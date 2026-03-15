@@ -52,7 +52,7 @@ export class AuthController {
       });
 
       // Enviar email de bienvenida (Req 13.1) — async, no bloquea la respuesta
-      notificationService.sendWelcomeEmail(result.brand).catch((err) =>
+      notificationService.sendWelcomeEmail(result.brand as any).catch((err) =>
         console.error('[Auth] Error enviando email de bienvenida:', err)
       );
 

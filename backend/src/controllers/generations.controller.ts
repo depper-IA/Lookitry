@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { GenerationsService } from '../services/generations.service';
 import { ProductsService } from '../services/products.service';
-import { asyncHandler, ValidationError, NotFoundError } from '../middleware/errorHandler';
+import { asyncHandler, ValidationError } from '../middleware/errorHandler';
 
 const generationsService = new GenerationsService();
 const productsService = new ProductsService();
