@@ -1,0 +1,24 @@
+import { Router } from 'express';
+import { PruebaloController } from '../controllers/pruebalo.controller';
+import { uploadSingleImage, handleMulterError } from '../middleware/multer.middleware';
+import { publicRateLimiter, generationRateLimiter, slugGenerationRateLimiter } from '../middleware/rateLimiter';
+
+const router = Router();
+const pruebaloController = new PruebaloController();
+
+// GET /api/pruebalo/:brandSlug - Obtener configuración pública de marca y productos
+// Esta ruta NO requiere autenticación (con rate limiting público)
+router.get('/:brandSlug', publicRateLimiter, pruebaloController.getBrandConfig);
+
+// POST /api/pruebalo/:brandSlug/generate - Generar imagen de try-on
+// Esta ruta NO requiere autenticación (con rate limiting más estricto)
+router.post(
+  '/:brandSlug/generate',
+  slugGenerationRateLimiter,
+  generationRateLimiter,
+  uploadSingleImage,
+  handleMulterError,
+  pruebaloController.generateTryOn
+);
+
+export default router;

@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Variables de tema ─────────────────────────────────────────────────────── */
+:root {
+  --font-syne: 'Syne', sans-serif;
+  --font-dm-sans: 'DM Sans', sans-serif;
+  --color-accent: #FF5C3A;
+  --color-dark: #0a0a0a;
+  --color-warm: #f5f2ee;
+
+  /* Light mode */
+  --bg-base: #f5f2ee;
+  --bg-card: #ffffff;
+  --bg-sidebar: #0a0a0a;
+  --bg-sidebar-hover: #1a1a1a;
+  --bg-header: #ffffff;
+  --border-color: #e0dcd7;
+  --text-primary: #0a0a0a;
+  --text-secondary: #6b6560;
+  --text-muted: #9c9590;
+  --text-sidebar: #d4d0cc;
+  --text-sidebar-active: #ffffff;
+  --shadow-header: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.dark {
+  --bg-base: #0a0a0a;
+  --bg-card: #141414;
+  --bg-sidebar: #0a0a0a;
+  --bg-sidebar-hover: #1f1f1f;
+  --bg-header: #111111;
+  --border-color: #2a2a2a;
+  --text-primary: #f5f2ee;
+  --text-secondary: #a09b96;
+  --text-muted: #6b6560;
+  --text-sidebar: #a09b96;
+  --text-sidebar-active: #ffffff;
+  --shadow-header: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+body {
+  font-family: var(--font-dm-sans, 'DM Sans', sans-serif);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Utilidades de tema ────────────────────────────────────────────────────── */
+.theme-bg-base    { background-color: var(--bg-base); }
+.theme-bg-card    { background-color: var(--bg-card); }
+.theme-bg-sidebar { background-color: var(--bg-sidebar); }
+.theme-border     { border-color: var(--border-color); }
+.theme-text       { color: var(--text-primary); }
+.theme-text-muted { color: var(--text-secondary); }
+
+/* ── Animaciones ───────────────────────────────────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── Scrollbar personalizado ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }

@@ -1,0 +1,406 @@
+import { emailService } from './email.service';
+import { SubscriptionService } from './subscription.service';
+import { notificationPreferencesService } from './notificationPreferences.service';
+import { Brand } from '../types';
+import {
+  welcomeEmail,
+  reminder7DaysEmail,
+  reminder3DaysEmail,
+  expirationTodayEmail,
+  suspensionEmail,
+  renewalConfirmationEmail,
+  usageAlert80Email,
+  usageAlert100Email,
+  adminWelcomeEmail,
+} from '../templates/email-templates';
+
+/**
+ * NotificationService
+ * 
+ * Servicio para enviar notificaciones por email a las marcas.
+ * Utiliza EmailService y templates de email para enviar diferentes tipos de notificaciones.
+ * Respeta las preferencias de notificaciones de cada marca.
+ * 
+ * Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8, 13.10
+ */
+export class NotificationService {
+  private subscriptionService: SubscriptionService;
+
+  constructor() {
+    this.subscriptionService = new SubscriptionService();
+  }
+
+  /**
+   * Formatea un monto en COP (pesos colombianos)
+   * 
+   * @param amount - Monto numérico
+   * @returns Monto formateado como string (ej: "$150.000 COP")
+   */
+  private formatCOP(amount: number): string {
+    return `$${amount.toLocaleString('es-CO')} COP`;
+  }
+
+  /**
+   * Obtiene el monto del plan de una marca
+   * 
+   * @param plan - Tipo de plan ('BASIC' o 'PRO')
+   * @returns Monto del plan en COP
+   */
+  private getPlanAmount(plan: string): number {
+    // Según requirements.md:
+    // Plan Básico: 150.000 COP/mes
+    // Plan Pro: 250.000-300.000 COP/mes (usamos 250.000)
+    switch (plan.toUpperCase()) {
+      case 'BASIC':
+        return 150000;
+      case 'PRO':
+        return 250000;
+      default:
+        return 150000;
+    }
+  }
+
+  /**
+   * Envía email de bienvenida al registrarse una nueva marca
+   * 
+   * @param brand - Información de la marca
+   * 
+   * Requirement 13.1: Enviar email de bienvenida con detalles del plan
+   */
+  async sendWelcomeEmail(brand: Brand): Promise<void> {
+    try {
+      // Verificar si el email está habilitado
+      const emailEnabled = await notificationPreferencesService.isNotificationEnabled(
+        brand.id,
+        'email'
+      );
+
+      if (!emailEnabled) {
+        console.log(`⏭️  Email de bienvenida omitido para ${brand.email} (preferencias)`);
+        return;
+      }
+
+      const amount = this.formatCOP(this.getPlanAmount(brand.plan));
+      const daysRemaining = await this.subscriptionService.getDaysRemaining(brand.id) || 30;
+
+      const html = welcomeEmail(
+        { name: brand.name, email: brand.email },
+        brand.plan,
+        amount,
+        daysRemaining
+      );
+
+      await emailService.sendEmail({
+        to: brand.email,
+        subject: '¡Bienvenido a Virtual Try-On SaaS!',
+        html,
+      });
+
+      console.log(`✅ Email de bienvenida enviado a ${brand.email}`);
+    } catch (error) {
+      console.error(`❌ Error al enviar email de bienvenida a ${brand.email}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Envía recordatorio de renovación antes del vencimiento
+   * 
+   * @param brand - Información de la marca
+   * @param daysRemaining - Días restantes hasta el vencimiento
+   * 
+   * Requirements: 13.2, 13.3, 13.4, 13.9, 13.10
+   */
+  async sendExpirationReminder(brand: Brand, daysRemaining: number): Promise<void> {
+    try {
+      // Verificar si el email está habilitado
+      const emailEnabled = await notificationPreferencesService.isNotificationEnabled(
+        brand.id,
+        'email'
+      );
+
+      if (!emailEnabled) {
+        console.log(`⏭️  Recordatorio omitido para ${brand.email} (email deshabilitado)`);
+        return;
+      }
+
+      // Verificar preferencias específicas según los días
+      if (daysRemaining === 7) {
+        const reminder7Enabled = await notificationPreferencesService.isNotificationEnabled(
+          brand.id,
+          'reminder_7days'
+        );
+        if (!reminder7Enabled) {
+          console.log(`⏭️  Recordatorio 7 días omitido para ${brand.email} (preferencias)`);
+          return;
+        }
+      } else if (daysRemaining === 3) {
+        const reminder3Enabled = await notificationPreferencesService.isNotificationEnabled(
+          brand.id,
+          'reminder_3days'
+        );
+        if (!reminder3Enabled) {
+          console.log(`⏭️  Recordatorio 3 días omitido para ${brand.email} (preferencias)`);
+          return;
+        }
+      }
+
+      const amount = this.formatCOP(this.getPlanAmount(brand.plan));
+      let html: string;
+      let subject: string;
+
+      if (daysRemaining === 7) {
+        // Recordatorio 7 días antes (urgencia baja)
+        html = reminder7DaysEmail(
+          { name: brand.name, email: brand.email },
+          daysRemaining,
+          amount
+        );
+        subject = 'Recordatorio: Tu suscripción vence en 7 días';
+      } else if (daysRemaining === 3) {
+        // Recordatorio 3 días antes (urgencia alta)
+        html = reminder3DaysEmail(
+          { name: brand.name, email: brand.email },
+          daysRemaining,
+          amount
+        );
+        subject = '⚠️ Urgente: Tu suscripción vence en 3 días';
+      } else if (daysRemaining === 0) {
+        // Notificación el día del vencimiento
+        html = expirationTodayEmail(
+          { name: brand.name, email: brand.email },
+          amount
+        );
+        subject = '🚨 Tu suscripción vence hoy';
+      } else {
+        // Para otros días, usar template de 7 días con días personalizados
+        html = reminder7DaysEmail(
+          { name: brand.name, email: brand.email },
+          daysRemaining,
+          amount
+        );
+        subject = `Recordatorio: Tu suscripción vence en ${daysRemaining} días`;
+      }
+
+      await emailService.sendEmail({
+        to: brand.email,
+        subject,
+        html,
+      });
+
+      console.log(`✅ Recordatorio de vencimiento enviado a ${brand.email} (${daysRemaining} días)`);
+    } catch (error) {
+      console.error(`❌ Error al enviar recordatorio a ${brand.email}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Envía notificación de suspensión de cuenta
+   * 
+   * @param brand - Información de la marca
+   * 
+   * Requirement 13.5: Enviar notificación de suspensión si no se renueva
+   */
+  async sendSuspensionNotice(brand: Brand): Promise<void> {
+    try {
+      // Verificar si el email está habilitado
+      const emailEnabled = await notificationPreferencesService.isNotificationEnabled(
+        brand.id,
+        'email'
+      );
+
+      if (!emailEnabled) {
+        console.log(`⏭️  Notificación de suspensión omitida para ${brand.email} (preferencias)`);
+        return;
+      }
+
+      const amount = this.formatCOP(this.getPlanAmount(brand.plan));
+
+      const html = suspensionEmail(
+        { name: brand.name, email: brand.email },
+        amount
+      );
+
+      await emailService.sendEmail({
+        to: brand.email,
+        subject: 'Cuenta Suspendida - Acción Requerida',
+        html,
+      });
+
+      console.log(`✅ Notificación de suspensión enviada a ${brand.email}`);
+    } catch (error) {
+      console.error(`❌ Error al enviar notificación de suspensión a ${brand.email}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Envía confirmación de renovación exitosa
+   * 
+   * @param brand - Información de la marca
+   * 
+   * Requirement 13.6: Enviar confirmación de renovación exitosa
+   */
+  async sendRenewalConfirmation(brand: Brand): Promise<void> {
+    try {
+      // Verificar si el email está habilitado
+      const emailEnabled = await notificationPreferencesService.isNotificationEnabled(
+        brand.id,
+        'email'
+      );
+
+      if (!emailEnabled) {
+        console.log(`⏭️  Confirmación de renovación omitida para ${brand.email} (preferencias)`);
+        return;
+      }
+
+      const amount = this.formatCOP(this.getPlanAmount(brand.plan));
+      const daysRemaining = await this.subscriptionService.getDaysRemaining(brand.id) || 30;
+      
+      // Obtener información de suscripción para la nueva fecha de vencimiento
+      const subscriptionInfo = await this.subscriptionService.getSubscriptionInfo(brand.id);
+      const newExpirationDate = subscriptionInfo.endDate 
+        ? new Date(subscriptionInfo.endDate).toLocaleDateString('es-CO', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })
+        : 'No disponible';
+
+      const html = renewalConfirmationEmail(
+        { name: brand.name, email: brand.email },
+        newExpirationDate,
+        amount,
+        daysRemaining
+      );
+
+      await emailService.sendEmail({
+        to: brand.email,
+        subject: '✅ Renovación Exitosa - Virtual Try-On SaaS',
+        html,
+      });
+
+      console.log(`✅ Confirmación de renovación enviada a ${brand.email}`);
+    } catch (error) {
+      console.error(`❌ Error al enviar confirmación de renovación a ${brand.email}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Envía alerta de uso cuando se alcanza un porcentaje del límite mensual
+   * 
+   * @param brand - Información de la marca
+   * @param percentage - Porcentaje de uso alcanzado (80 o 100)
+   * @param used - Número de generaciones usadas
+   * @param limit - Límite total de generaciones
+   * 
+   * Requirements: 13.7, 13.8, 13.9, 13.10
+   */
+  async sendUsageAlert(
+    brand: Brand,
+    percentage: number,
+    used: number,
+    limit: number
+  ): Promise<void> {
+    try {
+      // Verificar si las alertas de uso están habilitadas
+      const usageAlertsEnabled = await notificationPreferencesService.isNotificationEnabled(
+        brand.id,
+        'usage_alerts'
+      );
+
+      if (!usageAlertsEnabled) {
+        console.log(`⏭️  Alerta de uso omitida para ${brand.email} (preferencias)`);
+        return;
+      }
+
+      const amount = this.formatCOP(this.getPlanAmount(brand.plan));
+      const daysRemaining = await this.subscriptionService.getDaysRemaining(brand.id) || 0;
+      let html: string;
+      let subject: string;
+
+      if (percentage >= 100) {
+        // Alerta 100% - límite alcanzado
+        html = usageAlert100Email(
+          { name: brand.name, email: brand.email },
+          limit,
+          daysRemaining,
+          amount
+        );
+        subject = '🚫 Límite de Generaciones Alcanzado';
+      } else if (percentage === 80) {
+        // Alerta 80% exacto - advertencia
+        html = usageAlert80Email(
+          { name: brand.name, email: brand.email },
+          used,
+          limit,
+          daysRemaining,
+          amount
+        );
+        subject = '⚠️ Alerta: Has usado el 80% de tus generaciones';
+      } else {
+        // Para otros porcentajes, usar template de 80% con subject personalizado
+        html = usageAlert80Email(
+          { name: brand.name, email: brand.email },
+          used,
+          limit,
+          daysRemaining,
+          amount
+        );
+        subject = `⚠️ Alerta: Has usado el ${percentage}% de tus generaciones`;
+      }
+
+      await emailService.sendEmail({
+        to: brand.email,
+        subject,
+        html,
+      });
+
+      console.log(`✅ Alerta de uso (${percentage}%) enviada a ${brand.email}`);
+    } catch (error) {
+      console.error(`❌ Error al enviar alerta de uso a ${brand.email}:`, error);
+      throw error;
+    }
+  }
+  /**
+   * Envía email de bienvenida cuando el admin crea una marca manualmente.
+   * Incluye credenciales de acceso y detalles del período de prueba.
+   */
+  async sendAdminCreatedWelcomeEmail(
+    brand: Brand,
+    password: string,
+    trialDays: number
+  ): Promise<void> {
+    try {
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + trialDays);
+      const formattedDate = trialEndDate.toLocaleDateString('es-CO', {
+        day: '2-digit', month: 'long', year: 'numeric',
+      });
+
+      const html = adminWelcomeEmail(
+        { name: brand.name, email: brand.email },
+        password,
+        brand.plan,
+        trialDays,
+        formattedDate
+      );
+
+      await emailService.sendEmail({
+        to: brand.email,
+        subject: 'Bienvenido a Virtual Try-On SaaS — Tus datos de acceso',
+        html,
+      });
+
+      console.log(`Email de bienvenida admin enviado a ${brand.email}`);
+    } catch (error) {
+      console.error(`Error al enviar email de bienvenida admin a ${brand.email}:`, error);
+      throw error;
+    }
+  }
+}
+
+// Exportar instancia singleton
+export const notificationService = new NotificationService();
