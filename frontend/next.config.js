@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'vkdooutklowctuudjnkl.supabase.co'],
   },
   async headers() {
     return [
