@@ -6,7 +6,7 @@ const cleanupService = new CleanupService();
 /**
  * Endpoint manual para ejecutar limpieza (solo admin)
  */
-export const runCleanup = async (req: Request, res: Response) => {
+export const runCleanup = async (_req: Request, res: Response) => {
   try {
     console.log('[Cleanup Controller] Ejecutando limpieza manual...');
 
@@ -30,7 +30,7 @@ export const runCleanup = async (req: Request, res: Response) => {
 /**
  * Endpoint para obtener estadísticas de almacenamiento
  */
-export const getStorageStats = async (req: Request, res: Response) => {
+export const getStorageStats = async (_req: Request, res: Response) => {
   try {
     // TODO: Implementar estadísticas de almacenamiento
     // - Total de imágenes

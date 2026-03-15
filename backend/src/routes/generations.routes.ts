@@ -7,8 +7,8 @@ const ctrl = new GenerationsController();
 
 router.use(authMiddleware);
 
-router.get('/', (req, res) => ctrl.getGenerations(req, res));
-router.delete('/:id', (req, res) => ctrl.deleteGeneration(req, res));
-router.delete('/', (req, res) => ctrl.deleteGenerations(req, res));
+router.get('/', (req, res, next) => ctrl.getGenerations(req, res, next));
+router.delete('/:id', (req, res, next) => ctrl.deleteGeneration(req, res, next));
+router.delete('/', (req, res, next) => ctrl.deleteGenerations(req, res, next));
 
 export default router;

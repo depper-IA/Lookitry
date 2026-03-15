@@ -24,12 +24,13 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 async function checkSupabase(): Promise<ServiceResult> {
   const start = Date.now();
   try {
-    const { error } = await withTimeout(
-      supabase.from('brands').select('id').limit(1),
+    const queryPromise = supabase.from('brands').select('id').limit(1);
+    const result = await withTimeout(
+      Promise.resolve(queryPromise) as Promise<{ error: unknown }>,
       5000
     );
     const latency = Date.now() - start;
-    return { status: error ? 'degraded' : 'ok', latency };
+    return { status: result.error ? 'degraded' : 'ok', latency };
   } catch {
     return { status: 'down', latency: Date.now() - start };
   }
