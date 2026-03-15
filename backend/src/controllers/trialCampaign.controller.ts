@@ -1,0 +1,156 @@
+import { Request, Response } from 'express';
+import { supabase } from '../config/supabase';
+
+/**
+ * Gestión de campañas de trial gratuito.
+ *
+ * Una campaña activa permite que nuevos registros reciban 7 días de trial.
+ * Sin campaña activa, el registro crea la cuenta sin trial (pago desde el día 1).
+ *
+ * Además se registra IP + fingerprint para evitar abuso de múltiples trials.
+ */
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+async function getActiveCampaign() {
+  const now = new Date().toISOString();
+  const { data } = await supabase
+    .from('trial_campaigns')
+    .select('*')
+    .eq('active', true)
+    .or(`ends_at.is.null,ends_at.gt.${now}`)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+  return data;
+}
+
+// ── Admin endpoints ───────────────────────────────────────────────────────────
+
+/**
+ * GET /api/admin/trial-campaign
+ * Obtener estado actual de la campaña de trial
+ */
+export const getTrialCampaign = async (_req: any, res: Response) => {
+  try {
+    const { data: campaigns, error } = await supabase
+      .from('trial_campaigns')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+
+    const active = await getActiveCampaign();
+
+    return res.json({ campaigns: campaigns ?? [], activeCampaign: active ?? null });
+  } catch (err: any) {
+    console.error('[TrialCampaign] getTrialCampaign:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: err.message });
+  }
+};
+
+/**
+ * POST /api/admin/trial-campaign
+ * Crear y activar una nueva campaña de trial
+ */
+export const createTrialCampaign = async (req: any, res: Response) => {
+  try {
+    const { name, trial_days = 7, ends_at } = req.body;
+
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El nombre de la campaña es requerido' });
+    }
+
+    const trialDays = Math.min(30, Math.max(1, Number(trial_days) || 7));
+
+    // Desactivar campañas anteriores
+    await supabase.from('trial_campaigns').update({ active: false }).eq('active', true);
+
+    // Crear nueva campaña activa
+    const { data, error } = await supabase
+      .from('trial_campaigns')
+      .insert({
+        name: name.trim(),
+        active: true,
+        trial_days: trialDays,
+        ends_at: ends_at || null,
+        created_by: req.admin?.email ?? 'admin',
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return res.status(201).json({ message: 'Campaña creada y activada', campaign: data });
+  } catch (err: any) {
+    console.error('[TrialCampaign] createTrialCampaign:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: err.message });
+  }
+};
+
+/**
+ * PATCH /api/admin/trial-campaign/:id
+ * Activar, desactivar o actualizar una campaña
+ */
+export const updateTrialCampaign = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { active, name, trial_days, ends_at } = req.body;
+
+    const updates: Record<string, any> = {};
+
+    if (typeof active === 'boolean') {
+      if (active) {
+        // Desactivar otras antes de activar esta
+        await supabase.from('trial_campaigns').update({ active: false }).eq('active', true);
+      }
+      updates.active = active;
+    }
+    if (name !== undefined) updates.name = name;
+    if (trial_days !== undefined) updates.trial_days = Math.min(30, Math.max(1, Number(trial_days)));
+    if (ends_at !== undefined) updates.ends_at = ends_at || null;
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Nada que actualizar' });
+    }
+
+    const { data, error } = await supabase
+      .from('trial_campaigns')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return res.json({ message: 'Campaña actualizada', campaign: data });
+  } catch (err: any) {
+    console.error('[TrialCampaign] updateTrialCampaign:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: err.message });
+  }
+};
+
+// ── Endpoint público ──────────────────────────────────────────────────────────
+
+/**
+ * GET /api/trial/status
+ * Consulta pública: ¿hay una campaña de trial activa ahora mismo?
+ * Usado por el frontend para mostrar/ocultar el botón "Empezar gratis".
+ */
+export const getTrialStatus = async (_req: Request, res: Response) => {
+  try {
+    const campaign = await getActiveCampaign();
+
+    return res.json({
+      trialAvailable: !!campaign,
+      trialDays: campaign?.trial_days ?? 0,
+      campaignName: campaign?.name ?? null,
+      endsAt: campaign?.ends_at ?? null,
+    });
+  } catch (err: any) {
+    console.error('[TrialCampaign] getTrialStatus:', err);
+    // En caso de error, asumir que no hay trial disponible
+    return res.json({ trialAvailable: false, trialDays: 0, campaignName: null, endsAt: null });
+  }
+};

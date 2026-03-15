@@ -1,0 +1,420 @@
+import { Response } from 'express';
+import { BrandsService, UpdateBrandDto } from '../services/brands.service';
+import { AuthRequest } from '../middleware/auth';
+import { notificationPreferencesService } from '../services/notificationPreferences.service';
+import { UpdateNotificationPreferencesDto } from '../types';
+import { emailService } from '../services/email.service';
+import { invalidateBrandConfigCache } from '../utils/brandConfigCache';
+import { createAdminNotification } from '../utils/adminNotifications';
+
+const brandsService = new BrandsService();
+
+export class BrandsController {
+  async getMe(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand) {
+        return res.status(401).json({
+          error: 'UNAUTHORIZED',
+          message: 'No autenticado',
+        });
+      }
+
+      const brand = await brandsService.getBrandById(req.brand.id);
+
+      if (!brand) {
+        return res.status(404).json({
+          error: 'NOT_FOUND',
+          message: 'Marca no encontrada',
+        });
+      }
+
+      // No devolver la contraseña
+      const { password, ...brandWithoutPassword } = brand;
+
+      return res.status(200).json(brandWithoutPassword);
+    } catch (error: any) {
+      console.error('Error en getMe:', error);
+      return res.status(500).json({
+        error: 'INTERNAL_ERROR',
+        message: 'Error al obtener datos de la marca',
+      });
+    }
+  }
+
+  async updateMe(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand) {
+        return res.status(401).json({
+          error: 'UNAUTHORIZED',
+          message: 'No autenticado',
+        });
+      }
+
+      const updates: UpdateBrandDto = {};
+
+      // Solo permitir actualizar ciertos campos
+      if (req.body.name !== undefined) {
+        if (typeof req.body.name !== 'string' || req.body.name.trim().length === 0) {
+          return res.status(400).json({
+            error: 'VALIDATION_ERROR',
+            message: 'El nombre no puede estar vacío',
+          });
+        }
+        updates.name = req.body.name;
+      }
+
+      if (req.body.logo !== undefined) {
+        updates.logo = req.body.logo;
+      }
+
+      if (req.body.primary_color !== undefined) {
+        updates.primary_color = req.body.primary_color;
+      }
+
+      if (req.body.secondary_color !== undefined) {
+        updates.secondary_color = req.body.secondary_color;
+      }
+
+      if (req.body.widget_template !== undefined) {
+        updates.widget_template = req.body.widget_template;
+      }
+
+      if (req.body.button_text !== undefined) {
+        updates.button_text = req.body.button_text;
+      }
+
+      if (req.body.welcome_message !== undefined) {
+        updates.welcome_message = req.body.welcome_message;
+      }
+
+      // Campos de contacto / perfil
+      const contactFields: (keyof UpdateBrandDto)[] = [
+        'phone', 'contact_name', 'address', 'city', 'country', 'nit', 'website',
+      ];
+      for (const field of contactFields) {
+        if (req.body[field] !== undefined) {
+          (updates as any)[field] = req.body[field];
+        }
+      }
+
+      // Slug personalizado — solo Plan PRO
+      if (req.body.slug !== undefined) {
+        if (req.brand.plan !== 'PRO') {
+          return res.status(403).json({
+            error: 'FORBIDDEN',
+            message: 'La personalización del slug requiere Plan Pro',
+          });
+        }
+        const slug = String(req.body.slug).trim().toLowerCase();
+        if (!slug || !/^[a-z0-9-]+$/.test(slug) || slug.length < 3) {
+          return res.status(400).json({
+            error: 'VALIDATION_ERROR',
+            message: 'El slug solo puede contener letras minúsculas, números y guiones (mínimo 3 caracteres)',
+          });
+        }
+        updates.slug = slug;
+      }
+
+      // Verificar que hay algo que actualizar
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({
+          error: 'VALIDATION_ERROR',
+          message: 'No hay campos para actualizar',
+        });
+      }
+
+      const updatedBrand = await brandsService.updateBrand(req.brand.id, updates);
+
+      // Invalidar caché del probador para este slug
+      invalidateBrandConfigCache(updatedBrand.slug);
+
+      // No devolver la contraseña
+      const { password, ...brandWithoutPassword } = updatedBrand;
+
+      return res.status(200).json(brandWithoutPassword);
+    } catch (error: any) {
+      console.error('Error en updateMe:', error);
+
+      if (error.message.includes('hexadecimal') || error.message.includes('slug') || error.message.includes('uso')) {
+        return res.status(400).json({
+          error: 'VALIDATION_ERROR',
+          message: error.message,
+        });
+      }
+
+      return res.status(500).json({
+        error: 'INTERNAL_ERROR',
+        message: 'Error al actualizar la marca',
+      });
+    }
+  }
+
+  async getNotificationPreferences(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand) {
+        return res.status(401).json({
+          error: 'UNAUTHORIZED',
+          message: 'No autenticado',
+        });
+      }
+
+      const preferences = await notificationPreferencesService.getPreferences(req.brand.id);
+
+      return res.status(200).json(preferences);
+    } catch (error: any) {
+      console.error('Error en getNotificationPreferences:', error);
+      return res.status(500).json({
+        error: 'INTERNAL_ERROR',
+        message: 'Error al obtener preferencias de notificaciones',
+      });
+    }
+  }
+
+  async updateNotificationPreferences(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand) {
+        return res.status(401).json({
+          error: 'UNAUTHORIZED',
+          message: 'No autenticado',
+        });
+      }
+
+      const updates: UpdateNotificationPreferencesDto = {};
+
+      // Validar y extraer campos permitidos
+      const allowedFields = [
+        'email_enabled',
+        'whatsapp_enabled',
+        'reminder_7days',
+        'reminder_3days',
+        'usage_alerts',
+      ];
+
+      for (const field of allowedFields) {
+        if (req.body[field] !== undefined) {
+          if (typeof req.body[field] !== 'boolean') {
+            return res.status(400).json({
+              error: 'VALIDATION_ERROR',
+              message: `El campo ${field} debe ser un valor booleano`,
+            });
+          }
+          updates[field as keyof UpdateNotificationPreferencesDto] = req.body[field];
+        }
+      }
+
+      // Verificar que hay algo que actualizar
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({
+          error: 'VALIDATION_ERROR',
+          message: 'No hay campos para actualizar',
+        });
+      }
+
+      const updatedPreferences = await notificationPreferencesService.updatePreferences(
+        req.brand.id,
+        updates
+      );
+
+      return res.status(200).json(updatedPreferences);
+    } catch (error: any) {
+      console.error('Error en updateNotificationPreferences:', error);
+
+      if (error.message.includes('No hay campos')) {
+        return res.status(400).json({
+          error: 'VALIDATION_ERROR',
+          message: error.message,
+        });
+      }
+
+      return res.status(500).json({
+        error: 'INTERNAL_ERROR',
+        message: 'Error al actualizar preferencias de notificaciones',
+      });
+    }
+  }
+
+  /**
+   * POST /api/brands/request-upgrade
+   * Solicitar upgrade a Plan PRO — envía notificación al admin para gestión manual.
+   * El admin aplica el cambio desde el panel una vez confirme el pago.
+   * Requirement 29.1
+   */
+  async requestUpgrade(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand) {
+        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'No autenticado' });
+      }
+
+      if (req.brand.plan === 'PRO') {
+        return res.status(400).json({
+          error: 'ALREADY_PRO',
+          message: 'Tu marca ya tiene el Plan PRO',
+        });
+      }
+
+      const brand = await brandsService.getBrandById(req.brand.id);
+      if (!brand) {
+        return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+      }
+
+      const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+      if (!adminEmail) {
+        console.error('[requestUpgrade] ADMIN_EMAIL no configurado');
+        return res.status(500).json({
+          error: 'INTERNAL_ERROR',
+          message: 'Error de configuración del servidor',
+        });
+      }
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+      emailService.sendEmail({
+        to: adminEmail,
+        subject: `Solicitud de upgrade a PRO — ${brand.name}`,
+        html: `
+          <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+            <h2 style="color:#4f46e5;margin-bottom:8px">Solicitud de upgrade a Plan PRO</h2>
+            <p style="color:#6b7280;margin-bottom:24px">Una marca solicita cambiar al Plan PRO. Aplica el cambio una vez confirmes el pago.</p>
+            <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Nombre</td><td style="padding:8px 0;font-weight:600;color:#111827">${brand.name}</td></tr>
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Email</td><td style="padding:8px 0;color:#111827">${brand.email}</td></tr>
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Slug</td><td style="padding:8px 0;color:#111827">/${brand.slug}</td></tr>
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Plan actual</td><td style="padding:8px 0;color:#111827">${brand.plan}</td></tr>
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Fecha solicitud</td><td style="padding:8px 0;color:#111827">${new Date().toLocaleString('es-CO')}</td></tr>
+            </table>
+            <a href="${appUrl}/admin/brands" style="display:inline-block;background:#4f46e5;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+              Aplicar cambio en el panel admin
+            </a>
+          </div>
+        `,
+      }).catch(err => console.error('[requestUpgrade] Error enviando email:', err));
+
+      // Guardar timestamp de la solicitud
+      const { supabase } = await import('../config/supabase');
+      await supabase.from('brands').update({ upgrade_requested_at: new Date().toISOString() }).eq('id', brand.id);
+
+      // Notificación persistente en el panel admin
+      createAdminNotification({
+        type: 'upgrade_request',
+        title: 'Solicitud de upgrade a PRO',
+        message: `${brand.name} (${brand.email}) solicita cambiar al Plan PRO — pendiente de pago`,
+        severity: 'warning',
+        brandId: brand.id,
+        brandName: brand.name,
+        metadata: { fromPlan: brand.plan, toPlan: 'PRO' },
+      }).catch(() => {});
+
+      return res.status(200).json({ message: 'Solicitud enviada. Nos contactaremos para coordinar el pago.' });
+    } catch (error: any) {
+      console.error('Error en requestUpgrade:', error);
+      return res.status(500).json({
+        error: 'INTERNAL_ERROR',
+        message: 'Error al enviar la solicitud de upgrade',
+      });
+    }
+  }
+
+  /**
+   * POST /api/brands/request-plan-change
+   * Solicitar cambio de plan (upgrade o downgrade) — envía email al admin
+   */
+  async requestPlanChange(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand) {
+        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'No autenticado' });
+      }
+
+      const { targetPlan, message, months } = req.body;
+      if (!targetPlan || !['BASIC', 'PRO'].includes(targetPlan)) {
+        return res.status(400).json({ error: 'INVALID_PLAN', message: 'Plan inválido' });
+      }
+      const monthsCount = Math.min(24, Math.max(1, Number(months) || 1));
+      const discountPct = monthsCount >= 12 ? 15 : monthsCount >= 6 ? 10 : monthsCount >= 3 ? 5 : 0;
+      const basePrices: Record<string, number> = { BASIC: 150000, PRO: 250000 };
+      const totalPrice = Math.round(basePrices[targetPlan] * monthsCount * (1 - discountPct / 100));
+
+      if (req.brand.plan === targetPlan) {
+        return res.status(400).json({ error: 'SAME_PLAN', message: 'Ya tienes ese plan' });
+      }
+
+      const brand = await brandsService.getBrandById(req.brand.id);
+      if (!brand) {
+        return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+      }
+
+      const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+      if (!adminEmail) {
+        return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error de configuración' });
+      }
+
+      const isUpgrade = targetPlan === 'PRO';
+      const changeType = isUpgrade ? 'Upgrade' : 'Downgrade';
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+      const monthsLabel = monthsCount > 1
+        ? `${monthsCount} meses${discountPct > 0 ? ` (${discountPct}% descuento — Total: ${totalPrice.toLocaleString('es-CO')} COP)` : ''}`
+        : '1 mes';
+
+      await emailService.sendEmail({
+        to: adminEmail,
+        subject: `Solicitud de ${changeType} — ${brand.name} (${brand.plan} → ${targetPlan})`,
+        html: `
+          <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+            <h2 style="color:${isUpgrade ? '#4f46e5' : '#dc2626'};margin-bottom:8px">
+              Solicitud de ${changeType} de Plan
+            </h2>
+            <p style="color:#6b7280;margin-bottom:24px">
+              Una marca ha solicitado cambiar su plan de <strong>${brand.plan}</strong> a <strong>${targetPlan}</strong>.
+            </p>
+            <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Nombre</td><td style="padding:8px 0;font-weight:600;color:#111827">${brand.name}</td></tr>
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Email</td><td style="padding:8px 0;color:#111827">${brand.email}</td></tr>
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Plan actual</td><td style="padding:8px 0;color:#111827">${brand.plan}</td></tr>
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Plan solicitado</td><td style="padding:8px 0;font-weight:600;color:${isUpgrade ? '#4f46e5' : '#dc2626'}">${targetPlan}</td></tr>
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Meses solicitados</td><td style="padding:8px 0;font-weight:600;color:#111827">${monthsLabel}</td></tr>
+              <tr><td style="padding:8px 0;color:#6b7280;font-size:14px">Fecha</td><td style="padding:8px 0;color:#111827">${new Date().toLocaleString('es-CO')}</td></tr>
+            </table>
+            ${message ? `<div style="background:#f9fafb;border-radius:8px;padding:16px;margin-bottom:24px"><p style="color:#6b7280;font-size:12px;margin:0 0 6px">Mensaje del cliente:</p><p style="color:#111827;font-size:14px;margin:0">${message}</p></div>` : ''}
+            <a href="${appUrl}/admin/brands" style="display:inline-block;background:${isUpgrade ? '#4f46e5' : '#dc2626'};color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
+              Gestionar en el panel admin
+            </a>
+          </div>
+        `,
+      });
+
+      // Guardar timestamp de la solicitud en la marca
+      const { supabase } = await import('../config/supabase');
+      await supabase.from('brands').update({ upgrade_requested_at: new Date().toISOString() }).eq('id', req.brand.id);
+
+      // Notificación persistente en el panel admin
+      const notifTitle = monthsCount > 1
+        ? `Solicitud de ${changeType} — ${monthsCount} meses`
+        : `Solicitud de ${changeType} de plan`;
+      const notifMessage = monthsCount > 1
+        ? `${brand.name} solicitó cambiar de ${brand.plan} a ${targetPlan} por ${monthsCount} meses${discountPct > 0 ? ` (${discountPct}% desc.)` : ''}`
+        : `${brand.name} (${brand.email}) solicitó cambiar de ${brand.plan} a ${targetPlan}`;
+
+      await createAdminNotification({
+        type: 'plan_change_request',
+        title: notifTitle,
+        message: notifMessage,
+        severity: isUpgrade ? 'warning' : 'info',
+        brandId: brand.id,
+        brandName: brand.name,
+        metadata: {
+          fromPlan: brand.plan,
+          toPlan: targetPlan,
+          clientMessage: message || null,
+          months: monthsCount,
+          discountPct,
+          totalPrice,
+        },
+      });
+
+      return res.status(200).json({ message: 'Solicitud enviada. Nos contactaremos en las próximas 24 horas.' });
+    } catch (error: any) {
+      console.error('Error en requestPlanChange:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al enviar la solicitud' });
+    }
+  }
+}

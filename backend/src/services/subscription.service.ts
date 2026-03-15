@@ -1,0 +1,495 @@
+import { supabase, supabaseAdmin } from '../config/supabase';
+import { Brand, SubscriptionPayment, CreatePaymentDto } from '../types';
+
+/**
+ * SubscriptionService
+ * 
+ * Servicio para gestionar suscripciones de marcas.
+ * Maneja verificación de estado, renovaciones, suspensiones y cálculos de fechas.
+ * 
+ * Requirements: 11.1, 11.2, 11.3, 11.5, 11.6, 11.10
+ */
+export class SubscriptionService {
+  /**
+   * Verifica si la suscripción de una marca está activa.
+   * También permite acceso si la marca está en período de prueba activo.
+   *
+   * @param brandId - ID de la marca
+   * @returns true si la suscripción está activa o el trial no ha vencido
+   *
+   * Requirements: 11.1, 11 (Opción C)
+   */
+  async checkSubscriptionStatus(brandId: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('brands')
+      .select('subscription_status, trial_end_date')
+      .eq('id', brandId)
+      .single();
+
+    if (error || !data) {
+      return false;
+    }
+
+    // Suscripción activa o por vencer
+    if (
+      data.subscription_status === 'active' ||
+      data.subscription_status === 'expiring_soon' ||
+      data.subscription_status == null
+    ) {
+      return true;
+    }
+
+    // Verificar período de prueba activo
+    if (data.trial_end_date) {
+      const trialEnd = new Date(data.trial_end_date);
+      if (trialEnd > new Date()) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Verifica si una marca está en período de prueba activo
+   *
+   * @param brandId - ID de la marca
+   * @returns true si el trial está activo y no ha vencido
+   */
+  async isInTrial(brandId: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('brands')
+      .select('trial_end_date, subscription_status')
+      .eq('id', brandId)
+      .single();
+
+    if (error || !data || !data.trial_end_date) {
+      return false;
+    }
+
+    // Solo es "en trial" si no tiene suscripción activa pagada
+    const hasActivePaidSubscription =
+      data.subscription_status === 'active' ||
+      data.subscription_status === 'expiring_soon';
+
+    if (hasActivePaidSubscription) {
+      return false;
+    }
+
+    return new Date(data.trial_end_date) > new Date();
+  }
+
+  /**
+   * Obtiene los días restantes del período de prueba
+   *
+   * @param brandId - ID de la marca
+   * @returns días restantes del trial, o null si no aplica
+   */
+  async getTrialDaysRemaining(brandId: string): Promise<number | null> {
+    const { data, error } = await supabase
+      .from('brands')
+      .select('trial_end_date')
+      .eq('id', brandId)
+      .single();
+
+    if (error || !data || !data.trial_end_date) {
+      return null;
+    }
+
+    const trialEnd = new Date(data.trial_end_date);
+    const now = new Date();
+    const diffMs = trialEnd.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    return diffDays > 0 ? diffDays : 0;
+  }
+
+  /**
+   * Calcula la fecha de vencimiento de una suscripción
+   * 
+   * @param startDate - Fecha de inicio de la suscripción
+   * @returns Fecha de vencimiento (+30 días desde la fecha de inicio)
+   * 
+   * Requirement 11.2: Calcular fecha de vencimiento
+   */
+  calculateExpirationDate(startDate: Date, months: number = 1): Date {
+    const expirationDate = new Date(startDate);
+    expirationDate.setDate(expirationDate.getDate() + 30 * months);
+    return expirationDate;
+  }
+
+  /**
+   * Renueva la suscripción de una marca por 30 días adicionales
+   * 
+   * @param brandId - ID de la marca
+   * @param paymentData - Datos del pago realizado
+   * @returns Marca actualizada con nueva fecha de vencimiento
+   * 
+   * Requirements: 11.6, 11.14
+   */
+  async renewSubscription(
+    brandId: string,
+    paymentData: CreatePaymentDto,
+    months: number = 1
+  ): Promise<Brand> {
+    // Validar meses permitidos
+    if (![1, 3, 6].includes(months)) {
+      throw new Error('Los períodos permitidos son 1, 3 o 6 meses');
+    }
+
+    // Obtener marca actual
+    const { data: brand, error: brandError } = await supabaseAdmin
+      .from('brands')
+      .select('*')
+      .eq('id', brandId)
+      .single();
+
+    if (brandError || !brand) {
+      throw new Error('Marca no encontrada');
+    }
+
+    // Calcular nueva fecha de inicio y vencimiento
+    const now = new Date();
+    const newStartDate = brand.subscription_end_date 
+      ? new Date(brand.subscription_end_date) > now
+        ? new Date(brand.subscription_end_date) // Si aún no venció, extender desde la fecha actual de vencimiento
+        : now // Si ya venció, empezar desde ahora
+      : now;
+
+    const newEndDate = this.calculateExpirationDate(newStartDate, months);
+
+    // Actualizar marca con nueva suscripción
+    const { data: updatedBrand, error: updateError } = await supabaseAdmin
+      .from('brands')
+      .update({
+        subscription_start_date: newStartDate.toISOString(),
+        subscription_end_date: newEndDate.toISOString(),
+        subscription_status: 'active',
+        last_payment_date: paymentData.payment_date || now.toISOString(),
+        next_payment_date: newEndDate.toISOString(),
+      })
+      .eq('id', brandId)
+      .select()
+      .single();
+
+    if (updateError || !updatedBrand) {
+      throw new Error('Error al renovar la suscripción: ' + updateError?.message);
+    }
+
+    // Registrar pago en historial
+    await this.createPaymentRecord({
+      ...paymentData,
+      brand_id: brandId,
+      payment_date: paymentData.payment_date || now.toISOString(),
+      status: paymentData.status || 'completed',
+    });
+
+    return updatedBrand as Brand;
+  }
+
+  /**
+   * Suspende la suscripción de una marca
+   * 
+   * @param brandId - ID de la marca
+   * @returns Marca actualizada con estado suspended
+   * 
+   * Requirement 11.3: Suspender marca por falta de pago
+   */
+  async suspendSubscription(brandId: string): Promise<Brand> {
+    const { data, error } = await supabaseAdmin
+      .from('brands')
+      .update({
+        subscription_status: 'suspended',
+      })
+      .eq('id', brandId)
+      .select()
+      .single();
+
+    if (error || !data) {
+      throw new Error('Error al suspender la suscripción: ' + error?.message);
+    }
+
+    return data as Brand;
+  }
+
+  /**
+   * Calcula los días restantes de suscripción de una marca
+   * 
+   * @param brandId - ID de la marca
+   * @returns Número de días restantes (puede ser negativo si ya venció)
+   * 
+   * Requirement 11.10: Mostrar días restantes en dashboard
+   */
+  async getDaysRemaining(brandId: string): Promise<number | null> {
+    const { data, error } = await supabase
+      .from('brands')
+      .select('subscription_end_date')
+      .eq('id', brandId)
+      .single();
+
+    if (error || !data || !data.subscription_end_date) {
+      return null;
+    }
+
+    const endDate = new Date(data.subscription_end_date);
+    const now = new Date();
+    const diffTime = endDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays;
+  }
+
+  /**
+   * Obtiene las suscripciones que vencen en los próximos X días
+   * 
+   * @param days - Número de días para filtrar (ej: 7 para suscripciones que vencen en 7 días)
+   * @returns Lista de marcas cuyas suscripciones vencen en el período especificado
+   * 
+   * Requirement 11.5: Identificar suscripciones por vencer para enviar recordatorios
+   */
+  async getExpiringSubscriptions(days: number): Promise<Brand[]> {
+    const now = new Date();
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + days);
+
+    const { data, error } = await supabaseAdmin
+      .from('brands')
+      .select('*')
+      .in('subscription_status', ['active', 'expiring_soon'])
+      .gte('subscription_end_date', now.toISOString())
+      .lte('subscription_end_date', futureDate.toISOString())
+      .order('subscription_end_date', { ascending: true });
+
+    if (error) {
+      throw new Error('Error al obtener suscripciones por vencer: ' + error.message);
+    }
+
+    return (data || []) as Brand[];
+  }
+
+  /**
+   * Obtiene información completa de la suscripción de una marca,
+   * incluyendo datos del período de prueba si aplica.
+   *
+   * @param brandId - ID de la marca
+   * @returns Información de suscripción incluyendo fechas, días restantes y estado de trial
+   */
+  async getSubscriptionInfo(brandId: string): Promise<{
+    status: string;
+    startDate: string | null;
+    endDate: string | null;
+    lastPaymentDate: string | null;
+    nextPaymentDate: string | null;
+    daysRemaining: number | null;
+    isInTrial: boolean;
+    trialEndDate: string | null;
+    trialDaysRemaining: number | null;
+  }> {
+    const { data, error } = await supabase
+      .from('brands')
+      .select(
+        'subscription_status, subscription_start_date, subscription_end_date, last_payment_date, next_payment_date, trial_end_date'
+      )
+      .eq('id', brandId)
+      .single();
+
+    if (error || !data) {
+      throw new Error('Error al obtener información de suscripción');
+    }
+
+    const daysRemaining = await this.getDaysRemaining(brandId);
+    const inTrial = await this.isInTrial(brandId);
+    const trialDaysRemaining = await this.getTrialDaysRemaining(brandId);
+
+    return {
+      status: data.subscription_status,
+      startDate: data.subscription_start_date,
+      endDate: data.subscription_end_date,
+      lastPaymentDate: data.last_payment_date,
+      nextPaymentDate: data.next_payment_date,
+      daysRemaining,
+      isInTrial: inTrial,
+      trialEndDate: data.trial_end_date,
+      trialDaysRemaining,
+    };
+  }
+
+  /**
+   * Reactiva una marca suspendida
+   * 
+   * @param brandId - ID de la marca
+   * @returns Marca actualizada con estado active
+   */
+  async reactivateSubscription(brandId: string): Promise<Brand> {
+    const { data, error } = await supabaseAdmin
+      .from('brands')
+      .update({
+        subscription_status: 'active',
+      })
+      .eq('id', brandId)
+      .select()
+      .single();
+
+    if (error || !data) {
+      throw new Error('Error al reactivar la suscripción: ' + error?.message);
+    }
+
+    return data as Brand;
+  }
+
+  /**
+   * Actualiza el estado de suscripciones basado en fechas de vencimiento
+   * Este método debe ser llamado por un job diario
+   * 
+   * @returns Resumen de actualizaciones realizadas
+   * 
+   * Requirement 11.3: Cambiar estado automáticamente al vencer
+   */
+  async updateSubscriptionStatuses(): Promise<{
+    expired: number;
+    expiringSoon: number;
+    suspended: number;
+  }> {
+    const now = new Date();
+    const sevenDaysFromNow = new Date();
+    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+    // Marcar como expired las que vencieron hoy o antes
+    const { data: expiredBrands } = await supabaseAdmin
+      .from('brands')
+      .update({ subscription_status: 'expired' })
+      .lte('subscription_end_date', now.toISOString())
+      .in('subscription_status', ['active', 'expiring_soon'])
+      .select();
+
+    // Marcar como expiring_soon las que vencen en menos de 7 días
+    const { data: expiringSoonBrands } = await supabaseAdmin
+      .from('brands')
+      .update({ subscription_status: 'expiring_soon' })
+      .gt('subscription_end_date', now.toISOString())
+      .lte('subscription_end_date', sevenDaysFromNow.toISOString())
+      .eq('subscription_status', 'active')
+      .select();
+
+    // Suspender marcas con suscripción vencida (opcional, puede hacerse manualmente)
+    const { data: suspendedBrands } = await supabaseAdmin
+      .from('brands')
+      .update({ subscription_status: 'suspended' })
+      .eq('subscription_status', 'expired')
+      .select();
+
+    return {
+      expired: expiredBrands?.length || 0,
+      expiringSoon: expiringSoonBrands?.length || 0,
+      suspended: suspendedBrands?.length || 0,
+    };
+  }
+
+  /**
+   * Crea un registro de pago en el historial
+   * 
+   * @param paymentData - Datos del pago
+   * @returns Registro de pago creado
+   * 
+   * Requirement 11.14: Registrar historial de pagos
+   */
+  private async createPaymentRecord(
+    paymentData: CreatePaymentDto
+  ): Promise<SubscriptionPayment> {
+    const { data, error } = await supabaseAdmin
+      .from('subscription_payments')
+      .insert({
+        brand_id: paymentData.brand_id,
+        amount: paymentData.amount,
+        currency: paymentData.currency || 'COP',
+        payment_date: paymentData.payment_date || new Date().toISOString(),
+        payment_method: paymentData.payment_method || null,
+        status: paymentData.status || 'completed',
+        notes: paymentData.notes || null,
+      })
+      .select()
+      .single();
+
+    if (error || !data) {
+      throw new Error('Error al registrar el pago: ' + error?.message);
+    }
+
+    return data as SubscriptionPayment;
+  }
+
+  /**
+   * Obtiene el historial de pagos de una marca
+   * 
+   * @param brandId - ID de la marca
+   * @returns Lista de pagos ordenados por fecha descendente
+   * 
+   * Requirement 11.14: Mostrar historial de pagos
+   */
+  async getPaymentHistory(brandId: string): Promise<SubscriptionPayment[]> {
+    const { data, error } = await supabase
+      .from('subscription_payments')
+      .select('*')
+      .eq('brand_id', brandId)
+      .order('payment_date', { ascending: false });
+
+    if (error) {
+      throw new Error('Error al obtener historial de pagos: ' + error.message);
+    }
+
+    return (data || []) as SubscriptionPayment[];
+  }
+
+  /**
+   * Purga marcas suspendidas hace más de 90 días.
+   * Elimina datos de la marca pero mantiene registros de pagos para auditoría.
+   * 
+   * Requirements: 11.12, 11.13
+   */
+  async purgeExpiredSuspendedBrands(): Promise<{ purged: number; errors: number }> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 90);
+
+    // Buscar marcas suspendidas cuya suscripción venció hace más de 90 días
+    const { data: brandsToPurge, error: fetchError } = await supabaseAdmin
+      .from('brands')
+      .select('id, name, email')
+      .eq('subscription_status', 'suspended')
+      .lt('subscription_end_date', cutoffDate.toISOString());
+
+    if (fetchError || !brandsToPurge?.length) {
+      return { purged: 0, errors: fetchError ? 1 : 0 };
+    }
+
+    let purged = 0;
+    let errors = 0;
+
+    for (const brand of brandsToPurge) {
+      try {
+        // Soft-delete: marcar como eliminada en lugar de borrar físicamente
+        const { error } = await supabaseAdmin
+          .from('brands')
+          .update({
+            subscription_status: 'suspended',
+            name: `[ELIMINADA] ${brand.name}`,
+            email: `deleted_${brand.id}@purged.local`,
+            logo: null,
+            slug: `deleted-${brand.id}`,
+          })
+          .eq('id', brand.id);
+
+        if (error) {
+          console.error(`[Subscription] Error purgando marca ${brand.id}:`, error.message);
+          errors++;
+        } else {
+          console.log(`[Subscription] Marca purgada tras 90 días: ${brand.name} (${brand.id})`);
+          purged++;
+        }
+      } catch (err) {
+        console.error(`[Subscription] Error inesperado purgando marca ${brand.id}:`, err);
+        errors++;
+      }
+    }
+
+    return { purged, errors };
+  }
+}
