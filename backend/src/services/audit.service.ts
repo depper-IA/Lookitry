@@ -12,10 +12,13 @@ export type AuditAction =
   | 'brand.plan_change'
   | 'brand.plan_activate'
   | 'brand.product_delete'
+  | 'brand.delete'
   | 'subscription.renew'
   | 'subscription.suspend'
   | 'subscription.reactivate'
-  | 'admin.login';
+  | 'admin.login'
+  | 'admin.send_credentials'
+  | 'admin.change_password';
 
 export interface AuditEntry {
   admin_id: string;

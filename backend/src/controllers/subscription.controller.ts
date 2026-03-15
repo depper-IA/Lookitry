@@ -271,7 +271,7 @@ export class SubscriptionController {
           ? `${notes}${discount > 0 ? ` (descuento ${discount * 100}% por ${periodMonths} meses)` : ''}`
           : discount > 0
             ? `Descuento ${discount * 100}% por pago de ${periodMonths} meses`
-            : null,
+            : undefined,
       };
 
       const updatedBrand = await subscriptionService.renewSubscription(brandId, paymentData, periodMonths);

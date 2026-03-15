@@ -1,3 +1,13 @@
 {
-  "mcpServers": {}
+  "mcpServers": {
+    "hostinger": {
+      "command": "npx",
+      "args": ["-y", "@hostinger/api-mcp-server"],
+      "env": {
+        "HOSTINGER_API_KEY": "***REMOVED-SECRET***"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
 }
