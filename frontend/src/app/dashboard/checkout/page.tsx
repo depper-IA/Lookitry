@@ -56,7 +56,10 @@ export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planParam = (searchParams.get('plan') ?? 'BASIC').toUpperCase() as PlanType;
-  const plan: PlanType = planParam in PLAN_INFO ? planParam : 'BASIC';
+  const initialPlan: PlanType = planParam in PLAN_INFO ? planParam : 'BASIC';
+
+  // plan es estado local — el usuario puede cambiarlo desde el selector
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>(initialPlan);
 
   const [state, setState] = useState<CheckoutState>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -66,6 +69,7 @@ export default function CheckoutPage() {
   const [hasLandingPage, setHasLandingPage] = useState(false);
   const [includeLanding, setIncludeLanding] = useState(false);
 
+  const plan = selectedPlan;
   const planInfo = PLAN_INFO[plan];
   const effectivePlanPrice = isInTrial ? planInfo.price : getEffectivePrice(plan, currentPlan);
   const isUpgrade = !isInTrial && currentPlan !== null && currentPlan !== plan && effectivePlanPrice < planInfo.price;
@@ -175,6 +179,59 @@ export default function CheckoutPage() {
                 ? `Upgrade de ${PLAN_INFO[currentPlan!].name} a ${planInfo.name}`
                 : `Activa tu suscripción — ${planInfo.name}`}
           </p>
+        </div>
+      </div>
+
+      {/* Selector de plan */}
+      <div
+        className="rounded-2xl border overflow-hidden"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+      >
+        <div className="px-6 py-4 border-b" style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}>
+          <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Selecciona tu plan</h2>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Puedes cambiar de plan antes de pagar</p>
+        </div>
+        <div className="p-4 grid grid-cols-2 gap-3">
+          {(Object.keys(PLAN_INFO) as PlanType[]).map((p) => {
+            const info = PLAN_INFO[p];
+            const isSelected = selectedPlan === p;
+            return (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setSelectedPlan(p)}
+                className="text-left rounded-xl border-2 p-4 transition-all"
+                style={{
+                  borderColor: isSelected ? '#FF5C3A' : 'var(--border-color)',
+                  background: isSelected ? 'rgba(255,92,58,0.06)' : 'var(--bg-hover)',
+                }}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{info.name}</span>
+                  <div
+                    className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                    style={{ borderColor: isSelected ? '#FF5C3A' : 'var(--border-color)' }}
+                  >
+                    {isSelected && <div className="w-2 h-2 rounded-full" style={{ background: '#FF5C3A' }} />}
+                  </div>
+                </div>
+                <p className="text-lg font-bold" style={{ color: isSelected ? '#FF5C3A' : 'var(--text-primary)' }}>
+                  {formatCurrency(info.price)}
+                  <span className="text-xs font-normal ml-1" style={{ color: 'var(--text-muted)' }}>/mes</span>
+                </p>
+                <ul className="mt-2 space-y-1">
+                  {info.features.slice(0, 3).map((f) => (
+                    <li key={f} className="flex items-start gap-1.5 text-xs" style={{ color: 'var(--text-muted)' }}>
+                      <svg className="w-3 h-3 mt-0.5 flex-shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </button>
+            );
+          })}
         </div>
       </div>
 
