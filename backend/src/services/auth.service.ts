@@ -114,7 +114,7 @@ export class AuthService {
         slug: data.slug,
         plan: 'BASIC',
         trial_end_date: trialEndDate ? trialEndDate.toISOString() : null,
-        trial_generations_limit: trialEndDate ? 30 : 0,
+        trial_generations_limit: trialEndDate ? (campaign?.trial_generations_limit ?? 50) : 0,
         email_verified: false,
         email_verification_token: crypto.randomBytes(32).toString('hex'),
       })

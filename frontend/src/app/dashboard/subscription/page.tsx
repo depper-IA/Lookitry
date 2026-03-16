@@ -43,6 +43,18 @@ const PLAN_INFO = {
   },
 } as const;
 
+const TRIAL_INFO = {
+  name: 'Plan Trial',
+  gradient: 'from-[#6366f1] to-[#4f46e5]',
+  features: [
+    '1 producto',
+    '50 generaciones incluidas',
+    'Acceso completo al probador virtual',
+    'Mini-landing pública',
+    'Soporte por WhatsApp/email',
+  ],
+};
+
 type PlanKey = keyof typeof PLAN_INFO;
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
@@ -282,31 +294,65 @@ export default function SubscriptionPage() {
     : 'BASIC';
   const planInfo = PLAN_INFO[plan];
   const statusInfo = STATUS_LABELS[info.status ?? 'active'] ?? STATUS_LABELS.active;
+  const inTrial = info.isInTrial ?? false;
+  const trialDaysLeft = info.trialDaysRemaining ?? 0;
 
   const progressPercent = info.daysRemaining != null
     ? Math.min(100, Math.max(0, Math.round(((30 - info.daysRemaining) / 30) * 100)))
     : 100;
 
+  // Hero: diferente si está en trial
+  const heroGradient = inTrial ? TRIAL_INFO.gradient : planInfo.gradient;
+  const heroTitle = inTrial ? TRIAL_INFO.name : planInfo.name;
+  const heroSubtitle = inTrial
+    ? `${trialDaysLeft} ${trialDaysLeft === 1 ? 'día restante' : 'días restantes'}`
+    : `${formatCurrency(planInfo.price)}/mes`;
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-10">
 
       {/* Hero: plan actual */}
-      <div className={`rounded-2xl bg-gradient-to-br ${planInfo.gradient} p-6 text-white shadow-lg`}>
+      <div className={`rounded-2xl bg-gradient-to-br ${heroGradient} p-6 text-white shadow-lg`}>
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <p className="text-white/70 text-sm font-medium uppercase tracking-wide">Tu plan actual</p>
-            <h2 className="text-3xl font-syne font-bold mt-1">{planInfo.name}</h2>
+            <h2 className="text-3xl font-syne font-bold mt-1">{heroTitle}</h2>
             <p className="text-white/80 text-lg mt-1">
-              {formatCurrency(planInfo.price)}
-              <span className="text-sm font-normal">/mes</span>
+              {inTrial ? (
+                <span className="text-base font-normal">Período de prueba gratuito</span>
+              ) : (
+                <>{formatCurrency(planInfo.price)}<span className="text-sm font-normal">/mes</span></>
+              )}
             </p>
           </div>
-          <span className={`px-3 py-1.5 rounded-full border text-sm font-medium ${statusInfo.bg} ${statusInfo.color}`}>
-            {statusInfo.label}
-          </span>
+          {inTrial ? (
+            <span className="px-3 py-1.5 rounded-full border text-sm font-medium bg-white/20 text-white border-white/30">
+              Trial activo
+            </span>
+          ) : (
+            <span className={`px-3 py-1.5 rounded-full border text-sm font-medium ${statusInfo.bg} ${statusInfo.color}`}>
+              {statusInfo.label}
+            </span>
+          )}
         </div>
 
-        {info.daysRemaining != null && (
+        {/* Barra de progreso del trial */}
+        {inTrial && (
+          <div className="mt-5">
+            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-white/80 rounded-full transition-all"
+                style={{ width: `${Math.max(5, Math.round((trialDaysLeft / (info.trialDaysRemaining ?? 7 || 7)) * 100))}%` }}
+              />
+            </div>
+            <p className="text-xs text-white/70 mt-1.5 text-right">
+              {trialDaysLeft > 0 ? `${trialDaysLeft} días restantes` : 'Trial vencido'}
+            </p>
+          </div>
+        )}
+
+        {/* Barra de progreso suscripción normal */}
+        {!inTrial && info.daysRemaining != null && (
           <div className="mt-5">
             <div className="h-2 bg-white/20 rounded-full overflow-hidden">
               <div
@@ -323,39 +369,64 @@ export default function SubscriptionPage() {
         )}
 
         <div className="mt-5 flex flex-wrap gap-3">
-          <button
-            onClick={() => {
-              const targetPlan: PlanKey = plan === 'BASIC' ? 'PRO' : 'BASIC';
-              if (info?.isInTrial) {
-                router.push(`/dashboard/checkout?plan=${targetPlan}`);
-              } else {
-                setShowChangePlan(true);
-              }
-            }}
-            className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors border border-white/30"
-          >
-            {plan === 'BASIC'
-              ? <><ArrowUpCircle className="w-4 h-4" /> {info?.isInTrial ? 'Activar Plan Pro' : 'Cambiar a Pro'}</>
-              : <><ArrowDownCircle className="w-4 h-4" /> {info?.isInTrial ? 'Activar Plan Básico' : 'Cambiar a Básico'}</>}
-          </button>
-          {(info?.status === 'expiring_soon' || info?.status === 'expired') && !info?.isInTrial && (
-            <button
-              onClick={() => router.push(`/dashboard/checkout?plan=${plan}`)}
-              className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white text-[#FF5C3A] text-sm font-semibold transition-colors border border-white/30 hover:bg-white/90"
-            >
-              <CreditCard className="w-4 h-4" />
-              Renovar ahora
-            </button>
+          {inTrial ? (
+            // En trial: botones directos para activar BASIC o PRO
+            <>
+              <button
+                onClick={() => router.push('/dashboard/checkout?plan=BASIC')}
+                className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white text-[#6366f1] text-sm font-semibold transition-colors border border-white/30 hover:bg-white/90"
+              >
+                <ArrowUpCircle className="w-4 h-4" />
+                Activar Plan Básico
+              </button>
+              <button
+                onClick={() => router.push('/dashboard/checkout?plan=PRO')}
+                className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors border border-white/30"
+              >
+                <ArrowUpCircle className="w-4 h-4" />
+                Activar Plan Pro
+              </button>
+              <a
+                href="https://wa.me/573105436281"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors border border-white/30"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Contactar soporte
+              </a>
+            </>
+          ) : (
+            // Suscripción normal
+            <>
+              <button
+                onClick={() => setShowChangePlan(true)}
+                className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors border border-white/30"
+              >
+                {plan === 'BASIC'
+                  ? <><ArrowUpCircle className="w-4 h-4" /> Cambiar a Pro</>
+                  : <><ArrowDownCircle className="w-4 h-4" /> Cambiar a Básico</>}
+              </button>
+              {(info?.status === 'expiring_soon' || info?.status === 'expired') && (
+                <button
+                  onClick={() => router.push(`/dashboard/checkout?plan=${plan}`)}
+                  className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white text-[#FF5C3A] text-sm font-semibold transition-colors border border-white/30 hover:bg-white/90"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Renovar ahora
+                </button>
+              )}
+              <a
+                href="https://wa.me/573105436281"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors border border-white/30"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Contactar soporte
+              </a>
+            </>
           )}
-          <a
-            href="https://wa.me/573105436281"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors border border-white/30"
-          >
-            <MessageCircle className="w-4 h-4" />
-            Contactar soporte
-          </a>
         </div>
       </div>
 
@@ -363,7 +434,7 @@ export default function SubscriptionPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {(Object.keys(PLAN_INFO) as PlanKey[]).map(p => {
           const pi = PLAN_INFO[p];
-          const isCurrent = p === plan;
+          const isCurrent = !inTrial && p === plan;
           return (
             <div
               key={p}
@@ -392,12 +463,12 @@ export default function SubscriptionPage() {
                   </li>
                 ))}
               </ul>
-      {!isCurrent && (
+              {(inTrial || !isCurrent) && (
                 <button
                   onClick={() => router.push(`/dashboard/checkout?plan=${p}`)}
                   className="mt-4 w-full py-2.5 min-h-[44px] rounded-xl text-sm font-semibold transition-colors bg-[#FF5C3A] hover:bg-[#e04e30] text-white"
                 >
-                  {info?.isInTrial ? `Activar ${pi.name}` : `Cambiar a ${pi.name}`}
+                  {inTrial ? `Activar ${pi.name}` : `Cambiar a ${pi.name}`}
                 </button>
               )}
             </div>
