@@ -38,47 +38,40 @@ export function LiveTryOnButton() {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      {/* Botón principal: abrir probador en nueva pestaña */}
+    <div className="flex items-center gap-1.5">
+      {/* Botón principal: solo icono en móvil, texto completo en desktop */}
       <button
         onClick={handleOpen}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-white text-sm font-medium rounded-lg transition-opacity min-h-[36px]"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-white text-sm font-medium rounded-lg transition-opacity min-h-[34px]"
         style={{ background: '#FF5C3A' }}
         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
         title={`Abrir probador: ${tryOnUrl}`}
       >
-        <ExternalLinkIcon className="h-4 w-4" />
-        Ver probador en vivo
+        <ExternalLinkIcon className="h-4 w-4 flex-shrink-0" />
+        <span className="hidden sm:inline">Ver probador</span>
       </button>
 
-      {/* URL copiable */}
-      <div
-        className="flex items-center gap-1 rounded-lg px-2 py-1.5 max-w-xs border"
-        style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}
+      {/* Botón copiar URL: solo en desktop */}
+      <button
+        onClick={handleCopy}
+        className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 text-sm rounded-lg border transition-colors min-h-[34px]"
+        style={{
+          background: 'var(--bg-hover)',
+          borderColor: 'var(--border-color)',
+          color: copied ? '#10b981' : 'var(--text-secondary)',
+        }}
+        title={copied ? 'Copiado' : `Copiar URL: ${tryOnUrl}`}
       >
-        <span
-          className="text-xs truncate select-all"
-          style={{ color: 'var(--text-secondary)' }}
-          title={tryOnUrl}
-        >
-          {tryOnUrl}
+        {copied ? (
+          <CheckIcon className="h-4 w-4 flex-shrink-0" />
+        ) : (
+          <CopyIcon className="h-4 w-4 flex-shrink-0" />
+        )}
+        <span className="hidden lg:inline text-xs truncate max-w-[140px]">
+          {copied ? 'Copiado' : tryOnUrl.replace(/^https?:\/\//, '')}
         </span>
-        <button
-          onClick={handleCopy}
-          className="ml-1 flex-shrink-0 transition-colors"
-          style={{ color: 'var(--text-muted)' }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-          title={copied ? 'Copiado' : 'Copiar URL'}
-        >
-          {copied ? (
-            <CheckIcon className="h-4 w-4 text-green-600" />
-          ) : (
-            <CopyIcon className="h-4 w-4" />
-          )}
-        </button>
-      </div>
+      </button>
     </div>
   );
 }

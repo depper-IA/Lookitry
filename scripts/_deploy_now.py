@@ -1,10 +1,16 @@
 """
-Deploy script — virtual-tryon
+Deploy script -- virtual-tryon
 Uso:
-  python _deploy_now.py              → rebuild solo lo que cambió (rápido, usa caché Docker)
-  python _deploy_now.py --no-cache   → rebuild completo sin caché (lento, para cambios en deps)
-  python _deploy_now.py --backend    → solo backend
-  python _deploy_now.py --frontend   → solo frontend
+  python _deploy_now.py              -> rebuild solo lo que cambio (rapido, usa cache Docker)
+  python _deploy_now.py --no-cache   -> rebuild completo sin cache (lento, para cambios en deps)
+  python _deploy_now.py --backend    -> solo backend
+  python _deploy_now.py --frontend   -> solo frontend
+  python _deploy_now.py --restart    -> solo reinicia contenedores SIN rebuild (~5s, instantaneo)
+
+Tiempos aproximados:
+  --restart   : ~5s   (solo reinicia, sin rebuild -- util para cambios de config/env)
+  normal      : ~2min frontend, ~1min backend (con cache Docker)
+  --no-cache  : ~5min (rebuild completo, solo cuando cambian package.json/deps)
 """
 import paramiko
 import time
@@ -15,11 +21,12 @@ USER = "root"
 PASS = "Travis18456916#"
 
 args = sys.argv[1:]
-no_cache    = "--no-cache" in args
-only_back   = "--backend"  in args
-only_front  = "--frontend" in args
-do_backend  = only_back  or (not only_front)
-do_frontend = only_front or (not only_back)
+no_cache     = "--no-cache" in args
+only_back    = "--backend"  in args
+only_front   = "--frontend" in args
+restart_only = "--restart"  in args
+do_backend   = only_back  or (not only_front)
+do_frontend  = only_front or (not only_back)
 
 build_flag = "--no-cache" if no_cache else ""
 
@@ -37,23 +44,42 @@ def run(ssh, cmd, timeout=300):
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect(HOST, username=USER, password=PASS, timeout=30)
-print(f"Conectado al VPS  [no-cache={no_cache}  backend={do_backend}  frontend={do_frontend}]")
+print(f"Conectado al VPS  [no-cache={no_cache}  backend={do_backend}  frontend={do_frontend}  restart={restart_only}]")
 
-# 1. Git pull — detectar qué archivos cambiaron
+# Modo --restart: solo reinicia contenedores, sin rebuild ni git pull (~5s)
+if restart_only:
+    print("\n=== Restart rapido (sin rebuild) ===")
+    if do_backend:
+        run(ssh, "docker compose -f /root/virtual-tryon/docker-compose.backend.yml restart")
+    if do_frontend:
+        run(ssh, "docker compose -f /root/virtual-tryon/docker-compose.frontend.yml restart")
+    time.sleep(3)
+    run(ssh, "docker ps --format 'table {{.Names}}\t{{.Status}}' | grep virtual-tryon")
+    ssh.close()
+    print("\nRestart completado.")
+    sys.exit(0)
+
+# 1. Git pull -- detectar que archivos cambiaron
 out, _ = run(ssh, "cd /root/virtual-tryon && git pull origin main")
 
-# Inferir qué rebuildar si no se especificó flag
+# Inferir que rebuildar si no se especifico flag
 if not only_back and not only_front:
     backend_changed  = "backend/"  in out
     frontend_changed = "frontend/" in out
-    # Si git pull no reportó cambios, rebuildar todo de todas formas
+    # Si git pull no reporto cambios, rebuildar todo de todas formas
     if not backend_changed and not frontend_changed:
         backend_changed = frontend_changed = True
     do_backend  = backend_changed
     do_frontend = frontend_changed
-    if do_backend  and not do_frontend: print("\n→ Solo cambió backend")
-    if do_frontend and not do_backend:  print("\n→ Solo cambió frontend")
-    if do_backend  and do_frontend:     print("\n→ Cambiaron backend y frontend")
+    if do_backend  and not do_frontend: print("\n-> Solo cambio backend")
+    if do_frontend and not do_backend:  print("\n-> Solo cambio frontend")
+    if do_backend  and do_frontend:     print("\n-> Cambiaron backend y frontend")
+
+# Avisar si cambiaron dependencias
+if do_frontend and "package.json" in out and not no_cache:
+    print("\n[AVISO] package.json cambio en frontend -- considera usar --no-cache")
+if do_backend and "package.json" in out and not no_cache:
+    print("\n[AVISO] package.json cambio en backend -- considera usar --no-cache")
 
 # 2. Rebuild backend
 if do_backend:

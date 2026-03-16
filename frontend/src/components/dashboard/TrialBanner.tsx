@@ -72,7 +72,7 @@ export function TrialBanner() {
         )}
       </div>
 
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
         <button
           onClick={() => router.push('/dashboard/checkout?plan=BASIC')}
           className="px-3 py-1.5 min-h-[36px] rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-85"
