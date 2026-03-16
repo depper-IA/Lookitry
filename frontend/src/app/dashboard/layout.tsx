@@ -50,6 +50,11 @@ export default function DashboardLayoutWrapper({
     };
 
     checkSubscriptionStatus();
+
+    // Re-fetch cuando el usuario vuelve a la pestaña (ej: admin cambió el plan)
+    const handleFocus = () => { checkSubscriptionStatus(); };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [isAuthenticated, isLoading]);
 
   if (isLoading || checkingSubscription) {

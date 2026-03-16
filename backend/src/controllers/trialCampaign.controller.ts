@@ -56,7 +56,7 @@ export const getTrialCampaign = async (_req: any, res: Response) => {
  */
 export const createTrialCampaign = async (req: any, res: Response) => {
   try {
-    const { name, trial_days = 7, ends_at } = req.body;
+    const { name, trial_days = 7, ends_at, require_card_verification = true } = req.body;
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El nombre de la campaña es requerido' });
@@ -75,6 +75,7 @@ export const createTrialCampaign = async (req: any, res: Response) => {
         active: true,
         trial_days: trialDays,
         ends_at: ends_at || null,
+        require_card_verification: require_card_verification !== false,
         created_by: req.admin?.email ?? 'admin',
       })
       .select()
@@ -110,6 +111,9 @@ export const updateTrialCampaign = async (req: any, res: Response) => {
     if (name !== undefined) updates.name = name;
     if (trial_days !== undefined) updates.trial_days = Math.min(30, Math.max(1, Number(trial_days)));
     if (ends_at !== undefined) updates.ends_at = ends_at || null;
+    if (typeof req.body.require_card_verification === 'boolean') {
+      updates.require_card_verification = req.body.require_card_verification;
+    }
 
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Nada que actualizar' });

@@ -30,7 +30,7 @@ export default function AuthVerifyPage() {
           setStatus('success');
           setMessage(data.message || 'Correo verificado correctamente.');
           // Redirigir al login después de 2 segundos
-          setTimeout(() => router.push('/login'), 2000);
+          setTimeout(() => router.push('/login'), 2500);
         }
       })
       .catch(() => {
