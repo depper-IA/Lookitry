@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { brandsService } from '@/services/brands.service';
+import { authService } from '@/services/auth.service';
 import { api } from '@/services/api';
 import { Spinner } from '@/components/ui/Spinner';
 import type { Brand } from '@/types';
@@ -109,10 +110,15 @@ function CoverImageUpload({
     try {
       const formData = new FormData();
       formData.append('image', file);
-      const res = await api.post<{ url: string }>('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const token = authService.getToken();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
       });
-      onUpload(res.data.url);
+      if (!res.ok) throw new Error('Error al subir imagen');
+      const data = await res.json();
+      onUpload(data.url);
     } catch {
       setError('Error al subir la imagen');
     } finally {
@@ -143,7 +149,7 @@ function CoverImageUpload({
               <Spinner size="sm" />
             ) : (
               <>
-                <UploadIcon className="w-8 h-8 mx-auto mb-2" style={{ color: 'var(--text-secondary)' }} />
+                <UploadIcon className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                 <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
                   Subir imagen de portada
                 </p>
