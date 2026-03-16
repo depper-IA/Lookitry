@@ -241,7 +241,7 @@ export default function MiPaginaPage() {
   }
 
   const slug = brand?.slug || authBrand?.slug || '';
-  const pageUrl = `${FRONTEND_URL}/pruebalo/${slug}`;
+  const pageUrl = `${FRONTEND_URL}/sitio/${slug}`;
   const primaryColor = (brand as any)?.primary_color || brand?.primaryColor || '#FF5C3A';
   const hasLandingPage = (brand as any)?.has_landing_page ?? false;
 

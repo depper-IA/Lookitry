@@ -220,7 +220,7 @@ export default function RegisterForm() {
               </label>
               <div className="flex items-center bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg overflow-hidden focus-within:border-[#FF5C3A] transition-colors">
                 <span className="px-3 py-2.5 text-[#333] text-[13px] border-r border-[#2a2a2a] whitespace-nowrap">
-                  /pruebalo/
+                  /sitio/
                 </span>
                 <input
                   name="slug"
