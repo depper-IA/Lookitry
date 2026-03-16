@@ -155,7 +155,8 @@ async function eliminarProductosMinIO(brandId: string): Promise<void> {
 
   // Importar el cliente de MinIO dinámicamente para no romper si no está instalado
   try {
-    const Minio = await import('minio');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const Minio = require('minio');
     const minioClient = new Minio.Client({
       endPoint: MINIO_ENDPOINT.replace('https://', '').replace('http://', ''),
       useSSL: MINIO_ENDPOINT.startsWith('https'),
