@@ -17,7 +17,7 @@ import trialRoutes from './routes/trial.routes';
 import { getPublicPaymentSettings } from './controllers/paymentSettings.controller';
 import { getHealthStatus } from './controllers/health.controller';
 import { getTrialStatus } from './controllers/trialCampaign.controller';
-import { uploadImage, uploadSelfie } from './controllers/upload.controller';
+import { uploadImage, uploadSelfie, multerMemory } from './controllers/upload.controller';
 import { authMiddleware } from './middleware/auth';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { globalRateLimiter } from './middleware/rateLimiter';
@@ -100,8 +100,8 @@ app.get('/api/payment-settings/public', getPublicPaymentSettings);
 // Ruta de upload de imágenes (alias directo, requiere auth de marca)
 app.post('/api/upload', authMiddleware, (req, res) => uploadImage(req as any, res));
 
-// Ruta de upload de selfies para n8n (autenticada con N8N_BEARER_TOKEN)
-app.post('/api/upload/selfie', (req, res) => uploadSelfie(req, res));
+// Ruta de upload de selfies para n8n — acepta JSON base64 o multipart/form-data
+app.post('/api/upload/selfie', multerMemory.single('file'), (req, res) => uploadSelfie(req, res));
 
 // Estado público del trial (sin auth — el frontend lo consulta para mostrar/ocultar el botón)
 app.get('/api/trial/status', getTrialStatus);
