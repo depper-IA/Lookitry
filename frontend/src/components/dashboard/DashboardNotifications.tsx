@@ -122,11 +122,12 @@ export function DashboardNotifications() {
     if (!subscriptionInfo) return;
 
     const inTrial = isInTrial();
-    // No mostrar banner de suscripción si está en período de prueba
+    // No mostrar banner de suscripción si está en período de prueba o sin suscripción pagada
     if (inTrial) return;
+    if (!subscriptionInfo.status) return; // sin suscripción pagada aún
 
     const days = getDaysRemaining();
-    if (days < 7 && !isDismissed(getSessionKey('subscription_expiring'))) {
+    if (days !== null && days < 7 && !isDismissed(getSessionKey('subscription_expiring'))) {
       setShowSubscriptionExpiring(true);
     }
   }, [subscriptionInfo]);

@@ -15,7 +15,7 @@ router.get('/status', asyncHandler(async (req, res) => {
   const now = new Date().toISOString();
   const { data } = await supabase
     .from('trial_campaigns')
-    .select('id, trial_days')
+    .select('id, trial_days, name, ends_at, require_card_verification')
     .eq('active', true)
     .or(`ends_at.is.null,ends_at.gt.${now}`)
     .order('created_at', { ascending: false })
@@ -23,9 +23,15 @@ router.get('/status', asyncHandler(async (req, res) => {
     .single();
 
   if (!data) {
-    return res.json({ active: false });
+    return res.json({ trialAvailable: false, trialDays: 0, campaignName: null, endsAt: null, requireCardVerification: false });
   }
-  return res.json({ active: true, trial_days: data.trial_days });
+  return res.json({
+    trialAvailable: true,
+    trialDays: data.trial_days,
+    campaignName: data.name ?? null,
+    endsAt: data.ends_at ?? null,
+    requireCardVerification: data.require_card_verification === true,
+  });
 }));
 
 /**
