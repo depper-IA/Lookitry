@@ -53,7 +53,7 @@ export const uploadSelfie = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Token inválido' });
     }
 
-    const { image_base64, filename } = req.body;
+    const { image_base64, filename, temporary } = req.body;
 
     if (!image_base64 || !filename) {
       return res.status(400).json({
@@ -65,7 +65,7 @@ export const uploadSelfie = async (req: Request, res: Response) => {
     const result = await uploadService.uploadImage({
       image_base64,
       filename,
-      temporary: true, // siempre en carpeta temp/
+      temporary: temporary !== false, // respetar el campo; default true para selfies
     });
 
     return res.status(200).json(result);
