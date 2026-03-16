@@ -13,6 +13,7 @@ import generationsRoutes from './routes/generations.routes';
 import cleanupRoutes from './routes/cleanup.routes';
 import revenueRoutes from './routes/revenue.routes';
 import wompiRoutes from './routes/wompi.routes';
+import trialRoutes from './routes/trial.routes';
 import { getPublicPaymentSettings } from './controllers/paymentSettings.controller';
 import { getHealthStatus } from './controllers/health.controller';
 import { getTrialStatus } from './controllers/trialCampaign.controller';
@@ -96,6 +97,7 @@ app.get('/api/payment-settings/public', getPublicPaymentSettings);
 
 // Estado público del trial (sin auth — el frontend lo consulta para mostrar/ocultar el botón)
 app.get('/api/trial/status', getTrialStatus);
+app.use('/api/trial', trialRoutes);
 
 // Ruta de health check
 app.get('/health', getHealthStatus);

@@ -6,7 +6,6 @@ import Link from 'next/link';
 
 async function getFingerprint(): Promise<string | null> {
   try {
-    // Fingerprint ligero sin dependencia externa
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (ctx) {
@@ -21,7 +20,6 @@ async function getFingerprint(): Promise<string | null> {
       new Date().getTimezoneOffset(),
       canvas.toDataURL(),
     ].join('|');
-    // Hash simple
     let hash = 0;
     for (let i = 0; i < nav.length; i++) {
       hash = ((hash << 5) - hash) + nav.charCodeAt(i);
@@ -38,7 +36,7 @@ export default function RegisterForm() {
   const [form, setForm] = useState({ name: '', email: '', password: '', slug: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [trialActive, setTrialActive] = useState(false);
+  const [trialActive, setTrialActive] = useState<boolean | null>(null); // null = cargando
   const [trialDays, setTrialDays] = useState(7);
   const [fingerprint, setFingerprint] = useState<string | null>(null);
 
@@ -48,12 +46,10 @@ export default function RegisterForm() {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`)
       .then((r) => r.json())
       .then((d) => {
-        if (d.active) {
-          setTrialActive(true);
-          setTrialDays(d.trial_days ?? 7);
-        }
+        setTrialActive(d.active === true);
+        if (d.active) setTrialDays(d.trial_days ?? 7);
       })
-      .catch(() => {});
+      .catch(() => setTrialActive(false));
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,9 +87,10 @@ export default function RegisterForm() {
         }
         return;
       }
+      // Guardar token y redirigir: con trial → verificar tarjeta, sin trial → verificar email
       localStorage.setItem('token', data.token);
       localStorage.setItem('brandToken', data.token);
-      router.push('/dashboard');
+      router.push('/verify-email');
     } catch {
       setError('Error de conexión. Intenta de nuevo.');
     } finally {
@@ -101,6 +98,65 @@ export default function RegisterForm() {
     }
   };
 
+  // ── Estado de carga ────────────────────────────────────────────────────────
+  if (trialActive === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a0a0a' }}>
+        <div className="w-6 h-6 border-2 border-[#FF5C3A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // ── Sin trial activo → redirigir a planes ─────────────────────────────────
+  if (trialActive === false) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center px-4 py-12"
+        style={{ fontFamily: 'DM Sans, sans-serif', background: '#0a0a0a' }}
+      >
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
+              Virtual<span className="text-[#FF5C3A]">Try</span>On
+            </Link>
+          </div>
+
+          <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8 text-center">
+            {/* Icono */}
+            <div className="w-14 h-14 rounded-full bg-[#1f1f1f] flex items-center justify-center mx-auto mb-5">
+              <svg className="w-7 h-7 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+              </svg>
+            </div>
+
+            <h1 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[20px] text-white mb-2">
+              No hay prueba gratuita activa
+            </h1>
+            <p className="text-[13px] text-[#555] mb-7 leading-relaxed">
+              En este momento no hay campañas de prueba disponibles.<br />
+              Elige un plan para comenzar a usar tu probador virtual.
+            </p>
+
+            <Link
+              href="/planes"
+              className="block w-full text-center py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-medium rounded-lg transition-colors mb-3"
+            >
+              Ver planes y precios
+            </Link>
+
+            <p className="text-center text-[13px] text-[#444] mt-4">
+              ¿Ya tienes cuenta?{' '}
+              <Link href="/login" className="text-[#FF5C3A] hover:text-[#e84d2c] transition-colors">
+                Inicia sesión
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Trial activo → formulario normal ──────────────────────────────────────
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4 py-12"
@@ -119,16 +175,9 @@ export default function RegisterForm() {
           <h1 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[22px] text-white mb-1">
             Crear cuenta
           </h1>
-
-          {trialActive ? (
-            <p className="text-[13px] text-[#FF5C3A] mb-6">
-              Prueba gratis por {trialDays} días — sin tarjeta de crédito
-            </p>
-          ) : (
-            <p className="text-[13px] text-[#555] mb-6">
-              Empieza a configurar tu probador virtual
-            </p>
-          )}
+          <p className="text-[13px] text-[#FF5C3A] mb-6">
+            Prueba gratis por {trialDays} días — sin tarjeta de crédito
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -209,11 +258,7 @@ export default function RegisterForm() {
               disabled={loading}
               className="w-full bg-[#FF5C3A] hover:bg-[#e84d2c] disabled:opacity-50 text-white font-medium py-2.5 rounded-lg text-[13px] transition-colors mt-2"
             >
-              {loading
-                ? 'Creando cuenta...'
-                : trialActive
-                ? `Empezar prueba de ${trialDays} días`
-                : 'Crear cuenta'}
+              {loading ? 'Creando cuenta...' : `Empezar prueba de ${trialDays} días`}
             </button>
           </form>
 

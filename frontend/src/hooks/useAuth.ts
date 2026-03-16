@@ -45,6 +45,11 @@ export function useAuth() {
       router.push('/dashboard');
       return response;
     } catch (err: any) {
+      const errorCode = err.response?.data?.error;
+      if (errorCode === 'EMAIL_NOT_VERIFIED') {
+        router.push('/verify-email');
+        return;
+      }
       const errorMessage = err.response?.data?.message || 'Error al iniciar sesión';
       setError(errorMessage);
       throw new Error(errorMessage);
