@@ -194,7 +194,13 @@ export default function MiPaginaPage() {
   const [tiktok, setTiktok] = useState('');
   const [cityDisplay, setCityDisplay] = useState('');
   const [nationalShipping, setNationalShipping] = useState(false);
-  const [landingTemplate, setLandingTemplate] = useState<'classic' | 'editorial'>('classic');
+  const [landingTemplate, setLandingTemplate] = useState<'classic' | 'editorial' | 'probador'>('classic');
+  const [primaryColor, setPrimaryColor] = useState('#FF5C3A');
+  const [rating, setRating] = useState('');
+  const [totalReviews, setTotalReviews] = useState('');
+  const [schedule, setSchedule] = useState<Record<string, string>>({
+    lunes: '', martes: '', miercoles: '', jueves: '', viernes: '', sabado: '', domingo: '',
+  });
   useEffect(() => {
     brandsService.getCurrentBrand()
       .then(b => {
@@ -213,6 +219,12 @@ export default function MiPaginaPage() {
         setCityDisplay(raw.city_display || '');
         setNationalShipping(raw.national_shipping ?? false);
         setLandingTemplate(raw.landing_template || 'classic');
+        setPrimaryColor(raw.primary_color || '#FF5C3A');
+        setRating(raw.rating != null ? String(raw.rating) : '');
+        setTotalReviews(raw.total_reviews != null ? String(raw.total_reviews) : '');
+        if (raw.schedule && typeof raw.schedule === 'object') {
+          setSchedule(prev => ({ ...prev, ...raw.schedule }));
+        }
       })
       .catch(() => setError('Error al cargar los datos'))
       .finally(() => setLoading(false));
@@ -238,6 +250,10 @@ export default function MiPaginaPage() {
         city_display: cityDisplay || null,
         national_shipping: nationalShipping,
         landing_template: landingTemplate,
+        primary_color: primaryColor || '#FF5C3A',
+        rating: rating ? parseFloat(rating) : null,
+        total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
+        schedule: Object.fromEntries(Object.entries(schedule).filter(([, v]) => v.trim())),
       });
 
       setSuccess(true);
@@ -259,7 +275,6 @@ export default function MiPaginaPage() {
 
   const slug = brand?.slug || authBrand?.slug || '';
   const pageUrl = `${FRONTEND_URL}/sitio/${slug}`;
-  const primaryColor = (brand as any)?.primary_color || brand?.primaryColor || '#FF5C3A';
   const hasLandingPage = (brand as any)?.has_landing_page ?? false;
   const brandLogo = (brand as any)?.logo || null;
 
@@ -509,10 +524,11 @@ export default function MiPaginaPage() {
           <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
             Diseño de la página
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {([
-              { value: 'classic', label: 'Clásico', desc: 'Hero + pasos + catálogo + probador' },
-              { value: 'editorial', label: 'Editorial', desc: 'Header sticky + layout 2 columnas' },
+              { value: 'classic',   label: 'Clásico',   desc: 'Hero + pasos + catálogo + probador' },
+              { value: 'editorial', label: 'Editorial',  desc: 'Header sticky + layout 2 columnas' },
+              { value: 'probador',  label: 'Probador',   desc: 'Single col · Playfair · Trust bar' },
             ] as const).map(t => (
               <button
                 key={t.value}
@@ -527,6 +543,102 @@ export default function MiPaginaPage() {
                 <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{t.label}</p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{t.desc}</p>
               </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Color principal */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+            Color principal de la marca
+          </label>
+          <div className="flex items-center gap-3">
+            <div className="relative w-12 h-12 rounded-xl overflow-hidden border flex-shrink-0 cursor-pointer" style={{ borderColor: 'var(--border-color)' }}>
+              <input
+                type="color"
+                value={primaryColor}
+                onChange={e => setPrimaryColor(e.target.value)}
+                className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+                title="Seleccionar color"
+              />
+              <div className="w-full h-full rounded-xl" style={{ backgroundColor: primaryColor }} />
+            </div>
+            <input
+              type="text"
+              value={primaryColor}
+              onChange={e => { if (/^#[0-9A-Fa-f]{0,6}$/.test(e.target.value)) setPrimaryColor(e.target.value); }}
+              maxLength={7}
+              placeholder="#FF5C3A"
+              className="flex-1 px-4 py-3 rounded-xl border text-sm font-mono outline-none"
+              style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+            />
+            <div className="flex gap-1.5 flex-wrap">
+              {['#FF5C3A','#6366f1','#0ea5e9','#10b981','#f59e0b','#ec4899','#0f0f0f'].map(c => (
+                <button key={c} type="button" onClick={() => setPrimaryColor(c)}
+                  className="w-7 h-7 rounded-lg border-2 transition-all hover:scale-110"
+                  style={{ backgroundColor: c, borderColor: primaryColor === c ? 'var(--text-primary)' : 'transparent' }}
+                  title={c}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Rating y reseñas */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Valoración (ej: 4.9)</label>
+            <input
+              type="number"
+              value={rating}
+              onChange={e => setRating(e.target.value)}
+              min={0} max={5} step={0.1}
+              placeholder="4.9"
+              className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
+              style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Total de reseñas</label>
+            <input
+              type="number"
+              value={totalReviews}
+              onChange={e => setTotalReviews(e.target.value)}
+              min={0}
+              placeholder="847"
+              className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
+              style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+            />
+          </div>
+        </div>
+
+        {/* Horarios */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+            Horario de atención
+          </label>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Deja en blanco los días que no apliquen. Escribe "Cerrado" para indicar cierre.</p>
+          <div className="space-y-2">
+            {([
+              { key: 'lunes',     label: 'Lunes' },
+              { key: 'martes',    label: 'Martes' },
+              { key: 'miercoles', label: 'Miércoles' },
+              { key: 'jueves',    label: 'Jueves' },
+              { key: 'viernes',   label: 'Viernes' },
+              { key: 'sabado',    label: 'Sábado' },
+              { key: 'domingo',   label: 'Domingo' },
+            ] as const).map(({ key, label }) => (
+              <div key={key} className="flex items-center gap-3">
+                <span className="w-24 text-xs font-medium flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                <input
+                  type="text"
+                  value={schedule[key] || ''}
+                  onChange={e => setSchedule(prev => ({ ...prev, [key]: e.target.value }))}
+                  placeholder="Ej: 9:00 AM – 6:00 PM"
+                  className="flex-1 px-4 py-2.5 rounded-xl border text-sm outline-none"
+                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -676,6 +788,67 @@ export default function MiPaginaPage() {
           <div className="px-3 py-2.5" style={{ backgroundColor: 'var(--bg-card)' }}>
             <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Editorial</p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Header sticky · 2 columnas · Panel probador</p>
+          </div>
+        </button>
+
+        {/* Preview Probador */}
+        <button
+          type="button"
+          onClick={() => setLandingTemplate('probador')}
+          className="w-full text-left rounded-2xl overflow-hidden border-2 transition-all"
+          style={{
+            borderColor: landingTemplate === 'probador' ? primaryColor : 'var(--border-color)',
+            boxShadow: landingTemplate === 'probador' ? `0 0 0 3px ${primaryColor}22` : 'none',
+          }}
+        >
+          {/* Miniatura Probador */}
+          <div className="relative overflow-hidden" style={{ height: 200, backgroundColor: '#0f0f0f' }}>
+            {/* Nav */}
+            <div className="h-7 flex items-center px-2 gap-1.5 border-b border-white/10">
+              <div className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primaryColor }}>
+                <div className="w-2 h-2 rounded-sm bg-white/80" />
+              </div>
+              <div className="w-14 h-1.5 rounded-full bg-white/60" />
+              <div className="ml-auto flex gap-1">
+                <div className="w-4 h-4 rounded-full border border-white/20" />
+                <div className="w-4 h-4 rounded-full border border-white/20" />
+              </div>
+            </div>
+            {/* Hero dark */}
+            <div className="flex flex-col items-center justify-center gap-1.5 py-4 px-3">
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full border" style={{ borderColor: primaryColor + '60', backgroundColor: primaryColor + '18' }}>
+                <div className="w-1 h-1 rounded-full" style={{ backgroundColor: primaryColor }} />
+                <div className="w-10 h-1 rounded-full" style={{ backgroundColor: primaryColor + '80' }} />
+              </div>
+              <div className="w-28 h-2.5 rounded-full bg-white/80 mt-0.5" />
+              <div className="w-20 h-2 rounded-full mt-0.5" style={{ backgroundColor: primaryColor + 'cc' }} />
+              <div className="w-16 h-1 rounded-full bg-white/30 mt-0.5" />
+            </div>
+            {/* Trust bar */}
+            <div className="grid grid-cols-4 border-t border-b border-white/10" style={{ backgroundColor: '#1a1a1a' }}>
+              {['4.9','847','12s','96%'].map(v => (
+                <div key={v} className="flex flex-col items-center py-1.5 border-r border-white/10 last:border-r-0">
+                  <span className="text-[8px] font-bold text-white/80">{v}</span>
+                  <span className="text-[6px] text-white/30 mt-0.5">stat</span>
+                </div>
+              ))}
+            </div>
+            {/* Products grid */}
+            <div className="grid grid-cols-4 gap-1 px-2 pt-2">
+              {[0,1,2,3].map(i => (
+                <div key={i} className="aspect-square rounded-lg border" style={{ backgroundColor: '#2a2a2a', borderColor: i === 0 ? primaryColor : '#333' }} />
+              ))}
+            </div>
+            {/* Overlay seleccionado */}
+            {landingTemplate === 'probador' && (
+              <div className="absolute inset-0 flex items-end justify-end p-2 pointer-events-none">
+                <span className="text-white text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: primaryColor }}>Activo</span>
+              </div>
+            )}
+          </div>
+          <div className="px-3 py-2.5" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Probador</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Dark hero · Trust bar · Single col</p>
           </div>
         </button>
 
