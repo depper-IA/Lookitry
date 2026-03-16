@@ -127,9 +127,23 @@ function PhoneIcon({ className }: { className?: string }) {
   );
 }
 
-// -- Shared: Modal de activaci�n (bloqueante) ----------------------------------
+// -- Shared: Modal de activacion (bloqueante) ----------------------------------
 function ActivationModal({ primaryColor }: { primaryColor: string }) {
-  const CHECKOUT_URL = '/dashboard/checkout?plan=BASIC&amount=500000&addon=landing';
+  const [landingPrice, setLandingPrice] = useState(650000);
+  const [landingOriginal, setLandingOriginal] = useState(900000);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/payment-settings/public`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.landingPrice) setLandingPrice(d.landingPrice);
+        if (d?.landingOriginalPrice) setLandingOriginal(d.landingOriginalPrice);
+      })
+      .catch(() => {});
+  }, []);
+
+  const discountPct = Math.round((1 - landingPrice / landingOriginal) * 100);
+  const CHECKOUT_URL = '/checkout?plan=LANDING';
 
   // Countdown hasta medianoche (urgencia diaria)
   const [time, setTime] = useState(() => {
@@ -153,14 +167,17 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
     'Probador virtual integrado con IA',
     'Boton de WhatsApp flotante',
     '3 templates de diseno a elegir',
-    'Sin mensajes de activacion',
+    'Plan de suscripcion BASIC o PRO incluido',
   ];
 
+  const BASIC_PRICE = 150000;
+  const totalDesde = landingPrice + BASIC_PRICE;
+  const formatCOP = (n: number) => '$' + n.toLocaleString('es-CO');
+
   return (
-    // Sin blur — solo overlay semitransparente para que se vea la landing detras
     <div
       className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+      style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
     >
       <div
         className="relative w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl"
@@ -170,7 +187,6 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
         <div className="h-1 w-full" style={{ backgroundColor: primaryColor }} />
 
         <div className="px-6 py-6 text-center">
-          {/* Titulo */}
           <h2
             className="text-xl font-black text-white tracking-tight mb-1"
             style={{ fontFamily: 'Syne, sans-serif' }}
@@ -207,22 +223,41 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
             </div>
           </div>
 
-          {/* Precio */}
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="text-gray-600 line-through text-xs">$650.000 COP</span>
-            <span
-              className="text-3xl font-black text-white"
-              style={{ fontFamily: 'Syne, sans-serif' }}
-            >
-              $500.000
-            </span>
-            <span className="text-xs text-gray-500">COP</span>
-            <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: primaryColor + '20', color: primaryColor }}
-            >
-              Pago unico
-            </span>
+          {/* Precio desglosado */}
+          <div
+            className="rounded-xl px-4 py-3 mb-4 text-left space-y-1.5"
+            style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-gray-500">Mini-landing (pago unico)</span>
+              <div className="flex items-center gap-1.5">
+                {discountPct > 0 && (
+                  <span className="text-[10px] text-gray-600 line-through">{formatCOP(landingOriginal)}</span>
+                )}
+                <span className="text-[13px] font-bold text-white">{formatCOP(landingPrice)}</span>
+                {discountPct > 0 && (
+                  <span
+                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                    style={{ backgroundColor: primaryColor + '25', color: primaryColor }}
+                  >
+                    -{discountPct}%
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-gray-500">Plan BASIC (desde)</span>
+              <span className="text-[13px] font-bold text-white">{formatCOP(BASIC_PRICE)}/mes</span>
+            </div>
+            <div className="border-t border-[#2a2a2a] pt-1.5 flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-gray-400">Total desde</span>
+              <span
+                className="text-[18px] font-black text-white"
+                style={{ fontFamily: 'Syne, sans-serif' }}
+              >
+                {formatCOP(totalDesde)} COP
+              </span>
+            </div>
           </div>
 
           {/* Features */}
@@ -247,10 +282,10 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
-            Activar mi pagina — $500.000
+            Ver planes y activar
           </a>
           <p className="text-[10px] text-gray-600 mt-2">
-            Pago unico · Sin mensualidad adicional · Activacion inmediata
+            Elige tu plan en el siguiente paso · Activacion inmediata
           </p>
         </div>
       </div>
@@ -258,7 +293,7 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
   );
 }
 
-// -- Shared: Bot�n flotante WhatsApp -------------------------------------------
+// -- Shared: Boton flotante WhatsApp ------------------------------------------
 function WhatsAppFAB({ phone, message }: { phone: string; message?: string | null }) {
   const clean = phone.replace(/\D/g, '');
   const url = message
@@ -275,7 +310,7 @@ function WhatsAppFAB({ phone, message }: { phone: string; message?: string | nul
       <div className="relative">
         {/* Tooltip */}
         <span className="absolute bottom-full right-0 mb-2 px-3 py-1.5 rounded-lg text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ backgroundColor: '#0a0a0a' }}>
-          �Tienes dudas? Escr�benos
+          Tienes dudas? Escribenos
         </span>
         {/* Badge */}
         <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-bold border-2 border-white" style={{ backgroundColor: '#FF5C3A' }}>1</span>
@@ -294,7 +329,7 @@ function LandingFooter({ primaryColor }: { primaryColor: string }) {
       <p className="text-xs text-gray-400">
         Probador virtual impulsado por{' '}
         <a href="https://pruebalo.wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: primaryColor }}>
-          Pru�balo
+          Pruebalo
         </a>
       </p>
     </footer>
@@ -350,7 +385,7 @@ function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
           {brand.cta_button_text || 'Probarme un producto'}
         </button>
       </div>
-      <button onClick={onScrollDown} className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 hover:text-white/90 transition-colors animate-bounce" aria-label="Ver m�s">
+      <button onClick={onScrollDown} className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 hover:text-white/90 transition-colors animate-bounce" aria-label="Ver mas">
         <ChevronDownIcon className="w-7 h-7" />
       </button>
     </section>
@@ -359,14 +394,14 @@ function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
 
 function ClassicHowItWorks({ primaryColor }: { primaryColor: string }) {
   const steps = [
-    { num: '1', title: 'Elige un producto', desc: 'Navega por el cat�logo y selecciona la prenda que quieras probar.' },
-    { num: '2', title: 'Sube tu foto', desc: 'Toma o sube una foto tuya. Funciona mejor con buena iluminaci�n.' },
-    { num: '3', title: 'Ve el resultado', desc: 'Nuestra IA genera en segundos c�mo te ver�a con ese producto.' },
+    { num: '1', title: 'Elige un producto', desc: 'Navega por el catalogo y selecciona la prenda que quieras probar.' },
+    { num: '2', title: 'Sube tu foto', desc: 'Toma o sube una foto tuya. Funciona mejor con buena iluminacion.' },
+    { num: '3', title: 'Ve el resultado', desc: 'Nuestra IA genera en segundos como te veria con ese producto.' },
   ];
   return (
     <section className="w-full bg-gray-50 py-16 px-4">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-2">�C�mo funciona?</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-2">Como funciona?</h2>
         <p className="text-gray-500 text-center text-sm mb-10">Tres pasos y listo</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {steps.map(s => (
@@ -386,8 +421,8 @@ function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { 
   if (!products.length) return null;
   return (
     <section className="w-full max-w-5xl mx-auto px-4 py-14">
-      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">Cat�logo</h2>
-      <p className="text-gray-500 text-center mb-10 text-sm">Selecciona un producto para prob�rtelo virtualmente</p>
+      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">Catalogo</h2>
+      <p className="text-gray-500 text-center mb-10 text-sm">Selecciona un producto para probartelo virtualmente</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {products.map(p => (
           <button key={p.id} onClick={() => onProductClick(p.id)} className="group rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-200 text-left">
@@ -418,7 +453,7 @@ function ClassicTryOn({ brandSlug, primaryColor }: { brandSlug: string; primaryC
     <section id="tryon-section" className="w-full py-14 px-4" style={{ backgroundColor: primaryColor + '0d' }}>
       <div className="max-w-2xl mx-auto">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">Probador virtual</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Sube una foto tuya y ve c�mo te queda el producto con IA</p>
+        <p className="text-gray-500 text-center mb-8 text-sm">Sube una foto tuya y ve como te queda el producto con IA</p>
         <div className="rounded-3xl overflow-hidden shadow-2xl border border-gray-100">
           <TryOnWidget brandSlug={brandSlug} />
         </div>
@@ -437,7 +472,7 @@ function ClassicSocial({ brand }: { brand: BrandData }) {
   };
   return (
     <section className="w-full max-w-2xl mx-auto px-4 py-10 text-center">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">S�guenos</h2>
+      <h2 className="text-xl font-bold text-gray-900 mb-6">Siguenos</h2>
       <div className="flex flex-wrap items-center justify-center gap-3">
         {entries.map(([platform, url]) => (
           <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors capitalize">
@@ -457,8 +492,8 @@ function ClassicContact({ brand, primaryColor }: { brand: BrandData; primaryColo
   return (
     <section className="w-full py-14 px-4 bg-gray-50">
       <div className="max-w-xl mx-auto text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">�Tienes preguntas?</h2>
-        <p className="text-gray-500 text-sm mb-8">Escr�benos directamente y te respondemos al instante</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Tienes preguntas?</h2>
+        <p className="text-gray-500 text-sm mb-8">Escribenos directamente y te respondemos al instante</p>
         <a href={`https://wa.me/${clean}${msg}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold text-base shadow-lg hover:opacity-90 active:scale-95 transition-all" style={{ backgroundColor: '#25D366' }}>
           <WhatsAppIcon className="w-6 h-6" />
           Escribir por WhatsApp
@@ -557,7 +592,7 @@ function EditorialStatsBar({ products, brand }: { products: ProductData[]; brand
         <div className="py-3 flex items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent flex-shrink-0">
           <StarIcon className="w-4 h-4 text-yellow-400" filled />
           <span className="font-bold text-base text-gray-900">{rating.toFixed(1)}</span>
-          {reviews != null && <span className="text-xs text-gray-400">({reviews} rese�as)</span>}
+          {reviews != null && <span className="text-xs text-gray-400">({reviews} resenas)</span>}
         </div>
       )}
       <div className="py-3 flex items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent flex-shrink-0">
@@ -592,7 +627,7 @@ function EditorialProductCard({ product, selected, primaryColor, ctaText, onClic
 }
 
 function EditorialInfoCard({ brand }: { brand: BrandData }) {
-  const DAYS: Record<string, string> = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Mi�rcoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'S�bado', domingo: 'Domingo' };
+  const DAYS: Record<string, string> = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Miercoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'Sabado', domingo: 'Domingo' };
   const scheduleEntries = brand.schedule ? Object.entries(brand.schedule) : [];
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-4 mt-4 space-y-4">
@@ -604,7 +639,7 @@ function EditorialInfoCard({ brand }: { brand: BrandData }) {
       )}
       {scheduleEntries.length > 0 && (
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Horario de atenci�n</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Horario de atencion</p>
           <div className="space-y-1">
             {scheduleEntries.map(([day, hours]) => (
               <div key={day} className="flex justify-between text-xs">
@@ -630,7 +665,7 @@ function EditorialInfoCard({ brand }: { brand: BrandData }) {
               <div className="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
                 <MapPinIcon className="w-3.5 h-3.5 text-gray-500" />
               </div>
-              <span>{brand.city_display}{brand.national_shipping ? ' � Env�os nacionales' : ''}</span>
+              <span>{brand.city_display}{brand.national_shipping ? '  Envos nacionales' : ''}</span>
             </div>
           )}
           {!brand.city_display && brand.national_shipping && (
@@ -638,7 +673,7 @@ function EditorialInfoCard({ brand }: { brand: BrandData }) {
               <div className="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
                 <TruckIcon className="w-3.5 h-3.5 text-gray-500" />
               </div>
-              <span>Env�os a todo el pa�s</span>
+              <span>Envos a todo el pas</span>
             </div>
           )}
         </div>
@@ -666,7 +701,7 @@ function TemplateEditorial({ brandSlug, brand, products }: { brandSlug: string; 
       {/* Layout principal */}
       <div className="max-w-5xl mx-auto w-full px-4 py-7 grid grid-cols-1 md:grid-cols-[1fr_320px] gap-6 items-start">
 
-        {/* Columna izquierda: cat�logo + info */}
+        {/* Columna izquierda: catlogo + info */}
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3">Nuestros productos</p>
           {products.length > 0 ? (
@@ -702,7 +737,7 @@ function TemplateEditorial({ brandSlug, brand, products }: { brandSlug: string; 
           </div>
           <div className="mt-3 flex items-center justify-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primary }} />
-            <span className="text-[10px] text-gray-400">Impulsado por Pru�balo AI</span>
+            <span className="text-[10px] text-gray-400">Impulsado por Pruebalo AI</span>
           </div>
         </div>
       </div>
@@ -786,7 +821,7 @@ function ProbadorHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown:
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
-        <p className="text-xs mt-5" style={{ color: 'rgba(255,255,255,0.25)' }}>Sin registro � Resultado en ~12 segundos � 100% gratis</p>
+        <p className="text-xs mt-5" style={{ color: 'rgba(255,255,255,0.25)' }}>Sin registro  Resultado en ~12 segundos  100% gratis</p>
       </div>
     </section>
   );
@@ -797,10 +832,10 @@ function ProbadorTrustBar({ brand }: { brand: BrandData }) {
   const rating = brand.rating ?? 4.9;
   const reviews = brand.total_reviews ?? 0;
   const items = [
-    { value: rating.toFixed(1), label: 'valoraci�n' },
+    { value: rating.toFixed(1), label: 'valoracin' },
     { value: reviews > 0 ? `+${reviews}` : '~12s', label: reviews > 0 ? 'pruebas' : 'por resultado' },
     { value: '~12s', label: 'por resultado' },
-    { value: '96%', label: 'satisfacci�n' },
+    { value: '96%', label: 'satisfaccin' },
   ].filter((_, i) => i < 4);
   return (
     <div className="flex border-b" style={{ backgroundColor: 'var(--p-surface, #fff)', borderColor: 'var(--p-border, #e5e5e5)' }}>
@@ -830,7 +865,7 @@ function ProbadorSocialProof({ brand }: { brand: BrandData }) {
           ))}
         </div>
         <span className="text-xs" style={{ color: 'var(--p-text-muted, #888)' }}>
-          <strong style={{ color: 'var(--p-text-secondary, #555)' }}>Laura, Mar�a y {reviews > 4 ? reviews - 2 : 843} m�s</strong> ya lo usaron
+          <strong style={{ color: 'var(--p-text-secondary, #555)' }}>Laura, Mara y {reviews > 4 ? reviews - 2 : 843} ms</strong> ya lo usaron
         </span>
       </div>
       <div className="w-px h-5 bg-gray-200" />
@@ -838,7 +873,7 @@ function ProbadorSocialProof({ brand }: { brand: BrandData }) {
         {[1,2,3,4,5].map(i => (
           <svg key={i} width="11" height="11" viewBox="0 0 24 24" fill={primary}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         ))}
-        <span className="text-xs ml-1" style={{ color: 'var(--p-text-muted, #888)' }}>{rating.toFixed(1)} � {reviews} rese�as</span>
+        <span className="text-xs ml-1" style={{ color: 'var(--p-text-muted, #888)' }}>{rating.toFixed(1)}  {reviews} reseas</span>
       </div>
     </div>
   );
@@ -849,9 +884,9 @@ function ProbadorProducts({ products, primaryColor, ctaText, onProductClick, sel
   return (
     <section id="probador-products" className="py-16 px-6" style={{ backgroundColor: 'var(--p-bg, #fafafa)' }}>
       <div className="max-w-4xl mx-auto">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-center mb-2" style={{ color: primaryColor }}>Colecci�n</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-center mb-2" style={{ color: primaryColor }}>Coleccin</p>
         <h2 className="text-3xl md:text-4xl font-black text-center mb-2 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>Nuestros productos</h2>
-        <p className="text-sm font-light text-center mb-12" style={{ color: 'var(--p-text-muted, #888)' }}>Selecciona una prenda para prob�rtela con IA</p>
+        <p className="text-sm font-light text-center mb-12" style={{ color: 'var(--p-text-muted, #888)' }}>Selecciona una prenda para probrtela con IA</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {products.map(p => (
             <button key={p.id} onClick={() => onProductClick(p.id)}
@@ -889,7 +924,7 @@ function ProbadorUploadZone({ brandSlug, primaryColor }: { brandSlug: string; pr
     <section id="probador-tryon" className="border-t border-b py-16 px-6" style={{ backgroundColor: 'var(--p-surface, #fff)', borderColor: 'var(--p-border, #e5e5e5)' }}>
       <div className="max-w-xl mx-auto text-center">
         <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: primaryColor }}>Probador IA</p>
-        <h2 className="text-3xl font-black mb-2 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>Pru�batelo ahora</h2>
+        <h2 className="text-3xl font-black mb-2 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>Prubatelo ahora</h2>
         <p className="text-sm font-light mb-8" style={{ color: 'var(--p-text-muted, #888)' }}>Sube tu foto y la IA genera el resultado en segundos</p>
         <div className="rounded-3xl overflow-hidden shadow-xl border" style={{ borderColor: 'var(--p-border, #e5e5e5)' }}>
           <TryOnWidget brandSlug={brandSlug} />
@@ -901,7 +936,7 @@ function ProbadorUploadZone({ brandSlug, primaryColor }: { brandSlug: string; pr
 
 function ProbadorAbout({ brand }: { brand: BrandData }) {
   const primary = brand.primary_color || '#FF5C3A';
-  const DAYS: Record<string, string> = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Mi�rcoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'S�bado', domingo: 'Domingo' };
+  const DAYS: Record<string, string> = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Mircoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'Sbado', domingo: 'Domingo' };
   const scheduleEntries = brand.schedule ? Object.entries(brand.schedule) : [];
   if (!brand.brand_description && !scheduleEntries.length && !brand.city_display && !brand.whatsapp_contact) return null;
   return (
@@ -932,7 +967,7 @@ function ProbadorAbout({ brand }: { brand: BrandData }) {
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primary + '18' }}>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke={primary} strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 </div>
-                <span className="text-sm" style={{ color: 'var(--p-text-secondary, #333)' }}>{brand.city_display}{brand.national_shipping ? ' � Env�os nacionales' : ''}</span>
+                <span className="text-sm" style={{ color: 'var(--p-text-secondary, #333)' }}>{brand.city_display}{brand.national_shipping ? '  Envos nacionales' : ''}</span>
               </div>
             )}
             {!brand.city_display && brand.national_shipping && (
@@ -940,7 +975,7 @@ function ProbadorAbout({ brand }: { brand: BrandData }) {
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primary + '18' }}>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke={primary} strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 1h8zM13 8h4l3 5v3h-7V8z" /></svg>
                 </div>
-                <span className="text-sm" style={{ color: 'var(--p-text-secondary, #333)' }}>Env�os a todo el pa�s</span>
+                <span className="text-sm" style={{ color: 'var(--p-text-secondary, #333)' }}>Envos a todo el pas</span>
               </div>
             )}
           </div>
@@ -950,7 +985,7 @@ function ProbadorAbout({ brand }: { brand: BrandData }) {
           <div className="rounded-2xl border overflow-hidden text-left" style={{ backgroundColor: 'var(--p-surface, #fff)', borderColor: 'var(--p-border, #e5e5e5)' }}>
             <div className="flex items-center gap-2 px-5 py-3 border-b" style={{ borderColor: 'var(--p-border, #e5e5e5)' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: 'var(--p-text-muted, #888)' }}><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-              <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--p-text-muted, #888)' }}>Horario de atenci�n</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--p-text-muted, #888)' }}>Horario de atencin</span>
             </div>
             {scheduleEntries.map(([day, hours]) => (
               <div key={day} className="flex items-center justify-between px-5 py-3 border-b last:border-b-0 text-sm" style={{ borderColor: 'var(--p-border, #e5e5e5)' }}>
@@ -976,8 +1011,8 @@ function ProbadorContact({ brand }: { brand: BrandData }) {
         <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#25D36618', border: '1px solid #25D36640' }}>
           <svg className="w-6 h-6" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
         </div>
-        <h2 className="text-2xl font-black mb-2 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>�Tienes preguntas?</h2>
-        <p className="text-sm font-light mb-6" style={{ color: 'var(--p-text-muted, #888)' }}>Escr�benos y te respondemos al instante</p>
+        <h2 className="text-2xl font-black mb-2 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>Tienes preguntas?</h2>
+        <p className="text-sm font-light mb-6" style={{ color: 'var(--p-text-muted, #888)' }}>Escrbenos y te respondemos al instante</p>
         <a href={`https://wa.me/${clean}${msg}`} target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full text-white text-sm font-semibold transition-opacity hover:opacity-90"
           style={{ backgroundColor: '#25D366' }}>
@@ -1048,7 +1083,7 @@ export function MiniLanding({ brandSlug, initialData }: MiniLandingProps) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center p-8">
-          <p className="text-xl font-bold text-gray-800">P�gina no encontrada</p>
+          <p className="text-xl font-bold text-gray-800">Pgina no encontrada</p>
           <p className="text-gray-500 mt-2 text-sm">Verifica el enlace e intenta de nuevo</p>
         </div>
       </div>
