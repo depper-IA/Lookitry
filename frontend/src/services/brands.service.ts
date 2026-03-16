@@ -20,6 +20,7 @@ class BrandsService {
       nextPaymentDate: response.data.next_payment_date,
       trialEndDate: response.data.trial_end_date,
       trialGenerationsLimit: response.data.trial_generations_limit,
+      emailVerified: response.data.email_verified,
     };
     
     return brandData;

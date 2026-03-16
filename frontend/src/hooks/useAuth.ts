@@ -42,14 +42,20 @@ export function useAuth() {
       setIsLoading(true);
       const response = await authService.login(data);
       setBrand(response.brand);
+
+      // Si la marca tiene trial pendiente de verificación de tarjeta → redirigir
+      const brandData = response.brand as any;
+      if (
+        brandData.trialEndDate &&
+        brandData.trialPaymentStatus === 'pending_payment'
+      ) {
+        router.push('/trial-payment');
+        return response;
+      }
+
       router.push('/dashboard');
       return response;
     } catch (err: any) {
-      const errorCode = err.response?.data?.error;
-      if (errorCode === 'EMAIL_NOT_VERIFIED') {
-        router.push('/verify-email');
-        return;
-      }
       const errorMessage = err.response?.data?.message || 'Error al iniciar sesión';
       setError(errorMessage);
       throw new Error(errorMessage);

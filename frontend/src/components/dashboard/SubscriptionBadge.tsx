@@ -33,17 +33,28 @@ export function SubscriptionBadge() {
   // Trial vencido sin suscripción activa
   const trialExpired =
     subscriptionInfo.trialEndDate !== null &&
-    trialDays === 0 &&
+    (trialDays === 0 || trialDays === null) &&
     subscriptionInfo.status !== 'active' &&
     subscriptionInfo.status !== 'expiring_soon';
+
+  // Sin suscripción pagada y sin trial — cuenta nueva sin campaña activa
+  const noSubscription =
+    !inTrial &&
+    !trialExpired &&
+    subscriptionInfo.status === null &&
+    subscriptionInfo.trialEndDate === null;
 
   if (trialExpired) {
     return (
       <div className="inline-flex items-center px-3 py-1.5 border border-red-300 rounded-full text-sm font-medium bg-red-100 text-red-800">
         <AlertIcon className="mr-1.5 h-4 w-4" />
-        Prueba vencida — Contacta a soporte
+        Prueba vencida — Activa tu plan
       </div>
     );
+  }
+
+  if (noSubscription) {
+    return null; // cuenta sin trial ni suscripción — no mostrar badge
   }
 
   if (inTrial) {

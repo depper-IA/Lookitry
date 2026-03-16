@@ -55,21 +55,24 @@ export default function RegisterForm() {
   const [form, setForm] = useState({ name: '', email: '', password: '', slug: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [trialActive, setTrialActive] = useState<boolean | null>(null); // null = cargando
+  const [trialActive, setTrialActive] = useState<boolean | null>(null);
   const [trialDays, setTrialDays] = useState(7);
+  const [requireCard, setRequireCard] = useState(false);
   const [fingerprint, setFingerprint] = useState<string | null>(null);
 
   useEffect(() => {
     getFingerprint().then(setFingerprint);
-
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`)
       .then((r) => r.json())
       .then((d) => {
-        // El endpoint devuelve { trialAvailable, trialDays, campaignName, endsAt }
         const isActive = d.trialAvailable === true || d.active === true;
         setTrialActive(isActive);
-        if (isActive) setTrialDays(d.trialDays ?? d.trial_days ?? 7);
+        if (isActive) {
+          setTrialDays(d.trialDays ?? d.trial_days ?? 7);
+          setRequireCard(d.requireCardVerification === true);
+        }
       })
       .catch(() => setTrialActive(false));
   }, []);
@@ -94,13 +97,17 @@ export default function RegisterForm() {
     e.preventDefault();
     setError('');
     setLoading(true);
+
     try {
+      // Paso 1: Crear cuenta
+      setLoadingStep('Creando tu cuenta...');
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, fingerprint }),
       });
       const data = await res.json();
+
       if (!res.ok) {
         if (data.error === 'TRIAL_ABUSE') {
           setError('Ya existe una cuenta de prueba registrada desde este dispositivo o red. Puedes contratar un plan directamente.');
@@ -109,18 +116,51 @@ export default function RegisterForm() {
         }
         return;
       }
-      // Guardar token y redirigir: con trial → verificar tarjeta, sin trial → verificar email
+
+      // Guardar token
       localStorage.setItem('token', data.token);
       localStorage.setItem('brandToken', data.token);
-      router.push('/verify-email');
+
+      // Paso 2: Si requiere tarjeta → llamar a /trial/initiate y redirigir a Wompi
+      if (data.requireCardVerification) {
+        setLoadingStep('Preparando verificación de tarjeta...');
+        const initiateRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/initiate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${data.token}`,
+          },
+        });
+        const initiateData = await initiateRes.json();
+
+        if (!initiateRes.ok) {
+          setError(initiateData.message || 'Error al iniciar verificación de tarjeta');
+          return;
+        }
+
+        if (initiateData.skipPayment) {
+          // Modo test sin tarjeta (admin desactivó require_card_verification)
+          router.push('/dashboard');
+          return;
+        }
+
+        // Redirigir a Wompi para verificar tarjeta
+        setLoadingStep('Redirigiendo a pasarela de pago...');
+        window.location.href = initiateData.checkoutUrl;
+        return;
+      }
+
+      // Sin verificación de tarjeta → ir al dashboard directamente
+      router.push('/dashboard');
     } catch {
       setError('Error de conexión. Intenta de nuevo.');
     } finally {
       setLoading(false);
+      setLoadingStep('');
     }
   };
 
-  // ── Estado de carga ────────────────────────────────────────────────────────
+  // ── Cargando estado del trial ──────────────────────────────────────────────
   if (trialActive === null) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a0a0a' }}>
@@ -129,7 +169,7 @@ export default function RegisterForm() {
     );
   }
 
-  // ── Sin trial activo → redirigir a planes ─────────────────────────────────
+  // ── Sin trial activo ───────────────────────────────────────────────────────
   if (trialActive === false) {
     return (
       <div
@@ -142,15 +182,12 @@ export default function RegisterForm() {
               Virtual<span className="text-[#FF5C3A]">Try</span>On
             </Link>
           </div>
-
           <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8 text-center">
-            {/* Icono */}
             <div className="w-14 h-14 rounded-full bg-[#1f1f1f] flex items-center justify-center mx-auto mb-5">
               <svg className="w-7 h-7 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
               </svg>
             </div>
-
             <h1 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[20px] text-white mb-2">
               No hay prueba gratuita activa
             </h1>
@@ -158,14 +195,12 @@ export default function RegisterForm() {
               En este momento no hay campañas de prueba disponibles.<br />
               Elige un plan para comenzar a usar tu probador virtual.
             </p>
-
             <Link
               href="/planes"
               className="block w-full text-center py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-medium rounded-lg transition-colors mb-3"
             >
               Ver planes y precios
             </Link>
-
             <p className="text-center text-[13px] text-[#444] mt-4">
               ¿Ya tienes cuenta?{' '}
               <Link href="/login" className="text-[#FF5C3A] hover:text-[#e84d2c] transition-colors">
@@ -178,7 +213,7 @@ export default function RegisterForm() {
     );
   }
 
-  // ── Trial activo → formulario normal ──────────────────────────────────────
+  // ── Formulario de registro ─────────────────────────────────────────────────
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4 py-12"
@@ -186,7 +221,6 @@ export default function RegisterForm() {
     >
       <div className="w-full max-w-md">
 
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
             Virtual<span className="text-[#FF5C3A]">Try</span>On
@@ -198,10 +232,11 @@ export default function RegisterForm() {
             Crear cuenta
           </h1>
           <p className="text-[13px] text-[#FF5C3A] mb-6">
-            Prueba gratis por {trialDays} días — sin tarjeta de crédito
+            Prueba gratis por {trialDays} días
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Nombre de la marca */}
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">
                 Nombre de la marca
@@ -216,6 +251,7 @@ export default function RegisterForm() {
               />
             </div>
 
+            {/* Slug */}
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">
                 Slug (URL del probador)
@@ -235,6 +271,7 @@ export default function RegisterForm() {
               </div>
             </div>
 
+            {/* Email */}
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">Email</label>
               <input
@@ -248,6 +285,7 @@ export default function RegisterForm() {
               />
             </div>
 
+            {/* Contraseña */}
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">Contraseña</label>
               <div className="relative">
@@ -272,6 +310,21 @@ export default function RegisterForm() {
               </div>
             </div>
 
+            {/* Aviso de verificación de tarjeta */}
+            {requireCard && (
+              <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-4 py-3 flex items-start gap-3">
+                <svg className="w-4 h-4 text-[#FF5C3A] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                </svg>
+                <div>
+                  <p className="text-[12px] text-[#888] leading-relaxed">
+                    Se realizará un cobro de verificación de{' '}
+                    <span className="text-white font-medium">$100 COP</span> que será reembolsado automáticamente. Solo necesitamos confirmar que la tarjeta es válida.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {error && (
               <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[13px] px-4 py-3 rounded-lg">
                 {error}
@@ -288,9 +341,26 @@ export default function RegisterForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#FF5C3A] hover:bg-[#e84d2c] disabled:opacity-50 text-white font-medium py-2.5 rounded-lg text-[13px] transition-colors mt-2"
+              className="w-full bg-[#FF5C3A] hover:bg-[#e84d2c] disabled:opacity-50 text-white font-medium py-2.5 rounded-lg text-[13px] transition-colors mt-2 flex items-center justify-center gap-2"
             >
-              {loading ? 'Creando cuenta...' : `Empezar prueba de ${trialDays} días`}
+              {loading ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  {loadingStep || 'Procesando...'}
+                </>
+              ) : requireCard ? (
+                <>
+                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  Crear cuenta y verificar tarjeta
+                </>
+              ) : (
+                `Empezar prueba de ${trialDays} días`
+              )}
             </button>
           </form>
 

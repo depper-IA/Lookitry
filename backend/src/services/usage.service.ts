@@ -17,11 +17,16 @@ export class UsageService {
     // Obtener el plan de la marca
     const { data: brand } = await supabase
       .from('brands')
-      .select('plan')
+      .select('plan, email_verified')
       .eq('id', brandId)
       .single();
 
     if (!brand) {
+      return false;
+    }
+
+    // Bloquear generaciones si el email no está verificado
+    if (!brand.email_verified) {
       return false;
     }
 
@@ -41,34 +46,33 @@ export class UsageService {
   }
 
   async checkProductLimit(brandId: string): Promise<boolean> {
-    // Obtener el plan de la marca
     const { data: brand } = await supabase
       .from('brands')
-      .select('plan')
+      .select('plan, trial_end_date, trial_generations_limit, subscription_status')
       .eq('id', brandId)
       .single();
 
-    if (!brand) {
-      return false;
-    }
+    if (!brand) return false;
 
+    const hasPaidSub = brand.subscription_status === 'active' || brand.subscription_status === 'expiring_soon';
+    const inTrial = !hasPaidSub && brand.trial_end_date && new Date(brand.trial_end_date) > new Date();
     const plan = getPlanByType(brand.plan);
+    const productsLimit = inTrial ? 1 : plan.maxProducts;
 
-    // Contar productos activos
     const { count } = await supabase
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('brand_id', brandId)
       .eq('is_active', true);
 
-    return (count || 0) < plan.maxProducts;
+    return (count || 0) < productsLimit;
   }
 
   async getUsageStats(brandId: string): Promise<UsageStats> {
-    // Obtener el plan de la marca
+    // Obtener el plan y datos de trial de la marca
     const { data: brand } = await supabase
       .from('brands')
-      .select('plan')
+      .select('plan, trial_end_date, trial_generations_limit, subscription_status')
       .eq('id', brandId)
       .single();
 
@@ -76,7 +80,16 @@ export class UsageService {
       throw new Error('Marca no encontrada');
     }
 
+    // Determinar si está en trial activo (sin suscripción pagada)
+    const hasPaidSub = brand.subscription_status === 'active' || brand.subscription_status === 'expiring_soon';
+    const inTrial = !hasPaidSub && brand.trial_end_date && new Date(brand.trial_end_date) > new Date();
+
+    // Límites del trial: 1 producto, generaciones = trial_generations_limit (default 30)
     const plan = getPlanByType(brand.plan);
+    const generationsLimit = inTrial
+      ? (brand.trial_generations_limit ?? 30)
+      : plan.maxGenerationsPerMonth;
+    const productsLimit = inTrial ? 1 : plan.maxProducts;
     const currentMonth = this.getCurrentMonthRange();
 
     // Contar productos activos
@@ -96,14 +109,14 @@ export class UsageService {
       .lte('generated_at', currentMonth.end.toISOString());
 
     const percentageUsed =
-      ((generationsUsed || 0) / plan.maxGenerationsPerMonth) * 100;
+      ((generationsUsed || 0) / generationsLimit) * 100;
 
     return {
       currentMonth: {
         generationsUsed: generationsUsed || 0,
-        generationsLimit: plan.maxGenerationsPerMonth,
+        generationsLimit,
         productsCount: productsCount || 0,
-        productsLimit: plan.maxProducts,
+        productsLimit,
       },
       percentageUsed: Math.round(percentageUsed * 100) / 100,
       resetDate: this.getNextMonthStart().toISOString(),

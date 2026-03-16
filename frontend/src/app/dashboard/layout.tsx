@@ -106,7 +106,37 @@ export default function DashboardLayoutWrapper({
       {showProBanner && brandData && (
         <ProUpgradeBanner brandName={brandData.name} />
       )}
+      {brandData && !(brandData as any).emailVerified && (
+        <EmailVerificationBanner email={brandData.email} />
+      )}
       <DashboardLayout>{children}</DashboardLayout>
     </>
+  );
+}
+
+function EmailVerificationBanner({ email }: { email: string }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+  return (
+    <div className="w-full bg-[#1a1200] border-b border-[#3d2e00] px-4 py-2.5 flex items-center justify-between gap-4">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <svg className="w-4 h-4 text-[#f5a623] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <p className="text-[12px] text-[#f5a623] truncate">
+          Verifica tu correo <span className="font-medium">{email}</span> para poder usar las generaciones.{' '}
+          <a href="/verify-email" className="underline hover:text-[#ffc04d] transition-colors">Reenviar correo</a>
+        </p>
+      </div>
+      <button
+        onClick={() => setDismissed(true)}
+        className="shrink-0 text-[#f5a623] hover:text-[#ffc04d] transition-colors"
+        aria-label="Cerrar aviso"
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
   );
 }
