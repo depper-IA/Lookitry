@@ -24,6 +24,9 @@ dotenv.config();
 
 const app = express();
 
+// Necesario para que express-rate-limit funcione correctamente detrás de Traefik/Nginx
+app.set('trust proxy', 1);
+
 // Security headers básicos (sin helmet)
 app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
