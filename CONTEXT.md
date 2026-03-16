@@ -198,6 +198,16 @@ NEXT_PUBLIC_API_URL=https://api.pruebalo.wilkiedevs.com
 
 ---
 
+## Estado de Datos en BD
+
+### URLs de imágenes de productos (verificado 15/03/2026)
+- Todos los productos tienen `image_url` apuntando a MinIO (`https://minio.wilkiedevs.com/images/...`) o placeholders
+- Producto "Life Kombucha - Lulo" (`a1a567a9`) tenía URL de WordPress (ya no existía) — reemplazada con placeholder
+- El admin debe subir una nueva imagen para ese producto desde el dashboard
+- No quedan URLs `wp-content` en la tabla `products`
+
+---
+
 ## Notas de Arquitectura
 
 - Upload de imágenes: MinIO vía AWS Signature V4 (sin SDK, solo axios)
