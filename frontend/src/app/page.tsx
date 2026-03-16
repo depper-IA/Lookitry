@@ -101,7 +101,7 @@ export default function HomePage() {
             Tus clientes se prueban<br />
             tu producto <span className="text-[#FF5C3A]">antes de comprar</span>
           </h1>
-          <p className="text-[#777] text-base max-w-md mx-auto mb-8 leading-relaxed font-light">
+          <p className="text-[#bbb] text-base max-w-md mx-auto mb-8 leading-relaxed font-light">
             Probador virtual con IA para ropa, accesorios y calzado. Embébelo en tu tienda en 10 minutos. Sin apps, sin desarrollo.
           </p>
           <div className="flex gap-3 justify-center flex-wrap mb-3">
@@ -114,7 +114,7 @@ export default function HomePage() {
               Ver planes <IconArrow />
             </Link>
           </div>
-          <p className="text-[12px] text-[#444]">Sin tarjeta de crédito · Cancela cuando quieras</p>
+          <p className="text-[12px] text-[#888]">Sin tarjeta de crédito · Cancela cuando quieras</p>
         </div>
       </section>
 
@@ -214,7 +214,7 @@ export default function HomePage() {
               <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[30px] text-white tracking-tight mb-0.5">
                 $250.000 <span className="text-[13px] font-normal text-[#555]" style={{ fontFamily: 'DM Sans, sans-serif' }}>/ mes</span>
               </div>
-              <div className="text-[12px] text-[#444] mb-5">Pago directo — activación inmediata</div>
+              <div className="text-[12px] text-[#888] mb-5">Pago directo — activación inmediata</div>
               <ul className="flex flex-col gap-2 mb-6">
                 {PRO_FEATURES.map(f => (
                   <li key={f} className="flex items-center gap-2 text-[13px] text-[#999]">
@@ -231,7 +231,7 @@ export default function HomePage() {
               </button>
             </div>
           </div>
-          <p className="text-[12px] text-[#444] text-center mt-4">
+          <p className="text-[12px] text-[#888] text-center mt-4">
             Descuentos: 5% (3 meses) · 10% (6 meses) · 15% (12 meses) ·{' '}
             <Link href="/planes" className="text-[#FF5C3A] hover:underline">Ver comparativa completa</Link>
           </p>
@@ -248,7 +248,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 border border-[#e0dcd7] rounded-xl overflow-hidden">
             {STEPS.map((s, i) => (
               <div key={s.n} className={`bg-[#f5f2ee] p-7 ${i < STEPS.length - 1 ? 'border-b md:border-b-0 md:border-r border-[#e0dcd7]' : ''}`}>
-                <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[40px] text-[#e0dcd7] tracking-tight leading-none mb-3">{s.n}</div>
+                <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[40px] text-[#FF5C3A] tracking-tight leading-none mb-3">{s.n}</div>
                 <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-base text-[#0a0a0a] mb-1.5">{s.title}</div>
                 <p className="text-[13px] text-[#777] leading-relaxed">{s.desc}</p>
               </div>
@@ -431,8 +431,8 @@ export default function HomePage() {
           <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[34px] md:text-[38px] text-white tracking-tight mb-3">
             Empieza hoy sin riesgos
           </h2>
-          <p className="text-[15px] text-[#666] mb-8">
-            7 días gratis en el Plan Básico. Plan Pro con pago directo y seguro.
+          <p className="text-[15px] text-[#aaa] mb-8">
+            7 días gratis con el plan Trial. Plan Básico y Pro con pago directo y seguro.
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
             <Link href="/register"

@@ -126,7 +126,7 @@ const FAQ_TABS: FaqTab[] = [
     items: [
       {
         q: '¿Cuáles son los precios de los planes?',
-        a: 'Plan Básico: $150.000 COP/mes. Plan Pro: $250.000 COP/mes. Ambos incluyen 7 días de prueba gratis al registrarte.',
+        a: 'Hay tres opciones: Plan Trial (gratuito, 7 días), Plan Básico ($150.000 COP/mes) y Plan Pro ($250.000 COP/mes). El Trial es un plan aparte sin costo, no requiere tarjeta de crédito y te da acceso completo por 7 días para que pruebes la plataforma.',
       },
       {
         q: '¿Hay descuentos por pagar varios meses?',
