@@ -219,43 +219,9 @@ export const notFoundHandler = (req: Request, _res: Response, next: NextFunction
 };
 
 /**
- * Manejador de errores no capturados
+ * Manejador de errores no capturados — no-op, los handlers reales están en index.ts
  */
 export const setupUncaughtExceptionHandlers = () => {
-  // Manejar excepciones no capturadas
-  process.on('uncaughtException', (error: Error) => {
-    console.error('💥 UNCAUGHT EXCEPTION! Apagando...');
-    console.error(error);
-    errorLogger.log(error);
-    
-    // Dar tiempo para que se complete el logging
-    setTimeout(() => {
-      process.exit(1);
-    }, 1000);
-  });
-
-  // Manejar promesas rechazadas no manejadas
-  process.on('unhandledRejection', (reason: any) => {
-    const error = reason instanceof Error ? reason : new Error(String(reason));
-    errorLogger.log(error);
-
-    // En producción nunca matar el proceso por un unhandledRejection —
-    // puede ser un error de un request individual y no debe tumbar el servidor.
-    if (process.env.NODE_ENV === 'production') {
-      console.error('⚠️  Unhandled rejection (no fatal en producción):', error.message);
-      return;
-    }
-
-    // Solo apagar si es un error NO operacional (inesperado del sistema) en desarrollo
-    if (error instanceof AppError && error.isOperational) {
-      console.warn('⚠️  Unhandled rejection operacional (no fatal):', error.message);
-      return;
-    }
-
-    console.error('💥 UNHANDLED REJECTION! Apagando...');
-    console.error(reason);
-    setTimeout(() => {
-      process.exit(1);
-    }, 1000);
-  });
+  // Los handlers de uncaughtException y unhandledRejection se registran en index.ts
+  // para tener control total sobre el comportamiento en producción vs desarrollo.
 };
