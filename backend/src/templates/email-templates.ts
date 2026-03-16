@@ -58,6 +58,36 @@ const baseTemplate = (content: string) => `
 `;
 
 /**
+ * Email de verificación de dirección de correo electrónico.
+ * Se envía al registrarse — el usuario debe hacer clic en el link antes de acceder al dashboard.
+ */
+export const verifyEmailTemplate = (brand: BrandInfo, verifyUrl: string): string => {
+  const content = `
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Confirma tu correo electrónico</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Gracias por registrarte. Para activar tu cuenta y acceder al dashboard, confirma tu dirección de correo haciendo clic en el botón de abajo.
+    </p>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${verifyUrl}"
+         style="background-color: #FF5C3A; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px;">
+        Confirmar correo electrónico
+      </a>
+    </div>
+    <p style="color: #888; font-size: 13px; text-align: center;">
+      Este enlace expira en 24 horas. Si no creaste esta cuenta, ignora este mensaje.
+    </p>
+    <p style="color: #aaa; font-size: 12px; text-align: center; margin-top: 16px; word-break: break-all;">
+      O copia este enlace en tu navegador:<br/>
+      <a href="${verifyUrl}" style="color: #FF5C3A;">${verifyUrl}</a>
+    </p>
+  `;
+  return baseTemplate(content);
+};
+
+/**
  * Email de bienvenida al registrarse
  */
 export const welcomeEmail = (brand: BrandInfo, plan: string, amount: string, daysRemaining: number): string => {

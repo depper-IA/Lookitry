@@ -282,6 +282,8 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
   const isPro = brand.plan === 'PRO';
 
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoError, setLogoError] = useState('');
 
   const [formData, setFormData] = useState<UpdateBrandConfigDto>({
     name: brand.name,
@@ -289,7 +291,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     logo: brand.logo || '',
     primaryColor: brand.primaryColor,
     secondaryColor: brand.secondaryColor,
-    widgetTemplate: brand.widgetTemplate || 'minimal',
+    widgetTemplate: brand.widgetTemplate || 'bare',
     buttonText: brand.buttonText || 'Probarme esto',
     welcomeMessage: brand.welcomeMessage || '',
   });
@@ -304,7 +306,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
       logo: brand.logo || '',
       primaryColor: brand.primaryColor,
       secondaryColor: brand.secondaryColor,
-      widgetTemplate: brand.widgetTemplate || 'minimal',
+      widgetTemplate: brand.widgetTemplate || 'bare',
       buttonText: brand.buttonText || 'Probarme esto',
       welcomeMessage: brand.welcomeMessage || '',
     });
@@ -317,9 +319,6 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     if (!formData.name?.trim()) e.name = 'El nombre es requerido';
     if (formData.primaryColor && !isValidHex(formData.primaryColor)) e.primaryColor = 'Color hexadecimal inválido';
     if (formData.secondaryColor && !isValidHex(formData.secondaryColor)) e.secondaryColor = 'Color hexadecimal inválido';
-    if (formData.logo && formData.logo.trim()) {
-      try { new URL(formData.logo); } catch { e.logo = 'URL inválida'; }
-    }
     if (formData.slug !== undefined) {
       if (!formData.slug?.trim()) e.slug = 'El slug no puede estar vacío';
       else if (!/^[a-z0-9-]+$/.test(formData.slug)) e.slug = 'Solo letras minúsculas, números y guiones';
@@ -327,6 +326,47 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     }
     setErrors(e);
     return Object.keys(e).length === 0;
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setLogoError('Solo se permiten imágenes (PNG, JPG, SVG, WebP)');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setLogoError('El archivo no puede superar 2 MB');
+      return;
+    }
+    setLogoError('');
+    setLogoUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = (reader.result as string).split(',')[1];
+        const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ image_base64: base64, filename: file.name }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setLogoError(data.message || 'Error al subir el logo');
+        } else {
+          setFormData(p => ({ ...p, logo: data.url }));
+        }
+        setLogoUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      setLogoError('Error de conexión al subir el logo');
+      setLogoUploading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -401,21 +441,49 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                   <div>
                     <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Logo</label>
                     <div className="flex gap-3 items-start">
-                      {formData.logo ? (
-                        <div style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }} className="w-16 h-16 rounded-xl border flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {/* Preview */}
+                      <div style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }}
+                        className="w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {formData.logo ? (
                           <img src={formData.logo} alt="Logo" className="w-full h-full object-contain"
                             onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                        </div>
-                      ) : (
-                        <div style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)', color: 'var(--text-muted)' }} className="w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center flex-shrink-0">
-                          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        ) : (
+                          <svg className="w-6 h-6" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5A.75.75 0 0121 3.75v16.5a.75.75 0 01-.75.75H3.75A.75.75 0 013 20.25V3.75A.75.75 0 013.75 3z" />
                           </svg>
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <Input name="logo" value={formData.logo || ''} onChange={handleChange} error={errors.logo} placeholder="https://ejemplo.com/logo.png" />
-                        <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">URL pública de tu logo (PNG, SVG recomendado)</p>
+                        )}
+                      </div>
+                      {/* Controles */}
+                      <div className="flex-1 space-y-2">
+                        <label
+                          style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)', color: 'var(--text-secondary)' }}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-[13px] cursor-pointer hover:opacity-80 transition-opacity ${logoUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                        >
+                          {logoUploading ? (
+                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                            </svg>
+                          )}
+                          {logoUploading ? 'Subiendo...' : 'Subir imagen'}
+                          <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={logoUploading} />
+                        </label>
+                        {formData.logo && (
+                          <button type="button" onClick={() => setFormData(p => ({ ...p, logo: '' }))}
+                            style={{ color: 'var(--text-muted)' }}
+                            className="text-[12px] hover:text-red-400 transition-colors flex items-center gap-1">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Quitar logo
+                          </button>
+                        )}
+                        {logoError && <p className="text-xs text-red-400">{logoError}</p>}
+                        <p style={{ color: 'var(--text-muted)' }} className="text-xs">PNG, JPG, SVG o WebP — máx. 2 MB</p>
                       </div>
                     </div>
                   </div>
