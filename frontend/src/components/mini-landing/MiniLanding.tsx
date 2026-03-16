@@ -328,8 +328,8 @@ function LandingFooter({ primaryColor }: { primaryColor: string }) {
     <footer className="py-6 px-4 border-t border-gray-100 text-center">
       <p className="text-xs text-gray-400">
         Probador virtual impulsado por{' '}
-        <a href="https://pruebalo.wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: primaryColor }}>
-          Pruebalo
+        <a href="https://lookitry.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: primaryColor }}>
+          Lookitry
         </a>
       </p>
     </footer>
@@ -737,7 +737,7 @@ function TemplateEditorial({ brandSlug, brand, products }: { brandSlug: string; 
           </div>
           <div className="mt-3 flex items-center justify-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primary }} />
-            <span className="text-[10px] text-gray-400">Impulsado por Pruebalo AI</span>
+            <span className="text-[10px] text-gray-400">Impulsado por Lookitry AI</span>
           </div>
         </div>
       </div>

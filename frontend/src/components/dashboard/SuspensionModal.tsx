@@ -106,8 +106,8 @@ export function SuspensionModal({
                 </svg>
                 <div>
                   <p className="text-sm font-medium">Email</p>
-                  <a href="mailto:soporte@pruebalo.com" className="text-sm text-blue-600 hover:underline">
-                    soporte@pruebalo.com
+                  <a href="mailto:soporte@lookitry.com" className="text-sm text-blue-600 hover:underline">
+                    soporte@lookitry.com
                   </a>
                 </div>
               </div>

@@ -151,7 +151,7 @@ export function SubscriptionModal({ isOpen, onClose, subscriptionInfo }: Subscri
                         : 'Tu suscripción está por vencer. Por favor, renueva pronto para evitar interrupciones.'}
                     </p>
                     <p className="text-sm text-yellow-800 mt-2">
-                      <strong>Contacto:</strong> soporte@pruebalo.com
+                      <strong>Contacto:</strong> soporte@lookitry.com
                     </p>
                   </div>
                 )}

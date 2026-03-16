@@ -71,7 +71,7 @@ export default function HomePage() {
       {/* NAV */}
       <nav className="bg-[#0a0a0a] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
         <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base text-white tracking-tight">
-          Virtual<span className="text-[#FF5C3A]">Try</span>On
+          Look<span className="text-[#FF5C3A]">itry</span>
         </span>
         <div className="flex items-center gap-1 md:gap-2">
           <Link href="/planes" className="text-[13px] text-[#888] hover:text-white px-2 md:px-3.5 py-1.5 rounded-md transition-colors hidden sm:block">
@@ -447,7 +447,7 @@ export default function HomePage() {
       <footer className="bg-[#050505] border-t border-[#1a1a1a] px-6 md:px-8 py-7">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-sm text-white">
-            Virtual<span className="text-[#FF5C3A]">Try</span>On
+            Look<span className="text-[#FF5C3A]">itry</span>
           </span>
           <div className="flex items-center gap-4 md:gap-5 flex-wrap justify-center">
             <Link href="/planes" className="text-[12px] text-[#555] hover:text-[#aaa] transition-colors">Planes</Link>
