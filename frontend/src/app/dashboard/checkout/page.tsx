@@ -38,7 +38,7 @@ const PLAN_INFO: Record<PlanType, { name: string; price: number; features: strin
   },
 };
 
-const MINI_LANDING_PRICE = 500000;
+const MINI_LANDING_PRICE = 650000; // fallback — se sobreescribe con valor dinámico de la API
 
 // Precio a cobrar según plan actual → plan destino
 function getEffectivePrice(targetPlan: PlanType, currentPlan: PlanType | null): number {
@@ -68,12 +68,13 @@ export default function CheckoutPage() {
   const [wompiEnabled, setWompiEnabled] = useState<boolean | null>(null);
   const [hasLandingPage, setHasLandingPage] = useState(false);
   const [includeLanding, setIncludeLanding] = useState(false);
+  const [miniLandingPrice, setMiniLandingPrice] = useState(650000);
 
   const plan = selectedPlan;
   const planInfo = PLAN_INFO[plan];
   const effectivePlanPrice = isInTrial ? planInfo.price : getEffectivePrice(plan, currentPlan);
   const isUpgrade = !isInTrial && currentPlan !== null && currentPlan !== plan && effectivePlanPrice < planInfo.price;
-  const totalPrice = effectivePlanPrice + (includeLanding ? MINI_LANDING_PRICE : 0);
+  const totalPrice = effectivePlanPrice + (includeLanding ? miniLandingPrice : 0);
 
   useEffect(() => {
     subscriptionService.getSubscriptionInfo().then((info) => {
@@ -85,6 +86,11 @@ export default function CheckoutPage() {
     api.get(`/payments/wompi/config?plan=${plan}`)
       .then(() => setWompiEnabled(true))
       .catch(() => setWompiEnabled(false));
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.landingPrice) setMiniLandingPrice(d.landingPrice); })
+      .catch(() => {});
   }, [plan]);
 
   const handleSuccess = (result: WompiWidgetResult) => {
@@ -304,7 +310,7 @@ export default function CheckoutPage() {
                       </span>
                     </div>
                     <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-                      {formatCurrency(MINI_LANDING_PRICE)}
+                      {formatCurrency(miniLandingPrice)}
                     </span>
                   </div>
                   <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
@@ -329,7 +335,7 @@ export default function CheckoutPage() {
               {includeLanding && (
                 <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
                   <span>Mini-landing (pago único)</span>
-                  <span>{formatCurrency(MINI_LANDING_PRICE)}</span>
+                  <span>{formatCurrency(miniLandingPrice)}</span>
                 </div>
               )}
               <div
@@ -345,7 +351,7 @@ export default function CheckoutPage() {
               {includeLanding && (
                 <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
                   <span>Mini-landing (pago único)</span>
-                  <span>{formatCurrency(MINI_LANDING_PRICE)}</span>
+                  <span>{formatCurrency(miniLandingPrice)}</span>
                 </div>
               )}
               <div className="flex items-center justify-between">

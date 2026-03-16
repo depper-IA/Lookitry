@@ -9,6 +9,7 @@ interface Campaign {
   name: string;
   active: boolean;
   trial_days: number;
+  trial_generations_limit: number;
   ends_at: string | null;
   require_card_verification: boolean;
   created_by: string;
@@ -78,6 +79,7 @@ export default function TrialCampaignPage() {
   const [showForm, setShowForm] = useState(false);
   const [formName, setFormName] = useState('');
   const [formDays, setFormDays] = useState(7);
+  const [formGenerations, setFormGenerations] = useState(50);
   const [formEndsAt, setFormEndsAt] = useState('');
 
   // Configuración global de verificación de tarjeta (independiente de campaña)
@@ -121,9 +123,10 @@ export default function TrialCampaignPage() {
         body: JSON.stringify({
           name: formName,
           trial_days: formDays,
+          trial_generations_limit: formGenerations,
           ends_at: formEndsAt || null,
-          active: true,                          // siempre activa al crear
-          require_card_verification: requireCard, // hereda config global actual
+          active: true,
+          require_card_verification: requireCard,
         }),
       });
       if (!res.ok) throw new Error((await res.json()).message);
@@ -131,6 +134,7 @@ export default function TrialCampaignPage() {
       setShowForm(false);
       setFormName('');
       setFormDays(7);
+      setFormGenerations(50);
       setFormEndsAt('');
       await load();
     } catch (err: any) {
@@ -312,7 +316,7 @@ export default function TrialCampaignPage() {
                 <input
                   type="number"
                   min={1}
-                  max={30}
+                  max={90}
                   value={formDays}
                   onChange={e => setFormDays(Number(e.target.value))}
                   style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
@@ -320,7 +324,19 @@ export default function TrialCampaignPage() {
                 />
               </div>
               <div>
-                <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Fecha de vencimiento (opcional)</label>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Generaciones incluidas</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={500}
+                  value={formGenerations}
+                  onChange={e => setFormGenerations(Number(e.target.value))}
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="w-full border rounded-xl px-3 py-2 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                />
+              </div>
+              <div className="col-span-2">
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Fecha de vencimiento de la campaña (opcional)</label>
                 <input
                   type="datetime-local"
                   value={formEndsAt}
@@ -332,7 +348,7 @@ export default function TrialCampaignPage() {
             </div>
             <p style={{ color: 'var(--text-muted)' }} className="text-xs">
               La campaña se creará activa por defecto. La verificación de tarjeta se hereda de la configuración global ({requireCard ? 'activa' : 'desactivada'}).
-              Cualquier campaña activa anterior se desactivará automáticamente.
+              Cualquier campaña activa anterior se desactivará automáticamente. El trial incluye 1 producto y {formGenerations} generaciones.
             </p>
             <div className="flex gap-3">
               <button
@@ -375,6 +391,7 @@ export default function TrialCampaignPage() {
                   <th style={{ color: 'var(--text-muted)' }} className="text-left px-6 py-3 font-semibold text-xs uppercase tracking-wide">Nombre</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Estado</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Días</th>
+                  <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Generaciones</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wide">Vence</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wide">Creada</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Acción</th>
@@ -386,6 +403,7 @@ export default function TrialCampaignPage() {
                     <td style={{ color: 'var(--text-primary)' }} className="px-6 py-3.5 font-medium">{c.name}</td>
                     <td className="px-4 py-3.5 text-center"><StatusBadge active={c.active} /></td>
                     <td style={{ color: 'var(--text-secondary)' }} className="px-4 py-3.5 text-center">{c.trial_days}d</td>
+                    <td style={{ color: 'var(--text-secondary)' }} className="px-4 py-3.5 text-center">{c.trial_generations_limit ?? 50}</td>
                     <td style={{ color: 'var(--text-muted)' }} className="px-4 py-3.5">
                       {c.ends_at ? formatDate(c.ends_at) : <span style={{ color: 'var(--text-muted)' }}>Sin límite</span>}
                     </td>

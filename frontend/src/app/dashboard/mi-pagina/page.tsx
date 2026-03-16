@@ -108,19 +108,35 @@ function CoverImageUpload({
     setError(null);
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('image', file);
+      // Convertir a base64 (el backend espera image_base64 + filename en JSON)
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          // Quitar el prefijo "data:image/...;base64,"
+          resolve(result.split(',')[1]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
       const token = authService.getToken();
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/upload`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image_base64: base64, filename: file.name }),
       });
-      if (!res.ok) throw new Error('Error al subir imagen');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || 'Error al subir imagen');
+      }
       const data = await res.json();
       onUpload(data.url);
-    } catch {
-      setError('Error al subir la imagen');
+    } catch (err: any) {
+      setError(err.message || 'Error al subir la imagen');
     } finally {
       setUploading(false);
     }
@@ -239,6 +255,10 @@ export default function MiPaginaPage() {
       if (facebook) social_links.facebook = facebook;
       if (tiktok) social_links.tiktok = tiktok;
 
+      // Validar que el color sea un hex completo (#RRGGBB) antes de enviar
+      const hexRegex = /^#[0-9A-Fa-f]{6}$/;
+      const safeColor = hexRegex.test(primaryColor) ? primaryColor : '#FF5C3A';
+
       await api.patch('/brands/me', {
         brand_description: description || null,
         slogan: slogan || null,
@@ -250,7 +270,7 @@ export default function MiPaginaPage() {
         city_display: cityDisplay || null,
         national_shipping: nationalShipping,
         landing_template: landingTemplate,
-        primary_color: primaryColor || '#FF5C3A',
+        primary_color: safeColor,
         rating: rating ? parseFloat(rating) : null,
         total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
         schedule: Object.fromEntries(Object.entries(schedule).filter(([, v]) => v.trim())),

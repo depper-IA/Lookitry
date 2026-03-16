@@ -56,13 +56,14 @@ export const getTrialCampaign = async (_req: any, res: Response) => {
  */
 export const createTrialCampaign = async (req: any, res: Response) => {
   try {
-    const { name, trial_days = 7, ends_at, require_card_verification = true } = req.body;
+    const { name, trial_days = 7, trial_generations_limit = 50, ends_at, require_card_verification = true } = req.body;
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El nombre de la campaña es requerido' });
     }
 
-    const trialDays = Math.min(30, Math.max(1, Number(trial_days) || 7));
+    const trialDays = Math.min(90, Math.max(1, Number(trial_days) || 7));
+    const trialGenerations = Math.min(500, Math.max(1, Number(trial_generations_limit) || 50));
 
     // Desactivar campañas anteriores
     await supabase.from('trial_campaigns').update({ active: false }).eq('active', true);
@@ -74,6 +75,7 @@ export const createTrialCampaign = async (req: any, res: Response) => {
         name: name.trim(),
         active: true,
         trial_days: trialDays,
+        trial_generations_limit: trialGenerations,
         ends_at: ends_at || null,
         require_card_verification: require_card_verification !== false,
         created_by: req.admin?.email ?? 'admin',
@@ -109,10 +111,13 @@ export const updateTrialCampaign = async (req: any, res: Response) => {
       updates.active = active;
     }
     if (name !== undefined) updates.name = name;
-    if (trial_days !== undefined) updates.trial_days = Math.min(30, Math.max(1, Number(trial_days)));
+    if (trial_days !== undefined) updates.trial_days = Math.min(90, Math.max(1, Number(trial_days)));
     if (ends_at !== undefined) updates.ends_at = ends_at || null;
     if (typeof req.body.require_card_verification === 'boolean') {
       updates.require_card_verification = req.body.require_card_verification;
+    }
+    if (req.body.trial_generations_limit !== undefined) {
+      updates.trial_generations_limit = Math.min(500, Math.max(1, Number(req.body.trial_generations_limit) || 50));
     }
 
     if (Object.keys(updates).length === 0) {
