@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import FaqSection from '@/components/landing/FaqSection';
 
 function IconUser() {
   return (
@@ -399,6 +400,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* FAQ */}
+      <FaqSection />
 
       {/* TESTIMONIOS */}
       <section className="bg-[#f5f2ee] py-16 md:py-20 px-6 md:px-8 border-t border-[#e0dcd7]">
