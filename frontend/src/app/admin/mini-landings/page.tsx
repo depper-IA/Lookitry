@@ -94,6 +94,8 @@ export default function AdminMiniLandingsPage() {
   const [filterPlan, setFilterPlan] = useState<'all' | 'BASIC' | 'PRO'>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<{ brand: LandingBrand; action: 'activate' | 'deactivate' | 'suspend' | 'restore' } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const fetchBrands = useCallback(async () => {
     try {
@@ -112,6 +114,7 @@ export default function AdminMiniLandingsPage() {
   }, []);
 
   useEffect(() => { fetchBrands(); }, [fetchBrands]);
+  useEffect(() => { setCurrentPage(1); }, [search, filterEstado, filterPlan]);
 
   const filtered = brands.filter(b => {
     const matchSearch =
@@ -130,6 +133,10 @@ export default function AdminMiniLandingsPage() {
     suspendida: brands.filter(b => getEstado(b) === 'suspendida').length,
     inactiva: brands.filter(b => getEstado(b) === 'inactiva').length,
   };
+
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginated = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const handleAction = async (brand: LandingBrand, action: 'activate' | 'deactivate' | 'suspend' | 'restore') => {
     setActionLoading(brand.id + action);
@@ -186,7 +193,7 @@ export default function AdminMiniLandingsPage() {
             Mini-Landings
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-            Control de páginas públicas por cliente
+            Total: {brands.length} | Mostrando: {filtered.length}
           </p>
         </div>
         <button
@@ -266,7 +273,7 @@ export default function AdminMiniLandingsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(brand => {
+              {paginated.map(brand => {
                 const estado = getEstado(brand);
                 const isLoading = (s: string) => actionLoading === brand.id + s;
                 return (
@@ -424,6 +431,51 @@ export default function AdminMiniLandingsPage() {
           </div>
         )}
       </div>
+
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border px-4 py-3"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            Mostrando {startIndex + 1} a {Math.min(startIndex + ITEMS_PER_PAGE, filtered.length)} de {filtered.length}
+          </div>
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => setCurrentPage(p => p - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 rounded-lg border text-xs disabled:opacity-40 transition-colors"
+              style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-base)' }}
+            >
+              Anterior
+            </button>
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+              const p = totalPages <= 5 ? i + 1
+                : currentPage <= 3 ? i + 1
+                : currentPage >= totalPages - 2 ? totalPages - 4 + i
+                : currentPage - 2 + i;
+              return (
+                <button key={p} onClick={() => setCurrentPage(p)}
+                  className="px-3 py-1.5 rounded-lg border text-xs transition-colors"
+                  style={{
+                    backgroundColor: currentPage === p ? '#FF5C3A' : 'var(--bg-base)',
+                    color: currentPage === p ? '#fff' : 'var(--text-secondary)',
+                    borderColor: currentPage === p ? '#FF5C3A' : 'var(--border-color)',
+                  }}>
+                  {p}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setCurrentPage(p => p + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 rounded-lg border text-xs disabled:opacity-40 transition-colors"
+              style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-base)' }}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmación */}
       {confirmModal && (
