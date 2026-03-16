@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { UploadService } from '../services/upload.service';
 import { AuthRequest } from '../middleware/auth';
 
@@ -6,10 +6,7 @@ const uploadService = new UploadService();
 
 export const uploadImage = async (req: AuthRequest, res: Response) => {
   try {
-    console.log('[Upload Controller] Petición recibida');
-    
     if (!req.brand) {
-      console.log('[Upload Controller] No autenticado');
       return res.status(401).json({
         error: 'UNAUTHORIZED',
         message: 'No autenticado',
@@ -18,15 +15,7 @@ export const uploadImage = async (req: AuthRequest, res: Response) => {
 
     const { image_base64, filename, temporary } = req.body;
 
-    console.log('[Upload Controller] Datos:', { 
-      filename, 
-      temporary, 
-      base64Length: image_base64?.length,
-      brandId: req.brand.id 
-    });
-
     if (!image_base64 || !filename) {
-      console.log('[Upload Controller] Faltan parámetros');
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
         message: 'image_base64 y filename son requeridos',
@@ -39,14 +28,52 @@ export const uploadImage = async (req: AuthRequest, res: Response) => {
       temporary: temporary || false,
     });
 
-    console.log('[Upload Controller] Éxito:', result);
-
     return res.status(200).json(result);
   } catch (error: any) {
     console.error('[Upload Controller] Error:', error);
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
       message: error.message || 'Error al subir imagen',
+    });
+  }
+};
+
+/**
+ * POST /api/upload/selfie
+ * Endpoint para que n8n suba selfies temporales a MinIO.
+ * Autenticado con Bearer token fijo (N8N_BEARER_TOKEN).
+ * Acepta base64 o multipart/form-data con campo "file".
+ */
+export const uploadSelfie = async (req: Request, res: Response) => {
+  try {
+    // Verificar token de n8n
+    const authHeader = req.headers.authorization || '';
+    const expectedToken = process.env.N8N_BEARER_TOKEN || '';
+    if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
+      return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Token inválido' });
+    }
+
+    const { image_base64, filename } = req.body;
+
+    if (!image_base64 || !filename) {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'image_base64 y filename son requeridos',
+      });
+    }
+
+    const result = await uploadService.uploadImage({
+      image_base64,
+      filename,
+      temporary: true, // siempre en carpeta temp/
+    });
+
+    return res.status(200).json(result);
+  } catch (error: any) {
+    console.error('[Upload Selfie] Error:', error);
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: error.message || 'Error al subir selfie',
     });
   }
 };
