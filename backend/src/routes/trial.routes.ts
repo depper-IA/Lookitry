@@ -76,8 +76,8 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
   const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
   const redirectUrl = `${frontendUrl}/trial-activado`;
 
-  // Monto mínimo de Wompi: 100 COP
-  const checkoutUrl = await wompiService.getCheckoutUrl(brand.id, 100, redirectUrl);
+  // Monto mínimo de Wompi: 100 COP — cardOnly=true restringe a solo tarjeta débito/crédito
+  const checkoutUrl = await wompiService.getCheckoutUrl(brand.id, 100, redirectUrl, true);
 
   return res.json({ checkoutUrl });
 }));

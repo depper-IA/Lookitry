@@ -94,8 +94,11 @@ export class WompiService {
    * URL base: https://checkout.wompi.co/p/
    * Parámetros requeridos:
    *   public-key, currency, amount-in-cents, reference, signature:integrity, redirect-url
+   *
+   * @param cardOnly - Si true, restringe los métodos de pago a solo CARD (tarjeta débito/crédito).
+   *                   Usar para verificación de trial donde se requiere tarjeta real.
    */
-  async getCheckoutUrl(brandId: string, amountCOP: number, redirectUrl: string): Promise<string> {
+  async getCheckoutUrl(brandId: string, amountCOP: number, redirectUrl: string, cardOnly = false): Promise<string> {
     const reference = this.generateReference(brandId);
     const amountInCents = amountCOP * 100;
     const currency = 'COP';
@@ -104,16 +107,21 @@ export class WompiService {
     // URLSearchParams codifica ":" como "%3A", pero Wompi requiere "signature:integrity" literal.
     // Construimos la query string manualmente para preservar los dos puntos.
     const encode = (v: string) => encodeURIComponent(v);
-    const qs = [
+    const params = [
       `public-key=${encode(this.publicKey)}`,
       `currency=${encode(currency)}`,
       `amount-in-cents=${encode(String(amountInCents))}`,
       `reference=${encode(reference)}`,
       `signature:integrity=${encode(signature)}`,
       `redirect-url=${encode(redirectUrl)}`,
-    ].join('&');
+    ];
 
-    return `https://checkout.wompi.co/p/?${qs}`;
+    // Restringir a solo tarjeta cuando se requiere verificación de tarjeta real
+    if (cardOnly) {
+      params.push(`payment-methods=${encode('CARD')}`);
+    }
+
+    return `https://checkout.wompi.co/p/?${params.join('&')}`;
   }
 }
 
