@@ -13,6 +13,7 @@ export type AuditAction =
   | 'brand.plan_activate'
   | 'brand.product_delete'
   | 'brand.delete'
+  | 'brand.landing_page_toggle'
   | 'subscription.renew'
   | 'subscription.suspend'
   | 'subscription.reactivate'
