@@ -428,7 +428,7 @@ export default function AdminSubscriptionsPage() {
     suspended: subscriptions.filter(s => s.subscription_status === 'suspended').length,
   };
 
-  const expiringSoon = subscriptions.filter(s => s.daysRemaining >= 0 && s.daysRemaining <= 7);
+  const expiringSoon = subscriptions.filter(s => s.daysRemaining !== null && s.daysRemaining >= 0 && s.daysRemaining <= 7);
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
