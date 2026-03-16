@@ -1,5 +1,5 @@
 import { supabase, supabaseAdmin } from '../config/supabase';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export interface Admin {
   id: string;

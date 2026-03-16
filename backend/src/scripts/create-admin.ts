@@ -5,7 +5,7 @@
  */
 
 import { supabaseAdmin } from '../config/supabase';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 async function createAdmin() {
   console.log('🔧 Creando administrador...\n');
