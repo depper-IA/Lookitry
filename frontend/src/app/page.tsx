@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -51,6 +52,18 @@ const PRODUCTS = [
 
 export default function HomePage() {
   const router = useRouter();
+  const [landingPrice, setLandingPrice] = useState(650000);
+  const [landingOriginal, setLandingOriginal] = useState(900000);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d?.landingPrice) setLandingPrice(d.landingPrice);
+        if (d?.landingOriginalPrice) setLandingOriginal(d.landingOriginalPrice);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <main style={{ fontFamily: 'DM Sans, sans-serif' }} className="min-h-screen overflow-x-hidden bg-[#f5f2ee]">
@@ -259,7 +272,7 @@ export default function HomePage() {
               <span className="text-[#FF5C3A]">sin pagar un diseñador</span>
             </h2>
             <p className="text-[#777] text-[15px] max-w-lg mx-auto leading-relaxed">
-              Activa tu mini-landing pública por un pago único de <strong className="text-[#0a0a0a]">$500.000 COP</strong> y obtén una página profesional con probador virtual integrado, lista en minutos.
+              Activa tu mini-landing pública por un pago único de <strong className="text-[#0a0a0a]">${landingPrice.toLocaleString('es-CO')} COP</strong> y obtén una página profesional con probador virtual integrado, lista en minutos.
             </p>
           </div>
 
@@ -350,11 +363,15 @@ export default function HomePage() {
                 {/* Precio y CTA */}
                 <div className="px-6 py-6 border-t border-[#1f1f1f]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[#555] text-sm line-through">$650.000 COP</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FF5C3A]/20 text-[#FF5C3A] uppercase tracking-wider">Lanzamiento</span>
+                    <span className="text-[#555] text-sm line-through">${landingOriginal.toLocaleString('es-CO')} COP</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FF5C3A]/20 text-[#FF5C3A] uppercase tracking-wider">
+                      {Math.round((1 - landingPrice / landingOriginal) * 100)}% OFF
+                    </span>
                   </div>
                   <div className="flex items-baseline gap-1 mb-1">
-                    <span style={{ fontFamily: 'Syne, sans-serif' }} className="text-4xl font-extrabold text-white">$500.000</span>
+                    <span style={{ fontFamily: 'Syne, sans-serif' }} className="text-4xl font-extrabold text-white">
+                      ${landingPrice.toLocaleString('es-CO')}
+                    </span>
                     <span className="text-[#555] text-sm">COP</span>
                   </div>
                   <p className="text-[12px] text-[#555] mb-5">Pago único · Sin mensualidad adicional</p>
@@ -369,11 +386,11 @@ export default function HomePage() {
                   </ul>
 
                   <button
-                    onClick={() => router.push('/dashboard/checkout?plan=BASIC&addon=landing')}
+                    onClick={() => router.push('/checkout?plan=LANDING')}
                     className="w-full py-3.5 rounded-2xl text-white text-[14px] font-bold transition-all hover:opacity-90 hover:-translate-y-0.5 active:scale-95"
                     style={{ background: '#FF5C3A', boxShadow: '0 8px 24px rgba(255,92,58,0.35)' }}
                   >
-                    Activar mi mini-landing
+                    Obtener mi mini-landing
                   </button>
                   <p className="text-[11px] text-[#444] text-center mt-3">Incluido al contratar cualquier plan</p>
                 </div>

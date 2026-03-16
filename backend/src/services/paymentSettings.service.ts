@@ -2,6 +2,9 @@ import { supabaseAdmin } from '../config/supabase';
 
 export interface PaymentSettings {
   id?: string;
+  // Precios de mini-landing
+  landing_price: number;
+  landing_original_price: number;
   // Wompi
   wompi_enabled: boolean;
   wompi_public_key: string;
@@ -36,6 +39,8 @@ export interface PaymentSettings {
 }
 
 const DEFAULT_SETTINGS: PaymentSettings = {
+  landing_price: 650000,
+  landing_original_price: 900000,
   wompi_enabled: false,
   wompi_public_key: '',
   wompi_private_key: '',
@@ -120,6 +125,8 @@ export class PaymentSettingsService {
    * para exponer al frontend de la marca
    */
   async getPublicSettings(): Promise<{
+    landingPrice: number;
+    landingOriginalPrice: number;
     wompiEnabled: boolean;
     wompiPublicKey: string;
     wompiTestMode: boolean;
@@ -139,6 +146,8 @@ export class PaymentSettingsService {
   }> {
     const s = await this.getSettings();
     return {
+      landingPrice: s.landing_price ?? 650000,
+      landingOriginalPrice: s.landing_original_price ?? 900000,
       wompiEnabled: s.wompi_enabled,
       wompiPublicKey: s.wompi_public_key,
       wompiTestMode: s.wompi_test_mode,

@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
 interface PaymentSettings {
+  landing_price: number;
+  landing_original_price: number;
   wompi_enabled: boolean;
   wompi_public_key: string;
   wompi_private_key: string;
@@ -183,6 +185,61 @@ export default function PaymentSettingsPage() {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
       )}
+
+      {/* Precios de mini-landing */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <svg className="w-5 h-5 text-[#FF5C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" />
+          </svg>
+          <h3 className="font-semibold text-gray-900">Precio de Mini-landing</h3>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">
+          Este precio aparece en la landing pública, en el checkout y en todos los mensajes promocionales.
+          El precio original se muestra tachado para generar contraste de valor.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Precio de venta (COP)
+            </label>
+            <input
+              type="number"
+              min={1000}
+              step={1000}
+              value={settings.landing_price ?? 650000}
+              onChange={e => set('landing_price', Number(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+            />
+            <p className="text-xs text-gray-400 mt-1">Valor real que paga el cliente</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Precio original / tachado (COP)
+            </label>
+            <input
+              type="number"
+              min={1000}
+              step={1000}
+              value={settings.landing_original_price ?? 900000}
+              onChange={e => set('landing_original_price', Number(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+            />
+            <p className="text-xs text-gray-400 mt-1">Se muestra tachado para mostrar el descuento</p>
+          </div>
+        </div>
+        {settings.landing_price && settings.landing_original_price && settings.landing_price < settings.landing_original_price && (
+          <div className="mt-3 flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            Descuento visible: {Math.round((1 - settings.landing_price / settings.landing_original_price) * 100)}% OFF —
+            el cliente ve <span className="line-through text-gray-400 mx-1">${settings.landing_original_price.toLocaleString('es-CO')}</span>
+            y paga <strong>${settings.landing_price.toLocaleString('es-CO')}</strong>
+          </div>
+        )}
+      </div>
 
       {/* Moneda global */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
