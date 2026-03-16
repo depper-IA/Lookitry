@@ -12,6 +12,9 @@ import {
   deleteBrand,
   getConversionStats,
   toggleLandingPage,
+  getMiniLandingsAdmin,
+  suspendMiniLanding,
+  restoreMiniLanding,
   listAdmins,
   createAdmin,
   updateAdminPermissions,
@@ -46,6 +49,11 @@ router.delete('/brands/:id/products/:productId', requirePermission('brands'), de
 router.patch('/brands/:id/plan', requirePermission('subscriptions'), changeBrandPlan);
 router.patch('/brands/:id/activate-plan', requirePermission('subscriptions'), activateBrandPlan);
 router.patch('/brands/:id/landing-page', requirePermission('brands'), toggleLandingPage);
+
+// Mini-landings — panel de control
+router.get('/mini-landings', requirePermission('brands'), getMiniLandingsAdmin);
+router.patch('/mini-landings/:id/suspend', requirePermission('brands'), suspendMiniLanding);
+router.patch('/mini-landings/:id/restore', requirePermission('brands'), restoreMiniLanding);
 router.get('/payment-settings', requirePermission('settings'), getPaymentSettings);
 router.put('/payment-settings', requirePermission('settings'), updatePaymentSettings);
 router.get('/notifications', requirePermission('notifications'), getAdminNotifications);

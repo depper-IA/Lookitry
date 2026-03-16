@@ -159,15 +159,29 @@ export class SubscriptionService {
     const newEndDate = this.calculateExpirationDate(newStartDate, months);
 
     // Actualizar marca con nueva suscripción
+    const updateData: Record<string, unknown> = {
+      subscription_start_date: newStartDate.toISOString(),
+      subscription_end_date: newEndDate.toISOString(),
+      subscription_status: 'active',
+      last_payment_date: paymentData.payment_date || now.toISOString(),
+      next_payment_date: newEndDate.toISOString(),
+    };
+
+    // Si la marca tenía mini-landing suspendida hace menos de 90 días, restaurarla
+    if (brand.landing_suspended_at) {
+      const diasSuspendida =
+        (now.getTime() - new Date(brand.landing_suspended_at).getTime()) / (1000 * 60 * 60 * 24);
+      if (diasSuspendida < 90) {
+        updateData.has_landing_page = true;
+        updateData.landing_suspended_at = null;
+        console.log(`[Subscription] Restaurando mini-landing al renovar marca ${brandId}`);
+      }
+    }
+
+    // Actualizar marca con nueva suscripción
     const { data: updatedBrand, error: updateError } = await supabaseAdmin
       .from('brands')
-      .update({
-        subscription_start_date: newStartDate.toISOString(),
-        subscription_end_date: newEndDate.toISOString(),
-        subscription_status: 'active',
-        last_payment_date: paymentData.payment_date || now.toISOString(),
-        next_payment_date: newEndDate.toISOString(),
-      })
+      .update(updateData)
       .eq('id', brandId)
       .select()
       .single();
@@ -315,17 +329,49 @@ export class SubscriptionService {
   }
 
   /**
-   * Reactiva una marca suspendida
-   * 
+   * Reactiva una marca suspendida.
+   * Si la marca tenía mini-landing suspendida hace menos de 90 días,
+   * la restaura automáticamente (has_landing_page = true, landing_suspended_at = null).
+   *
    * @param brandId - ID de la marca
    * @returns Marca actualizada con estado active
    */
   async reactivateSubscription(brandId: string): Promise<Brand> {
+    // Obtener datos actuales de la marca para verificar estado de la landing
+    const { data: brand, error: fetchError } = await supabaseAdmin
+      .from('brands')
+      .select('id, landing_suspended_at, has_landing_page')
+      .eq('id', brandId)
+      .single();
+
+    if (fetchError || !brand) {
+      throw new Error('Marca no encontrada: ' + fetchError?.message);
+    }
+
+    // Determinar si se debe restaurar la mini-landing
+    let restaurarLanding = false;
+    if (brand.landing_suspended_at) {
+      const suspendidaHace = Date.now() - new Date(brand.landing_suspended_at).getTime();
+      const diasSuspendida = suspendidaHace / (1000 * 60 * 60 * 24);
+      // Solo restaurar si han pasado menos de 90 días desde la suspensión
+      if (diasSuspendida < 90) {
+        restaurarLanding = true;
+      }
+    }
+
+    const updatePayload: Record<string, unknown> = {
+      subscription_status: 'active',
+    };
+
+    if (restaurarLanding) {
+      updatePayload.has_landing_page = true;
+      updatePayload.landing_suspended_at = null;
+      console.log(`[Subscription] Restaurando mini-landing al reactivar marca ${brandId}`);
+    }
+
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .update({
-        subscription_status: 'active',
-      })
+      .update(updatePayload)
       .eq('id', brandId)
       .select()
       .single();
