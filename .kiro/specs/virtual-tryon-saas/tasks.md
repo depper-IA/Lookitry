@@ -171,8 +171,8 @@
 
 ---
 
-- [ ] 38. Sección FAQ en landing pública
-  - [ ] 38.1 Crear componente `FaqSection` en React con paleta corporativa
+- [x] 38. Sección FAQ en landing pública
+  - [x] 38.1 Crear componente `FaqSection` en React con paleta corporativa
     - Paleta: fondo `#0a0a0a`, acento `#FF5C3A`, texto `#f4f4f5` / `#71717a`
     - Tabs: Mini-Landing / Pagos / Generaciones / Probador IA
     - Acordeón con animación CSS (max-height transition)
@@ -180,10 +180,10 @@
     - CTA final con botón WhatsApp y correo
     - _Archivos: frontend/src/components/landing/FaqSection.tsx_
 
-  - [ ] 38.2 Insertar `FaqSection` en `page.tsx` después de la sección mini-landing y antes de testimonios
+  - [x] 38.2 Insertar `FaqSection` en `page.tsx` después de la sección mini-landing y antes de testimonios
     - _Archivos: frontend/src/app/page.tsx_
 
-  - [ ] 38.3 Verificar consistencia de datos del FAQ con la lógica real del sistema
+  - [x] 38.3 Verificar consistencia de datos del FAQ con la lógica real del sistema
     - Generaciones Plan Básico: 400/mes — verificar en `usage.service.ts` y `plans.config.ts`
     - Generaciones Plan Pro: 1.200/mes — ídem
     - Descuentos: 5% (3m) / 10% (6m) / 15% (12m) — verificar en `checkout/page.tsx`
