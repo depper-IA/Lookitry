@@ -342,7 +342,7 @@ export default function SubscriptionPage() {
             <div className="h-2 bg-white/20 rounded-full overflow-hidden">
               <div
                 className="h-full bg-white/80 rounded-full transition-all"
-                style={{ width: `${Math.max(5, Math.round((trialDaysLeft / (info.trialDaysRemaining ?? 7 || 7)) * 100))}%` }}
+                style={{ width: `${Math.max(5, Math.round((trialDaysLeft / (info.trialDaysRemaining ?? 7)) * 100))}%` }}
               />
             </div>
             <p className="text-xs text-white/70 mt-1.5 text-right">
