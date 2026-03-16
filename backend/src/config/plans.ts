@@ -1,11 +1,17 @@
 export interface Plan {
-  type: 'BASIC' | 'PRO';
+  type: 'BASIC' | 'PRO' | 'TRIAL';
   maxProducts: number;
   maxGenerationsPerMonth: number;
   price: number; // Para futuro
 }
 
 export const PLANS: Record<string, Plan> = {
+  TRIAL: {
+    type: 'TRIAL',
+    maxProducts: 1,
+    maxGenerationsPerMonth: 50,
+    price: 0,
+  },
   BASIC: {
     type: 'BASIC',
     maxProducts: 5,
