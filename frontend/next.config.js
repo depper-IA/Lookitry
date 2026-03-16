@@ -3,7 +3,11 @@ const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   images: {
-    domains: ['localhost', 'vkdooutklowctuudjnkl.supabase.co'],
+    remotePatterns: [
+      { protocol: 'http', hostname: 'localhost' },
+      { protocol: 'https', hostname: 'vkdooutklowctuudjnkl.supabase.co' },
+      { protocol: 'https', hostname: 'api.pruebalo.wilkiedevs.com' },
+    ],
   },
   async headers() {
     return [
