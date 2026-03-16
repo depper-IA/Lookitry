@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
 
 interface BrandData {
@@ -30,7 +30,9 @@ interface MiniLandingProps {
   initialData: { brand: BrandData; products: ProductData[] } | null;
 }
 
-// ── Icono WhatsApp ────────────────────────────────────────────────────────────
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+
+// ── Iconos ────────────────────────────────────────────────────────────────────
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -39,7 +41,6 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-// ── Icono Instagram ───────────────────────────────────────────────────────────
 function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -48,7 +49,6 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
-// ── Icono Facebook ────────────────────────────────────────────────────────────
 function FacebookIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -57,7 +57,6 @@ function FacebookIcon({ className }: { className?: string }) {
   );
 }
 
-// ── Icono TikTok ──────────────────────────────────────────────────────────────
 function TikTokIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -66,44 +65,73 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+  );
+}
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+    </svg>
+  );
+}
+
 // ── Banner de activación ──────────────────────────────────────────────────────
 function ActivationBanner({ primaryColor }: { primaryColor: string }) {
   return (
-    <div className="w-full py-3 px-4 text-center text-sm font-medium text-white" style={{ backgroundColor: primaryColor }}>
+    <div className="w-full py-2.5 px-4 text-center text-sm font-medium text-white" style={{ backgroundColor: primaryColor }}>
       Activa tu página personalizada por $500.000 COP — contacta a soporte
     </div>
   );
 }
 
-// ── Sección Hero ──────────────────────────────────────────────────────────────
-function HeroSection({ brand }: { brand: BrandData }) {
+// ── Botón flotante WhatsApp ───────────────────────────────────────────────────
+function WhatsAppFAB({ phone }: { phone: string }) {
+  const clean = phone.replace(/\D/g, '');
+  const url = `https://wa.me/${clean}`;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Contactar por WhatsApp"
+      className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 pl-4 pr-5 py-3.5 rounded-full text-white text-sm font-semibold shadow-2xl hover:scale-105 active:scale-95 transition-transform"
+      style={{ backgroundColor: '#25D366' }}
+    >
+      <WhatsAppIcon className="w-5 h-5 flex-shrink-0" />
+      <span>WhatsApp</span>
+    </a>
+  );
+}
+
+// ── Hero ──────────────────────────────────────────────────────────────────────
+function HeroSection({ brand, onScrollDown }: { brand: BrandData; onScrollDown: () => void }) {
   const primary = brand.primary_color || '#FF5C3A';
   const hasCover = !!brand.cover_image_url;
 
   return (
     <section
-      className="relative w-full min-h-[280px] flex flex-col items-center justify-center text-center px-6 py-16 overflow-hidden"
-      style={hasCover ? {} : { backgroundColor: primary }}
+      className="relative w-full min-h-[420px] md:min-h-[520px] flex flex-col items-center justify-center text-center px-6 py-20 overflow-hidden"
+      style={hasCover ? {} : { background: `linear-gradient(135deg, ${primary}ee 0%, ${primary}99 100%)` }}
     >
       {hasCover && (
         <>
-          <img
-            src={brand.cover_image_url!}
-            alt={brand.name}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/50" />
+          <img src={brand.cover_image_url!} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/55" />
         </>
       )}
-      <div className="relative z-10 flex flex-col items-center gap-4">
+
+      <div className="relative z-10 flex flex-col items-center gap-5 max-w-2xl">
         {brand.logo && (
-          <img
-            src={brand.logo}
-            alt={brand.name}
-            className="h-16 object-contain drop-shadow-lg"
-          />
+          <img src={brand.logo} alt={brand.name} className="h-16 md:h-20 object-contain drop-shadow-lg" />
         )}
-        <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-md">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-md leading-tight">
           {brand.name}
         </h1>
         {brand.brand_description && (
@@ -111,6 +139,67 @@ function HeroSection({ brand }: { brand: BrandData }) {
             {brand.brand_description}
           </p>
         )}
+        <button
+          onClick={onScrollDown}
+          className="mt-2 inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base shadow-xl hover:opacity-90 active:scale-95 transition-all border-2 border-white/30"
+          style={{ backgroundColor: primary }}
+        >
+          <SparklesIcon className="w-5 h-5" />
+          Probarme un producto
+        </button>
+      </div>
+
+      {/* Indicador scroll */}
+      <button
+        onClick={onScrollDown}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 hover:text-white/90 transition-colors animate-bounce"
+        aria-label="Ver más"
+      >
+        <ChevronDownIcon className="w-7 h-7" />
+      </button>
+    </section>
+  );
+}
+
+// ── Sección "Cómo funciona" ───────────────────────────────────────────────────
+function HowItWorksSection({ primaryColor }: { primaryColor: string }) {
+  const steps = [
+    {
+      num: '1',
+      title: 'Elige un producto',
+      desc: 'Navega por el catálogo y selecciona la prenda o accesorio que quieras probar.',
+    },
+    {
+      num: '2',
+      title: 'Sube tu foto',
+      desc: 'Toma o sube una foto tuya. Funciona mejor con buena iluminación y fondo claro.',
+    },
+    {
+      num: '3',
+      title: 'Ve el resultado',
+      desc: 'Nuestra IA genera en segundos cómo te vería con ese producto puesto.',
+    },
+  ];
+
+  return (
+    <section className="w-full bg-gray-50 py-16 px-4">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-2">¿Cómo funciona?</h2>
+        <p className="text-gray-500 text-center text-sm mb-10">Tres pasos y listo</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {steps.map(s => (
+            <div key={s.num} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-4"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {s.num}
+              </div>
+              <h3 className="font-semibold text-gray-900 mb-2">{s.title}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -129,17 +218,17 @@ function ProductsGallery({
   if (products.length === 0) return null;
 
   return (
-    <section className="w-full max-w-5xl mx-auto px-4 py-12">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Nuestros productos</h2>
-      <p className="text-gray-500 text-center mb-8 text-sm">
-        Selecciona uno para probártelo virtualmente
+    <section className="w-full max-w-5xl mx-auto px-4 py-14">
+      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">Catálogo</h2>
+      <p className="text-gray-500 text-center mb-10 text-sm">
+        Selecciona un producto para probártelo virtualmente
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {products.map(p => (
           <button
             key={p.id}
             onClick={() => onProductClick(p.id)}
-            className="group rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-200 text-left"
+            className="group rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-200 text-left"
           >
             <div className="relative aspect-square overflow-hidden bg-gray-50">
               <img
@@ -151,7 +240,7 @@ function ProductsGallery({
                 className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 style={{ backgroundColor: primaryColor + 'cc' }}
               >
-                <span className="text-white text-sm font-semibold px-3 py-1.5 rounded-full border-2 border-white">
+                <span className="text-white text-xs font-semibold px-3 py-1.5 rounded-full border-2 border-white">
                   Probarme esto
                 </span>
               </div>
@@ -163,6 +252,9 @@ function ProductsGallery({
                   {p.category}
                 </span>
               )}
+              {p.description && (
+                <p className="mt-1.5 text-xs text-gray-400 leading-snug line-clamp-2">{p.description}</p>
+              )}
             </div>
           </button>
         ))}
@@ -171,28 +263,20 @@ function ProductsGallery({
   );
 }
 
-// ── Sección del probador ──────────────────────────────────────────────────────
-function TryOnSection({
-  brandSlug,
-  primaryColor,
-  sectionRef,
-}: {
-  brandSlug: string;
-  primaryColor: string;
-  sectionRef: React.RefObject<HTMLDivElement>;
-}) {
+// ── Probador virtual ──────────────────────────────────────────────────────────
+function TryOnSection({ brandSlug, primaryColor }: { brandSlug: string; primaryColor: string }) {
   return (
     <section
-      ref={sectionRef}
-      className="w-full py-12 px-4"
+      id="tryon-section"
+      className="w-full py-14 px-4"
       style={{ backgroundColor: primaryColor + '0d' }}
     >
       <div className="max-w-2xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Probador virtual</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">Probador virtual</h2>
         <p className="text-gray-500 text-center mb-8 text-sm">
-          Sube una foto tuya y ve cómo te queda el producto
+          Sube una foto tuya y ve cómo te queda el producto con IA
         </p>
-        <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-100">
+        <div className="rounded-3xl overflow-hidden shadow-2xl border border-gray-100">
           <TryOnWidget brandSlug={brandSlug} />
         </div>
       </div>
@@ -200,65 +284,59 @@ function TryOnSection({
   );
 }
 
-// ── Sección de contacto ───────────────────────────────────────────────────────
-function ContactSection({
-  brand,
-  primaryColor,
-}: {
-  brand: BrandData;
-  primaryColor: string;
-}) {
-  const hasWhatsApp = !!brand.whatsapp_contact;
+// ── Redes sociales ────────────────────────────────────────────────────────────
+function SocialSection({ brand }: { brand: BrandData }) {
   const socialLinks = brand.social_links || {};
-  const hasSocial = Object.keys(socialLinks).length > 0;
+  const entries = Object.entries(socialLinks).filter(([, url]) => !!url);
+  if (entries.length === 0) return null;
 
-  if (!hasWhatsApp && !hasSocial) return null;
-
-  const whatsappUrl = brand.whatsapp_contact
-    ? `https://wa.me/${brand.whatsapp_contact.replace(/\D/g, '')}`
-    : null;
-
-  const socialIcons: Record<string, React.ReactNode> = {
+  const icons: Record<string, React.ReactNode> = {
     instagram: <InstagramIcon className="w-5 h-5" />,
-    facebook: <FacebookIcon className="w-5 h-5" />,
-    tiktok: <TikTokIcon className="w-5 h-5" />,
+    facebook:  <FacebookIcon  className="w-5 h-5" />,
+    tiktok:    <TikTokIcon    className="w-5 h-5" />,
   };
 
   return (
-    <section className="w-full max-w-2xl mx-auto px-4 py-12 text-center">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Contáctanos</h2>
-      <p className="text-gray-500 text-sm mb-8">¿Tienes preguntas? Estamos aquí para ayudarte</p>
-
+    <section className="w-full max-w-2xl mx-auto px-4 py-10 text-center">
+      <h2 className="text-xl font-bold text-gray-900 mb-6">Síguenos</h2>
       <div className="flex flex-wrap items-center justify-center gap-3">
-        {whatsappUrl && (
+        {entries.map(([platform, url]) => (
           <a
-            href={whatsappUrl}
+            key={platform}
+            href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white font-semibold text-sm shadow-md hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: '#25D366' }}
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors capitalize"
           >
-            <WhatsAppIcon className="w-5 h-5" />
-            Escribir por WhatsApp
+            {icons[platform.toLowerCase()] ?? null}
+            {platform}
           </a>
-        )}
+        ))}
+      </div>
+    </section>
+  );
+}
 
-        {Object.entries(socialLinks).map(([platform, url]) => {
-          if (!url) return null;
-          const icon = socialIcons[platform.toLowerCase()];
-          return (
-            <a
-              key={platform}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors capitalize"
-            >
-              {icon}
-              {platform}
-            </a>
-          );
-        })}
+// ── Contacto ──────────────────────────────────────────────────────────────────
+function ContactSection({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
+  if (!brand.whatsapp_contact) return null;
+  const url = `https://wa.me/${brand.whatsapp_contact.replace(/\D/g, '')}`;
+
+  return (
+    <section className="w-full py-14 px-4 bg-gray-50">
+      <div className="max-w-xl mx-auto text-center">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">¿Tienes preguntas?</h2>
+        <p className="text-gray-500 text-sm mb-8">Escríbenos directamente y te respondemos al instante</p>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold text-base shadow-lg hover:opacity-90 active:scale-95 transition-all"
+          style={{ backgroundColor: '#25D366' }}
+        >
+          <WhatsAppIcon className="w-6 h-6" />
+          Escribir por WhatsApp
+        </a>
       </div>
     </section>
   );
@@ -268,9 +346,6 @@ function ContactSection({
 export function MiniLanding({ brandSlug, initialData }: MiniLandingProps) {
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(!initialData);
-  const tryOnRef = useState<React.RefObject<HTMLDivElement>>(() => ({ current: null }))[0];
-
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
   useEffect(() => {
     if (initialData) return;
@@ -310,47 +385,15 @@ export function MiniLanding({ brandSlug, initialData }: MiniLandingProps) {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Banner de activación si no tiene landing activa */}
       {!hasLandingPage && <ActivationBanner primaryColor={primaryColor} />}
 
-      {/* Hero */}
-      <HeroSection brand={brand} />
-
-      {/* CTA scroll al probador */}
-      <div className="flex justify-center py-8 px-4">
-        <button
-          onClick={scrollToTryOn}
-          className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base shadow-lg hover:opacity-90 active:scale-95 transition-all"
-          style={{ backgroundColor: primaryColor }}
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-          </svg>
-          Probarme un producto
-        </button>
-      </div>
-
-      {/* Galería de productos */}
-      <ProductsGallery
-        products={products}
-        primaryColor={primaryColor}
-        onProductClick={scrollToTryOn}
-      />
-
-      {/* Probador virtual */}
-      <div id="tryon-section">
-        <TryOnSection
-          brandSlug={brandSlug}
-          primaryColor={primaryColor}
-          sectionRef={tryOnRef as any}
-        />
-      </div>
-
-      {/* Contacto */}
+      <HeroSection brand={brand} onScrollDown={scrollToTryOn} />
+      <HowItWorksSection primaryColor={primaryColor} />
+      <ProductsGallery products={products} primaryColor={primaryColor} onProductClick={scrollToTryOn} />
+      <TryOnSection brandSlug={brandSlug} primaryColor={primaryColor} />
+      <SocialSection brand={brand} />
       <ContactSection brand={brand} primaryColor={primaryColor} />
 
-      {/* Footer */}
       <footer className="mt-auto py-6 px-4 border-t border-gray-100 text-center">
         <p className="text-xs text-gray-400">
           Probador virtual impulsado por{' '}
@@ -365,6 +408,9 @@ export function MiniLanding({ brandSlug, initialData }: MiniLandingProps) {
           </a>
         </p>
       </footer>
+
+      {/* Botón flotante WhatsApp */}
+      {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} />}
     </div>
   );
 }
