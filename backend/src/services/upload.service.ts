@@ -7,6 +7,12 @@ export interface UploadImageDto {
   temporary?: boolean;
 }
 
+export interface UploadImageBufferDto {
+  buffer: Buffer;
+  filename: string;
+  temporary?: boolean;
+}
+
 export interface UploadResponse {
   success: boolean;
   url: string;
@@ -25,29 +31,25 @@ export class UploadService {
   private readonly publicUrl = process.env.MINIO_PUBLIC_URL || 'https://minio.wilkiedevs.com';
 
   async uploadImage(data: UploadImageDto): Promise<UploadResponse> {
+    const base64Data = data.image_base64.includes(',')
+      ? data.image_base64.split(',')[1]
+      : data.image_base64;
+    const buffer = Buffer.from(base64Data, 'base64');
+    return this.uploadImageBuffer({ buffer, filename: data.filename, temporary: data.temporary });
+  }
+
+  async uploadImageBuffer(data: UploadImageBufferDto): Promise<UploadResponse> {
     try {
-      // Decodificar base64 — puede venir con o sin prefijo data:image/...;base64,
-      const base64Data = data.image_base64.includes(',')
-        ? data.image_base64.split(',')[1]
-        : data.image_base64;
-
-      const buffer = Buffer.from(base64Data, 'base64');
-
-      // Detectar content-type por extensión o magic bytes
-      const contentType = this.detectContentType(data.filename, buffer);
-
-      // Generar nombre único para evitar colisiones
-      const ext = this.getExtension(data.filename, contentType);
-      const folder = data.temporary ? 'temp' : 'products';
+      const { buffer, filename, temporary } = data;
+      const contentType = this.detectContentType(filename, buffer);
+      const ext = this.getExtension(filename, contentType);
+      const folder = temporary ? 'temp' : 'products';
       const uniqueName = `${folder}/${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
 
-      // Subir a MinIO via PUT con firma AWS Signature V4
       await this.putObject(uniqueName, buffer, contentType);
 
       const url = `${this.publicUrl}/${this.bucket}/${uniqueName}`;
-
       console.log('[Upload Service] Imagen subida a MinIO:', url);
-
       return { success: true, url, path: uniqueName };
     } catch (error: any) {
       console.error('[Upload Service] Error subiendo a MinIO:', error.message);
@@ -62,11 +64,10 @@ export class UploadService {
     const now = new Date();
     const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
     const amzDate = now.toISOString().replace(/[:-]/g, '').slice(0, 15) + 'Z';
-    const region = 'us-east-1'; // MinIO usa us-east-1 por defecto
+    const region = 'us-east-1';
 
     const payloadHash = crypto.createHash('sha256').update(body).digest('hex');
 
-    // Canonical headers (ordenados alfabéticamente)
     const canonicalHeaders =
       `content-type:${contentType}\n` +
       `host:${host}\n` +
@@ -92,12 +93,12 @@ export class UploadService {
       crypto.createHash('sha256').update(canonicalRequest).digest('hex'),
     ].join('\n');
 
-    // Calcular firma
     const signingKey = this.getSigningKey(dateStamp, region);
     const signature = crypto.createHmac('sha256', signingKey).update(stringToSign).digest('hex');
 
     const authorization =
-      `AWS4-HMAC-SHA256 Credential=${this.accessKey}/${credentialScope}, ` +
+      `AWS4-HMAC-SHA256 Credential=${
+this.accessKey}/${credentialScope}, ` +
       `SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
     await axios.put(url, body, {
@@ -120,12 +121,10 @@ export class UploadService {
   }
 
   private detectContentType(filename: string, buffer: Buffer): string {
-    // Magic bytes
     if (buffer[0] === 0xff && buffer[1] === 0xd8) return 'image/jpeg';
     if (buffer[0] === 0x89 && buffer[1] === 0x50) return 'image/png';
     if (buffer[0] === 0x47 && buffer[1] === 0x49) return 'image/gif';
     if (buffer[0] === 0x52 && buffer[4] === 0x57) return 'image/webp';
-    // Por extensión
     const ext = filename.split('.').pop()?.toLowerCase();
     const map: Record<string, string> = {
       jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',

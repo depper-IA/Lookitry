@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
+import multer from 'multer';
 import { UploadService } from '../services/upload.service';
 import { AuthRequest } from '../middleware/auth';
+
+// Multer en memoria para recibir archivos binarios desde n8n
+export const multerMemory = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 const uploadService = new UploadService();
 
@@ -40,9 +44,11 @@ export const uploadImage = async (req: AuthRequest, res: Response) => {
 
 /**
  * POST /api/upload/selfie
- * Endpoint para que n8n suba selfies temporales a MinIO.
+ * Endpoint para que n8n suba imágenes a MinIO.
  * Autenticado con Bearer token fijo (N8N_BEARER_TOKEN).
- * Acepta base64 o multipart/form-data con campo "file".
+ * Acepta:
+ *   - JSON: { image_base64, filename, temporary? }
+ *   - multipart/form-data: campo "file" (binario) + campo "filename" opcional
  */
 export const uploadSelfie = async (req: Request, res: Response) => {
   try {
@@ -53,8 +59,27 @@ export const uploadSelfie = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Token inválido' });
     }
 
-    const { image_base64, filename, temporary } = req.body;
+    const isMultipart = req.is('multipart/form-data');
 
+    if (isMultipart) {
+      // Caso multipart: el archivo viene en req.file (procesado por multer en app.ts)
+      const file = (req as any).file as Express.Multer.File | undefined;
+      if (!file) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Campo "file" requerido en multipart' });
+      }
+      const filename = (req.body.filename as string) || file.originalname || 'upload.jpg';
+      const temporary = req.body.temporary !== 'false' && req.body.temporary !== false;
+
+      const result = await uploadService.uploadImageBuffer({
+        buffer: file.buffer,
+        filename,
+        temporary,
+      });
+      return res.status(200).json(result);
+    }
+
+    // Caso JSON base64
+    const { image_base64, filename, temporary } = req.body;
     if (!image_base64 || !filename) {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
@@ -65,7 +90,7 @@ export const uploadSelfie = async (req: Request, res: Response) => {
     const result = await uploadService.uploadImage({
       image_base64,
       filename,
-      temporary: temporary !== false, // respetar el campo; default true para selfies
+      temporary: temporary !== false,
     });
 
     return res.status(200).json(result);
