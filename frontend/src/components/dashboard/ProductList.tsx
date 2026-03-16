@@ -37,6 +37,16 @@ export function ProductList({ products, onEdit, onDelete }: ProductListProps) {
               src={product.imageUrl}
               alt={product.name}
               className="h-full w-full object-cover object-center"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const parent = e.currentTarget.parentElement;
+                if (parent && !parent.querySelector('.img-fallback')) {
+                  const fb = document.createElement('div');
+                  fb.className = 'img-fallback h-full w-full flex items-center justify-center';
+                  fb.innerHTML = '<svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="color:#555"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5A.75.75 0 0121 3.75v16.5a.75.75 0 01-.75.75H3.75A.75.75 0 013 20.25V3.75A.75.75 0 013.75 3z"/></svg>';
+                  parent.appendChild(fb);
+                }
+              }}
             />
           </div>
           <CardBody>

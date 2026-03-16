@@ -10,6 +10,7 @@ interface Campaign {
   active: boolean;
   trial_days: number;
   ends_at: string | null;
+  require_card_verification: boolean;
   created_by: string;
   created_at: string;
 }
@@ -70,6 +71,7 @@ export default function TrialCampaignPage() {
   const [formName, setFormName] = useState('');
   const [formDays, setFormDays] = useState(7);
   const [formEndsAt, setFormEndsAt] = useState('');
+  const [formRequireCard, setFormRequireCard] = useState(true);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : '';
 
@@ -105,6 +107,7 @@ export default function TrialCampaignPage() {
           name: formName,
           trial_days: formDays,
           ends_at: formEndsAt || null,
+          require_card_verification: formRequireCard,
         }),
       });
       if (!res.ok) throw new Error((await res.json()).message);
@@ -113,6 +116,7 @@ export default function TrialCampaignPage() {
       setFormName('');
       setFormDays(7);
       setFormEndsAt('');
+      setFormRequireCard(true);
       await load();
     } catch (err: any) {
       setError(err.message || 'Error al crear campaña');
@@ -254,6 +258,35 @@ export default function TrialCampaignPage() {
                 />
               </div>
             </div>
+            {/* Toggle verificación de tarjeta */}
+            <div
+              style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}
+              className="flex items-center justify-between border rounded-xl px-4 py-3"
+            >
+              <div>
+                <p style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">
+                  Verificación de tarjeta
+                </p>
+                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
+                  {formRequireCard
+                    ? 'Activa — el usuario debe tokenizar una tarjeta con Wompi'
+                    : 'Desactivada — modo test, el trial se activa sin pago'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFormRequireCard(v => !v)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                  formRequireCard ? 'bg-[#FF5C3A]' : 'bg-gray-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    formRequireCard ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
             <p style={{ color: 'var(--text-muted)' }} className="text-xs">
               Al crear esta campaña, cualquier campaña activa anterior se desactivará automáticamente.
             </p>
@@ -300,6 +333,7 @@ export default function TrialCampaignPage() {
                   <th style={{ color: 'var(--text-muted)' }} className="text-left px-6 py-3 font-semibold text-xs uppercase tracking-wide">Nombre</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Estado</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Días</th>
+                  <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Tarjeta</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wide">Vence</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wide">Creada</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Acción</th>
@@ -313,6 +347,20 @@ export default function TrialCampaignPage() {
                       <StatusBadge active={c.active} />
                     </td>
                     <td style={{ color: 'var(--text-secondary)' }} className="px-4 py-3.5 text-center">{c.trial_days}d</td>
+                    <td className="px-4 py-3.5 text-center">
+                      <button
+                        onClick={() => handleToggleCard(c)}
+                        disabled={saving}
+                        title={c.require_card_verification ? 'Desactivar verificación de tarjeta' : 'Activar verificación de tarjeta'}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ${
+                          c.require_card_verification
+                            ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20'
+                            : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
+                        }`}
+                      >
+                        {c.require_card_verification ? 'Activa' : 'Modo test'}
+                      </button>
+                    </td>
                     <td style={{ color: 'var(--text-muted)' }} className="px-4 py-3.5">
                       {c.ends_at ? formatDate(c.ends_at) : <span style={{ color: 'var(--text-muted)' }}>Sin límite</span>}
                     </td>
