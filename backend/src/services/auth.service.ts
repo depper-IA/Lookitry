@@ -10,13 +10,13 @@ async function getActiveCampaign() {
   const now = new Date().toISOString();
   const { data } = await supabase
     .from('trial_campaigns')
-    .select('id, trial_days')
+    .select('id, trial_days, trial_generations_limit')
     .eq('active', true)
     .or(`ends_at.is.null,ends_at.gt.${now}`)
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
-  return data as { id: string; trial_days: number } | null;
+  return data as { id: string; trial_days: number; trial_generations_limit: number } | null;
 }
 
 async function isTrialAbuse(ip: string, fingerprint: string | null): Promise<boolean> {
