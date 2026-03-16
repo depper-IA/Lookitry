@@ -38,7 +38,15 @@ const PLAN_INFO: Record<PlanType, { name: string; price: number; features: strin
   },
 };
 
-const MINI_LANDING_PRICE = 650000; // fallback — se sobreescribe con valor dinámico de la API
+const MINI_LANDING_PRICE_FALLBACK = 650000;
+
+// Descuentos por meses
+const MONTH_DISCOUNTS = [
+  { months: 1,  pct: 0,  label: '1 mes' },
+  { months: 3,  pct: 5,  label: '3 meses' },
+  { months: 6,  pct: 10, label: '6 meses' },
+  { months: 12, pct: 15, label: '12 meses' },
+];
 
 // Precio a cobrar según plan actual → plan destino
 function getEffectivePrice(targetPlan: PlanType, currentPlan: PlanType | null): number {
@@ -60,6 +68,7 @@ export default function CheckoutPage() {
 
   // plan es estado local — el usuario puede cambiarlo desde el selector
   const [selectedPlan, setSelectedPlan] = useState<PlanType>(initialPlan);
+  const [selectedMonths, setSelectedMonths] = useState(1);
 
   const [state, setState] = useState<CheckoutState>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -68,13 +77,15 @@ export default function CheckoutPage() {
   const [wompiEnabled, setWompiEnabled] = useState<boolean | null>(null);
   const [hasLandingPage, setHasLandingPage] = useState(false);
   const [includeLanding, setIncludeLanding] = useState(false);
-  const [miniLandingPrice, setMiniLandingPrice] = useState(650000);
+  const [miniLandingPrice, setMiniLandingPrice] = useState(MINI_LANDING_PRICE_FALLBACK);
 
   const plan = selectedPlan;
   const planInfo = PLAN_INFO[plan];
+  const monthDiscount = MONTH_DISCOUNTS.find(d => d.months === selectedMonths)!;
   const effectivePlanPrice = isInTrial ? planInfo.price : getEffectivePrice(plan, currentPlan);
+  const planTotal = Math.round(effectivePlanPrice * selectedMonths * (1 - monthDiscount.pct / 100));
   const isUpgrade = !isInTrial && currentPlan !== null && currentPlan !== plan && effectivePlanPrice < planInfo.price;
-  const totalPrice = effectivePlanPrice + (includeLanding ? miniLandingPrice : 0);
+  const totalPrice = planTotal + (includeLanding ? miniLandingPrice : 0);
 
   useEffect(() => {
     subscriptionService.getSubscriptionInfo().then((info) => {
@@ -241,6 +252,49 @@ export default function CheckoutPage() {
         </div>
       </div>
 
+      {/* Selector de meses */}
+      <div
+        className="rounded-2xl border overflow-hidden"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+      >
+        <div className="px-6 py-4 border-b" style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}>
+          <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Período de suscripción</h2>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Más meses = mayor descuento</p>
+        </div>
+        <div className="p-4">
+          <div className="grid grid-cols-4 gap-2">
+            {MONTH_DISCOUNTS.map(d => (
+              <button
+                key={d.months}
+                type="button"
+                onClick={() => setSelectedMonths(d.months)}
+                className="relative py-3 rounded-xl border-2 text-center transition-all min-h-[56px]"
+                style={{
+                  borderColor: selectedMonths === d.months ? '#FF5C3A' : 'var(--border-color)',
+                  background: selectedMonths === d.months ? 'rgba(255,92,58,0.06)' : 'var(--bg-hover)',
+                }}
+              >
+                <span className="block text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{d.months}</span>
+                <span className="block text-xs" style={{ color: 'var(--text-muted)' }}>mes{d.months > 1 ? 'es' : ''}</span>
+                {d.pct > 0 && (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                    -{d.pct}%
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          {monthDiscount.pct > 0 && (
+            <div className="mt-3 flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
+              <span className="text-xs text-emerald-600">Ahorro con {monthDiscount.pct}% de descuento</span>
+              <span className="text-sm font-bold text-emerald-600">
+                − {formatCurrency(Math.round(effectivePlanPrice * selectedMonths * (monthDiscount.pct / 100)))}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Resumen del plan */}
       <div
         className="rounded-2xl border overflow-hidden"
@@ -255,9 +309,20 @@ export default function CheckoutPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{planInfo.name}</p>
-              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Suscripción mensual — 30 días</p>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                {selectedMonths === 1
+                  ? 'Suscripción mensual — 30 días'
+                  : `${selectedMonths} meses${monthDiscount.pct > 0 ? ` · ${monthDiscount.pct}% descuento` : ''}`}
+              </p>
             </div>
-            <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(planInfo.price)}</p>
+            <div className="text-right">
+              <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(planTotal)}</p>
+              {selectedMonths > 1 && (
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  {formatCurrency(planInfo.price)}/mes × {selectedMonths}
+                </p>
+              )}
+            </div>
           </div>
 
           <ul className="space-y-2 pt-2 border-t" style={{ borderColor: 'var(--border-color)' }}>
@@ -325,8 +390,8 @@ export default function CheckoutPage() {
           {isUpgrade ? (
             <div className="pt-3 border-t space-y-2" style={{ borderColor: 'var(--border-color)' }}>
               <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
-                <span>Precio {planInfo.name}</span>
-                <span>{formatCurrency(planInfo.price)}</span>
+                <span>Precio {planInfo.name} × {selectedMonths} mes{selectedMonths > 1 ? 'es' : ''}</span>
+                <span>{formatCurrency(Math.round(planInfo.price * selectedMonths * (1 - monthDiscount.pct / 100)))}</span>
               </div>
               <div className="flex items-center justify-between text-sm text-emerald-600">
                 <span>Ya pagaste ({PLAN_INFO[currentPlan!].name})</span>

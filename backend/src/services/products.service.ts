@@ -87,13 +87,14 @@ export class ProductsService {
   }
 
   /**
-   * Verificar si una marca puede crear más productos según su plan
+   * Verificar si una marca puede crear más productos según su plan.
+   * Si la marca está en período de prueba activo, aplica el límite de TRIAL (1 producto).
    */
   async canCreateProduct(brandId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }> {
-    // Obtener el plan de la marca
+    // Obtener el plan y datos de trial de la marca
     const { data: brand, error: brandError } = await supabase
       .from('brands')
-      .select('plan')
+      .select('plan, trial_end_date, subscription_status')
       .eq('id', brandId)
       .single();
 
@@ -101,7 +102,17 @@ export class ProductsService {
       throw new Error('Error al obtener información de la marca');
     }
 
-    const plan = PLANS[brand.plan];
+    // Detectar si está en trial activo (sin suscripción pagada)
+    const hasActivePaidSubscription =
+      brand.subscription_status === 'active' ||
+      brand.subscription_status === 'expiring_soon';
+    const isInTrial =
+      !hasActivePaidSubscription &&
+      brand.trial_end_date &&
+      new Date(brand.trial_end_date) > new Date();
+
+    const planKey = isInTrial ? 'TRIAL' : (brand.plan ?? 'BASIC');
+    const plan = PLANS[planKey] ?? PLANS['BASIC'];
     const currentCount = await this.countActiveProducts(brandId);
 
     return {
