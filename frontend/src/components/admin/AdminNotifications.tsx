@@ -125,7 +125,7 @@ function ApplyPlanChangeButton({ brandId, toPlan, onDone }: { brandId: string; t
     try {
       const token = localStorage.getItem('adminToken');
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/admin/brands/${brandId}/plan`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/admin/brands/${brandId}/plan`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -178,7 +178,7 @@ export function AdminNotifications() {
     try {
       const token = localStorage.getItem('adminToken');
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/admin/notifications`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/admin/notifications`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) return;

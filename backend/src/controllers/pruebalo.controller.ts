@@ -68,6 +68,12 @@ export class PruebaloController {
         widget_template: brand.widget_template,
         button_text: brand.button_text,
         welcome_message: brand.welcome_message,
+        // Campos de mini-landing (task 33)
+        brand_description: (brand as any).brand_description ?? null,
+        whatsapp_contact: (brand as any).whatsapp_contact ?? null,
+        cover_image_url: (brand as any).cover_image_url ?? null,
+        social_links: (brand as any).social_links ?? {},
+        has_landing_page: (brand as any).has_landing_page ?? false,
       },
       products: products.map(product => ({
         id: product.id,

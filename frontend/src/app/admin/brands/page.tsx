@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 
@@ -37,7 +37,7 @@ interface Product {
 type FilterPlan = 'all' | 'BASIC' | 'PRO';
 type FilterTrial = 'all' | 'trial' | 'active' | 'suspended';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
 export default function AdminBrandsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -57,6 +57,7 @@ export default function AdminBrandsPage() {
   const [deletingProduct, setDeletingProduct] = useState<string | null>(null);
   const [activating, setActivating] = useState(false);
   const [activateForm, setActivateForm] = useState({ plan: 'BASIC', amount: '', payment_method: 'transferencia', notes: '' });
+  const [togglingLanding, setTogglingLanding] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPlan, setFilterPlan] = useState<FilterPlan>('all');
@@ -193,6 +194,29 @@ export default function AdminBrandsPage() {
     setSelectedBrand(brand);
     setActivateForm({ plan: brand.plan || 'BASIC', amount: brand.plan === 'PRO' ? '250000' : '150000', payment_method: 'transferencia', notes: '' });
     setShowActivateModal(true);
+  };
+
+  const handleToggleLandingPage = async (brand: Brand) => {
+    const newValue = !(brand as any).has_landing_page;
+    setTogglingLanding(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_URL}/api/admin/brands/${brand.id}/landing-page`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ has_landing_page: newValue }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
+      // Actualizar localmente sin refetch completo
+      setBrands(prev => prev.map(b => b.id === brand.id ? { ...b, has_landing_page: newValue } as any : b));
+      if (selectedBrand?.id === brand.id) {
+        setSelectedBrand(prev => prev ? { ...prev, has_landing_page: newValue } as any : prev);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error al actualizar mini-landing');
+    } finally {
+      setTogglingLanding(false);
+    }
   };
 
   const handleActivatePlan = async () => {
@@ -569,6 +593,32 @@ export default function AdminBrandsPage() {
                       <p className="text-xl font-bold font-syne" style={{ color }}>{value}</p>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Toggle mini-landing */}
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Mini-landing activa</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                      {(selectedBrand as any).has_landing_page
+                        ? 'La página pública está activa y visible sin banners.'
+                        : 'La página muestra un banner de activación ($500.000 COP).'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleToggleLandingPage(selectedBrand)}
+                    disabled={togglingLanding}
+                    className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 flex-shrink-0"
+                    style={{ backgroundColor: (selectedBrand as any).has_landing_page ? '#FF5C3A' : 'var(--border-color)' }}
+                    aria-label="Activar mini-landing"
+                  >
+                    <span
+                      className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
+                      style={{ transform: (selectedBrand as any).has_landing_page ? 'translateX(1.375rem)' : 'translateX(0.25rem)' }}
+                    />
+                  </button>
                 </div>
               </div>
             </div>

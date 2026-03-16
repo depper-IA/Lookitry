@@ -683,19 +683,19 @@ Plan de implementación incremental para el sistema SaaS de probador virtual. Se
     - Página de trial-campaign
     - Página de ingresos/reportes
 
-- [ ] 33. Mini-landing por cliente en probador.wilkiedevs.com/[slug]
-  - [ ] 33.1 Diseñar estructura de la mini-landing
+- [x] 33. Mini-landing por cliente en probador.wilkiedevs.com/[slug]
+  - [x] 33.1 Diseñar estructura de la mini-landing
     - Ruta: `probador.wilkiedevs.com/[slug]` (extender la ruta pública existente)
     - Secciones: hero con nombre/logo de marca, descripción, galería de productos, probador virtual embebido, CTA de contacto/compra
     - La mini-landing usa los datos ya existentes de la marca (logo, colores, productos)
     - Campos adicionales opcionales: descripción de marca, redes sociales, WhatsApp de contacto, banner/imagen de portada
     - _Backend: agregar campos a tabla brands: brand_description, whatsapp_contact, cover_image_url, social_links (jsonb)_
-  - [ ] 33.2 Agregar campos de mini-landing en backend
+  - [x] 33.2 Agregar campos de mini-landing en backend
     - Migración SQL: agregar columnas brand_description, whatsapp_contact, cover_image_url, social_links a tabla brands
     - Endpoint PATCH /api/brands/me ya existente — extender para aceptar nuevos campos
     - Endpoint GET /api/pruebalo/:brandSlug — incluir nuevos campos en respuesta pública
     - _Archivos: brands.controller.ts, brands.service.ts_
-  - [ ] 33.3 Crear página de mini-landing pública
+  - [x] 33.3 Crear página de mini-landing pública
     - Componente `MiniLanding` en `/pruebalo/[brandSlug]/page.tsx`
     - Aplicar colores de la marca (primary_color, secondary_color) como variables CSS
     - Sección hero: cover_image o fondo con color de marca, logo, nombre
@@ -704,14 +704,14 @@ Plan de implementación incremental para el sistema SaaS de probador virtual. Se
     - Sección contacto: botón WhatsApp si whatsapp_contact está configurado
     - SEO básico: meta title y description con nombre de la marca
     - _Archivos: frontend/src/app/pruebalo/[brandSlug]/page.tsx_
-  - [ ] 33.4 Agregar configuración de mini-landing en dashboard de marca
+  - [x] 33.4 Agregar configuración de mini-landing en dashboard de marca
     - Nueva sección "Mi página" en el dashboard
     - Formulario para editar: descripción, WhatsApp, imagen de portada
     - Preview en tiempo real de cómo se verá la mini-landing
     - Botón "Ver mi página" que abre `probador.wilkiedevs.com/[slug]` en nueva pestaña
     - URL copiable con un clic
     - _Archivos: dashboard/mi-pagina/page.tsx_
-  - [ ] 33.5 Implementar cobro de setup fee en checkout
+  - [x] 33.5 Implementar cobro de setup fee en checkout
     - Agregar opción "Incluir creación de mini-landing" en página `/checkout`
     - Setup fee: $500.000 COP (pago único, solo primera vez)
     - Campo booleano `has_landing_page` en tabla brands
@@ -719,7 +719,7 @@ Plan de implementación incremental para el sistema SaaS de probador virtual. Se
     - Si `has_landing_page = true`, mini-landing completamente funcional y sin banners
     - Admin puede activar manualmente desde panel de marcas
     - _Archivos: checkout/page.tsx, brands tabla, admin panel_
-  - [ ] 33.6 Configurar dominio y SEO
+  - [x] 33.6 Configurar dominio y SEO
     - Verificar que `probador.wilkiedevs.com/[slug]` resuelve correctamente en producción
     - Agregar sitemap dinámico con todas las mini-landings activas
     - Open Graph tags para compartir en redes sociales (imagen de portada, nombre de marca)

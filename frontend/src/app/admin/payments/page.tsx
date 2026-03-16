@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { Search, CreditCard, RefreshCw, CheckCircle, XCircle, Clock, Banknote, Wifi } from 'lucide-react';
@@ -25,7 +25,7 @@ interface Payment {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function adminApi(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
   const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') ?? '' : '';
   return fetch(`${base}/api${path}`, {
     headers: { Authorization: `Bearer ${token}` },

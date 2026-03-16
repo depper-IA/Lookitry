@@ -266,7 +266,7 @@ export class BrandsController {
         });
       }
 
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pruebalo.wilkiedevs.com';
 
       emailService.sendEmail({
         to: adminEmail,
@@ -349,7 +349,7 @@ export class BrandsController {
 
       const isUpgrade = targetPlan === 'PRO';
       const changeType = isUpgrade ? 'Upgrade' : 'Downgrade';
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pruebalo.wilkiedevs.com';
 
       const monthsLabel = monthsCount > 1
         ? `${monthsCount} meses${discountPct > 0 ? ` (${discountPct}% descuento — Total: ${totalPrice.toLocaleString('es-CO')} COP)` : ''}`

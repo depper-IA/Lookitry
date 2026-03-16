@@ -18,6 +18,12 @@ export interface UpdateBrandDto {
   country?: string;
   nit?: string;
   website?: string;
+  // Campos de mini-landing (task 33)
+  brand_description?: string;
+  whatsapp_contact?: string;
+  cover_image_url?: string;
+  social_links?: Record<string, string>;
+  has_landing_page?: boolean;
 }
 
 export class BrandsService {

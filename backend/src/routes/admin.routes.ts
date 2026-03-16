@@ -11,6 +11,7 @@ import {
   createBrand,
   deleteBrand,
   getConversionStats,
+  toggleLandingPage,
   listAdmins,
   createAdmin,
   updateAdminPermissions,
@@ -44,6 +45,7 @@ router.get('/brands/:id/products', requirePermission('brands'), getBrandProducts
 router.delete('/brands/:id/products/:productId', requirePermission('brands'), deleteInactiveProduct);
 router.patch('/brands/:id/plan', requirePermission('subscriptions'), changeBrandPlan);
 router.patch('/brands/:id/activate-plan', requirePermission('subscriptions'), activateBrandPlan);
+router.patch('/brands/:id/landing-page', requirePermission('brands'), toggleLandingPage);
 router.get('/payment-settings', requirePermission('settings'), getPaymentSettings);
 router.put('/payment-settings', requirePermission('settings'), updatePaymentSettings);
 router.get('/notifications', requirePermission('notifications'), getAdminNotifications);

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle, XCircle, RefreshCw, Ban, RotateCcw, ArrowUpDown } from 'lucide-react';
@@ -25,7 +25,7 @@ type FilterStatus = 'all' | 'active' | 'expiring_soon' | 'expired' | 'suspended'
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function adminApi(path: string, options: RequestInit = {}) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
   const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') ?? '' : '';
   return fetch(`${base}/api${path}`, {
     ...options,

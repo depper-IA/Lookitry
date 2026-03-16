@@ -18,6 +18,7 @@ interface DashboardLayoutProps {
 const navigation = [
   { name: 'Productos',      href: '/dashboard/products',     icon: ProductsIcon },
   { name: 'Generaciones',   href: '/dashboard/generations',  icon: GenerationsIcon },
+  { name: 'Mi página',      href: '/dashboard/mi-pagina',    icon: LandingIcon },
   { name: 'Configuración',  href: '/dashboard/settings',     icon: SettingsIcon },
   { name: 'Uso',            href: '/dashboard/usage',        icon: UsageIcon },
   { name: 'Suscripción',    href: '/dashboard/subscription', icon: SubscriptionIcon },
@@ -236,6 +237,14 @@ function GenerationsIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5M21 6.75V18a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18V6.75m18 0A2.25 2.25 0 0018.75 4.5H5.25A2.25 2.25 0 003 6.75m18 0H3" />
+    </svg>
+  );
+}
+
+function LandingIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
     </svg>
   );
 }

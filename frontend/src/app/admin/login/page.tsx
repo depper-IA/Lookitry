@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
     setLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/admin/auth/login`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/admin/auth/login`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }
       );
       const data = await res.json();

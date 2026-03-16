@@ -1,6 +1,6 @@
-import type { TryOnConfigResponse, GenerateTryOnDto, GenerateTryOnResponse } from '@/types';
+﻿import type { TryOnConfigResponse, GenerateTryOnDto, GenerateTryOnResponse } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
 class TryOnService {
   async getConfig(brandSlug: string): Promise<TryOnConfigResponse> {
@@ -11,21 +11,27 @@ class TryOnService {
 
     return {
       brand: {
+        id: data.brand.id,
         name: data.brand.name,
+        slug: data.brand.slug,
         logo: data.brand.logo,
         primaryColor: data.brand.primary_color,
         secondaryColor: data.brand.secondary_color,
         widgetTemplate: data.brand.widget_template,
         buttonText: data.brand.button_text,
         welcomeMessage: data.brand.welcome_message,
+        brandDescription: data.brand.brand_description ?? null,
+        whatsappContact: data.brand.whatsapp_contact ?? null,
+        coverImageUrl: data.brand.cover_image_url ?? null,
+        socialLinks: data.brand.social_links ?? {},
+        hasLandingPage: data.brand.has_landing_page ?? false,
       },
       products: data.products.map((p: any) => ({
         id: p.id,
         name: p.name,
-        // Usar la URL original directamente — los <img> tags no tienen restricción CORS.
-        // El proxy solo se usa como fallback si la URL original falla.
         imageUrl: p.image_url || '',
         category: p.category,
+        description: p.description,
       })),
     };
   }

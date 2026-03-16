@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { Users, TrendingUp, UserCheck, BarChart2, Image, Package } from 'lucide-react';
@@ -13,7 +13,7 @@ interface ConversionStats {
 }
 
 function adminFetch(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
   const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') ?? '' : '';
   return fetch(`${base}/api${path}`, { headers: { Authorization: `Bearer ${token}` } });
 }
