@@ -46,9 +46,10 @@ export function SubscriptionBadge() {
 
   if (trialExpired) {
     return (
-      <div className="inline-flex items-center px-3 py-1.5 border border-red-300 rounded-full text-sm font-medium bg-red-100 text-red-800">
-        <AlertIcon className="mr-1.5 h-4 w-4" />
-        Prueba vencida — Activa tu plan
+      <div className="inline-flex items-center px-2.5 py-1.5 border border-red-300 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
+        <AlertIcon className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
+        <span className="hidden sm:inline">Prueba vencida — Activa tu plan</span>
+        <span className="sm:hidden">Plan vencido</span>
       </div>
     );
   }
@@ -65,11 +66,12 @@ export function SubscriptionBadge() {
       <>
         <button
           onClick={() => setIsModalOpen(true)}
-          className={`inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-all hover:shadow-md ${trialColorClass}`}
+          className={`inline-flex items-center px-2.5 py-1.5 border rounded-full text-xs font-medium transition-all hover:shadow-md whitespace-nowrap ${trialColorClass}`}
           title="Ver detalles del período de prueba"
         >
-          <BeakerIcon className="mr-1.5 h-4 w-4" />
-          Prueba gratuita — {trialDays} {trialDays === 1 ? 'día' : 'días'}
+          <BeakerIcon className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
+          <span className="hidden sm:inline">Prueba gratuita — {trialDays} {trialDays === 1 ? 'día' : 'días'}</span>
+          <span className="sm:hidden">{trialDays}d prueba</span>
         </button>
 
         <SubscriptionModal
@@ -87,11 +89,12 @@ export function SubscriptionBadge() {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className={`inline-flex items-center px-3 py-1.5 border rounded-full text-sm font-medium transition-all hover:shadow-md ${colorClass}`}
+        className={`inline-flex items-center px-2.5 py-1.5 border rounded-full text-xs font-medium transition-all hover:shadow-md whitespace-nowrap ${colorClass}`}
         title="Ver detalles de suscripción"
       >
-        <ClockIcon className="mr-1.5 h-4 w-4" />
-        {daysRemaining} {daysRemaining === 1 ? 'día' : 'días'} restantes
+        <ClockIcon className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
+        <span className="hidden sm:inline">{daysRemaining} {daysRemaining === 1 ? 'día' : 'días'} restantes</span>
+        <span className="sm:hidden">{daysRemaining}d</span>
       </button>
 
       <SubscriptionModal
