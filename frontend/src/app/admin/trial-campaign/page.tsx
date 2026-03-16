@@ -47,6 +47,14 @@ function IconPlus() {
   );
 }
 
+function IconShield() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    </svg>
+  );
+}
+
 function StatusBadge({ active }: { active: boolean }) {
   return (
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -66,15 +74,17 @@ export default function TrialCampaignPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Formulario nueva campaña
+  // Formulario nueva campaña — sin verificación de tarjeta
   const [showForm, setShowForm] = useState(false);
   const [formName, setFormName] = useState('');
   const [formDays, setFormDays] = useState(7);
   const [formEndsAt, setFormEndsAt] = useState('');
-  const [formRequireCard, setFormRequireCard] = useState(true);
+
+  // Configuración global de verificación de tarjeta (independiente de campaña)
+  const [requireCard, setRequireCard] = useState(true);
+  const [savingCard, setSavingCard] = useState(false);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : '';
-
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
   async function load() {
@@ -82,8 +92,13 @@ export default function TrialCampaignPage() {
     try {
       const res = await fetch(`${API_URL}/api/admin/trial-campaign`, { headers });
       const data = await res.json();
-      setCampaigns(data.campaigns ?? []);
-      setActiveCampaign(data.activeCampaign ?? null);
+      const list: Campaign[] = data.campaigns ?? [];
+      setCampaigns(list);
+      const active = data.activeCampaign ?? null;
+      setActiveCampaign(active);
+      // Sincronizar toggle global con la campaña activa (o la más reciente)
+      const ref = active ?? list[0] ?? null;
+      if (ref) setRequireCard(ref.require_card_verification);
     } catch {
       setError('Error al cargar campañas');
     } finally {
@@ -107,7 +122,8 @@ export default function TrialCampaignPage() {
           name: formName,
           trial_days: formDays,
           ends_at: formEndsAt || null,
-          require_card_verification: formRequireCard,
+          active: true,                          // siempre activa al crear
+          require_card_verification: requireCard, // hereda config global actual
         }),
       });
       if (!res.ok) throw new Error((await res.json()).message);
@@ -116,7 +132,6 @@ export default function TrialCampaignPage() {
       setFormName('');
       setFormDays(7);
       setFormEndsAt('');
-      setFormRequireCard(true);
       await load();
     } catch (err: any) {
       setError(err.message || 'Error al crear campaña');
@@ -125,23 +140,34 @@ export default function TrialCampaignPage() {
     }
   }
 
-  async function handleToggleCard(campaign: Campaign) {
-    setSaving(true);
+  async function handleToggleCardGlobal() {
+    const newVal = !requireCard;
+    setSavingCard(true);
     setError('');
     setSuccess('');
     try {
-      const res = await fetch(`${API_URL}/api/admin/trial-campaign/${campaign.id}`, {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ require_card_verification: !campaign.require_card_verification }),
-      });
-      if (!res.ok) throw new Error((await res.json()).message);
-      setSuccess(campaign.require_card_verification ? 'Verificación de tarjeta desactivada (modo test)' : 'Verificación de tarjeta activada');
+      // Actualizar todas las campañas activas con el nuevo valor
+      const targets = campaigns.filter(c => c.active);
+      if (targets.length === 0) {
+        // No hay campaña activa — solo actualizar estado local para nuevas campañas
+        setRequireCard(newVal);
+        setSuccess(newVal ? 'Verificación activada (se aplicará a la próxima campaña)' : 'Verificación desactivada (modo test)');
+        return;
+      }
+      await Promise.all(targets.map(c =>
+        fetch(`${API_URL}/api/admin/trial-campaign/${c.id}`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ require_card_verification: newVal }),
+        })
+      ));
+      setRequireCard(newVal);
+      setSuccess(newVal ? 'Verificación de tarjeta activada' : 'Verificación desactivada — modo test activo');
       await load();
     } catch (err: any) {
-      setError(err.message || 'Error al actualizar campaña');
+      setError(err.message || 'Error al actualizar verificación');
     } finally {
-      setSaving(false);
+      setSavingCard(false);
     }
   }
 
@@ -192,14 +218,10 @@ export default function TrialCampaignPage() {
 
       {/* Alertas */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm px-4 py-3 rounded-xl">
-          {error}
-        </div>
+        <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm px-4 py-3 rounded-xl">{error}</div>
       )}
       {success && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm px-4 py-3 rounded-xl">
-          {success}
-        </div>
+        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm px-4 py-3 rounded-xl">{success}</div>
       )}
 
       {/* Estado actual */}
@@ -231,15 +253,49 @@ export default function TrialCampaignPage() {
         </div>
       </div>
 
-      {/* Formulario nueva campaña */}
+      {/* ── Sección independiente: Verificación de tarjeta ── */}
+      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="border rounded-2xl p-5 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div style={{ background: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }} className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+            <IconShield />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">Verificación de tarjeta</p>
+                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
+                  {requireCard
+                    ? 'Activa — el usuario debe tokenizar una tarjeta con Wompi para activar el trial'
+                    : 'Desactivada — modo test, el trial se activa sin requerir tarjeta'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleToggleCardGlobal}
+                disabled={savingCard}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-60 flex-shrink-0 ${
+                  requireCard ? 'bg-[#FF5C3A]' : 'bg-gray-600'
+                }`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  requireCard ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+              </button>
+            </div>
+            <p style={{ color: 'var(--text-muted)', borderColor: 'var(--border-color)' }} className="text-xs mt-2 pt-2 border-t">
+              Esta configuración aplica a la campaña activa y a las nuevas campañas que se creen.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Formulario nueva campaña — simplificado */}
       {showForm && (
         <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="border rounded-2xl p-6 shadow-sm">
           <h2 style={{ color: 'var(--text-primary)' }} className="text-base font-semibold mb-4">Nueva campaña de trial</h2>
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
-                Nombre de la campaña
-              </label>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Nombre de la campaña</label>
               <input
                 type="text"
                 value={formName}
@@ -252,9 +308,7 @@ export default function TrialCampaignPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
-                  Días de trial
-                </label>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Días de trial</label>
                 <input
                   type="number"
                   min={1}
@@ -266,9 +320,7 @@ export default function TrialCampaignPage() {
                 />
               </div>
               <div>
-                <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
-                  Fecha de vencimiento (opcional)
-                </label>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Fecha de vencimiento (opcional)</label>
                 <input
                   type="datetime-local"
                   value={formEndsAt}
@@ -278,37 +330,9 @@ export default function TrialCampaignPage() {
                 />
               </div>
             </div>
-            {/* Toggle verificación de tarjeta */}
-            <div
-              style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}
-              className="flex items-center justify-between border rounded-xl px-4 py-3"
-            >
-              <div>
-                <p style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">
-                  Verificación de tarjeta
-                </p>
-                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
-                  {formRequireCard
-                    ? 'Activa — el usuario debe tokenizar una tarjeta con Wompi'
-                    : 'Desactivada — modo test, el trial se activa sin pago'}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setFormRequireCard(v => !v)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                  formRequireCard ? 'bg-[#FF5C3A]' : 'bg-gray-600'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    formRequireCard ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
             <p style={{ color: 'var(--text-muted)' }} className="text-xs">
-              Al crear esta campaña, cualquier campaña activa anterior se desactivará automáticamente.
+              La campaña se creará activa por defecto. La verificación de tarjeta se hereda de la configuración global ({requireCard ? 'activa' : 'desactivada'}).
+              Cualquier campaña activa anterior se desactivará automáticamente.
             </p>
             <div className="flex gap-3">
               <button
@@ -342,9 +366,7 @@ export default function TrialCampaignPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF5C3A]" />
           </div>
         ) : campaigns.length === 0 ? (
-          <div className="text-center py-12 text-sm" style={{ color: 'var(--text-muted)' }}>
-            No hay campañas creadas aún
-          </div>
+          <div className="text-center py-12 text-sm" style={{ color: 'var(--text-muted)' }}>No hay campañas creadas aún</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -353,7 +375,6 @@ export default function TrialCampaignPage() {
                   <th style={{ color: 'var(--text-muted)' }} className="text-left px-6 py-3 font-semibold text-xs uppercase tracking-wide">Nombre</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Estado</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Días</th>
-                  <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Tarjeta</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wide">Vence</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-left px-4 py-3 font-semibold text-xs uppercase tracking-wide">Creada</th>
                   <th style={{ color: 'var(--text-muted)' }} className="text-center px-4 py-3 font-semibold text-xs uppercase tracking-wide">Acción</th>
@@ -363,24 +384,8 @@ export default function TrialCampaignPage() {
                 {campaigns.map(c => (
                   <tr key={c.id} className="hover:opacity-80 transition-opacity">
                     <td style={{ color: 'var(--text-primary)' }} className="px-6 py-3.5 font-medium">{c.name}</td>
-                    <td className="px-4 py-3.5 text-center">
-                      <StatusBadge active={c.active} />
-                    </td>
+                    <td className="px-4 py-3.5 text-center"><StatusBadge active={c.active} /></td>
                     <td style={{ color: 'var(--text-secondary)' }} className="px-4 py-3.5 text-center">{c.trial_days}d</td>
-                    <td className="px-4 py-3.5 text-center">
-                      <button
-                        onClick={() => handleToggleCard(c)}
-                        disabled={saving}
-                        title={c.require_card_verification ? 'Desactivar verificación de tarjeta' : 'Activar verificación de tarjeta'}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ${
-                          c.require_card_verification
-                            ? 'bg-blue-500/10 text-blue-400 hover:bg-blue-500/20'
-                            : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
-                        }`}
-                      >
-                        {c.require_card_verification ? 'Activa' : 'Modo test'}
-                      </button>
-                    </td>
                     <td style={{ color: 'var(--text-muted)' }} className="px-4 py-3.5">
                       {c.ends_at ? formatDate(c.ends_at) : <span style={{ color: 'var(--text-muted)' }}>Sin límite</span>}
                     </td>
@@ -389,11 +394,8 @@ export default function TrialCampaignPage() {
                       <button
                         onClick={() => handleToggle(c)}
                         disabled={saving}
-                        title={c.active ? 'Desactivar' : 'Activar'}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-xl text-xs font-semibold transition-colors disabled:opacity-50 ${
-                          c.active
-                            ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
-                            : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+                          c.active ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
                         }`}
                       >
                         {c.active ? <><IconStop />Desactivar</> : <><IconCheck />Activar</>}
