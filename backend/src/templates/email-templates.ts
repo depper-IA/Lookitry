@@ -117,7 +117,7 @@ export const welcomeEmail = (brand: BrandInfo, plan: string, amount: string, day
       </p>
     </div>
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard"
+      <a href="${process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com'}/dashboard"
          style="background-color: #FF5C3A; color: #ffffff; padding: 13px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 14px;">
         Ir al Dashboard
       </a>
@@ -276,7 +276,7 @@ export const renewalConfirmationEmail = (brand: BrandInfo, newExpirationDate: st
       Tu servicio continuará sin interrupciones. Gracias por confiar en nosotros.
     </p>
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard"
+      <a href="${process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com'}/dashboard"
          style="background-color: #FF5C3A; color: #ffffff; padding: 13px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 14px;">
         Ir al Dashboard
       </a>
@@ -366,7 +366,7 @@ export const adminWelcomeEmail = (
   trialDays: number,
   trialEndDate: string
 ): string => {
-  const dashboardUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const dashboardUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
   const content = `
     <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Bienvenido a Virtual Try-On SaaS</h2>
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
@@ -427,7 +427,7 @@ export const adminPasswordResetEmail = (
   adminEmail: string,
   newPassword: string,
 ): string => {
-  const appUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const appUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
   const content = `
     <h2 style="color: #333333; margin-top: 0;">Restablecimiento de contraseña</h2>
     <p style="color: #666666; line-height: 1.6; font-size: 16px;">

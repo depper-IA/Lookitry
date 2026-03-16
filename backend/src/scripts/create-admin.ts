@@ -65,7 +65,7 @@ async function createAdmin() {
     console.log(`   Email: ${adminEmail}`);
     console.log(`   Password: ${adminPassword}`);
     console.log('\n🌐 URL de login:');
-    console.log(`   http://localhost:3000/admin/login`);
+    console.log(`   https://pruebalo.wilkiedevs.com/admin/login`);
   } catch (error: any) {
     console.error('\n❌ Error al crear administrador:');
     console.error(error.message);

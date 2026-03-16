@@ -53,9 +53,9 @@ const corsOriginEnv = process.env.CORS_ORIGIN
 
 const allowedOrigins = [
   ...new Set([
-    process.env.FRONTEND_URL || 'http://localhost:3000',
-    'http://localhost:3000',
-    'http://localhost:3001',
+    process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com',
+    'https://pruebalo.wilkiedevs.com',
+    'https://api.pruebalo.wilkiedevs.com',
     'https://pruebalo.wilkiedevs.com',
     ...corsOriginEnv,
   ]),
@@ -106,6 +106,21 @@ app.post('/api/upload/selfie', (req, res) => uploadSelfie(req, res));
 // Estado público del trial (sin auth — el frontend lo consulta para mostrar/ocultar el botón)
 app.get('/api/trial/status', getTrialStatus);
 app.use('/api/trial', trialRoutes);
+
+// Sitemap — slugs de mini-landings activas (sin auth, para Next.js sitemap.ts)
+app.get('/api/sitemap/landings', async (_req, res) => {
+  try {
+    const { supabase } = await import('./config/supabase');
+    const { data, error } = await supabase
+      .from('brands')
+      .select('slug')
+      .eq('has_landing_page', true);
+    if (error) return res.status(500).json({ slugs: [] });
+    return res.json({ slugs: (data ?? []).map((b: any) => b.slug) });
+  } catch {
+    return res.status(500).json({ slugs: [] });
+  }
+});
 
 // Ruta de health check
 app.get('/health', getHealthStatus);

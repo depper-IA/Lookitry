@@ -98,19 +98,28 @@ export interface TemplateConfig {
 // Try-On types
 export interface TryOnConfigResponse {
   brand: {
+    id: string;
     name: string;
+    slug: string;
     logo?: string;
     primaryColor: string;
     secondaryColor: string;
     widgetTemplate?: string;
     buttonText?: string;
     welcomeMessage?: string;
+    // Mini-landing (task 33)
+    brandDescription?: string | null;
+    whatsappContact?: string | null;
+    coverImageUrl?: string | null;
+    socialLinks?: Record<string, string>;
+    hasLandingPage?: boolean;
   };
   products: Array<{
     id: string;
     name: string;
     imageUrl: string;
     category: string;
+    description?: string;
   }>;
 }
 

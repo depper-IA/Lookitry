@@ -67,7 +67,7 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
     .update({ trial_payment_status: 'pending_payment' })
     .eq('id', brand.id);
 
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
   const redirectUrl = `${frontendUrl}/trial-activado`;
 
   // Monto mínimo de Wompi: 100 COP
