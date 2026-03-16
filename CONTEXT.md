@@ -130,6 +130,14 @@ curl -s -w '\nHTTP: %{http_code}' https://api.pruebalo.wilkiedevs.com/api/produc
 ```
 Esperado: HTTP 401
 
+### Verificar ruta /api/upload/selfie (debe dar 401 con token inválido)
+```bash
+curl -s -w '\nHTTP: %{http_code}' https://api.pruebalo.wilkiedevs.com/api/upload/selfie \
+  -X POST -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer token-invalido' -d '{}'
+```
+Esperado: HTTP 401 — si da 404, el backend no está actualizado
+
 ### Login superadmin
 ```bash
 curl -s -X POST https://api.pruebalo.wilkiedevs.com/api/admin/login \
@@ -160,18 +168,24 @@ NEXT_PUBLIC_API_URL=https://api.pruebalo.wilkiedevs.com
 
 ---
 
-## Migraciones SQL Pendientes
-
-Ejecutar en Supabase SQL Editor (`https://vkdooutklowctuudjnkl.supabase.co`):
+## Migraciones SQL
 
 | Archivo | Estado | Descripción |
 |---|---|---|
-| `backend/migrations/create_trial_campaigns_table.sql` | PENDIENTE | Crea tablas trial + agrega campos a brands (email_verified, trial_end_date, etc.) |
-| `backend/migrations/add_email_verification_to_brands.sql` | Incluido en el anterior | |
-| `backend/migrations/add_trial_payment_status.sql` | Incluido en el anterior | |
+| `backend/migrations/create_trial_campaigns_table.sql` | EJECUTADO (16/03/2026) | Tablas trial_campaigns + trial_registrations + campos en brands |
+| `backend/migrations/add_email_verification_to_brands.sql` | EJECUTADO (incluido arriba) | |
+| `backend/migrations/add_trial_payment_status.sql` | EJECUTADO (incluido arriba) | |
 
-> El archivo `create_trial_campaigns_table.sql` incluye todos los ALTER TABLE necesarios en brands.
-> Ejecutar solo ese archivo es suficiente.
+### Campos en `brands` confirmados en BD:
+- `email_verified` BOOLEAN DEFAULT false (usuarios existentes marcados como true)
+- `email_verification_token` TEXT nullable
+- `trial_payment_status` TEXT nullable
+- `trial_end_date` TIMESTAMPTZ nullable
+- `trial_generations_limit` INTEGER DEFAULT 30
+
+### Tablas creadas:
+- `trial_campaigns` — con RLS habilitado
+- `trial_registrations` — con RLS habilitado
 
 ---
 
@@ -203,5 +217,74 @@ Ejecutar en Supabase SQL Editor (`https://vkdooutklowctuudjnkl.supabase.co`):
 | `sync-and-deploy.py` | Sincroniza archivos locales al VPS vía SFTP y hace rebuild |
 | `vps-check-dns-propagation.py` | Verifica propagación DNS |
 | `vps-verify-final.py` | Verificación final post-deploy |
+| `n8n-patch-tryon.py` | Actualiza nodos de upload en workflows de n8n (WordPress → MinIO) |
+| `n8n-manage.py` | Elimina workflows inactivos y lista todos los workflows |
+| `n8n-inspect-workflow.py` | Inspecciona nodos de un workflow específico por ID |
 
 Para SSH desde Windows usar Python + paramiko (PowerShell no acepta `&&`, usar `;` o `cwd`).
+
+---
+
+## Workflows n8n — Virtual Try-On
+
+| ID | Nombre | Estado | Notas |
+|---|---|---|---|
+| `wPLypk7KhBcFLicX` | Virtual Try-On - Flujo Completo | **ACTIVO** | Flujo principal de generación |
+| `Ft86NDu6ZJCyOpgD` | Virtual Try-On - Actualizado | ELIMINADO (15/03/2026) | Era duplicado inactivo |
+
+### Nodos actualizados en `wPLypk7KhBcFLicX` (15/03/2026):
+- **Subir Selfie Temporal** → `POST https://api.pruebalo.wilkiedevs.com/api/upload/selfie` con `Authorization: Bearer Travis2305**`, body `{image_base64, filename: "selfie.jpg"}`
+- **Subir Imagen Final** → misma URL, body `{image_base64, filename: "result.jpg"}`
+- **Eliminar Selfie Temporal** → convertido a `NoOp` (MinIO no requiere delete explícito)
+
+---
+
+## Workflows n8n — Otros relevantes al proyecto
+
+| ID | Nombre | Estado | Webhook path |
+|---|---|---|---|
+| `ZjVTV3QxoPEi60GX` | Describir con IA | **ACTIVO** | `descriptor` |
+
+### Workflow "Describir con IA" (`ZjVTV3QxoPEi60GX`):
+- Webhook path: `descriptor` → URL completa: `https://n8n.wilkiedevs.com/webhook/descriptor` (o vía IP interna)
+- Nodos: Webhook → Extraer parámetros → Analyze an image (Google Gemini) → Construir prompt enriquecido → Formatear respuesta → Respond to Webhook
+- Función: recibe imagen, la analiza con Gemini y devuelve descripción enriquecida
+
+---
+
+## Endpoints Backend Registrados
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/health` | ninguna | Health check del sistema |
+| `POST` | `/api/auth/register` | ninguna | Registro de marca |
+| `POST` | `/api/auth/login` | ninguna | Login de marca |
+| `POST` | `/api/admin/login` | ninguna | Login de superadmin |
+| `GET` | `/api/brands/me` | JWT marca | Datos de la marca autenticada |
+| `PATCH` | `/api/brands/me` | JWT marca | Actualizar configuración de marca |
+| `GET` | `/api/products` | JWT marca | Listar productos |
+| `POST` | `/api/products` | JWT marca | Crear producto |
+| `PUT` | `/api/products/:id` | JWT marca | Editar producto |
+| `DELETE` | `/api/products/:id` | JWT marca | Eliminar producto (soft) |
+| `POST` | `/api/upload` | JWT marca | Subir imagen a MinIO |
+| `POST` | `/api/upload/selfie` | Bearer `N8N_BEARER_TOKEN` | Subir selfie temporal (para n8n) |
+| `GET` | `/api/pruebalo/:brandSlug` | ninguna | Config pública del probador |
+| `POST` | `/api/pruebalo/:brandSlug/generate` | ninguna | Generar try-on |
+| `GET` | `/api/trial/status` | ninguna | Estado público de campaña trial |
+| `GET` | `/api/usage/stats` | JWT marca | Estadísticas de uso |
+| `GET` | `/api/brands/subscription` | JWT marca | Estado de suscripción |
+| `GET` | `/api/admin/stats` | JWT admin | Estadísticas globales |
+| `GET` | `/api/admin/brands` | JWT admin | Listar marcas |
+| `PATCH` | `/api/admin/brands/:id/plan` | JWT admin | Cambiar plan de marca |
+| `GET` | `/api/admin/subscriptions` | JWT admin | Listar suscripciones |
+| `PATCH` | `/api/admin/subscriptions/:brandId/renew` | JWT admin | Renovar suscripción |
+| `PATCH` | `/api/admin/subscriptions/:brandId/suspend` | JWT admin | Suspender marca |
+| `PATCH` | `/api/admin/subscriptions/:brandId/reactivate` | JWT admin | Reactivar marca |
+| `POST` | `/api/admin/subscriptions/:brandId/payment` | JWT admin | Registrar pago manual |
+| `GET` | `/api/payment-settings/public` | ninguna | Config pública de medios de pago |
+| `POST` | `/api/payments/wompi/webhook` | HMAC Wompi | Webhook de pagos Wompi |
+| `POST` | `/api/brands/request-upgrade` | JWT marca | Solicitar upgrade de plan |
+| `GET` | `/api/admin/stats/conversion` | JWT admin | Métricas de conversión |
+| `GET` | `/api/admin/trial-campaign` | JWT admin | Listar campañas trial |
+| `POST` | `/api/admin/trial-campaign` | JWT admin | Crear campaña trial |
+| `PATCH` | `/api/admin/trial-campaign/:id` | JWT admin | Activar/desactivar campaña |
