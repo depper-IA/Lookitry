@@ -24,6 +24,12 @@ const adminNav = [
     ],
   },
   {
+    label: 'Contenido',
+    items: [
+      { href: '/admin/mini-landings', label: 'Mini-Landings', icon: MiniLandingIcon },
+    ],
+  },
+  {
     label: 'Sistema',
     items: [
       { href: '/admin/trial-campaign', label: 'Campañas de Trial',   icon: TrialIcon },
@@ -235,4 +241,7 @@ function HealthIcon({ className }: { className?: string }) {
 }
 function AdminsIcon({ className }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>;
+}
+function MiniLandingIcon({ className }: { className?: string }) {
+  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline strokeLinecap="round" strokeLinejoin="round" points="9 22 9 12 15 12 15 22" /></svg>;
 }

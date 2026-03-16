@@ -5,6 +5,55 @@
 
 ---
 
+## Instrucciones para Kiro — Herramientas Disponibles
+
+Antes de ejecutar cualquier tarea, Kiro debe considerar qué herramienta es la más eficiente para cada operación. Todas las credenciales necesarias están en este archivo y en `backend/.env`.
+
+### Supabase (Power MCP)
+Usar el **Power de Supabase** para cualquier operación de base de datos en lugar de scripts Python o curl:
+- `SUPABASE_URL`: `https://vkdooutklowctuudjnkl.supabase.co`
+- `SUPABASE_SERVICE_KEY`: ver `backend/.env` (rol `service_role` — acceso total sin RLS)
+- `SUPABASE_ANON_KEY`: ver `backend/.env` (rol `anon` — respeta RLS)
+- Usar para: ejecutar migraciones SQL, consultar tablas, insertar/actualizar datos, verificar esquemas
+
+### Deploy en VPS (Python + paramiko)
+Usar `scripts/_deploy_now.py` para cualquier deploy. Credenciales del VPS:
+- `HOST`: `31.220.18.39` | `USER`: `root` | `PASS`: `Travis18456916#`
+- Flags: `--frontend`, `--backend`, `--restart` (solo reinicia sin rebuild, ~5s)
+- Siempre hacer `git commit + push` antes de ejecutar el script
+
+### Email (SMTP Hostinger)
+- `SMTP_HOST`: `smtp.hostinger.com` | `PORT`: `465` | `SECURE`: true
+- `SMTP_USER`: `info@pruebalo.wilkiedevs.com` | `SMTP_PASS`: `Travis2305*`
+
+### Pagos Wompi
+- `WOMPI_PUBLIC_KEY`: `***REMOVED-SECRET***`
+- `WOMPI_PRIVATE_KEY`: `***REMOVED-SECRET***`
+- `WOMPI_EVENTS_SECRET`: `test_events_ywYgTECX1VdqCmLiGPxeUYXzaJqIAVsg`
+
+### MinIO (almacenamiento de imágenes)
+- `ENDPOINT`: `https://minio.wilkiedevs.com` | `BUCKET`: `images`
+- `ACCESS_KEY`: `Wilkiedevs` | `SECRET_KEY`: `Travis2305*`
+- Imágenes públicas: `https://minio.wilkiedevs.com/images/{path}`
+
+### n8n (workflows de IA)
+- Solo interactuar con workflows autorizados (ver sección "Workflows n8n" más abajo)
+- `N8N_API_KEY`: ver `backend/.env`
+- `N8N_BEARER_TOKEN`: `Travis2305**`
+- Webhook principal: `https://n8n.wilkiedevs.com/webhook/tryon`
+
+### GitHub
+- `GITHUB_TOKEN`: `***REMOVED-SECRET***`
+- `GITHUB_REPO`: `https://github.com/depper-IA/virtual-tryon.git`
+
+### Admin del sistema
+- `SUPERADMIN_EMAIL`: `info.samwilkie@gmail.com` | `PASS`: `Travis2305*`
+- Login: `POST https://api.pruebalo.wilkiedevs.com/api/admin/auth/login`
+
+---
+
+---
+
 ## Accesos
 
 | Recurso | Valor |
@@ -420,3 +469,59 @@ Webhook recibe → procesa con Gemini → sube imagen a MinIO → responde:
 | n8n IP interna | `172.19.0.4` (puede cambiar — obtener con `docker inspect root-n8n-1`) |
 | Variables backend OK | `N8N_WEBHOOK_URL`, `N8N_BEARER_TOKEN`, `N8N_API_KEY` correctamente configuradas en VPS |
 | Endpoint generate | Espera `multipart/form-data` con campos `productId` (texto) y `selfie` (archivo) |
+
+
+# Reglas Importantes del Proyecto
+
+## Gestión de Workflows de n8n
+
+### ⚠️ CRÍTICO: No Crear Nuevos Nodos sin Consentimiento
+
+**REGLA:** No crear, importar ni modificar workflows de n8n sin el consentimiento explícito del usuario.
+
+**Razón:** Los workflows de n8n pueden tener configuraciones específicas, credenciales y paths de webhook que no deben ser duplicados o modificados sin supervisión.
+
+**Workflows Activos:**
+- **Virtual Try-On** (`wPLypk7KhBcFLicX`) — webhook: `https://n8n.wilkiedevs.com/webhook/tryon`
+  - Modelo aprobado para generación de imágenes: `google/gemini-2.5-flash-image` (Nano Banana, ~$0.039/imagen)
+- **Describir con IA** (`ZjVTV3QxoPEi60GX`) — webhook: `https://n8n.wilkiedevs.com/webhook/descriptor`
+  - Modelo aprobado para visión/análisis: `google/gemma-3-27b-it:free` (gratuito, vision, 131K ctx)
+  - Prompt configurado para devolver texto plano (sin markdown, sin asteriscos, sin títulos)
+- **Acción permitida:** Solo actualizar los workflows existentes si el usuario lo solicita explícitamente
+
+### Acciones Permitidas sin Consentimiento
+
+1. ✅ Leer configuración de workflows existentes
+2. ✅ Crear scripts de prueba para webhooks
+3. ✅ Actualizar documentación
+4. ✅ Actualizar código del backend que consume el webhook
+5. ✅ Crear archivos JSON de workflows como respaldo (sin importar)
+
+### Acciones que Requieren Consentimiento Explícito
+
+1. ❌ Crear nuevos workflows en n8n
+2. ❌ Importar workflows a n8n
+3. ❌ Activar/desactivar workflows
+4. ❌ Modificar nodos de workflows existentes
+5. ❌ Cambiar paths de webhooks
+6. ❌ Modificar credenciales de n8n
+
+## ⛔ CRÍTICO: Uso de APIs y Modelos de IA — Solo Versiones Gratuitas
+
+**REGLA ABSOLUTA:** Está TOTALMENTE PROHIBIDO usar modelos de IA de pago o APIs con costo sin consentimiento explícito del usuario.
+
+**Esto aplica a:**
+- Modelos de Google Gemini (usar solo `gemini-1.5-flash` o `gemini-2.0-flash` en tier gratuito, NUNCA `gemini-1.5-pro` ni modelos de pago)
+- OpenRouter: usar solo modelos con sufijo `:free` (ej. `google/gemini-2.0-flash-exp:free`), NUNCA modelos sin ese sufijo
+- OpenAI: PROHIBIDO usar sin autorización explícita (todos son de pago)
+- Anthropic/Claude: PROHIBIDO usar sin autorización explícita
+- Cualquier otra API de IA con costo por token o por llamada
+
+**En n8n específicamente:**
+- Al configurar nodos de IA, verificar siempre que el modelo seleccionado sea gratuito
+- Si hay duda sobre si un modelo tiene costo, preguntar antes de usarlo
+- No asumir que un modelo es gratuito por estar disponible en la lista
+
+**Consecuencia de incumplimiento:** Genera costos no autorizados al usuario. Esto es inaceptable.
+
+---

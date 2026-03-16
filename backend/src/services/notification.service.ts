@@ -12,6 +12,8 @@ import {
   usageAlert80Email,
   usageAlert100Email,
   adminWelcomeEmail,
+  landingDeletionWarningEmail,
+  landingDeletedNoticeEmail,
 } from '../templates/email-templates';
 
 /**
@@ -397,6 +399,51 @@ export class NotificationService {
       console.log(`Email de bienvenida admin enviado a ${brand.email}`);
     } catch (error) {
       console.error(`Error al enviar email de bienvenida admin a ${brand.email}:`, error);
+      throw error;
+    }
+  }
+  /**
+   * Envía aviso previo de eliminación definitiva de mini-landing (a los 75 días de suspensión).
+   *
+   * @param brand - Información de la marca
+   * @param diasRestantes - Días que quedan antes de la eliminación definitiva
+   */
+  async sendLandingDeletionWarning(brand: Brand, diasRestantes: number): Promise<void> {
+    try {
+      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+      const html = landingDeletionWarningEmail(
+        { name: brand.name, email: brand.email },
+        diasRestantes,
+        frontendUrl
+      );
+      await emailService.sendEmail({
+        to: brand.email,
+        subject: `Aviso: tu mini-landing será eliminada en ${diasRestantes} días`,
+        html,
+      });
+      console.log(`[Notification] Aviso de eliminación de landing enviado a ${brand.email} (${diasRestantes} días restantes)`);
+    } catch (error) {
+      console.error(`[Notification] Error enviando aviso de eliminación a ${brand.email}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Envía notificación de eliminación definitiva de mini-landing (a los 90 días).
+   *
+   * @param brand - Información de la marca
+   */
+  async sendLandingDeletedNotice(brand: Brand): Promise<void> {
+    try {
+      const html = landingDeletedNoticeEmail({ name: brand.name, email: brand.email });
+      await emailService.sendEmail({
+        to: brand.email,
+        subject: 'Tu mini-landing ha sido eliminada',
+        html,
+      });
+      console.log(`[Notification] Aviso de eliminación definitiva enviado a ${brand.email}`);
+    } catch (error) {
+      console.error(`[Notification] Error enviando aviso de eliminación definitiva a ${brand.email}:`, error);
       throw error;
     }
   }
