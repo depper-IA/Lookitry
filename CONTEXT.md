@@ -235,6 +235,20 @@ Para SSH desde Windows usar Python + paramiko (PowerShell no acepta `&&`, usar `
 
 ---
 
+## REGLAS DE ACCESO A n8n — LEER ANTES DE TOCAR CUALQUIER WORKFLOW
+
+> El n8n de este VPS es compartido con otros clientes y proyectos de Wilkiedevs.
+> Violar estas reglas puede romper flujos de producción de terceros.
+
+- SOLO se puede leer, modificar o interactuar con workflows que pertenezcan al proyecto SaaS (Virtual Try-On)
+- Los únicos workflows autorizados son los listados en la sección "Workflows n8n — Virtual Try-On" más abajo
+- PROHIBIDO crear nuevos workflows
+- PROHIBIDO modificar cualquier workflow que no esté en la lista autorizada
+- PROHIBIDO eliminar workflows (el borrado del duplicado `Ft86NDu6ZJCyOpgD` fue un error — no repetir)
+- Antes de cualquier acción en n8n, verificar que el ID del workflow esté en la lista autorizada
+
+---
+
 ## Workflows n8n — Virtual Try-On
 
 | ID | Nombre | Estado | Notas |
