@@ -56,11 +56,25 @@ export function ProductList({ products, onEdit, onDelete }: ProductListProps) {
                 {product.description}
               </p>
             )}
-            <div className="mt-2">
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
                 style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}>
                 {product.category}
               </span>
+              {product.badge && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold capitalize"
+                  style={{
+                    backgroundColor: product.badge === 'nuevo' ? 'rgba(34,197,94,0.12)' : product.badge === 'top' ? 'rgba(234,179,8,0.12)' : 'rgba(239,68,68,0.12)',
+                    color: product.badge === 'nuevo' ? '#16a34a' : product.badge === 'top' ? '#ca8a04' : '#dc2626',
+                  }}>
+                  {product.badge}
+                </span>
+              )}
+              {product.price != null && (
+                <span className="text-xs font-semibold ml-auto" style={{ color: 'var(--text-primary)' }}>
+                  ${product.price.toLocaleString('es-CO')}
+                </span>
+              )}
             </div>
             <div className="mt-4 flex gap-2">
               <Button size="sm" variant="secondary" onClick={() => onEdit(product)} className="flex-1">

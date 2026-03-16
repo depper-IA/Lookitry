@@ -68,19 +68,31 @@ export class PruebaloController {
         widget_template: brand.widget_template,
         button_text: brand.button_text,
         welcome_message: brand.welcome_message,
-        // Campos de mini-landing (task 33)
+        // Mini-landing
         brand_description: (brand as any).brand_description ?? null,
         whatsapp_contact: (brand as any).whatsapp_contact ?? null,
         cover_image_url: (brand as any).cover_image_url ?? null,
         social_links: (brand as any).social_links ?? {},
         has_landing_page: (brand as any).has_landing_page ?? false,
+        // Nuevos campos
+        city_display: (brand as any).city_display ?? null,
+        national_shipping: (brand as any).national_shipping ?? false,
+        whatsapp_message: (brand as any).whatsapp_message ?? null,
+        cta_button_text: (brand as any).cta_button_text ?? 'Probarme esto',
+        rating: (brand as any).rating ?? null,
+        total_reviews: (brand as any).total_reviews ?? 0,
+        landing_template: (brand as any).landing_template ?? 'classic',
+        schedule: (brand as any).schedule ?? null,
+        slogan: (brand as any).slogan ?? null,
       },
       products: products.map(product => ({
         id: product.id,
         name: product.name,
         description: product.description,
-        image_url: product.imageUrl,   // el servicio devuelve camelCase
+        image_url: product.imageUrl,
         category: product.category,
+        price: (product as any).price ?? null,
+        badge: (product as any).badge ?? null,
       })),
     };
 

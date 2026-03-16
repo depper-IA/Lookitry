@@ -225,17 +225,8 @@ NEXT_PUBLIC_API_URL=https://api.pruebalo.wilkiedevs.com
 | `backend/migrations/create_trial_campaigns_table.sql` | EJECUTADO (16/03/2026) | Tablas trial_campaigns + trial_registrations + campos en brands |
 | `backend/migrations/add_email_verification_to_brands.sql` | EJECUTADO (incluido arriba) | |
 | `backend/migrations/add_trial_payment_status.sql` | EJECUTADO (incluido arriba) | |
-| `backend/migrations/add_mini_landing_fields.sql` | **PENDIENTE** — ejecutar en Supabase SQL Editor | Campos de mini-landing en tabla brands |
-
-### Migración pendiente — ejecutar en Supabase:
-```sql
-ALTER TABLE brands
-  ADD COLUMN IF NOT EXISTS brand_description TEXT,
-  ADD COLUMN IF NOT EXISTS whatsapp_contact   TEXT,
-  ADD COLUMN IF NOT EXISTS cover_image_url    TEXT,
-  ADD COLUMN IF NOT EXISTS social_links       JSONB DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS has_landing_page   BOOLEAN DEFAULT false;
-```
+| `backend/migrations/add_mini_landing_fields.sql` | **EJECUTADO (16/03/2026)** | Campos de mini-landing en tabla brands |
+| `backend/migrations/add_product_price_badge.sql` | **EJECUTADO (16/03/2026)** | Campos `price` y `badge` en tabla products; campos nuevos en brands: city_display, national_shipping, whatsapp_message, cta_button_text, rating, total_reviews, landing_template, schedule, slogan |
 
 ### Campos en `brands` confirmados en BD:
 - `email_verified` BOOLEAN DEFAULT false (usuarios existentes marcados como true)
@@ -389,6 +380,12 @@ Para SSH desde Windows usar Python + paramiko (PowerShell no acepta `&&`, usar `
 | 16/03/2026 | `mi-pagina/page.tsx` | `authService` usado sin importar | Agregado import de `auth.service` |
 | 16/03/2026 | Ruta pública del probador | `/pruebalo/[brandSlug]` → `/sitio/[brandSlug]` | Nueva carpeta `sitio/[brandSlug]`, ruta anterior sigue activa |
 | 16/03/2026 | `MiniLanding.tsx` | Template básico sin sección "Cómo funciona" ni FAB WhatsApp | Rediseño completo: hero mejorado, sección pasos, FAB flotante WhatsApp |
+| 16/03/2026 | `ProductForm.tsx` | Sin campos `price` y `badge` | Agregados: input precio COP + selector badge (nuevo/top/oferta) |
+| 16/03/2026 | `ProductList.tsx` | Sin precio ni badge en cards | Muestra precio formateado COP y badge con color según tipo |
+| 16/03/2026 | `mi-pagina/page.tsx` | Sin campos nuevos de marca | Agregados: slogan, city_display, national_shipping, whatsapp_message, cta_button_text, landing_template |
+| 16/03/2026 | `brands.controller.ts` | No aceptaba campos nuevos de mini-landing | Agregados todos los campos nuevos al PATCH /api/brands/me |
+| 16/03/2026 | `brands.service.ts` | `UpdateBrandDto` sin campos nuevos | Extendido con city_display, national_shipping, whatsapp_message, cta_button_text, rating, total_reviews, landing_template, schedule, slogan |
+| 16/03/2026 | `MiniLanding.tsx` | Un solo template | Dos templates: `classic` (hero + pasos + catálogo) y `editorial` (header sticky + cover + stats bar + layout 2 columnas + panel probador sticky) |
 
 ---
 

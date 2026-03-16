@@ -1,0 +1,696 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.lp {
+  font-family: 'DM Sans', sans-serif;
+  color: #0a0a0a;
+  background: #f5f2ee;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* NAV */
+.nav {
+  background: #0a0a0a;
+  padding: 0 2rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+.nav-logo span { color: #FF5C3A; }
+.nav-links { display: flex; align-items: center; gap: 8px; }
+.nav-link {
+  font-size: 13px;
+  color: #888;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color .2s;
+  text-decoration: none;
+}
+.nav-link:hover { color: #fff; }
+.nav-cta {
+  font-size: 13px;
+  font-weight: 500;
+  background: #FF5C3A;
+  color: #fff;
+  padding: 7px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .2s;
+}
+.nav-cta:hover { background: #e84d2c; }
+
+/* HERO */
+.hero {
+  background: #0a0a0a;
+  padding: 72px 2rem 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #FF5C3A18 0%, transparent 70%);
+  top: -100px; left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1a1a1a;
+  border: 0.5px solid #333;
+  color: #FF5C3A;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 100px;
+  margin-bottom: 28px;
+}
+.hero-badge-dot {
+  width: 6px; height: 6px;
+  background: #FF5C3A;
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(1.3); }
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(36px, 6vw, 60px);
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  max-width: 680px;
+  margin: 0 auto 20px;
+}
+.hero h1 em {
+  font-style: normal;
+  color: #FF5C3A;
+}
+.hero-sub {
+  font-size: 16px;
+  color: #777;
+  max-width: 440px;
+  margin: 0 auto 36px;
+  line-height: 1.6;
+  font-weight: 300;
+}
+.hero-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.btn-primary {
+  background: #FF5C3A;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 12px 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .2s;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-primary:hover { background: #e84d2c; transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent;
+  color: #aaa;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 12px 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color .2s;
+  border: 0.5px solid #333;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-ghost:hover { color: #fff; border-color: #555; }
+.hero-trust {
+  font-size: 12px;
+  color: #444;
+  margin-top: 2px;
+}
+
+/* DEMO MOCKUP */
+.demo-section {
+  background: #0a0a0a;
+  padding: 0 2rem 80px;
+  display: flex;
+  justify-content: center;
+}
+.demo-mockup {
+  background: #141414;
+  border: 0.5px solid #2a2a2a;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 560px;
+  width: 100%;
+}
+.demo-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+.demo-url {
+  background: #1f1f1f;
+  border: 0.5px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 11px;
+  color: #555;
+  flex: 1;
+  text-align: center;
+}
+.demo-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.demo-panel {
+  background: #1a1a1a;
+  border: 0.5px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 14px;
+}
+.demo-panel-label {
+  font-size: 10px;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 10px;
+}
+.demo-photo-placeholder {
+  background: #242424;
+  border: 1.5px dashed #333;
+  border-radius: 8px;
+  height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #444;
+  font-size: 11px;
+}
+.demo-photo-icon {
+  width: 28px; height: 28px;
+  background: #2a2a2a;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.demo-products { display: flex; flex-direction: column; gap: 6px; }
+.demo-product {
+  background: #222;
+  border: 0.5px solid #2d2d2d;
+  border-radius: 7px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.demo-product:hover { border-color: #FF5C3A44; }
+.demo-product.active { border-color: #FF5C3A; background: #1f1814; }
+.demo-thumb {
+  width: 28px; height: 28px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+.demo-prod-name { font-size: 11px; color: #bbb; }
+.demo-prod-price { font-size: 10px; color: #555; }
+.demo-generate {
+  grid-column: span 2;
+  background: #FF5C3A;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 11px;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: background .2s;
+  font-family: 'DM Sans', sans-serif;
+  border: none;
+  width: 100%;
+}
+.demo-generate:hover { background: #e84d2c; }
+
+/* STATS */
+.stats {
+  background: #f5f2ee;
+  padding: 48px 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+  border-bottom: 0.5px solid #e0dcd7;
+}
+.stat { text-align: center; }
+.stat-n {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  color: #0a0a0a;
+  letter-spacing: -0.03em;
+}
+.stat-n span { color: #FF5C3A; }
+.stat-label { font-size: 13px; color: #888; margin-top: 2px; }
+
+/* STEPS */
+.steps {
+  background: #f5f2ee;
+  padding: 72px 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.section-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #FF5C3A;
+  margin-bottom: 12px;
+}
+.section-h2 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 32px;
+  color: #0a0a0a;
+  letter-spacing: -0.025em;
+  margin-bottom: 40px;
+}
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: #e0dcd7;
+  border: 0.5px solid #e0dcd7;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.step {
+  background: #f5f2ee;
+  padding: 28px 24px;
+}
+.step-n {
+  font-family: 'Syne', sans-serif;
+  font-size: 40px;
+  font-weight: 800;
+  color: #e0dcd7;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+.step-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0a0a0a;
+  margin-bottom: 6px;
+}
+.step-desc { font-size: 13px; color: #777; line-height: 1.5; }
+
+/* PRICING */
+.pricing {
+  background: #0a0a0a;
+  padding: 72px 2rem;
+}
+.pricing-inner { max-width: 700px; margin: 0 auto; }
+.pricing .section-label { color: #FF5C3A; }
+.pricing .section-h2 { color: #fff; }
+.plans {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.plan {
+  background: #141414;
+  border: 0.5px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 28px 24px;
+}
+.plan.featured {
+  border-color: #FF5C3A;
+  position: relative;
+}
+.plan-badge {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #FF5C3A;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 3px 12px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.plan-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.plan-price {
+  font-family: 'Syne', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+  margin-bottom: 2px;
+}
+.plan-price span { font-size: 13px; font-weight: 400; color: #555; font-family: 'DM Sans', sans-serif; }
+.plan-trial { font-size: 12px; color: #FF5C3A; margin-bottom: 20px; }
+.plan-trial-none { font-size: 12px; color: #444; margin-bottom: 20px; }
+.plan-features { list-style: none; margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px; }
+.plan-feat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #999;
+}
+.plan-feat-check {
+  width: 16px; height: 16px;
+  background: #FF5C3A22;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.plan-feat-check svg { display: block; }
+.btn-plan-basic {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  border: 0.5px solid #333;
+  background: transparent;
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-plan-basic:hover { border-color: #555; color: #fff; }
+.btn-plan-pro {
+  display: block;
+  width: 100%;
+  padding: 11px;
+  background: #FF5C3A;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: background .2s;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-plan-pro:hover { background: #e84d2c; }
+
+/* TESTIMONIOS */
+.testi {
+  background: #f5f2ee;
+  padding: 72px 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.testi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.testi-card {
+  background: #fff;
+  border: 0.5px solid #e8e4df;
+  border-radius: 12px;
+  padding: 20px;
+}
+.testi-quote {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+.testi-author { font-size: 13px; font-weight: 500; color: #0a0a0a; }
+.testi-role { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+/* CTA FINAL */
+.cta-final {
+  background: #0a0a0a;
+  padding: 80px 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-final::before {
+  content: '';
+  position: absolute;
+  width: 500px; height: 300px;
+  background: radial-gradient(ellipse, #FF5C3A10 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.cta-final h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+.cta-final p { font-size: 15px; color: #666; margin-bottom: 32px; }
+
+/* FOOTER */
+.footer {
+  background: #050505;
+  border-top: 0.5px solid #1a1a1a;
+  padding: 28px 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: #fff;
+}
+.footer-logo span { color: #FF5C3A; }
+.footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+.footer-link { font-size: 12px; color: #555; text-decoration: none; transition: color .2s; cursor: pointer; }
+.footer-link:hover { color: #aaa; }
+</style>
+
+<div class="lp">
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-logo">Virtual<span>Try</span>On</div>
+    <div class="nav-links">
+      <a class="nav-link">Planes</a>
+      <a class="nav-link">Demo</a>
+      <a class="nav-link">Iniciar sesión</a>
+      <button class="nav-cta">Empezar gratis</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge"><span class="hero-badge-dot"></span>IA para moda colombiana</div>
+    <h1>Tus clientes se prueban la ropa <em>antes de comprar</em></h1>
+    <p class="hero-sub">Probador virtual impulsado por IA. Embébelo en tu tienda en 10 minutos. Sin apps, sin desarrollo.</p>
+    <div class="hero-btns">
+      <button class="btn-primary">Empezar gratis — 7 días</button>
+      <button class="btn-ghost">Ver demo en vivo →</button>
+    </div>
+    <p class="hero-trust">Sin tarjeta de crédito · Cancela cuando quieras</p>
+  </section>
+
+  <!-- DEMO MOCKUP -->
+  <section class="demo-section">
+    <div class="demo-mockup">
+      <div class="demo-topbar">
+        <div class="demo-dot" style="background:#ff5c5c"></div>
+        <div class="demo-dot" style="background:#ffbd2e"></div>
+        <div class="demo-dot" style="background:#28c840"></div>
+        <div class="demo-url">pruebalo.wilkiedevs.com/mi-marca</div>
+      </div>
+      <div class="demo-body">
+        <div class="demo-panel">
+          <div class="demo-panel-label">Tu foto</div>
+          <div class="demo-photo-placeholder">
+            <div class="demo-photo-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            </div>
+            <span>Sube una selfie</span>
+          </div>
+        </div>
+        <div class="demo-panel">
+          <div class="demo-panel-label">Elige producto</div>
+          <div class="demo-products">
+            <div class="demo-product active">
+              <div class="demo-thumb" style="background:linear-gradient(135deg,#2a2a2a,#444)"></div>
+              <div><div class="demo-prod-name">Camisa lino beige</div><div class="demo-prod-price">$89.000</div></div>
+            </div>
+            <div class="demo-product">
+              <div class="demo-thumb" style="background:linear-gradient(135deg,#1a2a3a,#2a4a6a)"></div>
+              <div><div class="demo-prod-name">Blazer azul marino</div><div class="demo-prod-price">$220.000</div></div>
+            </div>
+            <div class="demo-product">
+              <div class="demo-thumb" style="background:linear-gradient(135deg,#3a1a2a,#5a2a4a)"></div>
+              <div><div class="demo-prod-name">Vestido borgoña</div><div class="demo-prod-price">$145.000</div></div>
+            </div>
+          </div>
+        </div>
+        <button class="demo-generate">✦ Generar prueba virtual</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats">
+    <div class="stat"><div class="stat-n"><span>+</span>120</div><div class="stat-label">marcas activas</div></div>
+    <div class="stat"><div class="stat-n">18<span>K</span></div><div class="stat-label">generaciones este mes</div></div>
+    <div class="stat"><div class="stat-n">4.8<span>/5</span></div><div class="stat-label">satisfacción promedio</div></div>
+  </section>
+
+  <!-- STEPS -->
+  <section style="background:#f5f2ee; padding: 72px 2rem;">
+    <div style="max-width:800px; margin: 0 auto;">
+      <div class="section-label">Cómo funciona</div>
+      <div class="section-h2">Tres pasos. Cero fricción.</div>
+      <div class="steps-grid">
+        <div class="step"><div class="step-n">01</div><div class="step-title">Sube tu foto</div><div class="step-desc">El cliente toma una selfie o sube una imagen desde su celular.</div></div>
+        <div class="step"><div class="step-n">02</div><div class="step-title">Elige el producto</div><div class="step-desc">Selecciona la prenda o accesorio del catálogo de la marca.</div></div>
+        <div class="step"><div class="step-n">03</div><div class="step-title">Ve el resultado</div><div class="step-desc">La IA genera la imagen en segundos. Puede descargarla.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing">
+    <div class="pricing-inner">
+      <div class="section-label">Planes</div>
+      <div class="section-h2">Precios simples en COP</div>
+      <div class="plans">
+        <div class="plan">
+          <div class="plan-name">Básico</div>
+          <div class="plan-price">$150.000 <span>COP/mes</span></div>
+          <div class="plan-trial">✓ 7 días de prueba gratis</div>
+          <ul class="plan-features">
+            <li class="plan-feat"><span class="plan-feat-check"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#FF5C3A" stroke-width="1.5" stroke-linecap="round"/></svg></span>5 productos</li>
+            <li class="plan-feat"><span class="plan-feat-check"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#FF5C3A" stroke-width="1.5" stroke-linecap="round"/></svg></span>400 generaciones/mes</li>
+            <li class="plan-feat"><span class="plan-feat-check"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#FF5C3A" stroke-width="1.5" stroke-linecap="round"/></svg></span>Logo y colores</li>
+            <li class="plan-feat"><span class="plan-feat-check"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#FF5C3A" stroke-width="1.5" stroke-linecap="round"/></svg></span>Widget embebible</li>
+          </ul>
+          <button class="btn-plan-basic">Empezar gratis</button>
+        </div>
+        <div class="plan featured">
+          <div class="plan-badge">Más popular</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">$250.000 <span>COP/mes</span></div>
+          <div class="plan-trial-none">Pago directo — activación inmediata</div>
+          <ul class="plan-features">
+            <li class="plan-feat"><span class="plan-feat-check"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#FF5C3A" stroke-width="1.5" stroke-linecap="round"/></svg></span>15 productos</li>
+            <li class="plan-feat"><span class="plan-feat-check"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#FF5C3A" stroke-width="1.5" stroke-linecap="round"/></svg></span>1.200 generaciones/mes</li>
+            <li class="plan-feat"><span class="plan-feat-check"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#FF5C3A" stroke-width="1.5" stroke-linecap="round"/></svg></span>Templates avanzados</li>
+            <li class="plan-feat"><span class="plan-feat-check"><svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#FF5C3A" stroke-width="1.5" stroke-linecap="round"/></svg></span>Soporte prioritario</li>
+          </ul>
+          <button class="btn-plan-pro">Contratar Pro ahora</button>
+        </div>
+      </div>
+      <p style="font-size:12px; color:#444; text-align:center; margin-top:16px;">
+        Descuentos por pago anticipado: 5% (3 meses) · 10% (6 meses) · 15% (12 meses)
+      </p>
+    </div>
+  </section>
+
+  <!-- TESTIMONIOS -->
+  <section style="background:#f5f2ee; padding: 72px 2rem;">
+    <div style="max-width:860px; margin:0 auto;">
+      <div class="section-label">Testimonios</div>
+      <div class="section-h2">Lo que dicen las marcas</div>
+      <div class="testi-grid">
+        <div class="testi-card">
+          <p class="testi-quote">"Mis clientes pasan más tiempo en el probador que en cualquier otra parte de mi tienda. Las ventas subieron."</p>
+          <div class="testi-author">Laura M.</div>
+          <div class="testi-role">Tienda de ropa — Instagram</div>
+        </div>
+        <div class="testi-card">
+          <p class="testi-quote">"Lo integré en mi web en menos de 10 minutos. El soporte fue rápido y claro."</p>
+          <div class="testi-author">Carlos R.</div>
+          <div class="testi-role">Marca de accesorios</div>
+        </div>
+        <div class="testi-card">
+          <p class="testi-quote">"El trial me convenció desde el primer día. Ahora tengo el plan Pro y no lo cambio."</p>
+          <div class="testi-author">Valentina G.</div>
+          <div class="testi-role">Boutique online</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta-final">
+    <h2>Empieza hoy sin riesgos</h2>
+    <p>7 días gratis en el Plan Básico. Plan Pro con pago directo y seguro vía Wompi.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn-primary" style="font-size:15px; padding:14px 32px;">Crear cuenta gratis</button>
+      <button class="btn-ghost" style="font-size:15px; padding:14px 32px;">Contratar Pro ahora</button>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-logo">Virtual<span>Try</span>On</div>
+    <div class="footer-links">
+      <a class="footer-link">Planes</a>
+      <a class="footer-link">Iniciar sesión</a>
+      <a class="footer-link">info@pruebalo.wilkiedevs.com</a>
+      <a class="footer-link">+57 310 543 6281</a>
+      <a class="footer-link">Términos</a>
+      <a class="footer-link">Privacidad</a>
+    </div>
+  </footer>
+</div>

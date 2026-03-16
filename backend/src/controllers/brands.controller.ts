@@ -97,6 +97,18 @@ export class BrandsController {
         }
       }
 
+      // Campos de mini-landing
+      const landingFields = [
+        'brand_description', 'whatsapp_contact', 'cover_image_url', 'social_links',
+        'city_display', 'national_shipping', 'whatsapp_message', 'cta_button_text',
+        'rating', 'total_reviews', 'schedule', 'slogan', 'landing_template',
+      ];
+      for (const field of landingFields) {
+        if (req.body[field] !== undefined) {
+          (updates as any)[field] = req.body[field];
+        }
+      }
+
       // Slug personalizado — solo Plan PRO
       if (req.body.slug !== undefined) {
         if (req.brand.plan !== 'PRO') {

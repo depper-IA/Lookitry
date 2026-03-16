@@ -7,6 +7,8 @@ export interface CreateProductDto {
   description?: string;
   image_url: string;
   category: string;
+  price?: number | null;
+  badge?: 'nuevo' | 'top' | 'oferta' | null;
 }
 
 export interface UpdateProductDto {
@@ -14,6 +16,8 @@ export interface UpdateProductDto {
   description?: string;
   image_url?: string;
   category?: string;
+  price?: number | null;
+  badge?: 'nuevo' | 'top' | 'oferta' | null;
 }
 
 export class ProductsService {
@@ -40,6 +44,8 @@ export class ProductsService {
       description: product.description,
       imageUrl: product.image_url,
       category: product.category,
+      price: product.price ?? null,
+      badge: product.badge ?? null,
       isActive: product.is_active,
       createdAt: product.created_at,
       updatedAt: product.updated_at
@@ -138,6 +144,8 @@ export class ProductsService {
         description: productData.description?.trim() || null,
         image_url: productData.image_url.trim(),
         category: productData.category.trim(),
+        price: productData.price ?? null,
+        badge: productData.badge ?? null,
         is_active: true
       })
       .select()
@@ -195,6 +203,8 @@ export class ProductsService {
     if (updates.description !== undefined) updateData.description = updates.description?.trim() || null;
     if (updates.image_url !== undefined) updateData.image_url = updates.image_url.trim();
     if (updates.category !== undefined) updateData.category = updates.category.trim();
+    if (updates.price !== undefined) updateData.price = updates.price ?? null;
+    if (updates.badge !== undefined) updateData.badge = updates.badge ?? null;
 
     // Actualizar el producto
     const { data, error } = await supabase
@@ -208,7 +218,7 @@ export class ProductsService {
       throw new Error('Error al actualizar el producto: ' + error?.message);
     }
 
-    // Mapear snake_case a camelCase para el frontend
+    // Mapear snake_case a camelCase para el frontend (updateProduct)
     return {
       id: data.id,
       brandId: data.brand_id,
@@ -216,6 +226,8 @@ export class ProductsService {
       description: data.description,
       imageUrl: data.image_url,
       category: data.category,
+      price: data.price ?? null,
+      badge: data.badge ?? null,
       isActive: data.is_active,
       createdAt: data.created_at,
       updatedAt: data.updated_at
