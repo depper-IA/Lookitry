@@ -243,6 +243,79 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* MINI-LANDING */}
+      <section className="bg-[#0a0a0a] py-16 md:py-20 px-6 md:px-8">
+        <div className="max-w-[900px] mx-auto">
+          <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Mini-landing pública</p>
+          <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[32px] text-white tracking-tight mb-3">
+            Tu página de marca, lista en minutos
+          </h2>
+          <p className="text-[#666] text-[15px] mb-10 max-w-xl">
+            Cada marca obtiene una página pública con catálogo, probador virtual integrado y botón de WhatsApp. Sin código, sin diseñador.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            {/* Preview mockup */}
+            <div className="bg-[#141414] border border-[#2a2a2a] rounded-2xl overflow-hidden">
+              {/* Barra de navegador */}
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-[#2a2a2a]">
+                <span className="w-2 h-2 rounded-full bg-[#ff5c5c]" />
+                <span className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
+                <span className="w-2 h-2 rounded-full bg-[#28c840]" />
+                <div className="flex-1 bg-[#1f1f1f] border border-[#333] rounded px-3 py-1 text-[10px] text-[#444] text-center truncate ml-2">
+                  pruebalo.wilkiedevs.com/sitio/tu-marca
+                </div>
+              </div>
+              {/* Hero simulado */}
+              <div className="h-20 flex flex-col items-center justify-center gap-1.5" style={{ background: 'linear-gradient(135deg,#FF5C3A,#e84d2c)' }}>
+                <div className="w-20 h-3 rounded-full bg-white/70" />
+                <div className="w-32 h-2 rounded-full bg-white/40" />
+              </div>
+              {/* Catálogo simulado */}
+              <div className="grid grid-cols-3 gap-2 p-4">
+                {[0,1,2].map(i => (
+                  <div key={i} className="aspect-square rounded-xl bg-[#1f1f1f] border border-[#2a2a2a] flex flex-col justify-end p-2">
+                    <div className="w-full h-1.5 rounded-full bg-[#333] mb-1" />
+                    <div className="w-2/3 h-1 rounded-full bg-[#2a2a2a]" />
+                  </div>
+                ))}
+              </div>
+              {/* Botón CTA simulado */}
+              <div className="px-4 pb-4">
+                <div className="w-full h-9 rounded-xl bg-[#FF5C3A] flex items-center justify-center">
+                  <div className="w-24 h-2 rounded-full bg-white/60" />
+                </div>
+              </div>
+            </div>
+            {/* Features */}
+            <div className="space-y-5">
+              {[
+                { title: 'Catálogo de productos', desc: 'Muestra tus productos con foto, precio y badge. Tus clientes los ven de un vistazo.' },
+                { title: 'Probador virtual integrado', desc: 'El botón "Probarme esto" abre el widget de IA directamente en tu página.' },
+                { title: 'WhatsApp y redes sociales', desc: 'Botón flotante de WhatsApp y links a tus redes en un solo lugar.' },
+                { title: 'Dos diseños disponibles', desc: 'Elige entre el template Clásico o Editorial desde tu dashboard.' },
+              ].map(f => (
+                <div key={f.title} className="flex gap-3">
+                  <div className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5" style={{ background: 'rgba(255,92,58,0.15)' }}>
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <path d="M2 5l2.5 2.5L8 3" stroke="#FF5C3A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-white">{f.title}</p>
+                    <p className="text-[12px] text-[#666] mt-0.5 leading-relaxed">{f.desc}</p>
+                  </div>
+                </div>
+              ))}
+              <Link href="/register"
+                className="inline-flex items-center gap-2 mt-2 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-medium px-5 py-2.5 rounded-lg transition-colors">
+                Crear mi página gratis
+                <IconArrow />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* TESTIMONIOS */}
       <section className="bg-[#f5f2ee] py-16 md:py-20 px-6 md:px-8 border-t border-[#e0dcd7]">
         <div className="max-w-[860px] mx-auto">
