@@ -2,23 +2,30 @@ import app from './app';
 import { setupUncaughtExceptionHandlers } from './middleware/errorHandler';
 import { startCleanupJob } from './jobs/cleanup.job';
 
+// Capturar CUALQUIER error no manejado antes de que mate el proceso
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] uncaughtException:', err.message, err.stack);
+});
+
+process.on('unhandledRejection', (reason: any) => {
+  const msg = reason instanceof Error ? reason.stack || reason.message : String(reason);
+  console.error('[FATAL] unhandledRejection:', msg);
+  // En producción NO matar el proceso
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
+});
+
 // Configurar manejadores de excepciones no capturadas
 setupUncaughtExceptionHandlers();
 
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🔐 Auth endpoints:`);
-  console.log(`   POST http://localhost:${PORT}/api/auth/register`);
-  console.log(`   POST http://localhost:${PORT}/api/auth/login`);
-  console.log(`🏢 Brands endpoints:`);
-  console.log(`   GET  http://localhost:${PORT}/api/brands/me`);
-  console.log(`   PATCH http://localhost:${PORT}/api/brands/me`);
-  console.log(`📈 Usage endpoints:`);
-  console.log(`   GET  http://localhost:${PORT}/api/usage/stats`);
-  
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Health check: http://localhost:${PORT}/health`);
+  console.log(`Auth: POST /api/auth/register | POST /api/auth/login`);
+
   // Iniciar cron job de limpieza
   startCleanupJob();
 });
