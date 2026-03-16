@@ -24,9 +24,16 @@ client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 client.connect(HOST, port=PORT, username=USER, password=PASS, timeout=15)
 print("Conectado al VPS")
 
-# Dockerfile: usa next build directamente (sin prebuild que llama rimraf)
-# rimraf no existe en producción, pero en Docker partimos de cero así que no hace falta limpiar
-print("\n--- Creando Dockerfile del frontend ---")
+# 1. Git pull PRIMERO para tener el codigo actualizado
+print("\n--- Git pull ---")
+run(client, 'cd /root/virtual-tryon && git pull origin main')
+
+# Verificar que el archivo fue actualizado
+print("\n--- Verificando wompi.service.ts actualizado ---")
+run(client, 'grep -n "api.get" /root/virtual-tryon/frontend/src/services/wompi.service.ts')
+
+# 2. Dockerfile
+print("\n--- Creando Dockerfile ---")
 dockerfile = """FROM node:20-alpine AS builder
 WORKDIR /app
 
@@ -50,7 +57,6 @@ RUN npx next build
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 EXPOSE 3000
@@ -58,8 +64,7 @@ CMD ["node", "server.js"]
 """
 run(client, f"cat > /root/virtual-tryon/frontend/Dockerfile << 'DOCKEREOF'\n{dockerfile}\nDOCKEREOF")
 
-# docker-compose con build args
-print("\n--- Creando docker-compose.frontend.yml ---")
+# 3. docker-compose
 compose = """services:
   frontend:
     build:
@@ -88,20 +93,20 @@ networks:
 """
 run(client, f"cat > /root/virtual-tryon/docker-compose.frontend.yml << 'COMPOSEEOF'\n{compose}\nCOMPOSEEOF")
 
-# Build
+# 4. Build
 print("\n--- Build del frontend (5-8 minutos) ---")
 out, err = run(client, 'docker compose -f /root/virtual-tryon/docker-compose.frontend.yml build --no-cache 2>&1', timeout=600)
 
 combined = out + err
-if 'failed to solve' in combined.lower() or 'exit code: 1' in combined.lower():
+if 'failed to solve' in combined.lower() or ('exit code: 1' in combined.lower()):
     print("\nBuild falló. Ultimas lineas:")
-    print(combined[-1500:])
+    print(combined[-2000:])
     client.close()
     exit(1)
 
 print("\nBuild exitoso")
 
-# Levantar
+# 5. Levantar
 print("\n--- Iniciando frontend ---")
 run(client, 'docker compose -f /root/virtual-tryon/docker-compose.frontend.yml up -d')
 time.sleep(8)
@@ -113,8 +118,8 @@ run(client, 'docker logs virtual-tryon-frontend --tail 15')
 print("\n--- Health check ---")
 run(client, 'docker exec virtual-tryon-frontend wget -qO- http://localhost:3000 2>/dev/null | head -c 200')
 
-print("\n--- Traefik logs recientes ---")
-run(client, 'docker logs root-traefik-1 --since 30s 2>&1 | tail -8')
+print("\n--- Traefik ---")
+run(client, 'docker logs root-traefik-1 --since 30s 2>&1 | tail -5')
 
 print("\nURL: https://pruebalo.wilkiedevs.com")
 client.close()
