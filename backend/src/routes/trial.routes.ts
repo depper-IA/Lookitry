@@ -33,11 +33,32 @@ router.get('/status', asyncHandler(async (req, res) => {
  * Genera la URL de Wompi para tokenizar la tarjeta del trial.
  * Requiere auth (la cuenta ya fue creada en /register).
  * Monto: 100 COP (el mínimo aceptado por Wompi — se usa solo para tokenizar).
+ * Si la campaña activa tiene require_card_verification=false, activa el trial directamente.
  */
 router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
   const brand = (req as any).brand;
   if (!brand?.id) {
     return res.status(401).json({ error: 'No autenticado' });
+  }
+
+  // Obtener campaña activa y verificar si requiere tarjeta
+  const now = new Date().toISOString();
+  const { data: campaign } = await supabase
+    .from('trial_campaigns')
+    .select('id, trial_days, require_card_verification')
+    .eq('active', true)
+    .or(`ends_at.is.null,ends_at.gt.${now}`)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  // Modo test: sin verificación de tarjeta → activar trial directamente
+  if (!campaign || campaign.require_card_verification === false) {
+    await supabase
+      .from('brands')
+      .update({ trial_payment_status: 'active' })
+      .eq('id', brand.id);
+    return res.json({ skipPayment: true, message: 'Trial activado en modo test' });
   }
 
   // Marcar trial como pendiente de pago

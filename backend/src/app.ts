@@ -17,6 +17,8 @@ import trialRoutes from './routes/trial.routes';
 import { getPublicPaymentSettings } from './controllers/paymentSettings.controller';
 import { getHealthStatus } from './controllers/health.controller';
 import { getTrialStatus } from './controllers/trialCampaign.controller';
+import { uploadImage } from './controllers/upload.controller';
+import { authMiddleware } from './middleware/auth';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { globalRateLimiter } from './middleware/rateLimiter';
 
@@ -94,6 +96,9 @@ app.use('/api/payments/wompi', wompiRoutes);
 
 // Configuración pública de medios de pago (sin auth, para el frontend de marcas)
 app.get('/api/payment-settings/public', getPublicPaymentSettings);
+
+// Ruta de upload de imágenes (alias directo, requiere auth)
+app.post('/api/upload', authMiddleware, (req, res) => uploadImage(req as any, res));
 
 // Estado público del trial (sin auth — el frontend lo consulta para mostrar/ocultar el botón)
 app.get('/api/trial/status', getTrialStatus);

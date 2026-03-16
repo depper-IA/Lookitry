@@ -6,6 +6,7 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { UpgradeModal } from './UpgradeModal';
+import { uploadService } from '@/services/upload.service';
 
 interface SettingsFormProps {
   brand: Brand;
@@ -344,22 +345,18 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     try {
       const reader = new FileReader();
       reader.onload = async () => {
-        const base64 = (reader.result as string).split(',')[1];
-        const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ image_base64: base64, filename: file.name }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          setLogoError(data.message || 'Error al subir el logo');
-        } else {
-          setFormData(p => ({ ...p, logo: data.url }));
+        try {
+          const base64 = (reader.result as string).split(',')[1];
+          const url = await uploadService.uploadImage(base64, `logo-${Date.now()}.${file.name.split('.').pop()}`, false);
+          setFormData(p => ({ ...p, logo: url }));
+        } catch (err: any) {
+          setLogoError(err.message || 'Error al subir el logo');
+        } finally {
+          setLogoUploading(false);
         }
+      };
+      reader.onerror = () => {
+        setLogoError('Error al leer el archivo');
         setLogoUploading(false);
       };
       reader.readAsDataURL(file);
