@@ -193,34 +193,91 @@
 
 ---
 
-- [ ] 39. Sistema de suspensión y eliminación de mini-landing por falta de pago
-  - [ ] 39.1 Agregar campo `landing_suspended_at` a tabla `brands` (migración SQL)
+- [x] 39. Sistema de suspensión y eliminación de mini-landing por falta de pago
+  - [x] 39.1 Agregar campo `landing_suspended_at` a tabla `brands` (migración SQL)
     - Columna: `landing_suspended_at TIMESTAMPTZ nullable`
     - Se setea cuando la suscripción vence y la marca tiene `has_landing_page = true`
     - _Archivos: backend/migrations/add_landing_suspension.sql_
 
-  - [ ] 39.2 Lógica de suspensión automática en job diario
+  - [x] 39.2 Lógica de suspensión automática en job diario
     - En `cleanup.job.ts` o job de suscripciones: si `subscription_status = 'suspended'` y `has_landing_page = true` y `landing_suspended_at` es null → setear `landing_suspended_at = now()`
     - La mini-landing deja de ser accesible públicamente (ruta `/sitio/[brandSlug]` retorna 404 o página de suspensión)
     - _Archivos: backend/src/jobs/cleanup.job.ts, frontend/src/app/sitio/[brandSlug]/page.tsx_
 
-  - [ ] 39.3 Lógica de eliminación definitiva tras 3 meses
+  - [x] 39.3 Lógica de eliminación definitiva tras 3 meses
     - En job diario: si `landing_suspended_at` tiene más de 90 días → setear `has_landing_page = false`, `landing_suspended_at = null`, eliminar productos de MinIO si aplica
     - Enviar email de aviso al cliente antes de la eliminación (a los 75 días: aviso, a los 90: eliminación)
     - _Archivos: backend/src/jobs/cleanup.job.ts, backend/src/services/notification.service.ts_
 
-  - [ ] 39.4 Lógica de reactivación: restaurar mini-landing al renovar suscripción
+  - [x] 39.4 Lógica de reactivación: restaurar mini-landing al renovar suscripción
     - Al renovar suscripción (`subscription_status → 'active'`): si `landing_suspended_at` tiene menos de 90 días → setear `has_landing_page = true`, `landing_suspended_at = null`
     - _Archivos: backend/src/services/subscription.service.ts_
 
-  - [ ] 39.5 Página pública de mini-landing suspendida
+  - [x] 39.5 Página pública de mini-landing suspendida
     - Si `has_landing_page = false` o `landing_suspended_at` activo → mostrar página de "Esta tienda está temporalmente inactiva" con CTA de contacto
     - _Archivos: frontend/src/app/sitio/[brandSlug]/page.tsx_
 
-  - [ ] 39.6 Indicador en dashboard de marca cuando la mini-landing está suspendida
+  - [x] 39.6 Indicador en dashboard de marca cuando la mini-landing está suspendida
     - Banner de aviso en `/dashboard/mi-pagina` si `landing_suspended_at` está activo
     - Mostrar días restantes antes de eliminación definitiva
     - _Archivos: frontend/src/app/dashboard/mi-pagina/page.tsx_
+
+---
+
+- [x] 40. UX, SEO y rendimiento — Landing pública (Lookitry)
+
+  - [x] 40.1 SEO técnico: metadata dinámica y structured data en `layout.tsx` y `page.tsx`
+    - Convertir `page.tsx` de `'use client'` a Server Component (mover lógica de precio a `generateMetadata` o un Server Component wrapper)
+    - Agregar `openGraph`, `twitter`, `canonical`, `robots` y `keywords` en `metadata` de `layout.tsx`
+    - Agregar JSON-LD `Organization` + `WebSite` + `SoftwareApplication` en `page.tsx` via `<script type="application/ld+json">`
+    - Agregar `sitemap.xml` estático en `frontend/src/app/sitemap.ts` con las rutas públicas
+    - Agregar `robots.txt` en `frontend/src/app/robots.ts`
+    - _Archivos: frontend/src/app/layout.tsx, frontend/src/app/page.tsx, frontend/src/app/sitemap.ts, frontend/src/app/robots.ts_
+
+  - [x] 40.2 SEO on-page: copy y estructura semántica del hero (above the fold)
+    - El `<h1>` actual responde "qué" pero no "para quién" ni "siguiente paso" en 3 segundos
+    - Reescribir el subtítulo del hero para incluir nicho explícito: "Para tiendas de ropa, accesorios y calzado en Latinoamerica"
+    - Agregar un párrafo de apoyo con keywords long-tail: "probador virtual IA Latam", "prueba ropa online", "widget probador virtual tienda"
+    - Asegurar jerarquía semántica: un solo `<h1>`, secciones con `<h2>`, pasos con `<h3>`
+    - Agregar `alt` descriptivos a todas las imágenes y `aria-label` a botones sin texto visible
+    - _Archivos: frontend/src/app/page.tsx_
+
+  - [x] 40.3 Optimización de imágenes y assets
+    - Reemplazar cualquier `<img>` por `next/image` con `width`, `height` y `priority` en el hero
+    - Agregar `loading="lazy"` implícito (Next Image lo hace por defecto fuera del hero)
+    - Revisar que el favicon esté en formato `.ico` + `.png` 192×192 y 512×512 en `frontend/public/`
+    - Agregar `<link rel="preconnect">` para Google Fonts en `layout.tsx` (ya usa `next/font`, verificar que no haya imports CSS manuales)
+    - _Archivos: frontend/src/app/page.tsx, frontend/src/app/layout.tsx, frontend/public/_
+
+  - [x] 40.4 Microinteracciones y transiciones en la landing pública
+    - Botones CTA principales: agregar `transition-all duration-200 hover:-translate-y-0.5 active:scale-95` consistente en todos
+    - Cards de features y testimonios: agregar `hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`
+    - Cards de pricing: agregar `hover:border-[#FF5C3A]/60 transition-colors duration-200` en el plan Básico
+    - Nav links: agregar `transition-colors duration-150` (ya existe en algunos, unificar)
+    - Demo mockup: agregar `hover:border-[#FF5C3A]/40 transition-colors duration-300` al contenedor
+    - _Archivos: frontend/src/app/page.tsx_
+
+  - [x] 40.5 Responsive y touch targets en la landing
+    - Verificar que los botones del nav tengan `min-h-[44px]` en móvil (touch target mínimo recomendado)
+    - En la sección de pricing, en móvil las cards deben tener `gap-6` y padding suficiente para no sentirse apretadas
+    - La sección de stats (`+120 marcas`, `18K generaciones`) debe usar `grid-cols-3` en móvil con texto más pequeño si es necesario, sin overflow
+    - El demo mockup debe tener `max-w-full` y no desbordar en pantallas < 360px
+    - Revisar que el footer en móvil no tenga links demasiado juntos (agregar `gap-y-3` en el flex-wrap)
+    - _Archivos: frontend/src/app/page.tsx_
+
+  - [x] 40.6 Contraste y accesibilidad básica (WCAG AA)
+    - El texto `#888` sobre `#f5f2ee` tiene ratio ~3.5:1 (falla AA para texto normal < 18px) → cambiar a `#666` mínimo
+    - El texto `#555` sobre `#0a0a0a` tiene ratio suficiente, verificar el `#444` en el footer
+    - Agregar `focus-visible:ring-2 focus-visible:ring-[#FF5C3A]` a todos los botones y links interactivos
+    - Asegurar que el badge "Más popular" tenga `aria-label` o sea decorativo con `aria-hidden`
+    - Verificar que el `<nav>` tenga `aria-label="Navegación principal"`
+    - _Archivos: frontend/src/app/page.tsx_
+
+  - [x] 40.7 Microinteracciones en el panel admin y dashboard de marca
+    - En `/admin/brands`, `/admin/mini-landings`: botones de acción con `transition-all duration-150 hover:opacity-80`
+    - En `/dashboard/mi-pagina`: botón "Guardar cambios" con feedback visual de éxito (ya existe, verificar que el spinner sea consistente)
+    - Modales de confirmación: agregar `transition-opacity duration-150` al overlay y `transition-transform duration-200 scale-95→scale-100` al contenedor
+    - _Archivos: frontend/src/app/admin/mini-landings/page.tsx, frontend/src/app/admin/brands/page.tsx_
 
 ---
 
