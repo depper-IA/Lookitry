@@ -261,9 +261,12 @@ export default function MiPaginaPage() {
   const pageUrl = `${FRONTEND_URL}/sitio/${slug}`;
   const primaryColor = (brand as any)?.primary_color || brand?.primaryColor || '#FF5C3A';
   const hasLandingPage = (brand as any)?.has_landing_page ?? false;
+  const brandLogo = (brand as any)?.logo || null;
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6 items-start w-full">
+      {/* ── Columna izquierda: formulario ── */}
+      <div className="space-y-6 min-w-0">
       {/* Encabezado */}
       <div>
         <h1 className="font-syne font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
@@ -555,6 +558,141 @@ export default function MiPaginaPage() {
           Ver mi página
         </a>
       </div>
+    </div> {/* fin columna izquierda */}
+
+    {/* ── Columna derecha: preview sticky ── */}
+    <div className="hidden xl:block">
+      <div className="sticky top-20 space-y-4">
+        <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
+          Vista previa del diseño
+        </p>
+
+        {/* Preview Classic */}
+        <button
+          type="button"
+          onClick={() => setLandingTemplate('classic')}
+          className="w-full text-left rounded-2xl overflow-hidden border-2 transition-all"
+          style={{
+            borderColor: landingTemplate === 'classic' ? primaryColor : 'var(--border-color)',
+            boxShadow: landingTemplate === 'classic' ? `0 0 0 3px ${primaryColor}22` : 'none',
+          }}
+        >
+          {/* Miniatura Classic */}
+          <div className="relative bg-white overflow-hidden" style={{ height: 200 }}>
+            {/* Hero */}
+            <div className="h-20 flex flex-col items-center justify-center gap-1" style={{ background: `linear-gradient(135deg, ${primaryColor}dd, ${primaryColor}88)` }}>
+              {brandLogo
+                ? <img src={brandLogo} alt="" className="h-6 object-contain" />
+                : <div className="w-16 h-3 rounded-full bg-white/60" />}
+              <div className="w-24 h-2 rounded-full bg-white/80 mt-1" />
+              <div className="w-16 h-1.5 rounded-full bg-white/50" />
+            </div>
+            {/* Pasos */}
+            <div className="flex gap-1.5 px-3 py-2 bg-gray-50">
+              {[1,2,3].map(n => (
+                <div key={n} className="flex-1 bg-white rounded-md p-1.5 border border-gray-100 flex flex-col items-center gap-0.5">
+                  <div className="w-3 h-3 rounded-full text-white text-[6px] flex items-center justify-center font-bold" style={{ backgroundColor: primaryColor }}>{n}</div>
+                  <div className="w-8 h-1 rounded-full bg-gray-200" />
+                </div>
+              ))}
+            </div>
+            {/* Catálogo */}
+            <div className="grid grid-cols-4 gap-1 px-3 pb-2">
+              {[0,1,2,3].map(i => (
+                <div key={i} className="aspect-square rounded-md bg-gray-100 border border-gray-200" />
+              ))}
+            </div>
+            {/* Overlay seleccionado */}
+            {landingTemplate === 'classic' && (
+              <div className="absolute inset-0 flex items-end justify-end p-2 pointer-events-none">
+                <span className="text-white text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: primaryColor }}>Activo</span>
+              </div>
+            )}
+          </div>
+          <div className="px-3 py-2.5" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Clásico</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Hero · Pasos · Catálogo · Probador</p>
+          </div>
+        </button>
+
+        {/* Preview Editorial */}
+        <button
+          type="button"
+          onClick={() => setLandingTemplate('editorial')}
+          className="w-full text-left rounded-2xl overflow-hidden border-2 transition-all"
+          style={{
+            borderColor: landingTemplate === 'editorial' ? primaryColor : 'var(--border-color)',
+            boxShadow: landingTemplate === 'editorial' ? `0 0 0 3px ${primaryColor}22` : 'none',
+          }}
+        >
+          {/* Miniatura Editorial */}
+          <div className="relative bg-[#f7f5f2] overflow-hidden" style={{ height: 200 }}>
+            {/* Header sticky */}
+            <div className="h-7 bg-white border-b border-gray-100 flex items-center px-2 gap-1.5">
+              {brandLogo
+                ? <img src={brandLogo} alt="" className="h-4 w-4 rounded object-cover" />
+                : <div className="w-4 h-4 rounded bg-gray-900" />}
+              <div className="w-12 h-1.5 rounded-full bg-gray-800" />
+              <div className="ml-auto flex gap-1">
+                <div className="w-4 h-4 rounded bg-gray-100 border border-gray-200" />
+                <div className="w-4 h-4 rounded bg-gray-100 border border-gray-200" />
+              </div>
+            </div>
+            {/* Cover */}
+            <div className="h-14 flex items-end px-2 pb-1.5" style={{ background: 'linear-gradient(135deg,#1a1a2e,#0f3460)' }}>
+              <div className="space-y-0.5">
+                <div className="w-8 h-1 rounded-full bg-white/40" />
+                <div className="w-16 h-2 rounded-full bg-white/90" />
+              </div>
+            </div>
+            {/* Stats bar */}
+            <div className="h-6 bg-white border-b border-gray-100 flex items-center gap-3 px-2">
+              {['3 prod.','4.8 ★','IA'].map(s => (
+                <span key={s} className="text-[7px] text-gray-500 font-medium">{s}</span>
+              ))}
+            </div>
+            {/* Layout 2 cols */}
+            <div className="grid grid-cols-[1fr_80px] gap-1.5 px-2 pt-2">
+              <div className="grid grid-cols-3 gap-1">
+                {[0,1,2].map(i => (
+                  <div key={i} className={`aspect-square rounded bg-gray-200 border ${i===0 ? 'border-[#FF5C3A]' : 'border-gray-200'}`} />
+                ))}
+              </div>
+              <div className="bg-white rounded border border-gray-200 flex flex-col">
+                <div className="h-4 rounded-t" style={{ backgroundColor: '#0a0a0a' }} />
+                <div className="flex-1 p-1 space-y-1">
+                  <div className="w-full h-1 rounded-full bg-gray-100" />
+                  <div className="w-3/4 h-1 rounded-full bg-gray-100" />
+                </div>
+              </div>
+            </div>
+            {/* Overlay seleccionado */}
+            {landingTemplate === 'editorial' && (
+              <div className="absolute inset-0 flex items-end justify-end p-2 pointer-events-none">
+                <span className="text-white text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: primaryColor }}>Activo</span>
+              </div>
+            )}
+          </div>
+          <div className="px-3 py-2.5" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Editorial</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Header sticky · 2 columnas · Panel probador</p>
+          </div>
+        </button>
+
+        {/* Botón ver página */}
+        <a
+          href={pageUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-semibold border transition-colors"
+          style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)', backgroundColor: 'var(--bg-card)' }}
+        >
+          <ExternalLinkIcon className="w-4 h-4" />
+          Ver mi página en vivo
+        </a>
+      </div>
     </div>
+  </div>
   );
 }
+
