@@ -71,8 +71,13 @@ export interface AuthResponse {
     name: string;
     slug: string;
     plan: string;
+    emailVerified?: boolean;
+    trialEndDate?: string | null;
+    trialPaymentStatus?: string | null;
   };
   verificationToken?: string;
+  requireCardVerification?: boolean;
+  isTrial?: boolean;
 }
 
 // JWT Payload
