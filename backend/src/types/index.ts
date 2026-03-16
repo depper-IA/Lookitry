@@ -72,6 +72,7 @@ export interface AuthResponse {
     slug: string;
     plan: string;
   };
+  verificationToken?: string;
 }
 
 // JWT Payload

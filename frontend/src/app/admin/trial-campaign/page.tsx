@@ -125,6 +125,26 @@ export default function TrialCampaignPage() {
     }
   }
 
+  async function handleToggleCard(campaign: Campaign) {
+    setSaving(true);
+    setError('');
+    setSuccess('');
+    try {
+      const res = await fetch(`${API_URL}/api/admin/trial-campaign/${campaign.id}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ require_card_verification: !campaign.require_card_verification }),
+      });
+      if (!res.ok) throw new Error((await res.json()).message);
+      setSuccess(campaign.require_card_verification ? 'Verificación de tarjeta desactivada (modo test)' : 'Verificación de tarjeta activada');
+      await load();
+    } catch (err: any) {
+      setError(err.message || 'Error al actualizar campaña');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function handleToggle(campaign: Campaign) {
     setSaving(true);
     setError('');
