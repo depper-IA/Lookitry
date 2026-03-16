@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
 
 interface BrandData {
@@ -11,10 +11,19 @@ interface BrandData {
   primary_color: string;
   secondary_color: string;
   brand_description?: string | null;
+  slogan?: string | null;
   whatsapp_contact?: string | null;
+  whatsapp_message?: string | null;
+  cta_button_text?: string | null;
   cover_image_url?: string | null;
   social_links?: Record<string, string>;
   has_landing_page?: boolean;
+  city_display?: string | null;
+  national_shipping?: boolean;
+  rating?: number | null;
+  total_reviews?: number | null;
+  landing_template?: 'classic' | 'editorial';
+  schedule?: Record<string, string> | null;
 }
 
 interface ProductData {
@@ -23,6 +32,8 @@ interface ProductData {
   image_url: string;
   category: string;
   description?: string;
+  price?: number | null;
+  badge?: 'nuevo' | 'top' | 'oferta' | null;
 }
 
 interface MiniLandingProps {
@@ -82,7 +93,41 @@ function SparklesIcon({ className }: { className?: string }) {
   );
 }
 
-// ── Banner de activación ──────────────────────────────────────────────────────
+function MapPinIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+}
+
+function TruckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 1h8zM13 8h4l3 5v3h-7V8z" />
+    </svg>
+  );
+}
+
+function StarIcon({ className, filled }: { className?: string; filled?: boolean }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+    </svg>
+  );
+}
+
+function PhoneIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z" />
+    </svg>
+  );
+}
+
+// ── Shared: Banner de activación ─────────────────────────────────────────────
 function ActivationBanner({ primaryColor }: { primaryColor: string }) {
   return (
     <div className="w-full py-2.5 px-4 text-center text-sm font-medium text-white" style={{ backgroundColor: primaryColor }}>
@@ -91,30 +136,71 @@ function ActivationBanner({ primaryColor }: { primaryColor: string }) {
   );
 }
 
-// ── Botón flotante WhatsApp ───────────────────────────────────────────────────
-function WhatsAppFAB({ phone }: { phone: string }) {
+// ── Shared: Botón flotante WhatsApp ───────────────────────────────────────────
+function WhatsAppFAB({ phone, message }: { phone: string; message?: string | null }) {
   const clean = phone.replace(/\D/g, '');
-  const url = `https://wa.me/${clean}`;
+  const url = message
+    ? `https://wa.me/${clean}?text=${encodeURIComponent(message)}`
+    : `https://wa.me/${clean}`;
   return (
     <a
       href={url}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contactar por WhatsApp"
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 pl-4 pr-5 py-3.5 rounded-full text-white text-sm font-semibold shadow-2xl hover:scale-105 active:scale-95 transition-transform"
-      style={{ backgroundColor: '#25D366' }}
+      className="fixed bottom-6 right-6 z-50 group"
     >
-      <WhatsAppIcon className="w-5 h-5 flex-shrink-0" />
-      <span>WhatsApp</span>
+      <div className="relative">
+        {/* Tooltip */}
+        <span className="absolute bottom-full right-0 mb-2 px-3 py-1.5 rounded-lg text-white text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ backgroundColor: '#0a0a0a' }}>
+          ¿Tienes dudas? Escríbenos
+        </span>
+        {/* Badge */}
+        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-bold border-2 border-white" style={{ backgroundColor: '#FF5C3A' }}>1</span>
+        <div className="w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl hover:scale-105 active:scale-95 transition-transform" style={{ backgroundColor: '#25D366', boxShadow: '0 4px 16px rgba(37,211,102,.4)' }}>
+          <WhatsAppIcon className="w-7 h-7" />
+        </div>
+      </div>
     </a>
   );
 }
 
-// ── Hero ──────────────────────────────────────────────────────────────────────
-function HeroSection({ brand, onScrollDown }: { brand: BrandData; onScrollDown: () => void }) {
+// ── Shared: Footer ────────────────────────────────────────────────────────────
+function LandingFooter({ primaryColor }: { primaryColor: string }) {
+  return (
+    <footer className="py-6 px-4 border-t border-gray-100 text-center">
+      <p className="text-xs text-gray-400">
+        Probador virtual impulsado por{' '}
+        <a href="https://pruebalo.wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: primaryColor }}>
+          Pruébalo
+        </a>
+      </p>
+    </footer>
+  );
+}
+
+// ── Shared: Badge de producto ─────────────────────────────────────────────────
+function ProductBadge({ badge }: { badge: string }) {
+  const styles: Record<string, { bg: string; color: string }> = {
+    nuevo:  { bg: 'rgba(34,197,94,0.12)',  color: '#16a34a' },
+    top:    { bg: 'rgba(234,179,8,0.12)',  color: '#ca8a04' },
+    oferta: { bg: 'rgba(239,68,68,0.12)',  color: '#dc2626' },
+  };
+  const s = styles[badge] || { bg: 'rgba(0,0,0,0.06)', color: '#555' };
+  return (
+    <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize" style={{ backgroundColor: s.bg, color: s.color }}>
+      {badge}
+    </span>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TEMPLATE CLASSIC
+// ════════════════════════════════════════════════════════════════════════════
+
+function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: () => void }) {
   const primary = brand.primary_color || '#FF5C3A';
   const hasCover = !!brand.cover_image_url;
-
   return (
     <section
       className="relative w-full min-h-[420px] md:min-h-[520px] flex flex-col items-center justify-center text-center px-6 py-20 overflow-hidden"
@@ -126,18 +212,12 @@ function HeroSection({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
           <div className="absolute inset-0 bg-black/55" />
         </>
       )}
-
       <div className="relative z-10 flex flex-col items-center gap-5 max-w-2xl">
-        {brand.logo && (
-          <img src={brand.logo} alt={brand.name} className="h-16 md:h-20 object-contain drop-shadow-lg" />
-        )}
-        <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-md leading-tight">
-          {brand.name}
-        </h1>
+        {brand.logo && <img src={brand.logo} alt={brand.name} className="h-16 md:h-20 object-contain drop-shadow-lg" />}
+        <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-md leading-tight">{brand.name}</h1>
+        {brand.slogan && <p className="text-white/80 text-sm font-medium tracking-wide uppercase">{brand.slogan}</p>}
         {brand.brand_description && (
-          <p className="text-white/90 text-base md:text-lg max-w-xl leading-relaxed">
-            {brand.brand_description}
-          </p>
+          <p className="text-white/90 text-base md:text-lg max-w-xl leading-relaxed">{brand.brand_description}</p>
         )}
         <button
           onClick={onScrollDown}
@@ -145,42 +225,22 @@ function HeroSection({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
           style={{ backgroundColor: primary }}
         >
           <SparklesIcon className="w-5 h-5" />
-          Probarme un producto
+          {brand.cta_button_text || 'Probarme un producto'}
         </button>
       </div>
-
-      {/* Indicador scroll */}
-      <button
-        onClick={onScrollDown}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 hover:text-white/90 transition-colors animate-bounce"
-        aria-label="Ver más"
-      >
+      <button onClick={onScrollDown} className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 hover:text-white/90 transition-colors animate-bounce" aria-label="Ver más">
         <ChevronDownIcon className="w-7 h-7" />
       </button>
     </section>
   );
 }
 
-// ── Sección "Cómo funciona" ───────────────────────────────────────────────────
-function HowItWorksSection({ primaryColor }: { primaryColor: string }) {
+function ClassicHowItWorks({ primaryColor }: { primaryColor: string }) {
   const steps = [
-    {
-      num: '1',
-      title: 'Elige un producto',
-      desc: 'Navega por el catálogo y selecciona la prenda o accesorio que quieras probar.',
-    },
-    {
-      num: '2',
-      title: 'Sube tu foto',
-      desc: 'Toma o sube una foto tuya. Funciona mejor con buena iluminación y fondo claro.',
-    },
-    {
-      num: '3',
-      title: 'Ve el resultado',
-      desc: 'Nuestra IA genera en segundos cómo te vería con ese producto puesto.',
-    },
+    { num: '1', title: 'Elige un producto', desc: 'Navega por el catálogo y selecciona la prenda que quieras probar.' },
+    { num: '2', title: 'Sube tu foto', desc: 'Toma o sube una foto tuya. Funciona mejor con buena iluminación.' },
+    { num: '3', title: 'Ve el resultado', desc: 'Nuestra IA genera en segundos cómo te vería con ese producto.' },
   ];
-
   return (
     <section className="w-full bg-gray-50 py-16 px-4">
       <div className="max-w-4xl mx-auto">
@@ -189,12 +249,7 @@ function HowItWorksSection({ primaryColor }: { primaryColor: string }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {steps.map(s => (
             <div key={s.num} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
-              <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-4"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {s.num}
-              </div>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-4" style={{ backgroundColor: primaryColor }}>{s.num}</div>
               <h3 className="font-semibold text-gray-900 mb-2">{s.title}</h3>
               <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
             </div>
@@ -205,56 +260,29 @@ function HowItWorksSection({ primaryColor }: { primaryColor: string }) {
   );
 }
 
-// ── Galería de productos ──────────────────────────────────────────────────────
-function ProductsGallery({
-  products,
-  primaryColor,
-  onProductClick,
-}: {
-  products: ProductData[];
-  primaryColor: string;
-  onProductClick: (id: string) => void;
-}) {
-  if (products.length === 0) return null;
-
+function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { products: ProductData[]; primaryColor: string; ctaText?: string | null; onProductClick: (id: string) => void }) {
+  if (!products.length) return null;
   return (
     <section className="w-full max-w-5xl mx-auto px-4 py-14">
       <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">Catálogo</h2>
-      <p className="text-gray-500 text-center mb-10 text-sm">
-        Selecciona un producto para probártelo virtualmente
-      </p>
+      <p className="text-gray-500 text-center mb-10 text-sm">Selecciona un producto para probártelo virtualmente</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {products.map(p => (
-          <button
-            key={p.id}
-            onClick={() => onProductClick(p.id)}
-            className="group rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-200 text-left"
-          >
+          <button key={p.id} onClick={() => onProductClick(p.id)} className="group rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-200 text-left">
             <div className="relative aspect-square overflow-hidden bg-gray-50">
-              <img
-                src={p.image_url}
-                alt={p.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div
-                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                style={{ backgroundColor: primaryColor + 'cc' }}
-              >
-                <span className="text-white text-xs font-semibold px-3 py-1.5 rounded-full border-2 border-white">
-                  Probarme esto
-                </span>
+              <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ backgroundColor: primaryColor + 'cc' }}>
+                <span className="text-white text-xs font-semibold px-3 py-1.5 rounded-full border-2 border-white">{ctaText || 'Probarme esto'}</span>
               </div>
+              {p.badge && <span className="absolute top-2 left-2"><ProductBadge badge={p.badge} /></span>}
             </div>
             <div className="p-3">
               <p className="font-semibold text-sm text-gray-900 leading-tight truncate">{p.name}</p>
-              {p.category && (
-                <span className="inline-block mt-1 text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full capitalize">
-                  {p.category}
-                </span>
-              )}
-              {p.description && (
-                <p className="mt-1.5 text-xs text-gray-400 leading-snug line-clamp-2">{p.description}</p>
-              )}
+              <div className="flex items-center justify-between mt-1 gap-1 flex-wrap">
+                {p.category && <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full capitalize">{p.category}</span>}
+                {p.price != null && <span className="text-xs font-semibold" style={{ color: primaryColor }}>${p.price.toLocaleString('es-CO')}</span>}
+              </div>
+              {p.description && <p className="mt-1.5 text-xs text-gray-400 leading-snug line-clamp-2">{p.description}</p>}
             </div>
           </button>
         ))}
@@ -263,19 +291,12 @@ function ProductsGallery({
   );
 }
 
-// ── Probador virtual ──────────────────────────────────────────────────────────
-function TryOnSection({ brandSlug, primaryColor }: { brandSlug: string; primaryColor: string }) {
+function ClassicTryOn({ brandSlug, primaryColor }: { brandSlug: string; primaryColor: string }) {
   return (
-    <section
-      id="tryon-section"
-      className="w-full py-14 px-4"
-      style={{ backgroundColor: primaryColor + '0d' }}
-    >
+    <section id="tryon-section" className="w-full py-14 px-4" style={{ backgroundColor: primaryColor + '0d' }}>
       <div className="max-w-2xl mx-auto">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">Probador virtual</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">
-          Sube una foto tuya y ve cómo te queda el producto con IA
-        </p>
+        <p className="text-gray-500 text-center mb-8 text-sm">Sube una foto tuya y ve cómo te queda el producto con IA</p>
         <div className="rounded-3xl overflow-hidden shadow-2xl border border-gray-100">
           <TryOnWidget brandSlug={brandSlug} />
         </div>
@@ -284,30 +305,20 @@ function TryOnSection({ brandSlug, primaryColor }: { brandSlug: string; primaryC
   );
 }
 
-// ── Redes sociales ────────────────────────────────────────────────────────────
-function SocialSection({ brand }: { brand: BrandData }) {
-  const socialLinks = brand.social_links || {};
-  const entries = Object.entries(socialLinks).filter(([, url]) => !!url);
-  if (entries.length === 0) return null;
-
+function ClassicSocial({ brand }: { brand: BrandData }) {
+  const entries = Object.entries(brand.social_links || {}).filter(([, url]) => !!url);
+  if (!entries.length) return null;
   const icons: Record<string, React.ReactNode> = {
     instagram: <InstagramIcon className="w-5 h-5" />,
     facebook:  <FacebookIcon  className="w-5 h-5" />,
     tiktok:    <TikTokIcon    className="w-5 h-5" />,
   };
-
   return (
     <section className="w-full max-w-2xl mx-auto px-4 py-10 text-center">
       <h2 className="text-xl font-bold text-gray-900 mb-6">Síguenos</h2>
       <div className="flex flex-wrap items-center justify-center gap-3">
         {entries.map(([platform, url]) => (
-          <a
-            key={platform}
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors capitalize"
-          >
+          <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors capitalize">
             {icons[platform.toLowerCase()] ?? null}
             {platform}
           </a>
@@ -317,23 +328,16 @@ function SocialSection({ brand }: { brand: BrandData }) {
   );
 }
 
-// ── Contacto ──────────────────────────────────────────────────────────────────
-function ContactSection({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
+function ClassicContact({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
   if (!brand.whatsapp_contact) return null;
-  const url = `https://wa.me/${brand.whatsapp_contact.replace(/\D/g, '')}`;
-
+  const clean = brand.whatsapp_contact.replace(/\D/g, '');
+  const msg = brand.whatsapp_message ? `?text=${encodeURIComponent(brand.whatsapp_message)}` : '';
   return (
     <section className="w-full py-14 px-4 bg-gray-50">
       <div className="max-w-xl mx-auto text-center">
         <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">¿Tienes preguntas?</h2>
         <p className="text-gray-500 text-sm mb-8">Escríbenos directamente y te respondemos al instante</p>
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold text-base shadow-lg hover:opacity-90 active:scale-95 transition-all"
-          style={{ backgroundColor: '#25D366' }}
-        >
+        <a href={`https://wa.me/${clean}${msg}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold text-base shadow-lg hover:opacity-90 active:scale-95 transition-all" style={{ backgroundColor: '#25D366' }}>
           <WhatsAppIcon className="w-6 h-6" />
           Escribir por WhatsApp
         </a>
@@ -342,7 +346,255 @@ function ContactSection({ brand, primaryColor }: { brand: BrandData; primaryColo
   );
 }
 
-// ── Componente principal ──────────────────────────────────────────────────────
+function TemplateClassic({ brandSlug, brand, products }: { brandSlug: string; brand: BrandData; products: ProductData[] }) {
+  const primary = brand.primary_color || '#FF5C3A';
+  const scrollToTryOn = () => document.getElementById('tryon-section')?.scrollIntoView({ behavior: 'smooth' });
+  return (
+    <div className="min-h-screen bg-white flex flex-col">
+      {!brand.has_landing_page && <ActivationBanner primaryColor={primary} />}
+      <ClassicHero brand={brand} onScrollDown={scrollToTryOn} />
+      <ClassicHowItWorks primaryColor={primary} />
+      <ClassicProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={scrollToTryOn} />
+      <ClassicTryOn brandSlug={brandSlug} primaryColor={primary} />
+      <ClassicSocial brand={brand} />
+      <ClassicContact brand={brand} primaryColor={primary} />
+      <LandingFooter primaryColor={primary} />
+      {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// TEMPLATE EDITORIAL
+// ════════════════════════════════════════════════════════════════════════════
+
+function EditorialHeader({ brand }: { brand: BrandData }) {
+  const socialLinks = brand.social_links || {};
+  const entries = Object.entries(socialLinks).filter(([, url]) => !!url);
+  const icons: Record<string, React.ReactNode> = {
+    instagram: <InstagramIcon className="w-3.5 h-3.5" />,
+    facebook:  <FacebookIcon  className="w-3.5 h-3.5" />,
+    tiktok:    <TikTokIcon    className="w-3.5 h-3.5" />,
+  };
+  return (
+    <header className="bg-white border-b border-gray-100 px-5 h-16 flex items-center justify-between sticky top-0 z-50">
+      <div className="flex items-center gap-2.5">
+        {brand.logo ? (
+          <img src={brand.logo} alt={brand.name} className="h-9 w-9 rounded-lg object-cover" />
+        ) : (
+          <div className="h-9 w-9 rounded-lg bg-gray-900 flex items-center justify-center text-white font-bold text-sm">
+            {brand.name.slice(0, 2).toUpperCase()}
+          </div>
+        )}
+        <span className="font-bold text-base text-gray-900">{brand.name}</span>
+      </div>
+      {entries.length > 0 && (
+        <div className="flex items-center gap-1.5">
+          {entries.map(([platform, url]) => (
+            <a key={platform} href={url} target="_blank" rel="noopener noreferrer" title={platform}
+              className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
+              {icons[platform.toLowerCase()] ?? null}
+            </a>
+          ))}
+        </div>
+      )}
+    </header>
+  );
+}
+
+function EditorialCover({ brand }: { brand: BrandData }) {
+  const primary = brand.primary_color || '#FF5C3A';
+  return (
+    <div className="relative h-48 md:h-56 overflow-hidden flex items-end" style={brand.cover_image_url ? {} : { background: `linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` }}>
+      {brand.cover_image_url && (
+        <>
+          <img src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        </>
+      )}
+      {!brand.cover_image_url && <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />}
+      <div className="relative z-10 px-6 pb-5 w-full">
+        {brand.slogan && <p className="text-white/70 text-xs mb-1 tracking-widest uppercase">{brand.slogan}</p>}
+        <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">{brand.name}</h1>
+      </div>
+    </div>
+  );
+}
+
+function EditorialStatsBar({ products, brand }: { products: ProductData[]; brand: BrandData }) {
+  const primary = brand.primary_color || '#FF5C3A';
+  const rating = brand.rating;
+  const reviews = brand.total_reviews;
+  return (
+    <div className="bg-white border-b border-gray-100 px-5 flex gap-6 overflow-x-auto">
+      <div className="py-3 flex items-center gap-1.5 whitespace-nowrap border-b-2 flex-shrink-0" style={{ borderColor: primary }}>
+        <span className="font-bold text-base text-gray-900">{products.length}</span>
+        <span className="text-xs text-gray-400">productos</span>
+      </div>
+      {rating != null && (
+        <div className="py-3 flex items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent flex-shrink-0">
+          <StarIcon className="w-4 h-4 text-yellow-400" filled />
+          <span className="font-bold text-base text-gray-900">{rating.toFixed(1)}</span>
+          {reviews != null && <span className="text-xs text-gray-400">({reviews} reseñas)</span>}
+        </div>
+      )}
+      <div className="py-3 flex items-center gap-1.5 whitespace-nowrap border-b-2 border-transparent flex-shrink-0">
+        <SparklesIcon className="w-4 h-4 text-gray-400" />
+        <span className="font-bold text-base text-gray-900">IA</span>
+        <span className="text-xs text-gray-400">probador virtual</span>
+      </div>
+    </div>
+  );
+}
+
+function EditorialProductCard({ product, selected, primaryColor, ctaText, onClick }: { product: ProductData; selected: boolean; primaryColor: string; ctaText?: string | null; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="text-left w-full rounded-xl overflow-hidden border bg-white transition-all duration-200" style={{ borderColor: selected ? primaryColor : '#e8e4df', borderWidth: selected ? 1.5 : 0.5 }}>
+      <div className="relative aspect-square bg-gray-50">
+        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+        {product.badge && <span className="absolute top-2 left-2"><ProductBadge badge={product.badge} /></span>}
+        {selected && (
+          <span className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full" style={{ backgroundColor: primaryColor }}>
+            <svg className="w-2.5 h-2.5" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2.5L8 2.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" /></svg>
+            Seleccionado
+          </span>
+        )}
+      </div>
+      <div className="p-2.5">
+        <p className="text-xs font-semibold text-gray-900 leading-tight truncate">{product.name}</p>
+        <p className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">{product.category}</p>
+        {product.price != null && <p className="text-xs font-semibold mt-1" style={{ color: primaryColor }}>${product.price.toLocaleString('es-CO')}</p>}
+      </div>
+    </button>
+  );
+}
+
+function EditorialInfoCard({ brand }: { brand: BrandData }) {
+  const DAYS: Record<string, string> = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Miércoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'Sábado', domingo: 'Domingo' };
+  const scheduleEntries = brand.schedule ? Object.entries(brand.schedule) : [];
+  return (
+    <div className="bg-white border border-gray-100 rounded-xl p-4 mt-4 space-y-4">
+      {brand.brand_description && (
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Sobre la marca</p>
+          <p className="text-sm text-gray-600 leading-relaxed">{brand.brand_description}</p>
+        </div>
+      )}
+      {scheduleEntries.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Horario de atención</p>
+          <div className="space-y-1">
+            {scheduleEntries.map(([day, hours]) => (
+              <div key={day} className="flex justify-between text-xs">
+                <span className="text-gray-500">{DAYS[day] ?? day}</span>
+                <span className={hours === 'Cerrado' ? 'text-gray-300' : 'text-gray-800 font-medium'}>{hours}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {(brand.city_display || brand.national_shipping || brand.whatsapp_contact) && (
+        <div className="space-y-2 pt-1 border-t border-gray-50">
+          {brand.whatsapp_contact && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
+                <PhoneIcon className="w-3.5 h-3.5 text-gray-500" />
+              </div>
+              <span>{brand.whatsapp_contact}</span>
+            </div>
+          )}
+          {brand.city_display && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
+                <MapPinIcon className="w-3.5 h-3.5 text-gray-500" />
+              </div>
+              <span>{brand.city_display}{brand.national_shipping ? ' · Envíos nacionales' : ''}</span>
+            </div>
+          )}
+          {!brand.city_display && brand.national_shipping && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
+                <TruckIcon className="w-3.5 h-3.5 text-gray-500" />
+              </div>
+              <span>Envíos a todo el país</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TemplateEditorial({ brandSlug, brand, products }: { brandSlug: string; brand: BrandData; products: ProductData[] }) {
+  const primary = brand.primary_color || '#FF5C3A';
+  const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id ?? null);
+
+  const handleProductClick = (id: string) => {
+    setSelectedId(id);
+    document.getElementById('editorial-tryon')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#f7f5f2', color: '#0a0a0a' }}>
+      {!brand.has_landing_page && <ActivationBanner primaryColor={primary} />}
+      <EditorialHeader brand={brand} />
+      <EditorialCover brand={brand} />
+      <EditorialStatsBar products={products} brand={brand} />
+
+      {/* Layout principal */}
+      <div className="max-w-5xl mx-auto w-full px-4 py-7 grid grid-cols-1 md:grid-cols-[1fr_320px] gap-6 items-start">
+
+        {/* Columna izquierda: catálogo + info */}
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3">Nuestros productos</p>
+          {products.length > 0 ? (
+            <div className="grid grid-cols-3 gap-2.5">
+              {products.map(p => (
+                <EditorialProductCard
+                  key={p.id}
+                  product={p}
+                  selected={selectedId === p.id}
+                  primaryColor={primary}
+                  ctaText={brand.cta_button_text}
+                  onClick={() => handleProductClick(p.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 py-8 text-center">No hay productos disponibles</p>
+          )}
+          <EditorialInfoCard brand={brand} />
+        </div>
+
+        {/* Columna derecha: panel probador sticky */}
+        <div id="editorial-tryon" className="md:sticky md:top-20">
+          <div className="rounded-xl overflow-hidden border border-gray-200 shadow-lg bg-white">
+            <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: '#0a0a0a' }}>
+              <span className="text-white font-bold text-sm flex items-center gap-1.5">
+                <SparklesIcon className="w-4 h-4 text-orange-400" />
+                Probador Virtual
+              </span>
+              <span className="text-[10px] text-gray-500 bg-gray-800 px-2.5 py-1 rounded-full">IA</span>
+            </div>
+            <TryOnWidget brandSlug={brandSlug} />
+          </div>
+          <div className="mt-3 flex items-center justify-center gap-1.5">
+            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primary }} />
+            <span className="text-[10px] text-gray-400">Impulsado por Pruébalo AI</span>
+          </div>
+        </div>
+      </div>
+
+      <LandingFooter primaryColor={primary} />
+      {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// COMPONENTE PRINCIPAL
+// ════════════════════════════════════════════════════════════════════════════
+
 export function MiniLanding({ brandSlug, initialData }: MiniLandingProps) {
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(!initialData);
@@ -354,10 +606,6 @@ export function MiniLanding({ brandSlug, initialData }: MiniLandingProps) {
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
   }, [brandSlug]);
-
-  const scrollToTryOn = () => {
-    document.getElementById('tryon-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   if (loading) {
     return (
@@ -378,39 +626,12 @@ export function MiniLanding({ brandSlug, initialData }: MiniLandingProps) {
     );
   }
 
-  const brand = data.brand;
-  const products = data.products || [];
-  const primaryColor = brand.primary_color || '#FF5C3A';
-  const hasLandingPage = brand.has_landing_page ?? false;
+  const { brand, products } = data;
+  const template = brand.landing_template || 'classic';
 
-  return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {!hasLandingPage && <ActivationBanner primaryColor={primaryColor} />}
+  if (template === 'editorial') {
+    return <TemplateEditorial brandSlug={brandSlug} brand={brand} products={products || []} />;
+  }
 
-      <HeroSection brand={brand} onScrollDown={scrollToTryOn} />
-      <HowItWorksSection primaryColor={primaryColor} />
-      <ProductsGallery products={products} primaryColor={primaryColor} onProductClick={scrollToTryOn} />
-      <TryOnSection brandSlug={brandSlug} primaryColor={primaryColor} />
-      <SocialSection brand={brand} />
-      <ContactSection brand={brand} primaryColor={primaryColor} />
-
-      <footer className="mt-auto py-6 px-4 border-t border-gray-100 text-center">
-        <p className="text-xs text-gray-400">
-          Probador virtual impulsado por{' '}
-          <a
-            href="https://pruebalo.wilkiedevs.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium hover:underline"
-            style={{ color: primaryColor }}
-          >
-            Pruébalo
-          </a>
-        </p>
-      </footer>
-
-      {/* Botón flotante WhatsApp */}
-      {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} />}
-    </div>
-  );
+  return <TemplateClassic brandSlug={brandSlug} brand={brand} products={products || []} />;
 }

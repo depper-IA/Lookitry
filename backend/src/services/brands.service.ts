@@ -24,6 +24,16 @@ export interface UpdateBrandDto {
   cover_image_url?: string;
   social_links?: Record<string, string>;
   has_landing_page?: boolean;
+  // Nuevos campos de mini-landing (task 5)
+  city_display?: string;
+  national_shipping?: boolean;
+  whatsapp_message?: string;
+  cta_button_text?: string;
+  rating?: number;
+  total_reviews?: number;
+  landing_template?: string;
+  schedule?: Record<string, any> | null;
+  slogan?: string;
 }
 
 export class BrandsService {

@@ -49,8 +49,10 @@ export class ProductsController {
       const productData: CreateProductDto = {
         name: req.body.name,
         description: req.body.description,
-        image_url: req.body.image_url || req.body.imageUrl, // Soportar ambos formatos
+        image_url: req.body.image_url || req.body.imageUrl,
         category: req.body.category,
+        price: req.body.price != null ? Number(req.body.price) : null,
+        badge: req.body.badge || null,
       };
 
       const product = await productsService.createProduct(req.brand.id, productData);
@@ -111,6 +113,14 @@ export class ProductsController {
 
       if (req.body.category !== undefined) {
         updates.category = req.body.category;
+      }
+
+      if (req.body.price !== undefined) {
+        updates.price = req.body.price != null ? Number(req.body.price) : null;
+      }
+
+      if (req.body.badge !== undefined) {
+        updates.badge = req.body.badge || null;
       }
 
       // Verificar que hay algo que actualizar

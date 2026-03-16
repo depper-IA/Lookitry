@@ -39,6 +39,8 @@ export interface Product {
   description?: string;
   imageUrl: string;
   category: string;
+  price?: number | null;
+  badge?: 'nuevo' | 'top' | 'oferta' | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -49,6 +51,8 @@ export interface CreateProductDto {
   description?: string;
   imageUrl: string;
   category: string;
+  price?: number | null;
+  badge?: 'nuevo' | 'top' | 'oferta' | null;
 }
 
 export interface UpdateProductDto {
@@ -56,6 +60,8 @@ export interface UpdateProductDto {
   description?: string;
   imageUrl?: string;
   category?: string;
+  price?: number | null;
+  badge?: 'nuevo' | 'top' | 'oferta' | null;
 }
 
 // Usage types
