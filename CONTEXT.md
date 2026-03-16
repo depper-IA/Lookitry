@@ -34,6 +34,15 @@
 | MinIO | `https://minio.wilkiedevs.com` |
 | n8n | corre en el mismo VPS — no reiniciar |
 
+## Rutas del Frontend (actualizadas 16/03/2026)
+
+| Ruta | Descripción |
+|---|---|
+| `/sitio/[brandSlug]` | Mini-landing pública de cada marca (ruta oficial) |
+| `/pruebalo/[brandSlug]` | Ruta anterior — sigue existiendo por compatibilidad |
+| `/dashboard/mi-pagina` | Formulario de configuración de mini-landing (marca) |
+| `/admin/brands` | Panel admin — toggle `has_landing_page` por marca |
+
 ---
 
 ## Estructura en el VPS
@@ -65,7 +74,15 @@ Mostrador_wilkiedevs/
 
 ## Comandos de Rebuild / Deploy
 
-### Backend
+### Script principal (recomendado)
+```bash
+python scripts/_deploy_now.py              # detecta qué cambió, usa caché Docker (rápido)
+python scripts/_deploy_now.py --no-cache   # rebuild completo sin caché (usar cuando cambia package.json)
+python scripts/_deploy_now.py --backend    # solo backend
+python scripts/_deploy_now.py --frontend   # solo frontend
+```
+
+### Backend manual
 ```bash
 cd /root/virtual-tryon
 docker compose -f docker-compose.backend.yml build --no-cache
@@ -208,6 +225,17 @@ NEXT_PUBLIC_API_URL=https://api.pruebalo.wilkiedevs.com
 | `backend/migrations/create_trial_campaigns_table.sql` | EJECUTADO (16/03/2026) | Tablas trial_campaigns + trial_registrations + campos en brands |
 | `backend/migrations/add_email_verification_to_brands.sql` | EJECUTADO (incluido arriba) | |
 | `backend/migrations/add_trial_payment_status.sql` | EJECUTADO (incluido arriba) | |
+| `backend/migrations/add_mini_landing_fields.sql` | **PENDIENTE** — ejecutar en Supabase SQL Editor | Campos de mini-landing en tabla brands |
+
+### Migración pendiente — ejecutar en Supabase:
+```sql
+ALTER TABLE brands
+  ADD COLUMN IF NOT EXISTS brand_description TEXT,
+  ADD COLUMN IF NOT EXISTS whatsapp_contact   TEXT,
+  ADD COLUMN IF NOT EXISTS cover_image_url    TEXT,
+  ADD COLUMN IF NOT EXISTS social_links       JSONB DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS has_landing_page   BOOLEAN DEFAULT false;
+```
 
 ### Campos en `brands` confirmados en BD:
 - `email_verified` BOOLEAN DEFAULT false (usuarios existentes marcados como true)
@@ -355,6 +383,12 @@ Para SSH desde Windows usar Python + paramiko (PowerShell no acepta `&&`, usar `
 | 15/03/2026 | n8n `wPLypk7KhBcFLicX` | Nodos "Subir Selfie/Imagen" apuntaban a WordPress | Actualizados a `https://api.pruebalo.wilkiedevs.com/api/upload/selfie` |
 | 15/03/2026 | n8n `wPLypk7KhBcFLicX` | Nodo "Subir Imagen Final" usaba `$json.image_base64` | Corregido a `$json.generated_image_base64` (mismatch de campo) |
 | 15/03/2026 | Supabase `products` | Producto "Life Kombucha - Lulo" tenía URL de WordPress (404) | Reemplazada con placeholder — admin debe subir imagen real |
+| 16/03/2026 | `frontend` (25+ archivos) | Fallbacks `localhost:3001` / `localhost:3000` en código fuente | Reemplazados por URLs de producción |
+| 16/03/2026 | `backend/.env` | `FRONTEND_URL=http://localhost:3000` | Corregido a `https://pruebalo.wilkiedevs.com` |
+| 16/03/2026 | `audit.service.ts` | `'brand.landing_page_toggle'` no era `AuditAction` válido | Agregado al tipo `AuditAction` |
+| 16/03/2026 | `mi-pagina/page.tsx` | `authService` usado sin importar | Agregado import de `auth.service` |
+| 16/03/2026 | Ruta pública del probador | `/pruebalo/[brandSlug]` → `/sitio/[brandSlug]` | Nueva carpeta `sitio/[brandSlug]`, ruta anterior sigue activa |
+| 16/03/2026 | `MiniLanding.tsx` | Template básico sin sección "Cómo funciona" ni FAB WhatsApp | Rediseño completo: hero mejorado, sección pasos, FAB flotante WhatsApp |
 
 ---
 
