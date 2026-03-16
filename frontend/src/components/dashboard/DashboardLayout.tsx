@@ -80,9 +80,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Brand info + logout */}
       <div className="p-4 border-t" style={{ borderColor: '#1f1f1f' }}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+          <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
             style={{ backgroundColor: '#FF5C3A' }}>
-            {brand?.name?.charAt(0)?.toUpperCase() ?? 'M'}
+            {(brand as any)?.logo
+              ? <img src={(brand as any).logo} alt={brand?.name} className="w-full h-full object-cover" />
+              : brand?.name?.charAt(0)?.toUpperCase() ?? 'M'
+            }
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-white truncate">{brand?.name}</p>
