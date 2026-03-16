@@ -396,10 +396,10 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
   ] as const;
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
       {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
       {/* Formulario — 3 cols */}
-      <div className="xl:col-span-3">
+      <div className="lg:col-span-3">
         <Card>
           <CardHeader>
             <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="flex gap-1 border p-1 rounded-lg">
@@ -499,7 +499,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                   <div>
                     <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Layout del Widget</label>
                     <p style={{ color: 'var(--text-muted)' }} className="text-xs mb-3">Cada template cambia la disposición de los elementos, no solo los colores</p>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {TEMPLATES.map(tpl => {
                         const locked = tpl.proOnly && !isPro;
                         const selected = formData.widgetTemplate === tpl.id;
@@ -577,7 +577,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                         <p className="font-bold text-white text-base">Plan Pro — Personalización Avanzada</p>
                         <p className="text-white/70 text-xs mt-1">Desbloquea control total sobre tu widget</p>
                       </div>
-                      <div style={{ background: 'rgba(255,92,58,0.06)' }} className="px-5 py-4 grid grid-cols-2 gap-3">
+                      <div style={{ background: 'rgba(255,92,58,0.06)' }} className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
                           'Hasta 15 productos activos',
                           '1.200 generaciones/mes',
@@ -671,7 +671,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
       </div>
 
       {/* Preview — 2 cols */}
-      <div className="xl:col-span-2 space-y-4">
+      <div className="lg:col-span-2 space-y-4">
         <Card>
           <CardHeader>
             <h3 style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">Vista Previa del Widget</h3>

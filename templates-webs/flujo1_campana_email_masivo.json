@@ -1,0 +1,224 @@
+{
+  "name": "VirtualTryOn — Campaña Email Masivo",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "cron-diario",
+      "name": "Cron — L-V 9am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crm-campaign-launch",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-launch",
+      "name": "Webhook — Lanzar campaña manual",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 500],
+      "webhookId": "crm-campaign-launch"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, nombre_empresa, nombre_contacto, email, crm_ref FROM crm_leads WHERE campana_enviada = false AND email IS NOT NULL AND estado_lead = 'NUEVO' LIMIT 300;",
+        "options": {}
+      },
+      "id": "supabase-get-leads",
+      "name": "Supabase — Obtener 300 leads pendientes",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [460, 300],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_CRED_ID",
+          "name": "Supabase VirtualTryOn"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "loop-contactos",
+      "name": "Loop — Contacto a contacto",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.brevo.com/v3/smtp/email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "api-key", "value": "={{ $vars.BREVO_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"sender\": { \"name\": \"Pruébalo — Probador Virtual\", \"email\": \"info@pruebalo.wilkiedevs.com\" },\n  \"to\": [{ \"email\": \"{{ $json.email }}\", \"name\": \"{{ $json.nombre_contacto || $json.nombre_empresa }}\" }],\n  \"subject\": \"{{ $json.nombre_empresa }} — probador virtual gratis para tu tienda\",\n  \"htmlContent\": \"<html><body style='font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px'><h2 style='color:#FF5C3A'>Hola {{ $json.nombre_contacto || 'equipo de ' + $json.nombre_empresa }},</h2><p>¿Tus clientes no saben cómo les queda la ropa antes de comprar? Eso genera devoluciones y ventas perdidas.</p><p><strong>Pruébalo</strong> es un probador virtual con IA que tus clientes usan desde el celular — sin instalar nada, resultado en 12 segundos.</p><ul><li>7 días gratis, sin tarjeta</li><li>Sin instalación — solo un enlace</li><li>Resultado en 12 segundos</li></ul><p style='text-align:center;margin:30px 0'><a href='https://pruebalo.wilkiedevs.com/register?utm_source=email&utm_campaign=masivo&ref={{ $json.crm_ref }}' style='background:#FF5C3A;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold'>Activar probador gratis</a></p><p style='color:#888;font-size:12px'>Si no deseas recibir más correos, responde con CANCELAR.</p></body></html>\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "brevo-send-email",
+      "name": "Brevo — Enviar email personalizado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE crm_leads SET campana_enviada = true, fecha_campana = NOW(), estado_lead = 'CONTACTADO', ultimo_contacto = NOW() WHERE id = {{ $json.id }};",
+        "options": {}
+      },
+      "id": "supabase-update-ok",
+      "name": "Supabase — Marcar como enviado",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [1120, 200],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_CRED_ID",
+          "name": "Supabase VirtualTryOn"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE crm_leads SET estado_lead = 'EMAIL_INVALIDO', ultimo_contacto = NOW() WHERE id = {{ $json.id }};",
+        "options": {}
+      },
+      "id": "supabase-update-error",
+      "name": "Supabase — Marcar email invalido",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [1120, 420],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_CRED_ID",
+          "name": "Supabase VirtualTryOn"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds"
+      },
+      "id": "wait-antispam",
+      "name": "Wait — 2s anti-spam",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1340, 300],
+      "webhookId": "wait-antispam-crm"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(*) as enviados, COUNT(CASE WHEN estado_lead='EMAIL_INVALIDO' THEN 1 END) as errores FROM crm_leads WHERE DATE(fecha_campana) = CURRENT_DATE;",
+        "options": {}
+      },
+      "id": "stats-final",
+      "name": "Supabase — Stats del dia",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [1560, 300],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_CRED_ID",
+          "name": "Supabase VirtualTryOn"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { enviados: $json.enviados, errores: $json.errores, total: parseInt($json.enviados) + parseInt($json.errores) } }}"
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1780, 500]
+    }
+  ],
+  "connections": {
+    "Cron — L-V 9am": {
+      "main": [[{ "node": "Supabase — Obtener 300 leads pendientes", "type": "main", "index": 0 }]]
+    },
+    "Webhook — Lanzar campaña manual": {
+      "main": [[{ "node": "Supabase — Obtener 300 leads pendientes", "type": "main", "index": 0 }]]
+    },
+    "Supabase — Obtener 300 leads pendientes": {
+      "main": [[{ "node": "Loop — Contacto a contacto", "type": "main", "index": 0 }]]
+    },
+    "Loop — Contacto a contacto": {
+      "main": [[{ "node": "Brevo — Enviar email personalizado", "type": "main", "index": 0 }]]
+    },
+    "Brevo — Enviar email personalizado": {
+      "main": [
+        [{ "node": "Supabase — Marcar como enviado", "type": "main", "index": 0 }],
+        [{ "node": "Supabase — Marcar email invalido", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Marcar como enviado": {
+      "main": [[{ "node": "Wait — 2s anti-spam", "type": "main", "index": 0 }]]
+    },
+    "Supabase — Marcar email invalido": {
+      "main": [[{ "node": "Wait — 2s anti-spam", "type": "main", "index": 0 }]]
+    },
+    "Wait — 2s anti-spam": {
+      "main": [[{ "node": "Supabase — Stats del dia", "type": "main", "index": 0 }]]
+    },
+    "Supabase — Stats del dia": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "last",
+    "executionTimeout": 7200,
+    "timezone": "America/Bogota"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "virtualtyon-campana-001"
+  },
+  "pinData": {},
+  "versionId": "v1.0.0",
+  "triggerCount": 2,
+  "tags": [
+    { "id": "marketing", "name": "marketing" },
+    { "id": "email", "name": "email" },
+    { "id": "crm", "name": "crm" }
+  ]
+}

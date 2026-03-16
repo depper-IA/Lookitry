@@ -148,7 +148,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         >
           {/* Hamburger móvil */}
           <button
-            className="lg:hidden p-2 rounded-lg -ml-1"
+            className="lg:hidden p-2 rounded-lg -ml-1 flex-shrink-0"
             style={{ color: 'var(--text-secondary)' }}
             onClick={() => setSidebarOpen(true)}
             aria-label="Abrir menú"
@@ -159,13 +159,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </button>
 
           <h2
-            className="hidden lg:block font-syne font-semibold text-base"
+            className="hidden lg:block font-syne font-semibold text-base flex-shrink-0"
             style={{ color: 'var(--text-primary)' }}
           >
             Dashboard
           </h2>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 ml-auto min-w-0">
             <LiveTryOnButton />
             <SubscriptionBadge />
             <ThemeToggle />
