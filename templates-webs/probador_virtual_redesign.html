@@ -1,0 +1,282 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+.pv{font-family:'DM Sans',sans-serif;background:#f7f5f2;min-height:100vh;color:#0a0a0a;position:relative}
+
+/* HEADER */
+.pv-header{background:#fff;border-bottom:0.5px solid #e8e4df;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.pv-brand{display:flex;align-items:center;gap:10px}
+.pv-logo{width:36px;height:36px;border-radius:8px;background:#0a0a0a;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;color:#fff}
+.pv-name{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:#0a0a0a}
+.pv-header-right{display:flex;align-items:center;gap:10px}
+.pv-social-btn{width:32px;height:32px;border-radius:6px;background:#f5f2ee;display:flex;align-items:center;justify-content:center;cursor:pointer;border:0.5px solid #e8e4df;transition:background .2s}
+.pv-social-btn:hover{background:#ede9e3}
+
+/* HERO COVER */
+.pv-cover{position:relative;height:200px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);overflow:hidden;display:flex;align-items:flex-end}
+.pv-cover-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 60%)}
+.pv-cover-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;opacity:.3}
+.pv-cover-txt{font-size:12px;color:#fff;letter-spacing:.06em;text-transform:uppercase}
+.pv-cover-info{position:relative;z-index:2;padding:20px 24px;width:100%}
+.pv-cover-tagline{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:4px}
+.pv-cover-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;color:#fff;letter-spacing:-.02em}
+
+/* STATS BAR */
+.pv-stats{background:#fff;border-bottom:0.5px solid #e8e4df;padding:0 24px;display:flex;gap:24px;overflow-x:auto}
+.pv-stat{padding:12px 0;display:flex;align-items:center;gap:6px;white-space:nowrap;border-bottom:2px solid transparent}
+.pv-stat.active{border-bottom-color:#FF5C3A}
+.pv-stat-n{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:#0a0a0a}
+.pv-stat-l{font-size:11px;color:#aaa}
+
+/* MAIN LAYOUT */
+.pv-main{max-width:960px;margin:0 auto;padding:28px 16px;display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+@media(max-width:720px){.pv-main{grid-template-columns:1fr}}
+
+/* PRODUCTS */
+.pv-section-label{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#aaa;margin-bottom:14px}
+.pv-products{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:0}
+.pv-prod{background:#fff;border:0.5px solid #e8e4df;border-radius:10px;overflow:hidden;cursor:pointer;transition:all .2s}
+.pv-prod:hover{border-color:#FF5C3A55;transform:translateY(-2px)}
+.pv-prod.selected{border-color:#FF5C3A;border-width:1.5px}
+.pv-prod-img{width:100%;aspect-ratio:1;object-fit:cover;background:#f0ede8;display:flex;align-items:center;justify-content:center}
+.pv-prod-img-placeholder{width:100%;aspect-ratio:1;background:linear-gradient(135deg,#e8e4df,#d8d3cc);display:flex;align-items:center;justify-content:center;font-size:24px}
+.pv-prod-info{padding:8px 10px}
+.pv-prod-name{font-size:12px;font-weight:500;color:#0a0a0a;line-height:1.3;margin-bottom:2px}
+.pv-prod-cat{font-size:10px;color:#bbb;text-transform:uppercase;letter-spacing:.04em}
+.pv-prod-price{font-size:12px;font-weight:500;color:#FF5C3A;margin-top:3px}
+.pv-selected-badge{display:flex;align-items:center;gap:5px;background:#FF5C3A;color:#fff;font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:100px;margin-top:4px;width:fit-content}
+
+/* PROBADOR PANEL */
+.pv-panel{background:#fff;border:0.5px solid #e8e4df;border-radius:12px;overflow:hidden;position:sticky;top:80px}
+.pv-panel-header{background:#0a0a0a;padding:16px 18px;display:flex;align-items:center;justify-content:space-between}
+.pv-panel-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff}
+.pv-panel-step{font-size:11px;color:#666;background:#1a1a1a;padding:3px 10px;border-radius:100px}
+.pv-panel-body{padding:18px}
+.pv-step-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.pv-step-num{width:22px;height:22px;border-radius:50%;background:#FF5C3A;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pv-step-txt{font-size:13px;font-weight:500;color:#0a0a0a}
+.pv-upload-zone{border:1.5px dashed #e0dcd7;border-radius:8px;padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px;background:#faf9f7}
+.pv-upload-zone:hover{border-color:#FF5C3A55;background:#fff8f6}
+.pv-upload-icon{font-size:24px;margin-bottom:6px}
+.pv-upload-txt{font-size:12px;color:#aaa}
+.pv-upload-bold{font-size:13px;font-weight:500;color:#555;margin-bottom:2px}
+.pv-selected-prod{display:flex;align-items:center;gap:10px;background:#f7f5f2;border-radius:8px;padding:10px 12px;margin-bottom:14px;border:0.5px solid #e8e4df}
+.pv-selected-prod-thumb{width:36px;height:36px;border-radius:6px;background:linear-gradient(135deg,#ddd,#bbb);flex-shrink:0}
+.pv-selected-prod-name{font-size:13px;font-weight:500;color:#0a0a0a}
+.pv-selected-prod-change{font-size:11px;color:#FF5C3A;cursor:pointer;margin-left:auto}
+.pv-btn-generate{width:100%;background:#FF5C3A;color:#fff;font-size:14px;font-weight:500;padding:13px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.pv-btn-generate:hover{background:#e84d2c}
+.pv-divider{border:none;border-top:0.5px solid #e8e4df;margin:14px 0}
+.pv-powered{display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;color:#ccc}
+.pv-powered-dot{width:5px;height:5px;background:#FF5C3A;border-radius:50%}
+
+/* DESCRIPCION */
+.pv-desc-card{background:#fff;border:0.5px solid #e8e4df;border-radius:12px;padding:18px;margin-top:0}
+.pv-desc-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#0a0a0a;margin-bottom:6px}
+.pv-desc-txt{font-size:13px;color:#777;line-height:1.6;margin-bottom:14px}
+.pv-hours{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.pv-hour-row{display:flex;justify-content:space-between;font-size:12px;color:#888}
+.pv-hour-row.today{color:#0a0a0a;font-weight:500}
+.pv-hour-open{background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:600;padding:1px 8px;border-radius:100px}
+.pv-contact-row{display:flex;align-items:center;gap:8px;font-size:13px;color:#555;margin-bottom:6px}
+.pv-contact-icon{width:26px;height:26px;border-radius:6px;background:#f0ede8;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* WHATSAPP FLOAT */
+.pv-wa{position:fixed;bottom:24px;right:24px;z-index:200}
+.pv-wa-btn{width:52px;height:52px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 16px rgba(37,211,102,.4);transition:transform .2s}
+.pv-wa-btn:hover{transform:scale(1.08)}
+.pv-wa-tooltip{position:absolute;bottom:58px;right:0;background:#0a0a0a;color:#fff;font-size:11px;font-weight:500;padding:6px 12px;border-radius:6px;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none}
+.pv-wa:hover .pv-wa-tooltip{opacity:1}
+.pv-wa-badge{position:absolute;top:-2px;right:-2px;width:16px;height:16px;background:#FF5C3A;border-radius:50%;border:2px solid #f7f5f2;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700}
+</style>
+
+<div class="pv">
+
+  <!-- HEADER -->
+  <header class="pv-header">
+    <div class="pv-brand">
+      <div class="pv-logo">WD</div>
+      <span class="pv-name">Wilkie Devs</span>
+    </div>
+    <div class="pv-header-right">
+      <!-- Redes sociales desde dashboard -->
+      <button class="pv-social-btn" title="Instagram">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#555" stroke="none"/></svg>
+      </button>
+      <button class="pv-social-btn" title="TikTok">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#555"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>
+      </button>
+      <button class="pv-social-btn" title="Facebook">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#555"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- COVER -->
+  <div class="pv-cover">
+    <div class="pv-cover-placeholder">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      <span class="pv-cover-txt">Imagen de portada</span>
+    </div>
+    <div class="pv-cover-overlay"></div>
+    <div class="pv-cover-info">
+      <div class="pv-cover-tagline">Ropa hermosa a tu alcance</div>
+      <div class="pv-cover-brand">Wilkie Devs</div>
+    </div>
+  </div>
+
+  <!-- STATS BAR (conteo de prods + generaciones) -->
+  <div class="pv-stats">
+    <div class="pv-stat active">
+      <span class="pv-stat-n">3</span>
+      <span class="pv-stat-l">productos</span>
+    </div>
+    <div class="pv-stat">
+      <span class="pv-stat-n">⭐ 4.8</span>
+      <span class="pv-stat-l">valoración</span>
+    </div>
+    <div class="pv-stat">
+      <span class="pv-stat-n">+500</span>
+      <span class="pv-stat-l">pruebas realizadas</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="pv-main">
+
+    <!-- COLUMNA IZQUIERDA -->
+    <div>
+      <div class="pv-section-label">Nuestros productos</div>
+      <div class="pv-products">
+
+        <!-- Producto 1 (seleccionado) -->
+        <div class="pv-prod selected">
+          <div class="pv-prod-img-placeholder">👜</div>
+          <div class="pv-prod-info">
+            <div class="pv-prod-name">Bolso Nike Verde</div>
+            <div class="pv-prod-cat">Bolso</div>
+            <div class="pv-prod-price">$89.000</div>
+            <div class="pv-selected-badge">
+              <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2.5L8 2.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+              Seleccionado
+            </div>
+          </div>
+        </div>
+
+        <!-- Producto 2 -->
+        <div class="pv-prod">
+          <div class="pv-prod-img-placeholder">👟</div>
+          <div class="pv-prod-info">
+            <div class="pv-prod-name">Zapatos Nike Custom</div>
+            <div class="pv-prod-cat">Calzado</div>
+            <div class="pv-prod-price">$220.000</div>
+          </div>
+        </div>
+
+        <!-- Producto 3 -->
+        <div class="pv-prod">
+          <div class="pv-prod-img-placeholder">👔</div>
+          <div class="pv-prod-info">
+            <div class="pv-prod-name">Camisa a Cuadros</div>
+            <div class="pv-prod-cat">Camisas</div>
+            <div class="pv-prod-price">$65.000</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- DESCRIPCION + INFO -->
+      <div class="pv-desc-card" style="margin-top:16px">
+        <div class="pv-desc-title">Sobre la marca</div>
+        <div class="pv-desc-txt">Ropa hermosa a tu alcance. Encuentra prendas de calidad para cada ocasión, con envíos a todo Colombia.</div>
+
+        <!-- Horarios (nuevo campo) -->
+        <div style="margin-bottom:14px">
+          <div class="pv-section-label" style="margin-bottom:8px">Horario de atención</div>
+          <div class="pv-hours">
+            <div class="pv-hour-row today">
+              <span>Lunes — Viernes</span>
+              <span style="display:flex;align-items:center;gap:6px">9:00am – 7:00pm <span class="pv-hour-open">Abierto</span></span>
+            </div>
+            <div class="pv-hour-row"><span>Sábado</span><span>10:00am – 5:00pm</span></div>
+            <div class="pv-hour-row"><span>Domingo</span><span style="color:#ccc">Cerrado</span></div>
+          </div>
+        </div>
+
+        <hr class="pv-divider">
+
+        <!-- Contacto -->
+        <div class="pv-contact-row">
+          <div class="pv-contact-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
+          </div>
+          <span>+57 310 543 6281</span>
+        </div>
+        <div class="pv-contact-row">
+          <div class="pv-contact-icon">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <span>Bogotá, Colombia · Envíos nacionales</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- COLUMNA DERECHA — PANEL PROBADOR -->
+    <div class="pv-panel">
+      <div class="pv-panel-header">
+        <span class="pv-panel-title">✦ Probador Virtual</span>
+        <span class="pv-panel-step">Paso 1 de 2</span>
+      </div>
+      <div class="pv-panel-body">
+
+        <div class="pv-step-row">
+          <div class="pv-step-num">1</div>
+          <span class="pv-step-txt">Sube tu foto</span>
+        </div>
+        <div class="pv-upload-zone">
+          <div class="pv-upload-icon">📸</div>
+          <div class="pv-upload-bold">Arrastra tu foto aquí</div>
+          <div class="pv-upload-txt">o toca para seleccionar · JPG, PNG, WEBP · máx. 5MB</div>
+        </div>
+
+        <div class="pv-step-row">
+          <div class="pv-step-num">2</div>
+          <span class="pv-step-txt">Producto seleccionado</span>
+        </div>
+        <div class="pv-selected-prod">
+          <div class="pv-selected-prod-thumb"></div>
+          <div>
+            <div class="pv-selected-prod-name">Bolso Nike Verde</div>
+            <div style="font-size:11px;color:#aaa">$89.000 · Bolso</div>
+          </div>
+          <span class="pv-selected-prod-change">Cambiar</span>
+        </div>
+
+        <button class="pv-btn-generate">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Generar prueba virtual
+        </button>
+
+        <hr class="pv-divider">
+        <div class="pv-powered">
+          <div class="pv-powered-dot"></div>
+          <span>Impulsado por Pruébalo AI</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- WHATSAPP FLOTANTE -->
+  <div class="pv-wa">
+    <div class="pv-wa-tooltip">¿Tienes dudas? Escríbenos</div>
+    <div class="pv-wa-btn">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </div>
+    <div class="pv-wa-badge">1</div>
+  </div>
+
+</div>

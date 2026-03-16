@@ -184,24 +184,35 @@ export default function MiPaginaPage() {
 
   // Campos del formulario
   const [description, setDescription] = useState('');
+  const [slogan, setSlogan] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+  const [whatsappMessage, setWhatsappMessage] = useState('');
+  const [ctaButtonText, setCtaButtonText] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
   const [instagram, setInstagram] = useState('');
   const [facebook, setFacebook] = useState('');
   const [tiktok, setTiktok] = useState('');
-
+  const [cityDisplay, setCityDisplay] = useState('');
+  const [nationalShipping, setNationalShipping] = useState(false);
+  const [landingTemplate, setLandingTemplate] = useState<'classic' | 'editorial'>('classic');
   useEffect(() => {
     brandsService.getCurrentBrand()
       .then(b => {
         setBrand(b);
         const raw = b as any;
         setDescription(raw.brand_description || '');
+        setSlogan(raw.slogan || '');
         setWhatsapp(raw.whatsapp_contact || '');
+        setWhatsappMessage(raw.whatsapp_message || '');
+        setCtaButtonText(raw.cta_button_text || '');
         setCoverImageUrl(raw.cover_image_url || '');
         const links = raw.social_links || {};
         setInstagram(links.instagram || '');
         setFacebook(links.facebook || '');
         setTiktok(links.tiktok || '');
+        setCityDisplay(raw.city_display || '');
+        setNationalShipping(raw.national_shipping ?? false);
+        setLandingTemplate(raw.landing_template || 'classic');
       })
       .catch(() => setError('Error al cargar los datos'))
       .finally(() => setLoading(false));
@@ -218,9 +229,15 @@ export default function MiPaginaPage() {
 
       await api.patch('/brands/me', {
         brand_description: description || null,
+        slogan: slogan || null,
         whatsapp_contact: whatsapp || null,
+        whatsapp_message: whatsappMessage || null,
+        cta_button_text: ctaButtonText || null,
         cover_image_url: coverImageUrl || null,
         social_links,
+        city_display: cityDisplay || null,
+        national_shipping: nationalShipping,
+        landing_template: landingTemplate,
       });
 
       setSuccess(true);
@@ -329,6 +346,22 @@ export default function MiPaginaPage() {
           )}
         </div>
 
+        {/* Slogan */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+            Slogan
+          </label>
+          <input
+            type="text"
+            value={slogan}
+            onChange={e => setSlogan(e.target.value)}
+            maxLength={80}
+            placeholder="Ej: Ropa hermosa a tu alcance"
+            className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors"
+            style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+          />
+        </div>
+
         {/* Descripción */}
         <div className="space-y-1.5">
           <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
@@ -410,6 +443,89 @@ export default function MiPaginaPage() {
               />
             </div>
           ))}
+        </div>
+
+        {/* Ciudad y envíos */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Ciudad</label>
+            <input
+              type="text"
+              value={cityDisplay}
+              onChange={e => setCityDisplay(e.target.value)}
+              placeholder="Ej: Bogotá, Colombia"
+              className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
+              style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Envíos nacionales</label>
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
+              <input
+                type="checkbox"
+                id="national_shipping"
+                checked={nationalShipping}
+                onChange={e => setNationalShipping(e.target.checked)}
+                className="w-4 h-4 rounded"
+              />
+              <label htmlFor="national_shipping" className="text-sm" style={{ color: 'var(--text-primary)' }}>
+                Sí, envío a todo el país
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Mensaje WhatsApp y CTA */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Mensaje WhatsApp</label>
+            <input
+              type="text"
+              value={whatsappMessage}
+              onChange={e => setWhatsappMessage(e.target.value)}
+              placeholder="Ej: Hola, vi tu catálogo..."
+              className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
+              style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Texto botón CTA</label>
+            <input
+              type="text"
+              value={ctaButtonText}
+              onChange={e => setCtaButtonText(e.target.value)}
+              placeholder="Ej: Probarme esto"
+              className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
+              style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+            />
+          </div>
+        </div>
+
+        {/* Template de landing */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+            Diseño de la página
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            {([
+              { value: 'classic', label: 'Clásico', desc: 'Hero + pasos + catálogo + probador' },
+              { value: 'editorial', label: 'Editorial', desc: 'Header sticky + layout 2 columnas' },
+            ] as const).map(t => (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => setLandingTemplate(t.value)}
+                className="text-left p-4 rounded-xl border-2 transition-all"
+                style={{
+                  borderColor: landingTemplate === t.value ? primaryColor : 'var(--border-color)',
+                  backgroundColor: landingTemplate === t.value ? primaryColor + '10' : 'var(--bg-base)',
+                }}
+              >
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{t.label}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{t.desc}</p>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

@@ -22,8 +22,15 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const N8N_DESCRIPTOR_URL = process.env.NEXT_PUBLIC_N8N_DESCRIPTOR_URL || '';
 
+const BADGE_OPTIONS = [
+  { value: '', label: 'Sin badge' },
+  { value: 'nuevo', label: 'Nuevo' },
+  { value: 'top', label: 'Top' },
+  { value: 'oferta', label: 'Oferta' },
+];
+
 export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
-  const [formData, setFormData] = useState<CreateProductDto>({ name: '', description: '', imageUrl: '', category: 'tshirt' });
+  const [formData, setFormData] = useState<CreateProductDto>({ name: '', description: '', imageUrl: '', category: 'tshirt', price: undefined, badge: undefined });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -81,7 +88,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   useEffect(() => {
     if (product) {
       const isCustom = !STANDARD_CATEGORIES.includes(product.category);
-      setFormData({ name: product.name, description: product.description || '', imageUrl: product.imageUrl, category: isCustom ? 'other' : product.category });
+      setFormData({ name: product.name, description: product.description || '', imageUrl: product.imageUrl, category: isCustom ? 'other' : product.category, price: product.price ?? undefined, badge: product.badge ?? undefined });
       setImagePreview(product.imageUrl);
       if (isCustom) { setShowCustomCategory(true); setCustomCategory(product.category); }
     }
@@ -129,7 +136,12 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      await onSubmit({ ...formData, category: formData.category === 'other' ? customCategory.trim() : formData.category });
+      await onSubmit({
+        ...formData,
+        category: formData.category === 'other' ? customCategory.trim() : formData.category,
+        price: formData.price ? Number(formData.price) : undefined,
+        badge: formData.badge || undefined,
+      });
     } catch { /* error manejado por el padre */ } finally { setIsSubmitting(false); }
   };
 
@@ -255,6 +267,32 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
               </div>
             )}
           </div>
+
+          <div className="flex gap-3 pt-2">
+              <div className="flex-1 space-y-1.5">
+                <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Precio (COP)</label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price ?? ''}
+                  onChange={e => setFormData(p => ({ ...p, price: e.target.value ? Number(e.target.value) : undefined }))}
+                  min={0}
+                  placeholder="Ej: 89000"
+                  style={{ ...selectStyle }}
+                />
+              </div>
+              <div className="flex-1 space-y-1.5">
+                <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Badge</label>
+                <select
+                  name="badge"
+                  value={formData.badge ?? ''}
+                  onChange={e => setFormData(p => ({ ...p, badge: e.target.value as any || undefined }))}
+                  style={selectStyle}
+                >
+                  {BADGE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+            </div>
 
           <div className="flex gap-3 pt-2">
             <Button type="submit" disabled={isSubmitting} className="flex-1">
