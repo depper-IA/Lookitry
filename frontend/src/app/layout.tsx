@@ -17,7 +17,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Virtual Try-On — Probador virtual con IA para tu marca',
+  title: 'Lookitry — Probador virtual con IA para tu marca',
   description: 'Ofrece un probador virtual impulsado por IA en tu tienda. Sin apps, sin desarrollo. Tus clientes se prueban la ropa antes de comprar.',
 };
 
