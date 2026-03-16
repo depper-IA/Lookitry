@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { ProductsService, CreateProductDto, UpdateProductDto } from '../services/products.service';
 import { AuthRequest } from '../middleware/auth';
+import { invalidateBrandConfigCache } from '../utils/brandConfigCache';
 
 const productsService = new ProductsService();
 
@@ -57,6 +58,7 @@ export class ProductsController {
 
       const product = await productsService.createProduct(req.brand.id, productData);
 
+      invalidateBrandConfigCache(req.brand.slug);
       return res.status(201).json(product);
     } catch (error: any) {
       console.error('Error en createProduct:', error);
@@ -133,6 +135,7 @@ export class ProductsController {
 
       const product = await productsService.updateProduct(productId, req.brand.id, updates);
 
+      invalidateBrandConfigCache(req.brand.slug);
       return res.status(200).json(product);
     } catch (error: any) {
       console.error('Error en updateProduct:', error);
@@ -189,6 +192,7 @@ export class ProductsController {
 
       await productsService.deleteProduct(productId, req.brand.id);
 
+      invalidateBrandConfigCache(req.brand.slug);
       return res.status(200).json({
         success: true,
         message: 'Producto eliminado correctamente',

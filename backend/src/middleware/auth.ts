@@ -8,6 +8,7 @@ export interface AuthRequest extends Request {
   brand?: {
     id: string;
     email: string;
+    slug: string;
     plan?: string;
   };
 }
@@ -54,6 +55,7 @@ export const authMiddleware = async (
     req.brand = {
       id: brand.id,
       email: brand.email,
+      slug: (brand as any).slug,
       plan: (brand as any).plan,
     };
 
