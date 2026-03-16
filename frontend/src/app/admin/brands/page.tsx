@@ -488,19 +488,19 @@ export default function AdminBrandsPage() {
                 </td>
                 <td className="px-4 py-3.5 whitespace-nowrap">
                   <div className="flex items-center gap-1">
-                    <button onClick={() => handleViewDetails(brand)} className="p-1.5 rounded-lg transition-colors" style={{ color: '#3b82f6' }} title="Ver detalles">
+                    <button onClick={() => handleViewDetails(brand)} className="p-1.5 rounded-lg transition-all duration-150 hover:opacity-80" style={{ color: '#3b82f6' }} title="Ver detalles">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                     </button>
-                    <button onClick={() => handleViewProducts(brand)} className="p-1.5 rounded-lg transition-colors" style={{ color: '#10b981' }} title="Ver productos">
+                    <button onClick={() => handleViewProducts(brand)} className="p-1.5 rounded-lg transition-all duration-150 hover:opacity-80" style={{ color: '#10b981' }} title="Ver productos">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                     </button>
                     {brand.is_in_trial ? (
-                      <button onClick={() => handleOpenActivate(brand)} className="p-1.5 rounded-lg transition-colors" style={{ color: '#10b981' }} title="Activar plan">
+                      <button onClick={() => handleOpenActivate(brand)} className="p-1.5 rounded-lg transition-all duration-150 hover:opacity-80" style={{ color: '#10b981' }} title="Activar plan">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                       </button>
                     ) : (
                       <button onClick={() => handleChangePlan(brand.id, brand.plan === 'BASIC' ? 'PRO' : 'BASIC')} disabled={changingPlan === brand.id}
-                        className="p-1.5 rounded-lg transition-colors disabled:opacity-50" style={{ color: '#FF5C3A' }} title={`Cambiar a ${brand.plan === 'BASIC' ? 'PRO' : 'BASIC'}`}>
+                        className="p-1.5 rounded-lg transition-all duration-150 hover:opacity-80 disabled:opacity-50" style={{ color: '#FF5C3A' }} title={`Cambiar a ${brand.plan === 'BASIC' ? 'PRO' : 'BASIC'}`}>
                         {changingPlan === brand.id
                           ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
                           : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>}
@@ -556,8 +556,8 @@ export default function AdminBrandsPage() {
 
       {/* Modal Ver Detalles */}
       {showDetailsModal && selectedBrand && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
+          <div className="rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-5">
               <h2 className="font-syne font-bold text-xl" style={{ color: 'var(--text-primary)' }}>Detalles de {selectedBrand.name}</h2>
               <button onClick={() => setShowDetailsModal(false)} style={{ color: 'var(--text-secondary)' }}>
@@ -635,8 +635,8 @@ export default function AdminBrandsPage() {
 
       {/* Modal Ver Productos */}
       {showProductsModal && selectedBrand && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
+          <div className="rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-5">
               <div>
                 <h2 className="font-syne font-bold text-xl" style={{ color: 'var(--text-primary)' }}>Productos de {selectedBrand.name}</h2>
@@ -693,8 +693,8 @@ export default function AdminBrandsPage() {
 
       {/* Modal Crear Marca */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-150 animate-in fade-in">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-xl font-bold text-gray-900">Nueva Marca</h2>
               <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
@@ -781,8 +781,8 @@ export default function AdminBrandsPage() {
 
       {/* Modal Activar Plan */}
       {showActivateModal && selectedBrand && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="rounded-2xl p-6 max-w-md w-full" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
+          <div className="rounded-2xl p-6 max-w-md w-full transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-4">
               <h2 className="font-syne font-bold text-lg" style={{ color: 'var(--text-primary)' }}>Activar Plan — {selectedBrand.name}</h2>
               <button onClick={() => setShowActivateModal(false)} style={{ color: 'var(--text-secondary)' }}>
@@ -844,8 +844,8 @@ export default function AdminBrandsPage() {
 
       {/* Modal confirmación acción masiva */}
       {confirmBulk && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4 border">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
+          <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4 border transition-transform duration-200 animate-in zoom-in-95">
             <h3 style={{ color: 'var(--text-primary)' }} className="font-bold text-lg">
               {confirmBulk === 'delete' && `Eliminar ${selected.size} marca${selected.size > 1 ? 's' : ''}`}
               {confirmBulk === 'suspend' && `Suspender ${selected.size} marca${selected.size > 1 ? 's' : ''}`}
