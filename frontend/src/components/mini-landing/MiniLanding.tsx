@@ -131,7 +131,7 @@ function PhoneIcon({ className }: { className?: string }) {
 function ActivationModal({ primaryColor }: { primaryColor: string }) {
   const CHECKOUT_URL = '/dashboard/checkout?plan=BASIC&amount=500000&addon=landing';
 
-  // Countdown: 23:59:59 que se reinicia cada d�a (urgencia)
+  // Countdown hasta medianoche (urgencia diaria)
   const [time, setTime] = useState(() => {
     const now = new Date();
     const end = new Date(now);
@@ -148,65 +148,88 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
   const mm = String(Math.floor((time % 3600) / 60)).padStart(2, '0');
   const ss = String(time % 60).padStart(2, '0');
 
+  const features = [
+    'Pagina publica con tu catalogo completo',
+    'Probador virtual integrado con IA',
+    'Boton de WhatsApp flotante',
+    '3 templates de diseno a elegir',
+    'Sin mensajes de activacion',
+  ];
+
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}>
-      <div className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl" style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}>
-        {/* Franja superior de color */}
-        <div className="h-1.5 w-full" style={{ backgroundColor: primaryColor }} />
+    // Sin blur — solo overlay semitransparente para que se vea la landing detras
+    <div
+      className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4"
+      style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+    >
+      <div
+        className="relative w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl"
+        style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
+      >
+        {/* Franja superior */}
+        <div className="h-1 w-full" style={{ backgroundColor: primaryColor }} />
 
-        <div className="px-7 py-8 text-center">
-          {/* Icono */}
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ backgroundColor: primaryColor + '20', border: `1px solid ${primaryColor}40` }}>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={primaryColor} strokeWidth="2" strokeLinecap="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-          </div>
-
-          {/* T�tulo */}
-          <h2 className="text-2xl font-black text-white tracking-tight mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
-            Activa tu p�gina de marca
+        <div className="px-6 py-6 text-center">
+          {/* Titulo */}
+          <h2
+            className="text-xl font-black text-white tracking-tight mb-1"
+            style={{ fontFamily: 'Syne, sans-serif' }}
+          >
+            Activa tu pagina de marca
           </h2>
-          <p className="text-sm text-gray-400 leading-relaxed mb-6">
-            Est�s viendo una vista previa. Activa tu mini-landing para que tus clientes puedan verla sin restricciones.
+          <p className="text-xs text-gray-400 leading-relaxed mb-4">
+            Estas viendo una vista previa. Activa tu mini-landing para que tus clientes puedan verla.
           </p>
 
-          {/* Countdown urgencia */}
-          <div className="rounded-2xl p-4 mb-6" style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-500 mb-3">Oferta de lanzamiento � termina en</p>
+          {/* Countdown */}
+          <div
+            className="rounded-xl px-4 py-3 mb-4"
+            style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+          >
+            <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-500 mb-2">
+              Oferta de lanzamiento — termina en
+            </p>
             <div className="flex items-center justify-center gap-2">
               {[{ v: hh, l: 'horas' }, { v: mm, l: 'min' }, { v: ss, l: 'seg' }].map(({ v, l }, i) => (
                 <div key={l} className="flex items-center gap-2">
                   <div className="flex flex-col items-center">
-                    <span className="text-3xl font-black text-white tabular-nums" style={{ fontFamily: 'Syne, sans-serif' }}>{v}</span>
-                    <span className="text-[9px] text-gray-600 uppercase tracking-widest mt-0.5">{l}</span>
+                    <span
+                      className="text-2xl font-black text-white tabular-nums"
+                      style={{ fontFamily: 'Syne, sans-serif' }}
+                    >
+                      {v}
+                    </span>
+                    <span className="text-[8px] text-gray-600 uppercase tracking-widest">{l}</span>
                   </div>
-                  {i < 2 && <span className="text-2xl font-bold text-gray-600 mb-3">:</span>}
+                  {i < 2 && <span className="text-xl font-bold text-gray-600 mb-2">:</span>}
                 </div>
               ))}
             </div>
           </div>
 
           {/* Precio */}
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <span className="text-gray-600 line-through text-sm">$650.000 COP</span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-4xl font-black text-white" style={{ fontFamily: 'Syne, sans-serif' }}>$500.000</span>
-              <span className="text-sm text-gray-500">COP</span>
-            </div>
-            <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ backgroundColor: primaryColor + '20', color: primaryColor }}>Pago �nico</span>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <span className="text-gray-600 line-through text-xs">$650.000 COP</span>
+            <span
+              className="text-3xl font-black text-white"
+              style={{ fontFamily: 'Syne, sans-serif' }}
+            >
+              $500.000
+            </span>
+            <span className="text-xs text-gray-500">COP</span>
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: primaryColor + '20', color: primaryColor }}
+            >
+              Pago unico
+            </span>
           </div>
 
           {/* Features */}
-          <ul className="text-left space-y-2 mb-7">
-            {[
-              'P�gina p�blica con tu cat�logo completo',
-              'Probador virtual integrado con IA',
-              'Bot�n de WhatsApp flotante',
-              '3 templates de dise�o a elegir',
-              'Sin mensajes de activaci�n',
-            ].map(f => (
-              <li key={f} className="flex items-center gap-2.5 text-sm text-gray-300">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <ul className="text-left space-y-1.5 mb-5">
+            {features.map(f => (
+              <li key={f} className="flex items-center gap-2 text-xs text-gray-300">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0">
                   <circle cx="7" cy="7" r="7" fill={primaryColor + '25'} />
                   <path d="M4 7l2 2 4-4" stroke={primaryColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -218,15 +241,17 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
           {/* CTA */}
           <a
             href={CHECKOUT_URL}
-            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl text-white text-sm font-bold transition-all hover:opacity-90 hover:-translate-y-0.5 active:scale-95"
-            style={{ backgroundColor: primaryColor, boxShadow: `0 8px 24px ${primaryColor}40` }}
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-white text-sm font-bold transition-all hover:opacity-90 active:scale-95"
+            style={{ backgroundColor: primaryColor, boxShadow: `0 6px 20px ${primaryColor}40` }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
-            Activar mi p�gina ahora � $500.000
+            Activar mi pagina — $500.000
           </a>
-          <p className="text-[11px] text-gray-600 mt-3">Pago �nico � Sin mensualidad adicional � Activaci�n inmediata</p>
+          <p className="text-[10px] text-gray-600 mt-2">
+            Pago unico · Sin mensualidad adicional · Activacion inmediata
+          </p>
         </div>
       </div>
     </div>
