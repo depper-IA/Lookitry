@@ -138,6 +138,17 @@ export class AuthService {
       email: newBrand.email,
     });
 
+    // Verificar si la campaña activa requiere verificación de tarjeta
+    const { data: campaignFull } = campaign
+      ? await supabase
+          .from('trial_campaigns')
+          .select('require_card_verification')
+          .eq('id', campaign.id)
+          .single()
+      : { data: null };
+
+    const requireCardVerification = campaignFull?.require_card_verification === true;
+
     return {
       token,
       brand: {
@@ -148,6 +159,8 @@ export class AuthService {
         plan: newBrand.plan,
       },
       verificationToken: newBrand.email_verification_token,
+      requireCardVerification,
+      isTrial: !!trialEndDate,
     };
   }
 
@@ -170,11 +183,6 @@ export class AuthService {
       throw new Error('Credenciales inválidas');
     }
 
-    // Bloquear acceso si el email no está verificado
-    if (!brand.email_verified) {
-      throw new Error('EMAIL_NOT_VERIFIED');
-    }
-
     // Generar token
     const token = generateToken({
       brandId: brand.id,
@@ -189,6 +197,9 @@ export class AuthService {
         name: brand.name,
         slug: brand.slug,
         plan: brand.plan,
+        emailVerified: brand.email_verified,
+        trialEndDate: brand.trial_end_date ?? null,
+        trialPaymentStatus: brand.trial_payment_status ?? null,
       },
     };
   }

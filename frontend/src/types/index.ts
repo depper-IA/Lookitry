@@ -29,6 +29,8 @@ export interface Brand {
   // Trial fields (Requirement 11 - Opción C)
   trialEndDate?: string | null;
   trialGenerationsLimit?: number;
+  // Email verification
+  emailVerified?: boolean;
 }
 
 // Product types
