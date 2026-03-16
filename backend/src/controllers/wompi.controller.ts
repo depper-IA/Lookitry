@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { wompiService } from '../services/wompi.service';
 import { SubscriptionService } from '../services/subscription.service';
+import { supabase } from '../config/supabase';
 
 const subscriptionService = new SubscriptionService();
 
@@ -59,18 +60,27 @@ export class WompiController {
         return;
       }
 
-      // Renovar suscripción
-      await subscriptionService.renewSubscription(brandId, {
-        brand_id: brandId,
-        amount: amountInCents / 100,
-        currency: 'COP',
-        payment_date: new Date().toISOString(),
-        payment_method: 'wompi',
-        status: 'completed',
-        notes: `Pago automático Wompi. Ref: ${reference}. ID: ${transaction.id}`,
-      });
-
-      console.log(`[Wompi] Suscripción renovada para brand ${brandId}`);
+      // Renovar suscripción o activar trial según el monto
+      if (amountInCents === 100) {
+        // Pago de tokenización de trial (100 COP)
+        await supabase
+          .from('brands')
+          .update({ trial_payment_status: 'active' })
+          .eq('id', brandId);
+        console.log(`[Wompi] Trial activado para brand ${brandId}`);
+      } else {
+        // Renovar suscripción normal
+        await subscriptionService.renewSubscription(brandId, {
+          brand_id: brandId,
+          amount: amountInCents / 100,
+          currency: 'COP',
+          payment_date: new Date().toISOString(),
+          payment_method: 'wompi',
+          status: 'completed',
+          notes: `Pago automático Wompi. Ref: ${reference}. ID: ${transaction.id}`,
+        });
+        console.log(`[Wompi] Suscripción renovada para brand ${brandId}`);
+      }
       res.status(200).json({ received: true });
     } catch (error) {
       console.error('[Wompi] Error procesando webhook:', error);

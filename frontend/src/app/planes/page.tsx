@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -110,7 +110,15 @@ function formatCOP(n: number) {
 export default function PlanesPage() {
   const router = useRouter();
   const [selectedMonths, setSelectedMonths] = useState(1);
+  const [trialActive, setTrialActive] = useState(false);
   const duration = DURATIONS.find(d => d.months === selectedMonths)!;
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`)
+      .then(r => r.json())
+      .then(d => setTrialActive(d.active === true))
+      .catch(() => setTrialActive(false));
+  }, []);
 
   const proMonthlyPrice = Math.round(250000 * (1 - duration.pct / 100));
   const proTotalPrice = proMonthlyPrice * selectedMonths;
@@ -132,8 +140,8 @@ export default function PlanesPage() {
           <Link href="/login" className="text-[13px] text-[#888] hover:text-white px-2 md:px-3.5 py-1.5 rounded-md transition-colors hidden sm:block">
             Iniciar sesión
           </Link>
-          <Link href="/register" className="text-[13px] font-medium bg-[#FF5C3A] hover:bg-[#e84d2c] text-white px-3 md:px-4 py-1.5 rounded-md transition-colors">
-            Empezar gratis
+          <Link href={trialActive ? '/register' : `/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`} className="text-[13px] font-medium bg-[#FF5C3A] hover:bg-[#e84d2c] text-white px-3 md:px-4 py-1.5 rounded-md transition-colors">
+            {trialActive ? 'Empezar gratis' : 'Contratar ahora'}
           </Link>
         </div>
       </nav>
@@ -216,13 +224,13 @@ export default function PlanesPage() {
                   {duration.pct > 0 && <span className="ml-1 line-through text-[#333]">{formatCOP(basicOriginalTotal)}</span>}
                 </p>
               )}
-              <p className="text-[12px] text-[#FF5C3A] mb-6">7 días de prueba gratuita incluidos</p>
+              <p className="text-[12px] text-[#FF5C3A] mb-6">{trialActive ? '7 días de prueba gratuita incluidos' : 'Pago directo — sin período de prueba'}</p>
 
               <Link
                 href="/register"
                 className="block w-full text-center py-2.5 border border-[#333] hover:border-[#555] text-[#aaa] hover:text-white text-[13px] font-medium rounded-lg transition-colors mb-6"
               >
-                Empezar gratis — 7 días
+                {trialActive ? 'Empezar gratis — 7 días' : 'Contratar Básico'}
               </Link>
 
               <ul className="flex flex-col gap-2.5">
@@ -335,15 +343,17 @@ export default function PlanesPage() {
           style={{ width: '500px', height: '300px', background: 'radial-gradient(ellipse, rgba(255,92,58,0.06) 0%, transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }} />
         <div className="relative z-10 max-w-xl mx-auto">
           <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[32px] text-white tracking-tight mb-3">
-            Empieza hoy sin riesgos
+            {trialActive ? 'Empieza hoy sin riesgos' : 'Empieza hoy'}
           </h2>
           <p className="text-[15px] text-[#555] mb-8">
-            Plan Básico con 7 días gratis. Plan Pro con pago directo y seguro.
+            {trialActive
+              ? 'Plan Básico con 7 días gratis. Plan Pro con pago directo y seguro.'
+              : 'Elige el plan que mejor se adapte a tu marca.'}
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <Link href="/register"
+            <Link href={trialActive ? '/register' : `/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`}
               className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[14px] font-medium px-7 py-3 rounded-lg transition-colors flex items-center gap-2">
-              Crear cuenta gratis <IconArrow />
+              {trialActive ? 'Crear cuenta gratis' : 'Contratar Básico'} <IconArrow />
             </Link>
             <button
               onClick={() => router.push(`/checkout?plan=PRO&amount=${proTotalPrice}&months=${selectedMonths}`)}

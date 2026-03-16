@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { supabase } from '../config/supabase';
 import { RegisterBrandDto, LoginDto, AuthResponse, Brand } from '../types';
 import { generateToken } from '../utils/jwt';
@@ -114,6 +115,8 @@ export class AuthService {
         plan: 'BASIC',
         trial_end_date: trialEndDate ? trialEndDate.toISOString() : null,
         trial_generations_limit: trialEndDate ? 30 : 0,
+        email_verified: false,
+        email_verification_token: crypto.randomBytes(32).toString('hex'),
       })
       .select()
       .single();
@@ -144,6 +147,7 @@ export class AuthService {
         slug: newBrand.slug,
         plan: newBrand.plan,
       },
+      verificationToken: newBrand.email_verification_token,
     };
   }
 
@@ -166,6 +170,11 @@ export class AuthService {
       throw new Error('Credenciales inválidas');
     }
 
+    // Bloquear acceso si el email no está verificado
+    if (!brand.email_verified) {
+      throw new Error('EMAIL_NOT_VERIFIED');
+    }
+
     // Generar token
     const token = generateToken({
       brandId: brand.id,
@@ -182,6 +191,29 @@ export class AuthService {
         plan: brand.plan,
       },
     };
+  }
+
+  async verifyEmail(token: string): Promise<{ ok: boolean; message: string }> {
+    const { data: brand } = await supabase
+      .from('brands')
+      .select('id, email_verified')
+      .eq('email_verification_token', token)
+      .single();
+
+    if (!brand) {
+      return { ok: false, message: 'Token inválido o expirado' };
+    }
+
+    if (brand.email_verified) {
+      return { ok: true, message: 'El correo ya fue verificado anteriormente' };
+    }
+
+    await supabase
+      .from('brands')
+      .update({ email_verified: true, email_verification_token: null })
+      .eq('id', brand.id);
+
+    return { ok: true, message: 'Correo verificado correctamente' };
   }
 
   async getBrandById(brandId: string): Promise<Brand | null> {
