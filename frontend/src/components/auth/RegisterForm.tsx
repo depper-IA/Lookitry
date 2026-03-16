@@ -66,8 +66,10 @@ export default function RegisterForm() {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`)
       .then((r) => r.json())
       .then((d) => {
-        setTrialActive(d.active === true);
-        if (d.active) setTrialDays(d.trial_days ?? 7);
+        // El endpoint devuelve { trialAvailable, trialDays, campaignName, endsAt }
+        const isActive = d.trialAvailable === true || d.active === true;
+        setTrialActive(isActive);
+        if (isActive) setTrialDays(d.trialDays ?? d.trial_days ?? 7);
       })
       .catch(() => setTrialActive(false));
   }, []);
