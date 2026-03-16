@@ -138,6 +138,39 @@ curl -s -w '\nHTTP: %{http_code}' https://api.pruebalo.wilkiedevs.com/api/upload
 ```
 Esperado: HTTP 401 — si da 404, el backend no está actualizado
 
+### Login superadmin (ruta correcta confirmada 16/03/2026)
+```bash
+curl -s -X POST https://api.pruebalo.wilkiedevs.com/api/admin/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"info.samwilkie@gmail.com","password":"Travis2305*"}'
+```
+Nota: la ruta es `/api/admin/auth/login`, NO `/api/admin/login`
+
+### Listar marcas (requiere token de admin)
+```bash
+curl -s https://api.pruebalo.wilkiedevs.com/api/admin/brands \
+  -H 'Authorization: Bearer <token>'
+```
+- Devuelve array con campos: `id`, `name`, `slug`, `plan`, `subscription_status`, `stats.productsCount`
+- Campo de estado activo: `subscription_status: "active"` (NO `is_active`)
+- Marcas con productos: filtrar por `stats.productsCount > 0`
+- Marca de prueba con productos: `wilkie-devs` (3 productos)
+
+### Config pública del probador (sin auth)
+```bash
+curl -s https://api.pruebalo.wilkiedevs.com/api/pruebalo/wilkie-devs
+```
+- Devuelve `brand` + `products[]` con campos: `id`, `name`, `image_url`, `category`
+
+### Webhook n8n Virtual Try-On
+```bash
+curl -s -X POST https://n8n.wilkiedevs.com/webhook/tryon \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer Travis2305**' \
+  -d '{"brand_id":"...","product_id":"...","selfie_base64":"...","product_image_url":"...","prompt":"..."}'
+```
+- Responde HTTP 200 pero con body vacío (problema pendiente — ver abajo)
+
 ### Login superadmin
 ```bash
 curl -s -X POST https://api.pruebalo.wilkiedevs.com/api/admin/login \
@@ -312,3 +345,47 @@ Para SSH desde Windows usar Python + paramiko (PowerShell no acepta `&&`, usar `
 | `GET` | `/api/admin/trial-campaign` | JWT admin | Listar campañas trial |
 | `POST` | `/api/admin/trial-campaign` | JWT admin | Crear campaña trial |
 | `PATCH` | `/api/admin/trial-campaign/:id` | JWT admin | Activar/desactivar campaña |
+
+---
+
+## Correcciones Aplicadas
+
+| Fecha | Componente | Problema | Fix |
+|---|---|---|---|
+| 15/03/2026 | n8n `wPLypk7KhBcFLicX` | Nodos "Subir Selfie/Imagen" apuntaban a WordPress | Actualizados a `https://api.pruebalo.wilkiedevs.com/api/upload/selfie` |
+| 15/03/2026 | n8n `wPLypk7KhBcFLicX` | Nodo "Subir Imagen Final" usaba `$json.image_base64` | Corregido a `$json.generated_image_base64` (mismatch de campo) |
+| 15/03/2026 | Supabase `products` | Producto "Life Kombucha - Lulo" tenía URL de WordPress (404) | Reemplazada con placeholder — admin debe subir imagen real |
+
+---
+
+## Problema Pendiente — Webhook n8n devuelve body vacío
+
+**Detectado:** 16/03/2026  
+**Síntoma:** `POST https://n8n.wilkiedevs.com/webhook/tryon` responde HTTP 200 con body vacío `""`  
+**Consecuencia:** El backend recibe respuesta vacía, no puede parsear `imageUrl`, lanza error 502  
+**Causa probable:** El nodo "Respond to Webhook" del workflow `wPLypk7KhBcFLicX` no está configurado correctamente para devolver el JSON con `imageUrl`  
+**Pendiente:** Inspeccionar y corregir el nodo "Respond to Webhook" en el workflow autorizado  
+**Script de diagnóstico:** `scripts/inspect-respond-node.py`
+
+### Flujo esperado del webhook (para referencia al corregir):
+```
+Webhook recibe → procesa con Gemini → sube imagen a MinIO → responde:
+{
+  "success": true,
+  "imageUrl": "https://minio.wilkiedevs.com/images/temp/tryon-xxx.jpg"
+}
+```
+
+---
+
+## Rutas y Datos Confirmados en Tests (16/03/2026)
+
+| Dato | Valor confirmado |
+|---|---|
+| Login admin | `POST /api/admin/auth/login` con `{"email","password"}` |
+| Marca de prueba | slug `wilkie-devs`, 3 productos activos |
+| Producto de prueba | "Bolso Nike Verde" ID `ee5bf4ec-da9b-4cd5-b8da-2484797d0a71` |
+| Imagen producto | `https://minio.wilkiedevs.com/images/products/1773627349562-dca0d866bbf3.jpg` |
+| n8n IP interna | `172.19.0.4` (puede cambiar — obtener con `docker inspect root-n8n-1`) |
+| Variables backend OK | `N8N_WEBHOOK_URL`, `N8N_BEARER_TOKEN`, `N8N_API_KEY` correctamente configuradas en VPS |
+| Endpoint generate | Espera `multipart/form-data` con campos `productId` (texto) y `selfie` (archivo) |

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle, XCircle, CreditCard, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { CheckCircle, XCircle, CreditCard, ShieldCheck, ArrowLeft, Globe } from 'lucide-react';
 import WompiButton from '@/components/payments/WompiButton';
 import { subscriptionService } from '@/services/subscription.service';
 import { api } from '@/services/api';
@@ -38,12 +38,13 @@ const PLAN_INFO: Record<PlanType, { name: string; price: number; features: strin
   },
 };
 
+const MINI_LANDING_PRICE = 500000;
+
 // Precio a cobrar según plan actual → plan destino
 function getEffectivePrice(targetPlan: PlanType, currentPlan: PlanType | null): number {
   const target = PLAN_INFO[targetPlan].price;
   if (!currentPlan || currentPlan === targetPlan) return target;
   const current = PLAN_INFO[currentPlan]?.price ?? 0;
-  // Solo aplicar diferencia si es upgrade (target > current)
   return target > current ? target - current : target;
 }
 
@@ -62,19 +63,21 @@ export default function CheckoutPage() {
   const [currentPlan, setCurrentPlan] = useState<PlanType | null>(null);
   const [isInTrial, setIsInTrial] = useState(false);
   const [wompiEnabled, setWompiEnabled] = useState<boolean | null>(null);
+  const [hasLandingPage, setHasLandingPage] = useState(false);
+  const [includeLanding, setIncludeLanding] = useState(false);
 
   const planInfo = PLAN_INFO[plan];
-  // Si el usuario está en trial, siempre cobra el precio completo (no hay diferencia que descontar)
-  const effectivePrice = isInTrial ? planInfo.price : getEffectivePrice(plan, currentPlan);
-  const isUpgrade = !isInTrial && currentPlan !== null && currentPlan !== plan && effectivePrice < planInfo.price;
+  const effectivePlanPrice = isInTrial ? planInfo.price : getEffectivePrice(plan, currentPlan);
+  const isUpgrade = !isInTrial && currentPlan !== null && currentPlan !== plan && effectivePlanPrice < planInfo.price;
+  const totalPrice = effectivePlanPrice + (includeLanding ? MINI_LANDING_PRICE : 0);
 
   useEffect(() => {
     subscriptionService.getSubscriptionInfo().then((info) => {
       setCurrentPlan(info.brand.plan as PlanType);
       setIsInTrial(info.isInTrial ?? false);
+      setHasLandingPage((info.brand as any).has_landing_page ?? false);
     });
 
-    // Verificar si Wompi está habilitado consultando el config endpoint
     api.get(`/payments/wompi/config?plan=${plan}`)
       .then(() => setWompiEnabled(true))
       .catch(() => setWompiEnabled(false));
@@ -184,6 +187,8 @@ export default function CheckoutPage() {
           <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Resumen del pedido</h2>
         </div>
         <div className="px-6 py-5 space-y-4">
+
+          {/* Línea del plan */}
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{planInfo.name}</p>
@@ -201,12 +206,61 @@ export default function CheckoutPage() {
             ))}
           </ul>
 
-          {/* Desglose de precio cuando es upgrade */}
-          {isUpgrade && (
-            <div
-              className="pt-3 border-t space-y-2"
-              style={{ borderColor: 'var(--border-color)' }}
-            >
+          {/* Add-on: Mini-landing (solo si no la tiene ya) */}
+          {!hasLandingPage && (
+            <div className="pt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+              <label className="flex items-start gap-3 cursor-pointer" htmlFor="include-landing">
+                <div className="relative mt-0.5 flex-shrink-0">
+                  <input
+                    id="include-landing"
+                    type="checkbox"
+                    checked={includeLanding}
+                    onChange={e => setIncludeLanding(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div
+                    className="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
+                    style={{
+                      backgroundColor: includeLanding ? '#FF5C3A' : 'transparent',
+                      borderColor: includeLanding ? '#FF5C3A' : 'var(--border-color)',
+                    }}
+                  >
+                    {includeLanding && (
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 flex-shrink-0" style={{ color: '#FF5C3A' }} />
+                      <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        Mini-landing personalizada
+                      </span>
+                      <span
+                        className="text-xs px-1.5 py-0.5 rounded font-medium"
+                        style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}
+                      >
+                        Pago único
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                      {formatCurrency(MINI_LANDING_PRICE)}
+                    </span>
+                  </div>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                    Página pública en probador.wilkiedevs.com/tu-marca con hero, galería de productos, probador virtual y contacto.
+                  </p>
+                </div>
+              </label>
+            </div>
+          )}
+
+          {/* Desglose cuando es upgrade */}
+          {isUpgrade ? (
+            <div className="pt-3 border-t space-y-2" style={{ borderColor: 'var(--border-color)' }}>
               <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
                 <span>Precio {planInfo.name}</span>
                 <span>{formatCurrency(planInfo.price)}</span>
@@ -215,20 +269,32 @@ export default function CheckoutPage() {
                 <span>Ya pagaste ({PLAN_INFO[currentPlan!].name})</span>
                 <span>− {formatCurrency(PLAN_INFO[currentPlan!].price)}</span>
               </div>
+              {includeLanding && (
+                <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <span>Mini-landing (pago único)</span>
+                  <span>{formatCurrency(MINI_LANDING_PRICE)}</span>
+                </div>
+              )}
               <div
                 className="flex items-center justify-between pt-2 border-t font-semibold"
                 style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               >
                 <span>Total a pagar hoy</span>
-                <span className="text-xl font-bold" style={{ color: '#FF5C3A' }}>{formatCurrency(effectivePrice)}</span>
+                <span className="text-xl font-bold" style={{ color: '#FF5C3A' }}>{formatCurrency(totalPrice)}</span>
               </div>
             </div>
-          )}
-
-          {!isUpgrade && (
-            <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: 'var(--border-color)' }}>
-              <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Total</p>
-              <p className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(effectivePrice)}</p>
+          ) : (
+            <div className="pt-3 border-t space-y-2" style={{ borderColor: 'var(--border-color)' }}>
+              {includeLanding && (
+                <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <span>Mini-landing (pago único)</span>
+                  <span>{formatCurrency(MINI_LANDING_PRICE)}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Total</p>
+                <p className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(totalPrice)}</p>
+              </div>
             </div>
           )}
         </div>
@@ -267,7 +333,7 @@ export default function CheckoutPage() {
               style={{ background: '#FF5C3A' }}
             >
               <CreditCard className="w-4 h-4" />
-              Pagar {formatCurrency(effectivePrice)} con Wompi
+              Pagar {formatCurrency(totalPrice)} con Wompi
             </WompiButton>
           </>
         )}

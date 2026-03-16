@@ -137,7 +137,7 @@ export class WompiController {
       const brandId = brand?.id ?? `visitor_${Date.now()}`;
 
       // Después del pago: si tiene sesión → /pago-exitoso, si no → /registro-pro
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
       const successPath = brand?.id
         ? `/pago-exitoso?plan=PRO&months=${monthsNum}`
         : `/registro-pro?plan=PRO&months=${monthsNum}`;

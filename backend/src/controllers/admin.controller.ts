@@ -396,6 +396,55 @@ export const activateBrandPlan = async (req: any, res: Response) => {
 };
 
 /**
+ * PATCH /api/admin/brands/:id/landing-page
+ * Activar o desactivar la mini-landing de una marca (task 33.5)
+ */
+export const toggleLandingPage = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { has_landing_page } = req.body;
+
+    if (typeof has_landing_page !== 'boolean') {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'has_landing_page debe ser un booleano',
+      });
+    }
+
+    const { supabase } = await import('../config/supabase');
+    const { data, error } = await supabase
+      .from('brands')
+      .update({ has_landing_page })
+      .eq('id', id)
+      .select('id, name, has_landing_page')
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+    }
+
+    auditService.log({
+      admin_id: req.admin?.id ?? 'unknown',
+      admin_email: req.admin?.email ?? 'unknown',
+      action: 'brand.landing_page_toggle',
+      target_brand_id: id,
+      details: { has_landing_page },
+    });
+
+    return res.status(200).json({
+      message: `Mini-landing ${has_landing_page ? 'activada' : 'desactivada'} exitosamente`,
+      brand: data,
+    });
+  } catch (error: any) {
+    console.error('Error in toggleLandingPage:', error);
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Error al actualizar mini-landing',
+    });
+  }
+};
+
+/**
  * GET /api/admin/stats/conversion
  * Métricas de conversión: marcas en trial, convertidas, tasa y conversiones por mes.
  * Requirement 29.2
@@ -436,7 +485,7 @@ export const createAdmin = async (req: any, res: Response) => {
     const admin = await adminService.createAdmin({ email, password, name, permissions });
 
     // Enviar email de bienvenida al nuevo admin (sin bloquear la respuesta)
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pruebalo.wilkiedevs.com';
     const isSuperadmin = !permissions || permissions.length === 0;
     const permissionsList = isSuperadmin
       ? 'Acceso total (superadmin)'

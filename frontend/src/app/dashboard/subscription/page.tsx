@@ -99,7 +99,7 @@ function ChangePlanModal({ currentPlan, onClose }: { currentPlan: PlanKey; onClo
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/brands/request-plan-change`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/brands/request-plan-change`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -246,7 +246,7 @@ export default function SubscriptionPage() {
         const [subResult, paymentsResult, settingsResult] = await Promise.allSettled([
           subscriptionService.getSubscriptionInfo(),
           api.get<SubscriptionPayment[]>('/brands/me/payments'),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/payment-settings/public`)
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
             .then(r => r.ok ? r.json() : null),
         ]);
         if (subResult.status === 'fulfilled') setInfo(subResult.value);
