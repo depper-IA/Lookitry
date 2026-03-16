@@ -132,7 +132,7 @@ function RegistroProContent() {
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">URL del probador</label>
               <div className={`flex bg-[#0f0f0f] border ${errors.slug ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'} rounded-lg overflow-hidden focus-within:border-[#FF5C3A] transition-colors`}>
-                <span className="inline-flex items-center px-3 text-[#333] text-[13px] border-r border-[#2a2a2a]">/pruebalo/</span>
+                <span className="inline-flex items-center px-3 text-[#333] text-[13px] border-r border-[#2a2a2a]">/sitio/</span>
                 <input
                   name="slug" type="text" value={form.slug} onChange={handleChange} placeholder="mi-tienda"
                   className="flex-1 px-3 py-2.5 text-[13px] text-white bg-transparent focus:outline-none placeholder-[#333]"
