@@ -1,0 +1,151 @@
+# Tareas Completadas — Virtual Try-On SaaS
+
+Historial de todas las tareas ya implementadas y en producción.
+
+---
+
+- [x] 1. Setup inicial del proyecto
+- [x] 2. Configurar Supabase y crear schema de base de datos
+- [x] 3. Implementar sistema de autenticación
+  - [x] 3.1 Crear módulo de autenticación en backend
+- [x] 4. Implementar gestión de marcas (Brands)
+  - [x] 4.1 Crear servicio y controlador de brands
+- [x] 5. Implementar sistema de planes y límites
+  - [x] 5.1 Crear configuración de planes (BASIC, PRO)
+  - [x] 5.2 Crear endpoint GET /api/usage/stats
+  - [x] 5.3 Write property test for límites de plan
+- [x] 6. Checkpoint - Verificar autenticación y límites
+- [x] 7. Implementar CRUD de productos
+  - [x] 7.1 Crear servicio y controlador de products
+- [x] 8. Implementar cliente n8n
+  - [x] 8.1 Crear N8nClient con método callTryOnWebhook
+  - [x] 8.2 Write unit tests para n8n client con mock
+- [x] 9. Implementar endpoint público de configuración
+  - [x] 9.1 Crear endpoint GET /api/pruebalo/:brandSlug
+- [x] 10. Implementar generación de try-on (core feature)
+  - [x] 10.1 Crear endpoint POST /api/pruebalo/:brandSlug/generate
+- [x] 11. Checkpoint - Verificar generación de try-on
+- [x] 12. Implementar frontend - Autenticación
+  - [x] 12.1 Crear páginas de login y registro
+- [x] 13. Implementar frontend - Dashboard de marca
+  - [x] 13.1 Crear layout de dashboard con navegación
+  - [x] 13.2 Crear página de productos
+  - [x] 13.3 Crear página de configuración
+  - [x] 13.4 Crear página de uso/estadísticas
+- [x] 14. Implementar frontend - Probador público
+  - [x] 14.1 Crear página /pruebalo/[brandSlug]
+  - [x] 14.2 Crear componente ProductSelector
+  - [x] 14.3 Crear componente GenerationLoader
+  - [x] 14.4 Crear componente ResultDisplay
+  - [x] 14.5 Integrar flujo completo en TryOnWidget
+- [x] 15. Implementar widget embebible
+  - [x] 15.1 Crear página /embed/[brandSlug]
+  - [x] 15.2 Implementar comunicación postMessage
+  - [x] 15.3 Crear generador de código embed
+- [x] 16. Implementar manejo de errores y logging
+  - [x] 16.1 Crear middleware de manejo de errores global
+  - [x] 16.2 Implementar rate limiting
+- [x] 17. Checkpoint final - Testing end-to-end
+- [x] 18. Optimizaciones y refinamiento
+  - [x] 18.1 Optimizar carga de imágenes
+  - [x] 18.2 Mejorar UX de tiempos de espera
+  - [x] 18.3 Agregar analytics básico
+- [x] 19. Documentación y deployment
+  - [x] 19.1 Crear README con instrucciones de setup
+  - [x] 19.2 Documentar API endpoints
+  - [x] 19.3 Preparar para deployment
+- [x] 20. Implementar frontend - Panel de Administrador
+  - [x] 20.1 Crear página de login de admin
+  - [x] 20.2 Crear layout de dashboard de admin
+  - [x] 20.3 Crear página de estadísticas globales
+  - [x] 20.4 Crear página de gestión de marcas
+- [x] 21. Implementar sistema de suscripciones - Backend
+  - [x] 21.1 Agregar campos de suscripción a tabla brands
+  - [x] 21.2 Crear tabla de historial de pagos
+  - [x] 21.3 Crear SubscriptionService
+  - [x] 21.4 Crear middleware de verificación de suscripción
+  - [x] 21.5 Crear endpoints de gestión de suscripciones
+  - [x] 21.6 Implementar job de verificación diaria
+- [x] 22. Implementar sistema de notificaciones por email
+  - [x] 22.1 Configurar servicio de email
+  - [x] 22.2 Crear templates de email
+  - [x] 22.3 Implementar NotificationService
+  - [x] 22.4 Integrar notificaciones en job diario
+  - [x] 22.5 Agregar notificaciones de uso
+  - [x] 22.6 Crear tabla de preferencias de notificaciones
+- [x] 23. Implementar frontend - Gestión de suscripciones
+  - [x] 23.1 Agregar indicador de suscripción en dashboard de marca
+  - [x] 23.2 Crear página de suscripción para marca
+  - [x] 23.3 Crear modal de suspensión
+  - [x] 23.4 Agregar página de gestión de suscripciones en admin
+  - [x] 23.5 Crear modal de renovación manual en admin
+  - [x] 23.6 Agregar reporte de ingresos en admin
+  - [x] 23.7 Mostrar precios en COP en toda la interfaz
+- [x] 24. Implementar integración con pasarela de pagos (Wompi)
+  - [x] 24.1 Investigar y seleccionar pasarela
+  - [x] 24.2 Integrar SDK de pasarela seleccionada
+  - [x] 24.3 Implementar flujo de pago automático
+  - [x] 24.4 Crear página de checkout en frontend
+  - [x] 24.5 Write integration tests para flujo de pagos
+- [x] 25. Implementar período de prueba gratuito
+  - [x] 25.1 Agregar campo trial_end_date a tabla brands
+  - [x] 25.2 Modificar lógica de verificación de suscripción
+  - [x] 25.3 Agregar indicador de trial en dashboard
+  - [x] 25.4 Agregar gestión de trials en admin
+- [x] 26. Checkpoint - Sistema de suscripciones
+- [x] 27. Mejoras de UX — Landing y onboarding
+  - [x] 27.1 Mejorar página de landing pública
+  - [x] 27.2 Wizard de onboarding post-registro
+- [x] 28. Mejoras de UX — Dashboard de marca
+  - [x] 28.1 Botón "Ver probador en vivo" en dashboard
+  - [x] 28.2 Notificaciones in-app en dashboard
+- [x] 29. Mejoras de negocio — Conversión y monetización
+  - [x] 29.1 Modal de upgrade contextual para funciones Pro
+  - [x] 29.2 Métricas de conversión en panel admin
+  - [x] 29.3 Soporte para pagos anticipados con descuento
+- [x] 30. Mejoras técnicas — Estabilidad y rendimiento
+  - [x] 30.1 Health check mejorado con estado de servicios
+  - [x] 30.2 Rate limiting por brandSlug en generaciones
+  - [x] 30.3 Caché de configuración pública del probador
+- [x] 31. Sistema anti-abuso de trials por campaña
+  - [x] 31.1 Crear tablas SQL de campañas de trial
+  - [x] 31.2 Crear controlador de campañas de trial (admin)
+  - [x] 31.3 Modificar auth.service.ts para verificar campaña activa
+  - [x] 31.4 Manejar error TRIAL_ABUSE en auth.controller.ts
+  - [x] 31.5 Agregar rutas de campaña de trial en admin.routes.ts
+  - [x] 31.6 Crear página admin /admin/trial-campaign
+  - [x] 31.7 Agregar fingerprint en RegisterForm.tsx
+  - [x] 31.8 Mostrar estado del trial en RegisterForm.tsx
+- [x] 32. Rediseño visual del dashboard — paleta corporativa + Dark/Light mode + responsive móvil
+  - [x] 32.1 Aplicar paleta corporativa al layout del dashboard
+  - [x] 32.2 Implementar selector Dark/Light mode
+  - [x] 32.3 Verificar y corregir responsive para móvil
+  - [x] 32.4 Aplicar paleta a páginas internas del dashboard
+  - [x] 32.5 Aplicar paleta al panel de administrador
+- [x] 33. Mini-landing por cliente en probador.wilkiedevs.com/[slug]
+  - [x] 33.1 Diseñar estructura de la mini-landing
+  - [x] 33.2 Agregar campos de mini-landing en backend
+  - [x] 33.3 Crear página de mini-landing pública
+  - [x] 33.4 Agregar configuración de mini-landing en dashboard de marca
+  - [x] 33.5 Implementar cobro de setup fee en checkout
+  - [x] 33.6 Configurar dominio y SEO
+- [x] 34. Configurar Git y deploy
+  - [x] 34.1 Inicializar repositorio Git y configurar .gitignore
+  - [x] 34.2 Preparar variables de entorno para producción
+  - [x] 34.3 Configurar scripts de build para producción
+- [x] 34.4 Deploy del backend en VPS
+  - Código subido vía Git al VPS
+  - Variables de entorno configuradas en el servidor
+  - Dependencias instaladas y build ejecutado
+  - Proceso Node.js persistente configurado con Docker + PM2
+  - Backend responde en https://api.pruebalo.wilkiedevs.com/health (HTTP 200)
+- [x] 34.5 Deploy del frontend en VPS
+  - Código subido vía Git al VPS
+  - Variables de entorno de producción configuradas (NEXT_PUBLIC_API_URL)
+  - Build ejecutado y contenedor corriendo
+  - Frontend carga correctamente en https://pruebalo.wilkiedevs.com (HTTP 200)
+- [x] 34.6 Configurar dominio y HTTPS
+  - Dominio principal apunta al frontend (pruebalo.wilkiedevs.com)
+  - Subdominio API apunta al backend (api.pruebalo.wilkiedevs.com)
+  - Certificados SSL Let's Encrypt activos (válidos hasta Jun 14 2026) — gestionados por Traefik
+  - CORS en backend configurado para aceptar https://pruebalo.wilkiedevs.com

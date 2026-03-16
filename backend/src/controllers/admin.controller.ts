@@ -445,6 +445,98 @@ export const toggleLandingPage = async (req: any, res: Response) => {
 };
 
 /**
+ * GET /api/admin/mini-landings
+ * Lista todas las marcas con datos de mini-landing para el panel de control.
+ * Incluye: has_landing_page, landing_suspended_at, subscription_status, slug, plan.
+ */
+export const getMiniLandingsAdmin = async (req: any, res: Response) => {
+  try {
+    const { supabaseAdmin } = await import('../config/supabase');
+    const { data, error } = await supabaseAdmin
+      .from('brands')
+      .select('id, name, email, slug, plan, has_landing_page, landing_suspended_at, subscription_status, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const ahora = Date.now();
+    const brands = (data || []).map((b: any) => {
+      let dias_para_eliminacion: number | null = null;
+      if (b.landing_suspended_at) {
+        const transcurridos = Math.floor((ahora - new Date(b.landing_suspended_at).getTime()) / (1000 * 60 * 60 * 24));
+        dias_para_eliminacion = Math.max(0, 90 - transcurridos);
+      }
+      return { ...b, dias_para_eliminacion };
+    });
+
+    return res.status(200).json({ brands, count: brands.length });
+  } catch (error: any) {
+    console.error('Error in getMiniLandingsAdmin:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener mini-landings' });
+  }
+};
+
+/**
+ * PATCH /api/admin/mini-landings/:id/suspend
+ * Suspende manualmente la mini-landing de una marca (setea landing_suspended_at = now()).
+ */
+export const suspendMiniLanding = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { supabaseAdmin } = await import('../config/supabase');
+    const { data, error } = await supabaseAdmin
+      .from('brands')
+      .update({ landing_suspended_at: new Date().toISOString() })
+      .eq('id', id)
+      .select('id, name, landing_suspended_at')
+      .single();
+
+    if (error || !data) return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+
+    auditService.log({
+      admin_id: req.admin?.id ?? 'unknown',
+      admin_email: req.admin?.email ?? 'unknown',
+      action: 'brand.landing_suspend',
+      target_brand_id: id,
+    });
+
+    return res.status(200).json({ message: 'Mini-landing suspendida', brand: data });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al suspender mini-landing' });
+  }
+};
+
+/**
+ * PATCH /api/admin/mini-landings/:id/restore
+ * Restaura la mini-landing de una marca (limpia landing_suspended_at, activa has_landing_page).
+ */
+export const restoreMiniLanding = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { supabaseAdmin } = await import('../config/supabase');
+    const { data, error } = await supabaseAdmin
+      .from('brands')
+      .update({ landing_suspended_at: null, has_landing_page: true })
+      .eq('id', id)
+      .select('id, name, landing_suspended_at, has_landing_page')
+      .single();
+
+    if (error || !data) return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+
+    auditService.log({
+      admin_id: req.admin?.id ?? 'unknown',
+      admin_email: req.admin?.email ?? 'unknown',
+      action: 'brand.landing_restore',
+      target_brand_id: id,
+    });
+
+    return res.status(200).json({ message: 'Mini-landing restaurada', brand: data });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al restaurar mini-landing' });
+  }
+};
+
+/**
  * GET /api/admin/stats/conversion
  * Métricas de conversión: marcas en trial, convertidas, tasa y conversiones por mes.
  * Requirement 29.2

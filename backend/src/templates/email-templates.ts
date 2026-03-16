@@ -470,3 +470,84 @@ export const adminPasswordResetEmail = (
   `;
   return baseTemplate(content);
 };
+
+/**
+ * Email de aviso previo de eliminación de mini-landing (a los 75 días de suspensión).
+ * Informa que quedan N días antes de que la mini-landing sea eliminada definitivamente.
+ */
+export const landingDeletionWarningEmail = (
+  brand: BrandInfo,
+  diasRestantes: number,
+  frontendUrl: string
+): string => {
+  const content = `
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Tu mini-landing será eliminada en ${diasRestantes} días</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Tu suscripción lleva más de 75 días suspendida. Si no renuevas antes de que se cumplan 90 días desde la suspensión,
+      tu mini-landing y los productos asociados serán eliminados de forma definitiva.
+    </p>
+
+    <div style="background-color: #fff8f0; border-left: 4px solid #FF5C3A; padding: 20px; border-radius: 8px; margin: 24px 0;">
+      <p style="color: #c0392b; margin: 0; font-size: 15px; font-weight: bold;">
+        Tiempo restante para renovar: ${diasRestantes} días
+      </p>
+      <p style="color: #888; margin: 8px 0 0 0; font-size: 13px;">
+        Después de este plazo no será posible recuperar tu página ni tus productos.
+      </p>
+    </div>
+
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Para reactivar tu cuenta y conservar tu mini-landing, renueva tu suscripción desde el dashboard o contáctanos.
+    </p>
+
+    <div style="text-align: center; margin: 32px 0 8px 0;">
+      <a href="${frontendUrl}/dashboard/checkout"
+         style="background-color: #FF5C3A; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px;">
+        Renovar suscripción
+      </a>
+    </div>
+
+    <p style="color: #aaa; font-size: 13px; text-align: center; margin-top: 24px;">
+      ¿Tienes preguntas? Escríbenos a
+      <a href="mailto:info@pruebalo.wilkiedevs.com" style="color: #FF5C3A; text-decoration: none;">info@pruebalo.wilkiedevs.com</a>
+    </p>
+  `;
+  return baseTemplate(content);
+};
+
+/**
+ * Email de notificación de eliminación definitiva de mini-landing (a los 90 días).
+ * Se envía cuando la mini-landing ya fue eliminada del sistema.
+ */
+export const landingDeletedNoticeEmail = (brand: BrandInfo): string => {
+  const content = `
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Tu mini-landing ha sido eliminada</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Han transcurrido 90 días desde que tu suscripción fue suspendida. Como te informamos previamente,
+      tu mini-landing y los productos asociados han sido eliminados definitivamente de nuestros servidores.
+    </p>
+
+    <div style="background-color: #f5f2ee; padding: 20px; border-radius: 8px; margin: 24px 0;">
+      <p style="color: #555; margin: 0; font-size: 15px;">
+        Si deseas volver a usar Lookitry, puedes crear una nueva cuenta y configurar tu mini-landing desde cero.
+      </p>
+    </div>
+
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Lamentamos que no hayas podido continuar con nosotros. Si tienes alguna pregunta o quieres reactivar tu cuenta,
+      no dudes en contactarnos.
+    </p>
+
+    <p style="color: #aaa; font-size: 13px; text-align: center; margin-top: 24px;">
+      Escríbenos a
+      <a href="mailto:info@pruebalo.wilkiedevs.com" style="color: #FF5C3A; text-decoration: none;">info@pruebalo.wilkiedevs.com</a>
+    </p>
+  `;
+  return baseTemplate(content);
+};

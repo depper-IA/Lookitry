@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'URL inválida' }, { status: 400 });
   }
 
-  const allowed = ['pruebalo.wilkiedevs.com', 'supabase.co', 'supabase.in'];
+  const allowed = ['pruebalo.wilkiedevs.com', 'wilkiedevs.com', 'supabase.co', 'supabase.in'];
   const isAllowed = allowed.some(d => parsed.hostname === d || parsed.hostname.endsWith('.' + d));
   if (!isAllowed) {
     return NextResponse.json({ error: 'Dominio no permitido' }, { status: 403 });

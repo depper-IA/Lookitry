@@ -298,6 +298,16 @@ export default function MiPaginaPage() {
   const hasLandingPage = (brand as any)?.has_landing_page ?? false;
   const brandLogo = (brand as any)?.logo || null;
 
+  // Calcular días restantes antes de eliminación definitiva
+  const landingSuspendedAt: string | null = (brand as any)?.landing_suspended_at ?? null;
+  const diasParaEliminacion: number | null = (() => {
+    if (!landingSuspendedAt) return null;
+    const suspendidaHace = Date.now() - new Date(landingSuspendedAt).getTime();
+    const diasTranscurridos = Math.floor(suspendidaHace / (1000 * 60 * 60 * 24));
+    const restantes = 90 - diasTranscurridos;
+    return restantes > 0 ? restantes : 0;
+  })();
+
   return (
     <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6 items-start w-full">
       {/* ── Columna izquierda: formulario ── */}
@@ -338,6 +348,56 @@ export default function MiPaginaPage() {
           </p>
         )}
       </div>
+
+      {/* Banner de suspensión de mini-landing */}
+      {landingSuspendedAt && (
+        <div
+          className="flex items-start gap-3 px-4 py-4 rounded-xl border"
+          style={{ backgroundColor: '#1a0a00', borderColor: '#FF5C3A44' }}
+        >
+          {/* Icono advertencia */}
+          <svg
+            className="w-5 h-5 flex-shrink-0 mt-0.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="#FF5C3A"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold" style={{ color: '#FF5C3A' }}>
+              Tu mini-landing está suspendida
+            </p>
+            <p className="text-xs mt-1" style={{ color: '#aaa' }}>
+              Tu página no es visible públicamente por falta de pago.
+              {diasParaEliminacion !== null && diasParaEliminacion > 0 ? (
+                <>
+                  {' '}Será eliminada definitivamente en{' '}
+                  <strong style={{ color: '#f5f2ee' }}>{diasParaEliminacion} días</strong>.
+                  Renueva tu suscripción para reactivarla.
+                </>
+              ) : (
+                <> El plazo de recuperación ha vencido.</>
+              )}
+            </p>
+            <a
+              href="/dashboard/checkout"
+              className="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
+              style={{ backgroundColor: '#FF5C3A', color: '#fff' }}
+            >
+              {/* Icono renovar */}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                <path d="M16 16h5v5" />
+              </svg>
+              Renovar suscripción
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Alertas */}
       {error && (

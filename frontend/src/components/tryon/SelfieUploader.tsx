@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { compressImage, validateImageFile } from '@/utils/imageCompression';
 import { ImageEditor } from './ImageEditor';
 
@@ -15,7 +15,13 @@ export function SelfieUploader({ onUpload, primaryColor = '#6366f1', welcomeMess
   const [error, setError] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
   const [editingSrc, setEditingSrc] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setIsMobile(/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent));
+  }, []);
 
   const handleFile = async (file: File) => {
     setError(null);
@@ -77,36 +83,88 @@ export function SelfieUploader({ onUpload, primaryColor = '#6366f1', welcomeMess
           )}
         </div>
 
-        {/* Zona de drop */}
-        <div
-          className={`relative border-2 border-dashed rounded-3xl p-10 text-center cursor-pointer transition-all duration-200 ${
-            dragActive ? 'scale-[1.02]' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
-          }`}
-          style={dragActive ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` } : {}}
-          onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
-          onClick={() => !compressing && inputRef.current?.click()}
-        >
-          {compressing ? (
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: primaryColor }} />
-              <p className="text-sm text-gray-500">Optimizando imagen...</p>
-            </div>
-          ) : (
-            <>
-              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+        {/* Zona de drop — solo en desktop */}
+        {!isMobile && (
+          <div
+            className={`relative border-2 border-dashed rounded-3xl p-10 text-center cursor-pointer transition-all duration-200 ${
+              dragActive ? 'scale-[1.02]' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+            }`}
+            style={dragActive ? { borderColor: primaryColor, backgroundColor: `${primaryColor}10` } : {}}
+            onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
+            onClick={() => !compressing && inputRef.current?.click()}
+          >
+            {compressing ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: primaryColor }} />
+                <p className="text-sm text-gray-500">Optimizando imagen...</p>
               </div>
-              <p className="font-semibold text-gray-700">Arrastra tu foto aquí</p>
-              <p className="text-sm text-gray-400 mt-1">o haz clic para seleccionar</p>
-              <div className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                Seleccionar foto
+            ) : (
+              <>
+                <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="font-semibold text-gray-700">Arrastra tu foto aquí</p>
+                <p className="text-sm text-gray-400 mt-1">o haz clic para seleccionar</p>
+                <div className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white shadow-sm" style={{ backgroundColor: primaryColor }}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                  Seleccionar foto
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Botones móvil — galería + cámara */}
+        {isMobile && (
+          <div className="space-y-3">
+            {compressing ? (
+              <div className="flex flex-col items-center gap-3 py-8">
+                <div className="w-10 h-10 border-4 border-gray-200 rounded-full animate-spin" style={{ borderTopColor: primaryColor }} />
+                <p className="text-sm text-gray-500">Optimizando imagen...</p>
               </div>
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                {/* Botón cámara */}
+                <button
+                  type="button"
+                  onClick={() => cameraRef.current?.click()}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all active:scale-[0.98]"
+                  style={{ borderColor: primaryColor, backgroundColor: `${primaryColor}08` }}
+                >
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primaryColor }}>
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800">Tomar foto ahora</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Abre la cámara del dispositivo</p>
+                  </div>
+                </button>
+
+                {/* Botón galería */}
+                <button
+                  type="button"
+                  onClick={() => inputRef.current?.click()}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 bg-white text-left transition-all active:scale-[0.98]"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800">Elegir de galería</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Selecciona una foto existente</p>
+                  </div>
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Tips */}
         <div className="mt-4 grid grid-cols-3 gap-2 text-center">
@@ -131,6 +189,10 @@ export function SelfieUploader({ onUpload, primaryColor = '#6366f1', welcomeMess
         )}
 
         <input ref={inputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp"
+          onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
+        {/* Input exclusivo para cámara (capture="user" = cámara frontal) */}
+        <input ref={cameraRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp"
+          capture="user"
           onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
       </div>
     </>
