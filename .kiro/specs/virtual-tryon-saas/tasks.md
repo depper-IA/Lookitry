@@ -360,7 +360,7 @@
 
 ---
 
-- [-] 4axtiveje7. Templates: bugs y mejoras visuales
+- [-] 47. Templates: bugs y mejoras visuales
   - [x] 47.1 Template clásico: mostrar reseñas, ciudad/dirección y otros datos faltantes
     - Verificar qué campos no se están renderizando en `TemplateClassic`
     - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
