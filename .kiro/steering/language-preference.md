@@ -12,7 +12,7 @@ No usar emojis en la interfaz de usuario. En su lugar, usar iconos SVG o compone
 
 # Legibilidad de Textos en UI Oscura
 
-El proyecto usa fondo oscuro (`#0a0a0a`, `#141414`). Los textos secundarios NUNCA deben usar grises muy oscuros como `#333`, `#444`, `#555`. Usar siempre variantes más claras y legibles:
+El proyecto usa fondo oscuro (`#0a0a0a`, `#141414`). Los textos secundarios NUNCA deben usar grises muy oscuros como `#333`, `#444`, `#555`. Usar siempre variantes más claras tirando a blanco y legibles:
 
 - Textos de ayuda / secundarios: `#999` o `#aaa`
 - Textos de features / listas: `#bbb` o `#ccc`
