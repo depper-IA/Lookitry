@@ -5,9 +5,6 @@ import { useEffect, useState } from 'react';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
 interface PaymentSettings {
-  landing_price: number;
-  landing_original_price: number;
-  footer_brand_url: string;
   wompi_enabled: boolean;
   wompi_public_key: string;
   wompi_private_key: string;
@@ -15,18 +12,6 @@ interface PaymentSettings {
   wompi_integrity_secret: string;
   wompi_test_mode: boolean;
   paypal_enabled: boolean;
-  paypal_email: string;
-  paypal_client_id: string;
-  paypal_client_secret: string;
-  paypal_sandbox: boolean;
-  manual_enabled: boolean;
-  manual_instructions: string;
-  manual_bank_name: string;
-  manual_account_number: string;
-  manual_account_holder: string;
-  manual_whatsapp: string;
-  manual_email: string;
-  transfer_enabled: boolean;
   transfer_bank_name: string;
   transfer_account_number: string;
   transfer_account_type: string;
