@@ -25,7 +25,7 @@ interface BrandData {
   national_shipping?: boolean;
   rating?: number | null;
   total_reviews?: number | null;
-  landing_template?: 'classic' | 'editorial' | 'probador';
+  landing_template?: 'classic' | 'editorial' | 'moderno';
   schedule?: Record<string, string> | null;
 }
 
@@ -201,145 +201,50 @@ function ActivationModal({
   modalFeatures,
   onPreview,
 }: ActivationModalProps) {
-  const [landingPrice, setLandingPrice] = useState(650000);
-  const [landingOriginal, setLandingOriginal] = useState(900000);
-
-  useEffect(() => {
-    fetch(`${API_URL}/api/payment-settings/public`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d?.landingPrice) setLandingPrice(d.landingPrice);
-        if (d?.landingOriginalPrice) setLandingOriginal(d.landingOriginalPrice);
-      })
-      .catch(() => {});
-  }, []);
-
-  const discountPct = Math.round((1 - landingPrice / landingOriginal) * 100);
   const CHECKOUT_URL = '/checkout?plan=LANDING';
-
-  const defaultFeatures = [
-    'Pagina publica con tu catalogo completo',
-    'Probador virtual integrado con IA',
-    'Boton de WhatsApp flotante',
-    '3 templates de diseno a elegir',
-    'Plan de suscripcion BASIC o PRO incluido',
-  ];
-  const features = (modalFeatures && modalFeatures.length > 0) ? modalFeatures : defaultFeatures;
-  const title = modalTitle || (brandName ? `Activa la pagina de ${brandName}` : 'Activa tu pagina de marca');
-  const description = modalDescription || 'Estas viendo una vista previa. Activa tu mini-landing para que tus clientes puedan verla.';
-
-  const BASIC_PRICE = 150000;
-  const totalDesde = landingPrice + BASIC_PRICE;
-  const formatCOP = (n: number) => '$' + n.toLocaleString('es-CO');
+  const title = modalTitle || (brandName ? `Activa la pagina de ${brandName}` : 'Activa tu pagina');
+  const description = modalDescription || 'Esta pagina aun no esta activa. Activala para que tus clientes puedan verla.';
 
   return (
     <div
       className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.65)' }}
+      style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
     >
       <div
-        className="relative w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl"
-        style={{ backgroundColor: '#0f0f0f', border: '1px solid #2a2a2a' }}
+        className="w-full max-w-xs rounded-2xl overflow-hidden shadow-xl"
+        style={{ backgroundColor: 'var(--bg-card, #fff)', border: '1px solid var(--border-color, #e5e7eb)' }}
       >
-        {/* Franja superior */}
+        {/* Franja de color de marca */}
         <div className="h-1 w-full" style={{ backgroundColor: primaryColor }} />
 
-        <div className="px-6 py-6 text-center">
-          {/* Header con gradiente del color de la marca */}
-          <div
-            className="-mx-6 -mt-6 mb-5 px-6 pt-8 pb-6 text-center"
-            style={{ background: `linear-gradient(135deg, ${primaryColor}ee 0%, ${primaryColor}99 100%)` }}
-          >
-            <div
-              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
-              style={{ backgroundColor: 'rgba(255,255,255,0.2)', border: '2px solid rgba(255,255,255,0.3)' }}
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-black text-white tracking-tight mb-1" style={{ fontFamily: 'Syne, sans-serif' }}>
-              {title}
-            </h2>
-            <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>
-              {description}
-            </p>
-          </div>
+        <div className="px-5 py-5">
+          <h2 className="text-base font-bold mb-1" style={{ color: 'var(--text-primary, #111827)', fontFamily: 'Syne, sans-serif' }}>
+            {title}
+          </h2>
+          <p className="text-xs mb-4 leading-relaxed" style={{ color: 'var(--text-secondary, #6b7280)' }}>
+            {description}
+          </p>
 
-          {/* Precio desglosado */}
-          <div
-            className="rounded-xl px-4 py-3 mb-4 text-left space-y-1.5"
-            style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] text-gray-500">Mini-landing (pago unico)</span>
-              <div className="flex items-center gap-1.5">
-                {discountPct > 0 && (
-                  <span className="text-[10px] text-gray-600 line-through">{formatCOP(landingOriginal)}</span>
-                )}
-                <span className="text-[13px] font-bold text-white">{formatCOP(landingPrice)}</span>
-                {discountPct > 0 && (
-                  <span
-                    className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                    style={{ backgroundColor: primaryColor + '25', color: primaryColor }}
-                  >
-                    -{discountPct}%
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] text-gray-500">Plan BASIC (desde)</span>
-              <span className="text-[13px] font-bold text-white">{formatCOP(BASIC_PRICE)}/mes</span>
-            </div>
-            <div className="border-t border-[#2a2a2a] pt-1.5 flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-gray-400">Total desde</span>
-              <span className="text-[18px] font-black text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
-                {formatCOP(totalDesde)} COP
-              </span>
-            </div>
-          </div>
-
-          {/* Features */}
-          <ul className="text-left space-y-1.5 mb-5">
-            {features.map(f => (
-              <li key={f} className="flex items-center gap-2 text-xs text-gray-300">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0">
-                  <circle cx="7" cy="7" r="7" fill={primaryColor + '25'} />
-                  <path d="M4 7l2 2 4-4" stroke={primaryColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                {f}
-              </li>
-            ))}
-          </ul>
-
-          {/* CTA principal */}
           <a
             href={CHECKOUT_URL}
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-white text-sm font-bold transition-all hover:opacity-90 active:scale-95 mb-3"
-            style={{ backgroundColor: primaryColor, boxShadow: `0 6px 20px ${primaryColor}40` }}
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-white text-sm font-semibold transition-opacity hover:opacity-90 mb-2"
+            style={{ backgroundColor: primaryColor }}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
             Ver planes y activar
           </a>
 
-          {/* Boton ver preview */}
           {onPreview && (
             <button
               onClick={onPreview}
-              className="w-full py-2.5 rounded-2xl text-xs font-semibold transition-all hover:opacity-80 mb-2"
-              style={{ backgroundColor: '#1a1a1a', color: '#888', border: '1px solid #2a2a2a' }}
+              className="w-full py-2 rounded-xl text-xs font-medium transition-opacity hover:opacity-70"
+              style={{ color: 'var(--text-secondary, #6b7280)', backgroundColor: 'var(--bg-base, #f9fafb)', border: '1px solid var(--border-color, #e5e7eb)' }}
             >
               Ver como queda primero (3 min)
             </button>
           )}
-          <p className="text-[10px] text-gray-600 mt-2">
-            Elige tu plan en el siguiente paso · Activacion inmediata
-          </p>
         </div>
       </div>
     </div>
@@ -565,13 +470,18 @@ function TemplateClassic({ brandSlug, brand, products }: { brandSlug: string; br
   // Rebloqueo al llegar al final del scroll
   useEffect(() => {
     if (!previewMode) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const handleScroll = () => {
       const scrolled = window.scrollY + window.innerHeight;
       const total = document.documentElement.scrollHeight;
-      if (scrolled >= total - 40) setPreviewMode(false);
+      if (scrolled >= total - 40) {
+        if (!timer) timer = setTimeout(() => setPreviewMode(false), 30000);
+      } else {
+        if (timer) { clearTimeout(timer); timer = null; }
+      }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => { window.removeEventListener('scroll', handleScroll); if (timer) clearTimeout(timer); };
   }, [previewMode]);
 
   return (
@@ -778,13 +688,18 @@ function TemplateEditorial({ brandSlug, brand, products }: { brandSlug: string; 
 
   useEffect(() => {
     if (!previewMode) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const handleScroll = () => {
       const scrolled = window.scrollY + window.innerHeight;
       const total = document.documentElement.scrollHeight;
-      if (scrolled >= total - 40) setPreviewMode(false);
+      if (scrolled >= total - 40) {
+        if (!timer) timer = setTimeout(() => setPreviewMode(false), 30000);
+      } else {
+        if (timer) { clearTimeout(timer); timer = null; }
+      }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => { window.removeEventListener('scroll', handleScroll); if (timer) clearTimeout(timer); };
   }, [previewMode]);
 
   return (
@@ -1135,7 +1050,7 @@ function ProbadorContact({ brand }: { brand: BrandData }) {
   );
 }
 
-function TemplateProbador({ brandSlug, brand, products }: { brandSlug: string; brand: BrandData; products: ProductData[] }) {
+function TemplateModerno({ brandSlug, brand, products }: { brandSlug: string; brand: BrandData; products: ProductData[] }) {
   const primary = brand.primary_color || '#FF5C3A';
   const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id ?? null);
   const [previewMode, setPreviewMode] = useState(false);
@@ -1149,13 +1064,18 @@ function TemplateProbador({ brandSlug, brand, products }: { brandSlug: string; b
 
   useEffect(() => {
     if (!previewMode) return;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const handleScroll = () => {
       const scrolled = window.scrollY + window.innerHeight;
       const total = document.documentElement.scrollHeight;
-      if (scrolled >= total - 40) setPreviewMode(false);
+      if (scrolled >= total - 40) {
+        if (!timer) timer = setTimeout(() => setPreviewMode(false), 30000);
+      } else {
+        if (timer) { clearTimeout(timer); timer = null; }
+      }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => { window.removeEventListener('scroll', handleScroll); if (timer) clearTimeout(timer); };
   }, [previewMode]);
 
   return (
@@ -1234,8 +1154,8 @@ export function MiniLanding({ brandSlug, initialData }: MiniLandingProps) {
     return <TemplateEditorial brandSlug={brandSlug} brand={brand} products={products || []} />;
   }
 
-  if (template === 'probador') {
-    return <TemplateProbador brandSlug={brandSlug} brand={brand} products={products || []} />;
+  if (template === 'moderno' || (template as string) === 'probador') {
+    return <TemplateModerno brandSlug={brandSlug} brand={brand} products={products || []} />;
   }
 
   return <TemplateClassic brandSlug={brandSlug} brand={brand} products={products || []} />;
