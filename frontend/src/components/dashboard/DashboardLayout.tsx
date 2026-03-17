@@ -63,7 +63,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-5 border-b" style={{ borderColor: '#1f1f1f' }}>
         <Link href="/dashboard/products" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="Lookitry" width={26} height={26} className="object-contain w-[26px] h-[26px]" priority />
+          <Image src="/logo.svg" alt="Lookitry" width={26} height={26} className="object-contain w-[26px] h-[26px]" priority />
           <span style={{ fontFamily: 'Syne, sans-serif' }} className="hidden sm:inline font-extrabold text-base leading-none text-white tracking-tight">
             Look<span style={{ color: '#FF5C3A' }}>itry</span>
           </span>

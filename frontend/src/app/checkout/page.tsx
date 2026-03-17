@@ -208,7 +208,7 @@ function CheckoutContent() {
       {/* Nav */}
       <nav className="bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
         <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
+          <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
           <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base text-white tracking-tight">
             Look<span className="text-[#FF5C3A]">itry</span>
           </span>
