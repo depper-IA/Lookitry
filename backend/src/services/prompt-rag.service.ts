@@ -15,7 +15,7 @@ import { FeedbackService, SimilarFeedback } from './feedback.service';
 const feedbackService = new FeedbackService();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_API_KEY ?? '';
-const EMBEDDING_MODEL = 'text-embedding-004';
+const EMBEDDING_MODEL = 'gemini-embedding-001';
 const CHAT_MODEL = 'gemini-2.0-flash';
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
@@ -75,7 +75,7 @@ export class PromptRagService {
   }
 
   /**
-   * Genera embedding usando Gemini text-embedding-004 (gratuito).
+   * Genera embedding usando Gemini gemini-embedding-001 (gratuito, 768 dimensiones).
    */
   private async _generateEmbedding(text: string): Promise<number[] | null> {
     try {
