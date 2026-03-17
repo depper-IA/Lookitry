@@ -159,6 +159,33 @@ export class AuthController {
     }
   }
 
+  async resendVerification(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email requerido' });
+      }
+
+      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+      const { brand, token } = await authService.resendVerificationEmail(email);
+
+      if (brand && token) {
+        const verifyUrl = `${frontendUrl}/auth/verify?token=${token}`;
+        emailService.sendEmail({
+          to: brand.email,
+          subject: 'Confirma tu correo — Lookitry',
+          html: verifyEmailTemplate({ name: brand.name, email: brand.email }, verifyUrl),
+        }).catch(err => console.error('[Auth] Error reenviando email de verificación:', err));
+      }
+
+      // Siempre responder OK para no revelar si el email existe
+      return res.status(200).json({ message: 'Si el email está pendiente de verificación, recibirás un nuevo enlace.' });
+    } catch (error: any) {
+      console.error('Error en resendVerification:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al reenviar el correo' });
+    }
+  }
+
   async changePassword(req: AuthRequest, res: Response) {
     try {
       const brandId = req.brandId!;

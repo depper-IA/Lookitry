@@ -18,6 +18,33 @@ export default function ProfilePage() {
   const [pwError, setPwError] = useState<string | null>(null);
   const [showPw, setShowPw] = useState({ current: false, new: false, confirm: false });
 
+  // Estado para verificación de email
+  const [verifySending, setVerifySending] = useState(false);
+  const [verifySent, setVerifySent] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+
+  const handleResendVerification = async () => {
+    if (!brand?.email) return;
+    setVerifyError(null);
+    setVerifySending(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/auth/resend-verification`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: brand.email }),
+        }
+      );
+      if (!res.ok) throw new Error('Error al reenviar');
+      setVerifySent(true);
+    } catch {
+      setVerifyError('No se pudo enviar el correo. Intenta de nuevo.');
+    } finally {
+      setVerifySending(false);
+    }
+  };
+
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -153,13 +180,61 @@ export default function ProfilePage() {
               <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
                 Email
               </label>
-              <input
-                type="email"
-                value={brand?.email ?? ''}
-                disabled
-                style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}
-                className="w-full px-3 py-2 min-h-[44px] border rounded-xl text-sm cursor-not-allowed"
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  value={brand?.email ?? ''}
+                  disabled
+                  style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}
+                  className="w-full px-3 py-2 pr-28 min-h-[44px] border rounded-xl text-sm cursor-not-allowed"
+                />
+                {/* Badge de estado de verificación */}
+                {brand?.emailVerified ? (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded-full">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Verificado
+                  </span>
+                ) : (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[11px] font-medium text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                    </svg>
+                    Sin verificar
+                  </span>
+                )}
+              </div>
+              {/* Acción de reenvío si no está verificado */}
+              {!brand?.emailVerified && (
+                <div className="mt-2">
+                  {verifySent ? (
+                    <p className="flex items-center gap-1.5 text-[12px] text-emerald-400">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Correo enviado. Revisa tu bandeja de entrada.
+                    </p>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                        Verifica tu correo para usar las generaciones.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleResendVerification}
+                        disabled={verifySending}
+                        className="text-[12px] text-[#FF5C3A] hover:text-[#e04e30] underline disabled:opacity-50 transition-colors whitespace-nowrap"
+                      >
+                        {verifySending ? 'Enviando...' : 'Reenviar correo'}
+                      </button>
+                    </div>
+                  )}
+                  {verifyError && (
+                    <p className="text-[12px] text-red-400 mt-1">{verifyError}</p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div>
