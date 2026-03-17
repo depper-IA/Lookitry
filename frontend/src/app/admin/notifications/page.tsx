@@ -18,7 +18,7 @@ interface AdminNotification {
   brandName?: string;
   createdAt: string;
   severity: 'info' | 'warning' | 'error' | 'success';
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, string | number | boolean | null | undefined>;
 }
 
 const STORAGE_KEY = 'admin_notifications_read';
