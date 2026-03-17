@@ -388,12 +388,12 @@
 
 ---
 
-- [-] 49. Footer de templates: URL provisional de Lookitry
+- [x] 49. Footer de templates: URL provisional de Lookitry
   - [x] 49.1 Cambiar el link del footer en todos los templates de `lookitry.com` a `pruebalo.wilkiedevs.com`
     - Afecta `LandingFooter` en `MiniLanding.tsx` y cualquier otro footer de template
     - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
     - agregame una opcion para cambiar la URL actual Pruebalo.wilkiedevs.com por la nueva con toda la logica para que funcione el nuevo enlace y me haga automaticamente todas las redirecciones necesarias para que funcione la nueva URL, esto lo puedes crear en el apartado configuracion del panel de administracion.
- - [-] 49.2 Elimina la seccion pagina inactiva global del layout de configuracion ya que esta repetida en la oagina de mini-lading.
+ - [x] 49.2 Elimina la seccion pagina inactiva global del layout de configuracion ya que esta repetida en la oagina de mini-lading.
 
 ---
 
