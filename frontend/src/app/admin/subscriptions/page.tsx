@@ -597,7 +597,9 @@ export default function AdminSubscriptionsPage() {
                     </p>
                   </td>
                   <td style={{ color: 'var(--text-secondary)' }} className="px-5 py-3.5">{formatDate(s.subscription_end_date)}</td>
-                  <td className="px-5 py-3.5"><DaysChip days={s.daysRemaining} /></td>
+                  <td className="px-5 py-3.5">
+                    <DaysChip days={s.is_in_trial ? (s.trial_days_remaining ?? 0) : s.daysRemaining} />
+                  </td>
                   <td className="px-5 py-3.5"><StatusBadge status={s.subscription_status} /></td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2 flex-wrap">
