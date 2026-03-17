@@ -323,8 +323,8 @@
 
 ---
 
-- [~] 44. Configuración admin: selector bypass protección por IP en pruebas
-  - [~] 44.1 Agregar toggle en la página de configuración/pruebas del admin para desactivar protección por IP en registro
+- [-] 44. Configuración admin: selector bypass protección por IP en pruebas
+  - [x] 44.1 Agregar toggle en la página de configuración/pruebas del admin para desactivar protección por IP en registro
     - Colocarlo debajo del toggle de tarjetas de prueba (mismo estilo visual)
     - Persistir en la misma tabla/config que el toggle de tarjetas
     - _Archivos: frontend/src/app/admin/settings/page.tsx (o equivalente), backend/src/controllers/admin.controller.ts_
