@@ -51,10 +51,75 @@ NUNCA mostrar `BASIC` para una marca que esté en trial. El filtro de plan en ta
 PROHIBIDO usar modelos de IA de pago sin consentimiento explícito del usuario.
 
 - Google Gemini: solo `gemini-1.5-flash` o `gemini-2.0-flash` (tier gratuito). NUNCA `gemini-1.5-pro` ni modelos de pago.
+- Embeddings: usar `text-embedding-004` de Google (gratuito en tier free).
 - OpenRouter: solo modelos con sufijo `:free`. NUNCA modelos sin ese sufijo.
 - OpenAI, Anthropic u otras APIs de pago: PROHIBIDO sin autorización explícita.
 - En n8n: verificar siempre que el modelo configurado sea gratuito antes de usarlo.
 - Si hay duda sobre el costo de un modelo, preguntar antes de usarlo.
+
+# Regla Crítica: Generación de Imágenes — Calidad máxima al menor costo
+
+- La generación de imágenes debe mantener la máxima similitud con el producto original y la foto del usuario.
+- NO reducir resolución, pasos de inferencia ni calidad del modelo de imagen para ahorrar costos.
+- Los costos se reducen optimizando el PROMPT (más preciso = menos reintentos), no degradando el modelo.
+- El sistema RAG de feedback existe precisamente para mejorar prompts y reducir generaciones fallidas (que son el verdadero costo).
+- Reglas base por categoría de prenda (prompt-rules.ts) son OBLIGATORIAS antes de cualquier llamada al modelo.
+
+# Credenciales de Acceso (uso interno — NO exponer en código)
+
+## Supabase
+- URL: `https://vkdooutklowctuudjnkl.supabase.co`
+- Anon Key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM`
+- Service Key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDc2NTY2NSwiZXhwIjoyMDg2MzQxNjY1fQ.NxXV0Too3Iadb0FGuC8powPUuaMPiF1TKIUVtGMyFpg`
+
+## n8n
+- URL base: `https://n8n.wilkiedevs.com`
+- Webhook tryon: `https://n8n.wilkiedevs.com/webhook/tryon`
+- Webhook descriptor: `https://n8n.wilkiedevs.com/webhook/descriptor`
+- API Key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NGUxZTYyYi1kY2M0LTRiZGUtOWFjZS02OTBmMjAxMGIyMDAiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwianRpIjoiZWE2NmI1N2ItNTBiNS00ZTViLWJhYzYtZDE2MWFkM2NkZTkzIiwiaWF0IjoxNzczMjc5MzMyfQ.ZuYsz4K4ifpp9ho_nZzpDypTy49_APNx9hkecKridJw`
+- Bearer Token: `Travis2305**`
+
+## VPS (Hostinger)
+- Host: `31.220.18.39`
+- Puerto: `22`
+- Usuario: `root`
+- Contraseña: `Travis18456916#`
+
+## Hosting compartido (Hostinger SSH)
+- Host: `92.112.189.47`
+- Puerto: `65002`
+- Usuario: `u639440667`
+- Contraseña: `Travis2305*`
+
+## MinIO Storage
+- Endpoint: `https://minio.wilkiedevs.com`
+- Bucket: `images`
+- Access Key: `Wilkiedevs`
+- Secret Key: `Travis2305*`
+- URL pública: `https://minio.wilkiedevs.com`
+
+## SMTP (Hostinger)
+- Host: `smtp.hostinger.com`
+- Puerto: `465` (SSL)
+- Usuario: `info@pruebalo.wilkiedevs.com`
+- Contraseña: `Travis2305*`
+
+## Wompi (Colombia — modo test)
+- Public Key: `pub_test_3X84dh5ArV79atO6WwNFznjK3kv45JI2`
+- Private Key: `prv_test_ZrBx84WuuB6V7NDPf7Ed9XyRYhg77J1s`
+- Events Secret: `test_events_ywYgTECX1VdqCmLiGPxeUYXzaJqIAVsg`
+- Integrity Secret: `test_integrity_9tTBgHdvYU2yPEIapYGbeFvNCqrlfLQG`
+
+## GitHub
+- Token: `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`
+- Repo: `https://github.com/depper-IA/virtual-tryon.git`
+
+## OpenRouter
+- API Key: `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`
+- Solo usar modelos con sufijo `:free`
+
+## JWT
+- Secret: `virtual-tryon-saas-secret-key-change-in-production-2026`
 
 # Flujo de trabajo — Deploy y desarrollo local
 
