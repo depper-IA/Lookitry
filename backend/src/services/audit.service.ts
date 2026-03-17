@@ -16,6 +16,7 @@ export type AuditAction =
   | 'brand.landing_page_toggle'
   | 'brand.landing_suspend'
   | 'brand.landing_restore'
+  | 'brand.modal_config_update'
   | 'subscription.renew'
   | 'subscription.suspend'
   | 'subscription.reactivate'
