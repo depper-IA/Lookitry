@@ -10,6 +10,27 @@ Responde siempre en español. Esto aplica a todas las conversaciones, sin excepc
 
 No usar emojis en la interfaz de usuario. En su lugar, usar iconos SVG o componentes de iconos (por ejemplo, de `lucide-react` o iconos SVG inline) para mantener una apariencia profesional y consistente.
 
+# Legibilidad de Textos en UI Oscura
+
+El proyecto usa fondo oscuro (`#0a0a0a`, `#141414`). Los textos secundarios NUNCA deben usar grises muy oscuros como `#333`, `#444`, `#555`. Usar siempre variantes más claras y legibles:
+
+- Textos de ayuda / secundarios: `#999` o `#aaa`
+- Textos de features / listas: `#bbb` o `#ccc`
+- Textos de contacto / links secundarios: `#999`
+- Precios tachados: `#666`
+- Notas al pie: `#777`
+- Textos muy sutiles (mínimo): `#666`
+
+Regla general: en fondos oscuros, el texto más tenue visible debe ser al menos `#666`. Nunca usar `#333`, `#444` ni `#555` para texto legible.
+
+# Nombre de Marca
+
+El nombre del proyecto es **Lookitry**. En el código JSX se escribe como:
+```jsx
+Look<span className="text-[#FF5C3A]">itry</span>
+```
+NUNCA usar "VirtualTryOn", "Virtual Try On" ni variantes antiguas en ningún componente de UI.
+
 # Funcionalidades por Plan
 
 - Plan PRO: el usuario puede modificar el slug del widget (la URL pública del probador).

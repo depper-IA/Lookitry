@@ -103,6 +103,7 @@ export class BrandsController {
         'city_display', 'national_shipping', 'whatsapp_message', 'cta_button_text',
         'rating', 'total_reviews', 'schedule', 'slogan', 'landing_template',
         'modal_title', 'modal_description', 'modal_features',
+        'logo_light', 'logo_dark',
       ];
       for (const field of landingFields) {
         if (req.body[field] !== undefined) {

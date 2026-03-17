@@ -282,6 +282,8 @@ export default function MiPaginaPage() {
     lunes: '', martes: '', miercoles: '', jueves: '', viernes: '', sabado: '', domingo: '',
   });
   const [logoUrl, setLogoUrl] = useState('');
+  const [logoLightUrl, setLogoLightUrl] = useState('');
+  const [logoDarkUrl, setLogoDarkUrl] = useState('');
   useEffect(() => {
     brandsService.getCurrentBrand()
       .then(b => {
@@ -294,6 +296,8 @@ export default function MiPaginaPage() {
         setCtaButtonText(raw.cta_button_text || '');
         setCoverImageUrl(raw.cover_image_url || '');
         setLogoUrl(raw.logo || '');
+        setLogoLightUrl(raw.logo_light || '');
+        setLogoDarkUrl(raw.logo_dark || '');
         const links = raw.social_links || {};
         setInstagram(links.instagram || '');
         setFacebook(links.facebook || '');
@@ -333,6 +337,8 @@ export default function MiPaginaPage() {
         cta_button_text: ctaButtonText || null,
         cover_image_url: coverImageUrl || null,
         logo: logoUrl || null,
+        logo_light: logoLightUrl || null,
+        logo_dark: logoDarkUrl || null,
         social_links,
         city_display: cityDisplay || null,
         national_shipping: nationalShipping,
@@ -509,6 +515,46 @@ export default function MiPaginaPage() {
                 Eliminar logo
               </button>
             )}
+          </div>
+        </div>
+
+        {/* Logos light / dark */}
+        <div className="space-y-3">
+          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+            Versiones del logo por fondo
+          </label>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            Sube versiones alternativas para que el logo no se pierda según el color de fondo de cada template.
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>Para fondos oscuros</p>
+              <div className="flex items-start gap-3">
+                <LogoUpload
+                  currentUrl={logoLightUrl || null}
+                  onUpload={url => setLogoLightUrl(url)}
+                />
+                {logoLightUrl && (
+                  <button onClick={() => setLogoLightUrl('')} className="text-xs text-red-500 hover:text-red-600 transition-colors mt-1">
+                    Eliminar
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>Para fondos claros</p>
+              <div className="flex items-start gap-3">
+                <LogoUpload
+                  currentUrl={logoDarkUrl || null}
+                  onUpload={url => setLogoDarkUrl(url)}
+                />
+                {logoDarkUrl && (
+                  <button onClick={() => setLogoDarkUrl('')} className="text-xs text-red-500 hover:text-red-600 transition-colors mt-1">
+                    Eliminar
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
