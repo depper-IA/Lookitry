@@ -728,15 +728,15 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
 
 function EditorialCover({ brand }: { brand: BrandData }) {
   const primary = brand.primary_color || '#FF5C3A';
+  const fallbackBg = brand.cover_bg_color || `linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)`;
   return (
-    <div className="relative h-48 md:h-56 overflow-hidden flex items-end" style={brand.cover_image_url ? {} : { background: brand.cover_bg_color || `linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` }}>
+    <div className="relative h-48 md:h-56 overflow-hidden flex items-end" style={{ background: fallbackBg }}>
       {brand.cover_image_url && (
         <>
           <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         </>
       )}
-      {!brand.cover_image_url && <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
       <div className="relative z-10 px-6 pb-5 w-full">
         {brand.slogan && <p className="text-white/70 text-xs mb-1 tracking-widest uppercase">{brand.slogan}</p>}
         <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">{brand.name}</h1>
@@ -999,15 +999,28 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
 
 function ProbadorHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: () => void }) {
   const primary = brand.primary_color || '#FF5C3A';
-  const heroBg = brand.cover_bg_color || 'var(--p-hero-bg, #0f0f0f)';
+  const hasCover = !!brand.cover_image_url;
+  const heroBg = brand.cover_bg_color || '#0f0f0f';
   return (
-    <section className="relative py-20 px-6 text-center overflow-hidden" style={{ backgroundColor: heroBg }}>
-      {/* Anillos decorativos */}
+    <section
+      className="relative py-20 px-6 text-center overflow-hidden"
+      style={hasCover ? {} : { backgroundColor: heroBg }}
+    >
+      {/* Imagen de portada */}
+      {hasCover && (
+        <>
+          <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/60" />
+        </>
+      )}
+      {/* Anillos decorativos (solo sin imagen) */}
+      {!hasCover && (
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
         {[600, 400, 200].map((size, i) => (
           <div key={i} className="absolute rounded-full border" style={{ width: size, height: size, borderColor: primary, opacity: 0.04 + i * 0.02 }} />
         ))}
       </div>
+      )}
       <div className="relative z-10 max-w-2xl mx-auto">
         {/* Badge animado */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-7" style={{ backgroundColor: primary + '18', borderColor: primary + '40' }}>
