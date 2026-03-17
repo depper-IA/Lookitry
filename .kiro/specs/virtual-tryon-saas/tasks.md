@@ -378,9 +378,9 @@
 ---
 
 - [ ] 48. Suscripciones y marcas: plan trial
-  - [ ] 48.1 En `/admin/subscriptions`: mostrar plan TRIAL correctamente (no como BASIC)
+  - [x] 48.1 En `/admin/subscriptions`: mostrar plan TRIAL correctamente (no como BASIC)
     - _Archivos: frontend/src/app/admin/subscriptions/page.tsx, backend/src/controllers/admin.controller.ts_
-  - [ ] 48.2 Corregir flujo de upgrade: desde TRIAL debe poder ir a BASIC o a PRO
+  - [-] 48.2 Corregir flujo de upgrade: desde TRIAL debe poder ir a BASIC o a PRO
     - Actualmente solo permite ir a PRO desde TRIAL
     - _Archivos: frontend/src/app/dashboard/ (componente de upgrade), backend/src/controllers/brands.controller.ts_
   - [ ] 48.3 En `/admin/brands`: mostrar TRIAL como plan, no BASIC
