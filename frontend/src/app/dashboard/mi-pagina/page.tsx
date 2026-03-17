@@ -82,6 +82,70 @@ function CopyableUrl({ url }: { url: string }) {
   );
 }
 
+// ── Upload de logo ────────────────────────────────────────────────────────────
+function LogoUpload({
+  currentUrl,
+  onUpload,
+}: {
+  currentUrl?: string | null;
+  onUpload: (url: string) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) { setError('Solo se permiten imágenes'); return; }
+    if (file.size > 2 * 1024 * 1024) { setError('El logo no debe superar 2MB'); return; }
+    setError(null);
+    setUploading(true);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const token = authService.getToken();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/upload`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_base64: base64, filename: file.name }),
+      });
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.message || 'Error al subir logo'); }
+      const data = await res.json();
+      onUpload(data.url);
+    } catch (err: any) {
+      setError(err.message || 'Error al subir el logo');
+    } finally { setUploading(false); }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div
+        className="relative w-24 h-24 rounded-2xl border-2 border-dashed overflow-hidden flex items-center justify-center cursor-pointer transition-colors"
+        style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-card)' }}
+        onClick={() => inputRef.current?.click()}
+      >
+        {currentUrl ? (
+          <>
+            <img src={currentUrl} alt="Logo" className="absolute inset-0 w-full h-full object-contain p-2" />
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+              <UploadIcon className="w-5 h-5 text-white" />
+            </div>
+          </>
+        ) : (
+          uploading ? <Spinner size="sm" /> : <UploadIcon className="w-6 h-6 text-gray-400" />
+        )}
+      </div>
+      {error && <p className="text-xs text-red-500">{error}</p>}
+      <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>PNG o WEBP con fondo transparente recomendado — máx. 2MB</p>
+      <input ref={inputRef} type="file" accept="image/*" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+    </div>
+  );
+}
+
 // ── Upload de imagen de portada ───────────────────────────────────────────────
 function CoverImageUpload({
   currentUrl,
@@ -217,9 +281,7 @@ export default function MiPaginaPage() {
   const [schedule, setSchedule] = useState<Record<string, string>>({
     lunes: '', martes: '', miercoles: '', jueves: '', viernes: '', sabado: '', domingo: '',
   });
-  const [modalTitle, setModalTitle] = useState('');
-  const [modalDescription, setModalDescription] = useState('');
-  const [modalFeatures, setModalFeatures] = useState<string[]>(['', '', '']);
+  const [logoUrl, setLogoUrl] = useState('');
   useEffect(() => {
     brandsService.getCurrentBrand()
       .then(b => {
@@ -231,6 +293,7 @@ export default function MiPaginaPage() {
         setWhatsappMessage(raw.whatsapp_message || '');
         setCtaButtonText(raw.cta_button_text || '');
         setCoverImageUrl(raw.cover_image_url || '');
+        setLogoUrl(raw.logo || '');
         const links = raw.social_links || {};
         setInstagram(links.instagram || '');
         setFacebook(links.facebook || '');
@@ -243,13 +306,6 @@ export default function MiPaginaPage() {
         setTotalReviews(raw.total_reviews != null ? String(raw.total_reviews) : '');
         if (raw.schedule && typeof raw.schedule === 'object') {
           setSchedule(prev => ({ ...prev, ...raw.schedule }));
-        }
-        setModalTitle(raw.modal_title || '');
-        setModalDescription(raw.modal_description || '');
-        if (Array.isArray(raw.modal_features) && raw.modal_features.length > 0) {
-          const feats = [...raw.modal_features];
-          while (feats.length < 3) feats.push('');
-          setModalFeatures(feats);
         }
       })
       .catch(() => setError('Error al cargar los datos'))
@@ -276,6 +332,7 @@ export default function MiPaginaPage() {
         whatsapp_message: whatsappMessage || null,
         cta_button_text: ctaButtonText || null,
         cover_image_url: coverImageUrl || null,
+        logo: logoUrl || null,
         social_links,
         city_display: cityDisplay || null,
         national_shipping: nationalShipping,
@@ -284,11 +341,6 @@ export default function MiPaginaPage() {
         rating: rating ? parseFloat(rating) : null,
         total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
         schedule: Object.fromEntries(Object.entries(schedule).filter(([, v]) => v.trim())),
-        modal_title: modalTitle || null,
-        modal_description: modalDescription || null,
-        modal_features: modalFeatures.filter(f => f.trim()).length > 0
-          ? modalFeatures.filter(f => f.trim())
-          : null,
       });
 
       setSuccess(true);
@@ -311,7 +363,7 @@ export default function MiPaginaPage() {
   const slug = brand?.slug || authBrand?.slug || '';
   const pageUrl = `${FRONTEND_URL}/sitio/${slug}`;
   const hasLandingPage = (brand as any)?.has_landing_page ?? false;
-  const brandLogo = (brand as any)?.logo || null;
+  const brandLogo = logoUrl || (brand as any)?.logo || null;
 
   // Calcular días restantes antes de eliminación definitiva
   const landingSuspendedAt: string | null = (brand as any)?.landing_suspended_at ?? null;
@@ -438,6 +490,27 @@ export default function MiPaginaPage() {
         <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
           Contenido de la página
         </p>
+
+        {/* Logo de la marca */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+            Logo de la marca
+          </label>
+          <div className="flex items-start gap-4">
+            <LogoUpload
+              currentUrl={logoUrl || null}
+              onUpload={url => setLogoUrl(url)}
+            />
+            {logoUrl && (
+              <button
+                onClick={() => setLogoUrl('')}
+                className="text-xs text-red-500 hover:text-red-600 transition-colors mt-1"
+              >
+                Eliminar logo
+              </button>
+            )}
+          </div>
+        </div>
 
         {/* Imagen de portada */}
         <div className="space-y-1.5">
@@ -736,85 +809,6 @@ export default function MiPaginaPage() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Modal de activación — personalización */}
-      <div
-        className="p-5 rounded-2xl border space-y-5"
-        style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
-      >
-        <div>
-          <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-            Modal de activación
-          </p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-            Texto que verán los visitantes cuando tu página aún no está activa
-          </p>
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Título del modal</label>
-          <input
-            type="text"
-            value={modalTitle}
-            onChange={e => setModalTitle(e.target.value)}
-            maxLength={80}
-            placeholder="Ej: Activa tu probador virtual"
-            className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
-            style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Descripción</label>
-          <textarea
-            value={modalDescription}
-            onChange={e => setModalDescription(e.target.value)}
-            rows={3}
-            maxLength={300}
-            placeholder="Ej: Permite que tus clientes se prueben la ropa virtualmente..."
-            className="w-full px-4 py-3 rounded-xl border text-sm resize-none outline-none"
-            style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-            Beneficios (hasta 5)
-          </label>
-          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Deja en blanco los que no uses</p>
-          {modalFeatures.map((feat, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <span className="text-xs w-5 text-center flex-shrink-0" style={{ color: 'var(--text-muted, #9ca3af)' }}>{i + 1}</span>
-              <input
-                type="text"
-                value={feat}
-                onChange={e => {
-                  const next = [...modalFeatures];
-                  next[i] = e.target.value;
-                  setModalFeatures(next);
-                }}
-                maxLength={80}
-                placeholder={`Beneficio ${i + 1}`}
-                className="flex-1 px-4 py-2.5 rounded-xl border text-sm outline-none"
-                style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-              />
-            </div>
-          ))}
-          {modalFeatures.length < 5 && (
-            <button
-              type="button"
-              onClick={() => setModalFeatures(prev => [...prev, ''])}
-              className="text-xs font-medium flex items-center gap-1.5 transition-opacity hover:opacity-70"
-              style={{ color: primaryColor }}
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              Agregar beneficio
-            </button>
-          )}
         </div>
       </div>
 

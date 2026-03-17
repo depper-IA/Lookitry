@@ -12,6 +12,7 @@ import {
   deleteBrand,
   getConversionStats,
   toggleLandingPage,
+  updateModalConfig,
   getMiniLandingsAdmin,
   suspendMiniLanding,
   restoreMiniLanding,
@@ -49,6 +50,7 @@ router.delete('/brands/:id/products/:productId', requirePermission('brands'), de
 router.patch('/brands/:id/plan', requirePermission('subscriptions'), changeBrandPlan);
 router.patch('/brands/:id/activate-plan', requirePermission('subscriptions'), activateBrandPlan);
 router.patch('/brands/:id/landing-page', requirePermission('brands'), toggleLandingPage);
+router.patch('/brands/:id/modal-config', requirePermission('brands'), updateModalConfig);
 
 // Mini-landings — panel de control
 router.get('/mini-landings', requirePermission('brands'), getMiniLandingsAdmin);
