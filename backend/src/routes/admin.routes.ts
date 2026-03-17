@@ -22,6 +22,10 @@ import {
   deleteAdmin,
   sendAdminCredentials,
   changeOwnPassword,
+  getFeedbacks,
+  getFeedbackStats,
+  resolveFeedback,
+  getUnresolvedFeedbackCount,
 } from '../controllers/admin.controller';
 import {
   getPaymentSettings,
@@ -74,5 +78,11 @@ router.put('/admins/me/password', changeOwnPassword);
 router.get('/trial-campaign', requirePermission('settings'), getTrialCampaign);
 router.post('/trial-campaign', requirePermission('settings'), createTrialCampaign);
 router.patch('/trial-campaign/:id', requirePermission('settings'), updateTrialCampaign);
+
+// Feedback de generaciones (51.8)
+router.get('/feedback/count-unresolved', requirePermission('brands'), getUnresolvedFeedbackCount);
+router.get('/feedback/stats', requirePermission('brands'), getFeedbackStats);
+router.get('/feedback', requirePermission('brands'), getFeedbacks);
+router.patch('/feedback/:id/resolve', requirePermission('brands'), resolveFeedback);
 
 export default router;

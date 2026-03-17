@@ -601,7 +601,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                           onClick={() => setShowUpgradeModal(true)}
                           className="w-full py-2.5 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] transition-colors"
                         >
-                          Solicitar upgrade a Pro
+                          Activar plan
                         </button>
                       </div>
                     </div>

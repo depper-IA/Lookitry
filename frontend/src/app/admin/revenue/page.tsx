@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { formatCurrency, formatPlanPrice } from '@/utils/currency';
+import { formatCurrency } from '@/utils/currency';
 
 interface MonthlyRevenue {
   month: string;
   total: number;
   basic: number;
   pro: number;
+  landing: number;
   count: number;
 }
 
@@ -18,6 +19,7 @@ interface RevenueStats {
     total: number;
     basic: number;
     pro: number;
+    landing: number;
     paymentsCount: number;
   };
   projection: {
@@ -34,6 +36,11 @@ interface RevenueStats {
       averagePayment: number;
     };
     pro: {
+      totalRevenue: number;
+      paymentsCount: number;
+      averagePayment: number;
+    };
+    landing: {
       totalRevenue: number;
       paymentsCount: number;
       averagePayment: number;
@@ -119,8 +126,16 @@ export default function RevenuePage() {
           },
           {
             label: 'Total Histórico',
-            value: formatCurrency(stats.planBreakdown.basic.totalRevenue + stats.planBreakdown.pro.totalRevenue),
-            sub: `${stats.planBreakdown.basic.paymentsCount + stats.planBreakdown.pro.paymentsCount} pagos totales`,
+            value: formatCurrency(
+              stats.planBreakdown.basic.totalRevenue +
+              stats.planBreakdown.pro.totalRevenue +
+              stats.planBreakdown.landing.totalRevenue
+            ),
+            sub: `${
+              stats.planBreakdown.basic.paymentsCount +
+              stats.planBreakdown.pro.paymentsCount +
+              stats.planBreakdown.landing.paymentsCount
+            } pagos totales`,
             icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />,
           },
         ].map(card => (
@@ -142,22 +157,57 @@ export default function RevenuePage() {
       </div>
 
       {/* Desglose por plan */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {(['basic', 'pro'] as const).map(planKey => {
-          const planLabel = planKey === 'basic' ? 'BASIC' : 'PRO';
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {(['basic', 'pro', 'landing'] as const).map(planKey => {
+          const planLabel = planKey === 'basic' ? 'BASIC' : planKey === 'pro' ? 'PRO' : 'LANDING';
           const data = stats.planBreakdown[planKey];
           return (
             <div key={planKey} style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border p-5">
-              <h3 style={{ color: 'var(--text-primary)' }} className="text-base font-semibold mb-4">
-                Plan {planLabel} ({formatPlanPrice(planLabel as 'BASIC' | 'PRO')})
-              </h3>
+              <div className="flex items-center gap-2 mb-4">
+                <span
+                  className="px-2 py-0.5 rounded-full text-xs font-semibold"
+                  style={
+                    planKey === 'pro'
+                      ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
+                      : planKey === 'landing'
+                      ? { backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }
+                      : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }
+                  }
+                >
+                  {planLabel}
+                </span>
+                {planKey === 'landing' && (
+                  <span style={{ color: 'var(--text-muted)' }} className="text-xs">Pago único</span>
+                )}
+                {planKey !== 'landing' && (
+                  <span style={{ color: 'var(--text-muted)' }} className="text-xs">
+                    {planKey === 'basic' ? '$150.000/mes' : '$250.000/mes'}
+                  </span>
+                )}
+              </div>
               <div className="space-y-2.5">
                 {[
                   { label: 'Ingresos totales', value: formatCurrency(data.totalRevenue), color: 'var(--text-primary)' },
                   { label: 'Número de pagos', value: String(data.paymentsCount), color: 'var(--text-primary)' },
                   { label: 'Promedio por pago', value: formatCurrency(data.averagePayment), color: 'var(--text-primary)' },
-                  { label: 'Mes actual', value: formatCurrency(planKey === 'basic' ? stats.currentMonth.basic : stats.currentMonth.pro), color: '#10b981' },
-                  { label: 'Proyección próximo mes', value: formatCurrency(planKey === 'basic' ? stats.projection.basic : stats.projection.pro), color: '#FF5C3A' },
+                  ...(planKey !== 'landing' ? [
+                    {
+                      label: 'Mes actual',
+                      value: formatCurrency(planKey === 'basic' ? stats.currentMonth.basic : stats.currentMonth.pro),
+                      color: '#10b981',
+                    },
+                    {
+                      label: 'Proyección próximo mes',
+                      value: formatCurrency(planKey === 'basic' ? stats.projection.basic : stats.projection.pro),
+                      color: '#FF5C3A',
+                    },
+                  ] : [
+                    {
+                      label: 'Mes actual',
+                      value: formatCurrency(stats.currentMonth.landing),
+                      color: '#10b981',
+                    },
+                  ]),
                 ].map(row => (
                   <div key={row.label} className="flex justify-between items-center">
                     <span style={{ color: 'var(--text-secondary)' }} className="text-sm">{row.label}:</span>
@@ -176,33 +226,48 @@ export default function RevenuePage() {
           Ingresos Mensuales (Últimos 12 meses)
         </h3>
         <div className="space-y-4">
-          {stats.monthlyRevenue.slice(-12).map((month) => (
-            <div key={month.month}>
-              <div className="flex justify-between items-center mb-2">
-                <span style={{ color: 'var(--text-secondary)' }} className="text-sm font-medium">{formatMonth(month.month)}</span>
-                <span style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">{formatCurrency(month.total)}</span>
+          {stats.monthlyRevenue.slice(-12).map((month) => {
+            const basicPct = (month.basic / maxRevenue) * 100;
+            const proPct = (month.pro / maxRevenue) * 100;
+            const landingPct = (month.landing / maxRevenue) * 100;
+            return (
+              <div key={month.month}>
+                <div className="flex justify-between items-center mb-2">
+                  <span style={{ color: 'var(--text-secondary)' }} className="text-sm font-medium">{formatMonth(month.month)}</span>
+                  <span style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">{formatCurrency(month.total)}</span>
+                </div>
+                <div style={{ background: 'var(--bg-hover)' }} className="relative h-6 rounded-full overflow-hidden">
+                  {/* BASIC */}
+                  <div className="absolute top-0 left-0 h-full bg-[#FF5C3A]/50 rounded-full"
+                    style={{ width: `${basicPct}%` }} />
+                  {/* PRO */}
+                  <div className="absolute top-0 h-full bg-[#FF5C3A] rounded-full"
+                    style={{ left: `${basicPct}%`, width: `${proPct}%` }} />
+                  {/* LANDING */}
+                  <div className="absolute top-0 h-full bg-[#3b82f6] rounded-full"
+                    style={{ left: `${basicPct + proPct}%`, width: `${landingPct}%` }} />
+                </div>
+                <div className="flex justify-between mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
+                  <span>BASIC: {formatCurrency(month.basic)}</span>
+                  <span>PRO: {formatCurrency(month.pro)}</span>
+                  {month.landing > 0 && <span style={{ color: '#3b82f6' }}>LANDING: {formatCurrency(month.landing)}</span>}
+                </div>
               </div>
-              <div style={{ background: 'var(--bg-hover)' }} className="relative h-6 rounded-full overflow-hidden">
-                <div className="absolute top-0 left-0 h-full bg-[#FF5C3A]/60 rounded-full"
-                  style={{ width: `${(month.basic / maxRevenue) * 100}%` }} />
-                <div className="absolute top-0 h-full bg-[#FF5C3A] rounded-full"
-                  style={{ left: `${(month.basic / maxRevenue) * 100}%`, width: `${(month.pro / maxRevenue) * 100}%` }} />
-              </div>
-              <div className="flex justify-between mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-                <span>BASIC: {formatCurrency(month.basic)}</span>
-                <span>PRO: {formatCurrency(month.pro)}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
-        <div style={{ borderColor: 'var(--border-color)' }} className="flex items-center justify-center gap-6 mt-6 pt-6 border-t">
+        <div style={{ borderColor: 'var(--border-color)' }} className="flex items-center justify-center gap-6 mt-6 pt-6 border-t flex-wrap">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-[#FF5C3A]/60" />
+            <div className="w-3 h-3 rounded-full bg-[#FF5C3A]/50" />
             <span style={{ color: 'var(--text-secondary)' }} className="text-sm">Plan BASIC</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-[#FF5C3A]" />
             <span style={{ color: 'var(--text-secondary)' }} className="text-sm">Plan PRO</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-[#3b82f6]" />
+            <span style={{ color: 'var(--text-secondary)' }} className="text-sm">Landing</span>
           </div>
         </div>
       </div>

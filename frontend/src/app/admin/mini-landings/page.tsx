@@ -11,6 +11,7 @@ interface LandingBrand {
   email: string;
   slug: string;
   plan: string;
+  is_in_trial?: boolean;
   has_landing_page: boolean;
   landing_suspended_at: string | null;
   subscription_status: string | null;
@@ -19,6 +20,7 @@ interface LandingBrand {
 }
 
 type FilterEstado = 'all' | 'activa' | 'suspendida' | 'inactiva';
+type FilterPlanML = 'all' | 'TRIAL' | 'BASIC' | 'PRO';
 
 function getEstado(b: LandingBrand): 'activa' | 'suspendida' | 'inactiva' {
   if (b.landing_suspended_at) return 'suspendida';
@@ -91,7 +93,7 @@ export default function AdminMiniLandingsPage() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [filterEstado, setFilterEstado] = useState<FilterEstado>('all');
-  const [filterPlan, setFilterPlan] = useState<'all' | 'BASIC' | 'PRO'>('all');
+  const [filterPlan, setFilterPlan] = useState<FilterPlanML>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<{ brand: LandingBrand; action: 'activate' | 'deactivate' | 'suspend' | 'restore' } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -123,7 +125,11 @@ export default function AdminMiniLandingsPage() {
       b.email.toLowerCase().includes(search.toLowerCase()) ||
       b.slug.toLowerCase().includes(search.toLowerCase());
     const matchEstado = filterEstado === 'all' || getEstado(b) === filterEstado;
-    const matchPlan = filterPlan === 'all' || b.plan === filterPlan;
+    const matchPlan = filterPlan === 'all'
+      ? true
+      : filterPlan === 'TRIAL'
+      ? b.is_in_trial === true
+      : b.plan === filterPlan && !b.is_in_trial;
     return matchSearch && matchEstado && matchPlan;
   });
 
@@ -196,14 +202,16 @@ export default function AdminMiniLandingsPage() {
             Total: {brands.length} | Mostrando: {filtered.length}
           </p>
         </div>
-        <button
-          onClick={fetchBrands}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors"
-          style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-card)' }}
-        >
-          <IconRefresh className="w-4 h-4" />
-          Actualizar
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchBrands}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors"
+            style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-card)' }}
+          >
+            <IconRefresh className="w-4 h-4" />
+            Actualizar
+          </button>
+        </div>
       </div>
 
       {/* Tarjetas de resumen */}
@@ -241,18 +249,23 @@ export default function AdminMiniLandingsPage() {
             style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           />
           <div className="flex gap-2">
-            {(['all', 'BASIC', 'PRO'] as const).map(p => (
+            {([
+              { value: 'all',   label: 'Todos' },
+              { value: 'TRIAL', label: 'Trial' },
+              { value: 'BASIC', label: 'Basic' },
+              { value: 'PRO',   label: 'Pro' },
+            ] as { value: FilterPlanML; label: string }[]).map(({ value, label }) => (
               <button
-                key={p}
-                onClick={() => setFilterPlan(p)}
+                key={value}
+                onClick={() => setFilterPlan(value)}
                 className="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors border"
                 style={{
-                  backgroundColor: filterPlan === p ? '#FF5C3A' : 'var(--bg-base)',
-                  color: filterPlan === p ? '#fff' : 'var(--text-secondary)',
-                  borderColor: filterPlan === p ? '#FF5C3A' : 'var(--border-color)',
+                  backgroundColor: filterPlan === value ? '#FF5C3A' : 'var(--bg-base)',
+                  color: filterPlan === value ? '#fff' : 'var(--text-secondary)',
+                  borderColor: filterPlan === value ? '#FF5C3A' : 'var(--border-color)',
                 }}
               >
-                {p === 'all' ? 'Todos' : p}
+                {label}
               </button>
             ))}
           </div>
@@ -289,11 +302,15 @@ export default function AdminMiniLandingsPage() {
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       <span
                         className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                        style={brand.plan === 'PRO'
-                          ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
-                          : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+                        style={
+                          brand.is_in_trial
+                            ? { backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }
+                            : brand.plan === 'PRO'
+                            ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
+                            : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }
+                        }
                       >
-                        {brand.plan}
+                        {brand.is_in_trial ? 'TRIAL' : brand.plan}
                       </span>
                     </td>
 

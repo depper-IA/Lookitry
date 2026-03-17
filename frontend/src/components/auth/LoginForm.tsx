@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function EyeIcon() {
   return (
@@ -63,9 +64,9 @@ export default function LoginForm() {
       <div className="w-full max-w-md">
 
         {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
-            Look<span className="text-[#FF5C3A]">itry</span>
+        <div className="flex justify-center mb-8">
+          <Link href="/">
+            <Image src="/logo.png" alt="Lookitry" width={140} height={40} priority />
           </Link>
         </div>
 
@@ -109,9 +110,14 @@ export default function LoginForm() {
 
             {/* Contraseña */}
             <div>
-              <label htmlFor="password" className="block text-[13px] font-medium text-[#888] mb-1.5">
-                Contraseña
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="password" className="block text-[13px] font-medium text-[#888]">
+                  Contraseña
+                </label>
+                <Link href="/auth/forgot-password" className="text-[12px] text-[#555] hover:text-[#FF5C3A] transition-colors">
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
               <div className="relative">
                 <input
                   id="password"

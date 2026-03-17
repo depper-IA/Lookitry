@@ -34,7 +34,7 @@ interface Product {
   created_at: string;
 }
 
-type FilterPlan = 'all' | 'BASIC' | 'PRO';
+type FilterPlan = 'all' | 'TRIAL' | 'BASIC' | 'PRO' | 'LANDING';
 type FilterTrial = 'all' | 'trial' | 'active' | 'suspended';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
@@ -74,7 +74,13 @@ export default function AdminBrandsPage() {
   const [bulkLoading, setBulkLoading] = useState(false);
   const [confirmBulk, setConfirmBulk] = useState<'suspend' | 'reactivate' | 'delete' | null>(null);
 
-  useEffect(() => { fetchBrands(); }, []);
+  // Precio dinámico del plan LANDING
+  const [landingPrice, setLandingPrice] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetchBrands();
+    fetchLandingPrice();
+  }, []);
   useEffect(() => { applyFilters(); }, [brands, searchTerm, filterPlan, filterTrial]);
   useEffect(() => { setCurrentPage(1); setSelected(new Set()); }, [searchTerm, filterPlan, filterTrial]);
 
@@ -87,7 +93,8 @@ export default function AdminBrandsPage() {
         b.slug.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    if (filterPlan !== 'all') filtered = filtered.filter(b => b.plan === filterPlan);
+    if (filterPlan === 'TRIAL') filtered = filtered.filter(b => b.is_in_trial);
+    else if (filterPlan !== 'all') filtered = filtered.filter(b => b.plan === filterPlan && !b.is_in_trial);
     if (filterTrial === 'trial') filtered = filtered.filter(b => b.is_in_trial);
     else if (filterTrial === 'active') filtered = filtered.filter(b => b.subscription_status === 'active' || b.subscription_status === 'expiring_soon');
     else if (filterTrial === 'suspended') filtered = filtered.filter(b => b.subscription_status === 'suspended' || b.subscription_status === 'expired');
@@ -108,6 +115,18 @@ export default function AdminBrandsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchLandingPrice = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.landing_price) setLandingPrice(data.landing_price);
+    } catch { /* silencioso */ }
   };
 
   const handleViewDetails = (brand: Brand) => { setSelectedBrand(brand); setShowDetailsModal(true); };
@@ -392,15 +411,21 @@ export default function AdminBrandsPage() {
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Filtrar por plan</label>
             <div className="flex gap-2 flex-wrap">
-              {(['all', 'BASIC', 'PRO'] as FilterPlan[]).map(p => (
-                <button key={p} onClick={() => setFilterPlan(p)}
+              {([
+                { value: 'all',     label: `Todos (${brands.length})` },
+                { value: 'TRIAL',   label: `TRIAL (${brands.filter(b => b.is_in_trial).length})` },
+                { value: 'BASIC',   label: `BASIC (${brands.filter(b => b.plan === 'BASIC' && !b.is_in_trial).length})` },
+                { value: 'PRO',     label: `PRO (${brands.filter(b => b.plan === 'PRO').length})` },
+                { value: 'LANDING', label: `LANDING (${brands.filter(b => b.plan === 'LANDING').length})` },
+              ] as { value: FilterPlan; label: string }[]).map(({ value, label }) => (
+                <button key={value} onClick={() => setFilterPlan(value)}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                   style={{
-                    backgroundColor: filterPlan === p ? '#FF5C3A' : 'var(--bg-base)',
-                    color: filterPlan === p ? '#fff' : 'var(--text-secondary)',
-                    border: `1px solid ${filterPlan === p ? '#FF5C3A' : 'var(--border-color)'}`,
+                    backgroundColor: filterPlan === value ? '#FF5C3A' : 'var(--bg-base)',
+                    color: filterPlan === value ? '#fff' : 'var(--text-secondary)',
+                    border: `1px solid ${filterPlan === value ? '#FF5C3A' : 'var(--border-color)'}`,
                   }}>
-                  {p === 'all' ? `Todos (${brands.length})` : `${p} (${brands.filter(b => b.plan === p).length})`}
+                  {label}
                 </button>
               ))}
             </div>
@@ -497,17 +522,34 @@ export default function AdminBrandsPage() {
                 <td className="px-4 py-3.5 whitespace-nowrap text-sm" style={{ color: 'var(--text-secondary)' }}>{brand.email}</td>
                 <td className="px-4 py-3.5 whitespace-nowrap">
                   <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                    style={brand.plan === 'PRO'
-                      ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
-                      : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>
-                    {brand.plan}
+                    style={
+                      brand.is_in_trial
+                        ? { backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }
+                        : brand.plan === 'PRO'
+                        ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
+                        : brand.plan === 'LANDING'
+                        ? { backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }
+                        : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }
+                    }>
+                    {brand.is_in_trial ? 'TRIAL' : brand.plan}
                   </span>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                    {brand.is_in_trial
+                      ? 'Gratuito'
+                      : brand.plan === 'PRO'
+                      ? '$250.000/mes'
+                      : brand.plan === 'BASIC'
+                      ? '$150.000/mes'
+                      : brand.plan === 'LANDING'
+                      ? (landingPrice ? `$${landingPrice.toLocaleString('es-CO')}` : '—')
+                      : '—'}
+                  </div>
                 </td>
                 <td className="px-4 py-3.5 whitespace-nowrap">
                   {brand.is_in_trial ? (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v10.5a3 3 0 006 0V3M6 3h12" /></svg>
-                      Prueba — {brand.trial_days_remaining}d
+                      Prueba — {brand.trial_days_remaining ?? 0}d
                     </span>
                   ) : brand.subscription_status === 'active' ? (
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Activo</span>
@@ -606,7 +648,7 @@ export default function AdminBrandsPage() {
             </div>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                {[['Email', selectedBrand.email], ['Slug', selectedBrand.slug], ['Plan', selectedBrand.plan],
+                {[['Email', selectedBrand.email], ['Slug', selectedBrand.slug], ['Plan', selectedBrand.is_in_trial ? 'TRIAL' : selectedBrand.plan],
                   ['Fecha de registro', new Date(selectedBrand.created_at).toLocaleDateString('es-ES')]].map(([label, value]) => (
                   <div key={label}><p className="text-sm text-gray-600">{label}</p><p className="text-sm font-medium text-gray-900">{value}</p></div>
                 ))}
@@ -658,27 +700,6 @@ export default function AdminBrandsPage() {
                       className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
                       style={{ transform: (selectedBrand as any).has_landing_page ? 'translateX(1.375rem)' : 'translateX(0.25rem)' }}
                     />
-                  </button>
-                </div>
-              </div>
-              {/* Configurar modal de activación */}
-              <div className="border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Modal de activación</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                      Texto que ven los visitantes cuando la mini-landing no está activa.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => { setShowDetailsModal(false); handleOpenModalConfig(selectedBrand); }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                    style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.25)' }}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Editar
                   </button>
                 </div>
               </div>

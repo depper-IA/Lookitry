@@ -1,12 +1,10 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
 interface PaymentSettings {
-  landing_price: number;
-  landing_original_price: number;
   wompi_enabled: boolean;
   wompi_public_key: string;
   wompi_private_key: string;
@@ -32,6 +30,10 @@ interface PaymentSettings {
   transfer_account_holder: string;
   transfer_nit: string;
   currency: string;
+  landing_price?: number;
+  landing_original_price?: number;
+  footer_brand_url?: string;
+  bypass_ip_protection: boolean;
 }
 
 type Tab = 'wompi' | 'paypal' | 'manual' | 'transfer';
@@ -234,9 +236,105 @@ export default function PaymentSettingsPage() {
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            Descuento visible: {Math.round((1 - settings.landing_price / settings.landing_original_price) * 100)}% OFF —
+            Descuento visible: {Math.round((1 - settings.landing_price / settings.landing_original_price) * 100)}% OFF 
             el cliente ve <span className="line-through text-gray-400 mx-1">${settings.landing_original_price.toLocaleString('es-CO')}</span>
             y paga <strong>${settings.landing_price.toLocaleString('es-CO')}</strong>
+          </div>
+        )}
+      </div>
+
+      {/* URL del footer de mini-landings */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <svg className="w-5 h-5 text-[#FF5C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          </svg>
+          <h3 className="font-semibold text-gray-900">URL del footer de mini-landings</h3>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">
+          Esta URL aparece en el footer de todas las mini-landings como "Probador virtual impulsado por ...".
+          Cámbiala cuando migres a un dominio propio (ej: lookitry.com). Todos los templates se actualizan automáticamente.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 items-start">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              URL del footer
+            </label>
+            <input
+              type="url"
+              value={settings.footer_brand_url ?? 'https://pruebalo.wilkiedevs.com'}
+              onChange={e => set('footer_brand_url', e.target.value)}
+              placeholder="https://pruebalo.wilkiedevs.com"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Incluye el protocolo (https://). Se mostrará sin el protocolo en el footer.
+            </p>
+          </div>
+          {settings.footer_brand_url && (
+            <div className="sm:mt-6 flex-shrink-0">
+              <a
+                href={settings.footer_brand_url.startsWith('http') ? settings.footer_brand_url : `https://${settings.footer_brand_url}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                style={{ borderColor: '#e5e7eb' }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Verificar
+              </a>
+            </div>
+          )}
+        </div>
+        {/* Preview del footer */}
+        <div className="mt-4 p-3 rounded-lg border border-dashed border-gray-200 bg-gray-50 text-center">
+          <p className="text-xs text-gray-400">
+            Vista previa del footer:{' '}
+            <span className="text-gray-600">Probador virtual impulsado por </span>
+            <span className="font-medium" style={{ color: '#FF5C3A' }}>
+              {(settings.footer_brand_url || 'pruebalo.wilkiedevs.com').replace(/^https?:\/\//, '')}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      {/* Pruebas y desarrollo */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <h3 className="font-semibold text-gray-900">Pruebas y desarrollo</h3>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">
+          Opciones para facilitar el desarrollo y las pruebas. No usar en producción.
+        </p>
+        <div className="flex items-center justify-between py-3 border-b border-gray-100">
+          <div>
+            <p className="text-sm font-medium text-gray-900">Desactivar protección por IP en registro</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Cuando está activo, permite registrar múltiples cuentas de prueba desde la misma IP. Solo usar en entornos de prueba.
+            </p>
+          </div>
+          <Toggle
+            enabled={settings.bypass_ip_protection ?? false}
+            onChange={v => set('bypass_ip_protection', v)}
+          />
+        </div>
+        {settings.bypass_ip_protection && (
+          <div className="mt-3 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            <svg className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+            <p className="text-sm text-amber-800">
+              Protección por IP desactivada. No usar en producción.
+            </p>
           </div>
         )}
       </div>
@@ -249,10 +347,10 @@ export default function PaymentSettingsPage() {
           onChange={e => set('currency', e.target.value)}
           className="w-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
         >
-          <option value="COP">COP — Peso colombiano</option>
-          <option value="USD">USD — Dólar estadounidense</option>
-          <option value="EUR">EUR — Euro</option>
-          <option value="MXN">MXN — Peso mexicano</option>
+          <option value="COP">COP  Peso colombiano</option>
+          <option value="USD">USD  Dólar estadounidense</option>
+          <option value="EUR">EUR  Euro</option>
+          <option value="MXN">MXN  Peso mexicano</option>
         </select>
       </div>
 

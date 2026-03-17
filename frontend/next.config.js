@@ -7,6 +7,7 @@ const nextConfig = {
       { protocol: 'http', hostname: 'localhost' },
       { protocol: 'https', hostname: 'vkdooutklowctuudjnkl.supabase.co' },
       { protocol: 'https', hostname: 'api.pruebalo.wilkiedevs.com' },
+      { protocol: 'https', hostname: 'minio.wilkiedevs.com' },
     ],
   },
   async headers() {

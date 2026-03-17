@@ -5,6 +5,8 @@ export interface PaymentSettings {
   // Precios de mini-landing
   landing_price: number;
   landing_original_price: number;
+  // URL del footer de mini-landings
+  footer_brand_url: string;
   // Wompi
   wompi_enabled: boolean;
   wompi_public_key: string;
@@ -35,12 +37,15 @@ export interface PaymentSettings {
   transfer_nit: string;
   // General
   currency: string;
+  // Pruebas y desarrollo
+  bypass_ip_protection: boolean;
   updated_at?: string;
 }
 
 const DEFAULT_SETTINGS: PaymentSettings = {
   landing_price: 650000,
   landing_original_price: 900000,
+  footer_brand_url: 'https://pruebalo.wilkiedevs.com',
   wompi_enabled: false,
   wompi_public_key: '',
   wompi_private_key: '',
@@ -66,6 +71,7 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   transfer_account_holder: '',
   transfer_nit: '',
   currency: 'COP',
+  bypass_ip_protection: false,
 };
 
 export class PaymentSettingsService {
