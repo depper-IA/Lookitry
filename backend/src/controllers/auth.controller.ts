@@ -188,7 +188,7 @@ export class AuthController {
 
   async changePassword(req: AuthRequest, res: Response) {
     try {
-      const brandId = req.brandId!;
+      const brandId = req.brand!.id;
       const { currentPassword, newPassword } = req.body;
 
       if (!currentPassword || !newPassword) {
