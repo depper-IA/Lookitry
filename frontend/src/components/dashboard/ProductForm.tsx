@@ -22,6 +22,18 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 const N8N_DESCRIPTOR_URL = process.env.NEXT_PUBLIC_N8N_DESCRIPTOR_URL || '';
 
+// Mapa de categorías devueltas por n8n → valores del select
+const AI_CATEGORY_MAP: Record<string, string> = {
+  VESTIDO: 'other', DRESS: 'other',
+  CAMISA: 'tshirt', SHIRT: 'tshirt', TOP: 'tshirt', TSHIRT: 'tshirt',
+  PANTALON: 'pants', PANTS: 'pants',
+  ZAPATOS: 'shoes', SHOES: 'shoes',
+  HOODIE: 'hoodie',
+  CHAQUETA: 'jacket', JACKET: 'jacket',
+  ACCESORIOS: 'accessories', ACCESSORIES: 'accessories',
+  CONJUNTO: 'other', SET: 'other',
+};
+
 const BADGE_OPTIONS = [
   { value: '', label: 'Sin badge' },
   { value: 'nuevo', label: 'Nuevo' },
@@ -40,6 +52,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [customCategory, setCustomCategory] = useState('');
   const [describingWithAI, setDescribingWithAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [aiGenerated, setAiGenerated] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canDescribeWithAI = !!formData.imageUrl && !!formData.name.trim() && !!N8N_DESCRIPTOR_URL;
@@ -62,22 +75,43 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       const raw = await res.text();
       if (!raw || !raw.trim()) throw new Error('El servicio de IA no devolvió respuesta');
       let description = '';
+      let aiCategory: string | undefined;
       try {
         const data = JSON.parse(raw);
         description = data.description || data.text || '';
+        aiCategory = data.category;
       } catch {
-        // Si no es JSON válido, usar el texto directamente
         description = raw.trim();
       }
       if (!description) throw new Error('La IA no devolvió una descripción');
-      // Limpiar markdown: quitar **, *, ##, # y normalizar saltos de línea
       const clean = description
         .replace(/#{1,6}\s*/g, '')
         .replace(/\*\*(.+?)\*\*/g, '$1')
         .replace(/\*(.+?)\*/g, '$1')
         .replace(/\n{3,}/g, '\n\n')
         .trim();
-      setFormData(p => ({ ...p, description: clean }));
+
+      // Mapear categoría de n8n al valor del select
+      let mappedCategory = formData.category;
+      let mappedCustom = customCategory;
+      if (aiCategory) {
+        const normalized = aiCategory.toUpperCase().trim();
+        const mapped = AI_CATEGORY_MAP[normalized];
+        if (mapped) {
+          mappedCategory = mapped;
+          if (mapped === 'other') {
+            // Capitalizar para mostrar en el campo custom
+            mappedCustom = aiCategory.charAt(0).toUpperCase() + aiCategory.slice(1).toLowerCase();
+          } else {
+            mappedCustom = '';
+          }
+        }
+      }
+
+      setFormData(p => ({ ...p, description: clean, category: mappedCategory }));
+      setShowCustomCategory(mappedCategory === 'other');
+      setCustomCategory(mappedCustom);
+      setAiGenerated(true);
     } catch (err: any) {
       setAiError(err.message || 'Error al generar descripción');
     } finally {
@@ -114,10 +148,70 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
       const url = await uploadService.uploadImage(base64.split(',')[1], `product-${ts}.jpg`, false);
       setImagePreview(url);
-      setFormData(p => ({ ...p, imageUrl: url }));
+      setFormData(p => {
+        const updated = { ...p, imageUrl: url };
+        // Disparar auto-descripción si hay nombre
+        if (p.name.trim() && N8N_DESCRIPTOR_URL) {
+          // Usar setTimeout para que el estado se actualice antes de llamar
+          setTimeout(() => {
+            setFormData(latest => {
+              if (latest.imageUrl === url && latest.name.trim()) {
+                // Llamar directamente con los valores actualizados
+                triggerDescribeWithAI(url, latest.name.trim(), latest.category === 'other' ? customCategory : latest.category);
+              }
+              return latest;
+            });
+          }, 0);
+        }
+        return updated;
+      });
     } catch (err: any) {
       setErrors(p => ({ ...p, imageUrl: err.message || 'Error al procesar la imagen' }));
     } finally { setCompressing(false); }
+  };
+
+  // Versión interna que acepta valores explícitos (para llamar desde handleImageFile)
+  const triggerDescribeWithAI = async (imageUrl: string, productName: string, category: string) => {
+    if (!N8N_DESCRIPTOR_URL) return;
+    setDescribingWithAI(true);
+    setAiError(null);
+    try {
+      const res = await fetch(N8N_DESCRIPTOR_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_url: imageUrl, product_name: productName, category }),
+      });
+      if (!res.ok) throw new Error('Error al conectar con el servicio de IA');
+      const raw = await res.text();
+      if (!raw?.trim()) throw new Error('El servicio de IA no devolvió respuesta');
+      let description = '';
+      let aiCategory: string | undefined;
+      try {
+        const data = JSON.parse(raw);
+        description = data.description || data.text || '';
+        aiCategory = data.category;
+      } catch { description = raw.trim(); }
+      if (!description) throw new Error('La IA no devolvió una descripción');
+      const clean = description
+        .replace(/#{1,6}\s*/g, '').replace(/\*\*(.+?)\*\*/g, '$1')
+        .replace(/\*(.+?)\*/g, '$1').replace(/\n{3,}/g, '\n\n').trim();
+      let mappedCategory = category;
+      let mappedCustom = '';
+      if (aiCategory) {
+        const normalized = aiCategory.toUpperCase().trim();
+        const mapped = AI_CATEGORY_MAP[normalized];
+        if (mapped) {
+          mappedCategory = mapped;
+          if (mapped === 'other') mappedCustom = aiCategory.charAt(0).toUpperCase() + aiCategory.slice(1).toLowerCase();
+        }
+      }
+      setFormData(p => ({ ...p, description: clean, category: mappedCategory }));
+      setShowCustomCategory(mappedCategory === 'other');
+      setCustomCategory(mappedCustom);
+      setAiGenerated(true);
+    } catch (err: any) {
+      setAiError(err.message || 'Error al generar descripción');
+    } finally { setDescribingWithAI(false); }
   };
 
   const validate = (): boolean => {
@@ -179,42 +273,75 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Descripción</label>
-              {N8N_DESCRIPTOR_URL && (
-                <button
-                  type="button"
-                  onClick={handleDescribeWithAI}
-                  disabled={!canDescribeWithAI || describingWithAI}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ background: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.25)' }}
-                  title={!formData.imageUrl || !formData.name.trim() ? 'Agrega nombre e imagen primero' : 'Generar descripción con IA'}
-                >
-                  {describingWithAI ? (
-                    <>
-                      <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                      </svg>
-                      Analizando...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                      </svg>
-                      Describir con IA
-                    </>
-                  )}
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {aiGenerated && (
+                  <button
+                    type="button"
+                    onClick={() => setAiGenerated(false)}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-opacity hover:opacity-70"
+                    style={{ color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}
+                  >
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Editar manualmente
+                  </button>
+                )}
+                {N8N_DESCRIPTOR_URL && (
+                  <button
+                    type="button"
+                    onClick={handleDescribeWithAI}
+                    disabled={!canDescribeWithAI || describingWithAI}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{ background: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.25)' }}
+                    title={!formData.imageUrl || !formData.name.trim() ? 'Agrega nombre e imagen primero' : 'Generar descripción con IA'}
+                  >
+                    {describingWithAI ? (
+                      <>
+                        <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        </svg>
+                        Analizando...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        Describir con IA
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows={3}
-              style={textareaStyle}
-              placeholder="Descripción del producto (opcional, o genera una con IA)"
-            />
+            {aiGenerated ? (
+              <div
+                className="rounded-lg px-3 py-2 text-sm relative"
+                style={{
+                  backgroundColor: 'rgba(255,92,58,0.04)',
+                  border: '1px solid rgba(255,92,58,0.2)',
+                  color: 'var(--text-primary)',
+                  minHeight: '72px',
+                  whiteSpace: 'pre-wrap',
+                }}
+              >
+                <span className="absolute top-1.5 right-2 text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>
+                  IA
+                </span>
+                {formData.description || <span style={{ color: 'var(--text-muted)' }}>Sin descripción</span>}
+              </div>
+            ) : (
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={3}
+                style={textareaStyle}
+                placeholder="Descripción del producto (opcional, o genera una con IA)"
+              />
+            )}
             {aiError && (
               <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
                 <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -253,18 +380,40 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
 
           <div>
             <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Categoría</label>
-            <select name="category" value={formData.category} onChange={handleChange} style={selectStyle} required>
-              {[...STANDARD_CATEGORIES, 'other'].map(c => (
-                <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>
-              ))}
-            </select>
-            {errors.category && <p className="mt-1 text-xs text-red-500">{errors.category}</p>}
-            {showCustomCategory && (
-              <div className="mt-3">
-                <Input label="Especificar categoría" name="customCategory" value={customCategory}
-                  onChange={e => { setCustomCategory(e.target.value); if (errors.customCategory) setErrors(p => ({ ...p, customCategory: '' })); }}
-                  error={errors.customCategory} placeholder="Ej: Gorras, Bufandas..." required />
+            {aiGenerated ? (
+              <div
+                className="rounded-lg px-3 py-2 text-sm flex items-center justify-between"
+                style={{
+                  backgroundColor: 'rgba(255,92,58,0.04)',
+                  border: '1px solid rgba(255,92,58,0.2)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                <span>
+                  {formData.category === 'other'
+                    ? customCategory || 'Otro'
+                    : CATEGORY_LABELS[formData.category] ?? formData.category}
+                </span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>
+                  IA
+                </span>
               </div>
+            ) : (
+              <>
+                <select name="category" value={formData.category} onChange={handleChange} style={selectStyle} required>
+                  {[...STANDARD_CATEGORIES, 'other'].map(c => (
+                    <option key={c} value={c}>{CATEGORY_LABELS[c] ?? c}</option>
+                  ))}
+                </select>
+                {errors.category && <p className="mt-1 text-xs text-red-500">{errors.category}</p>}
+                {showCustomCategory && (
+                  <div className="mt-3">
+                    <Input label="Especificar categoría" name="customCategory" value={customCategory}
+                      onChange={e => { setCustomCategory(e.target.value); if (errors.customCategory) setErrors(p => ({ ...p, customCategory: '' })); }}
+                      error={errors.customCategory} placeholder="Ej: Gorras, Bufandas..." required />
+                  </div>
+                )}
+              </>
             )}
           </div>
 

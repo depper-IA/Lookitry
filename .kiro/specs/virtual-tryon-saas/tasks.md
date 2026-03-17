@@ -487,6 +487,67 @@
 
 ---
 
+---
+
+- [-] 52. Auto-categorización con IA en ProductForm + revertir buildTryOnPrompt
+  - [x] 52.1 Revertir `buildTryOnPrompt` en `pruebalo.controller.ts`
+    - Quitar el bloque `[CRITICAL INSTRUCTION — READ FIRST]` del inicio
+    - Quitar las líneas `IMPORTANT: ${rules.replace}` e `IMPORTANT: ${rules.keep}` duplicadas al inicio
+    - Quitar el `[FINAL REMINDER]` del final
+    - Las reglas ya están correctamente inyectadas vía `buildCategoryRulesBlock` y en el bloque `[CLOTHING REPLACEMENT — MANDATORY]`
+    - _Archivos: backend/src/controllers/pruebalo.controller.ts_
+
+  - [x] 52.2 Actualizar workflow n8n descriptor para devolver `{ description, category }`
+    - El workflow apuntado por `NEXT_PUBLIC_N8N_DESCRIPTOR_URL` debe devolver también `category`
+    - `category` debe ser uno de: `VESTIDO`, `DRESS`, `CAMISA`, `SHIRT`, `TOP`, `PANTS`, `SHOES`, `CONJUNTO`, `SET`, `HOODIE`, `JACKET`, `HELMET`, `ACCESSORIES`
+    - _Archivos: n8n workflow descriptor (NEXT_PUBLIC_N8N_DESCRIPTOR_URL)_
+
+  - [x] 52.3 Mapear categoría de n8n a valores del select en `ProductForm.tsx`
+    - Crear mapa: `VESTIDO/DRESS → other (vestido)`, `CAMISA/SHIRT/TOP → tshirt`, `PANTS/PANTALON → pants`, `SHOES/ZAPATOS → shoes`, `HOODIE → hoodie`, `JACKET/CHAQUETA → jacket`, `ACCESSORIES → accessories`, `CONJUNTO/SET → other (conjunto)`
+    - _Archivos: frontend/src/components/dashboard/ProductForm.tsx_
+
+  - [x] 52.4 En `handleDescribeWithAI`: leer `data.category` y actualizar `formData.category`
+    - Después de limpiar la descripción, también mapear y setear la categoría
+    - Si la categoría mapeada es `other`, setear `customCategory` con el valor original de n8n
+    - _Archivos: frontend/src/components/dashboard/ProductForm.tsx_
+
+  - [x] 52.5 Agregar estado `aiGenerated` y hacer campos readonly tras auto-generación
+    - Estado `aiGenerated: boolean` — se activa cuando `handleDescribeWithAI` completa exitosamente
+    - `description` y `category` quedan readonly cuando `aiGenerated = true`
+    - Mostrar botón "Editar manualmente" que setea `aiGenerated = false`
+    - _Archivos: frontend/src/components/dashboard/ProductForm.tsx_
+
+  - [x] 52.6 Disparar auto-descripción automáticamente al subir imagen
+    - En `handleImageFile`: después de setear `formData.imageUrl`, si `formData.name.trim()` existe, llamar `handleDescribeWithAI()` automáticamente
+    - _Archivos: frontend/src/components/dashboard/ProductForm.tsx_
+
+---
+
+- [x] 53. Fix n8n — responseMode del webhook flujo4
+  - [x] 53.1 Cambiar `responseMode` del nodo Webhook en workflow `47RcLopJB6M82b0k`
+    - El nodo Webhook ya tiene `parameters.responseMode: "responseNode"` — workflow activo y correcto
+    - _Archivos: Mostrador_wilkiedevs/templates-webs/flujo4_feedback_embedding.json_
+
+---
+
+- [-] 54. Bugs de producción
+  - [x] 54.1 Color del hero no carga en producción
+    - `pruebalo/[brandSlug]/page.tsx`: cambiado `next: { revalidate: 300 }` por `cache: 'no-store'`
+
+  - [x] 54.2 Slider de opacidad invisible en modo oscuro
+    - `mi-pagina/page.tsx`: track del slider con `linear-gradient` dinámico visible en ambos modos
+
+  - [x] 54.3 Favicon no carga en producción
+    - `favicon.ico` existe en `frontend/public/`, `.dockerignore` no excluye `public/`
+    - Requiere deploy con `--no-cache` para limpiar caché de Docker/Next.js
+
+  - [x] 54.4 Modal ImageEditor no funciona en móvil (desbordamiento vertical)
+    - Modal con `max-h-[95vh] overflow-hidden flex flex-col`, contenido con `overflow-y-auto`
+
+  - [x] 54.5 Imagen generada en reporte de feedback
+    - Backend: `getFeedbacks` hace JOIN con `generations` para incluir `result_image_url`
+    - Frontend: fila expandida muestra imagen + prompt lado a lado
+
 - [ ] 50. Base de datos: seguridad y gestión de usuarios
   - [ ] 50.1 Activar RLS (Row Level Security) en tablas críticas de Supabase
     - Tablas: `brands`, `products`, `generations`, `subscriptions`

@@ -10,7 +10,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkied
 async function getBrandConfig(slug: string) {
   try {
     const res = await fetch(`${API_URL}/api/pruebalo/${slug}`, {
-      next: { revalidate: 300 }, // caché 5 min
+      cache: 'no-store',
     });
     if (!res.ok) return null;
     return res.json();

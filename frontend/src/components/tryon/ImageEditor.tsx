@@ -179,9 +179,9 @@ export function ImageEditor({ src, onConfirm, onCancel, primaryColor = '#6366f1'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm max-h-[95vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
           <h3 className="font-semibold text-gray-900 text-base">Ajustar foto</h3>
           <button onClick={onCancel} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
             <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -190,7 +190,7 @@ export function ImageEditor({ src, onConfirm, onCancel, primaryColor = '#6366f1'
           </button>
         </div>
 
-        <div className="p-5 space-y-4">
+        <div className="p-5 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(95vh - 120px)' }}>
           {/* Selector de modo de recorte */}
           <div>
             <p className="text-xs font-medium text-gray-500 mb-2 text-center">Recorte</p>
@@ -273,7 +273,7 @@ export function ImageEditor({ src, onConfirm, onCancel, primaryColor = '#6366f1'
         </div>
 
         {/* Acciones */}
-        <div className="flex gap-3 px-5 pb-5">
+        <div className="flex gap-3 px-5 pb-5 flex-shrink-0 border-t border-gray-100 pt-4">
           <button
             onClick={onCancel}
             className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"

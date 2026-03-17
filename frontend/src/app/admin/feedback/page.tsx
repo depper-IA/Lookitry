@@ -32,6 +32,7 @@ interface Feedback {
   description: string | null;
   product_category: string | null;
   prompt_used: string | null;
+  result_image_url?: string | null;
   resolved: boolean;
   resolved_at: string | null;
   created_at: string;
@@ -270,19 +271,42 @@ export default function FeedbackPage() {
                     </td>
                   </tr>
 
-                  {/* Fila expandida con prompt */}
-                  {expanded === f.id && f.prompt_used && (
+                  {/* Fila expandida con imagen y prompt */}
+                  {expanded === f.id && (f.prompt_used || f.result_image_url) && (
                     <tr key={`${f.id}-exp`} style={{ backgroundColor: 'var(--bg-hover)', borderBottom: '1px solid var(--border-color)' }}>
                       <td colSpan={6} className="px-4 pb-4 pt-2">
-                        <p className="text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
-                          Prompt usado en la generación
-                        </p>
-                        <pre
-                          className="text-xs p-3 rounded-lg overflow-x-auto whitespace-pre-wrap break-words"
-                          style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', maxHeight: '160px' }}
-                        >
-                          {f.prompt_used}
-                        </pre>
+                        <div className="flex gap-4 flex-wrap">
+                          {/* Imagen generada */}
+                          {f.result_image_url && (
+                            <div className="flex-shrink-0">
+                              <p className="text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                                Imagen generada
+                              </p>
+                              <a href={f.result_image_url} target="_blank" rel="noopener noreferrer">
+                                <img
+                                  src={f.result_image_url}
+                                  alt="Imagen generada"
+                                  className="rounded-lg object-cover border"
+                                  style={{ width: 120, height: 120, borderColor: 'var(--border-color)' }}
+                                />
+                              </a>
+                            </div>
+                          )}
+                          {/* Prompt */}
+                          {f.prompt_used && (
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                                Prompt usado en la generación
+                              </p>
+                              <pre
+                                className="text-xs p-3 rounded-lg overflow-x-auto whitespace-pre-wrap break-words"
+                                style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)', maxHeight: '160px' }}
+                              >
+                                {f.prompt_used}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )}
