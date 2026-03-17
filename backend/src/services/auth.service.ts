@@ -20,15 +20,23 @@ async function getActiveCampaign() {
 }
 
 async function isTrialAbuse(ip: string, fingerprint: string | null): Promise<boolean> {
-  // Verificar si bypass_ip_protection está activo en payment_settings
+  // Verificar bypass y whitelist en payment_settings
   const { data: psData } = await supabaseAdmin
     .from('payment_settings')
-    .select('bypass_ip_protection')
+    .select('bypass_ip_protection, ip_whitelist')
     .eq('id', 1)
     .single();
 
   if (psData?.bypass_ip_protection === true) {
     return false;
+  }
+
+  // Verificar si la IP está en la whitelist
+  if (psData?.ip_whitelist) {
+    const whitelist = psData.ip_whitelist.split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (whitelist.includes(ip)) {
+      return false;
+    }
   }
 
   // Verificar si la IP ya tiene un trial registrado en los últimos 30 días

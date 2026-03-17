@@ -144,10 +144,9 @@ export default function SystemConfigPage() {
   const [bypassIp, setBypassIp] = useState(false);
   const [savingBypass, setSavingBypass] = useState(false);
 
-  // Modal páginas inactivas
-  const [globalModal, setGlobalModal] = useState({ title: '', description: '', features: ['', '', ''] });
-  const [savingModal, setSavingModal] = useState(false);
-  const [modalSaved, setModalSaved] = useState(false);
+  // Whitelist de IPs
+  const [ipWhitelist, setIpWhitelist] = useState('');
+  const [savingWhitelist, setSavingWhitelist] = useState(false);
 
   // Health
   const [health, setHealth] = useState<HealthData | null>(null);
@@ -193,7 +192,8 @@ export default function SystemConfigPage() {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, { headers });
       if (res.ok) {
         const data = await res.json();
-        setBypassIp(data.bypass_ip_check ?? false);
+        setBypassIp(data.bypass_ip_protection ?? false);
+        setIpWhitelist(data.ip_whitelist ?? '');
       }
     } catch { /* silencioso */ }
   }, []);
@@ -265,7 +265,7 @@ export default function SystemConfigPage() {
     setSavingBypass(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PATCH', headers, body: JSON.stringify({ bypass_ip_check: newVal }),
+        method: 'PUT', headers, body: JSON.stringify({ bypass_ip_protection: newVal }),
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Error');
       setBypassIp(newVal);
@@ -274,21 +274,16 @@ export default function SystemConfigPage() {
     finally { setSavingBypass(false); }
   }
 
-  // ── Modal páginas inactivas ────────────────────────────────────────────────
-
-  async function handleSaveModal() {
-    setSavingModal(true);
+  async function handleSaveWhitelist() {
+    setSavingWhitelist(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/mini-landings/global-modal`, {
-        method: 'PUT', headers,
-        body: JSON.stringify({ modal_title: globalModal.title || null, modal_description: globalModal.description || null, modal_features: globalModal.features.filter(f => f.trim()) }),
+      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
+        method: 'PUT', headers, body: JSON.stringify({ ip_whitelist: ipWhitelist }),
       });
-      if (!res.ok) throw new Error((await res.json()).message);
-      setModalSaved(true);
-      flash('Configuración de página inactiva guardada', 'ok');
-      setTimeout(() => setModalSaved(false), 2000);
+      if (!res.ok) throw new Error((await res.json()).message || 'Error');
+      flash('Whitelist de IPs guardada', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
-    finally { setSavingModal(false); }
+    finally { setSavingWhitelist(false); }
   }
 
   function formatDate(iso: string) {
@@ -431,61 +426,46 @@ export default function SystemConfigPage() {
           </div>
 
           {/* Bypass IP */}
-          <div className="flex items-start justify-between gap-4 py-3">
+          <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--border-color)' }}>
             <div className="flex-1">
               <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">Bypass verificación de IP</p>
               <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
                 {bypassIp
-                  ? 'Activo — se omite la verificación de IP en pagos (modo test)'
+                  ? 'Activo — se omite la verificación de IP para todos los registros de prueba'
                   : 'Inactivo — verificación de IP habilitada en producción'}
               </p>
             </div>
             <Toggle value={bypassIp} onChange={handleToggleBypass} disabled={savingBypass} />
           </div>
 
-        </div>
-      </Section>
-
-      {/* ── SECCIÓN 3: Modal páginas inactivas ── */}
-      <Section title="Página inactiva global" icon={<IconGlobe className="w-4 h-4" />}>
-        <div className="space-y-4">
-          <p style={{ color: 'var(--text-muted)' }} className="text-xs">
-            Texto que ven los visitantes cuando una mini-landing no está activa. Se aplica a todas las marcas sin configuración propia.
-          </p>
-          <div>
-            <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-medium mb-1.5">Título del modal</label>
-            <input type="text" value={globalModal.title} onChange={e => setGlobalModal(f => ({ ...f, title: e.target.value }))}
-              placeholder="Ej: Esta tienda estará disponible próximamente"
-              style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-              className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
-          </div>
-          <div>
-            <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-medium mb-1.5">Descripción</label>
-            <textarea value={globalModal.description} onChange={e => setGlobalModal(f => ({ ...f, description: e.target.value }))} rows={3}
-              placeholder="Ej: Activa tu mini-landing para mostrar tus productos..."
-              style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-              className="w-full border rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
-          </div>
-          <div>
-            <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-medium mb-1.5">Características (hasta 3)</label>
-            <div className="space-y-2">
-              {globalModal.features.map((feat, i) => (
-                <input key={i} type="text" value={feat}
-                  onChange={e => { const next = [...globalModal.features]; next[i] = e.target.value; setGlobalModal(f => ({ ...f, features: next })); }}
-                  placeholder={`Característica ${i + 1}`}
-                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                  className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
-              ))}
+          {/* Whitelist de IPs */}
+          <div className="pt-1">
+            <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold mb-1">Whitelist de IPs para pruebas</p>
+            <p style={{ color: 'var(--text-muted)' }} className="text-xs mb-3">
+              IPs que siempre pueden registrar cuentas de prueba sin importar el bypass global. Separa con comas. Ej: <span className="font-mono">190.24.1.1, 181.55.2.3</span>
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={ipWhitelist}
+                onChange={e => setIpWhitelist(e.target.value)}
+                placeholder="190.24.1.1, 181.55.2.3"
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="flex-1 border rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+              />
+              <button
+                onClick={handleSaveWhitelist}
+                disabled={savingWhitelist}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
+              >
+                {savingWhitelist
+                  ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                  : <IconCheck className="w-4 h-4" />}
+                Guardar
+              </button>
             </div>
           </div>
-          <div className="flex justify-end">
-            <button onClick={handleSaveModal} disabled={savingModal}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors">
-              {savingModal ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
-                : modalSaved ? <IconCheck className="w-4 h-4" /> : <IconEdit className="w-4 h-4" />}
-              {modalSaved ? 'Guardado' : 'Guardar configuración'}
-            </button>
-          </div>
+
         </div>
       </Section>
 
