@@ -41,6 +41,7 @@ export interface UpdateBrandDto {
   modal_title?: string | null;
   modal_description?: string | null;
   modal_features?: string[] | null;
+  show_brand_name?: boolean | null;
 }
 
 export class BrandsService {
