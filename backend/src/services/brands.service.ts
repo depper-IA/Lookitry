@@ -37,6 +37,10 @@ export interface UpdateBrandDto {
   logo_light?: string | null;
   logo_dark?: string | null;
   cover_bg_color?: string | null;
+  cover_overlay_opacity?: number | null;
+  modal_title?: string | null;
+  modal_description?: string | null;
+  modal_features?: string[] | null;
 }
 
 export class BrandsService {

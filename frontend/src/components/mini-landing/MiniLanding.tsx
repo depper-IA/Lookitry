@@ -30,6 +30,7 @@ interface BrandData {
   logo_light?: string | null;
   logo_dark?: string | null;
   cover_bg_color?: string | null;
+  cover_overlay_opacity?: number | null;
 }
 
 interface ProductData {
@@ -419,16 +420,17 @@ function BrandLogo({
 function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: () => void }) {
   const primary = brand.primary_color || '#FF5C3A';
   const hasCover = !!brand.cover_image_url;
+  const overlayOpacity = brand.cover_overlay_opacity ?? 0.55;
   return (
     <section
       className="relative w-full min-h-[420px] md:min-h-[520px] flex flex-col items-center justify-center text-center px-6 py-20 overflow-hidden"
-      style={hasCover ? {} : { background: brand.cover_bg_color || `linear-gradient(135deg, ${primary}ee 0%, ${primary}99 100%)` }}
+      style={{ background: brand.cover_bg_color || `linear-gradient(135deg, ${primary}ee 0%, ${primary}99 100%)` }}
     >
       {hasCover && (
-        <>
-          <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/55" />
-        </>
+        <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
+      )}
+      {(hasCover && overlayOpacity > 0) && (
+        <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity})` }} />
       )}
       <div className="relative z-10 flex flex-col items-center gap-5 max-w-2xl">
         {brand.logo && <BrandLogo src={brand.logo_light || brand.logo} alt={brand.name} className="h-16 md:h-20 object-contain drop-shadow-lg" />}
@@ -729,14 +731,13 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
 function EditorialCover({ brand }: { brand: BrandData }) {
   const primary = brand.primary_color || '#FF5C3A';
   const fallbackBg = brand.cover_bg_color || `linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)`;
+  const overlayOpacity = brand.cover_overlay_opacity ?? 0.6;
   return (
     <div className="relative h-48 md:h-56 overflow-hidden flex items-end" style={{ background: fallbackBg }}>
       {brand.cover_image_url && (
-        <>
-          <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
-        </>
+        <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" style={{ opacity: overlayOpacity > 0 ? 1 : 0 }} />
       <div className="relative z-10 px-6 pb-5 w-full">
         {brand.slogan && <p className="text-white/70 text-xs mb-1 tracking-widest uppercase">{brand.slogan}</p>}
         <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">{brand.name}</h1>
@@ -1001,17 +1002,18 @@ function ProbadorHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown:
   const primary = brand.primary_color || '#FF5C3A';
   const hasCover = !!brand.cover_image_url;
   const heroBg = brand.cover_bg_color || '#0f0f0f';
+  const overlayOpacity = brand.cover_overlay_opacity ?? 0.6;
   return (
     <section
       className="relative py-20 px-6 text-center overflow-hidden"
-      style={hasCover ? {} : { backgroundColor: heroBg }}
+      style={{ backgroundColor: heroBg }}
     >
       {/* Imagen de portada */}
       {hasCover && (
-        <>
-          <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/60" />
-        </>
+        <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
+      )}
+      {(hasCover && overlayOpacity > 0) && (
+        <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity})` }} />
       )}
       {/* Anillos decorativos (solo sin imagen) */}
       {!hasCover && (
