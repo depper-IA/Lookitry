@@ -318,6 +318,28 @@ export class AuthService {
       .eq('id', brand.id);
   }
 
+  async resendVerificationEmail(email: string): Promise<{ brand: { name: string; email: string } | null; token: string | null }> {
+    const { data: brand } = await supabase
+      .from('brands')
+      .select('id, name, email, email_verified, email_verification_token')
+      .eq('email', email)
+      .single();
+
+    if (!brand || brand.email_verified) return { brand: null, token: null };
+
+    // Reusar token existente o generar uno nuevo
+    let token = brand.email_verification_token;
+    if (!token) {
+      token = crypto.randomBytes(32).toString('hex');
+      await supabase
+        .from('brands')
+        .update({ email_verification_token: token })
+        .eq('id', brand.id);
+    }
+
+    return { brand: { name: brand.name, email: brand.email }, token };
+  }
+
   async changePassword(brandId: string, currentPassword: string, newPassword: string): Promise<void> {
     const { data: brand } = await supabase
       .from('brands')

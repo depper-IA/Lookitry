@@ -342,15 +342,15 @@
     - _Archivos: frontend/src/app/dashboard/profile/page.tsx_
   - [x] 45.4 Agregar opción "Cambiar contraseña" en el menú de administrador
     - _Archivos: frontend/src/app/admin/perfil/page.tsx (o componente de perfil admin)_
-  - [ ] 45.5 Corregir bug visual de notificación "Comprueba tu correo electrónico" en cuentas nuevas
+  - [x] 45.5 Corregir bug visual de notificación "Comprueba tu correo electrónico" en cuentas nuevas
     - Investigar dónde se dispara y por qué está bugeada
-    - Contexto: la recuperación es para acceder a créditos de generación / herramienta de generación, si no esta aplicada esta logica
+    - Contexto: la recuperación es para acceder a créditos de generación / herramienta de generación, si no esta aplicada esta logica, creala...
     - _Archivos: frontend/src/components/auth/RegisterForm.tsx, backend/src/services/auth.service.ts_
 
 ---
 
-- [ ] 46. Tutoriales: onboarding y tutorial de configuración de landing
-  - [ ] 46.1 Investigar y corregir por qué desapareció el tutorial paso a paso de configuración de cuenta
+- [-] 46. Tutoriales: onboarding y tutorial de configuración de landing
+  - [x] 46.1 Investigar y corregir por qué desapareció el tutorial paso a paso de configuración de cuenta
     - Verificar si fue eliminado en algún commit reciente o si hay condición que lo oculta
     - _Archivos: frontend/src/app/dashboard/ (buscar componente de onboarding/tutorial)_
   - [ ] 46.2 Crear tutorial de configuración de mini-landing para usuarios que compran plan LANDING

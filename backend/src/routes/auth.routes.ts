@@ -22,6 +22,9 @@ router.post('/forgot-password', authRateLimiter, asyncHandler((req, res) => auth
 // POST /api/auth/reset-password
 router.post('/reset-password', authRateLimiter, asyncHandler((req, res) => authController.resetPassword(req, res)));
 
+// POST /api/auth/resend-verification
+router.post('/resend-verification', authRateLimiter, asyncHandler((req, res) => authController.resendVerification(req, res)));
+
 // POST /api/auth/change-password (requiere auth)
 router.post('/change-password', authMiddleware, asyncHandler((req, res) => authController.changePassword(req as any, res)));
 
