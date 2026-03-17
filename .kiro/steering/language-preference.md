@@ -39,7 +39,7 @@ NUNCA usar "VirtualTryOn", "Virtual Try On" ni variantes antiguas en ningún com
 
 Los planes del sistema son: **TRIAL**, **BASIC**, **PRO**, **LANDING**.
 
-- **TRIAL**: plan gratuito temporal. Es un estado independiente, NO es BASIC. En la BD el campo `plan` puede ser `BASIC` pero `is_in_trial = true` indica que es TRIAL. En toda la UI del admin se debe mostrar como `TRIAL` (badge violeta `#6366f1`) cuando `is_in_trial === true`, independientemente del valor de `plan`.
+- **TRIAL**: plan gratuito temporal. Es un estado independiente, NO es BASIC. En la BD el campo `plan` puede ser `BASIC` pero `trial_end_date` no nulo y en el futuro indica que está en trial. `is_in_trial` NO es una columna de la BD — se calcula en el backend comparando `trial_end_date > now && subscription_status !== 'active' && subscription_status !== 'expiring_soon'`. En toda la UI del admin se debe mostrar como `TRIAL` (badge violeta `#6366f1`) cuando `is_in_trial === true`.
 - **BASIC**: plan de pago mensual básico ($150.000 COP). Solo aplica cuando `is_in_trial = false`.
 - **PRO**: plan de pago mensual avanzado ($250.000 COP).
 - **LANDING**: pago único por mini-landing.
@@ -55,3 +55,36 @@ PROHIBIDO usar modelos de IA de pago sin consentimiento explícito del usuario.
 - OpenAI, Anthropic u otras APIs de pago: PROHIBIDO sin autorización explícita.
 - En n8n: verificar siempre que el modelo configurado sea gratuito antes de usarlo.
 - Si hay duda sobre el costo de un modelo, preguntar antes de usarlo.
+
+# Flujo de trabajo — Deploy y desarrollo local
+
+## Deploy
+- Hacer deploy solo cuando el usuario lo indique explícitamente, NO después de cada tarea.
+- Acumular todos los cambios y hacer un único deploy al final con: `git add -A; git commit -m "..."; git push` seguido de `python scripts/_deploy_now.py` con el flag apropiado (`--frontend`, `--backend`, o sin flag para ambos).
+- Usar `cwd: Mostrador_wilkiedevs` en lugar de `cd`.
+- Separador de comandos en PowerShell: `;` (no `&&`).
+
+## Desarrollo local
+Para probar cambios en local sin deploy al VPS:
+
+**Terminal 1 — Backend** (puerto 3001, usa Supabase en la nube):
+```bash
+cd Mostrador_wilkiedevs/backend
+npm run dev
+```
+
+**Terminal 2 — Frontend** (puerto 3000):
+Crear `Mostrador_wilkiedevs/frontend/.env.local` con:
+```
+NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=https://vkdooutklowctuudjnkl.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<mismo valor que .env>
+NEXT_PUBLIC_N8N_DESCRIPTOR_URL=https://n8n.wilkiedevs.com/webhook/descriptor
+```
+Luego:
+```bash
+cd Mostrador_wilkiedevs/frontend
+npm run dev
+```
+El `.env.local` tiene prioridad sobre `.env` en Next.js. No se necesita BD local — todo apunta a Supabase en la nube.
