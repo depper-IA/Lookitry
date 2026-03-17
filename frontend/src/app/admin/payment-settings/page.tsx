@@ -12,12 +12,27 @@ interface PaymentSettings {
   wompi_integrity_secret: string;
   wompi_test_mode: boolean;
   paypal_enabled: boolean;
+  paypal_email: string;
+  paypal_client_id: string;
+  paypal_client_secret: string;
+  paypal_sandbox: boolean;
+  manual_enabled: boolean;
+  manual_instructions: string;
+  manual_bank_name: string;
+  manual_account_number: string;
+  manual_account_holder: string;
+  manual_whatsapp: string;
+  manual_email: string;
+  transfer_enabled: boolean;
   transfer_bank_name: string;
   transfer_account_number: string;
   transfer_account_type: string;
   transfer_account_holder: string;
   transfer_nit: string;
   currency: string;
+  landing_price?: number;
+  landing_original_price?: number;
+  footer_brand_url?: string;
   bypass_ip_protection: boolean;
 }
 
