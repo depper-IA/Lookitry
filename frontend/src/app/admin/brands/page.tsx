@@ -34,7 +34,7 @@ interface Product {
   created_at: string;
 }
 
-type FilterPlan = 'all' | 'BASIC' | 'PRO';
+type FilterPlan = 'all' | 'BASIC' | 'PRO' | 'LANDING';
 type FilterTrial = 'all' | 'trial' | 'active' | 'suspended';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
@@ -392,7 +392,7 @@ export default function AdminBrandsPage() {
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Filtrar por plan</label>
             <div className="flex gap-2 flex-wrap">
-              {(['all', 'BASIC', 'PRO'] as FilterPlan[]).map(p => (
+              {(['all', 'BASIC', 'PRO', 'LANDING'] as FilterPlan[]).map(p => (
                 <button key={p} onClick={() => setFilterPlan(p)}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                   style={{
@@ -497,9 +497,13 @@ export default function AdminBrandsPage() {
                 <td className="px-4 py-3.5 whitespace-nowrap text-sm" style={{ color: 'var(--text-secondary)' }}>{brand.email}</td>
                 <td className="px-4 py-3.5 whitespace-nowrap">
                   <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                    style={brand.plan === 'PRO'
-                      ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
-                      : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>
+                    style={
+                      brand.plan === 'PRO'
+                        ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
+                        : brand.plan === 'LANDING'
+                        ? { backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }
+                        : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }
+                    }>
                     {brand.plan}
                   </span>
                 </td>
