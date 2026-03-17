@@ -367,7 +367,7 @@
   - [x] 47.2 Cambiar campo "ciudad" por "dirección completa" en el formulario de mi-pagina
     - Reflejar el campo en todos los templates (clásico, editorial, moderno)
     - _Archivos: frontend/src/app/dashboard/mi-pagina/page.tsx, frontend/src/components/mini-landing/MiniLanding.tsx_
-  - [~] 47.3 Templates moderno y editorial: corregir carga de imágenes
+  - [x] 47.3 Templates moderno y editorial: corregir carga de imágenes
     - Investigar por qué las imágenes no cargan en esos templates
     - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
   - [~] 47.4 Todos los templates: opción de color de fondo sólido como alternativa a imagen de portada
