@@ -397,7 +397,7 @@
 
 ---
 
-- [-] 51. Sistema RAG de mejora continua de prompts (feedback + agente IA)
+- [x] 51. Sistema RAG de mejora continua de prompts (feedback + agente IA)
 
   **Contexto del problema:** Al generar imágenes con prendas de cobertura total (vestidos, monos, conjuntos), el modelo de IA puede dejar ropa subyacente visible (ej: pantalón bajo un vestido, zapatos eliminados incorrectamente). Se necesita un ciclo de feedback que aprenda de los errores reportados por los clientes y corrija automáticamente los prompts futuros.
 

@@ -20,13 +20,13 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 
 ## Paleta de colores corporativos
 
-| Nombre         | Hex       | Uso principal                                      |
-|----------------|-----------|----------------------------------------------------|
-| Naranja Lookitry | `#FF5C3A` | Color de marca, CTAs, acentos, ítem activo en nav |
-| Negro base     | `#0a0a0a` | Fondo principal (modo oscuro)                      |
-| Negro card     | `#141414` | Fondo de tarjetas y paneles                        |
-| Crema / Beige  | `#f5f2ee` | Fondo alternativo claro, secciones landing         |
-| Blanco         | `#ffffff` | Texto principal sobre fondos oscuros               |
+| Nombre           | Hex       | Uso principal                                      |
+|------------------|-----------|----------------------------------------------------|
+| Naranja Lookitry | `#FF5C3A` | Color de marca, CTAs, acentos, ítem activo en nav  |
+| Negro base       | `#0a0a0a` | Fondo principal (modo oscuro)                      |
+| Negro card       | `#141414` | Fondo de tarjetas y paneles                        |
+| Crema / Beige    | `#f5f2ee` | Fondo alternativo claro, secciones landing         |
+| Blanco           | `#ffffff` | Texto principal sobre fondos oscuros               |
 
 ### Grises (modo oscuro — regla de legibilidad)
 
@@ -39,12 +39,14 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 
 ## Archivos de marca
 
-| Archivo                                      | Uso                                  |
-|----------------------------------------------|--------------------------------------|
-| `frontend/public/logo.png`                   | Logo principal (sidebar, header, OG) |
-| `frontend/public/favicon.png`                | Favicon del sitio                    |
-| `templates-webs/Lookitry-logo.png`           | Original fuente                      |
-| `templates-webs/Lookitry-favicon.png`        | Original fuente                      |
+| Archivo                                    | Estado       | Uso                                         |
+|--------------------------------------------|--------------|---------------------------------------------|
+| `frontend/public/logo.svg`                 | ✅ Activo    | Logo principal — usar en TODAS las páginas  |
+| `frontend/public/favicon.png`              | ✅ Activo    | Favicon del sitio                           |
+| `templates-webs/Lookitry-logo - copia.svg` | ✅ Fuente    | Original SVG fuente                         |
+| `templates-webs/Lookitry-favicon.png`      | ✅ Fuente    | Original favicon fuente                     |
+| `frontend/public/logo.png`                 | ❌ Obsoleto  | NO usar — reemplazado por logo.svg          |
+| `templates-webs/Lookitry-logo.png`         | ❌ Obsoleto  | NO usar — reemplazado por SVG               |
 
 ## Tipografía
 
@@ -79,12 +81,12 @@ var(--shadow-header)    /* Sombra del header */
 
 ## Planes del producto
 
-| Plan    | Precio          | Descripción                                      |
-|---------|-----------------|--------------------------------------------------|
-| TRIAL   | Gratis temporal | Badge violeta `#6366f1`. Independiente de BASIC. |
-| BASIC   | $150.000 COP/mes | 5 productos, 400 generaciones/mes               |
-| PRO     | $250.000 COP/mes | 15 productos, 1.200 generaciones/mes            |
-| LANDING | Pago único      | Mini-landing personalizada                       |
+| Plan    | Precio           | Descripción                                      |
+|---------|------------------|--------------------------------------------------|
+| TRIAL   | Gratis temporal  | Badge violeta `#6366f1`. Independiente de BASIC. |
+| BASIC   | $150.000 COP/mes | 5 productos, 400 generaciones/mes                |
+| PRO     | $250.000 COP/mes | 15 productos, 1.200 generaciones/mes             |
+| LANDING | Pago único       | Mini-landing personalizada                       |
 
 ## Toggle / Switch
 
@@ -92,17 +94,27 @@ var(--shadow-header)    /* Sombra del header */
 
 ## URLs del sistema
 
-| Servicio   | URL                                          |
-|------------|----------------------------------------------|
-| Frontend   | `https://pruebalo.wilkiedevs.com`            |
-| API        | `https://api.pruebalo.wilkiedevs.com`        |
-| n8n        | `https://n8n.wilkiedevs.com`                 |
-| MinIO      | `https://minio.wilkiedevs.com`               |
+| Servicio | URL                                   |
+|----------|---------------------------------------|
+| Frontend | `https://pruebalo.wilkiedevs.com`     |
+| API      | `https://api.pruebalo.wilkiedevs.com` |
+| n8n      | `https://n8n.wilkiedevs.com`          |
+| MinIO    | `https://minio.wilkiedevs.com`        |
 
 ## Reglas de branding en nuevas páginas
 
-1. Siempre usar `logo.png` en sidebar y header — nunca texto plano "Lookitry" sin el logo.
+1. **Logo siempre SVG + nombre de texto** — en TODAS las páginas del frontend sin excepción:
+   - Usar `<Image src="/logo.svg" ... />` (nunca `logo.png`)
+   - Junto al logo siempre mostrar: `Look<span className="text-[#FF5C3A]">itry</span>`
+   - Aplica a: landing, login, register, dashboard, checkout, planes, términos, registro-pro, pago-exitoso, admin, y cualquier página creada a futuro
 2. El favicon debe ser `favicon.png` en todos los layouts.
 3. El color `#FF5C3A` es el único acento de marca — no introducir otros colores de acento.
 4. Fondo oscuro por defecto en dashboards (`#0a0a0a`). Landing puede usar `#f5f2ee` como sección alternativa.
 5. No usar emojis en UI — usar iconos SVG o `lucide-react`.
+6. NUNCA mostrar solo el logo sin el nombre de texto, ni solo el nombre sin el logo.
+7. Tamaños estándar del logo por contexto:
+   - Sidebar / header dashboard: `h-7` o `h-8`
+   - Páginas de auth (login, register): `h-8` o `h-10`
+   - Landing pública (nav): `h-8`
+   - Footer: `h-6`
+8. En JSX el nombre siempre es: `Look<span className="text-[#FF5C3A]">itry</span>` — nunca texto plano "Lookitry".
