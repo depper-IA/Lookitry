@@ -26,8 +26,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   const brand = data.brand;
 
-  // Si la landing está suspendida o inactiva, metadata genérica
-  if (!brand.has_landing_page || brand.landing_suspended_at) {
+  // Si la landing está suspendida (fue activada y luego suspendida), metadata genérica
+  if (!brand.has_landing_page && brand.landing_suspended_at) {
     return { title: 'Tienda temporalmente inactiva' };
   }
 
@@ -213,8 +213,10 @@ export default async function TryOnPage({ params }: PageProps) {
 
   const brand = data.brand;
 
-  // Si la landing está suspendida o desactivada, mostrar página de suspensión
-  if (!brand.has_landing_page || brand.landing_suspended_at) {
+  // Si la landing está suspendida (fue activada y luego suspendida), mostrar página de suspensión
+  // Si nunca fue activada (landing_suspended_at es null y has_landing_page es false),
+  // mostrar el landing normal con el modal de compra
+  if (!brand.has_landing_page && brand.landing_suspended_at) {
     return <PaginaSuspendida brandName={brand.name} />;
   }
 

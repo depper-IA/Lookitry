@@ -74,6 +74,7 @@ export class PruebaloController {
         cover_image_url: (brand as any).cover_image_url ?? null,
         social_links: (brand as any).social_links ?? {},
         has_landing_page: (brand as any).has_landing_page ?? false,
+        landing_suspended_at: (brand as any).landing_suspended_at ?? null,
         // Nuevos campos
         city_display: (brand as any).city_display ?? null,
         national_shipping: (brand as any).national_shipping ?? false,
