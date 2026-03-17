@@ -1,11 +1,12 @@
 ﻿'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, TrendingUp, UserCheck, BarChart2, Image, Package } from 'lucide-react';
+import { Users, TrendingUp, UserCheck, BarChart2, Image, Package, Globe, PauseCircle, MinusCircle } from 'lucide-react';
 
 interface GlobalStats {
   totalBrands: number; totalProducts: number; totalGenerations: number;
   generationsThisMonth: number; successRate: number; brandsByPlan: { BASIC: number; PRO: number };
+  landingStats: { active: number; suspended: number; inactive: number };
 }
 interface ConversionStats {
   totalBrands: number; inTrial: number; converted: number; conversionRate: number;
@@ -146,6 +147,30 @@ export default function AdminDashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Mini-landings */}
+      {global.landingStats && (
+        <div className="rounded-xl border p-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <h2 className="font-syne font-semibold text-sm mb-4" style={{ color: 'var(--text-primary)' }}>Mini-landings</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { label: 'Activas',      value: global.landingStats.active,    icon: <Globe className="w-4 h-4" />,       color: '#10b981' },
+              { label: 'Suspendidas',  value: global.landingStats.suspended, icon: <PauseCircle className="w-4 h-4" />, color: '#f59e0b' },
+              { label: 'Sin activar',  value: global.landingStats.inactive,  icon: <MinusCircle className="w-4 h-4" />, color: '#64748b' },
+            ].map(c => (
+              <div key={c.label} className="rounded-lg border p-4 flex items-center gap-3" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-base)' }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white flex-shrink-0" style={{ backgroundColor: c.color }}>
+                  {c.icon}
+                </div>
+                <div>
+                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{c.label}</p>
+                  <p className="text-xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>{c.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Tabla detalle */}
       <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
