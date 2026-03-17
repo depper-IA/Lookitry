@@ -729,3 +729,67 @@ export const changeOwnPassword = async (req: any, res: Response) => {
     return res.status(isValidation ? 400 : 500).json({ error: 'BAD_REQUEST', message: error.message });
   }
 };
+
+// ── Feedback de generaciones (51.8) ──────────────────────────────────────────
+
+import { FeedbackService } from '../services/feedback.service';
+const feedbackService = new FeedbackService();
+
+/**
+ * GET /api/admin/feedback
+ * Lista feedbacks con filtros opcionales: error_type, brand_id, resolved
+ */
+export const getFeedbacks = async (req: any, res: Response) => {
+  try {
+    const { error_type, brand_id, resolved, limit } = req.query;
+    const feedbacks = await feedbackService.getFeedbacks({
+      error_type: error_type as any,
+      brand_id: brand_id as string | undefined,
+      resolved: resolved === 'true' ? true : resolved === 'false' ? false : undefined,
+      limit: limit ? parseInt(limit as string) : 100,
+    });
+    return res.status(200).json({ feedbacks });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+  }
+};
+
+/**
+ * GET /api/admin/feedback/stats
+ * Estadísticas agrupadas por tipo de error
+ */
+export const getFeedbackStats = async (_req: any, res: Response) => {
+  try {
+    const stats = await feedbackService.getErrorStats();
+    return res.status(200).json({ stats });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+  }
+};
+
+/**
+ * PATCH /api/admin/feedback/:id/resolve
+ * Marca un feedback como resuelto
+ */
+export const resolveFeedback = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    await feedbackService.resolveFeedback(id, req.admin?.email ?? 'admin');
+    return res.status(200).json({ message: 'Feedback marcado como resuelto' });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+  }
+};
+
+/**
+ * GET /api/admin/feedback/count-unresolved
+ * Conteo de feedbacks sin resolver (para badge en sidebar)
+ */
+export const getUnresolvedFeedbackCount = async (_req: any, res: Response) => {
+  try {
+    const feedbacks = await feedbackService.getUnresolvedFeedbacks(1000);
+    return res.status(200).json({ count: feedbacks.length });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 0 });
+  }
+};
