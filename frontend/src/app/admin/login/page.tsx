@@ -72,7 +72,7 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
-            Virtual<span className="text-[#FF5C3A]">Try</span>On
+            Look<span className="text-[#FF5C3A]">itry</span>
           </Link>
         </div>
 
