@@ -19,8 +19,15 @@ jobs:
           CURR=$(git rev-parse HEAD)
           CHANGED=$(git diff --name-only $PREV $CURR)
           echo "$CHANGED"
-          echo "frontend=$(echo "$CHANGED" | grep -q '^frontend/' && echo true || echo false)" >> $GITHUB_OUTPUT
-          echo "backend=$(echo "$CHANGED" | grep -q '^backend/' && echo true || echo false)" >> $GITHUB_OUTPUT
+          # Si el commit message contiene [deploy-all] o [force] o está vacío → deploy ambos
+          MSG=$(git log -1 --pretty=%s)
+          if echo "$MSG" | grep -qE '\[deploy-all\]|\[force\]|force deploy'; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            echo "backend=true" >> $GITHUB_OUTPUT
+          else
+            echo "frontend=$(echo "$CHANGED" | grep -q '^frontend/' && echo true || echo false)" >> $GITHUB_OUTPUT
+            echo "backend=$(echo "$CHANGED" | grep -q '^backend/' && echo true || echo false)" >> $GITHUB_OUTPUT
+          fi
 
       - name: Deploy frontend
         if: steps.changes.outputs.frontend == 'true'
