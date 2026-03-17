@@ -138,7 +138,7 @@ export default function LandingClient() {
               Ver planes <IconArrow />
             </Link>
           </div>
-          <p className="text-[12px] text-[#666]">Sin tarjeta de crédito · Cancela cuando quieras</p>
+          <p className="text-[12px] text-[#666]">Verificación de tarjeta requerida ($100 COP reembolsables) · Cancela cuando quieras</p>
         </div>
       </section>
 
