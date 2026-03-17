@@ -10,7 +10,7 @@ const jsonLd = {
       '@id': `${BASE_URL}/#organization`,
       name: 'Lookitry',
       url: BASE_URL,
-      logo: { '@type': 'ImageObject', url: `${BASE_URL}/logo.png` },
+      logo: { '@type': 'ImageObject', url: `${BASE_URL}/logo.svg` },
       contactPoint: {
         '@type': 'ContactPoint',
         telephone: '+57-310-543-6281',
