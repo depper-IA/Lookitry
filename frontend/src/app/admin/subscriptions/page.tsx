@@ -283,7 +283,11 @@ function ChangePlanModal({
           {error && <p className="text-sm text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
           <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border px-4 py-3">
             <p style={{ color: 'var(--text-muted)' }} className="text-xs mb-0.5">Plan actual</p>
-            <p style={{ color: 'var(--text-primary)' }} className="font-semibold">{brand.plan} — {formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes</p>
+            <p style={{ color: 'var(--text-primary)' }} className="font-semibold">
+              {brand.plan}
+              {brand.plan !== 'LANDING' && ` — ${formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes`}
+              {brand.plan === 'LANDING' && ' — Pago único'}
+            </p>
           </div>
           <div>
             <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Nuevo plan</label>
@@ -541,10 +545,20 @@ export default function AdminSubscriptionsPage() {
                     <p style={{ color: 'var(--text-muted)' }} className="text-xs">/{s.slug}</p>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${s.plan === 'PRO' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      s.plan === 'PRO'
+                        ? 'bg-purple-500/10 text-purple-400'
+                        : s.plan === 'LANDING'
+                        ? 'bg-blue-500/10 text-blue-400'
+                        : 'bg-blue-500/10 text-blue-400'
+                    }`}
+                      style={s.plan === 'LANDING' ? { backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' } : undefined}
+                    >
                       {s.plan}
                     </span>
-                    <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">{formatPlanPrice(s.plan as 'BASIC' | 'PRO')}</p>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">
+                      {s.plan === 'LANDING' ? 'Pago único' : formatPlanPrice(s.plan as 'BASIC' | 'PRO')}
+                    </p>
                   </td>
                   <td style={{ color: 'var(--text-secondary)' }} className="px-5 py-3.5">{formatDate(s.subscription_end_date)}</td>
                   <td className="px-5 py-3.5"><DaysChip days={s.daysRemaining} /></td>

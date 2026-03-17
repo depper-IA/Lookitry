@@ -312,13 +312,13 @@
 
 ---
 
-- [~] 43. Ingresos y pagos: reportes de landings
-  - [~] 43.1 En `/admin/revenue` incluir ingresos por plan LANDING separados de BASIC/PRO
+- [x] 43. Ingresos y pagos: reportes de landings
+  - [x] 43.1 En `/admin/revenue` incluir ingresos por plan LANDING separados de BASIC/PRO
     - Filtro o columna adicional para pagos de tipo landing
     - _Archivos: frontend/src/app/admin/revenue/page.tsx_
-  - [~] 43.2 En `/admin/brands` y `/admin/subscriptions` mostrar correctamente el plan LANDING
+  - [x] 43.2 En `/admin/brands` y `/admin/subscriptions` mostrar correctamente el plan LANDING
     - _Archivos: frontend/src/app/admin/brands/page.tsx, frontend/src/app/admin/subscriptions/page.tsx_
-  - [~] 43.3 Historial de pagos: incluir y filtrar pagos de tipo landing
+  - [x] 43.3 Historial de pagos: incluir y filtrar pagos de tipo landing
     - _Archivos: frontend/src/app/admin/revenue/page.tsx, backend/src/controllers/admin.controller.ts_
 
 ---
