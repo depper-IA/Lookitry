@@ -510,6 +510,9 @@ export default function LandingClient() {
             <Link href="/admin/login" className="text-[12px] text-[#333] hover:text-[#555] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]">
               Admin
             </Link>
+            <Link href="/terminos" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]">
+              Términos y Condiciones
+            </Link>
           </div>
         </div>
       </footer>
