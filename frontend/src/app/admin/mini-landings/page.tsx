@@ -11,6 +11,7 @@ interface LandingBrand {
   email: string;
   slug: string;
   plan: string;
+  is_in_trial?: boolean;
   has_landing_page: boolean;
   landing_suspended_at: string | null;
   subscription_status: string | null;
@@ -19,6 +20,7 @@ interface LandingBrand {
 }
 
 type FilterEstado = 'all' | 'activa' | 'suspendida' | 'inactiva';
+type FilterPlanML = 'all' | 'TRIAL' | 'BASIC' | 'PRO';
 
 function getEstado(b: LandingBrand): 'activa' | 'suspendida' | 'inactiva' {
   if (b.landing_suspended_at) return 'suspendida';
@@ -91,11 +93,16 @@ export default function AdminMiniLandingsPage() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [filterEstado, setFilterEstado] = useState<FilterEstado>('all');
-  const [filterPlan, setFilterPlan] = useState<'all' | 'BASIC' | 'PRO'>('all');
+  const [filterPlan, setFilterPlan] = useState<FilterPlanML>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<{ brand: LandingBrand; action: 'activate' | 'deactivate' | 'suspend' | 'restore' } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
+  // Modal global de páginas inactivas
+  const [showGlobalModal, setShowGlobalModal] = useState(false);
+  const [globalModalForm, setGlobalModalForm] = useState({ title: '', description: '', features: ['', '', ''] });
+  const [savingGlobalModal, setSavingGlobalModal] = useState(false);
+  const [globalModalSaved, setGlobalModalSaved] = useState(false);
 
   const fetchBrands = useCallback(async () => {
     try {
@@ -123,7 +130,11 @@ export default function AdminMiniLandingsPage() {
       b.email.toLowerCase().includes(search.toLowerCase()) ||
       b.slug.toLowerCase().includes(search.toLowerCase());
     const matchEstado = filterEstado === 'all' || getEstado(b) === filterEstado;
-    const matchPlan = filterPlan === 'all' || b.plan === filterPlan;
+    const matchPlan = filterPlan === 'all'
+      ? true
+      : filterPlan === 'TRIAL'
+      ? b.is_in_trial === true
+      : b.plan === filterPlan && !b.is_in_trial;
     return matchSearch && matchEstado && matchPlan;
   });
 
@@ -137,6 +148,29 @@ export default function AdminMiniLandingsPage() {
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginated = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handleSaveGlobalModal = async () => {
+    setSavingGlobalModal(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_URL}/api/admin/mini-landings/global-modal`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          modal_title: globalModalForm.title || null,
+          modal_description: globalModalForm.description || null,
+          modal_features: globalModalForm.features.filter(f => f.trim()),
+        }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
+      setGlobalModalSaved(true);
+      setTimeout(() => { setGlobalModalSaved(false); setShowGlobalModal(false); }, 1500);
+    } catch (err: any) {
+      alert(err.message || 'Error al guardar');
+    } finally {
+      setSavingGlobalModal(false);
+    }
+  };
 
   const handleAction = async (brand: LandingBrand, action: 'activate' | 'deactivate' | 'suspend' | 'restore') => {
     setActionLoading(brand.id + action);
@@ -196,14 +230,26 @@ export default function AdminMiniLandingsPage() {
             Total: {brands.length} | Mostrando: {filtered.length}
           </p>
         </div>
-        <button
-          onClick={fetchBrands}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors"
-          style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-card)' }}
-        >
-          <IconRefresh className="w-4 h-4" />
-          Actualizar
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowGlobalModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors"
+            style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-card)' }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Página inactiva global
+          </button>
+          <button
+            onClick={fetchBrands}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors"
+            style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-card)' }}
+          >
+            <IconRefresh className="w-4 h-4" />
+            Actualizar
+          </button>
+        </div>
       </div>
 
       {/* Tarjetas de resumen */}
@@ -241,18 +287,23 @@ export default function AdminMiniLandingsPage() {
             style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           />
           <div className="flex gap-2">
-            {(['all', 'BASIC', 'PRO'] as const).map(p => (
+            {([
+              { value: 'all',   label: 'Todos' },
+              { value: 'TRIAL', label: 'Trial' },
+              { value: 'BASIC', label: 'Basic' },
+              { value: 'PRO',   label: 'Pro' },
+            ] as { value: FilterPlanML; label: string }[]).map(({ value, label }) => (
               <button
-                key={p}
-                onClick={() => setFilterPlan(p)}
+                key={value}
+                onClick={() => setFilterPlan(value)}
                 className="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors border"
                 style={{
-                  backgroundColor: filterPlan === p ? '#FF5C3A' : 'var(--bg-base)',
-                  color: filterPlan === p ? '#fff' : 'var(--text-secondary)',
-                  borderColor: filterPlan === p ? '#FF5C3A' : 'var(--border-color)',
+                  backgroundColor: filterPlan === value ? '#FF5C3A' : 'var(--bg-base)',
+                  color: filterPlan === value ? '#fff' : 'var(--text-secondary)',
+                  borderColor: filterPlan === value ? '#FF5C3A' : 'var(--border-color)',
                 }}
               >
-                {p === 'all' ? 'Todos' : p}
+                {label}
               </button>
             ))}
           </div>
@@ -289,11 +340,15 @@ export default function AdminMiniLandingsPage() {
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       <span
                         className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                        style={brand.plan === 'PRO'
-                          ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
-                          : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
+                        style={
+                          brand.is_in_trial
+                            ? { backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }
+                            : brand.plan === 'PRO'
+                            ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
+                            : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }
+                        }
                       >
-                        {brand.plan}
+                        {brand.is_in_trial ? 'TRIAL' : brand.plan}
                       </span>
                     </td>
 
@@ -485,6 +540,106 @@ export default function AdminMiniLandingsPage() {
           onConfirm={() => handleAction(confirmModal.brand, confirmModal.action)}
           onCancel={() => setConfirmModal(null)}
         />
+      )}
+
+      {/* Modal global — configuración de página inactiva */}
+      {showGlobalModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-in fade-in">
+          <div
+            className="w-full max-w-lg rounded-2xl border p-6 space-y-5 animate-in zoom-in-95"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  Configuración global — Página inactiva
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
+                  Texto y características que ven los visitantes cuando una mini-landing no está activa. Se aplica a todas las marcas que no tengan configuración propia.
+                </p>
+              </div>
+              <button onClick={() => setShowGlobalModal(false)} style={{ color: 'var(--text-secondary)' }}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  Título del modal
+                </label>
+                <input
+                  type="text"
+                  value={globalModalForm.title}
+                  onChange={e => setGlobalModalForm(f => ({ ...f, title: e.target.value }))}
+                  placeholder="Ej: Esta tienda está próximamente disponible"
+                  className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A]"
+                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  Descripción
+                </label>
+                <textarea
+                  value={globalModalForm.description}
+                  onChange={e => setGlobalModalForm(f => ({ ...f, description: e.target.value }))}
+                  rows={3}
+                  placeholder="Ej: Activa tu mini-landing para mostrar tus productos..."
+                  className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A] resize-none"
+                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  Características (hasta 3)
+                </label>
+                <div className="space-y-2">
+                  {globalModalForm.features.map((feat, i) => (
+                    <input
+                      key={i}
+                      type="text"
+                      value={feat}
+                      onChange={e => {
+                        const next = [...globalModalForm.features];
+                        next[i] = e.target.value;
+                        setGlobalModalForm(f => ({ ...f, features: next }));
+                      }}
+                      placeholder={`Característica ${i + 1}`}
+                      className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A]"
+                      style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end pt-1">
+              <button
+                onClick={() => setShowGlobalModal(false)}
+                className="px-4 py-2 rounded-lg text-sm border transition-all duration-150 hover:opacity-80"
+                style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-base)' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveGlobalModal}
+                disabled={savingGlobalModal}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all duration-150 hover:opacity-90 active:scale-95 disabled:opacity-50"
+                style={{ backgroundColor: '#FF5C3A' }}
+              >
+                {savingGlobalModal
+                  ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                  : globalModalSaved
+                  ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  : null}
+                {globalModalSaved ? 'Guardado' : 'Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

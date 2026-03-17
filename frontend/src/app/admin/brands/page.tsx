@@ -34,7 +34,7 @@ interface Product {
   created_at: string;
 }
 
-type FilterPlan = 'all' | 'BASIC' | 'PRO' | 'LANDING';
+type FilterPlan = 'all' | 'TRIAL' | 'BASIC' | 'PRO' | 'LANDING';
 type FilterTrial = 'all' | 'trial' | 'active' | 'suspended';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
@@ -87,7 +87,8 @@ export default function AdminBrandsPage() {
         b.slug.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    if (filterPlan !== 'all') filtered = filtered.filter(b => b.plan === filterPlan);
+    if (filterPlan === 'TRIAL') filtered = filtered.filter(b => b.is_in_trial);
+    else if (filterPlan !== 'all') filtered = filtered.filter(b => b.plan === filterPlan && !b.is_in_trial);
     if (filterTrial === 'trial') filtered = filtered.filter(b => b.is_in_trial);
     else if (filterTrial === 'active') filtered = filtered.filter(b => b.subscription_status === 'active' || b.subscription_status === 'expiring_soon');
     else if (filterTrial === 'suspended') filtered = filtered.filter(b => b.subscription_status === 'suspended' || b.subscription_status === 'expired');
@@ -392,15 +393,21 @@ export default function AdminBrandsPage() {
           <div>
             <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Filtrar por plan</label>
             <div className="flex gap-2 flex-wrap">
-              {(['all', 'BASIC', 'PRO', 'LANDING'] as FilterPlan[]).map(p => (
-                <button key={p} onClick={() => setFilterPlan(p)}
+              {([
+                { value: 'all',     label: `Todos (${brands.length})` },
+                { value: 'TRIAL',   label: `TRIAL (${brands.filter(b => b.is_in_trial).length})` },
+                { value: 'BASIC',   label: `BASIC (${brands.filter(b => b.plan === 'BASIC' && !b.is_in_trial).length})` },
+                { value: 'PRO',     label: `PRO (${brands.filter(b => b.plan === 'PRO').length})` },
+                { value: 'LANDING', label: `LANDING (${brands.filter(b => b.plan === 'LANDING').length})` },
+              ] as { value: FilterPlan; label: string }[]).map(({ value, label }) => (
+                <button key={value} onClick={() => setFilterPlan(value)}
                   className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
                   style={{
-                    backgroundColor: filterPlan === p ? '#FF5C3A' : 'var(--bg-base)',
-                    color: filterPlan === p ? '#fff' : 'var(--text-secondary)',
-                    border: `1px solid ${filterPlan === p ? '#FF5C3A' : 'var(--border-color)'}`,
+                    backgroundColor: filterPlan === value ? '#FF5C3A' : 'var(--bg-base)',
+                    color: filterPlan === value ? '#fff' : 'var(--text-secondary)',
+                    border: `1px solid ${filterPlan === value ? '#FF5C3A' : 'var(--border-color)'}`,
                   }}>
-                  {p === 'all' ? `Todos (${brands.length})` : `${p} (${brands.filter(b => b.plan === p).length})`}
+                  {label}
                 </button>
               ))}
             </div>
@@ -498,13 +505,15 @@ export default function AdminBrandsPage() {
                 <td className="px-4 py-3.5 whitespace-nowrap">
                   <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
                     style={
-                      brand.plan === 'PRO'
+                      brand.is_in_trial
+                        ? { backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }
+                        : brand.plan === 'PRO'
                         ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
                         : brand.plan === 'LANDING'
                         ? { backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }
                         : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }
                     }>
-                    {brand.plan}
+                    {brand.is_in_trial ? 'TRIAL' : brand.plan}
                   </span>
                 </td>
                 <td className="px-4 py-3.5 whitespace-nowrap">
@@ -662,27 +671,6 @@ export default function AdminBrandsPage() {
                       className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
                       style={{ transform: (selectedBrand as any).has_landing_page ? 'translateX(1.375rem)' : 'translateX(0.25rem)' }}
                     />
-                  </button>
-                </div>
-              </div>
-              {/* Configurar modal de activación */}
-              <div className="border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Modal de activación</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                      Texto que ven los visitantes cuando la mini-landing no está activa.
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => { setShowDetailsModal(false); handleOpenModalConfig(selectedBrand); }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                    style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.25)' }}
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Editar
                   </button>
                 </div>
               </div>
