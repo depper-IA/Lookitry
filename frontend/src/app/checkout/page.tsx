@@ -209,7 +209,7 @@ function CheckoutContent() {
         <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base text-white tracking-tight">
           Virtual<span className="text-[#FF5C3A]">Try</span>On
         </Link>
-        <div className="flex items-center gap-1.5 text-[12px] text-[#444]">
+        <div className="flex items-center gap-1.5 text-[12px] text-[#888]">
           <IconLock />
           Pago seguro con Wompi
         </div>
@@ -218,7 +218,7 @@ function CheckoutContent() {
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-10">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-[13px] text-[#555] hover:text-[#aaa] transition-colors mb-8"
+          className="flex items-center gap-1.5 text-[13px] text-[#888] hover:text-[#ccc] transition-colors mb-8"
         >
           <IconArrowLeft />
           Volver
@@ -270,14 +270,14 @@ function CheckoutContent() {
                           <div className="text-[16px] font-extrabold text-[#FF5C3A]" style={{ fontFamily: 'Syne, sans-serif' }}>
                             {formatCOP(landingPrice)}
                           </div>
-                          <div className="text-[10px] text-[#555] mt-0.5">Pago unico</div>
+                          <div className="text-[10px] text-[#999] mt-0.5">Pago unico</div>
                         </>
                       ) : (
                         <>
                           <div className="text-[16px] font-extrabold text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
                             {formatCOP(PLAN_BASE[p as 'BASIC' | 'PRO'])}
                           </div>
-                          <div className="text-[10px] text-[#555] mt-0.5">/mes</div>
+                          <div className="text-[10px] text-[#999] mt-0.5">/mes</div>
                         </>
                       )}
                     </button>
@@ -290,7 +290,7 @@ function CheckoutContent() {
                   <svg className="w-4 h-4 text-[#FF5C3A] flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p className="text-[11px] text-[#777] leading-relaxed">
+                  <p className="text-[11px] text-[#aaa] leading-relaxed">
                     La mini-landing requiere un plan de suscripcion activo. Selecciona el plan que quieres activar junto con tu pagina.
                   </p>
                 </div>
@@ -390,7 +390,7 @@ function CheckoutContent() {
                     </div>
                     <div className="text-right">
                       {landingDiscount > 0 && (
-                        <div className="text-[11px] text-[#333] line-through">{formatCOP(landingOriginal)}</div>
+                        <div className="text-[11px] text-[#666] line-through">{formatCOP(landingOriginal)}</div>
                       )}
                       <div className="text-[15px] font-bold text-white">{formatCOP(landingPrice)}</div>
                     </div>
@@ -399,7 +399,7 @@ function CheckoutContent() {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-[13px] font-semibold text-white">{planNames[subPlan]}</div>
-                      <div className="text-[11px] text-[#555]">
+                      <div className="text-[11px] text-[#999]">
                         {DISCOUNTS.find(d => d.months === selectedMonths)?.label}
                         {subMonthDiscount > 0 && (
                           <span className="ml-1.5 text-emerald-400">-{subMonthDiscount}%</span>
@@ -408,17 +408,17 @@ function CheckoutContent() {
                     </div>
                     <div className="text-right">
                       {subMonthDiscount > 0 && (
-                        <div className="text-[11px] text-[#333] line-through">{formatCOP(PLAN_BASE[subPlan] * selectedMonths)}</div>
+                        <div className="text-[11px] text-[#666] line-through">{formatCOP(PLAN_BASE[subPlan] * selectedMonths)}</div>
                       )}
                       <div className="text-[15px] font-bold text-white">{formatCOP(subPlanTotal)}</div>
                     </div>
                   </div>
                   {/* Features landing */}
                   <div className="pt-2 border-t border-[#1f1f1f]">
-                    <p className="text-[10px] font-semibold text-[#444] uppercase tracking-wide mb-2">Mini-landing incluye</p>
+                    <p className="text-[10px] font-semibold text-[#666] uppercase tracking-wide mb-2">Mini-landing incluye</p>
                     <ul className="space-y-1.5">
                       {PLAN_FEATURES.LANDING.map(f => (
-                        <li key={f} className="flex items-start gap-2 text-[12px] text-[#666]">
+                        <li key={f} className="flex items-start gap-2 text-[12px] text-[#bbb]">
                           <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-[rgba(255,92,58,0.13)]">
                             <IconCheck />
                           </span>
@@ -429,10 +429,10 @@ function CheckoutContent() {
                   </div>
                   {/* Features subPlan */}
                   <div className="pt-2 border-t border-[#1f1f1f]">
-                    <p className="text-[10px] font-semibold text-[#444] uppercase tracking-wide mb-2">{planNames[subPlan]} incluye</p>
+                    <p className="text-[10px] font-semibold text-[#666] uppercase tracking-wide mb-2">{planNames[subPlan]} incluye</p>
                     <ul className="space-y-1.5">
                       {PLAN_FEATURES[subPlan].map(f => (
-                        <li key={f} className="flex items-start gap-2 text-[12px] text-[#666]">
+                        <li key={f} className="flex items-start gap-2 text-[12px] text-[#bbb]">
                           <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-[rgba(255,92,58,0.13)]">
                             <IconCheck />
                           </span>
@@ -455,19 +455,19 @@ function CheckoutContent() {
                     </div>
                     <div className="text-right">
                       {discountPct > 0 && (
-                        <div className="text-[12px] text-[#333] line-through">{formatCOP(originalPrice)}</div>
+                        <div className="text-[12px] text-[#666] line-through">{formatCOP(originalPrice)}</div>
                       )}
                       <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[20px] text-white">
                         {formatCOP(totalPrice)}
                       </div>
                       {selectedMonths > 1 && monthlyPrice && (
-                        <div className="text-[11px] text-[#555]">{formatCOP(Math.round(monthlyPrice))}/mes</div>
+                        <div className="text-[11px] text-[#999]">{formatCOP(Math.round(monthlyPrice))}/mes</div>
                       )}
                     </div>
                   </div>
                   <ul className="space-y-2">
                     {PLAN_FEATURES[selectedPlan].map(f => (
-                      <li key={f} className="flex items-start gap-2.5 text-[12px] text-[#666]">
+                      <li key={f} className="flex items-start gap-2.5 text-[12px] text-[#bbb]">
                         <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-[rgba(255,92,58,0.13)]">
                           <IconCheck />
                         </span>
@@ -479,7 +479,7 @@ function CheckoutContent() {
               )}
 
               <div className="border-t border-[#2a2a2a] pt-4 flex items-center justify-between">
-                <span className="text-[13px] font-medium text-[#666]">Total a pagar</span>
+                <span className="text-[13px] font-medium text-[#999]">Total a pagar</span>
                 <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[22px] text-white">
                   {formatCOP(totalPrice)} COP
                 </span>
@@ -493,7 +493,7 @@ function CheckoutContent() {
               <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[16px] text-white mb-1">
                 Método de pago
               </h2>
-              <p className="text-[12px] text-[#555] mb-5">
+              <p className="text-[12px] text-[#aaa] mb-5">
                 Serás redirigido a Wompi para completar el pago de forma segura.
                 Aceptamos tarjetas débito, crédito, PSE y Nequi.
               </p>
@@ -518,7 +518,7 @@ function CheckoutContent() {
                     : `Pagar ${formatCOP(totalPrice)} COP`}
               </button>
 
-              <div className="flex items-center justify-center gap-1.5 mt-3 text-[11px] text-[#333]">
+              <div className="flex items-center justify-center gap-1.5 mt-3 text-[11px] text-[#666]">
                 <IconLock />
                 Pago procesado por Wompi — 100% seguro
               </div>
@@ -526,29 +526,35 @@ function CheckoutContent() {
 
             {/* Contacto alternativo */}
             <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-5 space-y-3">
-              <p className="text-[12px] text-[#555] font-medium">¿Prefieres pagar por otro medio?</p>
+              <p className="text-[12px] text-[#999] font-medium">¿Prefieres pagar por otro medio?</p>
               <a
                 href={`https://wa.me/${(pricing?.manualWhatsapp || '573105436281').replace(/\D/g, '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[12px] text-[#777] hover:text-white transition-colors"
+                className="flex items-center gap-2 text-[12px] text-[#999] hover:text-white transition-colors"
               >
                 <IconWhatsapp />
                 Contactar por WhatsApp
               </a>
               <a
                 href={`mailto:${pricing?.manualEmail || 'info@pruebalo.wilkiedevs.com'}`}
-                className="flex items-center gap-2 text-[12px] text-[#777] hover:text-white transition-colors"
+                className="flex items-center gap-2 text-[12px] text-[#999] hover:text-white transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 {pricing?.manualEmail || 'info@pruebalo.wilkiedevs.com'}
               </a>
-              <p className="text-[11px] text-[#333] pt-1 border-t border-[#1f1f1f]">
+              <p className="text-[11px] text-[#777] pt-1 border-t border-[#1f1f1f]">
                 {isLanding
                   ? 'La mini-landing se activa en minutos tras confirmar el pago.'
                   : 'El plan se activa inmediatamente después del pago.'}
+              </p>
+              <p className="text-[11px] text-[#555] pt-1">
+                Al pagar aceptas nuestros{' '}
+                <Link href="/terminos" target="_blank" className="text-[#FF5C3A] hover:underline">
+                  Términos y Condiciones
+                </Link>
               </p>
             </div>
           </div>
