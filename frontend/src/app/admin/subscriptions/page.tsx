@@ -51,6 +51,40 @@ function DaysChip({ days }: { days: number }) {
   return <span className="text-xs text-emerald-600">{days} días</span>;
 }
 
+function PlanBadge({ plan, isInTrial }: { plan: string; isInTrial?: boolean }) {
+  if (isInTrial) {
+    return (
+      <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
+        style={{ backgroundColor: 'rgba(107,114,128,0.15)', color: '#6b7280' }}>
+        TRIAL
+      </span>
+    );
+  }
+  if (plan === 'PRO') {
+    return (
+      <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
+        style={{ backgroundColor: 'rgba(168,85,247,0.12)', color: '#a855f7' }}>
+        PRO
+      </span>
+    );
+  }
+  if (plan === 'LANDING') {
+    return (
+      <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
+        style={{ backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }}>
+        LANDING
+      </span>
+    );
+  }
+  // BASIC
+  return (
+    <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
+      style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
+      BASIC
+    </span>
+  );
+}
+
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     active: 'bg-emerald-100 text-emerald-800',
@@ -158,7 +192,9 @@ function RenewModal({
       <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border shadow-xl w-full max-w-md">
         <div style={{ borderColor: 'var(--border-color)' }} className="px-6 py-5 border-b">
           <h3 style={{ color: 'var(--text-primary)' }} className="font-bold text-lg">Registrar pago — {brand.name}</h3>
-          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">Plan {brand.plan} · {formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes</p>
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">
+            {brand.is_in_trial ? 'Plan Trial' : `Plan ${brand.plan}`} · {brand.is_in_trial ? formatPlanPrice('BASIC') : formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes
+          </p>
         </div>
         <div className="px-6 py-5 space-y-4">
           {error && <p className="text-sm text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
@@ -286,9 +322,10 @@ function ChangePlanModal({
           <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border px-4 py-3">
             <p style={{ color: 'var(--text-muted)' }} className="text-xs mb-0.5">Plan actual</p>
             <p style={{ color: 'var(--text-primary)' }} className="font-semibold">
-              {brand.plan}
-              {brand.plan !== 'LANDING' && ` — ${formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes`}
-              {brand.plan === 'LANDING' && ' — Pago único'}
+              {brand.is_in_trial ? 'TRIAL' : brand.plan}
+              {!brand.is_in_trial && brand.plan !== 'LANDING' && ` — ${formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes`}
+              {!brand.is_in_trial && brand.plan === 'LANDING' && ' — Pago único'}
+              {brand.is_in_trial && ` — ${brand.trial_days_remaining ?? '?'} días restantes`}
             </p>
           </div>
           <div>
@@ -552,19 +589,7 @@ export default function AdminSubscriptionsPage() {
                     <p style={{ color: 'var(--text-muted)' }} className="text-xs">/{s.slug}</p>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold`}
-                      style={
-                        s.is_in_trial
-                          ? { backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }
-                          : s.plan === 'PRO'
-                          ? { backgroundColor: 'rgba(168,85,247,0.12)', color: '#a855f7' }
-                          : s.plan === 'LANDING'
-                          ? { backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }
-                          : { backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }
-                      }
-                    >
-                      {s.is_in_trial ? 'TRIAL' : s.plan}
-                    </span>
+                    <PlanBadge plan={s.plan} isInTrial={s.is_in_trial} />
                     <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">
                       {s.is_in_trial
                         ? `${s.trial_days_remaining ?? '?'} días restantes`
