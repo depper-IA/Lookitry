@@ -217,6 +217,9 @@ export default function MiPaginaPage() {
   const [schedule, setSchedule] = useState<Record<string, string>>({
     lunes: '', martes: '', miercoles: '', jueves: '', viernes: '', sabado: '', domingo: '',
   });
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalDescription, setModalDescription] = useState('');
+  const [modalFeatures, setModalFeatures] = useState<string[]>(['', '', '']);
   useEffect(() => {
     brandsService.getCurrentBrand()
       .then(b => {
@@ -240,6 +243,13 @@ export default function MiPaginaPage() {
         setTotalReviews(raw.total_reviews != null ? String(raw.total_reviews) : '');
         if (raw.schedule && typeof raw.schedule === 'object') {
           setSchedule(prev => ({ ...prev, ...raw.schedule }));
+        }
+        setModalTitle(raw.modal_title || '');
+        setModalDescription(raw.modal_description || '');
+        if (Array.isArray(raw.modal_features) && raw.modal_features.length > 0) {
+          const feats = [...raw.modal_features];
+          while (feats.length < 3) feats.push('');
+          setModalFeatures(feats);
         }
       })
       .catch(() => setError('Error al cargar los datos'))
@@ -274,6 +284,11 @@ export default function MiPaginaPage() {
         rating: rating ? parseFloat(rating) : null,
         total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
         schedule: Object.fromEntries(Object.entries(schedule).filter(([, v]) => v.trim())),
+        modal_title: modalTitle || null,
+        modal_description: modalDescription || null,
+        modal_features: modalFeatures.filter(f => f.trim()).length > 0
+          ? modalFeatures.filter(f => f.trim())
+          : null,
       });
 
       setSuccess(true);
@@ -721,6 +736,85 @@ export default function MiPaginaPage() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Modal de activación — personalización */}
+      <div
+        className="p-5 rounded-2xl border space-y-5"
+        style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+      >
+        <div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Modal de activación
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+            Texto que verán los visitantes cuando tu página aún no está activa
+          </p>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Título del modal</label>
+          <input
+            type="text"
+            value={modalTitle}
+            onChange={e => setModalTitle(e.target.value)}
+            maxLength={80}
+            placeholder="Ej: Activa tu probador virtual"
+            className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
+            style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Descripción</label>
+          <textarea
+            value={modalDescription}
+            onChange={e => setModalDescription(e.target.value)}
+            rows={3}
+            maxLength={300}
+            placeholder="Ej: Permite que tus clientes se prueben la ropa virtualmente..."
+            className="w-full px-4 py-3 rounded-xl border text-sm resize-none outline-none"
+            style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+            Beneficios (hasta 5)
+          </label>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Deja en blanco los que no uses</p>
+          {modalFeatures.map((feat, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-xs w-5 text-center flex-shrink-0" style={{ color: 'var(--text-muted, #9ca3af)' }}>{i + 1}</span>
+              <input
+                type="text"
+                value={feat}
+                onChange={e => {
+                  const next = [...modalFeatures];
+                  next[i] = e.target.value;
+                  setModalFeatures(next);
+                }}
+                maxLength={80}
+                placeholder={`Beneficio ${i + 1}`}
+                className="flex-1 px-4 py-2.5 rounded-xl border text-sm outline-none"
+                style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              />
+            </div>
+          ))}
+          {modalFeatures.length < 5 && (
+            <button
+              type="button"
+              onClick={() => setModalFeatures(prev => [...prev, ''])}
+              className="text-xs font-medium flex items-center gap-1.5 transition-opacity hover:opacity-70"
+              style={{ color: primaryColor }}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Agregar beneficio
+            </button>
+          )}
         </div>
       </div>
 

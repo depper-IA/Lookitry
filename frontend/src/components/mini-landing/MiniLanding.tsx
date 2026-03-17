@@ -18,6 +18,9 @@ interface BrandData {
   cover_image_url?: string | null;
   social_links?: Record<string, string>;
   has_landing_page?: boolean;
+  modal_title?: string | null;
+  modal_description?: string | null;
+  modal_features?: string[] | null;
   city_display?: string | null;
   national_shipping?: boolean;
   rating?: number | null;
@@ -127,8 +130,77 @@ function PhoneIcon({ className }: { className?: string }) {
   );
 }
 
+// -- Shared: Preview Banner (top header durante modo preview) -----------------
+const PREVIEW_DURATION = 3 * 60; // 3 minutos en segundos
+
+function PreviewBanner({
+  primaryColor,
+  onExpired,
+}: {
+  primaryColor: string;
+  onExpired: () => void;
+}) {
+  const [seconds, setSeconds] = useState(PREVIEW_DURATION);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setSeconds(s => {
+        if (s <= 1) { clearInterval(t); onExpired(); return 0; }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [onExpired]);
+
+  const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+  const ss = String(seconds % 60).padStart(2, '0');
+
+  // Color de fondo llamativo: usamos el primaryColor con alta saturación
+  return (
+    <div
+      className="fixed top-0 left-0 right-0 z-[9998] flex items-center justify-between px-4 py-2.5 text-white text-xs font-semibold shadow-lg"
+      style={{ backgroundColor: primaryColor, boxShadow: `0 2px 12px ${primaryColor}80` }}
+    >
+      <div className="flex items-center gap-2">
+        {/* Icono ojo */}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        <span>Vista previa — activa tu pagina para que tus clientes la vean</span>
+      </div>
+      <div className="flex items-center gap-3 flex-shrink-0">
+        <span className="tabular-nums font-black text-sm opacity-90">{mm}:{ss}</span>
+        <a
+          href="/checkout?plan=LANDING"
+          className="px-3 py-1 rounded-lg text-xs font-bold transition-all hover:opacity-90"
+          style={{ backgroundColor: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.3)' }}
+        >
+          Activar ahora
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // -- Shared: Modal de activacion (bloqueante) ----------------------------------
-function ActivationModal({ primaryColor }: { primaryColor: string }) {
+interface ActivationModalProps {
+  primaryColor: string;
+  brandName?: string;
+  modalTitle?: string | null;
+  modalDescription?: string | null;
+  modalFeatures?: string[] | null;
+  onPreview?: () => void;
+}
+
+function ActivationModal({
+  primaryColor,
+  brandName,
+  modalTitle,
+  modalDescription,
+  modalFeatures,
+  onPreview,
+}: ActivationModalProps) {
   const [landingPrice, setLandingPrice] = useState(650000);
   const [landingOriginal, setLandingOriginal] = useState(900000);
 
@@ -145,30 +217,16 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
   const discountPct = Math.round((1 - landingPrice / landingOriginal) * 100);
   const CHECKOUT_URL = '/checkout?plan=LANDING';
 
-  // Countdown hasta medianoche (urgencia diaria)
-  const [time, setTime] = useState(() => {
-    const now = new Date();
-    const end = new Date(now);
-    end.setHours(23, 59, 59, 0);
-    return Math.floor((end.getTime() - now.getTime()) / 1000);
-  });
-
-  useEffect(() => {
-    const t = setInterval(() => setTime(s => (s <= 1 ? 86399 : s - 1)), 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  const hh = String(Math.floor(time / 3600)).padStart(2, '0');
-  const mm = String(Math.floor((time % 3600) / 60)).padStart(2, '0');
-  const ss = String(time % 60).padStart(2, '0');
-
-  const features = [
+  const defaultFeatures = [
     'Pagina publica con tu catalogo completo',
     'Probador virtual integrado con IA',
     'Boton de WhatsApp flotante',
     '3 templates de diseno a elegir',
     'Plan de suscripcion BASIC o PRO incluido',
   ];
+  const features = (modalFeatures && modalFeatures.length > 0) ? modalFeatures : defaultFeatures;
+  const title = modalTitle || (brandName ? Activa la pagina de \ : 'Activa tu pagina de marca');
+  const description = modalDescription || 'Estas viendo una vista previa. Activa tu mini-landing para que tus clientes puedan verla.';
 
   const BASIC_PRICE = 150000;
   const totalDesde = landingPrice + BASIC_PRICE;
@@ -187,40 +245,27 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
         <div className="h-1 w-full" style={{ backgroundColor: primaryColor }} />
 
         <div className="px-6 py-6 text-center">
-          <h2
-            className="text-xl font-black text-white tracking-tight mb-1"
-            style={{ fontFamily: 'Syne, sans-serif' }}
-          >
-            Activa tu pagina de marca
-          </h2>
-          <p className="text-xs text-gray-400 leading-relaxed mb-4">
-            Estas viendo una vista previa. Activa tu mini-landing para que tus clientes puedan verla.
-          </p>
-
-          {/* Countdown */}
+          {/* Header con gradiente del color de la marca */}
           <div
-            className="rounded-xl px-4 py-3 mb-4"
-            style={{ backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a' }}
+            className="-mx-6 -mt-6 mb-5 px-6 pt-8 pb-6 text-center"
+            style={{ background: `linear-gradient(135deg, ${primaryColor}ee 0%, ${primaryColor}99 100%)` }}
           >
-            <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-500 mb-2">
-              Oferta de lanzamiento — termina en
-            </p>
-            <div className="flex items-center justify-center gap-2">
-              {[{ v: hh, l: 'horas' }, { v: mm, l: 'min' }, { v: ss, l: 'seg' }].map(({ v, l }, i) => (
-                <div key={l} className="flex items-center gap-2">
-                  <div className="flex flex-col items-center">
-                    <span
-                      className="text-2xl font-black text-white tabular-nums"
-                      style={{ fontFamily: 'Syne, sans-serif' }}
-                    >
-                      {v}
-                    </span>
-                    <span className="text-[8px] text-gray-600 uppercase tracking-widest">{l}</span>
-                  </div>
-                  {i < 2 && <span className="text-xl font-bold text-gray-600 mb-2">:</span>}
-                </div>
-              ))}
+            <div
+              className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3"
+              style={{ backgroundColor: 'rgba(255,255,255,0.2)', border: '2px solid rgba(255,255,255,0.3)' }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
             </div>
+            <h2 className="text-xl font-black text-white tracking-tight mb-1" style={{ fontFamily: 'Syne, sans-serif' }}>
+              {title}
+            </h2>
+            <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>
+              {description}
+            </p>
           </div>
 
           {/* Precio desglosado */}
@@ -251,10 +296,7 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
             </div>
             <div className="border-t border-[#2a2a2a] pt-1.5 flex items-center justify-between">
               <span className="text-[11px] font-semibold text-gray-400">Total desde</span>
-              <span
-                className="text-[18px] font-black text-white"
-                style={{ fontFamily: 'Syne, sans-serif' }}
-              >
+              <span className="text-[18px] font-black text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
                 {formatCOP(totalDesde)} COP
               </span>
             </div>
@@ -273,10 +315,10 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
             ))}
           </ul>
 
-          {/* CTA */}
+          {/* CTA principal */}
           <a
             href={CHECKOUT_URL}
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-white text-sm font-bold transition-all hover:opacity-90 active:scale-95"
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-white text-sm font-bold transition-all hover:opacity-90 active:scale-95 mb-3"
             style={{ backgroundColor: primaryColor, boxShadow: `0 6px 20px ${primaryColor}40` }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -284,6 +326,17 @@ function ActivationModal({ primaryColor }: { primaryColor: string }) {
             </svg>
             Ver planes y activar
           </a>
+
+          {/* Boton ver preview */}
+          {onPreview && (
+            <button
+              onClick={onPreview}
+              className="w-full py-2.5 rounded-2xl text-xs font-semibold transition-all hover:opacity-80 mb-2"
+              style={{ backgroundColor: '#1a1a1a', color: '#888', border: '1px solid #2a2a2a' }}
+            >
+              Ver como queda primero (3 min)
+            </button>
+          )}
           <p className="text-[10px] text-gray-600 mt-2">
             Elige tu plan en el siguiente paso · Activacion inmediata
           </p>
@@ -506,16 +559,45 @@ function ClassicContact({ brand, primaryColor }: { brand: BrandData; primaryColo
 function TemplateClassic({ brandSlug, brand, products }: { brandSlug: string; brand: BrandData; products: ProductData[] }) {
   const primary = brand.primary_color || '#FF5C3A';
   const scrollToTryOn = () => document.getElementById('tryon-section')?.scrollIntoView({ behavior: 'smooth' });
+  const [previewMode, setPreviewMode] = useState(false);
+  const showModal = !brand.has_landing_page && !previewMode;
+
+  // Rebloqueo al llegar al final del scroll
+  useEffect(() => {
+    if (!previewMode) return;
+    const handleScroll = () => {
+      const scrolled = window.scrollY + window.innerHeight;
+      const total = document.documentElement.scrollHeight;
+      if (scrolled >= total - 40) setPreviewMode(false);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [previewMode]);
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {!brand.has_landing_page && <ActivationModal primaryColor={primary} />}
-      <ClassicHero brand={brand} onScrollDown={scrollToTryOn} />
-      <ClassicHowItWorks primaryColor={primary} />
-      <ClassicProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={scrollToTryOn} />
-      <ClassicTryOn brandSlug={brandSlug} primaryColor={primary} />
-      <ClassicSocial brand={brand} />
-      <ClassicContact brand={brand} primaryColor={primary} />
-      <LandingFooter primaryColor={primary} />
+      {showModal && (
+        <ActivationModal
+          primaryColor={primary}
+          brandName={brand.name}
+          modalTitle={brand.modal_title}
+          modalDescription={brand.modal_description}
+          modalFeatures={brand.modal_features}
+          onPreview={() => setPreviewMode(true)}
+        />
+      )}
+      {previewMode && (
+        <PreviewBanner primaryColor={primary} onExpired={() => setPreviewMode(false)} />
+      )}
+      <div style={previewMode ? { paddingTop: '40px' } : {}}>
+        <ClassicHero brand={brand} onScrollDown={scrollToTryOn} />
+        <ClassicHowItWorks primaryColor={primary} />
+        <ClassicProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={scrollToTryOn} />
+        <ClassicTryOn brandSlug={brandSlug} primaryColor={primary} />
+        <ClassicSocial brand={brand} />
+        <ClassicContact brand={brand} primaryColor={primary} />
+        <LandingFooter primaryColor={primary} />
+      </div>
       {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
     </div>
   );
@@ -691,9 +773,36 @@ function TemplateEditorial({ brandSlug, brand, products }: { brandSlug: string; 
     document.getElementById('editorial-tryon')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 
+  const [previewMode, setPreviewMode] = useState(false);
+  const showModal = !brand.has_landing_page && !previewMode;
+
+  useEffect(() => {
+    if (!previewMode) return;
+    const handleScroll = () => {
+      const scrolled = window.scrollY + window.innerHeight;
+      const total = document.documentElement.scrollHeight;
+      if (scrolled >= total - 40) setPreviewMode(false);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [previewMode]);
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#f7f5f2', color: '#0a0a0a' }}>
-      {!brand.has_landing_page && <ActivationModal primaryColor={primary} />}
+      {showModal && (
+        <ActivationModal
+          primaryColor={primary}
+          brandName={brand.name}
+          modalTitle={brand.modal_title}
+          modalDescription={brand.modal_description}
+          modalFeatures={brand.modal_features}
+          onPreview={() => setPreviewMode(true)}
+        />
+      )}
+      {previewMode && (
+        <PreviewBanner primaryColor={primary} onExpired={() => setPreviewMode(false)} />
+      )}
+      <div style={previewMode ? { paddingTop: '40px' } : {}}>
       <EditorialHeader brand={brand} />
       <EditorialCover brand={brand} />
       <EditorialStatsBar products={products} brand={brand} />
@@ -743,6 +852,7 @@ function TemplateEditorial({ brandSlug, brand, products }: { brandSlug: string; 
       </div>
 
       <LandingFooter primaryColor={primary} />
+      </div>
       {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
     </div>
   );
@@ -1028,6 +1138,8 @@ function ProbadorContact({ brand }: { brand: BrandData }) {
 function TemplateProbador({ brandSlug, brand, products }: { brandSlug: string; brand: BrandData; products: ProductData[] }) {
   const primary = brand.primary_color || '#FF5C3A';
   const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id ?? null);
+  const [previewMode, setPreviewMode] = useState(false);
+  const showModal = !brand.has_landing_page && !previewMode;
 
   const scrollToTryOn = () => document.getElementById('probador-tryon')?.scrollIntoView({ behavior: 'smooth' });
   const handleProductClick = (id: string) => {
@@ -1035,21 +1147,46 @@ function TemplateProbador({ brandSlug, brand, products }: { brandSlug: string; b
     scrollToTryOn();
   };
 
+  useEffect(() => {
+    if (!previewMode) return;
+    const handleScroll = () => {
+      const scrolled = window.scrollY + window.innerHeight;
+      const total = document.documentElement.scrollHeight;
+      if (scrolled >= total - 40) setPreviewMode(false);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [previewMode]);
+
   return (
     <div className="min-h-screen flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
       <style>{`
         :root { --p-bg:#fafafa; --p-surface:#fff; --p-border:#e5e5e5; --p-text:#0f0f0f; --p-text-secondary:#333; --p-text-muted:#888; --p-img-bg:#f0f0f0; --p-hero-bg:#0f0f0f; }
       `}</style>
-      {!brand.has_landing_page && <ActivationModal primaryColor={primary} />}
-      <ProbadorNav brand={brand} />
-      <ProbadorHero brand={brand} onScrollDown={() => document.getElementById('probador-products')?.scrollIntoView({ behavior: 'smooth' })} />
-      <ProbadorTrustBar brand={brand} />
-      <ProbadorSocialProof brand={brand} />
-      <ProbadorProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} selectedId={selectedId} />
-      <ProbadorUploadZone brandSlug={brandSlug} primaryColor={primary} />
-      <ProbadorAbout brand={brand} />
-      <ProbadorContact brand={brand} />
-      <LandingFooter primaryColor={primary} />
+      {showModal && (
+        <ActivationModal
+          primaryColor={primary}
+          brandName={brand.name}
+          modalTitle={brand.modal_title}
+          modalDescription={brand.modal_description}
+          modalFeatures={brand.modal_features}
+          onPreview={() => setPreviewMode(true)}
+        />
+      )}
+      {previewMode && (
+        <PreviewBanner primaryColor={primary} onExpired={() => setPreviewMode(false)} />
+      )}
+      <div style={previewMode ? { paddingTop: '40px' } : {}}>
+        <ProbadorNav brand={brand} />
+        <ProbadorHero brand={brand} onScrollDown={() => document.getElementById('probador-products')?.scrollIntoView({ behavior: 'smooth' })} />
+        <ProbadorTrustBar brand={brand} />
+        <ProbadorSocialProof brand={brand} />
+        <ProbadorProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} selectedId={selectedId} />
+        <ProbadorUploadZone brandSlug={brandSlug} primaryColor={primary} />
+        <ProbadorAbout brand={brand} />
+        <ProbadorContact brand={brand} />
+        <LandingFooter primaryColor={primary} />
+      </div>
       {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
     </div>
   );
