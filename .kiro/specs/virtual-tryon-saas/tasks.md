@@ -383,7 +383,7 @@
   - [x] 48.2 Corregir flujo de upgrade: desde TRIAL debe poder ir a BASIC o a PRO
     - Actualmente solo permite ir a PRO desde TRIAL
     - _Archivos: frontend/src/app/dashboard/ (componente de upgrade), backend/src/controllers/brands.controller.ts_
-  - [-] 48.3 En `/admin/brands`: mostrar TRIAL como plan, no BASIC
+  - [x] 48.3 En `/admin/brands`: mostrar TRIAL como plan, no BASIC
     - _Archivos: frontend/src/app/admin/brands/page.tsx_
 
 ---
