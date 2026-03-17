@@ -102,6 +102,8 @@ export class PruebaloController {
         logo_light: (brand as any).logo_light ?? null,
         logo_dark: (brand as any).logo_dark ?? null,
         cover_bg_color: (brand as any).cover_bg_color ?? null,
+        cover_overlay_opacity: (brand as any).cover_overlay_opacity ?? 0.55,
+        show_brand_name: (brand as any).show_brand_name ?? true,
       },
       footer_brand_url: footerBrandUrl,
       products: products.map(product => ({
