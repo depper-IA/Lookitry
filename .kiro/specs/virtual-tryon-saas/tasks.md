@@ -331,20 +331,20 @@
 
 ---
 
-- [ ] 45. Autenticación: recuperar y cambiar contraseña
-  - [ ] 45.1 Agregar enlace "¿Olvidaste tu contraseña?" en el login de usuarios (`/login`)
+- [x] 45. Autenticación: recuperar y cambiar contraseña
+  - [x] 45.1 Agregar enlace "¿Olvidaste tu contraseña?" en el login de usuarios (`/login`)
     - Flujo: ingresa email → recibe correo con link → página de reset → nueva contraseña
-    - _Archivos: frontend/src/app/login/page.tsx, backend/src/controllers/auth.controller.ts, backend/src/services/auth.service.ts_
-  - [ ] 45.2 Agregar enlace "¿Olvidaste tu contraseña?" en el login de administrador (`/admin/login`)
+    - _Archivos: frontend/src/components/auth/LoginForm.tsx, frontend/src/app/auth/forgot-password/page.tsx, frontend/src/app/auth/reset-password/page.tsx, backend/src/controllers/auth.controller.ts, backend/src/services/auth.service.ts, backend/src/routes/auth.routes.ts_
+  - [x] 45.2 Agregar enlace "¿Olvidaste tu contraseña?" en el login de administrador (`/admin/login`)
     - _Archivos: frontend/src/app/admin/login/page.tsx_
-  - [ ] 45.3 Agregar opción "Cambiar contraseña" en el menú de perfil de usuario del dashboard
-    - Modal o página: ingresa contraseña actual + nueva + confirmar
-    - _Archivos: frontend/src/app/dashboard/perfil/page.tsx (o componente de perfil)_
-  - [ ] 45.4 Agregar opción "Cambiar contraseña" en el menú de administrador
+  - [x] 45.3 Agregar opción "Cambiar contraseña" en el perfil de usuario del dashboard
+    - Sección en `/dashboard/profile`: contraseña actual + nueva + confirmar
+    - _Archivos: frontend/src/app/dashboard/profile/page.tsx_
+  - [x] 45.4 Agregar opción "Cambiar contraseña" en el menú de administrador
     - _Archivos: frontend/src/app/admin/perfil/page.tsx (o componente de perfil admin)_
-  - [ ] 45.5 Corregir bug de notificación "Comprueba tu correo electrónico"
+  - [ ] 45.5 Corregir bug visual de notificación "Comprueba tu correo electrónico" en cuentas nuevas
     - Investigar dónde se dispara y por qué está bugeada
-    - Contexto: la recuperación es para acceder a créditos de generación / herramienta de generación
+    - Contexto: la recuperación es para acceder a créditos de generación / herramienta de generación, si no esta aplicada esta logica
     - _Archivos: frontend/src/components/auth/RegisterForm.tsx, backend/src/services/auth.service.ts_
 
 ---
