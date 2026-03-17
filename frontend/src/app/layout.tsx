@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: '%s | Lookitry',
   },
   description:
-    'Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica. Embébelo en tu tienda en 10 minutos. Sin apps, sin desarrollo.',
+    'Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica. Intégralo en tu tienda en 10 minutos. Sin apps, sin desarrollo.',
   keywords: [
     'probador virtual IA',
     'probador virtual tienda',
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     siteName: 'Lookitry',
     title: 'Lookitry — Probador virtual con IA para tu marca',
     description:
-      'Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica. Embébelo en tu tienda en 10 minutos.',
+      'Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica. Intégralo en tu tienda en 10 minutos.',
     images: [
       {
         url: '/og-image.png',

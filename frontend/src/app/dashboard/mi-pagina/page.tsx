@@ -210,7 +210,7 @@ export default function MiPaginaPage() {
   const [tiktok, setTiktok] = useState('');
   const [cityDisplay, setCityDisplay] = useState('');
   const [nationalShipping, setNationalShipping] = useState(false);
-  const [landingTemplate, setLandingTemplate] = useState<'classic' | 'editorial' | 'probador'>('classic');
+  const [landingTemplate, setLandingTemplate] = useState<'classic' | 'editorial' | 'moderno'>('classic');
   const [primaryColor, setPrimaryColor] = useState('#FF5C3A');
   const [rating, setRating] = useState('');
   const [totalReviews, setTotalReviews] = useState('');
@@ -237,7 +237,7 @@ export default function MiPaginaPage() {
         setTiktok(links.tiktok || '');
         setCityDisplay(raw.city_display || '');
         setNationalShipping(raw.national_shipping ?? false);
-        setLandingTemplate(raw.landing_template || 'classic');
+        setLandingTemplate((raw.landing_template === 'probador' ? 'moderno' : raw.landing_template) || 'classic');
         setPrimaryColor(raw.primary_color || '#FF5C3A');
         setRating(raw.rating != null ? String(raw.rating) : '');
         setTotalReviews(raw.total_reviews != null ? String(raw.total_reviews) : '');
@@ -623,7 +623,7 @@ export default function MiPaginaPage() {
             {([
               { value: 'classic',   label: 'Clásico',   desc: 'Hero + pasos + catálogo + probador' },
               { value: 'editorial', label: 'Editorial',  desc: 'Header sticky + layout 2 columnas' },
-              { value: 'probador',  label: 'Probador',   desc: 'Single col · Playfair · Trust bar' },
+              { value: 'moderno',   label: 'Moderno',    desc: 'Single col · Playfair · Trust bar' },
             ] as const).map(t => (
               <button
                 key={t.value}
@@ -965,17 +965,17 @@ export default function MiPaginaPage() {
           </div>
         </button>
 
-        {/* Preview Probador */}
+        {/* Preview Moderno */}
         <button
           type="button"
-          onClick={() => setLandingTemplate('probador')}
+          onClick={() => setLandingTemplate('moderno')}
           className="w-full text-left rounded-2xl overflow-hidden border-2 transition-all"
           style={{
-            borderColor: landingTemplate === 'probador' ? primaryColor : 'var(--border-color)',
-            boxShadow: landingTemplate === 'probador' ? `0 0 0 3px ${primaryColor}22` : 'none',
+            borderColor: landingTemplate === 'moderno' ? primaryColor : 'var(--border-color)',
+            boxShadow: landingTemplate === 'moderno' ? `0 0 0 3px ${primaryColor}22` : 'none',
           }}
         >
-          {/* Miniatura Probador */}
+          {/* Miniatura Moderno */}
           <div className="relative overflow-hidden" style={{ height: 200, backgroundColor: '#0f0f0f' }}>
             {/* Nav */}
             <div className="h-7 flex items-center px-2 gap-1.5 border-b border-white/10">
@@ -1014,14 +1014,14 @@ export default function MiPaginaPage() {
               ))}
             </div>
             {/* Overlay seleccionado */}
-            {landingTemplate === 'probador' && (
+            {landingTemplate === 'moderno' && (
               <div className="absolute inset-0 flex items-end justify-end p-2 pointer-events-none">
                 <span className="text-white text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: primaryColor }}>Activo</span>
               </div>
             )}
           </div>
           <div className="px-3 py-2.5" style={{ backgroundColor: 'var(--bg-card)' }}>
-            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Probador</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Moderno</p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Dark hero · Trust bar · Single col</p>
           </div>
         </button>
