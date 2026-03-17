@@ -43,10 +43,10 @@ export default function PaymentSettingsPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al cargar configuración');
+      if (!res.ok) throw new Error(data.message || 'Error al cargar configuraciÃ³n');
       setSettings(data);
     } catch (err: any) {
-      setError(err.message || 'Error al cargar configuración');
+      setError(err.message || 'Error al cargar configuraciÃ³n');
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,7 @@ export default function PaymentSettingsPage() {
   );
 
   if (!settings) return (
-    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error || 'No se pudo cargar la configuración'}</div>
+    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error || 'No se pudo cargar la configuraciÃ³n'}</div>
   );
 
   const tabs: { id: Tab; label: string; enabled: boolean; icon: React.ReactNode }[] = [
@@ -141,7 +141,7 @@ export default function PaymentSettingsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Medios de Pago</h1>
-          <p className="text-gray-500 mt-1 text-sm">Configura los métodos de pago disponibles para tus clientes</p>
+          <p className="text-gray-500 mt-1 text-sm">Configura los mÃ©todos de pago disponibles para tus clientes</p>
         </div>
         <div className="flex items-center gap-3">
           {saved && (
@@ -183,7 +183,7 @@ export default function PaymentSettingsPage() {
           <h3 className="font-semibold text-gray-900">Precio de Mini-landing</h3>
         </div>
         <p className="text-sm text-gray-500 mb-4">
-          Este precio aparece en la landing pública, en el checkout y en todos los mensajes promocionales.
+          Este precio aparece en la landing pÃºblica, en el checkout y en todos los mensajes promocionales.
           El precio original se muestra tachado para generar contraste de valor.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -221,7 +221,7 @@ export default function PaymentSettingsPage() {
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            Descuento visible: {Math.round((1 - settings.landing_price / settings.landing_original_price) * 100)}% OFF —
+            Descuento visible: {Math.round((1 - settings.landing_price / settings.landing_original_price) * 100)}% OFF Â—
             el cliente ve <span className="line-through text-gray-400 mx-1">${settings.landing_original_price.toLocaleString('es-CO')}</span>
             y paga <strong>${settings.landing_price.toLocaleString('es-CO')}</strong>
           </div>
@@ -239,7 +239,7 @@ export default function PaymentSettingsPage() {
         </div>
         <p className="text-sm text-gray-500 mb-4">
           Esta URL aparece en el footer de todas las mini-landings como "Probador virtual impulsado por ...".
-          Cámbiala cuando migres a un dominio propio (ej: lookitry.com). Todos los templates se actualizan automáticamente.
+          CÃ¡mbiala cuando migres a un dominio propio (ej: lookitry.com). Todos los templates se actualizan automÃ¡ticamente.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 items-start">
           <div className="flex-1">
@@ -254,7 +254,7 @@ export default function PaymentSettingsPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
             />
             <p className="text-xs text-gray-400 mt-1">
-              Incluye el protocolo (https://). Se mostrará sin el protocolo en el footer.
+              Incluye el protocolo (https://). Se mostrarÃ¡ sin el protocolo en el footer.
             </p>
           </div>
           {settings.footer_brand_url && (
@@ -297,13 +297,13 @@ export default function PaymentSettingsPage() {
           <h3 className="font-semibold text-gray-900">Pruebas y desarrollo</h3>
         </div>
         <p className="text-sm text-gray-500 mb-4">
-          Opciones para facilitar el desarrollo y las pruebas. No usar en producción.
+          Opciones para facilitar el desarrollo y las pruebas. No usar en producciÃ³n.
         </p>
         <div className="flex items-center justify-between py-3 border-b border-gray-100">
           <div>
-            <p className="text-sm font-medium text-gray-900">Desactivar protección por IP en registro</p>
+            <p className="text-sm font-medium text-gray-900">Desactivar protecciÃ³n por IP en registro</p>
             <p className="text-xs text-gray-500 mt-0.5">
-              Cuando está activo, permite registrar múltiples cuentas de prueba desde la misma IP. Solo usar en entornos de prueba.
+              Cuando estÃ¡ activo, permite registrar mÃºltiples cuentas de prueba desde la misma IP. Solo usar en entornos de prueba.
             </p>
           </div>
           <Toggle
@@ -318,7 +318,7 @@ export default function PaymentSettingsPage() {
                 d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
             </svg>
             <p className="text-sm text-amber-800">
-              Protección por IP desactivada. No usar en producción.
+              ProtecciÃ³n por IP desactivada. No usar en producciÃ³n.
             </p>
           </div>
         )}
@@ -332,10 +332,10 @@ export default function PaymentSettingsPage() {
           onChange={e => set('currency', e.target.value)}
           className="w-48 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
         >
-          <option value="COP">COP — Peso colombiano</option>
-          <option value="USD">USD — Dólar estadounidense</option>
-          <option value="EUR">EUR — Euro</option>
-          <option value="MXN">MXN — Peso mexicano</option>
+          <option value="COP">COP Â— Peso colombiano</option>
+          <option value="USD">USD Â— DÃ³lar estadounidense</option>
+          <option value="EUR">EUR Â— Euro</option>
+          <option value="MXN">MXN Â— Peso mexicano</option>
         </select>
       </div>
 
@@ -366,7 +366,7 @@ export default function PaymentSettingsPage() {
               <div className="flex items-center justify-between pb-4 border-b border-gray-100">
                 <div>
                   <h3 className="font-semibold text-gray-900">Wompi (Colombia)</h3>
-                  <p className="text-sm text-gray-500 mt-0.5">Pasarela de pagos para Colombia. Acepta tarjetas, PSE, Nequi y más.</p>
+                  <p className="text-sm text-gray-500 mt-0.5">Pasarela de pagos para Colombia. Acepta tarjetas, PSE, Nequi y mÃ¡s.</p>
                 </div>
                 <Toggle enabled={settings.wompi_enabled} onChange={v => set('wompi_enabled', v)} />
               </div>
@@ -378,7 +378,7 @@ export default function PaymentSettingsPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <p className="text-sm text-amber-800">
-                      Modo {settings.wompi_test_mode ? 'prueba (sandbox)' : 'producción'} activo.
+                      Modo {settings.wompi_test_mode ? 'prueba (sandbox)' : 'producciÃ³n'} activo.
                       {settings.wompi_test_mode ? ' Los pagos no son reales.' : ' Los pagos son reales.'}
                     </p>
                     <label className="ml-auto flex items-center gap-2 text-sm text-amber-800 cursor-pointer">
@@ -388,19 +388,19 @@ export default function PaymentSettingsPage() {
                         onChange={e => set('wompi_test_mode', !e.target.checked)}
                         className="rounded"
                       />
-                      Producción
+                      ProducciÃ³n
                     </label>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4">
-                    <Field label="Llave pública" value={settings.wompi_public_key} onChange={v => set('wompi_public_key', v)} placeholder="pub_test_..." />
+                    <Field label="Llave pÃºblica" value={settings.wompi_public_key} onChange={v => set('wompi_public_key', v)} placeholder="pub_test_..." />
                     <SecretField label="Llave privada" fieldKey="wompi_private" value={settings.wompi_private_key} onChange={v => set('wompi_private_key', v)} show={showSecrets['wompi_private']} onToggle={() => toggleSecret('wompi_private')} placeholder="prv_test_..." />
                     <SecretField label="Events secret" fieldKey="wompi_events" value={settings.wompi_events_secret} onChange={v => set('wompi_events_secret', v)} show={showSecrets['wompi_events']} onToggle={() => toggleSecret('wompi_events')} placeholder="test_events_..." />
                     <SecretField label="Integrity secret" fieldKey="wompi_integrity" value={settings.wompi_integrity_secret} onChange={v => set('wompi_integrity_secret', v)} show={showSecrets['wompi_integrity']} onToggle={() => toggleSecret('wompi_integrity')} placeholder="test_integrity_..." />
                   </div>
 
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-                    Obtén tus llaves en{' '}
+                    ObtÃ©n tus llaves en{' '}
                     <a href="https://comercios.wompi.co" target="_blank" rel="noopener noreferrer" className="underline font-medium">
                       comercios.wompi.co
                     </a>
@@ -416,7 +416,7 @@ export default function PaymentSettingsPage() {
               <div className="flex items-center justify-between pb-4 border-b border-gray-100">
                 <div>
                   <h3 className="font-semibold text-gray-900">PayPal</h3>
-                  <p className="text-sm text-gray-500 mt-0.5">Acepta pagos internacionales vía PayPal. Puedes usar solo el email o integración completa.</p>
+                  <p className="text-sm text-gray-500 mt-0.5">Acepta pagos internacionales vÃ­a PayPal. Puedes usar solo el email o integraciÃ³n completa.</p>
                 </div>
                 <Toggle enabled={settings.paypal_enabled} onChange={v => set('paypal_enabled', v)} />
               </div>
@@ -428,7 +428,7 @@ export default function PaymentSettingsPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <p className="text-sm text-amber-800">
-                      Modo {settings.paypal_sandbox ? 'sandbox (prueba)' : 'producción'} activo.
+                      Modo {settings.paypal_sandbox ? 'sandbox (prueba)' : 'producciÃ³n'} activo.
                     </p>
                     <label className="ml-auto flex items-center gap-2 text-sm text-amber-800 cursor-pointer">
                       <input
@@ -437,7 +437,7 @@ export default function PaymentSettingsPage() {
                         onChange={e => set('paypal_sandbox', !e.target.checked)}
                         className="rounded"
                       />
-                      Producción
+                      ProducciÃ³n
                     </label>
                   </div>
 
@@ -450,12 +450,12 @@ export default function PaymentSettingsPage() {
                       hint="Los clientes pueden enviarte pagos directamente a este email."
                       type="email"
                     />
-                    <Field label="Client ID (opcional)" value={settings.paypal_client_id} onChange={v => set('paypal_client_id', v)} placeholder="AXxx..." hint="Solo necesario para integración avanzada con botón de PayPal." />
+                    <Field label="Client ID (opcional)" value={settings.paypal_client_id} onChange={v => set('paypal_client_id', v)} placeholder="AXxx..." hint="Solo necesario para integraciÃ³n avanzada con botÃ³n de PayPal." />
                     <SecretField label="Client Secret (opcional)" fieldKey="paypal_secret" value={settings.paypal_client_secret} onChange={v => set('paypal_client_secret', v)} show={showSecrets['paypal_secret']} onToggle={() => toggleSecret('paypal_secret')} placeholder="EXxx..." />
                   </div>
 
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
-                    Obtén tus credenciales en{' '}
+                    ObtÃ©n tus credenciales en{' '}
                     <a href="https://developer.paypal.com" target="_blank" rel="noopener noreferrer" className="underline font-medium">
                       developer.paypal.com
                     </a>
@@ -471,7 +471,7 @@ export default function PaymentSettingsPage() {
               <div className="flex items-center justify-between pb-4 border-b border-gray-100">
                 <div>
                   <h3 className="font-semibold text-gray-900">Pago Manual</h3>
-                  <p className="text-sm text-gray-500 mt-0.5">El cliente paga por fuera y envía el comprobante. Tú confirmas manualmente.</p>
+                  <p className="text-sm text-gray-500 mt-0.5">El cliente paga por fuera y envÃ­a el comprobante. TÃº confirmas manualmente.</p>
                 </div>
                 <Toggle enabled={settings.manual_enabled} onChange={v => set('manual_enabled', v)} />
               </div>
@@ -485,13 +485,13 @@ export default function PaymentSettingsPage() {
                       onChange={e => set('manual_instructions', e.target.value)}
                       rows={3}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      placeholder="Realiza el pago y envía el comprobante..."
+                      placeholder="Realiza el pago y envÃ­a el comprobante..."
                     />
                   </div>
-                  <Field label="WhatsApp de contacto" value={settings.manual_whatsapp} onChange={v => set('manual_whatsapp', v)} placeholder="+57 300 123 4567" hint="Número con código de país para enlace directo." />
+                  <Field label="WhatsApp de contacto" value={settings.manual_whatsapp} onChange={v => set('manual_whatsapp', v)} placeholder="+57 300 123 4567" hint="NÃºmero con cÃ³digo de paÃ­s para enlace directo." />
                   <Field label="Email de contacto" value={settings.manual_email} onChange={v => set('manual_email', v)} placeholder="pagos@tuempresa.com" type="email" />
                   <Field label="Banco (opcional)" value={settings.manual_bank_name} onChange={v => set('manual_bank_name', v)} placeholder="Bancolombia" />
-                  <Field label="Número de cuenta (opcional)" value={settings.manual_account_number} onChange={v => set('manual_account_number', v)} placeholder="123-456789-00" />
+                  <Field label="NÃºmero de cuenta (opcional)" value={settings.manual_account_number} onChange={v => set('manual_account_number', v)} placeholder="123-456789-00" />
                   <Field label="Titular de la cuenta (opcional)" value={settings.manual_account_holder} onChange={v => set('manual_account_holder', v)} placeholder="Nombre del titular" />
                 </div>
               )}
@@ -523,9 +523,9 @@ export default function PaymentSettingsPage() {
                       <option value="Corriente">Corriente</option>
                     </select>
                   </div>
-                  <Field label="Número de cuenta" value={settings.transfer_account_number} onChange={v => set('transfer_account_number', v)} placeholder="123-456789-00" />
-                  <Field label="Titular" value={settings.transfer_account_holder} onChange={v => set('transfer_account_holder', v)} placeholder="Nombre o razón social" />
-                  <Field label="NIT / Cédula" value={settings.transfer_nit} onChange={v => set('transfer_nit', v)} placeholder="900.123.456-7" />
+                  <Field label="NÃºmero de cuenta" value={settings.transfer_account_number} onChange={v => set('transfer_account_number', v)} placeholder="123-456789-00" />
+                  <Field label="Titular" value={settings.transfer_account_holder} onChange={v => set('transfer_account_holder', v)} placeholder="Nombre o razÃ³n social" />
+                  <Field label="NIT / CÃ©dula" value={settings.transfer_nit} onChange={v => set('transfer_nit', v)} placeholder="900.123.456-7" />
                 </div>
               )}
             </div>
@@ -533,9 +533,9 @@ export default function PaymentSettingsPage() {
         </div>
       </div>
 
-      {/* Resumen de métodos activos */}
+      {/* Resumen de mÃ©todos activos */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-        <h3 className="font-semibold text-gray-900 mb-3">Métodos activos</h3>
+        <h3 className="font-semibold text-gray-900 mb-3">MÃ©todos activos</h3>
         <div className="flex flex-wrap gap-2">
           {tabs.map(tab => (
             <span
@@ -553,7 +553,7 @@ export default function PaymentSettingsPage() {
         </div>
         {!tabs.some(t => t.enabled) && (
           <p className="text-sm text-red-600 mt-2">
-            Ningún método de pago está activo. Los clientes no podrán pagar.
+            NingÃºn mÃ©todo de pago estÃ¡ activo. Los clientes no podrÃ¡n pagar.
           </p>
         )}
       </div>
