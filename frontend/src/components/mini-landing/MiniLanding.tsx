@@ -529,7 +529,7 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
     <header className="bg-white border-b border-gray-100 px-5 h-16 flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center gap-2.5">
         {brand.logo ? (
-          <img src={brand.logo} alt={brand.name} className="h-9 w-9 rounded-lg object-cover" />
+          <img src={brand.logo} alt={brand.name} className="h-9 w-auto max-w-[120px] rounded-lg object-contain" />
         ) : (
           <div className="h-9 w-9 rounded-lg bg-gray-900 flex items-center justify-center text-white font-bold text-sm">
             {brand.name.slice(0, 2).toUpperCase()}
@@ -619,8 +619,11 @@ function EditorialProductCard({ product, selected, primaryColor, ctaText, onClic
 }
 
 function EditorialInfoCard({ brand }: { brand: BrandData }) {
+  const DAYS_ORDER = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
   const DAYS: Record<string, string> = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Miercoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'Sabado', domingo: 'Domingo' };
-  const scheduleEntries = brand.schedule ? Object.entries(brand.schedule) : [];
+  const scheduleEntries = brand.schedule
+    ? DAYS_ORDER.filter(d => d in brand.schedule!).map(d => [d, brand.schedule![d]] as [string, string])
+    : [];
   return (
     <div className="bg-white border border-gray-100 rounded-xl p-4 mt-4 space-y-4">
       {brand.brand_description && (
@@ -790,7 +793,7 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
       <div className="flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primary }}>
           {brand.logo
-            ? <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover rounded-lg" />
+            ? <img src={brand.logo} alt={brand.name} className="w-full h-full object-contain rounded-lg" />
             : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>}
         </div>
         <span className="font-bold text-base" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.name}</span>
@@ -961,15 +964,18 @@ function ProbadorUploadZone({ brandSlug, primaryColor }: { brandSlug: string; pr
 
 function ProbadorAbout({ brand }: { brand: BrandData }) {
   const primary = brand.primary_color || '#FF5C3A';
+  const DAYS_ORDER = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
   const DAYS: Record<string, string> = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Miercoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'Sabado', domingo: 'Domingo' };
-  const scheduleEntries = brand.schedule ? Object.entries(brand.schedule) : [];
+  const scheduleEntries = brand.schedule
+    ? DAYS_ORDER.filter(d => d in brand.schedule!).map(d => [d, brand.schedule![d]] as [string, string])
+    : [];
   if (!brand.brand_description && !scheduleEntries.length && !brand.city_display && !brand.whatsapp_contact) return null;
   return (
     <section className="py-16 px-6 text-center" style={{ backgroundColor: 'var(--p-bg, #fafafa)' }}>
       <div className="max-w-lg mx-auto">
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: primary }}>
           {brand.logo
-            ? <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover rounded-2xl" />
+            ? <img src={brand.logo} alt={brand.name} className="w-full h-full object-contain rounded-2xl" />
             : <span className="text-white font-black text-lg" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{brand.name.slice(0, 2).toUpperCase()}</span>}
         </div>
         <h2 className="text-3xl font-black mb-4 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.name}</h2>
