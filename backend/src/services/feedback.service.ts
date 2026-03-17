@@ -190,16 +190,17 @@ export class FeedbackService {
 
   /**
    * Obtiene todos los feedbacks con filtros opcionales para el panel admin.
+   * Incluye result_image_url de la generación relacionada.
    */
   async getFeedbacks(filters: {
     error_type?: GenerationErrorType;
     brand_id?: string;
     resolved?: boolean;
     limit?: number;
-  } = {}): Promise<FeedbackRecord[]> {
+  } = {}): Promise<(FeedbackRecord & { result_image_url?: string | null })[]> {
     let query = supabaseAdmin
       .from('generation_feedback')
-      .select('*')
+      .select('*, generations(result_image_url)')
       .order('created_at', { ascending: false })
       .limit(filters.limit ?? 100);
 
@@ -209,7 +210,13 @@ export class FeedbackService {
 
     const { data, error } = await query;
     if (error) throw new Error('Error al obtener feedbacks: ' + error.message);
-    return (data || []) as FeedbackRecord[];
+
+    // Aplanar el join: generations es un objeto o null
+    return (data || []).map((row: any) => ({
+      ...row,
+      result_image_url: row.generations?.result_image_url ?? null,
+      generations: undefined,
+    }));
   }
 
   /**

@@ -659,7 +659,10 @@ export default function MiPaginaPage() {
             value={coverOverlayOpacity}
             onChange={e => setCoverOverlayOpacity(parseFloat(e.target.value))}
             className="w-full h-2 rounded-full appearance-none cursor-pointer"
-            style={{ accentColor: '#FF5C3A' }}
+            style={{
+              accentColor: '#FF5C3A',
+              background: `linear-gradient(to right, #FF5C3A ${coverOverlayOpacity * 100}%, var(--border-color) ${coverOverlayOpacity * 100}%)`,
+            }}
           />
           <div className="flex justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
             <span>Sin oscurecer (imagen pura)</span>

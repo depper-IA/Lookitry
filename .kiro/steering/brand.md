@@ -118,3 +118,26 @@ var(--shadow-header)    /* Sombra del header */
    - Landing pública (nav): `h-8`
    - Footer: `h-6`
 8. En JSX el nombre siempre es: `Look<span className="text-[#FF5C3A]">itry</span>` — nunca texto plano "Lookitry".
+
+## Flujo de trabajo Git y Deploy — Reglas obligatorias
+
+### Antes de cualquier commit/push
+1. Siempre hacer `git fetch origin` y revisar si hay commits nuevos en `main` que no están localmente.
+2. Verificar si Juli (u otro colaborador) tiene cambios pendientes de subir — revisar el log remoto con `git log origin/main --oneline -10` antes de hacer push.
+3. Hacer `git pull origin main --rebase` antes de cualquier push para integrar cambios remotos sin conflictos.
+4. Si hay conflictos de merge, resolverlos antes de continuar.
+
+### Antes de aplicar un deploy al VPS
+1. Verificar el estado del repo remoto: `git log origin/main --oneline -5` para ver si hay commits recientes de otros colaboradores.
+2. Si hay commits recientes de Juli u otro colaborador en los últimos minutos, esperar o coordinar antes de hacer deploy para no pisar sus cambios.
+3. El VPS siempre jala del repo git (`git pull origin main`) — los cambios locales que no estén en git NO se despliegan.
+4. Siempre verificar que el `git pull` en el VPS muestre los archivos modificados esperados, no solo "Already up to date".
+
+### Flujo correcto de deploy
+```
+git add <archivos>
+git commit -m "descripción"
+git pull origin main --rebase   ← integrar cambios de otros
+git push origin main
+python scripts/_deploy_now.py --backend --frontend --no-cache
+```

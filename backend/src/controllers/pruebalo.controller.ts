@@ -324,17 +324,7 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
   const rules = getPromptRules(product.category);
   const categoryRulesBlock = buildCategoryRulesBlock(product.category);
 
-  // Las reglas de reemplazo van AL INICIO (antes de cualquier descripción)
-  // y se repiten al final para reforzar la instrucción crítica en el modelo.
   const lines: string[] = [
-    // ── BLOQUE CRÍTICO AL INICIO ──────────────────────────────────────────
-    `[CRITICAL INSTRUCTION — READ FIRST]`,
-    categoryRulesBlock,
-    // Repetición explícita de la regla de reemplazo para vestidos/categorías clave
-    `IMPORTANT: ${rules.replace}`,
-    `IMPORTANT: ${rules.keep}`,
-
-    // ── Contexto de la tarea ──────────────────────────────────────────────
     `You are a professional virtual try-on AI specialized in fashion photography.`,
     `Your task: generate a single photorealistic image of the person in the selfie wearing the exact product shown in the reference image.`,
     `Product: "${product.name}"${product.category ? ` (${product.category})` : ''}.`,
@@ -348,6 +338,7 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
     `ABSOLUTE RULES — follow all of them without exception:`,
 
     `[CLOTHING REPLACEMENT — MANDATORY]`,
+    categoryRulesBlock,
     `- ${rules.replace}`,
     `- ${rules.keep}`,
     `- Do NOT leave any clothing item from the original photo visible if the product replaces it.`,
@@ -371,9 +362,6 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
     `- Keep the person's face, skin tone, hair, body proportions, and expression IDENTICAL to the selfie.`,
     `- The product must fit naturally on the body with correct perspective, lighting, and shadows.`,
     `- Photorealistic quality only — no illustrations, no stylization.`,
-
-    // ── RECORDATORIO FINAL (refuerzo) ─────────────────────────────────────
-    `[FINAL REMINDER] ${rules.replace} ${rules.keep}`,
 
     `Output: the final try-on image only. No text, no watermarks, no UI overlays.`,
   );
