@@ -349,7 +349,7 @@
 
 ---
 
-- [-] 46. Tutoriales: onboarding y tutorial de configuración de landing
+- [x] 46. Tutoriales: onboarding y tutorial de configuración de landing
   - [x] 46.1 Investigar y corregir por qué desapareció el tutorial paso a paso de configuración de cuenta
     - Verificar si fue eliminado en algún commit reciente o si hay condición que lo oculta
     - _Archivos: frontend/src/app/dashboard/ (buscar componente de onboarding/tutorial)_
@@ -360,17 +360,17 @@
 
 ---
 
-- [ ] 47. Templates: bugs y mejoras visuales
-  - [ ] 47.1 Template clásico: mostrar reseñas, ciudad/dirección y otros datos faltantes
+- [-] 47. Templates: bugs y mejoras visuales
+  - [x] 47.1 Template clásico: mostrar reseñas, ciudad/dirección y otros datos faltantes
     - Verificar qué campos no se están renderizando en `TemplateClassic`
     - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
-  - [ ] 47.2 Cambiar campo "ciudad" por "dirección completa" en el formulario de mi-pagina
+  - [x] 47.2 Cambiar campo "ciudad" por "dirección completa" en el formulario de mi-pagina
     - Reflejar el campo en todos los templates (clásico, editorial, moderno)
     - _Archivos: frontend/src/app/dashboard/mi-pagina/page.tsx, frontend/src/components/mini-landing/MiniLanding.tsx_
-  - [ ] 47.3 Templates moderno y editorial: corregir carga de imágenes
+  - [~] 47.3 Templates moderno y editorial: corregir carga de imágenes
     - Investigar por qué las imágenes no cargan en esos templates
     - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
-  - [ ] 47.4 Todos los templates: opción de color de fondo sólido como alternativa a imagen de portada
+  - [~] 47.4 Todos los templates: opción de color de fondo sólido como alternativa a imagen de portada
     - Si no hay imagen de portada, permitir elegir un color sólido de fondo en lugar del gradiente por defecto
     - Agregar campo `cover_bg_color` en el formulario y en la BD
     - _Archivos: frontend/src/app/dashboard/mi-pagina/page.tsx, frontend/src/components/mini-landing/MiniLanding.tsx, backend/src/services/brands.service.ts_
@@ -378,20 +378,22 @@
 ---
 
 - [ ] 48. Suscripciones y marcas: plan trial
-  - [ ] 48.1 En `/admin/subscriptions`: mostrar plan TRIAL correctamente (no como BASIC)
+  - [~] 48.1 En `/admin/subscriptions`: mostrar plan TRIAL correctamente (no como BASIC)
     - _Archivos: frontend/src/app/admin/subscriptions/page.tsx, backend/src/controllers/admin.controller.ts_
-  - [ ] 48.2 Corregir flujo de upgrade: desde TRIAL debe poder ir a BASIC o a PRO
+  - [~] 48.2 Corregir flujo de upgrade: desde TRIAL debe poder ir a BASIC o a PRO
     - Actualmente solo permite ir a PRO desde TRIAL
     - _Archivos: frontend/src/app/dashboard/ (componente de upgrade), backend/src/controllers/brands.controller.ts_
-  - [ ] 48.3 En `/admin/brands`: mostrar TRIAL como plan, no BASIC
+  - [~] 48.3 En `/admin/brands`: mostrar TRIAL como plan, no BASIC
     - _Archivos: frontend/src/app/admin/brands/page.tsx_
 
 ---
 
 - [ ] 49. Footer de templates: URL provisional de Lookitry
-  - [ ] 49.1 Cambiar el link del footer en todos los templates de `lookitry.com` a `pruebalo.wilkiedevs.com`
+  - [-] 49.1 Cambiar el link del footer en todos los templates de `lookitry.com` a `pruebalo.wilkiedevs.com`
     - Afecta `LandingFooter` en `MiniLanding.tsx` y cualquier otro footer de template
     - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
+    - agregame una opcion para cambiar la URL actual Pruebalo.wilkiedevs.com por la nueva con toda la logica para que funcione el nuevo enlace y me haga automaticamente todas las redirecciones necesarias para que funcione la nueva URL, esto lo puedes crear en el apartado configuracion del panel de administracion.
+ - [~] 49.2 Elimina la seccion pagina inactiva global del layout de configuracion ya que esta repetida en la oagina de mini-lading.
 
 ---
 
