@@ -31,6 +31,7 @@ interface BrandData {
   logo_dark?: string | null;
   cover_bg_color?: string | null;
   cover_overlay_opacity?: number | null;
+  show_brand_name?: boolean | null;
 }
 
 interface ProductData {
@@ -434,7 +435,9 @@ function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
       )}
       <div className="relative z-10 flex flex-col items-center gap-5 max-w-2xl">
         {brand.logo && <BrandLogo src={brand.logo_light || brand.logo} alt={brand.name} className="h-16 md:h-20 object-contain drop-shadow-lg" />}
-        <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-md leading-tight">{brand.name}</h1>
+        {brand.show_brand_name !== false && (
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-md leading-tight">{brand.name}</h1>
+        )}
         {brand.slogan && <p className="text-white/80 text-sm font-medium tracking-wide uppercase">{brand.slogan}</p>}
         {brand.brand_description && (
           <p className="text-white/90 text-base md:text-lg max-w-xl leading-relaxed">{brand.brand_description}</p>
@@ -712,7 +715,9 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
             {brand.name.slice(0, 2).toUpperCase()}
           </div>
         )}
-        <span className="font-bold text-base text-gray-900">{brand.name}</span>
+        {brand.show_brand_name !== false && (
+          <span className="font-bold text-base text-gray-900">{brand.name}</span>
+        )}
       </div>
       {entries.length > 0 && (
         <div className="flex items-center gap-1.5">
@@ -981,7 +986,7 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
           )}
         </div>
-        <span className="font-bold text-base" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.name}</span>
+        <span className="font-bold text-base" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.show_brand_name !== false ? brand.name : ''}</span>
       </div>
       {entries.length > 0 && (
         <div className="flex gap-1.5">
