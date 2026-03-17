@@ -261,6 +261,7 @@ export default function MiPaginaPage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [landingPrice, setLandingPrice] = useState<number | null>(null);
 
   // Campos del formulario
   const [description, setDescription] = useState('');
@@ -314,6 +315,13 @@ export default function MiPaginaPage() {
       })
       .catch(() => setError('Error al cargar los datos'))
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/payment-settings/public`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.landingPrice) setLandingPrice(d.landingPrice); })
+      .catch(() => {});
   }, []);
 
   const handleSave = async () => {
@@ -417,7 +425,11 @@ export default function MiPaginaPage() {
         <CopyableUrl url={pageUrl} />
         {!hasLandingPage && (
           <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            Tu página ya es visible pero muestra un banner de activación. Para removerlo, activa tu página por $500.000 COP contactando a soporte.
+            Tu página ya es visible pero muestra un banner de activación. Para removerlo, activa tu página
+            {landingPrice !== null
+              ? <> por <strong style={{ color: 'var(--text-primary)' }}>${landingPrice.toLocaleString('es-CO')} COP</strong></>
+              : null
+            }{' '}contactando a soporte.
           </p>
         )}
       </div>
