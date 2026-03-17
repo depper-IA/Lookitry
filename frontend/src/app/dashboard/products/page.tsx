@@ -1,13 +1,45 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ProductList } from '@/components/dashboard/ProductList';
+import { ProductList, type ViewMode } from '@/components/dashboard/ProductList';
 import { ProductForm } from '@/components/dashboard/ProductForm';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { productsService } from '@/services/products.service';
 import type { Product, CreateProductDto } from '@/types';
 
+// ── Iconos de vista ──────────────────────────────────────────────────────────
+function IconGrid() {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+    </svg>
+  );
+}
+
+function IconThumbnails() {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+    </svg>
+  );
+}
+
+function IconList() {
+  return (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+    </svg>
+  );
+}
+
+const VIEW_MODES: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
+  { id: 'grid',       label: 'Cuadrícula',  icon: <IconGrid /> },
+  { id: 'thumbnails', label: 'Miniaturas',  icon: <IconThumbnails /> },
+  { id: 'list',       label: 'Lista',       icon: <IconList /> },
+];
+
+// ── Página ───────────────────────────────────────────────────────────────────
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLimit, setProductsLimit] = useState(0);
@@ -15,6 +47,18 @@ export default function ProductsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+
+  // Persistir preferencia de vista
+  useEffect(() => {
+    const saved = localStorage.getItem('products-view-mode') as ViewMode | null;
+    if (saved && ['grid', 'thumbnails', 'list'].includes(saved)) setViewMode(saved);
+  }, []);
+
+  const handleViewMode = (mode: ViewMode) => {
+    setViewMode(mode);
+    localStorage.setItem('products-view-mode', mode);
+  };
 
   useEffect(() => { loadProducts(); }, []);
 
@@ -102,14 +146,40 @@ export default function ProductsPage() {
             {products.length} de {productsLimit} productos
           </p>
         </div>
-        {!showForm && (
-          <Button onClick={handleNewProduct} size="md">
-            <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            Nuevo Producto
-          </Button>
-        )}
+
+        <div className="flex items-center gap-2">
+          {/* Selector de vista — solo visible cuando no hay formulario abierto */}
+          {!showForm && (
+            <div
+              className="flex items-center rounded-lg p-0.5 gap-0.5"
+              style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
+            >
+              {VIEW_MODES.map(({ id, label, icon }) => (
+                <button
+                  key={id}
+                  onClick={() => handleViewMode(id)}
+                  title={label}
+                  className="p-1.5 rounded-md transition-colors"
+                  style={{
+                    backgroundColor: viewMode === id ? '#FF5C3A' : 'transparent',
+                    color: viewMode === id ? '#fff' : 'var(--text-secondary)',
+                  }}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {!showForm && (
+            <Button onClick={handleNewProduct} size="md">
+              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Nuevo Producto
+            </Button>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -130,6 +200,7 @@ export default function ProductsPage() {
       ) : (
         <ProductList
           products={products}
+          viewMode={viewMode}
           onEdit={(p) => { setEditingProduct(p); setShowForm(true); }}
           onDelete={handleDeleteProduct}
         />
