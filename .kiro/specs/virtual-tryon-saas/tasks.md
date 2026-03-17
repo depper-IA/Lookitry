@@ -360,7 +360,7 @@
 
 ---
 
-- [-] 4axtiv7. Templates: bugs y mejoras visuales
+- [-] 4axtiveje7. Templates: bugs y mejoras visuales
   - [x] 47.1 Template clásico: mostrar reseñas, ciudad/dirección y otros datos faltantes
     - Verificar qué campos no se están renderizando en `TemplateClassic`
     - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
@@ -394,6 +394,96 @@
     - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
     - agregame una opcion para cambiar la URL actual Pruebalo.wilkiedevs.com por la nueva con toda la logica para que funcione el nuevo enlace y me haga automaticamente todas las redirecciones necesarias para que funcione la nueva URL, esto lo puedes crear en el apartado configuracion del panel de administracion.
  - [x] 49.2 Elimina la seccion pagina inactiva global del layout de configuracion ya que esta repetida en la oagina de mini-lading.
+
+---
+
+- [-] 51. Sistema RAG de mejora continua de prompts (feedback + agente IA)
+
+  **Contexto del problema:** Al generar imágenes con prendas de cobertura total (vestidos, monos, conjuntos), el modelo de IA puede dejar ropa subyacente visible (ej: pantalón bajo un vestido, zapatos eliminados incorrectamente). Se necesita un ciclo de feedback que aprenda de los errores reportados por los clientes y corrija automáticamente los prompts futuros.
+
+  **Arquitectura:**
+  - Cliente reporta error desde el frontend → backend guarda en `generation_feedback`
+  - n8n genera embeddings del feedback y los almacena en Supabase pgvector
+  - Al construir un nuevo prompt, el backend hace RAG query sobre los feedbacks similares
+  - Agente IA (Gemini 2.0 flash) enriquece el prompt con las reglas aprendidas
+  - El admin recibe notificación de errores frecuentes para revisión manual
+
+  - [x] 51.1 Tabla `generation_feedback` en Supabase
+    - Migración SQL: `backend/migrations/create_generation_feedback.sql`
+    - Columnas: `id`, `generation_id` (FK → generations), `brand_id`, `error_type` (enum: `wrong_clothing_removed`, `wrong_clothing_kept`, `body_distortion`, `color_wrong`, `other`), `description` (text libre del cliente), `product_category` (inferido del producto), `prompt_used` (el prompt que generó el error), `embedding` (vector 768d para pgvector), `resolved` (bool, default false), `created_at`
+    - Índice en `brand_id`, `error_type`, `resolved`
+    - Habilitar extensión `vector` en Supabase si no está activa
+    - _Archivos: backend/migrations/create_generation_feedback.sql_
+
+  - [x] 51.2 Endpoint de reporte de error desde el frontend
+    - `POST /api/generations/:generationId/feedback`
+    - Auth: JWT de la marca (solo puede reportar sus propias generaciones)
+    - Body: `{ error_type, description }`
+    - El backend recupera el `prompt_used` de la generación y lo guarda en el feedback
+    - Retorna `{ id, message: 'Gracias por tu reporte. Usaremos esto para mejorar.' }`
+    - _Archivos: backend/src/controllers/generations.controller.ts, backend/src/routes/generations.routes.ts_
+
+  - [x] 51.3 Botón "Reportar error" en el resultado de generación (frontend widget)
+    - En `TryOnWidget.tsx` (o `ResultDisplay.tsx`): agregar botón discreto bajo la imagen generada
+    - Al hacer click: modal pequeño con selector de tipo de error + campo de texto opcional
+    - Tipos de error en UI: "Ropa incorrecta eliminada", "Ropa incorrecta conservada", "Distorsión corporal", "Color incorrecto", "Otro"
+    - Enviar a `POST /api/generations/:id/feedback`
+    - Confirmar con mensaje de éxito (sin recargar)
+    - _Archivos: frontend/src/components/tryon/ResultDisplay.tsx (o TryOnWidget.tsx)_
+
+  - [x] 51.4 Workflow n8n: generación de embeddings de feedback
+    - Webhook `POST /webhook/feedback-embedding` recibe `{ feedback_id, description, prompt_used, error_type, product_category }`
+    - Concatenar: `"[${error_type}] Producto: ${product_category}. Error: ${description}. Prompt original: ${prompt_used}"`
+    - Generar embedding con Gemini Embedding API (`text-embedding-004`, gratuito)
+    - Actualizar fila en `generation_feedback` con el vector resultante
+    - El backend llama este webhook después de guardar el feedback (fire-and-forget)
+    - _Archivos: n8n workflow `flujo4_feedback_embedding`_
+
+  - [x] 51.5 Servicio RAG de enriquecimiento de prompts en el backend
+    - Crear `backend/src/services/prompt-rag.service.ts`
+    - Función `enrichPrompt(basePrompt, productCategory, selfieDescription)`:
+      1. Genera embedding del prompt base + categoría con Gemini Embedding API
+      2. Hace similarity search en Supabase pgvector: `SELECT * FROM generation_feedback WHERE resolved = false ORDER BY embedding <=> $1 LIMIT 5`
+      3. Si hay feedbacks similares (distancia < 0.3), construye un bloque de reglas: `"REGLAS APRENDIDAS: [lista de correcciones]"`
+      4. Llama a Gemini 2.0 flash con: prompt base + reglas + instrucción de reescritura
+      5. Retorna el prompt enriquecido
+    - Si no hay feedbacks relevantes, retorna el prompt base sin cambios
+    - Timeout máximo: 3 segundos (para no bloquear la generación)
+    - _Archivos: backend/src/services/prompt-rag.service.ts_
+
+  - [x] 51.6 Reglas base hardcodeadas por categoría de prenda (corrección inmediata del bug actual)
+    - Crear `backend/src/config/prompt-rules.ts` con reglas por categoría:
+      - `VESTIDO` / `DRESS`: `"Replace the entire outfit including pants, jeans, leggings and shoes. The dress covers from shoulders to knees/ankles. Remove all lower body clothing visible beneath the dress."`
+      - `CAMISA` / `TOP`: `"Replace only the upper body garment. Keep pants, jeans and shoes unchanged."`
+      - `PANTALON` / `PANTS`: `"Replace only the lower body garment. Keep the top/shirt unchanged."`
+      - `ZAPATOS` / `SHOES`: `"Replace only the footwear. Keep all clothing (top and bottom) unchanged."`
+      - `CONJUNTO` / `SET`: `"Replace the complete outfit: top, bottom and shoes."`
+    - Estas reglas se inyectan en el prompt ANTES del RAG, como capa base de corrección
+    - El descriptor de producto (n8n webhook descriptor) debe inferir la categoría y devolverla
+    - _Archivos: backend/src/config/prompt-rules.ts, backend/src/services/pruebalo.service.ts_
+
+  - [x] 51.7 Integrar RAG + reglas base en el flujo de generación
+    - En `pruebalo.service.ts` (o donde se construye el prompt antes de llamar a n8n):
+      1. Obtener categoría del producto desde el descriptor o desde `products.category`
+      2. Aplicar reglas base de `prompt-rules.ts` según categoría
+      3. Llamar `enrichPrompt()` del servicio RAG (con timeout de 3s, si falla usar prompt base)
+      4. Enviar prompt enriquecido a n8n
+    - Guardar el `prompt_used` final en la tabla `generations` para trazabilidad
+    - _Archivos: backend/src/services/pruebalo.service.ts, backend/src/controllers/pruebalo.controller.ts_
+
+  - [x] 51.8 Panel admin: vista de feedbacks y errores frecuentes
+    - Página `/admin/feedback` (o sección en `/admin/dashboard`)
+    - Lista de feedbacks recientes con: marca, tipo de error, descripción, prompt usado, fecha
+    - Filtros: tipo de error, marca, resuelto/pendiente
+    - Botón "Marcar como resuelto" → `PATCH /api/admin/feedback/:id/resolve`
+    - Sección "Errores frecuentes": agrupar por `error_type` + `product_category` con conteo
+    - Notificación en el sidebar admin cuando hay feedbacks sin resolver (badge con conteo)
+    - _Archivos: frontend/src/app/admin/feedback/page.tsx, backend/src/controllers/admin.controller.ts_
+
+  - [x] 51.9 Notificación automática al admin cuando se acumulan errores del mismo tipo
+    - En el backend, después de guardar un feedback: contar feedbacks del mismo `error_type` + `product_category` en las últimas 24h
+    - Si hay 3 o más → crear notificación en tabla `admin_notifications`: `"Alerta: 3+ errores de tipo '${error_type}' en categoría '${product_category}' en las últimas 24h"`
+    - _Archivos: backend/src/services/notification.service.ts_
 
 ---
 

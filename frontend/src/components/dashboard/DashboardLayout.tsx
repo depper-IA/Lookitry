@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { SubscriptionBadge } from './SubscriptionBadge';
@@ -61,7 +62,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-5 border-b" style={{ borderColor: '#1f1f1f' }}>
-        <span className="font-syne font-bold text-lg text-white tracking-tight">Mostrador</span>
+        <Link href="/dashboard/products" className="flex items-center gap-2">
+          <Image src="/logo.png" alt="Lookitry" width={26} height={26} className="object-contain w-[26px] h-[26px]" priority />
+          <span style={{ fontFamily: 'Syne, sans-serif' }} className="hidden sm:inline font-extrabold text-base leading-none text-white tracking-tight">
+            Look<span style={{ color: '#FF5C3A' }}>itry</span>
+          </span>
+        </Link>
         {/* Botón cerrar en móvil */}
         <button
           className="lg:hidden p-1 rounded text-gray-400 hover:text-white"

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { AdminNotifications } from '@/components/admin/AdminNotifications';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
@@ -33,6 +34,7 @@ const adminNav = [
     label: 'Sistema',
     items: [
       { href: '/admin/notifications',  label: 'Notificaciones',  icon: BellIcon },
+      { href: '/admin/feedback',       label: 'Feedback IA',     icon: FeedbackIcon },
       { href: '/admin/trial-campaign', label: 'Configuración',   icon: TrialIcon },
       { href: '/admin/admins',         label: 'Administradores', icon: AdminsIcon },
     ],
@@ -45,6 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [adminUser, setAdminUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [feedbackCount, setFeedbackCount] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -55,6 +58,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
     if (user) setAdminUser(JSON.parse(user));
     setLoading(false);
+
+    // Cargar conteo de feedbacks sin resolver
+    if (token) {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+      fetch(`${apiBase}/api/admin/feedback/count-unresolved`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d?.count) setFeedbackCount(d.count); })
+        .catch(() => {});
+    }
   }, [pathname, router]);
 
   const handleLogout = () => {
@@ -77,10 +91,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
       {/* Logo */}
       <div className="flex items-center justify-between h-14 px-5 border-b" style={{ borderColor: '#1f1f1f' }}>
-        <div>
-          <span className="font-syne font-bold text-base text-white">Admin</span>
-          <span className="font-syne font-bold text-base" style={{ color: '#FF5C3A' }}> Panel</span>
-        </div>
+        <Link href="/admin/dashboard" className="flex items-center gap-2">
+          <Image src="/logo.png" alt="Lookitry" width={24} height={24} className="object-contain w-6 h-6" priority />
+          <span style={{ fontFamily: 'Syne, sans-serif' }} className="hidden sm:inline font-extrabold text-base leading-none text-white tracking-tight">
+            Look<span style={{ color: '#FF5C3A' }}>itry</span>
+          </span>
+          <span className="hidden sm:inline font-syne font-semibold text-xs" style={{ color: '#FF5C3A' }}>Admin</span>
+        </Link>
         <button
           className="lg:hidden p-1 rounded text-gray-400 hover:text-white"
           onClick={() => setSidebarOpen(false)}
@@ -104,6 +121,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="space-y-0.5">
               {group.items.map(item => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                const isFeedback = item.href === '/admin/feedback';
                 return (
                   <Link
                     key={item.href}
@@ -118,7 +136,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
                   >
                     <item.icon className="w-4 h-4 flex-shrink-0" />
-                    {item.label}
+                    <span className="flex-1">{item.label}</span>
+                    {isFeedback && feedbackCount > 0 && (
+                      <span
+                        className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white flex-shrink-0"
+                        style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : '#ef4444' }}
+                      >
+                        {feedbackCount > 99 ? '99+' : feedbackCount}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -247,4 +273,7 @@ function MiniLandingIcon({ className }: { className?: string }) {
 }
 function BellIcon({ className }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>;
+}
+function FeedbackIcon({ className }: { className?: string }) {
+  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>;
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import FaqSection from '@/components/landing/FaqSection';
 
@@ -74,9 +75,12 @@ export default function LandingClient() {
 
       {/* NAV */}
       <nav aria-label="Navegación principal" className="bg-[#0a0a0a] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
-        <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base text-white tracking-tight">
-          Look<span className="text-[#FF5C3A]">itry</span>
-        </span>
+        <Link href="/" className="flex items-center gap-2.5">
+          <Image src="/logo.png" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
+          <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-lg leading-none text-white tracking-tight">
+            Look<span className="text-[#FF5C3A]">itry</span>
+          </span>
+        </Link>
         <div className="flex items-center gap-1 md:gap-2">
           <Link
             href="/planes"
@@ -489,9 +493,12 @@ export default function LandingClient() {
       {/* FOOTER */}
       <footer className="bg-[#050505] border-t border-[#1a1a1a] px-6 md:px-8 py-7">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-sm text-white">
-            Look<span className="text-[#FF5C3A]">itry</span>
-          </span>
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+            <Image src="/logo.png" alt="Lookitry" width={24} height={24} className="object-contain h-6 w-auto" />
+            <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base leading-none text-white">
+              Look<span className="text-[#FF5C3A]">itry</span>
+            </span>
+          </Link>
           <div className="flex items-center gap-4 md:gap-5 flex-wrap justify-center gap-y-3">
             <Link href="/planes" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]">Planes</Link>
             <Link href="/login" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]">Iniciar sesión</Link>
