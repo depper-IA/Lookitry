@@ -39,6 +39,7 @@ export interface PaymentSettings {
   currency: string;
   // Pruebas y desarrollo
   bypass_ip_protection: boolean;
+  ip_whitelist: string; // IPs separadas por coma que siempre pasan el check
   updated_at?: string;
 }
 
@@ -72,6 +73,7 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   transfer_nit: '',
   currency: 'COP',
   bypass_ip_protection: false,
+  ip_whitelist: '',
 };
 
 export class PaymentSettingsService {
