@@ -287,6 +287,7 @@ export default function MiPaginaPage() {
   const [logoLightUrl, setLogoLightUrl] = useState('');
   const [logoDarkUrl, setLogoDarkUrl] = useState('');
   const [coverBgColor, setCoverBgColor] = useState('');
+  const [coverOverlayOpacity, setCoverOverlayOpacity] = useState(0.55);
   useEffect(() => {
     brandsService.getCurrentBrand()
       .then(b => {
@@ -302,6 +303,7 @@ export default function MiPaginaPage() {
         setLogoLightUrl(raw.logo_light || '');
         setLogoDarkUrl(raw.logo_dark || '');
         setCoverBgColor(raw.cover_bg_color || '');
+        setCoverOverlayOpacity(raw.cover_overlay_opacity != null ? raw.cover_overlay_opacity : 0.55);
         const links = raw.social_links || {};
         setInstagram(links.instagram || '');
         setFacebook(links.facebook || '');
@@ -351,6 +353,7 @@ export default function MiPaginaPage() {
         logo_light: logoLightUrl || null,
         logo_dark: logoDarkUrl || null,
         cover_bg_color: coverBgColor || null,
+        cover_overlay_opacity: coverOverlayOpacity,
         social_links,
         city_display: cityDisplay || null,
         national_shipping: nationalShipping,
@@ -635,6 +638,35 @@ export default function MiPaginaPage() {
           </div>
           <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             Se usa como fondo cuando no hay imagen de portada, o como color base detrás de la imagen.
+          </p>
+        </div>
+
+        {/* Opacidad del overlay sobre la imagen */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+              Oscuridad del overlay sobre la imagen
+            </label>
+            <span className="text-sm font-mono tabular-nums" style={{ color: 'var(--text-secondary)' }}>
+              {Math.round(coverOverlayOpacity * 100)}%
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={coverOverlayOpacity}
+            onChange={e => setCoverOverlayOpacity(parseFloat(e.target.value))}
+            className="w-full h-2 rounded-full appearance-none cursor-pointer"
+            style={{ accentColor: '#FF5C3A' }}
+          />
+          <div className="flex justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
+            <span>Sin oscurecer (imagen pura)</span>
+            <span>Muy oscuro</span>
+          </div>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            Controla cuánto se oscurece la imagen de portada. 0% muestra la imagen sin filtro.
           </p>
         </div>
 
