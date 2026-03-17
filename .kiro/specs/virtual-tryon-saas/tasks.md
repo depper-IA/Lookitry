@@ -370,7 +370,7 @@
   - [x] 47.3 Templates moderno y editorial: corregir carga de imágenes
     - Investigar por qué las imágenes no cargan en esos templates
     - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
-  - [~] 47.4 Todos los templates: opción de color de fondo sólido como alternativa a imagen de portada
+  - [x] 47.4 Todos los templates: opción de color de fondo sólido como alternativa a imagen de portada
     - Si no hay imagen de portada, permitir elegir un color sólido de fondo en lugar del gradiente por defecto
     - Agregar campo `cover_bg_color` en el formulario y en la BD
     - _Archivos: frontend/src/app/dashboard/mi-pagina/page.tsx, frontend/src/components/mini-landing/MiniLanding.tsx, backend/src/services/brands.service.ts_
@@ -378,12 +378,12 @@
 ---
 
 - [ ] 48. Suscripciones y marcas: plan trial
-  - [~] 48.1 En `/admin/subscriptions`: mostrar plan TRIAL correctamente (no como BASIC)
+  - [ ] 48.1 En `/admin/subscriptions`: mostrar plan TRIAL correctamente (no como BASIC)
     - _Archivos: frontend/src/app/admin/subscriptions/page.tsx, backend/src/controllers/admin.controller.ts_
-  - [~] 48.2 Corregir flujo de upgrade: desde TRIAL debe poder ir a BASIC o a PRO
+  - [ ] 48.2 Corregir flujo de upgrade: desde TRIAL debe poder ir a BASIC o a PRO
     - Actualmente solo permite ir a PRO desde TRIAL
     - _Archivos: frontend/src/app/dashboard/ (componente de upgrade), backend/src/controllers/brands.controller.ts_
-  - [~] 48.3 En `/admin/brands`: mostrar TRIAL como plan, no BASIC
+  - [ ] 48.3 En `/admin/brands`: mostrar TRIAL como plan, no BASIC
     - _Archivos: frontend/src/app/admin/brands/page.tsx_
 
 ---
@@ -393,7 +393,7 @@
     - Afecta `LandingFooter` en `MiniLanding.tsx` y cualquier otro footer de template
     - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
     - agregame una opcion para cambiar la URL actual Pruebalo.wilkiedevs.com por la nueva con toda la logica para que funcione el nuevo enlace y me haga automaticamente todas las redirecciones necesarias para que funcione la nueva URL, esto lo puedes crear en el apartado configuracion del panel de administracion.
- - [~] 49.2 Elimina la seccion pagina inactiva global del layout de configuracion ya que esta repetida en la oagina de mini-lading.
+ - [ ] 49.2 Elimina la seccion pagina inactiva global del layout de configuracion ya que esta repetida en la oagina de mini-lading.
 
 ---
 

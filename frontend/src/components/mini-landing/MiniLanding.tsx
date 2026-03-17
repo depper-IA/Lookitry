@@ -999,8 +999,9 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
 
 function ProbadorHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: () => void }) {
   const primary = brand.primary_color || '#FF5C3A';
+  const heroBg = brand.cover_bg_color || 'var(--p-hero-bg, #0f0f0f)';
   return (
-    <section className="relative py-20 px-6 text-center overflow-hidden" style={{ backgroundColor: 'var(--p-hero-bg, #0f0f0f)' }}>
+    <section className="relative py-20 px-6 text-center overflow-hidden" style={{ backgroundColor: heroBg }}>
       {/* Anillos decorativos */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
         {[600, 400, 200].map((size, i) => (
