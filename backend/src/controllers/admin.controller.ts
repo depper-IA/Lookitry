@@ -490,19 +490,26 @@ export const getMiniLandingsAdmin = async (req: any, res: Response) => {
     const { supabaseAdmin } = await import('../config/supabase');
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .select('id, name, email, slug, plan, is_in_trial, has_landing_page, landing_suspended_at, subscription_status, created_at')
+      .select('id, name, email, slug, plan, trial_end_date, has_landing_page, landing_suspended_at, subscription_status, created_at')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
 
     const ahora = Date.now();
+    const now = new Date();
     const brands = (data || []).map((b: any) => {
       let dias_para_eliminacion: number | null = null;
       if (b.landing_suspended_at) {
         const transcurridos = Math.floor((ahora - new Date(b.landing_suspended_at).getTime()) / (1000 * 60 * 60 * 24));
         dias_para_eliminacion = Math.max(0, 90 - transcurridos);
       }
-      return { ...b, dias_para_eliminacion };
+      const trialEnd = b.trial_end_date ? new Date(b.trial_end_date) : null;
+      const is_in_trial =
+        trialEnd !== null &&
+        trialEnd > now &&
+        b.subscription_status !== 'active' &&
+        b.subscription_status !== 'expiring_soon';
+      return { ...b, dias_para_eliminacion, is_in_trial };
     });
 
     return res.status(200).json({ brands, count: brands.length });

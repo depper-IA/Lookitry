@@ -33,8 +33,7 @@ const adminNav = [
     label: 'Sistema',
     items: [
       { href: '/admin/trial-campaign', label: 'Configuración',   icon: TrialIcon },
-      { href: '/admin/health',         label: 'Estado del Sistema',  icon: HealthIcon },
-      { href: '/admin/admins',         label: 'Administradores',     icon: AdminsIcon },
+      { href: '/admin/admins',         label: 'Administradores', icon: AdminsIcon },
     ],
   },
 ];
