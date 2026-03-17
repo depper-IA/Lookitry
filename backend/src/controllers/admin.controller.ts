@@ -445,6 +445,42 @@ export const toggleLandingPage = async (req: any, res: Response) => {
 };
 
 /**
+ * PATCH /api/admin/brands/:id/modal-config
+ * Actualiza el texto del modal de activación que ven los visitantes.
+ */
+export const updateModalConfig = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { modal_title, modal_description, modal_features } = req.body;
+
+    const { supabase } = await import('../config/supabase');
+    const { data, error } = await supabase
+      .from('brands')
+      .update({ modal_title, modal_description, modal_features })
+      .eq('id', id)
+      .select('id, name, modal_title, modal_description, modal_features')
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+    }
+
+    auditService.log({
+      admin_id: req.admin?.id ?? 'unknown',
+      admin_email: req.admin?.email ?? 'unknown',
+      action: 'brand.modal_config_update' as any,
+      target_brand_id: id,
+      details: { modal_title, modal_description },
+    });
+
+    return res.status(200).json({ message: 'Configuración del modal actualizada', brand: data });
+  } catch (error: any) {
+    console.error('Error in updateModalConfig:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al actualizar modal' });
+  }
+};
+
+/**
  * GET /api/admin/mini-landings
  * Lista todas las marcas con datos de mini-landing para el panel de control.
  * Incluye: has_landing_page, landing_suspended_at, subscription_status, slug, plan.

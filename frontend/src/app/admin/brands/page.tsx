@@ -58,6 +58,10 @@ export default function AdminBrandsPage() {
   const [activating, setActivating] = useState(false);
   const [activateForm, setActivateForm] = useState({ plan: 'BASIC', amount: '', payment_method: 'transferencia', notes: '' });
   const [togglingLanding, setTogglingLanding] = useState(false);
+  const [showModalConfigModal, setShowModalConfigModal] = useState(false);
+  const [modalConfigBrand, setModalConfigBrand] = useState<Brand | null>(null);
+  const [modalConfigForm, setModalConfigForm] = useState({ modal_title: '', modal_description: '', modal_features: ['', '', ''] });
+  const [savingModalConfig, setSavingModalConfig] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPlan, setFilterPlan] = useState<FilterPlan>('all');
@@ -217,6 +221,42 @@ export default function AdminBrandsPage() {
     } finally {
       setTogglingLanding(false);
     }
+  };
+
+  const handleOpenModalConfig = (brand: Brand) => {
+    setModalConfigBrand(brand);
+    const b = brand as any;
+    const feats = Array.isArray(b.modal_features) ? [...b.modal_features] : [];
+    while (feats.length < 3) feats.push('');
+    setModalConfigForm({
+      modal_title: b.modal_title || '',
+      modal_description: b.modal_description || '',
+      modal_features: feats,
+    });
+    setShowModalConfigModal(true);
+  };
+
+  const handleSaveModalConfig = async () => {
+    if (!modalConfigBrand) return;
+    setSavingModalConfig(true);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_URL}/api/admin/brands/${modalConfigBrand.id}/modal-config`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          modal_title: modalConfigForm.modal_title || null,
+          modal_description: modalConfigForm.modal_description || null,
+          modal_features: modalConfigForm.modal_features.filter(f => f.trim()).length > 0
+            ? modalConfigForm.modal_features.filter(f => f.trim())
+            : null,
+        }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
+      setShowModalConfigModal(false);
+    } catch (err: any) {
+      alert(err.message || 'Error al guardar configuración del modal');
+    } finally { setSavingModalConfig(false); }
   };
 
   const handleActivatePlan = async () => {
@@ -621,6 +661,27 @@ export default function AdminBrandsPage() {
                   </button>
                 </div>
               </div>
+              {/* Configurar modal de activación */}
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Modal de activación</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                      Texto que ven los visitantes cuando la mini-landing no está activa.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => { setShowDetailsModal(false); handleOpenModalConfig(selectedBrand); }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                    style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.25)' }}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Editar
+                  </button>
+                </div>
+              </div>
             </div>
             <div className="mt-5 flex justify-end">
               <button onClick={() => setShowDetailsModal(false)}
@@ -881,6 +942,100 @@ export default function AdminBrandsPage() {
                 }`}
               >
                 Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal Configurar Modal de Activación */}
+      {showModalConfigModal && modalConfigBrand && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h2 className="font-syne font-bold text-lg" style={{ color: 'var(--text-primary)' }}>Modal de activación</h2>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{modalConfigBrand.name}</p>
+              </div>
+              <button onClick={() => setShowModalConfigModal(false)} style={{ color: 'var(--text-secondary)' }}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+              Este texto aparece en el modal que ven los visitantes cuando la mini-landing aún no está activa.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Título del modal</label>
+                <input
+                  type="text"
+                  value={modalConfigForm.modal_title}
+                  onChange={e => setModalConfigForm(f => ({ ...f, modal_title: e.target.value }))}
+                  maxLength={80}
+                  placeholder="Ej: Activa tu probador virtual"
+                  className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
+                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Descripción</label>
+                <textarea
+                  value={modalConfigForm.modal_description}
+                  onChange={e => setModalConfigForm(f => ({ ...f, modal_description: e.target.value }))}
+                  rows={3}
+                  maxLength={300}
+                  placeholder="Ej: Permite que tus clientes se prueben la ropa virtualmente..."
+                  className="w-full px-3 py-2 rounded-lg border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
+                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Beneficios (hasta 5)</label>
+                <div className="space-y-2">
+                  {modalConfigForm.modal_features.map((feat, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
+                      <input
+                        type="text"
+                        value={feat}
+                        onChange={e => {
+                          const next = [...modalConfigForm.modal_features];
+                          next[i] = e.target.value;
+                          setModalConfigForm(f => ({ ...f, modal_features: next }));
+                        }}
+                        maxLength={80}
+                        placeholder={`Beneficio ${i + 1}`}
+                        className="flex-1 px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
+                        style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+                  ))}
+                  {modalConfigForm.modal_features.length < 5 && (
+                    <button
+                      type="button"
+                      onClick={() => setModalConfigForm(f => ({ ...f, modal_features: [...f.modal_features, ''] }))}
+                      className="flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-70"
+                      style={{ color: '#FF5C3A' }}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Agregar beneficio
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 flex justify-end gap-3">
+              <button onClick={() => setShowModalConfigModal(false)}
+                className="px-4 py-2 rounded-lg text-sm transition-colors"
+                style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>
+                Cancelar
+              </button>
+              <button onClick={handleSaveModalConfig} disabled={savingModalConfig}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-2 disabled:opacity-50 transition-colors"
+                style={{ backgroundColor: '#FF5C3A' }}>
+                {savingModalConfig && <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />}
+                Guardar
               </button>
             </div>
           </div>

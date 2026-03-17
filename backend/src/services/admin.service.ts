@@ -268,6 +268,10 @@ export class AdminService {
           trial_end_date: brand.trial_end_date,
           is_in_trial: isInTrial,
           trial_days_remaining: trialDaysRemaining,
+          has_landing_page: brand.has_landing_page ?? false,
+          modal_title: brand.modal_title ?? null,
+          modal_description: brand.modal_description ?? null,
+          modal_features: brand.modal_features ?? null,
           stats: {
             productsCount: productCounts[brand.id] || 0,
             generationsCount: generationCounts[brand.id] || 0,
