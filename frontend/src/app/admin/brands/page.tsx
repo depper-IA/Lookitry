@@ -74,7 +74,13 @@ export default function AdminBrandsPage() {
   const [bulkLoading, setBulkLoading] = useState(false);
   const [confirmBulk, setConfirmBulk] = useState<'suspend' | 'reactivate' | 'delete' | null>(null);
 
-  useEffect(() => { fetchBrands(); }, []);
+  // Precio dinámico del plan LANDING
+  const [landingPrice, setLandingPrice] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetchBrands();
+    fetchLandingPrice();
+  }, []);
   useEffect(() => { applyFilters(); }, [brands, searchTerm, filterPlan, filterTrial]);
   useEffect(() => { setCurrentPage(1); setSelected(new Set()); }, [searchTerm, filterPlan, filterTrial]);
 
@@ -109,6 +115,18 @@ export default function AdminBrandsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchLandingPrice = async () => {
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.landing_price) setLandingPrice(data.landing_price);
+    } catch { /* silencioso */ }
   };
 
   const handleViewDetails = (brand: Brand) => { setSelectedBrand(brand); setShowDetailsModal(true); };
@@ -515,12 +533,23 @@ export default function AdminBrandsPage() {
                     }>
                     {brand.is_in_trial ? 'TRIAL' : brand.plan}
                   </span>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                    {brand.is_in_trial
+                      ? 'Gratuito'
+                      : brand.plan === 'PRO'
+                      ? '$250.000/mes'
+                      : brand.plan === 'BASIC'
+                      ? '$150.000/mes'
+                      : brand.plan === 'LANDING'
+                      ? (landingPrice ? `$${landingPrice.toLocaleString('es-CO')}` : '—')
+                      : '—'}
+                  </div>
                 </td>
                 <td className="px-4 py-3.5 whitespace-nowrap">
                   {brand.is_in_trial ? (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v10.5a3 3 0 006 0V3M6 3h12" /></svg>
-                      Prueba — {brand.trial_days_remaining}d
+                      Prueba — {brand.trial_days_remaining ?? 0}d
                     </span>
                   ) : brand.subscription_status === 'active' ? (
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Activo</span>
