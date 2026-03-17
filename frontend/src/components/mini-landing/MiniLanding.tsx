@@ -318,6 +318,12 @@ function ProductBadge({ badge }: { badge: string }) {
 // -- Componente de imagen de producto con fallback ----------------------------
 function ProductImage({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
   const [error, setError] = useState(false);
+
+  // Resetear error cuando cambia el src
+  useEffect(() => {
+    setError(false);
+  }, [src]);
+
   if (!src || error) {
     return (
       <div className={`w-full h-full flex items-center justify-center bg-gray-100 ${className || ''}`}>
@@ -327,7 +333,83 @@ function ProductImage({ src, alt, className }: { src?: string | null; alt: strin
       </div>
     );
   }
-  return <img src={src} alt={alt} className={className} onError={() => setError(true)} />;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setError(true)}
+      referrerPolicy="no-referrer"
+    />
+  );
+}
+
+// -- Componente de imagen de portada (cover) con fallback ---------------------
+function CoverImage({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    setError(false);
+  }, [src]);
+
+  if (!src || error) return null;
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setError(true)}
+      referrerPolicy="no-referrer"
+    />
+  );
+}
+
+// -- Componente de logo de marca con fallback ---------------------------------
+function BrandLogo({
+  src,
+  alt,
+  className,
+  fallbackInitials,
+  fallbackBg,
+  fallbackTextColor,
+}: {
+  src?: string | null;
+  alt: string;
+  className?: string;
+  fallbackInitials?: string;
+  fallbackBg?: string;
+  fallbackTextColor?: string;
+}) {
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    setError(false);
+  }, [src]);
+
+  if (!src || error) {
+    if (fallbackInitials) {
+      return (
+        <div
+          className="flex items-center justify-center font-bold"
+          style={{ backgroundColor: fallbackBg || '#0a0a0a', color: fallbackTextColor || '#fff' }}
+        >
+          {fallbackInitials}
+        </div>
+      );
+    }
+    return null;
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setError(true)}
+      referrerPolicy="no-referrer"
+    />
+  );
 }
 
 // ----------------------------------------------------------------------------
@@ -344,12 +426,12 @@ function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
     >
       {hasCover && (
         <>
-          <img src={brand.cover_image_url!} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
+          <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/55" />
         </>
       )}
       <div className="relative z-10 flex flex-col items-center gap-5 max-w-2xl">
-        {brand.logo && <img src={brand.logo_light || brand.logo} alt={brand.name} className="h-16 md:h-20 object-contain drop-shadow-lg" />}
+        {brand.logo && <BrandLogo src={brand.logo_light || brand.logo} alt={brand.name} className="h-16 md:h-20 object-contain drop-shadow-lg" />}
         <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-md leading-tight">{brand.name}</h1>
         {brand.slogan && <p className="text-white/80 text-sm font-medium tracking-wide uppercase">{brand.slogan}</p>}
         {brand.brand_description && (
@@ -615,7 +697,14 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
     <header className="bg-white border-b border-gray-100 px-5 h-16 flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center gap-2.5">
         {brand.logo ? (
-          <img src={brand.logo_dark || brand.logo} alt={brand.name} className="h-9 w-auto max-w-[120px] rounded-lg object-contain" />
+          <BrandLogo
+            src={brand.logo_dark || brand.logo}
+            alt={brand.name}
+            className="h-9 w-auto max-w-[120px] rounded-lg object-contain"
+            fallbackInitials={brand.name.slice(0, 2).toUpperCase()}
+            fallbackBg="#111827"
+            fallbackTextColor="#fff"
+          />
         ) : (
           <div className="h-9 w-9 rounded-lg bg-gray-900 flex items-center justify-center text-white font-bold text-sm">
             {brand.name.slice(0, 2).toUpperCase()}
@@ -643,7 +732,7 @@ function EditorialCover({ brand }: { brand: BrandData }) {
     <div className="relative h-48 md:h-56 overflow-hidden flex items-end" style={brand.cover_image_url ? {} : { background: brand.cover_bg_color || `linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` }}>
       {brand.cover_image_url && (
         <>
-          <img src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
+          <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         </>
       )}
@@ -877,10 +966,19 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
   return (
     <nav className="sticky top-0 z-50 h-14 flex items-center justify-between px-6 border-b" style={{ backgroundColor: 'var(--p-surface, #fff)', borderColor: 'var(--p-border, #e5e5e5)' }}>
       <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primary }}>
-          {brand.logo
-            ? <img src={brand.logo_dark || brand.logo} alt={brand.name} className="w-full h-full object-contain rounded-lg" />
-            : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>}
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ backgroundColor: primary }}>
+          {brand.logo ? (
+            <BrandLogo
+              src={brand.logo_dark || brand.logo}
+              alt={brand.name}
+              className="w-full h-full object-contain rounded-lg"
+              fallbackInitials={brand.name.slice(0, 2).toUpperCase()}
+              fallbackBg={primary}
+              fallbackTextColor="#fff"
+            />
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          )}
         </div>
         <span className="font-bold text-base" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.name}</span>
       </div>
@@ -1059,10 +1157,19 @@ function ProbadorAbout({ brand }: { brand: BrandData }) {
   return (
     <section className="py-16 px-6 text-center" style={{ backgroundColor: 'var(--p-bg, #fafafa)' }}>
       <div className="max-w-lg mx-auto">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: primary }}>
-          {brand.logo
-            ? <img src={brand.logo_light || brand.logo} alt={brand.name} className="w-full h-full object-contain rounded-2xl" />
-            : <span className="text-white font-black text-lg" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{brand.name.slice(0, 2).toUpperCase()}</span>}
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6 overflow-hidden" style={{ backgroundColor: primary }}>
+          {brand.logo ? (
+            <BrandLogo
+              src={brand.logo_light || brand.logo}
+              alt={brand.name}
+              className="w-full h-full object-contain rounded-2xl"
+              fallbackInitials={brand.name.slice(0, 2).toUpperCase()}
+              fallbackBg={primary}
+              fallbackTextColor="#fff"
+            />
+          ) : (
+            <span className="text-white font-black text-lg" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{brand.name.slice(0, 2).toUpperCase()}</span>
+          )}
         </div>
         <h2 className="text-3xl font-black mb-4 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.name}</h2>
         {brand.brand_description && (
