@@ -73,7 +73,7 @@ export class SubscriptionController {
 
       let query = supabaseAdmin
         .from('brands')
-        .select('id, name, email, slug, plan, subscription_status, subscription_start_date, subscription_end_date, last_payment_date, next_payment_date')
+        .select('id, name, email, slug, plan, subscription_status, subscription_start_date, subscription_end_date, last_payment_date, next_payment_date, is_in_trial, trial_days_remaining')
         .order('subscription_end_date', { ascending: true });
 
       // Aplicar filtro de estado si se proporciona

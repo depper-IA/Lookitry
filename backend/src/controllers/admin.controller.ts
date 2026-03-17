@@ -490,7 +490,7 @@ export const getMiniLandingsAdmin = async (req: any, res: Response) => {
     const { supabaseAdmin } = await import('../config/supabase');
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .select('id, name, email, slug, plan, has_landing_page, landing_suspended_at, subscription_status, created_at')
+      .select('id, name, email, slug, plan, is_in_trial, has_landing_page, landing_suspended_at, subscription_status, created_at')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
