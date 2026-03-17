@@ -34,6 +34,8 @@ export interface UpdateBrandDto {
   landing_template?: string;
   schedule?: Record<string, any> | null;
   slogan?: string;
+  logo_light?: string | null;
+  logo_dark?: string | null;
 }
 
 export class BrandsService {

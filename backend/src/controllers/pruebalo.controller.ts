@@ -88,6 +88,8 @@ export class PruebaloController {
         modal_title: (brand as any).modal_title ?? null,
         modal_description: (brand as any).modal_description ?? null,
         modal_features: (brand as any).modal_features ?? null,
+        logo_light: (brand as any).logo_light ?? null,
+        logo_dark: (brand as any).logo_dark ?? null,
       },
       products: products.map(product => ({
         id: product.id,

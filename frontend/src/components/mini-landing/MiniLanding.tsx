@@ -27,6 +27,8 @@ interface BrandData {
   total_reviews?: number | null;
   landing_template?: 'classic' | 'editorial' | 'moderno';
   schedule?: Record<string, string> | null;
+  logo_light?: string | null;
+  logo_dark?: string | null;
 }
 
 interface ProductData {
@@ -328,7 +330,7 @@ function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
         </>
       )}
       <div className="relative z-10 flex flex-col items-center gap-5 max-w-2xl">
-        {brand.logo && <img src={brand.logo} alt={brand.name} className="h-16 md:h-20 object-contain drop-shadow-lg" />}
+        {brand.logo && <img src={brand.logo_light || brand.logo} alt={brand.name} className="h-16 md:h-20 object-contain drop-shadow-lg" />}
         <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-md leading-tight">{brand.name}</h1>
         {brand.slogan && <p className="text-white/80 text-sm font-medium tracking-wide uppercase">{brand.slogan}</p>}
         {brand.brand_description && (
@@ -529,7 +531,7 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
     <header className="bg-white border-b border-gray-100 px-5 h-16 flex items-center justify-between sticky top-0 z-50">
       <div className="flex items-center gap-2.5">
         {brand.logo ? (
-          <img src={brand.logo} alt={brand.name} className="h-9 w-auto max-w-[120px] rounded-lg object-contain" />
+          <img src={brand.logo_dark || brand.logo} alt={brand.name} className="h-9 w-auto max-w-[120px] rounded-lg object-contain" />
         ) : (
           <div className="h-9 w-9 rounded-lg bg-gray-900 flex items-center justify-center text-white font-bold text-sm">
             {brand.name.slice(0, 2).toUpperCase()}
@@ -793,7 +795,7 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
       <div className="flex items-center gap-2.5">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primary }}>
           {brand.logo
-            ? <img src={brand.logo} alt={brand.name} className="w-full h-full object-contain rounded-lg" />
+            ? <img src={brand.logo_dark || brand.logo} alt={brand.name} className="w-full h-full object-contain rounded-lg" />
             : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>}
         </div>
         <span className="font-bold text-base" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.name}</span>
@@ -975,7 +977,7 @@ function ProbadorAbout({ brand }: { brand: BrandData }) {
       <div className="max-w-lg mx-auto">
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: primary }}>
           {brand.logo
-            ? <img src={brand.logo} alt={brand.name} className="w-full h-full object-contain rounded-2xl" />
+            ? <img src={brand.logo_light || brand.logo} alt={brand.name} className="w-full h-full object-contain rounded-2xl" />
             : <span className="text-white font-black text-lg" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{brand.name.slice(0, 2).toUpperCase()}</span>}
         </div>
         <h2 className="text-3xl font-black mb-4 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.name}</h2>
