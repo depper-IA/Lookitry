@@ -286,6 +286,7 @@ export default function MiPaginaPage() {
   const [logoUrl, setLogoUrl] = useState('');
   const [logoLightUrl, setLogoLightUrl] = useState('');
   const [logoDarkUrl, setLogoDarkUrl] = useState('');
+  const [coverBgColor, setCoverBgColor] = useState('');
   useEffect(() => {
     brandsService.getCurrentBrand()
       .then(b => {
@@ -300,6 +301,7 @@ export default function MiPaginaPage() {
         setLogoUrl(raw.logo || '');
         setLogoLightUrl(raw.logo_light || '');
         setLogoDarkUrl(raw.logo_dark || '');
+        setCoverBgColor(raw.cover_bg_color || '');
         const links = raw.social_links || {};
         setInstagram(links.instagram || '');
         setFacebook(links.facebook || '');
@@ -348,6 +350,7 @@ export default function MiPaginaPage() {
         logo: logoUrl || null,
         logo_light: logoLightUrl || null,
         logo_dark: logoDarkUrl || null,
+        cover_bg_color: coverBgColor || null,
         social_links,
         city_display: cityDisplay || null,
         national_shipping: nationalShipping,
@@ -597,6 +600,46 @@ export default function MiPaginaPage() {
           )}
         </div>
 
+        {/* Color de fondo del hero (solo si no hay imagen de portada) */}
+        {!coverImageUrl && (
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+              Color de fondo (si no hay imagen de portada)
+            </label>
+            <div className="flex items-center gap-3">
+              <div className="relative w-10 h-10 rounded-xl overflow-hidden border flex-shrink-0 cursor-pointer" style={{ borderColor: 'var(--border-color)' }}>
+                <input
+                  type="color"
+                  value={coverBgColor || '#1a1a1a'}
+                  onChange={e => setCoverBgColor(e.target.value)}
+                  className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+                />
+                <div className="w-full h-full rounded-xl" style={{ backgroundColor: coverBgColor || '#1a1a1a' }} />
+              </div>
+              <input
+                type="text"
+                value={coverBgColor}
+                onChange={e => { if (/^#[0-9A-Fa-f]{0,6}$/.test(e.target.value)) setCoverBgColor(e.target.value); }}
+                maxLength={7}
+                placeholder="#1a1a1a (opcional)"
+                className="flex-1 px-4 py-2.5 rounded-xl border text-sm font-mono outline-none"
+                style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              />
+              {coverBgColor && (
+                <button
+                  onClick={() => setCoverBgColor('')}
+                  className="text-xs text-red-500 hover:text-red-600 transition-colors"
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              Si no eliges color, se usará el color principal de tu marca como fondo del hero.
+            </p>
+          </div>
+        )}
+
         {/* Slogan */}
         <div className="space-y-1.5">
           <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
@@ -699,12 +742,12 @@ export default function MiPaginaPage() {
         {/* Ciudad y envíos */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Ciudad</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Dirección completa</label>
             <input
               type="text"
               value={cityDisplay}
               onChange={e => setCityDisplay(e.target.value)}
-              placeholder="Ej: Bogotá, Colombia"
+              placeholder="Ej: Calle 80 #15-20, Bogotá, Colombia"
               className="w-full px-4 py-3 rounded-xl border text-sm outline-none"
               style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             />

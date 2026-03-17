@@ -29,6 +29,7 @@ interface BrandData {
   schedule?: Record<string, string> | null;
   logo_light?: string | null;
   logo_dark?: string | null;
+  cover_bg_color?: string | null;
 }
 
 interface ProductData {
@@ -44,6 +45,7 @@ interface ProductData {
 interface MiniLandingProps {
   brandSlug: string;
   initialData: { brand: BrandData; products: ProductData[] } | null;
+  footerUrl?: string;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
@@ -283,13 +285,15 @@ function WhatsAppFAB({ phone, message }: { phone: string; message?: string | nul
 }
 
 // -- Shared: Footer ------------------------------------------------------------
-function LandingFooter({ primaryColor }: { primaryColor: string }) {
+function LandingFooter({ primaryColor, footerUrl }: { primaryColor: string; footerUrl?: string }) {
+  const url = footerUrl || 'https://pruebalo.wilkiedevs.com';
+  const displayUrl = url.replace(/^https?:\/\//, '');
   return (
     <footer className="py-6 px-4 border-t border-gray-100 text-center">
       <p className="text-xs text-gray-400">
         Probador virtual impulsado por{' '}
-        <a href="https://lookitry.com" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: primaryColor }}>
-          Lookitry
+        <a href={url.startsWith('http') ? url : `https://${url}`} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: primaryColor }}>
+          {displayUrl}
         </a>
       </p>
     </footer>
@@ -311,6 +315,21 @@ function ProductBadge({ badge }: { badge: string }) {
   );
 }
 
+// -- Componente de imagen de producto con fallback ----------------------------
+function ProductImage({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
+  const [error, setError] = useState(false);
+  if (!src || error) {
+    return (
+      <div className={`w-full h-full flex items-center justify-center bg-gray-100 ${className || ''}`}>
+        <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+        </svg>
+      </div>
+    );
+  }
+  return <img src={src} alt={alt} className={className} onError={() => setError(true)} />;
+}
+
 // ----------------------------------------------------------------------------
 // TEMPLATE CLASSIC
 // ----------------------------------------------------------------------------
@@ -321,7 +340,7 @@ function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
   return (
     <section
       className="relative w-full min-h-[420px] md:min-h-[520px] flex flex-col items-center justify-center text-center px-6 py-20 overflow-hidden"
-      style={hasCover ? {} : { background: `linear-gradient(135deg, ${primary}ee 0%, ${primary}99 100%)` }}
+      style={hasCover ? {} : { background: brand.cover_bg_color || `linear-gradient(135deg, ${primary}ee 0%, ${primary}99 100%)` }}
     >
       {hasCover && (
         <>
@@ -387,7 +406,7 @@ function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { 
         {products.map(p => (
           <button key={p.id} onClick={() => onProductClick(p.id)} className="group rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-200 text-left">
             <div className="relative aspect-square overflow-hidden bg-gray-50">
-              <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ backgroundColor: primaryColor + 'cc' }}>
                 <span className="text-white text-xs font-semibold px-3 py-1.5 rounded-full border-2 border-white">{ctaText || 'Probarme esto'}</span>
               </div>
@@ -445,6 +464,70 @@ function ClassicSocial({ brand }: { brand: BrandData }) {
   );
 }
 
+function ClassicInfo({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
+  const DAYS_ORDER = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'];
+  const DAYS: Record<string, string> = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Miercoles', jueves: 'Jueves', viernes: 'Viernes', sabado: 'Sabado', domingo: 'Domingo' };
+  const scheduleEntries = brand.schedule
+    ? DAYS_ORDER.filter(d => d in brand.schedule!).map(d => [d, brand.schedule![d]] as [string, string])
+    : [];
+  const hasRating = brand.rating != null;
+  const hasLocation = !!(brand.city_display || brand.national_shipping);
+  const hasSchedule = scheduleEntries.length > 0;
+  if (!hasRating && !hasLocation && !hasSchedule) return null;
+
+  return (
+    <section className="w-full max-w-2xl mx-auto px-4 py-10">
+      <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-5">
+        {/* Rating */}
+        {hasRating && (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              {[1,2,3,4,5].map(i => (
+                <StarIcon key={i} className="w-4 h-4 text-yellow-400" filled={i <= Math.round(brand.rating!)} />
+              ))}
+            </div>
+            <span className="font-bold text-gray-900">{brand.rating!.toFixed(1)}</span>
+            {brand.total_reviews != null && brand.total_reviews > 0 && (
+              <span className="text-sm text-gray-500">({brand.total_reviews.toLocaleString('es-CO')} reseñas)</span>
+            )}
+          </div>
+        )}
+        {/* Dirección / envíos */}
+        {hasLocation && (
+          <div className="flex flex-wrap items-center gap-4">
+            {brand.city_display && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <MapPinIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <span>{brand.city_display}</span>
+              </div>
+            )}
+            {brand.national_shipping && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <TruckIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <span>Envíos nacionales</span>
+              </div>
+            )}
+          </div>
+        )}
+        {/* Horario */}
+        {hasSchedule && (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">Horario de atención</p>
+            <div className="space-y-1">
+              {scheduleEntries.map(([day, hours]) => (
+                <div key={day} className="flex justify-between text-sm">
+                  <span className="text-gray-500">{DAYS[day] ?? day}</span>
+                  <span className={hours === 'Cerrado' ? 'text-gray-300' : 'text-gray-800 font-medium'}>{hours}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function ClassicContact({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
   if (!brand.whatsapp_contact) return null;
   const clean = brand.whatsapp_contact.replace(/\D/g, '');
@@ -463,7 +546,7 @@ function ClassicContact({ brand, primaryColor }: { brand: BrandData; primaryColo
   );
 }
 
-function TemplateClassic({ brandSlug, brand, products }: { brandSlug: string; brand: BrandData; products: ProductData[] }) {
+function TemplateClassic({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
   const primary = brand.primary_color || '#FF5C3A';
   const scrollToTryOn = () => document.getElementById('tryon-section')?.scrollIntoView({ behavior: 'smooth' });
   const [previewMode, setPreviewMode] = useState(false);
@@ -506,9 +589,10 @@ function TemplateClassic({ brandSlug, brand, products }: { brandSlug: string; br
         <ClassicHowItWorks primaryColor={primary} />
         <ClassicProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={scrollToTryOn} />
         <ClassicTryOn brandSlug={brandSlug} primaryColor={primary} />
+        <ClassicInfo brand={brand} primaryColor={primary} />
         <ClassicSocial brand={brand} />
         <ClassicContact brand={brand} primaryColor={primary} />
-        <LandingFooter primaryColor={primary} />
+        <LandingFooter primaryColor={primary} footerUrl={footerUrl} />
       </div>
       {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
     </div>
@@ -556,7 +640,7 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
 function EditorialCover({ brand }: { brand: BrandData }) {
   const primary = brand.primary_color || '#FF5C3A';
   return (
-    <div className="relative h-48 md:h-56 overflow-hidden flex items-end" style={brand.cover_image_url ? {} : { background: `linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` }}>
+    <div className="relative h-48 md:h-56 overflow-hidden flex items-end" style={brand.cover_image_url ? {} : { background: brand.cover_bg_color || `linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)` }}>
       {brand.cover_image_url && (
         <>
           <img src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
@@ -602,7 +686,7 @@ function EditorialProductCard({ product, selected, primaryColor, ctaText, onClic
   return (
     <button onClick={onClick} className="text-left w-full rounded-xl overflow-hidden border bg-white transition-all duration-200" style={{ borderColor: selected ? primaryColor : '#e8e4df', borderWidth: selected ? 1.5 : 0.5 }}>
       <div className="relative aspect-square bg-gray-50">
-        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+        <ProductImage src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
         {product.badge && <span className="absolute top-2 left-2"><ProductBadge badge={product.badge} /></span>}
         {selected && (
           <span className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full" style={{ backgroundColor: primaryColor }}>
@@ -662,7 +746,7 @@ function EditorialInfoCard({ brand }: { brand: BrandData }) {
               <div className="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
                 <MapPinIcon className="w-3.5 h-3.5 text-gray-500" />
               </div>
-              <span>{brand.city_display}{brand.national_shipping ? '  Envios nacionales' : ''}</span>
+              <span>{brand.city_display}{brand.national_shipping ? ' · Envíos nacionales' : ''}</span>
             </div>
           )}
           {!brand.city_display && brand.national_shipping && (
@@ -670,7 +754,7 @@ function EditorialInfoCard({ brand }: { brand: BrandData }) {
               <div className="w-6 h-6 rounded-md bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
                 <TruckIcon className="w-3.5 h-3.5 text-gray-500" />
               </div>
-              <span>Envios a todo el pais</span>
+              <span>Envíos a todo el país</span>
             </div>
           )}
         </div>
@@ -679,7 +763,7 @@ function EditorialInfoCard({ brand }: { brand: BrandData }) {
   );
 }
 
-function TemplateEditorial({ brandSlug, brand, products }: { brandSlug: string; brand: BrandData; products: ProductData[] }) {
+function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
   const primary = brand.primary_color || '#FF5C3A';
   const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id ?? null);
 
@@ -771,7 +855,7 @@ function TemplateEditorial({ brandSlug, brand, products }: { brandSlug: string; 
         </div>
       </div>
 
-      <LandingFooter primaryColor={primary} />
+      <LandingFooter primaryColor={primary} footerUrl={footerUrl} />
       </div>
       {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
     </div>
@@ -923,7 +1007,7 @@ function ProbadorProducts({ products, primaryColor, ctaText, onProductClick, sel
               className="text-left rounded-2xl overflow-hidden border transition-all duration-200 hover:-translate-y-1"
               style={{ backgroundColor: 'var(--p-surface, #fff)', borderColor: selectedId === p.id ? primaryColor : 'var(--p-border, #e5e5e5)', borderWidth: selectedId === p.id ? 1.5 : 1 }}>
               <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: 'var(--p-img-bg, #f0f0f0)' }}>
-                <img src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
+                <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
                 {p.badge && <span className="absolute top-2 left-2"><ProductBadge badge={p.badge} /></span>}
                 {selectedId === p.id && (
                   <span className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full" style={{ backgroundColor: primaryColor }}>
@@ -1000,7 +1084,7 @@ function ProbadorAbout({ brand }: { brand: BrandData }) {
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primary + '18' }}>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke={primary} strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 </div>
-                <span className="text-sm" style={{ color: 'var(--p-text-secondary, #333)' }}>{brand.city_display}{brand.national_shipping ? '  Envios nacionales' : ''}</span>
+                <span className="text-sm" style={{ color: 'var(--p-text-secondary, #333)' }}>{brand.city_display}{brand.national_shipping ? ' · Envíos nacionales' : ''}</span>
               </div>
             )}
             {!brand.city_display && brand.national_shipping && (
@@ -1008,7 +1092,7 @@ function ProbadorAbout({ brand }: { brand: BrandData }) {
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primary + '18' }}>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke={primary} strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 1h8zM13 8h4l3 5v3h-7V8z" /></svg>
                 </div>
-                <span className="text-sm" style={{ color: 'var(--p-text-secondary, #333)' }}>Envios a todo el pais</span>
+                <span className="text-sm" style={{ color: 'var(--p-text-secondary, #333)' }}>Envíos a todo el país</span>
               </div>
             )}
           </div>
@@ -1058,7 +1142,7 @@ function ProbadorContact({ brand }: { brand: BrandData }) {
   );
 }
 
-function TemplateModerno({ brandSlug, brand, products }: { brandSlug: string; brand: BrandData; products: ProductData[] }) {
+function TemplateModerno({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
   const primary = brand.primary_color || '#FF5C3A';
   const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id ?? null);
   const [previewMode, setPreviewMode] = useState(false);
@@ -1113,7 +1197,7 @@ function TemplateModerno({ brandSlug, brand, products }: { brandSlug: string; br
         <ProbadorUploadZone brandSlug={brandSlug} primaryColor={primary} />
         <ProbadorAbout brand={brand} />
         <ProbadorContact brand={brand} />
-        <LandingFooter primaryColor={primary} />
+        <LandingFooter primaryColor={primary} footerUrl={footerUrl} />
       </div>
       {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
     </div>
@@ -1124,7 +1208,7 @@ function TemplateModerno({ brandSlug, brand, products }: { brandSlug: string; br
 // COMPONENTE PRINCIPAL
 // ----------------------------------------------------------------------------
 
-export function MiniLanding({ brandSlug, initialData }: MiniLandingProps) {
+export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingProps) {
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(!initialData);
 
@@ -1159,12 +1243,12 @@ export function MiniLanding({ brandSlug, initialData }: MiniLandingProps) {
   const template = brand.landing_template || 'classic';
 
   if (template === 'editorial') {
-    return <TemplateEditorial brandSlug={brandSlug} brand={brand} products={products || []} />;
+    return <TemplateEditorial brandSlug={brandSlug} brand={brand} products={products || []} footerUrl={footerUrl} />;
   }
 
   if (template === 'moderno' || (template as string) === 'probador') {
-    return <TemplateModerno brandSlug={brandSlug} brand={brand} products={products || []} />;
+    return <TemplateModerno brandSlug={brandSlug} brand={brand} products={products || []} footerUrl={footerUrl} />;
   }
 
-  return <TemplateClassic brandSlug={brandSlug} brand={brand} products={products || []} />;
+  return <TemplateClassic brandSlug={brandSlug} brand={brand} products={products || []} footerUrl={footerUrl} />;
 }

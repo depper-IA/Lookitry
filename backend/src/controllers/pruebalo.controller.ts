@@ -90,6 +90,7 @@ export class PruebaloController {
         modal_features: (brand as any).modal_features ?? null,
         logo_light: (brand as any).logo_light ?? null,
         logo_dark: (brand as any).logo_dark ?? null,
+        cover_bg_color: (brand as any).cover_bg_color ?? null,
       },
       products: products.map(product => ({
         id: product.id,

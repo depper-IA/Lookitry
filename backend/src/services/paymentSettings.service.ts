@@ -5,6 +5,8 @@ export interface PaymentSettings {
   // Precios de mini-landing
   landing_price: number;
   landing_original_price: number;
+  // URL del footer de mini-landings
+  footer_brand_url: string;
   // Wompi
   wompi_enabled: boolean;
   wompi_public_key: string;
