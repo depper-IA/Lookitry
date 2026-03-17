@@ -35,6 +35,8 @@ export interface PaymentSettings {
   transfer_nit: string;
   // General
   currency: string;
+  // Pruebas y desarrollo
+  bypass_ip_protection: boolean;
   updated_at?: string;
 }
 
@@ -66,6 +68,7 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   transfer_account_holder: '',
   transfer_nit: '',
   currency: 'COP',
+  bypass_ip_protection: false,
 };
 
 export class PaymentSettingsService {
