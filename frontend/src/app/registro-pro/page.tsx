@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
@@ -88,9 +89,9 @@ function RegistroProContent() {
       <div className="w-full max-w-md">
 
         {/* Logo */}
-        <div className="text-center mb-6">
-          <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
-            Look<span className="text-[#FF5C3A]">itry</span>
+        <div className="flex justify-center mb-6">
+          <Link href="/">
+            <Image src="/logo.png" alt="Lookitry" width={140} height={40} priority />
           </Link>
         </div>
 

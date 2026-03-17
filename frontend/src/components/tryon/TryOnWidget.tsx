@@ -150,6 +150,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [resultImageUrl, setResultImageUrl] = useState<string | null>(null);
+  const [generationId, setGenerationId]     = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -198,6 +199,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
       setError(null);
       const result = await tryonService.generate(brandSlug, { productId: selectedProduct.id, selfieFile });
       setResultImageUrl(result.imageUrl);
+      setGenerationId(result.generationId ?? null);
       setStep('result');
       if (isEmbed) window.parent?.postMessage({ type: 'TRYON_COMPLETE', data: { imageUrl: result.imageUrl, productId: selectedProduct.id, productName: selectedProduct.name, generationId: result.generationId, processingTime: result.processingTime } }, '*');
     } catch (err: any) {
@@ -209,7 +211,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
 
   const handleReset = () => {
     setSelfieFile(null); setSelfiePreview(null); setSelectedProduct(null);
-    setResultImageUrl(null); setError(null); setStep('upload');
+    setResultImageUrl(null); setGenerationId(null); setError(null); setStep('upload');
   };
 
   const primaryColor   = config?.brand.primaryColor   || '#6366f1';
@@ -376,7 +378,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
               </div>
             )}
             {step === 'result' && resultImageUrl && (
-              <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} />
+              <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} />
             )}
           </div>
         </div>
@@ -457,7 +459,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
             </div>
           )}
           {step === 'result' && resultImageUrl && (
-            <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} />
+            <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} />
           )}
         </div>
       </div>
@@ -498,7 +500,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
               </div>
             )}
             {step === 'result' && resultImageUrl && (
-              <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} />
+              <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} />
             )}
           </div>
         )}
@@ -546,7 +548,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
         )}
 
         {step === 'result' && resultImageUrl && (
-          <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} />
+          <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} />
         )}
       </div>
     </div>

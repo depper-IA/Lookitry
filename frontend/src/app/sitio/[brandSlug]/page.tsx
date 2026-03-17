@@ -220,5 +220,5 @@ export default async function TryOnPage({ params }: PageProps) {
     return <PaginaSuspendida brandName={brand.name} />;
   }
 
-  return <MiniLanding brandSlug={params.brandSlug} initialData={data} />;
+  return <MiniLanding brandSlug={params.brandSlug} initialData={data} footerUrl={data.footer_brand_url} />;
 }

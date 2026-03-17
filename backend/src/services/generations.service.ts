@@ -14,6 +14,7 @@ export interface UpdateGenerationDto {
   selfie_url?: string;
   error_message?: string;
   processing_time?: number;
+  prompt_used?: string;
 }
 
 export class GenerationsService {

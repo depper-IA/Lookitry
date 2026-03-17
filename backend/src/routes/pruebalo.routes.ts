@@ -11,7 +11,6 @@ const pruebaloController = new PruebaloController();
 router.get('/:brandSlug', publicRateLimiter, pruebaloController.getBrandConfig);
 
 // POST /api/pruebalo/:brandSlug/generate - Generar imagen de try-on
-// Esta ruta NO requiere autenticación (con rate limiting más estricto)
 router.post(
   '/:brandSlug/generate',
   slugGenerationRateLimiter,
@@ -19,6 +18,13 @@ router.post(
   uploadSingleImage,
   handleMulterError,
   pruebaloController.generateTryOn
+);
+
+// POST /api/pruebalo/:brandSlug/generation/:generationId/feedback - Reportar error de generación
+router.post(
+  '/:brandSlug/generation/:generationId/feedback',
+  publicRateLimiter,
+  pruebaloController.reportGenerationFeedback
 );
 
 export default router;

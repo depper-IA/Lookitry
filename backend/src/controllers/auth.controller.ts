@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
 import { EmailService } from '../services/email.service';
-import { verifyEmailTemplate } from '../templates/email-templates';
+import { verifyEmailTemplate, passwordResetTemplate } from '../templates/email-templates';
 import { RegisterBrandDto, LoginDto } from '../types';
+import { AuthRequest } from '../middleware/auth';
 
 const authService = new AuthService();
 const emailService = new EmailService();
@@ -107,6 +108,104 @@ export class AuthController {
       }
 
       return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al iniciar sesión' });
+    }
+  }
+
+  async forgotPassword(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email requerido' });
+      }
+
+      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+      const { brand, token } = await authService.requestPasswordResetGetToken(email);
+
+      // Siempre responder OK para no revelar si el email existe
+      if (brand && token) {
+        const resetUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
+        emailService.sendEmail({
+          to: brand.email,
+          subject: 'Recuperar contraseña — Virtual Try-On',
+          html: passwordResetTemplate({ name: brand.name, email: brand.email }, resetUrl),
+        }).catch(err => console.error('[Auth] Error enviando email de reset:', err));
+      }
+
+      return res.status(200).json({ message: 'Si el email existe, recibirás un enlace para restablecer tu contraseña.' });
+    } catch (error: any) {
+      console.error('Error en forgotPassword:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al procesar la solicitud' });
+    }
+  }
+
+  async resetPassword(req: Request, res: Response) {
+    try {
+      const { token, password } = req.body;
+      if (!token || !password) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Token y contraseña son requeridos' });
+      }
+      if (password.length < 6) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La contraseña debe tener al menos 6 caracteres' });
+      }
+
+      await authService.resetPassword(token, password);
+      return res.status(200).json({ message: 'Contraseña restablecida correctamente' });
+    } catch (error: any) {
+      console.error('Error en resetPassword:', error);
+      if (error.message === 'TOKEN_INVALID' || error.message === 'TOKEN_EXPIRED') {
+        return res.status(400).json({ error: error.message, message: 'El enlace es inválido o ha expirado. Solicita uno nuevo.' });
+      }
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al restablecer la contraseña' });
+    }
+  }
+
+  async resendVerification(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email requerido' });
+      }
+
+      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+      const { brand, token } = await authService.resendVerificationEmail(email);
+
+      if (brand && token) {
+        const verifyUrl = `${frontendUrl}/auth/verify?token=${token}`;
+        emailService.sendEmail({
+          to: brand.email,
+          subject: 'Confirma tu correo — Lookitry',
+          html: verifyEmailTemplate({ name: brand.name, email: brand.email }, verifyUrl),
+        }).catch(err => console.error('[Auth] Error reenviando email de verificación:', err));
+      }
+
+      // Siempre responder OK para no revelar si el email existe
+      return res.status(200).json({ message: 'Si el email está pendiente de verificación, recibirás un nuevo enlace.' });
+    } catch (error: any) {
+      console.error('Error en resendVerification:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al reenviar el correo' });
+    }
+  }
+
+  async changePassword(req: AuthRequest, res: Response) {
+    try {
+      const brandId = req.brand!.id;
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Contraseña actual y nueva son requeridas' });
+      }
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La nueva contraseña debe tener al menos 6 caracteres' });
+      }
+
+      await authService.changePassword(brandId, currentPassword, newPassword);
+      return res.status(200).json({ message: 'Contraseña actualizada correctamente' });
+    } catch (error: any) {
+      console.error('Error en changePassword:', error);
+      if (error.message === 'WRONG_PASSWORD') {
+        return res.status(401).json({ error: 'WRONG_PASSWORD', message: 'La contraseña actual es incorrecta' });
+      }
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al cambiar la contraseña' });
     }
   }
 }

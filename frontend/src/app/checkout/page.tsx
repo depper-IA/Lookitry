@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
@@ -206,8 +207,8 @@ function CheckoutContent() {
 
       {/* Nav */}
       <nav className="bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
-        <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base text-white tracking-tight">
-          Look<span className="text-[#FF5C3A]">itry</span>
+        <Link href="/">
+          <Image src="/logo.png" alt="Lookitry" width={120} height={36} priority />
         </Link>
         <div className="flex items-center gap-1.5 text-[12px] text-[#888]">
           <IconLock />

@@ -73,7 +73,7 @@ export class SubscriptionController {
 
       let query = supabaseAdmin
         .from('brands')
-        .select('id, name, email, slug, plan, subscription_status, subscription_start_date, subscription_end_date, last_payment_date, next_payment_date')
+        .select('id, name, email, slug, plan, trial_end_date, subscription_status, subscription_start_date, subscription_end_date, last_payment_date, next_payment_date')
         .order('subscription_end_date', { ascending: true });
 
       // Aplicar filtro de estado si se proporciona
@@ -87,14 +87,21 @@ export class SubscriptionController {
         throw new Error(error.message);
       }
 
-      // Calcular días restantes para cada marca
+      // Calcular días restantes y estado trial para cada marca
+      const now = new Date();
       const subscriptionsWithDays = await Promise.all(
         (data || []).map(async (brand) => {
           const daysRemaining = await subscriptionService.getDaysRemaining(brand.id);
-          return {
-            ...brand,
-            daysRemaining,
-          };
+          const trialEnd = brand.trial_end_date ? new Date(brand.trial_end_date) : null;
+          const is_in_trial =
+            trialEnd !== null &&
+            trialEnd > now &&
+            brand.subscription_status !== 'active' &&
+            brand.subscription_status !== 'expiring_soon';
+          const trial_days_remaining = is_in_trial && trialEnd
+            ? Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+            : null;
+          return { ...brand, daysRemaining, is_in_trial, trial_days_remaining };
         })
       );
 

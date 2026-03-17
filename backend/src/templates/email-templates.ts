@@ -519,6 +519,36 @@ export const landingDeletionWarningEmail = (
 };
 
 /**
+ * Email de recuperación de contraseña.
+ * Se envía cuando el usuario solicita restablecer su contraseña.
+ */
+export const passwordResetTemplate = (brand: BrandInfo, resetUrl: string): string => {
+  const content = `
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Restablecer contraseña</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Recibimos una solicitud para restablecer la contraseña de tu cuenta. Haz clic en el botón de abajo para crear una nueva contraseña.
+    </p>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${resetUrl}"
+         style="background-color: #FF5C3A; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px;">
+        Restablecer contraseña
+      </a>
+    </div>
+    <p style="color: #888; font-size: 13px; text-align: center;">
+      Este enlace expira en 1 hora. Si no solicitaste este cambio, ignora este mensaje — tu contraseña no será modificada.
+    </p>
+    <p style="color: #aaa; font-size: 12px; text-align: center; margin-top: 16px; word-break: break-all;">
+      O copia este enlace en tu navegador:<br/>
+      <a href="${resetUrl}" style="color: #FF5C3A;">${resetUrl}</a>
+    </p>
+  `;
+  return baseTemplate(content);
+};
+
+/**
  * Email de notificación de eliminación definitiva de mini-landing (a los 90 días).
  * Se envía cuando la mini-landing ya fue eliminada del sistema.
  */

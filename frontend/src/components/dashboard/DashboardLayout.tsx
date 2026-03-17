@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { SubscriptionBadge } from './SubscriptionBadge';
@@ -31,12 +32,42 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { brand, logout } = useAuth();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [verificationBannerDismissed, setVerificationBannerDismissed] = useState(false);
+  const [resendSending, setResendSending] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
+
+  const showVerificationBanner = !verificationBannerDismissed && brand && !(brand as any).emailVerified;
+
+  const handleResendVerification = async () => {
+    if (!brand?.email) return;
+    setResendSending(true);
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/auth/resend-verification`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: brand.email }),
+        }
+      );
+      setResendSent(true);
+    } catch {
+      // silencioso
+    } finally {
+      setResendSending(false);
+    }
+  };
 
   const sidebarContent = (
     <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-5 border-b" style={{ borderColor: '#1f1f1f' }}>
-        <span className="font-syne font-bold text-lg text-white tracking-tight">Mostrador</span>
+        <Link href="/dashboard/products" className="flex items-center gap-2">
+          <Image src="/logo.png" alt="Lookitry" width={26} height={26} className="object-contain w-[26px] h-[26px]" priority />
+          <span style={{ fontFamily: 'Syne, sans-serif' }} className="hidden sm:inline font-extrabold text-base leading-none text-white tracking-tight">
+            Look<span style={{ color: '#FF5C3A' }}>itry</span>
+          </span>
+        </Link>
         {/* Botón cerrar en móvil */}
         <button
           className="lg:hidden p-1 rounded text-gray-400 hover:text-white"
@@ -137,6 +168,39 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Contenido principal */}
       <div className="lg:pl-60 flex flex-col min-h-screen">
+        {/* Banner de verificación de email — dentro del área de contenido para respetar el padding del sidebar */}
+        {showVerificationBanner && (
+          <div className="w-full bg-[#1a1200] border-b border-[#3d2e00] px-4 py-2.5 flex items-center justify-between gap-4 flex-shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <svg className="w-4 h-4 text-[#f5a623] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <p className="text-[12px] text-[#f5a623] truncate">
+                Verifica tu correo <span className="font-medium">{brand?.email}</span> para usar las generaciones.{' '}
+                {resendSent ? (
+                  <span className="text-emerald-400">Correo enviado.</span>
+                ) : (
+                  <button
+                    onClick={handleResendVerification}
+                    disabled={resendSending}
+                    className="underline hover:text-[#ffc04d] transition-colors disabled:opacity-50 bg-transparent border-0 p-0 cursor-pointer text-[#f5a623] text-[12px]"
+                  >
+                    {resendSending ? 'Enviando...' : 'Reenviar correo'}
+                  </button>
+                )}
+              </p>
+            </div>
+            <button
+              onClick={() => setVerificationBannerDismissed(true)}
+              className="shrink-0 text-[#f5a623] hover:text-[#ffc04d] transition-colors"
+              aria-label="Cerrar aviso"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
         {/* Header */}
         <header
           className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 h-14 border-b"

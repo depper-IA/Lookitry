@@ -12,6 +12,8 @@ interface Subscription {
   email: string;
   slug: string;
   plan: string;
+  is_in_trial?: boolean;
+  trial_days_remaining?: number | null;
   subscription_status: 'active' | 'expiring_soon' | 'expired' | 'suspended';
   subscription_start_date: string;
   subscription_end_date: string;
@@ -20,7 +22,7 @@ interface Subscription {
   daysRemaining: number;
 }
 
-type FilterStatus = 'all' | 'active' | 'expiring_soon' | 'expired' | 'suspended';
+type FilterStatus = 'all' | 'active' | 'expiring_soon' | 'expired' | 'suspended' | 'trial';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -47,6 +49,40 @@ function DaysChip({ days }: { days: number }) {
   if (days <= 3) return <span className="text-xs font-semibold text-red-600">{days} días</span>;
   if (days <= 7) return <span className="text-xs font-semibold text-amber-600">{days} días</span>;
   return <span className="text-xs text-emerald-600">{days} días</span>;
+}
+
+function PlanBadge({ plan, isInTrial }: { plan: string; isInTrial?: boolean }) {
+  if (isInTrial) {
+    return (
+      <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
+        style={{ backgroundColor: 'rgba(107,114,128,0.15)', color: '#6b7280' }}>
+        TRIAL
+      </span>
+    );
+  }
+  if (plan === 'PRO') {
+    return (
+      <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
+        style={{ backgroundColor: 'rgba(168,85,247,0.12)', color: '#a855f7' }}>
+        PRO
+      </span>
+    );
+  }
+  if (plan === 'LANDING') {
+    return (
+      <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
+        style={{ backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }}>
+        LANDING
+      </span>
+    );
+  }
+  // BASIC
+  return (
+    <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
+      style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
+      BASIC
+    </span>
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -156,7 +192,9 @@ function RenewModal({
       <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border shadow-xl w-full max-w-md">
         <div style={{ borderColor: 'var(--border-color)' }} className="px-6 py-5 border-b">
           <h3 style={{ color: 'var(--text-primary)' }} className="font-bold text-lg">Registrar pago — {brand.name}</h3>
-          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">Plan {brand.plan} · {formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes</p>
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">
+            {brand.is_in_trial ? 'Plan Trial' : `Plan ${brand.plan}`} · {brand.is_in_trial ? formatPlanPrice('BASIC') : formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes
+          </p>
         </div>
         <div className="px-6 py-5 space-y-4">
           {error && <p className="text-sm text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
@@ -283,7 +321,12 @@ function ChangePlanModal({
           {error && <p className="text-sm text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
           <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border px-4 py-3">
             <p style={{ color: 'var(--text-muted)' }} className="text-xs mb-0.5">Plan actual</p>
-            <p style={{ color: 'var(--text-primary)' }} className="font-semibold">{brand.plan} — {formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes</p>
+            <p style={{ color: 'var(--text-primary)' }} className="font-semibold">
+              {brand.is_in_trial ? 'TRIAL' : brand.plan}
+              {!brand.is_in_trial && brand.plan !== 'LANDING' && ` — ${formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes`}
+              {!brand.is_in_trial && brand.plan === 'LANDING' && ' — Pago único'}
+              {brand.is_in_trial && ` — ${brand.trial_days_remaining ?? '?'} días restantes`}
+            </p>
           </div>
           <div>
             <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Nuevo plan</label>
@@ -411,7 +454,11 @@ export default function AdminSubscriptionsPage() {
 
   // Filtrado
   const filtered = subscriptions.filter(s => {
-    const matchStatus = filter === 'all' || s.subscription_status === filter;
+    const matchStatus = filter === 'all'
+      ? true
+      : filter === 'trial'
+      ? s.is_in_trial === true
+      : s.subscription_status === filter;
     const q = search.toLowerCase();
     const matchSearch = !q || s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q) || s.slug.toLowerCase().includes(q);
     return matchStatus && matchSearch;
@@ -426,6 +473,7 @@ export default function AdminSubscriptionsPage() {
     expiring_soon: subscriptions.filter(s => s.subscription_status === 'expiring_soon').length,
     expired: subscriptions.filter(s => s.subscription_status === 'expired').length,
     suspended: subscriptions.filter(s => s.subscription_status === 'suspended').length,
+    trial: subscriptions.filter(s => s.is_in_trial === true).length,
   };
 
   const expiringSoon = subscriptions.filter(s => s.daysRemaining !== null && s.daysRemaining >= 0 && s.daysRemaining <= 7);
@@ -464,9 +512,9 @@ export default function AdminSubscriptionsPage() {
           style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           className="w-full px-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
         <div className="flex flex-wrap gap-2">
-          {(['all', 'active', 'expiring_soon', 'expired', 'suspended'] as FilterStatus[]).map(f => {
-            const labels: Record<FilterStatus, string> = { all: 'Todas', active: 'Activas', expiring_soon: 'Por vencer', expired: 'Vencidas', suspended: 'Suspendidas' };
-            const colors: Record<FilterStatus, string> = { all: 'bg-[#FF5C3A]', active: 'bg-emerald-600', expiring_soon: 'bg-amber-500', expired: 'bg-red-600', suspended: 'bg-gray-600' };
+          {(['all', 'active', 'expiring_soon', 'expired', 'suspended', 'trial'] as FilterStatus[]).map(f => {
+            const labels: Record<FilterStatus, string> = { all: 'Todas', active: 'Activas', expiring_soon: 'Por vencer', expired: 'Vencidas', suspended: 'Suspendidas', trial: 'Trial' };
+            const colors: Record<FilterStatus, string> = { all: 'bg-[#FF5C3A]', active: 'bg-emerald-600', expiring_soon: 'bg-amber-500', expired: 'bg-red-600', suspended: 'bg-gray-600', trial: 'bg-[#6366f1]' };
             const active = filter === f;
             return (
               <button key={f} onClick={() => setFilter(f)}
@@ -541,13 +589,17 @@ export default function AdminSubscriptionsPage() {
                     <p style={{ color: 'var(--text-muted)' }} className="text-xs">/{s.slug}</p>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${s.plan === 'PRO' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                      {s.plan}
-                    </span>
-                    <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">{formatPlanPrice(s.plan as 'BASIC' | 'PRO')}</p>
+                    <PlanBadge plan={s.plan} isInTrial={s.is_in_trial} />
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">
+                      {s.is_in_trial
+                        ? `${s.trial_days_remaining ?? '?'} días restantes`
+                        : s.plan === 'LANDING' ? 'Pago único' : formatPlanPrice(s.plan as 'BASIC' | 'PRO')}
+                    </p>
                   </td>
                   <td style={{ color: 'var(--text-secondary)' }} className="px-5 py-3.5">{formatDate(s.subscription_end_date)}</td>
-                  <td className="px-5 py-3.5"><DaysChip days={s.daysRemaining} /></td>
+                  <td className="px-5 py-3.5">
+                    <DaysChip days={s.is_in_trial ? (s.trial_days_remaining ?? 0) : s.daysRemaining} />
+                  </td>
                   <td className="px-5 py-3.5"><StatusBadge status={s.subscription_status} /></td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2 flex-wrap">
