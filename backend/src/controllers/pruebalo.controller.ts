@@ -85,6 +85,9 @@ export class PruebaloController {
         landing_template: (brand as any).landing_template ?? 'classic',
         schedule: (brand as any).schedule ?? null,
         slogan: (brand as any).slogan ?? null,
+        modal_title: (brand as any).modal_title ?? null,
+        modal_description: (brand as any).modal_description ?? null,
+        modal_features: (brand as any).modal_features ?? null,
       },
       products: products.map(product => ({
         id: product.id,
