@@ -619,7 +619,7 @@ export default function AdminBrandsPage() {
             </div>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                {[['Email', selectedBrand.email], ['Slug', selectedBrand.slug], ['Plan', selectedBrand.plan],
+                {[['Email', selectedBrand.email], ['Slug', selectedBrand.slug], ['Plan', selectedBrand.is_in_trial ? 'TRIAL' : selectedBrand.plan],
                   ['Fecha de registro', new Date(selectedBrand.created_at).toLocaleDateString('es-ES')]].map(([label, value]) => (
                   <div key={label}><p className="text-sm text-gray-600">{label}</p><p className="text-sm font-medium text-gray-900">{value}</p></div>
                 ))}
