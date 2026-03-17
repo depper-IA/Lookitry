@@ -288,3 +288,119 @@
 - Variables de entorno n8n pendientes de configurar: `BREVO_API_KEY`, `APIFY_API_TOKEN`, `GOOGLE_CSE_API_KEY`, `GOOGLE_CSE_ID`, `GROQ_API_KEY`, `SUPABASE_SERVICE_KEY`
 - El FAQ usa paleta `#FF5C3A` (acento), `#0a0a0a` (fondo oscuro), `#f5f2ee` (fondo claro) — misma paleta corporativa del sitio
 - Nombre nuevo del proyecto: **Lookitry** (antes VirtualTryOn)
+
+---
+
+- [-] 41. Layout "Mi página": precio dinámico y ocultar mensaje cuando está activa
+  - [x] 41.1 Leer el precio de activación de landing desde configuración del admin (no hardcodeado)
+    - El mensaje actual dice "$500.000 COP" hardcodeado en `mi-pagina/page.tsx`
+    - Exponer el precio desde el panel admin (ya existe config de precios) vía endpoint o variable de entorno
+    - _Archivos: frontend/src/app/dashboard/mi-pagina/page.tsx, backend/src/controllers/admin.controller.ts_
+  - [x] 41.2 Ocultar el mensaje de activación cuando `has_landing_page = true`
+    - El bloque de texto informativo solo debe mostrarse si la landing NO está activa
+    - _Archivos: frontend/src/app/dashboard/mi-pagina/page.tsx_
+
+---
+
+- [x] 42. Dashboard: estadísticas de mini-landings activas
+  - [x] 42.1 Agregar tarjeta/sección en el dashboard principal con contadores de mini-landings
+    - Total activas (`has_landing_page = true`)
+    - Total suspendidas (`landing_suspended_at != null`)
+    - Total sin activar (`has_landing_page = false` y `landing_suspended_at = null`)
+    - Endpoint: `GET /api/admin/stats/landings` o extender el endpoint de stats existente
+    - _Archivos: frontend/src/app/dashboard/page.tsx, backend/src/controllers/admin.controller.ts_
+
+---
+
+- [~] 43. Ingresos y pagos: reportes de landings
+  - [~] 43.1 En `/admin/revenue` incluir ingresos por plan LANDING separados de BASIC/PRO
+    - Filtro o columna adicional para pagos de tipo landing
+    - _Archivos: frontend/src/app/admin/revenue/page.tsx_
+  - [~] 43.2 En `/admin/brands` y `/admin/subscriptions` mostrar correctamente el plan LANDING
+    - _Archivos: frontend/src/app/admin/brands/page.tsx, frontend/src/app/admin/subscriptions/page.tsx_
+  - [~] 43.3 Historial de pagos: incluir y filtrar pagos de tipo landing
+    - _Archivos: frontend/src/app/admin/revenue/page.tsx, backend/src/controllers/admin.controller.ts_
+
+---
+
+- [~] 44. Configuración admin: selector bypass protección por IP en pruebas
+  - [~] 44.1 Agregar toggle en la página de configuración/pruebas del admin para desactivar protección por IP en registro
+    - Colocarlo debajo del toggle de tarjetas de prueba (mismo estilo visual)
+    - Persistir en la misma tabla/config que el toggle de tarjetas
+    - _Archivos: frontend/src/app/admin/settings/page.tsx (o equivalente), backend/src/controllers/admin.controller.ts_
+
+---
+
+- [ ] 45. Autenticación: recuperar y cambiar contraseña
+  - [ ] 45.1 Agregar enlace "¿Olvidaste tu contraseña?" en el login de usuarios (`/login`)
+    - Flujo: ingresa email → recibe correo con link → página de reset → nueva contraseña
+    - _Archivos: frontend/src/app/login/page.tsx, backend/src/controllers/auth.controller.ts, backend/src/services/auth.service.ts_
+  - [ ] 45.2 Agregar enlace "¿Olvidaste tu contraseña?" en el login de administrador (`/admin/login`)
+    - _Archivos: frontend/src/app/admin/login/page.tsx_
+  - [ ] 45.3 Agregar opción "Cambiar contraseña" en el menú de perfil de usuario del dashboard
+    - Modal o página: ingresa contraseña actual + nueva + confirmar
+    - _Archivos: frontend/src/app/dashboard/perfil/page.tsx (o componente de perfil)_
+  - [ ] 45.4 Agregar opción "Cambiar contraseña" en el menú de administrador
+    - _Archivos: frontend/src/app/admin/perfil/page.tsx (o componente de perfil admin)_
+  - [ ] 45.5 Corregir bug de notificación "Comprueba tu correo electrónico"
+    - Investigar dónde se dispara y por qué está bugeada
+    - Contexto: la recuperación es para acceder a créditos de generación / herramienta de generación
+    - _Archivos: frontend/src/components/auth/RegisterForm.tsx, backend/src/services/auth.service.ts_
+
+---
+
+- [ ] 46. Tutoriales: onboarding y tutorial de configuración de landing
+  - [ ] 46.1 Investigar y corregir por qué desapareció el tutorial paso a paso de configuración de cuenta
+    - Verificar si fue eliminado en algún commit reciente o si hay condición que lo oculta
+    - _Archivos: frontend/src/app/dashboard/ (buscar componente de onboarding/tutorial)_
+  - [ ] 46.2 Crear tutorial de configuración de mini-landing para usuarios que compran plan LANDING
+    - Mostrar tutorial al entrar al dashboard por primera vez después de activar landing
+    - Pasos: subir logo, configurar colores, agregar productos, publicar
+    - _Archivos: frontend/src/app/dashboard/mi-pagina/page.tsx, frontend/src/components/dashboard/_
+
+---
+
+- [ ] 47. Templates: bugs y mejoras visuales
+  - [ ] 47.1 Template clásico: mostrar reseñas, ciudad/dirección y otros datos faltantes
+    - Verificar qué campos no se están renderizando en `TemplateClassic`
+    - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
+  - [ ] 47.2 Cambiar campo "ciudad" por "dirección completa" en el formulario de mi-pagina
+    - Reflejar el campo en todos los templates (clásico, editorial, moderno)
+    - _Archivos: frontend/src/app/dashboard/mi-pagina/page.tsx, frontend/src/components/mini-landing/MiniLanding.tsx_
+  - [ ] 47.3 Templates moderno y editorial: corregir carga de imágenes
+    - Investigar por qué las imágenes no cargan en esos templates
+    - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
+  - [ ] 47.4 Todos los templates: opción de color de fondo sólido como alternativa a imagen de portada
+    - Si no hay imagen de portada, permitir elegir un color sólido de fondo en lugar del gradiente por defecto
+    - Agregar campo `cover_bg_color` en el formulario y en la BD
+    - _Archivos: frontend/src/app/dashboard/mi-pagina/page.tsx, frontend/src/components/mini-landing/MiniLanding.tsx, backend/src/services/brands.service.ts_
+
+---
+
+- [ ] 48. Suscripciones y marcas: plan trial
+  - [ ] 48.1 En `/admin/subscriptions`: mostrar plan TRIAL correctamente (no como BASIC)
+    - _Archivos: frontend/src/app/admin/subscriptions/page.tsx, backend/src/controllers/admin.controller.ts_
+  - [ ] 48.2 Corregir flujo de upgrade: desde TRIAL debe poder ir a BASIC o a PRO
+    - Actualmente solo permite ir a PRO desde TRIAL
+    - _Archivos: frontend/src/app/dashboard/ (componente de upgrade), backend/src/controllers/brands.controller.ts_
+  - [ ] 48.3 En `/admin/brands`: mostrar TRIAL como plan, no BASIC
+    - _Archivos: frontend/src/app/admin/brands/page.tsx_
+
+---
+
+- [ ] 49. Footer de templates: URL provisional de Lookitry
+  - [ ] 49.1 Cambiar el link del footer en todos los templates de `lookitry.com` a `pruebalo.wilkiedevs.com`
+    - Afecta `LandingFooter` en `MiniLanding.tsx` y cualquier otro footer de template
+    - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
+
+---
+
+- [ ] 50. Base de datos: seguridad y gestión de usuarios
+  - [ ] 50.1 Activar RLS (Row Level Security) en tablas críticas de Supabase
+    - Tablas: `brands`, `products`, `generations`, `subscriptions`
+    - Políticas: cada brand solo puede leer/escribir sus propios registros (por `brand_id` o `id`)
+    - El backend usa `service_role` (bypassa RLS) — verificar que ningún endpoint exponga datos cruzados
+    - _Archivos: backend/migrations/enable_rls.sql_
+  - [ ] 50.2 Auditoría de endpoints: verificar que no haya filtración de datos entre marcas
+    - Revisar todos los `GET` que devuelven listas — asegurar que siempre filtren por `brand_id` del token
+    - _Archivos: backend/src/controllers/ (todos)_
