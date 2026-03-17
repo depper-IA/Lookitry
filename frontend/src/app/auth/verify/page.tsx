@@ -29,8 +29,16 @@ export default function AuthVerifyPage() {
         } else {
           setStatus('success');
           setMessage(data.message || 'Correo verificado correctamente.');
-          // Redirigir al login después de 2 segundos
-          setTimeout(() => router.push('/login'), 2500);
+          // Actualizar emailVerified en localStorage para que el banner desaparezca
+          try {
+            const stored = localStorage.getItem('brand');
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              localStorage.setItem('brand', JSON.stringify({ ...parsed, emailVerified: true }));
+            }
+          } catch {}
+          // Redirigir al dashboard después de 2 segundos
+          setTimeout(() => router.push('/dashboard'), 2500);
         }
       })
       .catch(() => {
@@ -72,7 +80,7 @@ export default function AuthVerifyPage() {
                 Correo verificado
               </h1>
               <p className="text-[13px] text-[#555] mb-5">{message}</p>
-              <p className="text-[12px] text-[#333]">Redirigiendo al inicio de sesión...</p>
+              <p className="text-[12px] text-[#333]">Redirigiendo al dashboard...</p>
             </>
           )}
 
