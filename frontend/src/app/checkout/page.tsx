@@ -207,7 +207,7 @@ function CheckoutContent() {
       {/* Nav */}
       <nav className="bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
         <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base text-white tracking-tight">
-          Virtual<span className="text-[#FF5C3A]">Try</span>On
+          Look<span className="text-[#FF5C3A]">itry</span>
         </Link>
         <div className="flex items-center gap-1.5 text-[12px] text-[#888]">
           <IconLock />
