@@ -58,6 +58,13 @@ PROHIBIDO usar modelos de IA de pago sin consentimiento explícito del usuario.
 
 # Flujo de trabajo — Deploy y desarrollo local
 
+## REGLA CRÍTICA: Trabajo en LOCAL
+**Actualmente estamos trabajando en LOCAL. El deploy al VPS se hará UNA SOLA VEZ al final, cuando el usuario lo indique explícitamente después de completar TODAS las tareas pendientes.**
+
+- NO hacer deploy después de cada tarea.
+- NO ejecutar `_deploy_now.py` ni `git push` salvo orden explícita del usuario.
+- Todos los cambios se acumulan localmente hasta que el usuario diga "hacer deploy".
+
 ## Deploy
 - Hacer deploy solo cuando el usuario lo indique explícitamente, NO después de cada tarea.
 - Acumular todos los cambios y hacer un único deploy al final con: `git add -A; git commit -m "..."; git push` seguido de `python scripts/_deploy_now.py` con el flag apropiado (`--frontend`, `--backend`, o sin flag para ambos).
