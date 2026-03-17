@@ -6,6 +6,7 @@ import { brandsService } from '@/services/brands.service';
 import { authService } from '@/services/auth.service';
 import { api } from '@/services/api';
 import { Spinner } from '@/components/ui/Spinner';
+import { LandingTutorial } from '@/components/dashboard/LandingTutorial';
 import type { Brand } from '@/types';
 
 const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
@@ -389,7 +390,13 @@ export default function MiPaginaPage() {
     return restantes > 0 ? restantes : 0;
   })();
 
+  const brandId = (brand as any)?.id;
+
   return (
+    <>
+      {hasLandingPage && brandId && (
+        <LandingTutorial brandId={brandId} />
+      )}
     <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6 items-start w-full">
       {/* ── Columna izquierda: formulario ── */}
       <div className="space-y-6 min-w-0">
@@ -1092,6 +1099,7 @@ export default function MiPaginaPage() {
       </div>
     </div>
   </div>
+    </>
   );
 }
 

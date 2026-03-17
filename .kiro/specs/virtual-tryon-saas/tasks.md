@@ -353,7 +353,7 @@
   - [x] 46.1 Investigar y corregir por qué desapareció el tutorial paso a paso de configuración de cuenta
     - Verificar si fue eliminado en algún commit reciente o si hay condición que lo oculta
     - _Archivos: frontend/src/app/dashboard/ (buscar componente de onboarding/tutorial)_
-  - [ ] 46.2 Crear tutorial de configuración de mini-landing para usuarios que compran plan LANDING
+  - [x] 46.2 Crear tutorial de configuración de mini-landing para usuarios que compran plan LANDING
     - Mostrar tutorial al entrar al dashboard por primera vez después de activar landing
     - Pasos: subir logo, configurar colores, agregar productos, publicar
     - _Archivos: frontend/src/app/dashboard/mi-pagina/page.tsx, frontend/src/components/dashboard/_
