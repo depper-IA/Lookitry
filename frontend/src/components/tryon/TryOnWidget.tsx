@@ -72,12 +72,13 @@ function StepBar({ step, primaryColor }: { step: Step; primaryColor: string }) {
 
 // ── Selector de productos amigable ────────────────────────────────────────────
 function FriendlyProductSelector({
-  products, selected, onSelect, primaryColor,
+  products, selected, onSelect, primaryColor, generatedProducts,
 }: {
   products: Product[];
   selected: Product | null;
   onSelect: (p: Product) => void;
   primaryColor: string;
+  generatedProducts: Map<string, string>;
 }) {
   if (products.length === 0) {
     return (
@@ -102,6 +103,7 @@ function FriendlyProductSelector({
       <div className="grid grid-cols-2 gap-3">
         {products.map(p => {
           const sel = selected?.id === p.id;
+          const alreadyGenerated = generatedProducts.has(p.id);
           return (
             <button
               key={p.id}
@@ -117,6 +119,15 @@ function FriendlyProductSelector({
                   alt={p.name}
                   className="w-full aspect-square object-cover"
                 />
+                {/* Badge "Ya probado" */}
+                {alreadyGenerated && !sel && (
+                  <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-white text-xs font-semibold shadow-md" style={{ backgroundColor: '#10b981' }}>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Probado
+                  </div>
+                )}
                 {sel && (
                   <div
                     className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-white text-sm shadow-md"
@@ -132,6 +143,9 @@ function FriendlyProductSelector({
                   <span className="inline-block mt-1 text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full capitalize">
                     {p.category}
                   </span>
+                )}
+                {alreadyGenerated && (
+                  <p className="text-xs mt-1" style={{ color: '#10b981' }}>Ver resultado</p>
                 )}
               </div>
             </button>
@@ -153,6 +167,8 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   const [generationId, setGenerationId]     = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  // Productos ya generados en esta sesión: productId → imageUrl
+  const [generatedProducts, setGeneratedProducts] = useState<Map<string, string>>(new Map());
 
   useEffect(() => { loadConfig(); }, [brandSlug]);
 
@@ -194,12 +210,21 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
 
   const handleGenerate = async () => {
     if (!selfieFile || !selectedProduct) return;
+    // Si ya fue generado, mostrar resultado guardado directamente
+    const cached = generatedProducts.get(selectedProduct.id);
+    if (cached) {
+      setResultImageUrl(cached);
+      setStep('result');
+      return;
+    }
     try {
       setStep('generating');
       setError(null);
       const result = await tryonService.generate(brandSlug, { productId: selectedProduct.id, selfieFile });
       setResultImageUrl(result.imageUrl);
       setGenerationId(result.generationId ?? null);
+      // Guardar en el mapa de generados
+      setGeneratedProducts(prev => new Map(prev).set(selectedProduct.id, result.imageUrl));
       setStep('result');
       if (isEmbed) window.parent?.postMessage({ type: 'TRYON_COMPLETE', data: { imageUrl: result.imageUrl, productId: selectedProduct.id, productName: selectedProduct.name, generationId: result.generationId, processingTime: result.processingTime } }, '*');
     } catch (err: any) {
@@ -211,7 +236,9 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
 
   const handleReset = () => {
     setSelfieFile(null); setSelfiePreview(null); setSelectedProduct(null);
-    setResultImageUrl(null); setGenerationId(null); setError(null); setStep('upload');
+    setResultImageUrl(null); setGenerationId(null); setError(null);
+    setGeneratedProducts(new Map());
+    setStep('upload');
   };
 
   const primaryColor   = config?.brand.primaryColor   || '#6366f1';
@@ -484,7 +511,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
             {step === 'select' && (
               <div className="space-y-4">
                 <SelfieThumb preview={selfiePreview} onReset={handleReset} />
-                <FriendlyProductSelector products={config.products} selected={selectedProduct} onSelect={handleProductSelect} primaryColor={primaryColor} />
+                <FriendlyProductSelector products={config.products} selected={selectedProduct} onSelect={handleProductSelect} primaryColor={primaryColor} generatedProducts={generatedProducts} />
                 {selectedProduct && (
                   <div className="sticky bottom-4">
                     <button
@@ -492,9 +519,11 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
                       className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
                       style={{ backgroundColor: primaryColor }}
                     >
-                      {buttonText}
+                      {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
                     </button>
-                    <p className="text-center text-xs text-gray-400 mt-2">Puede tardar unos 30 segundos</p>
+                    <p className="text-center text-xs text-gray-400 mt-2">
+                      {generatedProducts.has(selectedProduct.id) ? 'Ya generado — sin costo adicional' : 'Puede tardar unos 30 segundos'}
+                    </p>
                   </div>
                 )}
               </div>
@@ -533,15 +562,17 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
         {step === 'select' && (
           <div className="space-y-4">
             <SelfieThumb preview={selfiePreview} onReset={handleReset} />
-            <FriendlyProductSelector products={config.products} selected={selectedProduct} onSelect={handleProductSelect} primaryColor={primaryColor} />
+            <FriendlyProductSelector products={config.products} selected={selectedProduct} onSelect={handleProductSelect} primaryColor={primaryColor} generatedProducts={generatedProducts} />
             {selectedProduct && (
               <div className="sticky bottom-4">
                 <button onClick={handleGenerate}
                   className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
                   style={{ backgroundColor: primaryColor }}>
-                  {buttonText}
+                  {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
                 </button>
-                <p className="text-center text-xs text-gray-400 mt-2">Tarda unos 30 segundos</p>
+                <p className="text-center text-xs text-gray-400 mt-2">
+                  {generatedProducts.has(selectedProduct.id) ? 'Ya generado — sin costo adicional' : 'Tarda unos 30 segundos'}
+                </p>
               </div>
             )}
           </div>
