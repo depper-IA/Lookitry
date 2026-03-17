@@ -179,8 +179,11 @@ export default function RegisterForm() {
       >
         <div className="w-full max-w-md">
           <div className="flex justify-center mb-8">
-            <Link href="/">
-              <Image src="/logo.png" alt="Lookitry" width={140} height={40} priority />
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image src="/logo.png" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
+              <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
+                Look<span className="text-[#FF5C3A]">itry</span>
+              </span>
             </Link>
           </div>
           <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8 text-center">
@@ -223,8 +226,11 @@ export default function RegisterForm() {
       <div className="w-full max-w-md">
 
         <div className="flex justify-center mb-8">
-          <Link href="/">
-            <Image src="/logo.png" alt="Lookitry" width={140} height={40} priority />
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image src="/logo.png" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
+            <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
+              Look<span className="text-[#FF5C3A]">itry</span>
+            </span>
           </Link>
         </div>
 
