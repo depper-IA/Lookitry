@@ -4,16 +4,15 @@ import React, { useState } from 'react';
 import { downloadImage } from '@/utils/download';
 
 const ERROR_TYPES = [
-  { value: 'wrong_clothing_removed', label: 'Ropa incorrecta eliminada' },
-  { value: 'wrong_clothing_kept',    label: 'Ropa incorrecta conservada' },
-  { value: 'body_distortion',        label: 'Distorsión corporal' },
+  { value: 'wrong_clothing_removed', label: 'Ropa eliminada' },
+  { value: 'wrong_clothing_kept',    label: 'Ropa conservada' },
+  { value: 'body_distortion',        label: 'Distorsión' },
   { value: 'color_wrong',            label: 'Color incorrecto' },
-  { value: 'product_not_applied',    label: 'Producto no aplicado' },
-  { value: 'background_changed',     label: 'Fondo modificado' },
-  { value: 'other',                  label: 'Otro' },
 ] as const;
 
-type ErrorTypeValue = typeof ERROR_TYPES[number]['value'];
+const OTHER_VALUE = 'other';
+
+type ErrorTypeValue = typeof ERROR_TYPES[number]['value'] | 'other';
 
 interface ResultDisplayProps {
   imageUrl: string;
@@ -60,6 +59,7 @@ export function ResultDisplay({
 
   const handleFeedbackSubmit = async () => {
     if (!feedbackType || !generationId || !brandSlug) return;
+    if (feedbackType === OTHER_VALUE && !feedbackDesc.trim()) return;
     setFeedbackSending(true);
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -232,36 +232,58 @@ export function ResultDisplay({
 
                 <div className="px-5 py-4 space-y-3">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipo de problema</p>
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {ERROR_TYPES.map(et => (
                       <button
                         key={et.value}
                         onClick={() => setFeedbackType(et.value)}
-                        className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm text-left transition-all ${
+                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs text-left transition-all ${
                           feedbackType === et.value
                             ? 'border-transparent text-white font-medium'
                             : 'border-gray-200 text-gray-700 hover:border-gray-300 bg-white'
                         }`}
                         style={feedbackType === et.value ? { backgroundColor: primaryColor } : {}}
                       >
-                        <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                        <span className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
                           feedbackType === et.value ? 'border-white bg-white/30' : 'border-gray-300'
                         }`}>
                           {feedbackType === et.value && (
-                            <span className="w-2 h-2 rounded-full bg-white" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-white" />
                           )}
                         </span>
                         {et.label}
                       </button>
                     ))}
+                    {/* Opción "Otros" */}
+                    <button
+                      onClick={() => setFeedbackType(OTHER_VALUE)}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs text-left transition-all col-span-2 ${
+                        feedbackType === OTHER_VALUE
+                          ? 'border-transparent text-white font-medium'
+                          : 'border-gray-200 text-gray-700 hover:border-gray-300 bg-white'
+                      }`}
+                      style={feedbackType === OTHER_VALUE ? { backgroundColor: primaryColor } : {}}
+                    >
+                      <span className={`w-3.5 h-3.5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                        feedbackType === OTHER_VALUE ? 'border-white bg-white/30' : 'border-gray-300'
+                      }`}>
+                        {feedbackType === OTHER_VALUE && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                        )}
+                      </span>
+                      Otro problema
+                    </button>
                   </div>
 
+                  {/* Campo de texto — siempre visible para "Otros", opcional para el resto */}
                   <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Descripción (opcional)</p>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                      {feedbackType === OTHER_VALUE ? 'Describe el problema' : 'Descripción (opcional)'}
+                    </p>
                     <textarea
                       value={feedbackDesc}
                       onChange={e => setFeedbackDesc(e.target.value)}
-                      placeholder="Describe brevemente qué salió mal..."
+                      placeholder={feedbackType === OTHER_VALUE ? 'Cuéntanos qué salió mal...' : 'Describe brevemente qué salió mal...'}
                       rows={2}
                       maxLength={300}
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:border-transparent"
@@ -273,7 +295,7 @@ export function ResultDisplay({
                 <div className="px-5 pb-5">
                   <button
                     onClick={handleFeedbackSubmit}
-                    disabled={!feedbackType || feedbackSending}
+                    disabled={!feedbackType || feedbackSending || (feedbackType === OTHER_VALUE && !feedbackDesc.trim())}
                     className="w-full py-3 rounded-xl font-semibold text-sm text-white disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                     style={{ backgroundColor: primaryColor }}
                   >
