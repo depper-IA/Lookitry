@@ -225,7 +225,7 @@ function ActivationModal({
     'Plan de suscripcion BASIC o PRO incluido',
   ];
   const features = (modalFeatures && modalFeatures.length > 0) ? modalFeatures : defaultFeatures;
-  const title = modalTitle || (brandName ? Activa la pagina de \ : 'Activa tu pagina de marca');
+  const title = modalTitle || (brandName ? `Activa la pagina de ${brandName}` : 'Activa tu pagina de marca');
   const description = modalDescription || 'Estas viendo una vista previa. Activa tu mini-landing para que tus clientes puedan verla.';
 
   const BASIC_PRICE = 150000;
