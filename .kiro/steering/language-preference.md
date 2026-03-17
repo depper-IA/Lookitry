@@ -35,6 +35,17 @@ NUNCA usar "VirtualTryOn", "Virtual Try On" ni variantes antiguas en ningún com
 
 - Plan PRO: el usuario puede modificar el slug del widget (la URL pública del probador).
 
+# Planes del sistema — Regla crítica
+
+Los planes del sistema son: **TRIAL**, **BASIC**, **PRO**, **LANDING**.
+
+- **TRIAL**: plan gratuito temporal. Es un estado independiente, NO es BASIC. En la BD el campo `plan` puede ser `BASIC` pero `is_in_trial = true` indica que es TRIAL. En toda la UI del admin se debe mostrar como `TRIAL` (badge violeta `#6366f1`) cuando `is_in_trial === true`, independientemente del valor de `plan`.
+- **BASIC**: plan de pago mensual básico ($150.000 COP). Solo aplica cuando `is_in_trial = false`.
+- **PRO**: plan de pago mensual avanzado ($250.000 COP).
+- **LANDING**: pago único por mini-landing.
+
+NUNCA mostrar `BASIC` para una marca que esté en trial. El filtro de plan en tablas admin debe incluir `TRIAL` como opción separada.
+
 # Regla Crítica: APIs y Modelos de IA — Solo Versiones Gratuitas
 
 PROHIBIDO usar modelos de IA de pago sin consentimiento explícito del usuario.
