@@ -368,6 +368,25 @@ export class AdminService {
       .select('*', { count: 'exact', head: true })
       .eq('plan', 'PRO');
 
+    // Mini-landings: activas
+    const { count: landingsActive } = await supabase
+      .from('brands')
+      .select('*', { count: 'exact', head: true })
+      .eq('has_landing_page', true);
+
+    // Mini-landings: suspendidas
+    const { count: landingsSuspended } = await supabase
+      .from('brands')
+      .select('*', { count: 'exact', head: true })
+      .not('landing_suspended_at', 'is', null);
+
+    // Mini-landings: sin activar (has_landing_page = false y landing_suspended_at = null)
+    const { count: landingsInactive } = await supabase
+      .from('brands')
+      .select('*', { count: 'exact', head: true })
+      .eq('has_landing_page', false)
+      .is('landing_suspended_at', null);
+
     return {
       totalBrands: totalBrands || 0,
       totalProducts: totalProducts || 0,
@@ -379,6 +398,11 @@ export class AdminService {
       brandsByPlan: {
         BASIC: basicBrands || 0,
         PRO: proBrands || 0,
+      },
+      landingStats: {
+        active: landingsActive || 0,
+        suspended: landingsSuspended || 0,
+        inactive: landingsInactive || 0,
       },
     };
   }

@@ -57,6 +57,9 @@ const allowedOrigins = [
     'https://pruebalo.wilkiedevs.com',
     'https://api.pruebalo.wilkiedevs.com',
     'https://pruebalo.wilkiedevs.com',
+    // Desarrollo local
+    'http://localhost:3000',
+    'http://localhost:3001',
     ...corsOriginEnv,
   ]),
 ];

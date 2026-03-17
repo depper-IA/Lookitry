@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import Image from 'next/image';
 
 function IconCheck() {
   return (
@@ -26,9 +27,9 @@ function PagoExitosoContent() {
       <div className="w-full max-w-md">
 
         {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
-            Look<span className="text-[#FF5C3A]">itry</span>
+        <div className="flex justify-center mb-8">
+          <Link href="/">
+            <Image src="/logo.png" alt="Lookitry" width={140} height={40} priority />
           </Link>
         </div>
 

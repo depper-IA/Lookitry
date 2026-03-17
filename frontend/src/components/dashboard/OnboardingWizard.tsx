@@ -4,8 +4,15 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
-const STORAGE_KEY = 'onboarding_completed';
-const STEP_KEY = 'onboarding_step';
+/**
+ * Clave de localStorage específica por brand para evitar que el onboarding
+ * se marque como completado para otros usuarios en el mismo navegador.
+ */
+const getStorageKey = (brandId?: string | number) =>
+  brandId ? `onboarding_completed_${brandId}` : 'onboarding_completed';
+
+const getStepKey = (brandId?: string | number) =>
+  brandId ? `onboarding_step_${brandId}` : 'onboarding_step';
 
 interface Step {
   id: number;
@@ -94,15 +101,24 @@ export function OnboardingWizard() {
   const [visible, setVisible] = useState(false);
   const currentStepRef = useRef(0);
 
+  // Esperar a que el brand esté disponible antes de leer localStorage
+  const brandId = (brand as any)?.id;
+
   useEffect(() => {
     currentStepRef.current = currentStep;
   }, [currentStep]);
 
   useEffect(() => {
-    const completed = localStorage.getItem(STORAGE_KEY);
+    // No hacer nada hasta tener el brand cargado
+    if (brand === null) return;
+
+    const storageKey = getStorageKey(brandId);
+    const stepKey = getStepKey(brandId);
+
+    const completed = localStorage.getItem(storageKey);
     if (completed) return;
 
-    const savedStep = parseInt(localStorage.getItem(STEP_KEY) ?? '0', 10);
+    const savedStep = parseInt(localStorage.getItem(stepKey) ?? '0', 10);
     const step = isNaN(savedStep) ? 0 : Math.min(savedStep, STEPS.length - 1);
     setCurrentStep(step);
     setVisible(true);
@@ -110,22 +126,25 @@ export function OnboardingWizard() {
     const handleStepComplete = () => {
       const next = currentStepRef.current + 1;
       if (next >= STEPS.length) {
-        localStorage.setItem(STORAGE_KEY, 'true');
-        localStorage.removeItem(STEP_KEY);
+        localStorage.setItem(storageKey, 'true');
+        localStorage.removeItem(stepKey);
         setVisible(false);
       } else {
-        localStorage.setItem(STEP_KEY, String(next));
+        localStorage.setItem(stepKey, String(next));
         setCurrentStep(next);
         currentStepRef.current = next;
       }
     };
     window.addEventListener('onboarding:step-complete', handleStepComplete);
     return () => window.removeEventListener('onboarding:step-complete', handleStepComplete);
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brand, brandId]);
 
   const dismiss = () => {
-    localStorage.setItem(STORAGE_KEY, 'true');
-    localStorage.removeItem(STEP_KEY);
+    const storageKey = getStorageKey(brandId);
+    const stepKey = getStepKey(brandId);
+    localStorage.setItem(storageKey, 'true');
+    localStorage.removeItem(stepKey);
     setVisible(false);
   };
 
@@ -134,18 +153,20 @@ export function OnboardingWizard() {
     if (next >= STEPS.length) {
       dismiss();
     } else {
-      localStorage.setItem(STEP_KEY, String(next));
+      localStorage.setItem(getStepKey(brandId), String(next));
       setCurrentStep(next);
     }
   };
 
   const goToStep = (href: string) => {
+    const storageKey = getStorageKey(brandId);
+    const stepKey = getStepKey(brandId);
     const next = currentStep + 1;
     if (next >= STEPS.length) {
-      localStorage.setItem(STORAGE_KEY, 'true');
-      localStorage.removeItem(STEP_KEY);
+      localStorage.setItem(storageKey, 'true');
+      localStorage.removeItem(stepKey);
     } else {
-      localStorage.setItem(STEP_KEY, String(next));
+      localStorage.setItem(stepKey, String(next));
     }
     setVisible(false);
     router.push(href);

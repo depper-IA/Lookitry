@@ -26,7 +26,7 @@ export class RevenueController {
       // 1. Obtener ingresos mensuales de los últimos 12 meses
       const { data: monthlyRevenue, error: monthlyError } = await supabaseAdmin
         .from('subscription_payments')
-        .select('payment_date, amount, brands!inner(plan)')
+        .select('payment_date, amount, notes, brands!inner(plan)')
         .eq('status', 'completed')
         .gte('payment_date', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString())
         .order('payment_date', { ascending: true });
@@ -36,20 +36,27 @@ export class RevenueController {
       }
 
       // 2. Agrupar por mes y plan
-      const monthlyData: Record<string, { total: number; basic: number; pro: number; count: number }> = {};
+      const monthlyData: Record<string, { total: number; basic: number; pro: number; landing: number; count: number }> = {};
 
       (monthlyRevenue || []).forEach((payment: any) => {
         const month = new Date(payment.payment_date).toISOString().substring(0, 7); // YYYY-MM
-        
+
         if (!monthlyData[month]) {
-          monthlyData[month] = { total: 0, basic: 0, pro: 0, count: 0 };
+          monthlyData[month] = { total: 0, basic: 0, pro: 0, landing: 0, count: 0 };
         }
 
         const amount = parseFloat(payment.amount);
+        // Identificar pago de landing: plan de la marca es LANDING o notes contiene 'landing'
+        const isLanding =
+          payment.brands.plan === 'LANDING' ||
+          (typeof payment.notes === 'string' && payment.notes.toLowerCase().includes('landing'));
+
         monthlyData[month].total += amount;
         monthlyData[month].count += 1;
 
-        if (payment.brands.plan === 'BASIC') {
+        if (isLanding) {
+          monthlyData[month].landing += amount;
+        } else if (payment.brands.plan === 'BASIC') {
           monthlyData[month].basic += amount;
         } else if (payment.brands.plan === 'PRO') {
           monthlyData[month].pro += amount;
@@ -63,13 +70,14 @@ export class RevenueController {
           total: data.total,
           basic: data.basic,
           pro: data.pro,
+          landing: data.landing,
           count: data.count,
         }))
         .sort((a, b) => a.month.localeCompare(b.month));
 
       // 4. Calcular ingresos del mes actual
       const currentMonth = new Date().toISOString().substring(0, 7);
-      const currentMonthRevenue = monthlyData[currentMonth] || { total: 0, basic: 0, pro: 0, count: 0 };
+      const currentMonthRevenue = monthlyData[currentMonth] || { total: 0, basic: 0, pro: 0, landing: 0, count: 0 };
 
       // 5. Calcular proyección del próximo mes basado en suscripciones activas
       const { data: activeSubscriptions, error: subsError } = await supabaseAdmin
@@ -84,6 +92,7 @@ export class RevenueController {
       let projectedRevenue = 0;
       let projectedBasic = 0;
       let projectedPro = 0;
+      // Las marcas LANDING no generan proyección mensual recurrente (pago único)
 
       (activeSubscriptions || []).forEach((brand: any) => {
         if (brand.plan === 'BASIC') {
@@ -93,12 +102,13 @@ export class RevenueController {
           projectedPro += PLAN_PRICES.PRO;
           projectedRevenue += PLAN_PRICES.PRO;
         }
+        // LANDING: pago único, no se proyecta mensualmente
       });
 
       // 6. Desglose por plan (totales históricos)
       const { data: planBreakdown, error: planError } = await supabaseAdmin
         .from('subscription_payments')
-        .select('amount, brands!inner(plan)')
+        .select('amount, notes, brands!inner(plan)')
         .eq('status', 'completed');
 
       if (planError) {
@@ -107,12 +117,21 @@ export class RevenueController {
 
       let totalBasicRevenue = 0;
       let totalProRevenue = 0;
+      let totalLandingRevenue = 0;
       let basicPaymentsCount = 0;
       let proPaymentsCount = 0;
+      let landingPaymentsCount = 0;
 
       (planBreakdown || []).forEach((payment: any) => {
         const amount = parseFloat(payment.amount);
-        if (payment.brands.plan === 'BASIC') {
+        const isLanding =
+          payment.brands.plan === 'LANDING' ||
+          (typeof payment.notes === 'string' && payment.notes.toLowerCase().includes('landing'));
+
+        if (isLanding) {
+          totalLandingRevenue += amount;
+          landingPaymentsCount += 1;
+        } else if (payment.brands.plan === 'BASIC') {
           totalBasicRevenue += amount;
           basicPaymentsCount += 1;
         } else if (payment.brands.plan === 'PRO') {
@@ -128,6 +147,7 @@ export class RevenueController {
           total: currentMonthRevenue.total,
           basic: currentMonthRevenue.basic,
           pro: currentMonthRevenue.pro,
+          landing: currentMonthRevenue.landing,
           paymentsCount: currentMonthRevenue.count,
         },
         projection: {
@@ -148,6 +168,11 @@ export class RevenueController {
             paymentsCount: proPaymentsCount,
             averagePayment: proPaymentsCount > 0 ? totalProRevenue / proPaymentsCount : 0,
           },
+          landing: {
+            totalRevenue: totalLandingRevenue,
+            paymentsCount: landingPaymentsCount,
+            averagePayment: landingPaymentsCount > 0 ? totalLandingRevenue / landingPaymentsCount : 0,
+          },
         },
       });
     } catch (error: any) {
@@ -160,7 +185,7 @@ export class RevenueController {
   }
   async getAllPayments(req: Request, res: Response): Promise<Response> {
     try {
-      const { method, status, from, to, search } = req.query;
+      const { method, status, from, to, search, plan } = req.query;
 
       let query = supabaseAdmin
         .from('subscription_payments')
@@ -175,6 +200,8 @@ export class RevenueController {
       if (status && status !== 'all') query = query.eq('status', status as string);
       if (from) query = query.gte('payment_date', from as string);
       if (to) query = query.lte('payment_date', `${to}T23:59:59`);
+      // Filtrar por plan de la marca (BASIC, PRO, LANDING)
+      if (plan && plan !== 'all') query = (query as any).eq('brands.plan', plan as string);
 
       const { data, error } = await query;
       if (error) throw new Error(error.message);
@@ -193,6 +220,10 @@ export class RevenueController {
         status: p.status,
         notes: p.notes,
         createdAt: p.created_at,
+        // Identificar si es pago de landing
+        isLanding:
+          p.brands?.plan === 'LANDING' ||
+          (typeof p.notes === 'string' && p.notes.toLowerCase().includes('landing')),
       }));
 
       if (search) {

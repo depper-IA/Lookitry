@@ -36,6 +36,7 @@ export interface UpdateBrandDto {
   slogan?: string;
   logo_light?: string | null;
   logo_dark?: string | null;
+  cover_bg_color?: string | null;
 }
 
 export class BrandsService {

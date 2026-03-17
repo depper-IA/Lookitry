@@ -1,0 +1,205 @@
+{
+  "name": "Lookitry — Feedback Embedding (RAG)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "feedback-embedding",
+        "responseMode": "lastNode",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "id": "webhook-feedback",
+      "name": "Webhook — Recibir feedback",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "feedback-embedding"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json;\n\nconst errorType = body.error_type ?? 'other';\nconst productCategory = body.product_category ?? 'desconocido';\nconst description = body.description ?? '';\nconst promptUsed = body.prompt_used ?? '';\n\n// Texto concatenado para generar el embedding\nconst text = `[${errorType}] Producto: ${productCategory}. Error: ${description}. Prompt original: ${promptUsed}`;\n\nreturn [{\n  json: {\n    feedback_id: body.feedback_id,\n    error_type: errorType,\n    product_category: productCategory,\n    description,\n    prompt_used: promptUsed,\n    embedding_text: text\n  }\n}];"
+      },
+      "id": "build-text",
+      "name": "Construir texto para embedding",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "={{ $env.GEMINI_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "models/text-embedding-004"
+            },
+            {
+              "name": "content",
+              "value": "={{ { parts: [{ text: $json.embedding_text }] } }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gemini-embedding",
+      "name": "Gemini — Generar embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const prev = $input.first().json;\nconst embedding = prev.embedding?.values ?? [];\n\nif (!embedding.length) {\n  throw new Error('Gemini no devolvió embedding válido');\n}\n\nreturn [{\n  json: {\n    feedback_id: $('Construir texto para embedding').first().json.feedback_id,\n    embedding\n  }\n}];"
+      },
+      "id": "extract-embedding",
+      "name": "Extraer vector del embedding",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ `UPDATE generation_feedback SET embedding = '[${$json.embedding.join(',')}]'::vector WHERE id = '${$json.feedback_id}';` }}",
+        "options": {}
+      },
+      "id": "supabase-update",
+      "name": "Supabase — Guardar embedding",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [1120, 300],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_CRED_ID",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, feedback_id: $('Extraer vector del embedding').first().json.feedback_id } }}"
+      },
+      "id": "respond-ok",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ { ok: false, error: $json.message } }",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "respond-error",
+      "name": "Responder Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 480]
+    }
+  ],
+  "connections": {
+    "Webhook — Recibir feedback": {
+      "main": [
+        [
+          {
+            "node": "Construir texto para embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construir texto para embedding": {
+      "main": [
+        [
+          {
+            "node": "Gemini — Generar embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini — Generar embedding": {
+      "main": [
+        [
+          {
+            "node": "Extraer vector del embedding",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer vector del embedding": {
+      "main": [
+        [
+          {
+            "node": "Supabase — Guardar embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase — Guardar embedding": {
+      "main": [
+        [
+          {
+            "node": "Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {},
+  "versionId": "flujo4-v1",
+  "triggerCount": 0,
+  "tags": [
+    {
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z",
+      "id": "rag-feedback",
+      "name": "RAG"
+    }
+  ]
+}

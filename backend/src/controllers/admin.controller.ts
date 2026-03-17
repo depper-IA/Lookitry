@@ -490,19 +490,26 @@ export const getMiniLandingsAdmin = async (req: any, res: Response) => {
     const { supabaseAdmin } = await import('../config/supabase');
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .select('id, name, email, slug, plan, has_landing_page, landing_suspended_at, subscription_status, created_at')
+      .select('id, name, email, slug, plan, trial_end_date, has_landing_page, landing_suspended_at, subscription_status, created_at')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
 
     const ahora = Date.now();
+    const now = new Date();
     const brands = (data || []).map((b: any) => {
       let dias_para_eliminacion: number | null = null;
       if (b.landing_suspended_at) {
         const transcurridos = Math.floor((ahora - new Date(b.landing_suspended_at).getTime()) / (1000 * 60 * 60 * 24));
         dias_para_eliminacion = Math.max(0, 90 - transcurridos);
       }
-      return { ...b, dias_para_eliminacion };
+      const trialEnd = b.trial_end_date ? new Date(b.trial_end_date) : null;
+      const is_in_trial =
+        trialEnd !== null &&
+        trialEnd > now &&
+        b.subscription_status !== 'active' &&
+        b.subscription_status !== 'expiring_soon';
+      return { ...b, dias_para_eliminacion, is_in_trial };
     });
 
     return res.status(200).json({ brands, count: brands.length });
@@ -720,5 +727,69 @@ export const changeOwnPassword = async (req: any, res: Response) => {
     const isValidation = error.message === 'La contraseña actual es incorrecta'
       || error.message === 'La nueva contraseña debe tener al menos 8 caracteres';
     return res.status(isValidation ? 400 : 500).json({ error: 'BAD_REQUEST', message: error.message });
+  }
+};
+
+// ── Feedback de generaciones (51.8) ──────────────────────────────────────────
+
+import { FeedbackService } from '../services/feedback.service';
+const feedbackService = new FeedbackService();
+
+/**
+ * GET /api/admin/feedback
+ * Lista feedbacks con filtros opcionales: error_type, brand_id, resolved
+ */
+export const getFeedbacks = async (req: any, res: Response) => {
+  try {
+    const { error_type, brand_id, resolved, limit } = req.query;
+    const feedbacks = await feedbackService.getFeedbacks({
+      error_type: error_type as any,
+      brand_id: brand_id as string | undefined,
+      resolved: resolved === 'true' ? true : resolved === 'false' ? false : undefined,
+      limit: limit ? parseInt(limit as string) : 100,
+    });
+    return res.status(200).json({ feedbacks });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+  }
+};
+
+/**
+ * GET /api/admin/feedback/stats
+ * Estadísticas agrupadas por tipo de error
+ */
+export const getFeedbackStats = async (_req: any, res: Response) => {
+  try {
+    const stats = await feedbackService.getErrorStats();
+    return res.status(200).json({ stats });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+  }
+};
+
+/**
+ * PATCH /api/admin/feedback/:id/resolve
+ * Marca un feedback como resuelto
+ */
+export const resolveFeedback = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    await feedbackService.resolveFeedback(id, req.admin?.email ?? 'admin');
+    return res.status(200).json({ message: 'Feedback marcado como resuelto' });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+  }
+};
+
+/**
+ * GET /api/admin/feedback/count-unresolved
+ * Conteo de feedbacks sin resolver (para badge en sidebar)
+ */
+export const getUnresolvedFeedbackCount = async (_req: any, res: Response) => {
+  try {
+    const feedbacks = await feedbackService.getUnresolvedFeedbacks(1000);
+    return res.status(200).json({ count: feedbacks.length });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 0 });
   }
 };

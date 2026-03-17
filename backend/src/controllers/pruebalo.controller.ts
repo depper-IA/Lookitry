@@ -5,6 +5,10 @@ import { ProductsService } from '../services/products.service';
 import { UsageService } from '../services/usage.service';
 import { GenerationsService } from '../services/generations.service';
 import { N8nClient } from '../services/n8n.client';
+import { PaymentSettingsService } from '../services/paymentSettings.service';
+import { FeedbackService, GenerationErrorType } from '../services/feedback.service';
+import { PromptRagService } from '../services/prompt-rag.service';
+import { buildCategoryRulesBlock } from '../config/prompt-rules';
 import {
   NotFoundError,
   ValidationError,
@@ -18,6 +22,9 @@ const productsService = new ProductsService();
 const usageService = new UsageService();
 const generationsService = new GenerationsService();
 const n8nClient = new N8nClient();
+const paymentSettingsService = new PaymentSettingsService();
+const feedbackService = new FeedbackService();
+const promptRagService = new PromptRagService();
 
 export class PruebaloController {
   /**
@@ -56,6 +63,10 @@ export class PruebaloController {
     // Obtener productos activos de la marca
     const products = await productsService.getProductsByBrand(brand.id);
 
+    // Obtener URL del footer desde configuración global
+    const paymentSettings = await paymentSettingsService.getSettings();
+    const footerBrandUrl = paymentSettings.footer_brand_url || 'https://pruebalo.wilkiedevs.com';
+
     // Preparar respuesta con configuración visual y productos
     const response = {
       brand: {
@@ -90,7 +101,9 @@ export class PruebaloController {
         modal_features: (brand as any).modal_features ?? null,
         logo_light: (brand as any).logo_light ?? null,
         logo_dark: (brand as any).logo_dark ?? null,
+        cover_bg_color: (brand as any).cover_bg_color ?? null,
       },
+      footer_brand_url: footerBrandUrl,
       products: products.map(product => ({
         id: product.id,
         name: product.name,
@@ -178,7 +191,11 @@ export class PruebaloController {
     // 7. Llamar a n8n con selfieBase64 y prompt
     const startTime = Date.now();
     try {
-      const prompt = buildTryOnPrompt(product);
+      // Construir prompt base con reglas de categoría
+      const basePrompt = buildTryOnPrompt(product);
+
+      // Enriquecer con RAG (aprendizaje de errores anteriores) — timeout 4s, no bloquea
+      const prompt = await promptRagService.enrichPrompt(basePrompt, product.category ?? null);
 
       const n8nResult = await n8nClient.callTryOnWebhook({
         brandId: brand.id,
@@ -194,12 +211,13 @@ export class PruebaloController {
 
       const processingTime = Date.now() - startTime;
 
-      // 8. Actualizar registro con resultado (SUCCESS/FAILED)
+      // 8. Actualizar registro con resultado (SUCCESS/FAILED) — guardar prompt para trazabilidad RAG
       await generationsService.updateGeneration(generation.id, {
         status: 'SUCCESS',
         result_image_url: n8nResult.imageUrl,
-        selfie_url: n8nResult.imageUrl, // n8n ya subió la selfie
+        selfie_url: n8nResult.imageUrl,
         processing_time: processingTime,
+        prompt_used: prompt,
       });
 
       // 9. Retornar imageUrl al frontend
@@ -223,14 +241,88 @@ export class PruebaloController {
       );
     }
   });
+
+  /**
+   * POST /api/pruebalo/:brandSlug/generation/:generationId/feedback
+   * Endpoint público para reportar un error en una generación.
+   * No requiere autenticación — el cliente del widget puede reportar directamente.
+   */
+  reportGenerationFeedback = asyncHandler(async (req: Request, res: Response) => {
+    const { brandSlug, generationId } = req.params;
+    const { error_type, description } = req.body;
+
+    const validErrorTypes: GenerationErrorType[] = [
+      'wrong_clothing_removed',
+      'wrong_clothing_kept',
+      'body_distortion',
+      'color_wrong',
+      'product_not_applied',
+      'background_changed',
+      'other',
+    ];
+
+    if (!error_type || !validErrorTypes.includes(error_type)) {
+      throw new ValidationError(
+        `Tipo de error inválido. Valores permitidos: ${validErrorTypes.join(', ')}`
+      );
+    }
+
+    // Verificar que la generación existe y pertenece a esta marca
+    const brand = await brandsService.getBrandBySlug(brandSlug);
+    if (!brand) throw new NotFoundError('Marca no encontrada');
+
+    const generation = await generationsService.getGenerationById(generationId);
+    if (!generation) throw new NotFoundError('Generación no encontrada');
+    if (generation.brand_id !== brand.id) throw new NotFoundError('Generación no encontrada');
+
+    // Obtener categoría del producto para el RAG
+    let productCategory: string | undefined;
+    try {
+      const product = await productsService.getProductById(generation.product_id);
+      productCategory = product?.category ?? undefined;
+    } catch { /* producto eliminado */ }
+
+    // Guardar feedback (dispara embedding async vía n8n)
+    const feedback = await feedbackService.createFeedback({
+      generation_id: generationId,
+      brand_id: brand.id,
+      error_type,
+      description: description?.trim() || undefined,
+      product_category: productCategory,
+      prompt_used: (generation as any).prompt_used ?? undefined,
+    });
+
+    // Verificar si hay errores frecuentes del mismo tipo → notificar admin
+    feedbackService.countRecentByType(error_type, productCategory ?? null, 24)
+      .then(async (count) => {
+        if (count >= 3) {
+          const { createAdminNotification } = await import('../utils/adminNotifications');
+          await createAdminNotification({
+            type: 'high_usage',
+            severity: 'warning',
+            title: 'Errores frecuentes de generación',
+            message: `Se han reportado ${count} errores de tipo "${error_type}"${productCategory ? ` en categoría "${productCategory}"` : ''} en las últimas 24h.`,
+          });
+        }
+      })
+      .catch(() => { /* silencioso */ });
+
+    return res.status(201).json({
+      success: true,
+      id: feedback.id,
+      message: 'Gracias por tu reporte. Lo usaremos para mejorar las generaciones.',
+    });
+  });
 }
 
 /**
  * Construye el prompt de try-on para Gemini.
- * Si el producto tiene descripción generada por IA, la usa de forma estructurada
- * para maximizar la fidelidad visual del resultado.
+ * Aplica reglas base por categoría de prenda para evitar errores comunes
+ * (ej: vestido que deja pantalón visible, zapatos eliminados incorrectamente).
  */
 function buildTryOnPrompt(product: { name: string; category?: string; description?: string | null }): string {
+  const categoryRules = buildCategoryRulesBlock(product.category);
+
   const lines: string[] = [
     `You are a professional virtual try-on AI specialized in fashion photography.`,
     `Your task: generate a single photorealistic image of the person in the selfie wearing the exact product shown in the reference image.`,
@@ -242,6 +334,9 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
   }
 
   lines.push(
+    // ── Reglas de reemplazo por categoría (crítico — va primero) ──
+    categoryRules,
+
     `ABSOLUTE RULES — follow all of them without exception:`,
 
     `[COMPOSITION & FRAMING]`,
