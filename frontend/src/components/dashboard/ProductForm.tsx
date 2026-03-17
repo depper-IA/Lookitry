@@ -148,23 +148,13 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       const ts = new Date().toISOString().replace(/[:.]/g, '-');
       const url = await uploadService.uploadImage(base64.split(',')[1], `product-${ts}.jpg`, false);
       setImagePreview(url);
-      setFormData(p => {
-        const updated = { ...p, imageUrl: url };
-        // Disparar auto-descripción si hay nombre
-        if (p.name.trim() && N8N_DESCRIPTOR_URL) {
-          // Usar setTimeout para que el estado se actualice antes de llamar
-          setTimeout(() => {
-            setFormData(latest => {
-              if (latest.imageUrl === url && latest.name.trim()) {
-                // Llamar directamente con los valores actualizados
-                triggerDescribeWithAI(url, latest.name.trim(), latest.category === 'other' ? customCategory : latest.category);
-              }
-              return latest;
-            });
-          }, 0);
-        }
-        return updated;
-      });
+      setFormData(p => ({ ...p, imageUrl: url }));
+      // Disparar auto-descripción directamente con valores actuales
+      const currentName = formData.name.trim();
+      const currentCategory = formData.category === 'other' ? customCategory : formData.category;
+      if (currentName && N8N_DESCRIPTOR_URL) {
+        triggerDescribeWithAI(url, currentName, currentCategory);
+      }
     } catch (err: any) {
       setErrors(p => ({ ...p, imageUrl: err.message || 'Error al procesar la imagen' }));
     } finally { setCompressing(false); }
