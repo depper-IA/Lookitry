@@ -94,12 +94,34 @@ var(--shadow-header)    /* Sombra del header */
 
 ## URLs del sistema
 
-| Servicio | URL                                   |
-|----------|---------------------------------------|
-| Frontend | `https://pruebalo.wilkiedevs.com`     |
-| API      | `https://api.pruebalo.wilkiedevs.com` |
-| n8n      | `https://n8n.wilkiedevs.com`          |
-| MinIO    | `https://minio.wilkiedevs.com`        |
+| Servicio   | URL                                   |
+|------------|---------------------------------------|
+| Frontend   | `https://pruebalo.wilkiedevs.com`     |
+| API        | `https://api.pruebalo.wilkiedevs.com` |
+| n8n        | `https://n8n.wilkiedevs.com`          |
+| MinIO      | `https://minio.wilkiedevs.com`        |
+
+## Infraestructura — IDs y referencias clave
+
+| Recurso              | ID / Valor                                      |
+|----------------------|-------------------------------------------------|
+| Supabase Project ID  | `vkdooutklowctuudjnkl`                          |
+| Supabase URL         | `https://vkdooutklowctuudjnkl.supabase.co`      |
+| VPS ID (Hostinger)   | `1004711`                                       |
+| VPS IP               | `31.220.18.39`                                  |
+| Docker project       | `virtual-tryon`                                 |
+| GitHub repo          | `https://github.com/depper-IA/virtual-tryon.git`|
+
+## Workflows n8n (IDs — no cargar archivos para consultarlos)
+
+| Workflow              | ID                   | Webhook / Uso                        |
+|-----------------------|----------------------|--------------------------------------|
+| Try-On principal      | `wPLypk7KhBcFLicX`   | `/webhook/tryon`                     |
+| Feedback embedding    | `47RcLopJB6M82b0k`   | Flujo4 — embeddings de feedback      |
+| Describir con IA      | `ZjVTV3QxoPEi60GX`   | Descriptor de productos              |
+
+Nodo clave en "Describir con IA": `03feeeff-f6bb-4eaf-92f8-4d67d2ba18fe` (Formatear respuesta) — devuelve `{ description, category, enrichedPrompt }`.
+Todos los workflows tienen la etiqueta `SaaS`.
 
 ## Reglas de branding en nuevas páginas
 
