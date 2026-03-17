@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import Image from 'next/image';
 
 const ARTICLES = [
   {
@@ -162,8 +163,8 @@ export default function TerminosPage() {
 
       {/* NAV */}
       <nav className="bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
-        <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base text-white tracking-tight">
-          Look<span className="text-[#FF5C3A]">itry</span>
+        <Link href="/">
+          <Image src="/logo.png" alt="Lookitry" width={120} height={36} priority />
         </Link>
         <Link href="/" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors">
           Volver al inicio
@@ -274,9 +275,7 @@ export default function TerminosPage() {
       {/* FOOTER */}
       <footer className="bg-[#050505] border-t border-[#1a1a1a] px-6 md:px-8 py-7">
         <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-sm text-white">
-            Look<span className="text-[#FF5C3A]">itry</span>
-          </span>
+          <Image src="/logo.png" alt="Lookitry" width={100} height={30} />
           <div className="flex items-center gap-4 flex-wrap justify-center">
             <Link href="/" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors">Inicio</Link>
             <Link href="/planes" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors">Planes</Link>

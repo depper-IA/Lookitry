@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -40,9 +41,9 @@ export default function ForgotPasswordPage() {
       style={{ fontFamily: 'DM Sans, sans-serif', background: '#0a0a0a' }}
     >
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
-            Look<span className="text-[#FF5C3A]">itry</span>
+        <div className="flex justify-center mb-8">
+          <Link href="/">
+            <Image src="/logo.png" alt="Lookitry" width={140} height={40} priority />
           </Link>
         </div>
 
