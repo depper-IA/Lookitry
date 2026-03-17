@@ -5,6 +5,7 @@ import { ProductsService } from '../services/products.service';
 import { UsageService } from '../services/usage.service';
 import { GenerationsService } from '../services/generations.service';
 import { N8nClient } from '../services/n8n.client';
+import { PaymentSettingsService } from '../services/paymentSettings.service';
 import {
   NotFoundError,
   ValidationError,
@@ -18,6 +19,7 @@ const productsService = new ProductsService();
 const usageService = new UsageService();
 const generationsService = new GenerationsService();
 const n8nClient = new N8nClient();
+const paymentSettingsService = new PaymentSettingsService();
 
 export class PruebaloController {
   /**
@@ -56,6 +58,10 @@ export class PruebaloController {
     // Obtener productos activos de la marca
     const products = await productsService.getProductsByBrand(brand.id);
 
+    // Obtener URL del footer desde configuración global
+    const paymentSettings = await paymentSettingsService.getSettings();
+    const footerBrandUrl = paymentSettings.footer_brand_url || 'https://pruebalo.wilkiedevs.com';
+
     // Preparar respuesta con configuración visual y productos
     const response = {
       brand: {
@@ -92,6 +98,7 @@ export class PruebaloController {
         logo_dark: (brand as any).logo_dark ?? null,
         cover_bg_color: (brand as any).cover_bg_color ?? null,
       },
+      footer_brand_url: footerBrandUrl,
       products: products.map(product => ({
         id: product.id,
         name: product.name,

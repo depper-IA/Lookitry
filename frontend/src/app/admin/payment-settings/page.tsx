@@ -7,6 +7,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkied
 interface PaymentSettings {
   landing_price: number;
   landing_original_price: number;
+  footer_brand_url: string;
   wompi_enabled: boolean;
   wompi_public_key: string;
   wompi_private_key: string;
@@ -240,6 +241,64 @@ export default function PaymentSettingsPage() {
             y paga <strong>${settings.landing_price.toLocaleString('es-CO')}</strong>
           </div>
         )}
+      </div>
+
+      {/* URL del footer de mini-landings */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <svg className="w-5 h-5 text-[#FF5C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+          </svg>
+          <h3 className="font-semibold text-gray-900">URL del footer de mini-landings</h3>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">
+          Esta URL aparece en el footer de todas las mini-landings como "Probador virtual impulsado por ...".
+          Cámbiala cuando migres a un dominio propio (ej: lookitry.com). Todos los templates se actualizan automáticamente.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 items-start">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              URL del footer
+            </label>
+            <input
+              type="url"
+              value={settings.footer_brand_url ?? 'https://pruebalo.wilkiedevs.com'}
+              onChange={e => set('footer_brand_url', e.target.value)}
+              placeholder="https://pruebalo.wilkiedevs.com"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Incluye el protocolo (https://). Se mostrará sin el protocolo en el footer.
+            </p>
+          </div>
+          {settings.footer_brand_url && (
+            <div className="sm:mt-6 flex-shrink-0">
+              <a
+                href={settings.footer_brand_url.startsWith('http') ? settings.footer_brand_url : `https://${settings.footer_brand_url}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                style={{ borderColor: '#e5e7eb' }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Verificar
+              </a>
+            </div>
+          )}
+        </div>
+        {/* Preview del footer */}
+        <div className="mt-4 p-3 rounded-lg border border-dashed border-gray-200 bg-gray-50 text-center">
+          <p className="text-xs text-gray-400">
+            Vista previa del footer:{' '}
+            <span className="text-gray-600">Probador virtual impulsado por </span>
+            <span className="font-medium" style={{ color: '#FF5C3A' }}>
+              {(settings.footer_brand_url || 'pruebalo.wilkiedevs.com').replace(/^https?:\/\//, '')}
+            </span>
+          </p>
+        </div>
       </div>
 
       {/* Pruebas y desarrollo */}
