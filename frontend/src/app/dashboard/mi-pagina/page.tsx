@@ -586,6 +586,26 @@ export default function MiPaginaPage() {
           </div>
         </div>
 
+        {/* Mostrar nombre de marca en navbar */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Nombre en el encabezado</label>
+          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
+            <input
+              type="checkbox"
+              id="show_brand_name"
+              checked={showBrandName}
+              onChange={e => setShowBrandName(e.target.checked)}
+              className="w-4 h-4 rounded"
+            />
+            <label htmlFor="show_brand_name" className="text-sm" style={{ color: 'var(--text-primary)' }}>
+              Mostrar nombre de la marca junto al logo
+            </label>
+          </div>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            Desactívalo si prefieres mostrar solo el logo sin texto
+          </p>
+        </div>
+
         {/* Imagen de portada */}
         <div className="space-y-1.5">
           <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
@@ -803,26 +823,6 @@ export default function MiPaginaPage() {
               </label>
             </div>
           </div>
-        </div>
-
-        {/* Mostrar nombre de marca en navbar */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Nombre en el navbar</label>
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl border" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
-            <input
-              type="checkbox"
-              id="show_brand_name"
-              checked={showBrandName}
-              onChange={e => setShowBrandName(e.target.checked)}
-              className="w-4 h-4 rounded"
-            />
-            <label htmlFor="show_brand_name" className="text-sm" style={{ color: 'var(--text-primary)' }}>
-              Mostrar nombre de la marca en el encabezado
-            </label>
-          </div>
-          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            Desactívalo si prefieres mostrar solo el logo sin texto
-          </p>
         </div>
 
         {/* Mensaje WhatsApp y CTA */}
