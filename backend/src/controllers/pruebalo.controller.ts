@@ -8,7 +8,7 @@ import { N8nClient } from '../services/n8n.client';
 import { PaymentSettingsService } from '../services/paymentSettings.service';
 import { FeedbackService, GenerationErrorType } from '../services/feedback.service';
 import { PromptRagService } from '../services/prompt-rag.service';
-import { buildCategoryRulesBlock } from '../config/prompt-rules';
+import { buildCategoryRulesBlock, getPromptRules } from '../config/prompt-rules';
 import {
   NotFoundError,
   ValidationError,
@@ -321,9 +321,20 @@ export class PruebaloController {
  * (ej: vestido que deja pantalón visible, zapatos eliminados incorrectamente).
  */
 function buildTryOnPrompt(product: { name: string; category?: string; description?: string | null }): string {
-  const categoryRules = buildCategoryRulesBlock(product.category);
+  const rules = getPromptRules(product.category);
+  const categoryRulesBlock = buildCategoryRulesBlock(product.category);
 
+  // Las reglas de reemplazo van AL INICIO (antes de cualquier descripción)
+  // y se repiten al final para reforzar la instrucción crítica en el modelo.
   const lines: string[] = [
+    // ── BLOQUE CRÍTICO AL INICIO ──────────────────────────────────────────
+    `[CRITICAL INSTRUCTION — READ FIRST]`,
+    categoryRulesBlock,
+    // Repetición explícita de la regla de reemplazo para vestidos/categorías clave
+    `IMPORTANT: ${rules.replace}`,
+    `IMPORTANT: ${rules.keep}`,
+
+    // ── Contexto de la tarea ──────────────────────────────────────────────
     `You are a professional virtual try-on AI specialized in fashion photography.`,
     `Your task: generate a single photorealistic image of the person in the selfie wearing the exact product shown in the reference image.`,
     `Product: "${product.name}"${product.category ? ` (${product.category})` : ''}.`,
@@ -334,10 +345,12 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
   }
 
   lines.push(
-    // ── Reglas de reemplazo por categoría (crítico — va primero) ──
-    categoryRules,
-
     `ABSOLUTE RULES — follow all of them without exception:`,
+
+    `[CLOTHING REPLACEMENT — MANDATORY]`,
+    `- ${rules.replace}`,
+    `- ${rules.keep}`,
+    `- Do NOT leave any clothing item from the original photo visible if the product replaces it.`,
 
     `[COMPOSITION & FRAMING]`,
     `- The input photo may be a close-up selfie (face/bust) OR a full-body shot. Detect which type it is and preserve that exact framing.`,
@@ -347,21 +360,23 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
     `- Fill every pixel of the frame with the scene — no empty space, no unused canvas area.`,
 
     `[OUTPUT DIMENSIONS]`,
-    `- The output image MUST match the EXACT aspect ratio of the input selfie (e.g. if the selfie is portrait 3:4, output must be portrait 3:4).`,
-    `- NEVER add white borders, black bars, gray padding, letterboxing, pillarboxing, or any kind of margin. The image must bleed to all four edges.`,
+    `- The output image MUST match the EXACT aspect ratio of the input selfie.`,
+    `- NEVER add white borders, black bars, gray padding, letterboxing, pillarboxing, or any kind of margin.`,
 
     `[PRODUCT FIDELITY]`,
-    `- Reproduce the garment or accessory EXACTLY as shown in the reference image: same colors, patterns, textures, logos, stitching, cuts, fit, and every design detail.`,
+    `- Reproduce the garment EXACTLY as shown in the reference image: same colors, patterns, textures, logos, stitching, cuts, and fit.`,
     `- Do NOT invent, simplify, or alter any visual element of the product.`,
-    `- If a description is provided above, cross-reference it with the reference image to ensure maximum accuracy.`,
 
     `[PERSON & REALISM]`,
     `- Keep the person's face, skin tone, hair, body proportions, and expression IDENTICAL to the selfie.`,
-    `- The product must fit naturally on the body with correct perspective, lighting, and shadows matching the original photo.`,
+    `- The product must fit naturally on the body with correct perspective, lighting, and shadows.`,
     `- Photorealistic quality only — no illustrations, no stylization.`,
+
+    // ── RECORDATORIO FINAL (refuerzo) ─────────────────────────────────────
+    `[FINAL REMINDER] ${rules.replace} ${rules.keep}`,
 
     `Output: the final try-on image only. No text, no watermarks, no UI overlays.`,
   );
 
-  return lines.join(' ');
+  return lines.join('\n');
 }
