@@ -72,9 +72,15 @@ export class N8nClient {
 
         // Error de respuesta del servidor
         if (error.response) {
+          const status: number = error.response.status;
           const errorMessage = error.response.data?.error || error.response.data?.message || error.message;
-          console.error('❌ Error de n8n:', errorMessage);
-          throw new Error(`n8n error: ${errorMessage}`);
+          console.error(`[n8n] Error HTTP ${status}:`, errorMessage, '| body:', JSON.stringify(error.response.data ?? {}));
+
+          // Crear error enriquecido con statusCode para que el controller lo detecte
+          const enriched = new Error(`n8n error ${status}: ${errorMessage}`) as any;
+          enriched.statusCode = status;
+          enriched.n8nBody = error.response.data;
+          throw enriched;
         }
 
         // Error de conexión

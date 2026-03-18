@@ -54,7 +54,16 @@ class TryOnService {
       const json = await res.json();
 
       if (res.status === 429) throw new Error(json.message || 'Límite de generaciones excedido');
-      if (!res.ok) throw new Error(json.message || 'Error al generar la imagen');
+      if (!res.ok) {
+        const msg: string = json.message || 'Error al generar la imagen';
+        // Marcar errores de servicio (créditos agotados) para que el widget los trate diferente
+        if (msg === 'SERVICE_CREDITS_EXHAUSTED') {
+          const err = new Error('SERVICE_CREDITS_EXHAUSTED') as any;
+          err.isServiceError = true;
+          throw err;
+        }
+        throw new Error(msg);
+      }
 
       return json as GenerateTryOnResponse;
     } catch (err: any) {

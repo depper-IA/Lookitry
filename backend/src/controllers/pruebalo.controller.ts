@@ -231,27 +231,42 @@ export class PruebaloController {
       });
 
     } catch (n8nError: any) {
-      // Error en n8n
-      await generationsService.updateGeneration(generation.id, {
-        status: 'FAILED',
-        error_message: n8nError.message,
-      });
+      const processingTime = Date.now() - startTime;
 
-      // Detectar si el error es por créditos agotados en OpenRouter (402/429)
-      const errMsg = (n8nError.message || '').toLowerCase();
+      // ── Debugging detallado para trazabilidad ──────────────────────────────
       const isCreditsError =
         n8nError.statusCode === 402 ||
         n8nError.statusCode === 429 ||
-        errMsg.includes('402') ||
-        errMsg.includes('insufficient') ||
-        errMsg.includes('credits') ||
-        errMsg.includes('quota') ||
-        errMsg.includes('rate limit') ||
-        errMsg.includes('out of credits');
+        (n8nError.message || '').toLowerCase().includes('insufficient') ||
+        (n8nError.message || '').toLowerCase().includes('credits') ||
+        (n8nError.message || '').toLowerCase().includes('quota') ||
+        (n8nError.message || '').toLowerCase().includes('out of credits') ||
+        (n8nError.message || '').toLowerCase().includes('402') ||
+        JSON.stringify(n8nError.n8nBody ?? {}).toLowerCase().includes('credits');
+
+      console.error('[pruebalo] Error en generación', {
+        brandSlug,
+        brandId: brand.id,
+        productId: product.id,
+        generationId: generation.id,
+        errorType: isCreditsError ? 'CREDITS_EXHAUSTED' : 'GENERATION_FAILED',
+        statusCode: n8nError.statusCode ?? null,
+        message: n8nError.message,
+        n8nBody: n8nError.n8nBody ?? null,
+        processingTimeMs: processingTime,
+      });
+
+      // Guardar en BD con tipo de error para debugging
+      await generationsService.updateGeneration(generation.id, {
+        status: 'FAILED',
+        error_message: isCreditsError
+          ? `CREDITS_EXHAUSTED: ${n8nError.message}`
+          : n8nError.message,
+      });
 
       if (isCreditsError) {
         throw new ExternalServiceError(
-          'Servicio temporalmente no disponible. El límite de créditos de IA ha sido alcanzado. Por favor contacta al soporte.',
+          'SERVICE_CREDITS_EXHAUSTED',
           'openrouter'
         );
       }
