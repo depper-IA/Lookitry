@@ -320,7 +320,7 @@ export default function LandingClient() {
       </section>
 
       {/* MINI-LANDING — sección de venta del add-on */}
-      <section className="bg-[#f5f2ee] py-16 md:py-24 px-6 md:px-8 border-t border-[#e0dcd7]" aria-labelledby="mini-landing-heading">
+      <section className="bg-[#f5f2ee] py-16 md:py-24 px-6 md:px-8" aria-labelledby="mini-landing-heading">
         <div className="max-w-[960px] mx-auto">
           <div className="text-center mb-14">
             <div className="inline-flex items-center gap-2 bg-white border border-[#e0dcd7] text-[#FF5C3A] text-[11px] font-semibold tracking-widest uppercase px-3 py-1.5 rounded-full mb-5">
