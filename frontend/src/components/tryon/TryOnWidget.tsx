@@ -166,6 +166,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   const [resultImageUrl, setResultImageUrl] = useState<string | null>(null);
   const [generationId, setGenerationId]     = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorIsService, setErrorIsService] = useState(false);
   const [loading, setLoading] = useState(true);
   // Productos ya generados en esta sesión: productId → imageUrl
   const [generatedProducts, setGeneratedProducts] = useState<Map<string, string>>(new Map());
@@ -220,6 +221,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
     try {
       setStep('generating');
       setError(null);
+      setErrorIsService(false);
       const result = await tryonService.generate(brandSlug, { productId: selectedProduct.id, selfieFile });
       setResultImageUrl(result.imageUrl);
       setGenerationId(result.generationId ?? null);
@@ -228,7 +230,9 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
       setStep('result');
       if (isEmbed) window.parent?.postMessage({ type: 'TRYON_COMPLETE', data: { imageUrl: result.imageUrl, productId: selectedProduct.id, productName: selectedProduct.name, generationId: result.generationId, processingTime: result.processingTime } }, '*');
     } catch (err: any) {
-      setError(err.message || 'Algo salió mal. Intenta de nuevo.');
+      const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
+      setErrorIsService(isService);
+      setError(isService ? 'SERVICE_CREDITS_EXHAUSTED' : (err.message || 'Algo salió mal. Intenta de nuevo.'));
       setStep('select');
       if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, '*');
     }
@@ -236,7 +240,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
 
   const handleReset = () => {
     setSelfieFile(null); setSelfiePreview(null); setSelectedProduct(null);
-    setResultImageUrl(null); setGenerationId(null); setError(null);
+    setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false);
     setGeneratedProducts(new Map());
     setStep('upload');
   };
@@ -371,7 +375,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
             )}
           </div>
           <div className="flex-1 p-6">
-            <ErrorBanner error={error} />
+            <ErrorBanner error={error} isService={errorIsService} />
             {step === 'upload' && <SelfieUploader onUpload={handleSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} />}
             {step === 'select' && (
               <div>
@@ -442,7 +446,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
         </div>
 
         <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-6">
-          <ErrorBanner error={error} />
+          <ErrorBanner error={error} isService={errorIsService} />
           {step === 'upload' && <SelfieUploader onUpload={handleSelfieUpload} primaryColor={primaryColor} welcomeMessage="" />}
           {step === 'select' && (
             <div>
@@ -504,7 +508,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
         )}
         {step !== 'generating' && (
           <div className="flex-1 max-w-lg mx-auto w-full px-4 py-6">
-            <ErrorBanner error={error} />
+            <ErrorBanner error={error} isService={errorIsService} />
             {step === 'upload' && (
               <SelfieUploader onUpload={handleSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} />
             )}
@@ -553,7 +557,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
       </div>
 
       <div className="max-w-lg mx-auto px-4 py-5">
-        <ErrorBanner error={error} />
+        <ErrorBanner error={error} isService={errorIsService} />
 
         {step === 'upload' && (
           <SelfieUploader onUpload={handleSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} />
@@ -632,8 +636,25 @@ function SelfieThumb({ preview, onReset }: { preview: string | null; onReset: ()
   );
 }
 
-function ErrorBanner({ error }: { error: string | null }) {
+function ErrorBanner({ error, isService = false }: { error: string | null; isService?: boolean }) {
   if (!error) return null;
+
+  // Error de servicio (créditos agotados) — mensaje sutil, no culpa al usuario
+  if (isService) {
+    return (
+      <div className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-2xl flex items-start gap-3">
+        <svg className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+        </svg>
+        <div>
+          <p className="text-sm font-medium text-gray-600">Servicio no disponible en este momento</p>
+          <p className="text-xs text-gray-400 mt-0.5">Estamos trabajando para resolverlo. Por favor intenta más tarde.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error normal
   return (
     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3">
       <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
