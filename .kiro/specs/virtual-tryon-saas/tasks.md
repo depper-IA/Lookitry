@@ -796,23 +796,23 @@
 
 ---
 
-- [-] 64. Auditoría de seguridad
+- [x] 64. Auditoría de seguridad
   - [x] 64.1 Verificar RLS por tabla
     - `brands`, `products`, `generations`, `generation_feedback`, `subscription_payments`, `trial_registrations`: solo la marca dueña puede acceder
     - `coupons`, `promotions`, `pricing_config`, `payment_settings`: solo service role puede escribir
     - `admins`, `admin_notifications`, `admin_notification_preferences`: solo service role / admins
-  - [ ] 64.2 Verificar autenticación y autorización
+  - [x] 64.2 Verificar autenticación y autorización
     - Todas las rutas `/api/admin/*` requieren middleware de admin
     - Todas las rutas `/api/brands/*` requieren JWT válido
     - `JWT_SECRET` no es el valor por defecto en producción
     - Llaves de Wompi en producción son las de producción (no test)
     - `TURNSTILE_ENABLED=true` en producción
-  - [ ] 64.3 Verificar variables de entorno expuestas
+  - [x] 64.3 Verificar variables de entorno expuestas
     - `SUPABASE_SERVICE_KEY` NO está en el frontend (solo en backend)
     - `WOMPI_PRIVATE_KEY` NO está en el frontend
     - `JWT_SECRET` NO está en el frontend
     - `.env.local` y `backend/.env` están en `.gitignore`
-  - [ ] 64.4 Verificar CORS y headers del backend
+  - [x] 64.4 Verificar CORS y headers del backend
     - CORS configurado solo para dominios autorizados
     - Backend no expone headers sensibles
 
