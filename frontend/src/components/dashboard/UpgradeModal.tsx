@@ -31,12 +31,34 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
   const router = useRouter();
   const [isInTrial, setIsInTrial] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [basicPrice, setBasicPrice] = useState(150000);
+  const [proPrice, setProPrice] = useState(250000);
+
+  function formatCOP(n: number) {
+    return '$' + n.toLocaleString('es-CO');
+  }
 
   useEffect(() => {
     subscriptionService.getSubscriptionInfo()
       .then((info) => setIsInTrial(info.isInTrial ?? false))
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?select=id,data&id=in.(basic,pro)`, {
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+      },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then((rows: any[]) => {
+        if (!Array.isArray(rows)) return;
+        const b = rows.find(r => r.id === 'basic')?.data;
+        const p = rows.find(r => r.id === 'pro')?.data;
+        if (b?.precio_mensual_cop) setBasicPrice(b.precio_mensual_cop);
+        if (p?.precio_mensual_cop) setProPrice(p.precio_mensual_cop);
+      })
+      .catch(() => {});
   }, []);
 
   const handleUpgrade = (plan: 'BASIC' | 'PRO') => {
@@ -90,7 +112,7 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
                 <div>
                   <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Plan Básico</p>
                   <p className="text-xl font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>
-                    $150.000
+                    {formatCOP(basicPrice)}
                     <span className="text-xs font-normal ml-1" style={{ color: 'var(--text-muted)' }}>/mes</span>
                   </p>
                 </div>
@@ -133,7 +155,7 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
                 <div>
                   <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Plan Pro</p>
                   <p className="text-xl font-bold mt-0.5" style={{ color: '#FF5C3A' }}>
-                    $250.000
+                    {formatCOP(proPrice)}
                     <span className="text-xs font-normal ml-1" style={{ color: 'var(--text-muted)' }}>/mes</span>
                   </p>
                 </div>
@@ -203,7 +225,7 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
             </div>
             <div>
               <h2 className="text-lg font-bold text-white font-syne">Actualiza a Plan Pro</h2>
-              <p className="text-white/75 text-sm">$250.000 COP / mes</p>
+              <p className="text-white/75 text-sm">{formatCOP(proPrice)} COP / mes</p>
             </div>
           </div>
         </div>

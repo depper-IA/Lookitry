@@ -632,7 +632,7 @@
 
 ---
 
-- [-] 59. Sistema de marketing: promociones y herramientas desde el admin
+- [ ] 59. Sistema de marketing: promociones y herramientas desde el admin
   - [x] 59.1 Tabla `promotions` en Supabase
     - Migración SQL con columnas: id, type (enum: modal_timer, coupon, banner, plan_override, launch_offer), name, config (jsonb), active, starts_at, ends_at, created_at
     - RLS: solo service_role puede escribir; anon puede leer activas
@@ -668,5 +668,5 @@
     - Formulario de creación/edición por tipo
     - Preview en tiempo real del componente (modal, banner, etc.)
     - _Archivos: frontend/src/app/admin/marketing/promotions/page.tsx_
-  - [~] 59.8 Agregar link "Promociones" al sidebar admin bajo grupo Marketing
+  - [ ] 59.8 Agregar link "Promociones" al sidebar admin bajo grupo Marketing
     - _Archivos: frontend/src/app/admin/layout.tsx_
