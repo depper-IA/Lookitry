@@ -45,11 +45,11 @@ const METHOD_LABELS: Record<string, { label: string; icon: React.ReactNode }> = 
   manual:        { label: 'Manual',        icon: <RefreshCw className="w-3.5 h-3.5" /> },
 };
 
-const STATUS_CONFIG: Record<string, { label: string; cls: string; icon: React.ReactNode }> = {
-  completed: { label: 'Completado', cls: 'bg-emerald-100 text-emerald-800', icon: <CheckCircle className="w-3.5 h-3.5" /> },
-  pending:   { label: 'Pendiente',  cls: 'bg-amber-100 text-amber-800',    icon: <Clock className="w-3.5 h-3.5" /> },
-  failed:    { label: 'Fallido',    cls: 'bg-red-100 text-red-800',        icon: <XCircle className="w-3.5 h-3.5" /> },
-  refunded:  { label: 'Reembolsado',cls: 'bg-gray-100 text-gray-700',      icon: <RefreshCw className="w-3.5 h-3.5" /> },
+const STATUS_CONFIG: Record<string, { label: string; style: React.CSSProperties; icon: React.ReactNode }> = {
+  completed: { label: 'Completado', style: { backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }, icon: <CheckCircle className="w-3.5 h-3.5" /> },
+  pending:   { label: 'Pendiente',  style: { backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }, icon: <Clock className="w-3.5 h-3.5" /> },
+  failed:    { label: 'Fallido',    style: { backgroundColor: 'rgba(239,68,68,0.12)',   color: '#ef4444' }, icon: <XCircle className="w-3.5 h-3.5" /> },
+  refunded:  { label: 'Reembolsado',style: { backgroundColor: 'rgba(107,114,128,0.12)',color: '#6b7280' }, icon: <RefreshCw className="w-3.5 h-3.5" /> },
 };
 
 // ── Componente principal ──────────────────────────────────────────────────────
@@ -223,7 +223,7 @@ export default function AdminPaymentsPage() {
                 <tbody style={{ borderColor: 'var(--border-color)' }} className="divide-y">
                   {paginated.map(p => {
                     const methodCfg = METHOD_LABELS[p.paymentMethod] ?? { label: p.paymentMethod, icon: <Banknote className="w-3.5 h-3.5" /> };
-                    const statusCfg = STATUS_CONFIG[p.status] ?? { label: p.status, cls: 'bg-gray-100 text-gray-700', icon: null };
+                    const statusCfg = STATUS_CONFIG[p.status] ?? { label: p.status, style: { backgroundColor: 'rgba(107,114,128,0.12)', color: '#6b7280' }, icon: null };
                     return (
                       <tr key={p.id} className="hover:opacity-80 transition-opacity">
                         <td className="px-5 py-3.5">
@@ -243,7 +243,7 @@ export default function AdminPaymentsPage() {
                         </td>
                         <td style={{ color: 'var(--text-secondary)' }} className="px-5 py-3.5">{formatDate(p.paymentDate)}</td>
                         <td className="px-5 py-3.5">
-                          <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold w-fit ${statusCfg.cls}`}>
+                          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold w-fit" style={statusCfg.style}>
                             {statusCfg.icon} {statusCfg.label}
                           </span>
                         </td>

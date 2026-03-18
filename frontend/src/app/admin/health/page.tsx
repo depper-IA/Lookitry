@@ -21,18 +21,21 @@ interface HealthData {
 }
 
 function StatusBadge({ status }: { status: ServiceStatus }) {
-  const styles: Record<ServiceStatus, string> = {
-    ok:       'bg-green-100 text-green-800 border-green-200',
-    degraded: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    down:     'bg-red-100 text-red-800 border-red-200',
-    loading:  'bg-gray-100 text-gray-500 border-gray-200',
+  const styleMap: Record<ServiceStatus, React.CSSProperties> = {
+    ok:       { backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981', borderColor: 'rgba(16,185,129,0.3)' },
+    degraded: { backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b', borderColor: 'rgba(245,158,11,0.3)' },
+    down:     { backgroundColor: 'rgba(239,68,68,0.12)',  color: '#ef4444', borderColor: 'rgba(239,68,68,0.3)' },
+    loading:  { backgroundColor: 'rgba(107,114,128,0.12)',color: '#6b7280', borderColor: 'rgba(107,114,128,0.3)' },
   };
   const labels: Record<ServiceStatus, string> = {
     ok: 'Operativo', degraded: 'Degradado', down: 'Caído', loading: 'Verificando',
   };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${styles[status]}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${status === 'loading' ? 'bg-gray-400 animate-pulse' : status === 'ok' ? 'bg-green-500' : status === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'}`} />
+    <span
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border"
+      style={styleMap[status]}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${status === 'loading' ? 'bg-gray-400 animate-pulse' : status === 'ok' ? 'bg-emerald-500' : status === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'}`} />
       {labels[status]}
     </span>
   );
