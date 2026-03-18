@@ -26,7 +26,8 @@ interface MiniLandingConfig {
 }
 
 interface MetaConfig {
-  meta_mensual_cop: number;
+  gastos_personales_cop: number;
+  meta_ingreso_cop: number;
   trm_referencia: number;
   trm_auto: boolean;
 }
@@ -256,13 +257,11 @@ export default function PricingAdminPage() {
   const [error, setError]           = useState('');
   const [trm, setTrm]               = useState(3700);
   const [trmAuto, setTrmAuto]       = useState(true);
-  const [trmLive, setTrmLive]       = useState(3700); // TRM real de la API
+  const [trmLive, setTrmLive]       = useState(3700);
 
   const [basic, setBasic]               = useState<PlanConfig | null>(null);
   const [pro, setPro]                   = useState<PlanConfig | null>(null);
   const [miniLanding, setMiniLanding]   = useState<MiniLandingConfig | null>(null);
-  const [meta, setMeta]                 = useState<MetaConfig | null>(null);
-  const [costs, setCosts]               = useState<CostsConfig | null>(null);
   const [descuentos, setDescuentos]     = useState<DescuentosConfig | null>(null);
 
   const load = useCallback(async () => {
@@ -282,11 +281,9 @@ export default function PricingAdminPage() {
         if (row.id === 'basic')               setBasic(row.data as unknown as PlanConfig);
         if (row.id === 'pro')                 setPro(row.data as unknown as PlanConfig);
         if (row.id === 'mini_landing')        setMiniLanding(row.data as unknown as MiniLandingConfig);
-        if (row.id === 'costs')               setCosts(row.data as unknown as CostsConfig);
         if (row.id === 'descuentos_duracion') setDescuentos(row.data as unknown as DescuentosConfig);
         if (row.id === 'meta') {
           const m = row.data as unknown as MetaConfig;
-          setMeta(m);
           setTrm(m.trm_referencia);
           setTrmAuto(m.trm_auto);
           autoEnabled = m.trm_auto;
@@ -329,12 +326,7 @@ export default function PricingAdminPage() {
     }
   }, []);
 
-  const toggleTrmAuto = useCallback(() => {
-    const next = !trmAuto;
-    setTrmAuto(next);
-    if (next) setTrm(trmLive); // al activar auto, usar el valor live
-    setMeta(prev => prev ? { ...prev, trm_auto: next, trm_referencia: next ? trmLive : trm } : prev);
-  }, [trmAuto, trmLive, trm]);
+  // En pricing solo usamos TRM para mostrar precio en USD — sin toggle aquí
 
   if (loading) {
     return (
@@ -344,8 +336,8 @@ export default function PricingAdminPage() {
     );
   }
 
-  const metaCop  = meta?.meta_mensual_cop ?? 1400000;
-  const costsObj = costs ?? { costo_vps_cop: 37000, costo_dominio_cop_mensual: 5000, costo_openrouter_por_gen_cop: 25 };
+  const costsObj = { costo_vps_cop: 37000, costo_dominio_cop_mensual: 5000, costo_openrouter_por_gen_cop: 25 };
+  const metaCop  = 2000000;
 
   return (
     <div className="space-y-8 max-w-4xl">
@@ -378,66 +370,6 @@ export default function PricingAdminPage() {
           style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}>
           <span>{error}</span>
           <button className="ml-3 underline text-xs" onClick={() => setError('')}>Cerrar</button>
-        </div>
-      )}
-
-      {/* ── Meta mensual y TRM ── */}
-      {meta && (
-        <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <div>
-            <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Meta mensual y TRM</h3>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              Usados para calcular % de cumplimiento y conversiones en USD en el dashboard de ROI.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field
-              label="Meta mensual (COP)" type="number" prefix="$"
-              value={meta.meta_mensual_cop}
-              onChange={v => setMeta({ ...meta, meta_mensual_cop: Number(v) })}
-            />
-            <Field
-              label="TRM de referencia (COP/USD)" type="number"
-              value={trm}
-              disabled={trmAuto}
-              onChange={v => {
-                const n = Number(v);
-                setTrm(n);
-                setMeta({ ...meta, trm_referencia: n });
-              }}
-              hint={trmAuto ? `Automático — valor actual: ${trmLive.toLocaleString('es-CO')} COP/USD` : 'Valor manual editable'}
-            />
-          </div>
-
-          {/* Toggle TRM automático */}
-          <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--bg-base)' }}>
-            <button
-              onClick={toggleTrmAuto}
-              className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0"
-              style={{ background: trmAuto ? '#FF5C3A' : 'var(--border-color)' }}
-              aria-label="Toggle TRM automático"
-            >
-              <span
-                className="inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform"
-                style={{ transform: trmAuto ? 'translateX(18px)' : 'translateX(2px)' }}
-              />
-            </button>
-            <div>
-              <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                TRM automático
-              </p>
-              <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                {trmAuto
-                  ? 'Se actualiza diariamente desde la Superfinanciera Colombia (datos.gov.co)'
-                  : 'Desactivado — el valor se toma del campo manual'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex justify-end">
-            <SaveBtn id="meta" data={meta as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
-          </div>
         </div>
       )}
 
@@ -501,43 +433,6 @@ export default function PricingAdminPage() {
           <FeaturesList features={miniLanding.features} onChange={f => setMiniLanding({ ...miniLanding, features: f })} />
           <div className="flex justify-end">
             <SaveBtn id="mini_landing" data={miniLanding as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
-          </div>
-        </div>
-      )}
-
-      {/* ── Costos operativos ── */}
-      {costs && (
-        <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <div>
-            <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Costos operativos</h3>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              Usados para calcular ROI, margen y punto de equilibrio en el dashboard de ingresos.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Field
-              label="VPS Hostinger (COP/mes)" type="number" prefix="$"
-              value={costs.costo_vps_cop}
-              onChange={v => setCosts({ ...costs, costo_vps_cop: Number(v) })}
-            />
-            <Field
-              label="Dominio (COP/mes)" type="number" prefix="$"
-              value={costs.costo_dominio_cop_mensual}
-              onChange={v => setCosts({ ...costs, costo_dominio_cop_mensual: Number(v) })}
-            />
-            <Field
-              label="OpenRouter por generación (COP)" type="number" prefix="$"
-              value={costs.costo_openrouter_por_gen_cop}
-              onChange={v => setCosts({ ...costs, costo_openrouter_por_gen_cop: Number(v) })}
-            />
-          </div>
-          <Field
-            label="Notas"
-            value={costs.notas ?? ''}
-            onChange={v => setCosts({ ...costs, notas: v })}
-          />
-          <div className="flex justify-end">
-            <SaveBtn id="costs" data={costs as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
           </div>
         </div>
       )}

@@ -21,13 +21,13 @@ También tenía un panel de monitoreo en tiempo real en `/live` con logs y estad
 
 ## Credenciales que usaba
 
-| Variable | Valor |
-|---|---|
+| Variable             | Valor              |
+|----------------------|--------------------|
 | `SUPERPROF_USERNAME` | `lnwb45@gmail.com` |
-| `SUPERPROF_PASSWORD` | `Elohimes#1` |
-| `PROFILE_ID` | `7302143` |
-| `APP_HOST` | `0.0.0.0` |
-| `APP_PORT` | `5000` |
+| `SUPERPROF_PASSWORD` | `Elohimes#1`       |
+| `PROFILE_ID`         | `7302143`          |
+| `APP_HOST`           | `0.0.0.0`          |
+| `APP_PORT`           | `5000`             |
 
 URL del perfil: `https://www.superprof.co.uk/dashboard.html/my-listings/listing/7302143`
 
@@ -35,13 +35,13 @@ URL del perfil: `https://www.superprof.co.uk/dashboard.html/my-listings/listing/
 
 ## Stack técnico
 
-| Componente | Versión |
-|---|---|
-| Python | 3.12 |
-| Flask | 3.1.2 |
-| Playwright | 1.55.0 |
-| python-dotenv | 1.1.1 |
-| Werkzeug | 3.1.3 |
+| Componente    | Versión |
+|---------------|---------|
+| Python        | 3.12    |
+| Flask         | 3.1.2   |
+| Playwright    | 1.55.0  |
+| python-dotenv | 1.1.1   |
+| Werkzeug      | 3.1.3   |
 
 ---
 

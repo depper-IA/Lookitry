@@ -632,41 +632,41 @@
 
 ---
 
-- [ ] 59. Sistema de marketing: promociones y herramientas desde el admin
-  - [ ] 59.1 Tabla `promotions` en Supabase
+- [-] 59. Sistema de marketing: promociones y herramientas desde el admin
+  - [x] 59.1 Tabla `promotions` en Supabase
     - Migración SQL con columnas: id, type (enum: modal_timer, coupon, banner, plan_override, launch_offer), name, config (jsonb), active, starts_at, ends_at, created_at
     - RLS: solo service_role puede escribir; anon puede leer activas
     - _Archivos: supabase/migrations/20260318_promotions.sql_
-  - [ ] 59.2 API routes de promociones
+  - [~] 59.2 API routes de promociones
     - `GET /api/promotions` — devuelve promociones activas (público, ISR 300s)
     - `GET /api/admin/promotions` — todas (admin)
     - `POST /api/admin/promotions` — crear
     - `PUT /api/admin/promotions/[id]` — editar
     - `DELETE /api/admin/promotions/[id]` — eliminar
     - _Archivos: frontend/src/app/api/promotions/route.ts, frontend/src/app/api/admin/promotions/route.ts_
-  - [ ] 59.3 Modal de oferta con countdown (landing)
+  - [~] 59.3 Modal de oferta con countdown (landing)
     - Componente `PromoModal` — aparece tras X segundos configurables
     - Timer de urgencia con countdown hasta `ends_at`
     - Configurable desde admin: título, descripción, CTA, segundos de delay, fecha fin
     - _Archivos: frontend/src/components/landing/PromoModal.tsx_
-  - [ ] 59.4 Cupones de descuento
+  - [~] 59.4 Cupones de descuento
     - Tabla `coupons`: code, discount_type (pct/fixed), discount_value, max_uses, uses_count, expires_at, plan_ids (array), active
     - API `POST /api/coupons/validate` — valida código y retorna descuento
     - Integrar en checkout: campo de cupón antes del pago
     - _Archivos: supabase/migrations/20260318_coupons.sql, frontend/src/app/checkout/page.tsx_
-  - [ ] 59.5 Banner de promoción (barra superior landing)
+  - [~] 59.5 Banner de promoción (barra superior landing)
     - Componente `PromoBanner` — barra sticky en la parte superior de la landing
     - Configurable: texto, color de fondo, CTA, link, activo/inactivo
     - Persistir cierre en sessionStorage para no molestar al usuario
     - _Archivos: frontend/src/components/landing/PromoBanner.tsx_
-  - [ ] 59.6 Precio especial temporal por plan (override)
+  - [~] 59.6 Precio especial temporal por plan (override)
     - En `pricing_config` o tabla `promotions`: precio override con fecha de expiración
     - La landing muestra precio tachado + precio especial si hay override activo
     - _Archivos: frontend/src/lib/pricing.ts, frontend/src/app/planes/PlanesClient.tsx_
-  - [ ] 59.7 Panel admin `/admin/marketing/promotions`
+  - [~] 59.7 Panel admin `/admin/marketing/promotions`
     - Lista de promociones con toggle activo/inactivo
     - Formulario de creación/edición por tipo
     - Preview en tiempo real del componente (modal, banner, etc.)
     - _Archivos: frontend/src/app/admin/marketing/promotions/page.tsx_
-  - [ ] 59.8 Agregar link "Promociones" al sidebar admin bajo grupo Marketing
+  - [~] 59.8 Agregar link "Promociones" al sidebar admin bajo grupo Marketing
     - _Archivos: frontend/src/app/admin/layout.tsx_
