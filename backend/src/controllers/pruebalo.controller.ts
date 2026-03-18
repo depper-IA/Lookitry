@@ -237,6 +237,25 @@ export class PruebaloController {
         error_message: n8nError.message,
       });
 
+      // Detectar si el error es por créditos agotados en OpenRouter (402/429)
+      const errMsg = (n8nError.message || '').toLowerCase();
+      const isCreditsError =
+        n8nError.statusCode === 402 ||
+        n8nError.statusCode === 429 ||
+        errMsg.includes('402') ||
+        errMsg.includes('insufficient') ||
+        errMsg.includes('credits') ||
+        errMsg.includes('quota') ||
+        errMsg.includes('rate limit') ||
+        errMsg.includes('out of credits');
+
+      if (isCreditsError) {
+        throw new ExternalServiceError(
+          'Servicio temporalmente no disponible. El límite de créditos de IA ha sido alcanzado. Por favor contacta al soporte.',
+          'openrouter'
+        );
+      }
+
       throw new ExternalServiceError(
         'Error al generar la imagen. Por favor intenta de nuevo.',
         'n8n'

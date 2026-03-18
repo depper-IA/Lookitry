@@ -27,6 +27,19 @@ interface HealthData {
   services: { supabase: ServiceResult; n8n: ServiceResult; email: ServiceResult; };
 }
 
+interface OpenRouterCredits {
+  label: string | null;
+  usage: number;
+  limit: number | null;
+  balance: number | null;
+  is_free_tier: boolean;
+  usage_percent: number | null;
+  estimated_generations_remaining: number | null;
+  cost_per_generation: number;
+  low_balance_alert: boolean;
+  critical_balance_alert: boolean;
+}
+
 // ── Iconos ────────────────────────────────────────────────────────────────────
 
 function IconClock({ className }: { className?: string }) {
@@ -53,13 +66,21 @@ function IconRefresh({ className }: { className?: string }) {
 function IconServer({ className }: { className?: string }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg>;
 }
+function IconCreditCard({ className }: { className?: string }) {
+  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>;
+}
+function IconAlertTriangle({ className }: { className?: string }) {
+  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>;
+}
+function IconExternalLink({ className }: { className?: string }) {
+  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>;
+}
 function IconGlobe({ className }: { className?: string }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" /></svg>;
 }
 function IconWifi({ className }: { className?: string }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>;
 }
-
 // ── Toggle switch ─────────────────────────────────────────────────────────────
 
 function Toggle({ value, onChange, disabled }: { value: boolean; onChange: () => void; disabled?: boolean }) {
@@ -152,6 +173,10 @@ export default function SystemConfigPage() {
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loadingHealth, setLoadingHealth] = useState(true);
 
+  // Créditos OpenRouter
+  const [credits, setCredits] = useState<OpenRouterCredits | null>(null);
+  const [loadingCredits, setLoadingCredits] = useState(true);
+
   // Alertas globales
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -187,6 +212,15 @@ export default function SystemConfigPage() {
     } finally { setLoadingHealth(false); }
   }, []);
 
+  const loadCredits = useCallback(async () => {
+    setLoadingCredits(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/openrouter-credits`, { headers });
+      if (res.ok) setCredits(await res.json());
+    } catch { /* silencioso */ }
+    finally { setLoadingCredits(false); }
+  }, []);
+
   const loadPaymentSettings = useCallback(async () => {
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, { headers });
@@ -202,6 +236,7 @@ export default function SystemConfigPage() {
     loadCampaigns();
     loadHealth();
     loadPaymentSettings();
+    loadCredits();
   }, []);
 
   function flash(msg: string, type: 'ok' | 'err') {
@@ -466,6 +501,111 @@ export default function SystemConfigPage() {
             </div>
           </div>
 
+        </div>
+      </Section>
+
+      {/* ── SECCIÓN 3: Créditos OpenRouter ── */}
+      <Section title="Créditos OpenRouter" icon={<IconCreditCard className="w-4 h-4" />}>
+        <div className="space-y-4">
+          {/* Alertas */}
+          {credits?.critical_balance_alert && (
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30">
+              <IconAlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              <p className="text-sm text-red-500 font-semibold">Balance crítico — menos de $5 USD disponibles. Recarga ahora para evitar interrupciones.</p>
+            </div>
+          )}
+          {!credits?.critical_balance_alert && credits?.low_balance_alert && (
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+              <IconAlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+              <p className="text-sm text-amber-500 font-semibold">Balance bajo — queda menos del 20% del límite. Considera recargar pronto.</p>
+            </div>
+          )}
+
+          {loadingCredits ? (
+            <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin border-[#FF5C3A]" /></div>
+          ) : credits ? (
+            <>
+              {/* Métricas principales */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: 'Balance disponible', value: credits.balance !== null ? `$${credits.balance.toFixed(2)}` : '—', sub: 'USD restantes', color: credits.critical_balance_alert ? 'text-red-500' : credits.low_balance_alert ? 'text-amber-500' : 'text-emerald-500' },
+                  { label: 'Uso acumulado', value: `$${credits.usage.toFixed(2)}`, sub: 'USD gastados', color: 'var(--text-primary)' },
+                  { label: 'Límite total', value: credits.limit !== null ? `$${credits.limit.toFixed(2)}` : 'Sin límite', sub: 'USD comprados', color: 'var(--text-primary)' },
+                  { label: 'Generaciones restantes', value: credits.estimated_generations_remaining !== null ? credits.estimated_generations_remaining.toLocaleString() : '—', sub: `~$${credits.cost_per_generation}/gen`, color: 'var(--text-primary)' },
+                ].map(m => (
+                  <div key={m.label} style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs font-medium mb-1">{m.label}</p>
+                    <p className={`text-xl font-bold font-mono ${typeof m.color === 'string' && m.color.startsWith('text-') ? m.color : ''}`} style={typeof m.color === 'string' && !m.color.startsWith('text-') ? { color: m.color } : {}}>{m.value}</p>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">{m.sub}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Barra de progreso */}
+              {credits.usage_percent !== null && credits.limit !== null && (
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-medium">Uso del crédito comprado</p>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs font-mono">{credits.usage_percent}%</p>
+                  </div>
+                  <div style={{ background: 'var(--bg-hover)' }} className="w-full h-2.5 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${credits.critical_balance_alert ? 'bg-red-500' : credits.low_balance_alert ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                      style={{ width: `${credits.usage_percent}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-1">
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs">$0</p>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs">${credits.limit.toFixed(0)}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Referencia de costos */}
+              <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
+                <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-semibold uppercase tracking-wide mb-3">Referencia de escalabilidad</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                  {[
+                    { escenario: '10 marcas × 50 gen/mes', costo: '$19.50/mes' },
+                    { escenario: '50 marcas × 50 gen/mes', costo: '$97.50/mes' },
+                    { escenario: '100 marcas × 50 gen/mes', costo: '$195/mes' },
+                    { escenario: '100 marcas × 100 gen/mes', costo: '$390/mes' },
+                    { escenario: '100 marcas × 200 gen/mes', costo: '$780/mes' },
+                    { escenario: 'Buffer recomendado', costo: '$50–100 extra' },
+                  ].map(r => (
+                    <div key={r.escenario} className="flex justify-between gap-2">
+                      <span style={{ color: 'var(--text-muted)' }}>{r.escenario}</span>
+                      <span style={{ color: 'var(--text-primary)' }} className="font-mono font-semibold flex-shrink-0">{r.costo}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Acciones */}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={loadCredits}
+                  disabled={loadingCredits}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors disabled:opacity-50"
+                  style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', background: 'var(--bg-hover)' }}
+                >
+                  <IconRefresh className={`w-3.5 h-3.5 ${loadingCredits ? 'animate-spin' : ''}`} />
+                  Actualizar
+                </button>
+                <a
+                  href="https://openrouter.ai/credits"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF5C3A] text-white text-xs font-semibold hover:bg-[#e04e30] transition-colors"
+                >
+                  <IconExternalLink className="w-3.5 h-3.5" />
+                  Recargar en OpenRouter
+                </a>
+              </div>
+            </>
+          ) : (
+            <p style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-6">No se pudo obtener información de créditos</p>
+          )}
         </div>
       </Section>
 
