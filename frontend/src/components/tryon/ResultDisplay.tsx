@@ -94,9 +94,9 @@ export function ResultDisplay({
 
   // ── Compartir ──────────────────────────────────────────────────────────────
   const isPro = brandPlan === 'PRO';
-  const shareText = isPro && brandName
-    ? `Mira cómo me queda este look de ${brandName} con IA`
-    : 'Mira cómo me queda este look con el probador virtual de Lookitry';
+  const shareText = isPro
+    ? `¿Qué tal me queda este ${productName} de ${brandName ?? ''}? ¿Me lo llevo?`
+    : `¿Qué tal me queda este ${productName} de ${brandName ?? ''}? ¿Me lo llevo?\nImagen generada por *Lookitry*`;
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   const handleShareWhatsApp = () => {
