@@ -114,14 +114,29 @@ var(--shadow-header)    /* Sombra del header */
 
 ## Workflows n8n (IDs — no cargar archivos para consultarlos)
 
-| Workflow              | ID                   | Webhook / Uso                        |
-|-----------------------|----------------------|--------------------------------------|
-| Try-On principal      | `wPLypk7KhBcFLicX`   | `/webhook/tryon`                     |
-| Feedback embedding    | `47RcLopJB6M82b0k`   | Flujo4 — embeddings de feedback      |
-| Describir con IA      | `ZjVTV3QxoPEi60GX`   | Descriptor de productos              |
+| Workflow                        | ID                   | Webhook / Uso                                          |
+|---------------------------------|----------------------|--------------------------------------------------------|
+| Try-On principal                | `wPLypk7KhBcFLicX`   | `/webhook/tryon`                                       |
+| Error Handler (OpenRouter)      | `PNri7NdZYkZhpPnm`   | errorWorkflow del Try-On — escribe en admin_notifications |
+| Feedback embedding              | `47RcLopJB6M82b0k`   | Flujo4 — embeddings de feedback                        |
+| Describir con IA                | `ZjVTV3QxoPEi60GX`   | Descriptor de productos                                |
 
 Nodo clave en "Describir con IA": `03feeeff-f6bb-4eaf-92f8-4d67d2ba18fe` (Formatear respuesta) — devuelve `{ description, category, enrichedPrompt }`.
 Todos los workflows tienen la etiqueta `SaaS`.
+
+### Reglas de gestión de workflows en n8n
+
+- Para buscar o filtrar workflows en n8n, usar siempre el tag `SaaS`.
+- Al crear un nuevo workflow bajo consentimiento explícito del usuario, agregar obligatoriamente la etiqueta `SaaS` antes de guardar.
+- Si se crea un workflow sin esa etiqueta, corregirlo inmediatamente.
+
+### Error Handler — detalles
+- Se activa automáticamente cuando el workflow principal falla en producción
+- Clasifica el error: `credits_exhausted` (HTTP 402/429 o keywords "credits"/"insufficient") vs `service_down`
+- Inserta directo en tabla `admin_notifications` via Supabase REST API (service role key)
+- Recupera `brand_id` y `product_id` del contexto de ejecución fallida si están disponibles
+- Archivo de referencia: `templates-webs/flujo5_error_handler_openrouter.json`
+
 
 ## Reglas de branding en nuevas páginas
 
