@@ -105,7 +105,7 @@ export class WompiController {
         : planAmounts[(plan as string)?.toUpperCase()] ?? 150000;
 
       const brandId = brand?.id ?? `visitor_${Date.now()}`;
-      const config = wompiService.getWidgetConfig(brandId, amountCOP);
+      const config = await wompiService.getWidgetConfig(brandId, amountCOP);
       const signature = await wompiService.generateIntegritySignature(
         config.reference,
         config.amountInCents,
