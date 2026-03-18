@@ -243,7 +243,7 @@ export default function NotificationsPage() {
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-white">Centro de actividad</h1>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary, #fff)' }}>Centro de actividad</h1>
           <button
             onClick={() => activeTab === 'notifications' ? fetchNotifications() : fetchFeedback()}
             className="p-2 rounded-xl border transition-colors hover:bg-white/5"
@@ -316,7 +316,7 @@ export default function NotificationsPage() {
 
             {showPrefs && (
               <div className="mb-6 rounded-2xl border p-5" style={{ backgroundColor: 'var(--bg-card, #141414)', borderColor: 'var(--border-color, #222)' }}>
-                <h2 className="text-sm font-semibold text-white mb-4">Preferencias de notificaciones</h2>
+                <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary, #fff)' }}>Preferencias de notificaciones</h2>
                 {prefLoading ? (
                   <div className="flex items-center gap-2 text-sm" style={{ color: '#999' }}>
                     <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
@@ -353,8 +353,8 @@ export default function NotificationsPage() {
                 placeholder="Buscar..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="flex-1 min-w-[160px] px-3 py-2 rounded-xl text-sm border bg-transparent text-white placeholder-gray-600 focus:outline-none focus:border-orange-500"
-                style={{ borderColor: 'var(--border-color, #222)' }}
+                className="flex-1 min-w-[160px] px-3 py-2 rounded-xl text-sm border bg-transparent focus:outline-none focus:border-orange-500"
+                style={{ borderColor: 'var(--border-color, #222)', color: 'var(--text-primary, #fff)' }}
               />
               <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="px-3 py-2 rounded-xl text-sm border bg-transparent focus:outline-none" style={{ borderColor: 'var(--border-color, #222)', color: '#bbb', backgroundColor: 'var(--bg-card, #141414)' }}>
                 <option value="all">Todas las categorías</option>
@@ -404,7 +404,7 @@ export default function NotificationsPage() {
                         <div className="mt-0.5 flex-shrink-0"><SeverityIcon severity={n.severity} /></div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className={`text-sm font-semibold truncate ${isRead ? 'text-gray-400' : 'text-white'}`}>{n.title}</p>
+                            <p className={`text-sm font-semibold truncate`} style={{ color: isRead ? '#999' : 'var(--text-primary, #fff)' }}>{n.title}</p>
                             {!isRead && <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#FF5C3A' }} />}
                           </div>
                           <p className="text-xs mt-0.5 truncate" style={{ color: '#999' }}>{n.message}</p>
@@ -440,7 +440,7 @@ export default function NotificationsPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {feedbackStats.map((s, i) => (
                         <div key={i} className="rounded-xl border p-3" style={{ backgroundColor: 'var(--bg-card, #141414)', borderColor: 'var(--border-color, #222)' }}>
-                          <p className="text-xl font-bold text-white">{s.count}</p>
+                          <p className="text-xl font-bold" style={{ color: 'var(--text-primary, #fff)' }}>{s.count}</p>
                           <p className="text-xs mt-0.5" style={{ color: '#bbb' }}>{ERROR_TYPE_LABELS[s.error_type] ?? s.error_type}</p>
                           {s.product_category && (
                             <p className="text-xs mt-0.5" style={{ color: '#666' }}>{s.product_category}</p>
@@ -540,7 +540,7 @@ export default function NotificationsPage() {
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex items-center gap-2.5">
                 <SeverityIcon severity={selected.severity} />
-                <h3 className="font-semibold text-white">{selected.title}</h3>
+                <h3 className="font-semibold" style={{ color: 'var(--text-primary, #fff)' }}>{selected.title}</h3>
               </div>
               <button onClick={() => setSelected(null)} className="p-1 rounded-lg hover:bg-white/10 transition-colors" style={{ color: '#666' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
