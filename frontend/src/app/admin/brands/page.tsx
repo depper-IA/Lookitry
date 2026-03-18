@@ -547,18 +547,18 @@ export default function AdminBrandsPage() {
                 </td>
                 <td className="px-4 py-3.5 whitespace-nowrap">
                   {brand.is_in_trial ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }}>
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v10.5a3 3 0 006 0V3M6 3h12" /></svg>
                       Prueba — {brand.trial_days_remaining ?? 0}d
                     </span>
                   ) : brand.subscription_status === 'active' ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">Activo</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }}>Activo</span>
                   ) : brand.subscription_status === 'expiring_soon' ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Por vencer</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>Por vencer</span>
                   ) : brand.subscription_status === 'suspended' ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Suspendido</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>Suspendido</span>
                   ) : brand.subscription_status === 'expired' ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Vencido</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>Vencido</span>
                   ) : (
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-muted)' }}>Sin suscripción</span>
                   )}
@@ -650,12 +650,15 @@ export default function AdminBrandsPage() {
               <div className="grid grid-cols-2 gap-4">
                 {[['Email', selectedBrand.email], ['Slug', selectedBrand.slug], ['Plan', selectedBrand.is_in_trial ? 'TRIAL' : selectedBrand.plan],
                   ['Fecha de registro', new Date(selectedBrand.created_at).toLocaleDateString('es-ES')]].map(([label, value]) => (
-                  <div key={label}><p className="text-sm text-gray-600">{label}</p><p className="text-sm font-medium text-gray-900">{value}</p></div>
+                  <div key={label}>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{label}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{value}</p>
+                  </div>
                 ))}
                 {selectedBrand.is_in_trial && (
                   <div className="col-span-2">
-                    <p className="text-sm text-gray-600">Estado de prueba</p>
-                    <p className="text-sm font-medium text-blue-700">
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Estado de prueba</p>
+                    <p className="text-sm font-medium" style={{ color: '#3b82f6' }}>
                       En período de prueba — {selectedBrand.trial_days_remaining} días restantes
                       {selectedBrand.trial_end_date && ` (vence ${new Date(selectedBrand.trial_end_date).toLocaleDateString('es-ES')})`}
                     </p>
@@ -743,7 +746,11 @@ export default function AdminBrandsPage() {
                     <h3 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{product.name}</h3>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{product.category}</p>
                     <div className="mt-2 flex items-center justify-between">
-                      <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${product.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'}`}>
+                      <span className={`px-2 py-0.5 text-xs rounded-full font-medium`}
+                        style={product.is_active
+                          ? { backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }
+                          : { backgroundColor: 'var(--bg-hover)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }
+                        }>
                         {product.is_active ? 'Activo' : 'Inactivo'}
                       </span>
                       <div className="flex items-center gap-2">
@@ -767,7 +774,7 @@ export default function AdminBrandsPage() {
               </div>
             )}
             <div className="mt-6 flex justify-end">
-              <button onClick={() => setShowProductsModal(false)} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Cerrar</button>
+              <button onClick={() => setShowProductsModal(false)} className="px-4 py-2 rounded-lg text-sm transition-colors" style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>Cerrar</button>
             </div>
           </div>
         </div>
@@ -775,15 +782,15 @@ export default function AdminBrandsPage() {
 
       {/* Modal Crear Marca */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-150 animate-in fade-in">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 transition-opacity duration-150 animate-in fade-in">
+          <div className="rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Nueva Marca</h2>
-              <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
+              <h2 className="font-syne font-bold text-xl" style={{ color: 'var(--text-primary)' }}>Nueva Marca</h2>
+              <button onClick={() => setShowCreateModal(false)} style={{ color: 'var(--text-secondary)' }}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
               Crea una marca manualmente. Se iniciará con un período de prueba activo.
             </p>
             <div className="space-y-4">

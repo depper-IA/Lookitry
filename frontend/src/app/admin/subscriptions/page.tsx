@@ -86,17 +86,19 @@ function PlanBadge({ plan, isInTrial }: { plan: string; isInTrial?: boolean }) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    active: 'bg-emerald-100 text-emerald-800',
-    expiring_soon: 'bg-amber-100 text-amber-800',
-    expired: 'bg-red-100 text-red-800',
-    suspended: 'bg-gray-100 text-gray-700',
+  const map: Record<string, { bg: string; color: string }> = {
+    active:        { bg: 'rgba(16,185,129,0.12)',  color: '#10b981' },
+    expiring_soon: { bg: 'rgba(245,158,11,0.12)',  color: '#f59e0b' },
+    expired:       { bg: 'rgba(239,68,68,0.12)',   color: '#ef4444' },
+    suspended:     { bg: 'rgba(107,114,128,0.12)', color: '#6b7280' },
   };
   const labels: Record<string, string> = {
     active: 'Activa', expiring_soon: 'Por vencer', expired: 'Vencida', suspended: 'Suspendida',
   };
+  const style = map[status] ?? { bg: 'rgba(107,114,128,0.12)', color: '#6b7280' };
   return (
-    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${map[status] ?? 'bg-gray-100 text-gray-700'}`}>
+    <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
+      style={{ backgroundColor: style.bg, color: style.color }}>
       {labels[status] ?? status}
     </span>
   );

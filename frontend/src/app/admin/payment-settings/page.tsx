@@ -95,7 +95,7 @@ export default function PaymentSettingsPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+      <div className="w-10 h-10 border-4 border-[#FF5C3A]/30 border-t-[#FF5C3A] rounded-full animate-spin" />
     </div>
   );
 
@@ -142,7 +142,10 @@ export default function PaymentSettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-lg disabled:opacity-50 font-medium transition-colors"
+            style={{ backgroundColor: '#FF5C3A' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e04e30')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FF5C3A')}
           >
             {saving ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
@@ -165,9 +168,9 @@ export default function PaymentSettingsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              style={activeTab === tab.id ? { color: '#3b82f6' } : { color: 'var(--text-muted)' }}
+              style={activeTab === tab.id ? { color: '#FF5C3A' } : { color: 'var(--text-muted)' }}
               className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                activeTab === tab.id ? 'border-blue-600' : 'border-transparent hover:opacity-80'
+                activeTab === tab.id ? 'border-[#FF5C3A]' : 'border-transparent hover:opacity-80'
               }`}
             >
               {tab.icon}
@@ -348,9 +351,8 @@ function Toggle({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean
   return (
     <button
       onClick={() => onChange(!enabled)}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-        enabled ? 'bg-blue-600' : 'bg-gray-400'
-      }`}
+      className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+      style={{ backgroundColor: enabled ? '#FF5C3A' : 'var(--border-color)' }}
     >
       <span
         className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
