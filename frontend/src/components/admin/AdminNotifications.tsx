@@ -172,20 +172,28 @@ export function AdminNotifications() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<AdminNotification | null>(null);
+  const [feedbackCount, setFeedbackCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/admin/notifications`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!res.ok) return;
-      const data = await res.json();
-      setNotifications(data.notifications || []);
-      setReadIds(getReadIds());
+      const headers = { Authorization: `Bearer ${token}` };
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+      const [notifRes, fbRes] = await Promise.all([
+        fetch(`${apiBase}/api/admin/notifications`, { headers }),
+        fetch(`${apiBase}/api/admin/feedback/count-unresolved`, { headers }),
+      ]);
+      if (notifRes.ok) {
+        const data = await notifRes.json();
+        setNotifications(data.notifications || []);
+        setReadIds(getReadIds());
+      }
+      if (fbRes.ok) {
+        const fbData = await fbRes.json();
+        setFeedbackCount(fbData.count ?? 0);
+      }
     } catch { /* silencioso */ } finally { setLoading(false); }
   }, []);
 
@@ -200,6 +208,7 @@ export function AdminNotifications() {
   }, []);
 
   const unreadCount = notifications.filter(n => !readIds.has(n.id)).length;
+  const totalBadge = unreadCount + feedbackCount;
 
   const markAllRead = () => {
     const all = new Set(notifications.map(n => n.id));
@@ -228,9 +237,9 @@ export function AdminNotifications() {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          {unreadCount > 0 && (
+          {totalBadge > 0 && (
             <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center leading-none">
-              {unreadCount > 9 ? '9+' : unreadCount}
+              {totalBadge > 9 ? '9+' : totalBadge}
             </span>
           )}
         </button>
@@ -243,6 +252,9 @@ export function AdminNotifications() {
                 <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Notificaciones</span>
                 {unreadCount > 0 && (
                   <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>{unreadCount} nuevas</span>
+                )}
+                {feedbackCount > 0 && (
+                  <span className="text-xs font-semibold px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(249,115,22,0.12)', color: '#f97316' }}>{feedbackCount} feedback</span>
                 )}
               </div>
               <div className="flex items-center gap-2">
@@ -304,8 +316,13 @@ export function AdminNotifications() {
             </div>
 
             {notifications.length > 0 && (
-              <div className="px-4 py-2.5 border-t" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }}>
-                <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>{notifications.length} notificaciones de los últimos 7 días</p>
+              <div className="px-4 py-2.5 border-t flex items-center justify-between" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }}>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{notifications.length} notificaciones · últimos 7 días</p>
+                {feedbackCount > 0 && (
+                  <a href="/admin/notifications" className="text-xs font-medium" style={{ color: '#f97316' }} onClick={() => setOpen(false)}>
+                    Ver {feedbackCount} feedback IA
+                  </a>
+                )}
               </div>
             )}
           </div>
