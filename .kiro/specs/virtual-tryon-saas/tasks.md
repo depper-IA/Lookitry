@@ -670,3 +670,148 @@
     - _Archivos: frontend/src/app/admin/marketing/promotions/page.tsx_
   - [ ] 59.8 Agregar link "Promociones" al sidebar admin bajo grupo Marketing
     - _Archivos: frontend/src/app/admin/layout.tsx_
+
+---
+
+- [ ] 60. Auditoría de base de datos
+  - [ ] 60.1 Verificar FK e índices en todas las tablas relacionales
+    - Tablas: brands, products, generations, generation_feedback, subscription_payments, trial_registrations
+    - Confirmar que no hay registros huérfanos en ninguna tabla
+    - SQL: `SELECT COUNT(*) FROM products p WHERE NOT EXISTS (SELECT 1 FROM brands b WHERE b.id = p.brand_id)`
+    - Ídem para generations, generation_feedback, subscription_payments, trial_registrations, admin_notifications
+  - [ ] 60.2 Verificar datos duplicados
+    - Emails duplicados en `brands` y `admins`
+    - Slugs duplicados en `brands`
+    - Códigos duplicados en `coupons`
+  - [ ] 60.3 Verificar datos inconsistentes en suscripciones
+    - Marcas con `subscription_status = 'active'` pero `subscription_end_date` en el pasado
+    - Marcas con `trial_end_date` en el pasado pero sin `subscription_status` definido
+    - Marcas con `has_landing_page = true` y `landing_suspended_at` no nulo (verificar lógica)
+    - Generaciones con `status = 'PENDING'` de más de 24 horas (stuck)
+  - [ ] 60.4 Verificar tabla `pricing_config`
+    - Confirmar que existen los 6 registros: `basic`, `pro`, `descuentos_duracion`, `metas`, `costos_operativos`, `landing`
+    - Verificar que `basic.data.precio_mensual_cop` y `pro.data.precio_mensual_cop` tienen valores correctos
+    - Verificar que `descuentos_duracion.data` tiene `meses_1`, `meses_3`, `meses_6`, `meses_12`
+
+---
+
+- [ ] 61. Auditoría de datos dinámicos
+  - [ ] 61.1 Verificar precios dinámicos en todos los puntos de carga
+    - `/checkout` público: confirmar que carga desde `pricing_config` (no hardcodeado)
+    - `/dashboard/checkout`: ídem
+    - `UpgradeModal`: ídem
+    - Panel admin `/admin/pricing`: confirmar que guarda y lee correctamente
+    - Descuentos por meses: confirmar que se aplican correctamente en ambos checkouts
+  - [ ] 61.2 Verificar configuración de pagos (`payment_settings`)
+    - `GET /api/payment-settings/public` devuelve `landingPrice`, `landingOriginalPrice`, `wompiEnabled`, `wompiPublicKey`, `manualEnabled`, `manualWhatsapp`, `manualEmail`
+    - Panel admin `/admin/payment-settings` guarda y lee correctamente
+    - `WOMPI_ENABLED` en `.env` y `wompi_enabled` en BD están sincronizados
+  - [ ] 61.3 Verificar cupones end-to-end
+    - `POST /api/coupons/validate` funciona correctamente
+    - Panel admin `/admin/marketing/promotions` lista, crea, edita y elimina cupones
+    - Controller usa `supabaseAdmin` (ya corregido — confirmar en producción)
+    - `uses_count` se incrementa al usar un cupón en el checkout
+  - [ ] 61.4 Verificar promociones
+    - `GET /api/promotions` devuelve promociones activas
+    - `PromoModal` en la landing muestra la promoción activa si existe
+    - Fechas `starts_at` / `ends_at` se respetan correctamente
+
+---
+
+- [ ] 62. Auditoría de frontend
+  - [ ] 62.1 Verificar páginas públicas
+    - `/` landing, `/planes`, `/register`, `/login`, `/sobre-nosotros`, `/terminos`, `/politicas-privacidad`
+    - `/checkout`, `/pago-exitoso`, `/trial-payment`, `/trial-activado`, `/verify-email`, `/registro-pro`
+    - `/pruebalo/[slug]`, `/marca/[slug]`, `/sitio/[slug]`, `/embed/[slug]`
+  - [ ] 62.2 Verificar dashboard (rutas privadas)
+    - Todas las rutas `/dashboard/*` requieren JWT válido
+    - Stats correctas en `/dashboard`, límites de plan en `/dashboard/products`
+    - Precios dinámicos en `/dashboard/checkout`
+  - [ ] 62.3 Verificar panel admin
+    - Todas las rutas `/admin/*` requieren Admin JWT
+    - Verificar que TODOS los paneles usan variables CSS (`var(--text-primary)`, etc.)
+    - Verificar que no hay colores hardcodeados en paneles admin
+    - Toggle de tema light/dark funciona correctamente en todos los paneles
+  - [ ] 62.4 Verificar modo light/dark en todos los paneles admin
+    - Recorrer cada página de `/admin/*` en modo light y dark
+    - Reportar cualquier panel con colores hardcodeados que no respetan el tema
+
+---
+
+- [ ] 63. Auditoría de backend
+  - [ ] 63.1 Verificar endpoints de autenticación
+    - `POST /api/auth/register`, `/login`, `/logout`, `/forgot-password`, `/reset-password`, `/verify-email`
+  - [ ] 63.2 Verificar endpoints de marcas y productos
+    - `GET/PUT /api/brands/me`, `GET /api/brands/:slug`
+    - CRUD `/api/products`, `POST /api/upload`
+  - [ ] 63.3 Verificar endpoints de generaciones y pagos
+    - `POST /api/generations`, `GET /api/generations`, `GET /api/generations/:id`
+    - `GET /api/payment-settings/public`, `GET /api/payments/wompi/config`, `GET /api/payments/wompi/checkout-url`, `POST /api/payments/wompi/webhook`
+  - [ ] 63.4 Verificar endpoints de cupones y suscripción
+    - `POST /api/coupons/validate`, CRUD `/api/admin/coupons/*`
+    - `GET /api/subscription`, `POST /api/subscription/activate`
+  - [ ] 63.5 Verificar endpoints de analytics, usage y pruebalo
+    - `GET /api/analytics`, `GET /api/usage`, `GET /api/admin/revenue`
+    - `GET /api/pruebalo/:slug`, `POST /api/pruebalo/:slug/generate`
+
+---
+
+- [ ] 64. Auditoría de seguridad
+  - [ ] 64.1 Verificar RLS por tabla
+    - `brands`, `products`, `generations`, `generation_feedback`, `subscription_payments`, `trial_registrations`: solo la marca dueña puede acceder
+    - `coupons`, `promotions`, `pricing_config`, `payment_settings`: solo service role puede escribir
+    - `admins`, `admin_notifications`, `admin_notification_preferences`: solo service role / admins
+  - [ ] 64.2 Verificar autenticación y autorización
+    - Todas las rutas `/api/admin/*` requieren middleware de admin
+    - Todas las rutas `/api/brands/*` requieren JWT válido
+    - `JWT_SECRET` no es el valor por defecto en producción
+    - Llaves de Wompi en producción son las de producción (no test)
+    - `TURNSTILE_ENABLED=true` en producción
+  - [ ] 64.3 Verificar variables de entorno expuestas
+    - `SUPABASE_SERVICE_KEY` NO está en el frontend (solo en backend)
+    - `WOMPI_PRIVATE_KEY` NO está en el frontend
+    - `JWT_SECRET` NO está en el frontend
+    - `.env.local` y `backend/.env` están en `.gitignore`
+  - [ ] 64.4 Verificar CORS y headers del backend
+    - CORS configurado solo para dominios autorizados
+    - Backend no expone headers sensibles
+
+---
+
+- [ ] 65. Auditoría de integraciones
+  - [ ] 65.1 Verificar n8n
+    - Workflow `wPLypk7KhBcFLicX` (Try-On) activo en producción
+    - Webhook `/webhook/tryon` responde correctamente
+    - Error Handler `PNri7NdZYkZhpPnm` activo, notificaciones llegan a `admin_notifications`
+    - Workflow `ZjVTV3QxoPEi60GX` (Descriptor IA) funciona
+  - [ ] 65.2 Verificar Wompi
+    - Llaves de producción configuradas en BD (`payment_settings`)
+    - Webhook de Wompi configurado en el dashboard de Wompi
+    - `WOMPI_EVENTS_SECRET` coincide entre BD y Wompi dashboard
+    - Flujo completo de pago funciona en producción
+  - [ ] 65.3 Verificar MinIO
+    - Bucket `images` existe y es accesible
+    - Imágenes subidas accesibles públicamente via `https://minio.wilkiedevs.com`
+    - Cleanup de imágenes temporales funciona
+  - [ ] 65.4 Verificar Cloudflare Turnstile y SMTP
+    - Site key `0x4AAAAAACsmy7e_yL9iyAXM` activo en Cloudflare
+    - `TURNSTILE_ENABLED=true` en el VPS
+    - Emails de verificación y reset de contraseña llegan correctamente
+
+---
+
+- [ ] 66. Auditoría de infraestructura
+  - [ ] 66.1 Verificar Docker / VPS
+    - Contenedores `frontend`, `backend`, `nginx` corriendo sin errores críticos en logs
+    - VPS con suficiente espacio en disco y RAM
+  - [ ] 66.2 Verificar DNS y SSL
+    - `pruebalo.wilkiedevs.com` y `api.pruebalo.wilkiedevs.com` resuelven correctamente
+    - Certificados SSL no próximos a vencer
+    - `minio.wilkiedevs.com` y `n8n.wilkiedevs.com` activos
+  - [ ] 66.3 Verificar sitemap y SEO técnico
+    - `sitemap.ts` incluye todas las páginas públicas
+    - `robots.ts` bloquea las páginas privadas
+    - Favicon visible en todos los navegadores
+    - Meta tags OG configurados en la landing
+    - Verificar OG image en https://www.opengraph.xyz/ (acción manual post-deploy)
+    - Enviar sitemap en Google Search Console y Bing Webmaster Tools (acción manual)
