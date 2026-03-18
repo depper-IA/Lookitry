@@ -262,6 +262,18 @@ export class FeedbackService {
   }
 
   /**
+   * Elimina un feedback del RAG (borra el registro completo).
+   */
+  async deleteFeedback(feedbackId: string): Promise<void> {
+    const { error } = await supabaseAdmin
+      .from('generation_feedback')
+      .delete()
+      .eq('id', feedbackId);
+
+    if (error) throw new Error('Error al eliminar feedback: ' + error.message);
+  }
+
+  /**
    * Estadísticas agrupadas por tipo de error para el panel admin.
    */
   async getErrorStats(): Promise<{ error_type: string; product_category: string | null; count: number }[]> {
