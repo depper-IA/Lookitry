@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { wompiService } from '../services/wompi.service';
 import { SubscriptionService } from '../services/subscription.service';
-import { supabase } from '../config/supabase';
+import { supabase, supabaseAdmin } from '../config/supabase';
 
 const subscriptionService = new SubscriptionService();
 
@@ -60,6 +60,9 @@ export class WompiController {
         return;
       }
 
+      // Extraer meses y plan de la referencia
+      const { months, plan } = wompiService.extractMetaFromReference(reference);
+
       // Renovar suscripción o activar trial según el monto
       if (amountInCents === 100) {
         // Pago de tokenización de trial (100 COP)
@@ -69,17 +72,40 @@ export class WompiController {
           .eq('id', brandId);
         console.log(`[Wompi] Trial activado para brand ${brandId}`);
       } else {
-        // Renovar suscripción normal
-        await subscriptionService.renewSubscription(brandId, {
-          brand_id: brandId,
-          amount: amountInCents / 100,
-          currency: 'COP',
-          payment_date: new Date().toISOString(),
-          payment_method: 'wompi',
-          status: 'completed',
-          notes: `Pago automático Wompi. Ref: ${reference}. ID: ${transaction.id}`,
-        });
-        console.log(`[Wompi] Suscripción renovada para brand ${brandId}`);
+        // Determinar si incluye activación de landing (plan LANDING en referencia legacy)
+        // En el nuevo formato, plan ya viene como BASIC o PRO (el subPlan del checkout)
+        // La activación de landing se detecta por el monto: landing_price + sub_price
+        // Por simplicidad, si el plan en la referencia es LANDING, activar landing + BASIC
+        const effectivePlan = plan === 'LANDING' ? 'BASIC' : plan;
+        const activateLanding = plan === 'LANDING';
+
+        // Renovar suscripción normal con meses y plan extraídos de la referencia
+        await subscriptionService.renewSubscription(
+          brandId,
+          {
+            brand_id: brandId,
+            amount: amountInCents / 100,
+            currency: 'COP',
+            payment_date: new Date().toISOString(),
+            payment_method: 'wompi',
+            status: 'completed',
+            months_paid: months,
+            notes: `Pago automático Wompi. Plan: ${effectivePlan}. Meses: ${months}. Ref: ${reference}. ID: ${transaction.id}`,
+          },
+          months,
+          effectivePlan
+        );
+
+        // Si el pago incluía landing, activarla
+        if (activateLanding) {
+          await supabaseAdmin
+            .from('brands')
+            .update({ has_landing_page: true, landing_suspended_at: null })
+            .eq('id', brandId);
+          console.log(`[Wompi] Mini-landing activada para brand ${brandId}`);
+        }
+
+        console.log(`[Wompi] Suscripción renovada para brand ${brandId} — Plan: ${effectivePlan}, Meses: ${months}`);
       }
       res.status(200).json({ received: true });
     } catch (error) {
@@ -129,21 +155,22 @@ export class WompiController {
   async getCheckoutUrl(req: Request, res: Response): Promise<void> {
     try {
       const brand = (req as any).brand;
-      const { amount, months } = req.query;
+      const { amount, months, plan } = req.query;
 
       const amountCOP = amount ? parseInt(amount as string, 10) : 250000;
       const monthsNum = months ? parseInt(months as string, 10) : 1;
+      const planStr = (plan as string)?.toUpperCase() || 'BASIC';
 
       const brandId = brand?.id ?? `visitor_${Date.now()}`;
 
       // Después del pago: si tiene sesión → /pago-exitoso, si no → /registro-pro
       const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
       const successPath = brand?.id
-        ? `/pago-exitoso?plan=PRO&months=${monthsNum}`
-        : `/registro-pro?plan=PRO&months=${monthsNum}`;
+        ? `/pago-exitoso?plan=${planStr}&months=${monthsNum}`
+        : `/registro-pro?plan=${planStr}&months=${monthsNum}`;
       const redirectUrl = `${frontendUrl}${successPath}`;
 
-      const checkoutUrl = await wompiService.getCheckoutUrl(brandId, amountCOP, redirectUrl);
+      const checkoutUrl = await wompiService.getCheckoutUrl(brandId, amountCOP, redirectUrl, false, monthsNum, planStr);
 
       res.json({ checkoutUrl });
     } catch (error) {

@@ -818,18 +818,18 @@
 
 ---
 
-- [ ] 65. Auditoría de integraciones
-  - [ ] 65.1 Verificar n8n
+- [-] 65. Auditoría de integraciones
+  - [-] 65.1 Verificar n8n
     - Workflow `wPLypk7KhBcFLicX` (Try-On) activo en producción
     - Webhook `/webhook/tryon` responde correctamente
     - Error Handler `PNri7NdZYkZhpPnm` activo, notificaciones llegan a `admin_notifications`
     - Workflow `ZjVTV3QxoPEi60GX` (Descriptor IA) funciona
-  - [ ] 65.2 Verificar Wompi
+  - [-] 65.2 Verificar Wompi
     - Llaves de producción configuradas en BD (`payment_settings`)
     - Webhook de Wompi configurado en el dashboard de Wompi
     - `WOMPI_EVENTS_SECRET` coincide entre BD y Wompi dashboard
     - Flujo completo de pago funciona en producción
-  - [ ] 65.3 Verificar MinIO
+  - [-] 65.3 Verificar MinIO
     - Bucket `images` existe y es accesible
     - Imágenes subidas accesibles públicamente via `https://minio.wilkiedevs.com`
     - Cleanup de imágenes temporales funciona

@@ -26,14 +26,20 @@ export const supabase = createClient(
 
 // Cliente de Supabase con service role key (para operaciones admin)
 // Este cliente bypasea RLS y debe usarse con cuidado
-export const supabaseAdmin = process.env.SUPABASE_SERVICE_KEY
-  ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    })
-  : supabase; // Fallback al cliente normal si no hay service key
+if (!process.env.SUPABASE_SERVICE_KEY) {
+  console.error('[Supabase] ADVERTENCIA CRÍTICA: SUPABASE_SERVICE_KEY no está definida. Las operaciones admin fallarán.');
+}
+
+export const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
+);
 
 // Tipos de base de datos (generados automáticamente por Supabase)
 export interface Database {
