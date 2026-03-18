@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { LandingNav } from '@/components/landing/LandingNav';
+import { LandingFooter } from '@/components/landing/LandingFooter';
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 
@@ -131,20 +133,10 @@ export default function PlanesPage() {
   return (
     <main style={{ fontFamily: 'DM Sans, sans-serif' }} className="min-h-screen bg-[#0a0a0a]">
 
-      {/* Nav */}
-      <nav className="bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
-        <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base text-white tracking-tight">
-          Look<span className="text-[#FF5C3A]">itry</span>
-        </Link>
-        <div className="flex items-center gap-1 md:gap-2">
-          <Link href="/login" className="text-[13px] text-[#888] hover:text-white px-2 md:px-3.5 py-1.5 rounded-md transition-colors hidden sm:block">
-            Iniciar sesión
-          </Link>
-          <Link href={trialActive ? '/register' : `/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`} className="text-[13px] font-medium bg-[#FF5C3A] hover:bg-[#e84d2c] text-white px-3 md:px-4 py-1.5 rounded-md transition-colors">
-            {trialActive ? 'Empezar gratis' : 'Contratar ahora'}
-          </Link>
-        </div>
-      </nav>
+      <LandingNav
+        ctaHref={trialActive ? '/register' : `/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`}
+        ctaLabel={trialActive ? 'Empezar gratis' : 'Contratar ahora'}
+      />
 
       {/* Hero */}
       <section className="bg-[#0a0a0a] pt-14 pb-10 px-6 md:px-8 text-center">
@@ -364,28 +356,7 @@ export default function PlanesPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#050505] border-t border-[#1a1a1a] px-6 md:px-8 py-7">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-sm text-white">
-            Look<span className="text-[#FF5C3A]">itry</span>
-          </Link>
-          <div className="flex items-center gap-4 md:gap-5 flex-wrap justify-center">
-            <Link href="/" className="text-[12px] text-[#555] hover:text-[#aaa] transition-colors">Inicio</Link>
-            <Link href="/login" className="text-[12px] text-[#555] hover:text-[#aaa] transition-colors">Iniciar sesión</Link>
-            <a href="mailto:info@pruebalo.wilkiedevs.com" className="text-[12px] text-[#555] hover:text-[#aaa] transition-colors">
-              info@pruebalo.wilkiedevs.com
-            </a>
-            <a href="https://wa.me/573105436281" target="_blank" rel="noopener noreferrer"
-              className="text-[12px] text-[#555] hover:text-[#aaa] transition-colors">
-              +57 310 543 6281
-            </a>
-            <Link href="/admin/login" className="text-[12px] text-[#333] hover:text-[#555] transition-colors">
-              Admin
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
 
     </main>
   );

@@ -57,9 +57,7 @@ function IconCheck({ className }: { className?: string }) {
 function IconStop({ className }: { className?: string }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" /></svg>;
 }
-function IconEdit({ className }: { className?: string }) {
-  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>;
-}
+
 function IconRefresh({ className }: { className?: string }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>;
 }
@@ -75,12 +73,7 @@ function IconAlertTriangle({ className }: { className?: string }) {
 function IconExternalLink({ className }: { className?: string }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>;
 }
-function IconGlobe({ className }: { className?: string }) {
-  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" /></svg>;
-}
-function IconWifi({ className }: { className?: string }) {
-  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>;
-}
+
 function IconTag({ className }: { className?: string }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" /></svg>;
 }
@@ -379,22 +372,52 @@ export default function SystemConfigPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
+  type SysTab = 'trial' | 'debug' | 'landing' | 'credits' | 'health';
+  const [activeTab, setActiveTab] = useState<SysTab>('trial');
+
+  const TABS: { id: SysTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'trial',   label: 'Trial',        icon: <IconClock className="w-4 h-4" /> },
+    { id: 'debug',   label: 'Debugging',    icon: <IconShield className="w-4 h-4" /> },
+    { id: 'landing', label: 'Landing',      icon: <IconTag className="w-4 h-4" /> },
+    { id: 'credits', label: 'Créditos IA',  icon: <IconCreditCard className="w-4 h-4" /> },
+    { id: 'health',  label: 'Servicios',    icon: <IconServer className="w-4 h-4" /> },
+  ];
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-syne font-bold">Configuración del sistema</h1>
-          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">Campañas, debugging, páginas inactivas y estado de servicios.</p>
-        </div>
+      <div>
+        <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-bold">Configuración del sistema</h1>
+        <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">Campañas, debugging, landing y estado de servicios.</p>
       </div>
 
       {/* Alertas */}
       {error && <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm px-4 py-3 rounded-xl">{error}</div>}
       {success && <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm px-4 py-3 rounded-xl">{success}</div>}
 
-      {/* ── SECCIÓN 1: Campañas de trial ── */}
+      {/* Tabs */}
+      <div style={{ borderColor: 'var(--border-color)' }} className="border-b flex gap-1 overflow-x-auto">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className="flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors"
+            style={activeTab === tab.id
+              ? { borderColor: '#FF5C3A', color: '#FF5C3A' }
+              : { borderColor: 'transparent', color: 'var(--text-muted)' }}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Contenido por tab */}
+      <div className="pt-2">
+
+      {/* ── TAB: Trial ── */}
+      {activeTab === 'trial' && (
       <Section title="Campañas de trial" icon={<IconClock className="w-4 h-4" />}>
         <div className="space-y-4">
           {/* Estado actual */}
@@ -494,8 +517,10 @@ export default function SystemConfigPage() {
           )}
         </div>
       </Section>
+      )} {/* fin tab trial */}
 
-      {/* ── SECCIÓN 2: Debugging / Toggles ── */}
+      {/* ── TAB: Debugging ── */}
+      {activeTab === 'debug' && (
       <Section title="Configuración de debugging" icon={<IconShield className="w-4 h-4" />}>
         <div className="space-y-4">
 
@@ -555,8 +580,10 @@ export default function SystemConfigPage() {
 
         </div>
       </Section>
+      )} {/* fin tab debug */}
 
-      {/* ── SECCIÓN 3: Precio de Mini-landing ── */}
+      {/* ── TAB: Landing ── */}
+      {activeTab === 'landing' && (<>
       <Section title="Precio de Mini-landing" icon={<IconTag className="w-4 h-4" />}>
         <div className="space-y-4">
           <p style={{ color: 'var(--text-muted)' }} className="text-sm">
@@ -613,8 +640,6 @@ export default function SystemConfigPage() {
           </div>
         </div>
       </Section>
-
-      {/* ── SECCIÓN 4: URL del footer de mini-landings ── */}
       <Section title="URL del footer de mini-landings" icon={<IconLink className="w-4 h-4" />}>
         <div className="space-y-4">
           <p style={{ color: 'var(--text-muted)' }} className="text-sm">
@@ -673,8 +698,6 @@ export default function SystemConfigPage() {
           </div>
         </div>
       </Section>
-
-      {/* ── SECCIÓN 5: Moneda del sistema ── */}
       <Section title="Moneda del sistema" icon={<IconCoin className="w-4 h-4" />}>
         <div className="space-y-4">
           <p style={{ color: 'var(--text-muted)' }} className="text-sm">
@@ -712,8 +735,11 @@ export default function SystemConfigPage() {
           </div>
         </div>
       </Section>
+      </>)} {/* fin tab landing */}
 
-      {/* ── SECCIÓN 6: Créditos OpenRouter ── */}      <Section title="Créditos OpenRouter" icon={<IconCreditCard className="w-4 h-4" />}>
+      {/* ── TAB: Créditos IA ── */}
+      {activeTab === 'credits' && (
+      <Section title="Créditos OpenRouter" icon={<IconCreditCard className="w-4 h-4" />}>
         <div className="space-y-4">
           {/* Alertas */}
           {credits?.critical_balance_alert && (
@@ -816,8 +842,10 @@ export default function SystemConfigPage() {
           )}
         </div>
       </Section>
+      )} {/* fin tab credits */}
 
-      {/* ── SECCIÓN 7: Estado del sistema ── */}
+      {/* ── TAB: Servicios ── */}
+      {activeTab === 'health' && (
       <Section title="Estado del sistema" icon={<IconServer className="w-4 h-4" />}>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -870,6 +898,9 @@ export default function SystemConfigPage() {
           </div>
         </div>
       </Section>
+      )} {/* fin tab health */}
+
+      </div> {/* fin contenido por tab */}
 
     </div>
   );
