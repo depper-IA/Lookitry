@@ -158,22 +158,6 @@ export default function PaymentSettingsPage() {
         <div style={{ background: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.3)', color: 'rgb(239,68,68)' }} className="border px-4 py-3 rounded-xl text-sm">{error}</div>
       )}
 
-      {/* Moneda global */}
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-xl shadow-sm border p-5">
-        <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-semibold mb-2">Moneda del sistema</label>
-        <select
-          value={settings.currency}
-          onChange={e => set('currency', e.target.value)}
-          style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-          className="w-48 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-        >
-          <option value="COP">COP — Peso colombiano</option>
-          <option value="USD">USD — Dólar estadounidense</option>
-          <option value="EUR">EUR — Euro</option>
-          <option value="MXN">MXN — Peso mexicano</option>
-        </select>
-      </div>
-
       {/* Tabs de métodos de pago */}
       <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-xl shadow-sm border overflow-hidden">
         <div style={{ borderColor: 'var(--border-color)' }} className="flex border-b">
