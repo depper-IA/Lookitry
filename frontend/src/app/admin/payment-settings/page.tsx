@@ -11,6 +11,11 @@ interface PaymentSettings {
   wompi_events_secret: string;
   wompi_integrity_secret: string;
   wompi_test_mode: boolean;
+  // Wompi producción
+  wompi_prod_public_key: string;
+  wompi_prod_private_key: string;
+  wompi_prod_events_secret: string;
+  wompi_prod_integrity_secret: string;
   paypal_enabled: boolean;
   paypal_email: string;
   paypal_client_id: string;
@@ -183,7 +188,8 @@ export default function PaymentSettingsPage() {
         <div className="p-6">
           {/* WOMPI */}
           {activeTab === 'wompi' && (
-            <div className="space-y-5">
+            <div className="space-y-6">
+              {/* Header con toggle habilitado */}
               <div style={{ borderColor: 'var(--border-color)' }} className="flex items-center justify-between pb-4 border-b">
                 <div>
                   <h3 style={{ color: 'var(--text-primary)' }} className="font-semibold">Wompi (Colombia)</h3>
@@ -191,25 +197,83 @@ export default function PaymentSettingsPage() {
                 </div>
                 <Toggle enabled={settings.wompi_enabled} onChange={v => set('wompi_enabled', v)} />
               </div>
+
               {settings.wompi_enabled && (
                 <>
-                  <div className="flex items-center gap-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                    <svg className="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <p className="text-sm text-amber-500">
-                      Modo {settings.wompi_test_mode ? 'prueba (sandbox)' : 'producción'} activo.
-                      {settings.wompi_test_mode ? ' Los pagos no son reales.' : ' Los pagos son reales.'}
-                    </p>
-                    <label className="ml-auto flex items-center gap-2 text-sm text-amber-500 cursor-pointer">
-                      <input type="checkbox" checked={!settings.wompi_test_mode} onChange={e => set('wompi_test_mode', !e.target.checked)} className="rounded" />
-                      Producción
-                    </label>
+                  {/* Selector de modo activo */}
+                  <div className="flex items-center gap-3 p-4 rounded-xl border" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-input)' }}>
+                    <div className="flex-1">
+                      <p style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">Modo activo</p>
+                      <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
+                        {settings.wompi_test_mode
+                          ? 'Sandbox — los pagos no son reales. Usa para pruebas.'
+                          : 'Producción — los pagos son reales y se cobran.'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 p-1 rounded-lg border" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-card)' }}>
+                      <button
+                        onClick={() => set('wompi_test_mode', true)}
+                        className="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+                        style={settings.wompi_test_mode
+                          ? { background: '#FF5C3A', color: '#fff' }
+                          : { color: 'var(--text-muted)' }}
+                      >
+                        Sandbox
+                      </button>
+                      <button
+                        onClick={() => set('wompi_test_mode', false)}
+                        className="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+                        style={!settings.wompi_test_mode
+                          ? { background: '#22c55e', color: '#fff' }
+                          : { color: 'var(--text-muted)' }}
+                      >
+                        Producción
+                      </button>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 gap-4">
-                    <Field label="Llave pública" value={settings.wompi_public_key} onChange={v => set('wompi_public_key', v)} placeholder="pub_test_..." />
-                    <SecretField label="Llave privada" fieldKey="wompi_private" value={settings.wompi_private_key} onChange={v => set('wompi_private_key', v)} show={showSecrets['wompi_private']} onToggle={() => toggleSecret('wompi_private')} placeholder="prv_test_..." />
-                    <SecretField label="Events secret" fieldKey="wompi_events" value={settings.wompi_events_secret} onChange={v => set('wompi_events_secret', v)} show={showSecrets['wompi_events']} onToggle={() => toggleSecret('wompi_events')} placeholder="test_events_..." />
-                    <SecretField label="Integrity secret" fieldKey="wompi_integrity" value={settings.wompi_integrity_secret} onChange={v => set('wompi_integrity_secret', v)} show={showSecrets['wompi_integrity']} onToggle={() => toggleSecret('wompi_integrity')} placeholder="test_integrity_..." />
+
+                  {/* Bloque Sandbox */}
+                  <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border-color)' }}>
+                    <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--border-color)', background: settings.wompi_test_mode ? 'rgba(255,92,58,0.08)' : 'var(--bg-input)' }}>
+                      <span className={`w-2 h-2 rounded-full ${settings.wompi_test_mode ? 'bg-[#FF5C3A]' : 'bg-gray-400'}`} />
+                      <span className="text-sm font-medium" style={{ color: settings.wompi_test_mode ? '#FF5C3A' : 'var(--text-muted)' }}>
+                        Llaves Sandbox (pruebas)
+                      </span>
+                      {settings.wompi_test_mode && (
+                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20">
+                          Activo
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-4 grid grid-cols-1 gap-4">
+                      <Field label="Llave pública sandbox" value={settings.wompi_public_key} onChange={v => set('wompi_public_key', v)} placeholder="pub_test_..." />
+                      <SecretField label="Llave privada sandbox" fieldKey="wompi_private" value={settings.wompi_private_key} onChange={v => set('wompi_private_key', v)} show={showSecrets['wompi_private']} onToggle={() => toggleSecret('wompi_private')} placeholder="prv_test_..." />
+                      <SecretField label="Events secret sandbox" fieldKey="wompi_events" value={settings.wompi_events_secret} onChange={v => set('wompi_events_secret', v)} show={showSecrets['wompi_events']} onToggle={() => toggleSecret('wompi_events')} placeholder="test_events_..." />
+                      <SecretField label="Integrity secret sandbox" fieldKey="wompi_integrity" value={settings.wompi_integrity_secret} onChange={v => set('wompi_integrity_secret', v)} show={showSecrets['wompi_integrity']} onToggle={() => toggleSecret('wompi_integrity')} placeholder="test_integrity_..." />
+                    </div>
                   </div>
+
+                  {/* Bloque Producción */}
+                  <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border-color)' }}>
+                    <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--border-color)', background: !settings.wompi_test_mode ? 'rgba(34,197,94,0.08)' : 'var(--bg-input)' }}>
+                      <span className={`w-2 h-2 rounded-full ${!settings.wompi_test_mode ? 'bg-green-500' : 'bg-gray-400'}`} />
+                      <span className="text-sm font-medium" style={{ color: !settings.wompi_test_mode ? '#22c55e' : 'var(--text-muted)' }}>
+                        Llaves Producción (pagos reales)
+                      </span>
+                      {!settings.wompi_test_mode && (
+                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 border border-green-500/20">
+                          Activo
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-4 grid grid-cols-1 gap-4">
+                      <Field label="Llave pública producción" value={settings.wompi_prod_public_key} onChange={v => set('wompi_prod_public_key', v)} placeholder="pub_prod_..." />
+                      <SecretField label="Llave privada producción" fieldKey="wompi_prod_private" value={settings.wompi_prod_private_key} onChange={v => set('wompi_prod_private_key', v)} show={showSecrets['wompi_prod_private']} onToggle={() => toggleSecret('wompi_prod_private')} placeholder="prv_prod_..." />
+                      <SecretField label="Events secret producción" fieldKey="wompi_prod_events" value={settings.wompi_prod_events_secret} onChange={v => set('wompi_prod_events_secret', v)} show={showSecrets['wompi_prod_events']} onToggle={() => toggleSecret('wompi_prod_events')} placeholder="prod_events_..." />
+                      <SecretField label="Integrity secret producción" fieldKey="wompi_prod_integrity" value={settings.wompi_prod_integrity_secret} onChange={v => set('wompi_prod_integrity_secret', v)} show={showSecrets['wompi_prod_integrity']} onToggle={() => toggleSecret('wompi_prod_integrity')} placeholder="prod_integrity_..." />
+                    </div>
+                  </div>
+
                   <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm text-blue-400">
                     Obtén tus llaves en{' '}
                     <a href="https://comercios.wompi.co" target="_blank" rel="noopener noreferrer" className="underline font-medium">comercios.wompi.co</a>
