@@ -19,6 +19,7 @@ import { getPublicPaymentSettings } from './controllers/paymentSettings.controll
 import { getHealthStatus } from './controllers/health.controller';
 import { getTrialStatus } from './controllers/trialCampaign.controller';
 import { uploadImage, uploadSelfie, multerMemory } from './controllers/upload.controller';
+import { redeemCoupon } from './controllers/coupons.controller';
 import { authMiddleware } from './middleware/auth';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { globalRateLimiter } from './middleware/rateLimiter';
@@ -111,6 +112,9 @@ app.post('/api/upload/selfie', multerMemory.single('file'), (req, res) => upload
 app.get('/api/trial/status', getTrialStatus);
 app.use('/api/trial', trialRoutes);
 app.use('/api/admin/coupons', couponsRoutes);
+
+// Redimir cupón — ruta pública (llamada desde el frontend de marca al confirmar pago)
+app.post('/api/coupons/redeem', redeemCoupon);
 
 // Sitemap — slugs de mini-landings activas (sin auth, para Next.js sitemap.ts)
 app.get('/api/sitemap/landings', async (_req, res) => {

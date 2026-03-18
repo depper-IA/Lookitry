@@ -668,50 +668,50 @@
     - Formulario de creación/edición por tipo
     - Preview en tiempo real del componente (modal, banner, etc.)
     - _Archivos: frontend/src/app/admin/marketing/promotions/page.tsx_
-  - [ ] 59.8 Agregar link "Promociones" al sidebar admin bajo grupo Marketing
+  - [x] 59.8 Agregar link "Promociones" al sidebar admin bajo grupo Marketing
     - _Archivos: frontend/src/app/admin/layout.tsx_
 
 ---
 
-- [ ] 60. Auditoría de base de datos
-  - [ ] 60.1 Verificar FK e índices en todas las tablas relacionales
+- [x] 60. Auditoría de base de datos
+  - [x] 60.1 Verificar FK e índices en todas las tablas relacionales
     - Tablas: brands, products, generations, generation_feedback, subscription_payments, trial_registrations
     - Confirmar que no hay registros huérfanos en ninguna tabla
     - SQL: `SELECT COUNT(*) FROM products p WHERE NOT EXISTS (SELECT 1 FROM brands b WHERE b.id = p.brand_id)`
     - Ídem para generations, generation_feedback, subscription_payments, trial_registrations, admin_notifications
-  - [ ] 60.2 Verificar datos duplicados
+  - [x] 60.2 Verificar datos duplicados
     - Emails duplicados en `brands` y `admins`
     - Slugs duplicados en `brands`
     - Códigos duplicados en `coupons`
-  - [ ] 60.3 Verificar datos inconsistentes en suscripciones
+  - [x] 60.3 Verificar datos inconsistentes en suscripciones
     - Marcas con `subscription_status = 'active'` pero `subscription_end_date` en el pasado
     - Marcas con `trial_end_date` en el pasado pero sin `subscription_status` definido
     - Marcas con `has_landing_page = true` y `landing_suspended_at` no nulo (verificar lógica)
     - Generaciones con `status = 'PENDING'` de más de 24 horas (stuck)
-  - [ ] 60.4 Verificar tabla `pricing_config`
+  - [x] 60.4 Verificar tabla `pricing_config`
     - Confirmar que existen los 6 registros: `basic`, `pro`, `descuentos_duracion`, `metas`, `costos_operativos`, `landing`
     - Verificar que `basic.data.precio_mensual_cop` y `pro.data.precio_mensual_cop` tienen valores correctos
     - Verificar que `descuentos_duracion.data` tiene `meses_1`, `meses_3`, `meses_6`, `meses_12`
 
 ---
 
-- [ ] 61. Auditoría de datos dinámicos
-  - [ ] 61.1 Verificar precios dinámicos en todos los puntos de carga
+- [-] 61. Auditoría de datos dinámicos
+  - [x] 61.1 Verificar precios dinámicos en todos los puntos de carga
     - `/checkout` público: confirmar que carga desde `pricing_config` (no hardcodeado)
     - `/dashboard/checkout`: ídem
     - `UpgradeModal`: ídem
     - Panel admin `/admin/pricing`: confirmar que guarda y lee correctamente
     - Descuentos por meses: confirmar que se aplican correctamente en ambos checkouts
-  - [ ] 61.2 Verificar configuración de pagos (`payment_settings`)
+  - [x] 61.2 Verificar configuración de pagos (`payment_settings`)
     - `GET /api/payment-settings/public` devuelve `landingPrice`, `landingOriginalPrice`, `wompiEnabled`, `wompiPublicKey`, `manualEnabled`, `manualWhatsapp`, `manualEmail`
     - Panel admin `/admin/payment-settings` guarda y lee correctamente
     - `WOMPI_ENABLED` en `.env` y `wompi_enabled` en BD están sincronizados
-  - [ ] 61.3 Verificar cupones end-to-end
+  - [x] 61.3 Verificar cupones end-to-end
     - `POST /api/coupons/validate` funciona correctamente
     - Panel admin `/admin/marketing/promotions` lista, crea, edita y elimina cupones
     - Controller usa `supabaseAdmin` (ya corregido — confirmar en producción)
     - `uses_count` se incrementa al usar un cupón en el checkout
-  - [ ] 61.4 Verificar promociones
+  - [x] 61.4 Verificar promociones
     - `GET /api/promotions` devuelve promociones activas
     - `PromoModal` en la landing muestra la promoción activa si existe
     - Fechas `starts_at` / `ends_at` se respetan correctamente
