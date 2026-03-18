@@ -969,18 +969,20 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
     tiktok:    <TikTokIcon    className="w-3 h-3" />,
   };
   const primary = brand.primary_color || '#FF5C3A';
+  // Usar cover_bg_color si está definido, si no usar un tono oscuro derivado del primary
+  const navBg = brand.cover_bg_color || '#0f0f0f';
   return (
-    <nav className="sticky top-0 z-50 h-14 flex items-center justify-between px-6 border-b" style={{ backgroundColor: 'var(--p-surface, #fff)', borderColor: 'var(--p-border, #e5e5e5)' }}>
+    <nav className="sticky top-0 z-50 h-14 flex items-center justify-between px-6 border-b" style={{ backgroundColor: navBg, borderColor: 'rgba(255,255,255,0.08)' }}>
       <div className="flex items-center gap-2.5">
         {brand.logo && (
           <BrandLogo
-            src={brand.logo_dark || brand.logo}
+            src={brand.logo_light || brand.logo}
             alt={brand.name}
             className="h-8 w-auto max-w-[140px] object-contain"
           />
         )}
         {brand.show_brand_name !== false && (
-          <span className="font-bold text-base" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.name}</span>
+          <span className="font-bold text-base text-white" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{brand.name}</span>
         )}
       </div>
       {entries.length > 0 && (
@@ -988,7 +990,7 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
           {entries.map(([platform, url]) => (
             <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
               className="w-7 h-7 rounded-full border flex items-center justify-center transition-colors hover:border-current"
-              style={{ borderColor: 'var(--p-border, #e5e5e5)', color: 'var(--p-text-muted, #888)' }}>
+              style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)' }}>
               {icons[platform.toLowerCase()] ?? null}
             </a>
           ))}
