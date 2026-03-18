@@ -34,9 +34,9 @@ function IconCheckSmall() {
 
 // ── Datos estáticos ───────────────────────────────────────────────────────────
 const STEPS = [
-  { n: '01', title: 'Sube tu foto', desc: 'El cliente toma una selfie o sube una imagen desde su celular o computador.' },
-  { n: '02', title: 'Elige el producto', desc: 'Selecciona la prenda, accesorio o calzado del catálogo de tu marca.' },
-  { n: '03', title: 'Ve el resultado', desc: 'La IA genera la imagen en segundos. El cliente puede descargarla y compartirla.' },
+  { n: '01', title: 'Sube tu foto', desc: 'El cliente toma una selfie o sube una imagen desde su celular o computador.', img: '/steps/paso-1.webp', alt: 'Cliente subiendo una selfie al probador virtual' },
+  { n: '02', title: 'Elige el producto', desc: 'Selecciona la prenda, accesorio o calzado del catálogo de tu marca.', img: '/steps/paso-2.webp', alt: 'Selección de producto en el catálogo del probador virtual' },
+  { n: '03', title: 'Ve el resultado', desc: 'La IA genera la imagen en segundos. El cliente puede descargarla y compartirla.', img: '/steps/paso-3.webp', alt: 'Resultado generado por IA del probador virtual de ropa' },
 ];
 
 const TESTIMONIALS = [
@@ -282,17 +282,37 @@ export default function LandingClient() {
 
       {/* CÓMO FUNCIONA */}
       <section className="bg-[#f5f2ee] py-16 md:py-20 px-6 md:px-8" aria-labelledby="how-it-works-heading">
-        <div className="max-w-[800px] mx-auto">
+        <div className="max-w-[860px] mx-auto">
           <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Cómo funciona</p>
           <h2 id="how-it-works-heading" style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[32px] text-[#0a0a0a] tracking-tight mb-10">
             Tres pasos. Cero fricción.
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 border border-[#e0dcd7] rounded-xl overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {STEPS.map((s, i) => (
-              <div key={s.n} className={`bg-[#f5f2ee] p-7 ${i < STEPS.length - 1 ? 'border-b md:border-b-0 md:border-r border-[#e0dcd7]' : ''}`}>
-                <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[40px] text-[#FF5C3A] tracking-tight leading-none mb-3" aria-hidden="true">{s.n}</div>
-                <h3 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-base text-[#0a0a0a] mb-1.5">{s.title}</h3>
-                <p className="text-[13px] text-[#666] leading-relaxed">{s.desc}</p>
+              <div key={s.n} className="bg-white border border-[#e8e4df] rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#f0ece8]">
+                  <Image
+                    src={s.img}
+                    alt={s.alt}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                  />
+                  <div className="absolute top-3 left-3">
+                    <span
+                      style={{ fontFamily: 'Syne, sans-serif', background: '#FF5C3A' }}
+                      className="inline-block text-white font-extrabold text-sm px-2.5 py-1 rounded-lg leading-none"
+                      aria-hidden="true"
+                    >
+                      {s.n}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-5">
+                  <h3 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-base text-[#0a0a0a] mb-1.5">{s.title}</h3>
+                  <p className="text-[13px] text-[#666] leading-relaxed">{s.desc}</p>
+                </div>
               </div>
             ))}
           </div>
