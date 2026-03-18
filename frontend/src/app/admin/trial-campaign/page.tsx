@@ -87,6 +87,9 @@ function IconTag({ className }: { className?: string }) {
 function IconLink({ className }: { className?: string }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>;
 }
+function IconCoin({ className }: { className?: string }) {
+  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7v1m0 8v1m-3-5h6m-6 0a3 3 0 006 0" /></svg>;
+}
 // ── Toggle switch ─────────────────────────────────────────────────────────────
 
 function Toggle({ value, onChange, disabled }: { value: boolean; onChange: () => void; disabled?: boolean }) {
@@ -185,6 +188,10 @@ export default function SystemConfigPage() {
   const [footerBrandUrl, setFooterBrandUrl] = useState<string>('https://pruebalo.wilkiedevs.com');
   const [savingLandingConfig, setSavingLandingConfig] = useState(false);
 
+  // Moneda del sistema
+  const [currency, setCurrency] = useState<string>('COP');
+  const [savingCurrency, setSavingCurrency] = useState(false);
+
   // Créditos OpenRouter
   const [credits, setCredits] = useState<OpenRouterCredits | null>(null);
   const [loadingCredits, setLoadingCredits] = useState(true);
@@ -243,6 +250,7 @@ export default function SystemConfigPage() {
         if (data.landing_price) setLandingPrice(data.landing_price);
         if (data.landing_original_price) setLandingOriginalPrice(data.landing_original_price);
         if (data.footer_brand_url) setFooterBrandUrl(data.footer_brand_url);
+        if (data.currency) setCurrency(data.currency);
       }
     } catch { /* silencioso */ }
   }, []);
@@ -351,6 +359,18 @@ export default function SystemConfigPage() {
       flash('Configuración de landing guardada', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
     finally { setSavingLandingConfig(false); }
+  }
+
+  async function handleSaveCurrency() {
+    setSavingCurrency(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
+        method: 'PUT', headers, body: JSON.stringify({ currency }),
+      });
+      if (!res.ok) throw new Error((await res.json()).message || 'Error');
+      flash('Moneda del sistema guardada', 'ok');
+    } catch (err: any) { flash(err.message, 'err'); }
+    finally { setSavingCurrency(false); }
   }
 
   function formatDate(iso: string) {
@@ -654,8 +674,46 @@ export default function SystemConfigPage() {
         </div>
       </Section>
 
-      {/* ── SECCIÓN 5: Créditos OpenRouter ── */}
-      <Section title="Créditos OpenRouter" icon={<IconCreditCard className="w-4 h-4" />}>
+      {/* ── SECCIÓN 5: Moneda del sistema ── */}
+      <Section title="Moneda del sistema" icon={<IconCoin className="w-4 h-4" />}>
+        <div className="space-y-4">
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+            Define la moneda base que se usa en precios, checkouts y reportes. Afecta la visualización en toda la plataforma.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 items-end">
+            <div className="flex-1">
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Moneda</label>
+              <select
+                value={currency}
+                onChange={e => setCurrency(e.target.value)}
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+              >
+                <option value="COP">COP — Peso colombiano</option>
+                <option value="USD">USD — Dólar estadounidense</option>
+                <option value="MXN">MXN — Peso mexicano</option>
+                <option value="PEN">PEN — Sol peruano</option>
+                <option value="CLP">CLP — Peso chileno</option>
+                <option value="ARS">ARS — Peso argentino</option>
+                <option value="BRL">BRL — Real brasileño</option>
+                <option value="EUR">EUR — Euro</option>
+              </select>
+            </div>
+            <button
+              onClick={handleSaveCurrency}
+              disabled={savingCurrency}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
+            >
+              {savingCurrency
+                ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                : <IconCheck className="w-4 h-4" />}
+              Guardar
+            </button>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── SECCIÓN 6: Créditos OpenRouter ── */}      <Section title="Créditos OpenRouter" icon={<IconCreditCard className="w-4 h-4" />}>
         <div className="space-y-4">
           {/* Alertas */}
           {credits?.critical_balance_alert && (
@@ -759,7 +817,7 @@ export default function SystemConfigPage() {
         </div>
       </Section>
 
-      {/* ── SECCIÓN 6: Estado del sistema ── */}
+      {/* ── SECCIÓN 7: Estado del sistema ── */}
       <Section title="Estado del sistema" icon={<IconServer className="w-4 h-4" />}>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
