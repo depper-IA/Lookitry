@@ -24,11 +24,11 @@ python scripts/_deploy_now.py --restart
 
 ## URLs del entorno
 
-| Servicio | URL |
-|---|---|
-| Frontend | https://pruebalo.wilkiedevs.com |
-| API | https://api.pruebalo.wilkiedevs.com |
-| Admin | https://pruebalo.wilkiedevs.com/admin |
+| Servicio | URL                                    |
+|----------|----------------------------------------|
+| Frontend | https://pruebalo.wilkiedevs.com        |
+| API      | https://api.pruebalo.wilkiedevs.com    |
+| Admin    | https://pruebalo.wilkiedevs.com/admin  |
 
 ---
 
