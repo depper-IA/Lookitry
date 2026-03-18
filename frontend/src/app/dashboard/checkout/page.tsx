@@ -40,8 +40,8 @@ const PLAN_INFO_FALLBACK: Record<PlanType, { name: string; price: number; featur
 
 const MINI_LANDING_PRICE_FALLBACK = 650000;
 
-// Descuentos por meses
-const MONTH_DISCOUNTS = [
+// Descuentos por meses — fallback estático, se sobreescribe con datos de pricing_config
+const MONTH_DISCOUNTS_FALLBACK = [
   { months: 1,  pct: 0,  label: '1 mes' },
   { months: 3,  pct: 5,  label: '3 meses' },
   { months: 6,  pct: 10, label: '6 meses' },
@@ -85,9 +85,10 @@ export default function CheckoutPage() {
 
   // Precios dinámicos desde pricing_config de Supabase
   const [planInfo, setPlanInfo] = useState(PLAN_INFO_FALLBACK);
+  const [monthDiscounts, setMonthDiscounts] = useState(MONTH_DISCOUNTS_FALLBACK);
 
   const plan = selectedPlan;
-  const monthDiscount = MONTH_DISCOUNTS.find(d => d.months === selectedMonths)!;
+  const monthDiscount = monthDiscounts.find(d => d.months === selectedMonths)!;
   const effectivePlanPrice = isInTrial ? planInfo[plan].price : getEffectivePrice(plan, currentPlan, planInfo);
   const planTotal = Math.round(effectivePlanPrice * selectedMonths * (1 - monthDiscount.pct / 100));
   const isUpgrade = !isInTrial && currentPlan !== null && currentPlan !== plan && effectivePlanPrice < planInfo[plan].price;
@@ -119,11 +120,20 @@ export default function CheckoutPage() {
       if (Array.isArray(pricingRows)) {
         const basic = pricingRows.find((r: any) => r.id === 'basic')?.data;
         const pro   = pricingRows.find((r: any) => r.id === 'pro')?.data;
+        const desc  = pricingRows.find((r: any) => r.id === 'descuentos_duracion')?.data;
         if (basic?.precio_mensual_cop || pro?.precio_mensual_cop) {
           setPlanInfo(prev => ({
             BASIC: { ...prev.BASIC, price: basic?.precio_mensual_cop ?? prev.BASIC.price },
             PRO:   { ...prev.PRO,   price: pro?.precio_mensual_cop   ?? prev.PRO.price },
           }));
+        }
+        if (desc) {
+          setMonthDiscounts([
+            { months: 1,  pct: desc.meses_1  ?? 0,  label: '1 mes' },
+            { months: 3,  pct: desc.meses_3  ?? 5,  label: '3 meses' },
+            { months: 6,  pct: desc.meses_6  ?? 10, label: '6 meses' },
+            { months: 12, pct: desc.meses_12 ?? 15, label: '12 meses' },
+          ]);
         }
       }
     }).catch(() => {});
@@ -288,7 +298,7 @@ export default function CheckoutPage() {
         </div>
         <div className="p-4">
           <div className="grid grid-cols-4 gap-2">
-            {MONTH_DISCOUNTS.map(d => (
+            {monthDiscounts.map(d => (
               <button
                 key={d.months}
                 type="button"

@@ -93,3 +93,30 @@ export async function deleteCoupon(req: Request, res: Response) {
     return res.status(500).json({ error: err.message });
   }
 }
+
+// POST /api/coupons/redeem — incrementar uses_count al confirmar pago con cupón
+export async function redeemCoupon(req: Request, res: Response) {
+  try {
+    const { coupon_id } = req.body as { coupon_id?: string };
+    if (!coupon_id) return res.status(400).json({ error: 'coupon_id requerido' });
+
+    // Leer uses_count actual y sumar 1 (operación simple — tráfico bajo)
+    const { data: current, error: fetchErr } = await supabaseAdmin
+      .from('coupons')
+      .select('uses_count')
+      .eq('id', coupon_id)
+      .single();
+
+    if (fetchErr || !current) return res.status(404).json({ error: 'Cupón no encontrado' });
+
+    const { error: updateErr } = await supabaseAdmin
+      .from('coupons')
+      .update({ uses_count: (current.uses_count ?? 0) + 1 })
+      .eq('id', coupon_id);
+
+    if (updateErr) throw updateErr;
+    return res.json({ ok: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+}
