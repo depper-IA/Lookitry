@@ -136,6 +136,7 @@ export interface CreatePaymentDto {
   payment_method?: string;
   status?: 'completed' | 'pending' | 'failed' | 'refunded';
   notes?: string;
+  months_paid?: number;
 }
 
 // Notification Preferences

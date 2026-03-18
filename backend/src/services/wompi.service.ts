@@ -77,10 +77,11 @@ export class WompiService {
 
   /**
    * Genera una referencia única para el pago.
-   * Formato: TRYON-{brandId}-{timestamp}
+   * Formato: TRYON-{brandId}-M{months}-P{plan}-{timestamp}
+   * Ejemplo: TRYON-uuid-M3-PPRO-1748000000000
    */
-  generateReference(brandId: string): string {
-    return `TRYON-${brandId}-${Date.now()}`;
+  generateReference(brandId: string, months: number = 1, plan: string = 'BASIC'): string {
+    return `TRYON-${brandId}-M${months}-P${plan.toUpperCase()}-${Date.now()}`;
   }
 
   /**
@@ -98,22 +99,45 @@ export class WompiService {
   }
 
   /**
-   * Extrae el brandId de la referencia de pago.
-   * Formato esperado: TRYON-{brandId}-{timestamp}
+   * Extrae el brandId, months y plan de la referencia de pago.
+   * Formato nuevo: TRYON-{brandId}-M{months}-P{plan}-{timestamp}
+   * Formato legacy: TRYON-{brandId}-{timestamp}
    */
   extractBrandIdFromReference(reference: string): string | null {
     const parts = reference.split('-');
     if (parts.length < 3 || parts[0] !== 'TRYON') return null;
-    const uuidParts = parts.slice(1, -1);
-    return uuidParts.join('-');
+    // Formato nuevo: TRYON-{uuid4parts}-M{n}-P{plan}-{ts}
+    // Buscar el índice del segmento que empieza con 'M' seguido de dígitos
+    const mIdx = parts.findIndex((p, i) => i > 0 && /^M\d+$/.test(p));
+    if (mIdx > 1) {
+      // brandId son las partes entre índice 1 y mIdx-1 (UUID tiene 5 partes con guiones)
+      return parts.slice(1, mIdx).join('-');
+    }
+    // Formato legacy: TRYON-{brandId}-{timestamp}
+    return parts.slice(1, -1).join('-');
+  }
+
+  /**
+   * Extrae months y plan de la referencia de pago.
+   * Retorna defaults si la referencia es formato legacy.
+   */
+  extractMetaFromReference(reference: string): { months: number; plan: string } {
+    const parts = reference.split('-');
+    const mIdx = parts.findIndex((p, i) => i > 0 && /^M\d+$/.test(p));
+    if (mIdx > 1 && parts[mIdx + 1]?.startsWith('P')) {
+      const months = parseInt(parts[mIdx].slice(1), 10) || 1;
+      const plan = parts[mIdx + 1].slice(1) || 'BASIC';
+      return { months, plan };
+    }
+    return { months: 1, plan: 'BASIC' };
   }
 
   /**
    * Retorna los datos necesarios para inicializar el widget de Wompi en el frontend.
    */
-  async getWidgetConfig(brandId: string, amountCOP: number) {
+  async getWidgetConfig(brandId: string, amountCOP: number, months: number = 1, plan: string = 'BASIC') {
     const { publicKey } = await this.getActiveKeys();
-    const reference = this.generateReference(brandId);
+    const reference = this.generateReference(brandId, months, plan);
     const amountInCents = amountCOP * 100;
     return {
       publicKey,
@@ -126,9 +150,9 @@ export class WompiService {
   /**
    * Genera la URL del checkout hosted de Wompi.
    */
-  async getCheckoutUrl(brandId: string, amountCOP: number, redirectUrl: string, cardOnly = false): Promise<string> {
+  async getCheckoutUrl(brandId: string, amountCOP: number, redirectUrl: string, cardOnly = false, months: number = 1, plan: string = 'BASIC'): Promise<string> {
     const { publicKey } = await this.getActiveKeys();
-    const reference = this.generateReference(brandId);
+    const reference = this.generateReference(brandId, months, plan);
     const amountInCents = amountCOP * 100;
     const currency = 'COP';
     const signature = await this.generateIntegritySignature(reference, amountInCents, currency);

@@ -240,7 +240,7 @@ function CheckoutContent() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
       const res = await fetch(
-        `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${isLanding ? 1 : selectedMonths}&plan=${selectedPlan}`,
+        `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${isLanding ? selectedMonths : selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}`,
         { headers }
       );
 

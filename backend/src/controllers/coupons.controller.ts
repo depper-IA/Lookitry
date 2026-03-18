@@ -94,7 +94,70 @@ export async function deleteCoupon(req: Request, res: Response) {
   }
 }
 
-// POST /api/coupons/redeem — incrementar uses_count al confirmar pago con cupón
+// POST /api/coupons/validate — validar cupón (público, sin auth)
+export async function validateCoupon(req: Request, res: Response) {
+  try {
+    const { code, plan } = req.body as { code?: string; plan?: string };
+
+    if (!code) {
+      return res.status(400).json({ ok: false, error: 'Código requerido' });
+    }
+
+    const normalizedCode = code.trim().toUpperCase();
+    const now = new Date().toISOString();
+
+    // Usar SQL directo para evitar problemas con el cliente Supabase y RLS
+    // supabaseAdmin usa service_role que bypasea RLS completamente
+    const { data: rows, error } = await supabaseAdmin
+      .from('coupons')
+      .select('id, code, discount_type, discount_value, max_uses, uses_count, expires_at, plan_ids, active')
+      .eq('code', normalizedCode)
+      .eq('active', true)
+      .limit(1);
+
+    if (error) {
+      console.error('[Coupons] Error al consultar cupón:', error);
+      throw error;
+    }
+
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ ok: false, error: 'Cupón inválido o expirado' });
+    }
+
+    const coupon = rows[0];
+
+    // Verificar expiración manualmente (evita el .or() que puede fallar con anon key)
+    if (coupon.expires_at && new Date(coupon.expires_at) < new Date(now)) {
+      return res.status(404).json({ ok: false, error: 'Cupón inválido o expirado' });
+    }
+
+    // Verificar límite de usos
+    if (coupon.max_uses !== null && coupon.uses_count >= coupon.max_uses) {
+      return res.status(409).json({ ok: false, error: 'Este cupón ya alcanzó su límite de usos' });
+    }
+
+    // Verificar que aplica al plan solicitado
+    if (plan && coupon.plan_ids && coupon.plan_ids.length > 0 && !coupon.plan_ids.includes(plan)) {
+      return res.status(422).json({ ok: false, error: 'Este cupón no aplica para el plan seleccionado' });
+    }
+
+    return res.json({
+      ok: true,
+      coupon: {
+        id: coupon.id,
+        code: coupon.code,
+        discount_type: coupon.discount_type,
+        discount_value: coupon.discount_value,
+        plan_ids: coupon.plan_ids,
+      },
+    });
+  } catch (err: any) {
+    console.error('[Coupons] Error en validateCoupon:', err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+}
+
+
 export async function redeemCoupon(req: Request, res: Response) {
   try {
     const { coupon_id } = req.body as { coupon_id?: string };
