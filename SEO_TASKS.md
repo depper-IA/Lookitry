@@ -329,17 +329,17 @@ Se estudiarán y aplicarán cuando las páginas de usuarios sean prioridad:
 | # | Tarea | Prioridad | Esfuerzo | Estado |
 |---|-------|-----------|----------|--------|
 | 1 | Adquirir dominio propio (lookitry.com) | Alta | Alto | A corto plazo |
-| 2 | Metadata en `/planes` y `/terminos` | Alta | Medio | Pendiente |
-| 3 | Ampliar sitemap (/terminos, /register) | Alta | Bajo | Pendiente |
+| 2 | Metadata en `/planes` y `/terminos` | Alta | Medio | Hecho — commit 1695834 |
+| 3 | Ampliar sitemap (/terminos, /register) | Alta | Bajo | Hecho — commit 1695834 |
 | 4 | Verificar/crear OG image 1200×630px | Alta | Medio | Pendiente |
-| 5 | Ampliar JSON-LD: FAQPage, featureList, AggregateRating | Alta | Medio | Pendiente |
-| 6 | Metadata en `/register` | Alta | Bajo | Pendiente |
+| 5 | Ampliar JSON-LD: FAQPage, featureList, AggregateRating | Alta | Medio | Hecho — commit 1695834 |
+| 6 | Metadata en `/register` | Alta | Bajo | Hecho — commit 1695834 |
 | 7 | Core Web Vitals: INP/LCP (fuentes inline, lazy loading) | Media | Medio | Pendiente |
 | 8 | LandingClient → Server Components (secciones estáticas) | Media | Alto | Pendiente |
-| 9 | Ampliar disallow en robots.ts | Media | Bajo | Pendiente |
+| 9 | Ampliar disallow en robots.ts | Media | Bajo | Hecho — commit 1695834 |
 | 10 | Breadcrumbs JSON-LD en /planes y /terminos | Media | Bajo | Pendiente |
 | 11 | GEO: resúmenes extractables + consistencia de hechos | Media | Medio | Pendiente |
-| 12 | Hreflang es-VE | Baja | Bajo | Hecho |
+| 12 | Hreflang es-VE | Baja | Bajo | Hecho — commit 8ba2d8e |
 | 13 | Página 404 personalizada | Baja | Bajo | Pendiente |
 | 14 | Verificar en GSC y Bing Webmaster Tools | Baja | Bajo | Pendiente |
 | 15 | ISR en mini-landings (revalidate: 60) | Baja | Bajo | Pendiente (páginas usuarios) |
@@ -348,3 +348,13 @@ Se estudiarán y aplicarán cuando las páginas de usuarios sean prioridad:
 | 18 | Alt text en imágenes de mini-landings | — | Bajo | Pendiente (páginas usuarios) |
 | 19 | Schema LocalBusiness en mini-landings | — | Bajo | Pendiente (páginas usuarios) |
 | 20 | Blog con contenido editorial | — | Muy alto | Pendiente (largo plazo) |
+
+---
+
+## Resumen de implementaciones realizadas
+
+| Commit | Fecha | Cambios |
+|--------|-------|---------|
+| `8ba2d8e` | mar 2026 | Venezuela en areaServed, keywords VE, hreflang es-VE en layout.tsx |
+| `7eb5632` | mar 2026 | SEO_TASKS.md reescrito con fuentes verificadas, GEO, CWV 2026 |
+| `1695834` | mar 2026 | Metadata /planes + /terminos (Server+Client), sitemap +/terminos, robots.ts +8 disallow, metadata /register, JSON-LD: FAQPage (6 preguntas) + featureList + AggregateRating + eligibleRegion VE |
