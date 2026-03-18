@@ -138,6 +138,50 @@ Todos los workflows tienen la etiqueta `SaaS`.
 - Archivo de referencia: `templates-webs/flujo5_error_handler_openrouter.json`
 
 
+## Cloudflare Turnstile — antispam registro
+
+| Clave | Valor |
+|-------|-------|
+| Site Key (pública, frontend) | `0x4AAAAAACsmy7e_yL9iyAXM` |
+| Secret Key (privada, backend) | `0x4AAAAAACsmy2ZsVW10HlNhDRP-ihDmo3o` |
+| Dashboard | https://dash.cloudflare.com → Turnstile |
+
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` va en `docker-compose.frontend.yml` como `build arg`
+- `TURNSTILE_SECRET_KEY` y `TURNSTILE_ENABLED` van en `backend/.env`
+- Para activar/desactivar sin redeploy: cambiar `TURNSTILE_ENABLED=true/false` en el VPS y hacer `--restart`
+
+---
+
+## Sitemap — Regla obligatoria
+
+**Cada vez que se cree una nueva página pública**, actualizar `frontend/src/app/sitemap.ts`:
+- Agregar la URL con `changeFrequency` y `priority` apropiados
+- Páginas de contenido público (landing, planes, sobre-nosotros, términos, políticas): incluir
+- Páginas privadas (dashboard, admin, checkout, pago-exitoso, trial-payment, etc.): NO incluir
+- El archivo `robots.ts` también debe tener la ruta en `disallow` si es privada
+
+Páginas públicas actuales en el sitemap:
+| URL | Priority | Frecuencia |
+|-----|----------|------------|
+| `/` | 1.0 | weekly |
+| `/planes` | 0.9 | weekly |
+| `/register` | 0.8 | monthly |
+| `/login` | 0.5 | monthly |
+| `/sobre-nosotros` | 0.6 | monthly |
+| `/terminos` | 0.4 | yearly |
+| `/politicas-privacidad` | 0.4 | yearly |
+
+---
+
+## Favicon — Regla obligatoria
+
+- El favicon correcto está en `frontend/public/favicon.png` (64x64, PNG válido)
+- `frontend/src/app/favicon.ico` debe generarse desde ese PNG con múltiples resoluciones (16, 32, 48, 64px)
+- `frontend/src/app/icon.png` debe ser copia de `frontend/public/favicon.png`
+- Si el favicon deja de verse, regenerar con: `python -c "from PIL import Image; img=Image.open('frontend/public/favicon.png').convert('RGBA'); img.save('frontend/src/app/favicon.ico', format='ICO', sizes=[(16,16),(32,32),(48,48),(64,64)])"`
+
+---
+
 ## Reglas de branding en nuevas páginas
 
 1. **Logo siempre SVG + nombre de texto** — en TODAS las páginas del frontend sin excepción:

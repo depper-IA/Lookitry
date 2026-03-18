@@ -34,7 +34,6 @@ const adminNav = [
     label: 'Sistema',
     items: [
       { href: '/admin/notifications',  label: 'Notificaciones',  icon: BellIcon },
-      { href: '/admin/feedback',       label: 'Feedback IA',     icon: FeedbackIcon },
       { href: '/admin/configuracion', label: 'Configuración',   icon: TrialIcon },
       { href: '/admin/admins',         label: 'Administradores', icon: AdminsIcon },
     ],
@@ -48,6 +47,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [feedbackCount, setFeedbackCount] = useState(0);
+  const [notifCount, setNotifCount] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -59,15 +59,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (user) setAdminUser(JSON.parse(user));
     setLoading(false);
 
-    // Cargar conteo de feedbacks sin resolver
+    // Cargar conteo de feedbacks sin resolver y notificaciones
     if (token) {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-      fetch(`${apiBase}/api/admin/feedback/count-unresolved`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then(r => r.ok ? r.json() : null)
-        .then(d => { if (d?.count) setFeedbackCount(d.count); })
-        .catch(() => {});
+      const headers = { Authorization: `Bearer ${token}` };
+      Promise.all([
+        fetch(`${apiBase}/api/admin/feedback/count-unresolved`, { headers }).then(r => r.ok ? r.json() : null),
+        fetch(`${apiBase}/api/admin/notifications`, { headers }).then(r => r.ok ? r.json() : null),
+      ]).then(([fbData, notifData]) => {
+        if (fbData?.count) setFeedbackCount(fbData.count);
+        if (notifData?.notifications) {
+          // Contar no leídas usando localStorage
+          try {
+            const readRaw = localStorage.getItem('admin_notifications_read');
+            const readIds: Set<string> = readRaw ? new Set(JSON.parse(readRaw)) : new Set();
+            const unread = (notifData.notifications as any[]).filter((n: any) => !readIds.has(n.id)).length;
+            setNotifCount(unread);
+          } catch { setNotifCount(notifData.notifications.length); }
+        }
+      }).catch(() => {});
     }
   }, [pathname, router]);
 
@@ -122,6 +132,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {group.items.map(item => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                 const isFeedback = item.href === '/admin/feedback';
+                const isNotifications = item.href === '/admin/notifications';
+                const sidebarBadge = isNotifications ? (feedbackCount + notifCount) : 0;
                 return (
                   <Link
                     key={item.href}
@@ -137,12 +149,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   >
                     <item.icon className="w-4 h-4 flex-shrink-0" />
                     <span className="flex-1">{item.label}</span>
-                    {isFeedback && feedbackCount > 0 && (
+                    {sidebarBadge > 0 && (
                       <span
                         className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white flex-shrink-0"
                         style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : '#ef4444' }}
                       >
-                        {feedbackCount > 99 ? '99+' : feedbackCount}
+                        {sidebarBadge > 99 ? '99+' : sidebarBadge}
                       </span>
                     )}
                   </Link>

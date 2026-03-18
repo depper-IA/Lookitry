@@ -131,6 +131,8 @@ export class AuthService {
         password: hashedPassword,
         name: data.name,
         slug: data.slug,
+        contact_name: data.contact_name.trim(),
+        phone: data.phone?.trim() || null,
         plan: 'BASIC',
         trial_end_date: trialEndDate ? trialEndDate.toISOString() : null,
         trial_generations_limit: trialEndDate ? (campaign?.trial_generations_limit ?? 50) : 0,
