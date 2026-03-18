@@ -66,7 +66,7 @@ export function SelfieUploader({ onUpload, primaryColor = '#6366f1', welcomeMess
         />
       )}
 
-      <div className="max-w-sm mx-auto">
+      <div className="max-w-md mx-auto">
         {/* Título */}
         <div className="text-center mb-6">
           <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">

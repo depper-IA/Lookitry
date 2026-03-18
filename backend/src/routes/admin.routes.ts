@@ -25,6 +25,7 @@ import {
   getFeedbacks,
   getFeedbackStats,
   resolveFeedback,
+  deleteFeedback,
   getUnresolvedFeedbackCount,
   getOpenRouterCredits,
 } from '../controllers/admin.controller';
@@ -91,6 +92,7 @@ router.get('/feedback/count-unresolved', requirePermission('brands'), getUnresol
 router.get('/feedback/stats', requirePermission('brands'), getFeedbackStats);
 router.get('/feedback', requirePermission('brands'), getFeedbacks);
 router.patch('/feedback/:id/resolve', requirePermission('brands'), resolveFeedback);
+router.delete('/feedback/:id', requirePermission('brands'), deleteFeedback);
 
 // Monitor de créditos OpenRouter
 router.get('/openrouter-credits', requirePermission('settings'), getOpenRouterCredits);

@@ -110,6 +110,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* fb:app_id requerido por Facebook/WhatsApp scraper */}
         <meta property="fb:app_id" content="966242223397117" />
+        {/* OG fallback explícito para scrapers que no ejecutan JS */}
+        <meta property="og:site_name" content="Lookitry" />
+        <meta property="og:locale" content="es_CO" />
+        <meta name="twitter:site" content="@lookitry" />
       </head>
       <body className="font-sans">{children}</body>
     </html>
