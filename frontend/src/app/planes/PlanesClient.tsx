@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
-import type { PricingConfig } from '@/lib/pricing';
+import type { PricingConfig, PlanPriceOverride } from '@/lib/pricing';
 import { precioConDescuento } from '@/lib/pricing';
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
@@ -60,14 +60,19 @@ function formatCOP(n: number) {
 
 interface Props {
   pricing: PricingConfig;
+  overrides?: PlanPriceOverride[];
 }
 
-export default function PlanesClient({ pricing }: Props) {
+export default function PlanesClient({ pricing, overrides = [] }: Props) {
   const router = useRouter();
   const [selectedMonths, setSelectedMonths] = useState(1);
   const [trialActive, setTrialActive] = useState(false);
 
   const { basic, pro, descuentos_duracion } = pricing;
+
+  // Override de precio por plan
+  const basicOverride = overrides.find(o => o.plan === 'BASIC');
+  const proOverride   = overrides.find(o => o.plan === 'PRO');
 
   // Duraciones con descuentos desde config
   const DURATIONS = [
@@ -86,14 +91,16 @@ export default function PlanesClient({ pricing }: Props) {
       .catch(() => setTrialActive(false));
   }, []);
 
-  // Precios calculados dinámicamente
-  const basicMonthlyPrice = precioConDescuento(basic.precio_mensual_cop, selectedMonths, descuentos_duracion);
+  // Precios calculados dinámicamente (con override si aplica)
+  const basicBasePrice    = basicOverride ? basicOverride.override_price : basic.precio_mensual_cop;
+  const basicMonthlyPrice = basicOverride ? basicOverride.override_price : precioConDescuento(basic.precio_mensual_cop, selectedMonths, descuentos_duracion);
   const basicTotalPrice   = basicMonthlyPrice * selectedMonths;
-  const basicOriginalTotal = basic.precio_mensual_cop * selectedMonths;
+  const basicOriginalTotal = (basicOverride ? basicOverride.original_price : basic.precio_mensual_cop) * selectedMonths;
 
-  const proMonthlyPrice   = precioConDescuento(pro.precio_mensual_cop, selectedMonths, descuentos_duracion);
-  const proTotalPrice     = proMonthlyPrice * selectedMonths;
-  const proOriginalTotal  = pro.precio_mensual_cop * selectedMonths;
+  const proBasePrice    = proOverride ? proOverride.override_price : pro.precio_mensual_cop;
+  const proMonthlyPrice = proOverride ? proOverride.override_price : precioConDescuento(pro.precio_mensual_cop, selectedMonths, descuentos_duracion);
+  const proTotalPrice   = proMonthlyPrice * selectedMonths;
+  const proOriginalTotal = (proOverride ? proOverride.original_price : pro.precio_mensual_cop) * selectedMonths;
 
   // Tabla comparativa generada desde features de ambos planes
   const allFeatures = Array.from(new Set([
@@ -172,14 +179,26 @@ export default function PlanesClient({ pricing }: Props) {
               <p className="text-[13px] text-[#555] mb-5">{basic.subtitulo}</p>
 
               <div className="mb-1 h-5">
-                {duration.pct > 0 && (
-                  <span className="text-[12px] text-[#444] line-through">{formatCOP(basic.precio_mensual_cop)}/mes</span>
+                {(duration.pct > 0 || basicOverride) && (
+                  <span className="text-[12px] text-[#444] line-through">
+                    {formatCOP(basicOverride ? basicOverride.original_price : basic.precio_mensual_cop)}/mes
+                  </span>
                 )}
               </div>
               <div className="font-syne font-extrabold text-[32px] text-white tracking-tight mb-0.5">
                 {formatCOP(basicMonthlyPrice)}
                 <span className="text-[13px] font-normal text-[#555]"> / mes</span>
               </div>
+              {basicOverride && (
+                <p className="text-[12px] text-[#FF5C3A] font-medium mb-1">
+                  {basicOverride.label ?? 'Precio especial'}
+                  {basicOverride.ends_at && (
+                    <span className="text-[#666] font-normal ml-1">
+                      · hasta {new Date(basicOverride.ends_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+                    </span>
+                  )}
+                </p>
+              )}
               {selectedMonths > 1 && (
                 <p className="text-[12px] text-[#444] mb-1">
                   Total {selectedMonths} meses:{' '}
@@ -227,14 +246,26 @@ export default function PlanesClient({ pricing }: Props) {
               <p className="text-[13px] text-[#555] mb-5">{pro.subtitulo}</p>
 
               <div className="mb-1 h-5">
-                {duration.pct > 0 && (
-                  <span className="text-[12px] text-[#444] line-through">{formatCOP(pro.precio_mensual_cop)}/mes</span>
+                {(duration.pct > 0 || proOverride) && (
+                  <span className="text-[12px] text-[#444] line-through">
+                    {formatCOP(proOverride ? proOverride.original_price : pro.precio_mensual_cop)}/mes
+                  </span>
                 )}
               </div>
               <div className="font-syne font-extrabold text-[32px] text-white tracking-tight mb-0.5">
                 {formatCOP(proMonthlyPrice)}
                 <span className="text-[13px] font-normal text-[#555]"> / mes</span>
               </div>
+              {proOverride && (
+                <p className="text-[12px] text-[#FF5C3A] font-medium mb-1">
+                  {proOverride.label ?? 'Precio especial'}
+                  {proOverride.ends_at && (
+                    <span className="text-[#666] font-normal ml-1">
+                      · hasta {new Date(proOverride.ends_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+                    </span>
+                  )}
+                </p>
+              )}
               {selectedMonths > 1 && (
                 <p className="text-[12px] text-[#444] mb-1">
                   Total {selectedMonths} meses:{' '}
