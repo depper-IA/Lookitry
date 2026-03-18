@@ -1,8 +1,11 @@
 'use client';
 
+<<<<<<< HEAD
 import { useState, useEffect } from 'react';
 
 // ── Tipos compartidos ─────────────────────────────────────────────────────────
+=======
+>>>>>>> e173c4b (refactor: restaurar division de mini-landing en templates independientes (Classic, Editorial, Moderno))
 export interface BrandData {
   id: string;
   name: string;
@@ -25,7 +28,11 @@ export interface BrandData {
   national_shipping?: boolean;
   rating?: number | null;
   total_reviews?: number | null;
+<<<<<<< HEAD
   landing_template?: 'classic' | 'editorial' | 'moderno';
+=======
+  landing_template?: 'classic' | 'editorial' | 'moderno' | 'probador';
+>>>>>>> e173c4b (refactor: restaurar division de mini-landing en templates independientes (Classic, Editorial, Moderno))
   schedule?: Record<string, string> | null;
   logo_light?: string | null;
   logo_dark?: string | null;
@@ -45,7 +52,17 @@ export interface ProductData {
   badge?: 'nuevo' | 'top' | 'oferta' | null;
 }
 
+<<<<<<< HEAD
 // ── Iconos compartidos ────────────────────────────────────────────────────────
+=======
+export interface MiniLandingProps {
+  brandSlug: string;
+  initialData: { brand: BrandData; products: ProductData[] } | null;
+  footerUrl?: string;
+}
+
+// Iconos compartidos
+>>>>>>> e173c4b (refactor: restaurar division de mini-landing en templates independientes (Classic, Editorial, Moderno))
 export function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -53,6 +70,7 @@ export function WhatsAppIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+<<<<<<< HEAD
 
 export function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -390,3 +408,5 @@ export function BrandLogo({
     />
   );
 }
+=======
+>>>>>>> e173c4b (refactor: restaurar division de mini-landing en templates independientes (Classic, Editorial, Moderno))

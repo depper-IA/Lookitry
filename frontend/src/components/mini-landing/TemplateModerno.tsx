@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+<<<<<<< HEAD
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
 import {
   BrandData,
@@ -692,5 +693,101 @@ function TikTokIcon({ className }: { className?: string }) {
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
       <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
     </svg>
+=======
+import Image from 'next/image';
+import { TryOnWidget } from '@/components/tryon/TryOnWidget';
+import { BrandData, ProductData, WhatsAppIcon } from './shared';
+
+function SparklesIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+    </svg>
+  );
+}
+
+export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
+  const [activeProduct, setActiveProduct] = useState<ProductData | null>(null);
+  const [showWidget, setShowWidget] = useState(false);
+  const primaryColor = brand.primary_color || '#FF5C3A';
+
+  const handleOpenWidget = (product: ProductData) => {
+    setActiveProduct(product);
+    setShowWidget(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleCloseWidget = () => {
+    setShowWidget(false);
+    setActiveProduct(null);
+    document.body.style.overflow = 'auto';
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f9f7f5] text-[#1a1a1a] font-sans">
+      <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-black/5 h-20 px-6 flex items-center justify-between">
+        <h1 className="text-xl font-black tracking-tight">{brand.name}</h1>
+        <a 
+          href={`https://wa.me/${brand.whatsapp_contact?.replace(/\+/g, '').replace(/\s/g, '')}`}
+          target="_blank" rel="noopener noreferrer"
+          className="p-3 bg-black text-white rounded-2xl hover:scale-110 transition-transform"
+        >
+          <WhatsAppIcon className="w-5 h-5" />
+        </a>
+      </header>
+
+      <main className="max-w-xl mx-auto py-12 px-6">
+        <div className="mb-12 text-center">
+          {brand.logo && (
+            <div className="relative w-20 h-20 mx-auto mb-6 rounded-[2rem] overflow-hidden shadow-xl border-4 border-white">
+              <Image src={brand.logo} alt={brand.name} fill className="object-contain p-2" />
+            </div>
+          )}
+          <h2 className="text-3xl font-black tracking-tighter italic uppercase mb-2">{brand.name}</h2>
+          <p className="text-gray-500 text-sm font-medium">{brand.slogan || 'Elige tu prenda y pruébatela ahora.'}</p>
+        </div>
+
+        <div className="space-y-6">
+          {products.map((p) => (
+            <div key={p.id} className="bg-white rounded-[2.5rem] p-4 shadow-sm border border-black/5 hover:shadow-xl transition-all group">
+              <div className="relative aspect-square rounded-[2rem] overflow-hidden mb-6 bg-[#f0ece8]">
+                <Image src={p.image_url} alt={p.name} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                <button 
+                  onClick={() => handleOpenWidget(p)}
+                  className="absolute bottom-6 left-6 right-6 py-4 bg-black text-white rounded-2xl font-bold text-sm shadow-2xl flex items-center justify-center gap-3 hover:bg-[#FF5C3A] transition-colors"
+                >
+                  <SparklesIcon className="w-5 h-5" />
+                  Probador IA
+                </button>
+              </div>
+              <div className="px-4 pb-2">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] font-bold text-[#FF5C3A] uppercase tracking-widest">{p.category}</span>
+                  {p.price && <span className="font-bold text-lg">${p.price.toLocaleString('es-CO')}</span>}
+                </div>
+                <h4 className="font-bold text-xl tracking-tight">{p.name}</h4>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      <footer className="py-20 text-center px-6">
+        <p className="text-gray-400 text-xs font-bold tracking-widest uppercase mb-4">Powered by</p>
+        <a href={footerUrl || '#'} className="inline-block px-6 py-2 bg-black text-white rounded-full text-[10px] font-black tracking-widest uppercase italic">Lookitry IA</a>
+      </footer>
+
+      {showWidget && activeProduct && (
+        <div className="fixed inset-0 z-[60] bg-black md:p-6 animate-in slide-in-from-bottom duration-500">
+          <button onClick={handleCloseWidget} className="absolute top-6 right-6 z-[70] p-4 bg-white/10 text-white rounded-full backdrop-blur-md">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+          <div className="w-full h-full md:rounded-[3rem] overflow-hidden">
+            <TryOnWidget brandSlug={brandSlug} initialProduct={activeProduct} isEmbed={true} />
+          </div>
+        </div>
+      )}
+    </div>
+>>>>>>> e173c4b (refactor: restaurar division de mini-landing en templates independientes (Classic, Editorial, Moderno))
   );
 }
