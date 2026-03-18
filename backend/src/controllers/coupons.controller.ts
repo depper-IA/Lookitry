@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import { supabase } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 
 // GET /api/admin/coupons — listar todos los cupones
 export async function listCoupons(req: Request, res: Response) {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('coupons')
       .select('*')
       .order('created_at', { ascending: false });
@@ -25,7 +25,7 @@ export async function createCoupon(req: Request, res: Response) {
       return res.status(400).json({ error: 'code, discount_type y discount_value son requeridos' });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('coupons')
       .insert({
         code: code.toUpperCase().trim(),
@@ -67,7 +67,7 @@ export async function updateCoupon(req: Request, res: Response) {
     if (plan_ids !== undefined) updates.plan_ids = plan_ids;
     if (active !== undefined) updates.active = active;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('coupons')
       .update(updates)
       .eq('id', id)
@@ -86,7 +86,7 @@ export async function updateCoupon(req: Request, res: Response) {
 export async function deleteCoupon(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    const { error } = await supabase.from('coupons').delete().eq('id', id);
+    const { error } = await supabaseAdmin.from('coupons').delete().eq('id', id);
     if (error) throw error;
     return res.json({ success: true });
   } catch (err: any) {
