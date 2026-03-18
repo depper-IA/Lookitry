@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
+import type { PricingConfig } from '@/lib/pricing';
+import { precioConDescuento } from '@/lib/pricing';
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 
@@ -48,71 +50,33 @@ function IconArrow() {
   );
 }
 
-// ── Datos ─────────────────────────────────────────────────────────────────────
-
-const DURATIONS = [
-  { months: 1,  label: '1 mes',    pct: 0  },
-  { months: 3,  label: '3 meses',  pct: 5  },
-  { months: 6,  label: '6 meses',  pct: 10 },
-  { months: 12, label: '12 meses', pct: 15 },
-];
-
-const PLAN_FEATURES = {
-  BASIC: [
-    { label: '5 productos en el probador',              included: true  },
-    { label: '400 generaciones por mes',                included: true  },
-    { label: 'Logo y colores de marca',                 included: true  },
-    { label: 'Template Bare (widget limpio)',            included: true  },
-    { label: 'Widget embebible (iframe)',                included: true  },
-    { label: 'Analytics de uso',                        included: true  },
-    { label: 'Templates Minimal, Modern y Bold',        included: false },
-    { label: 'Texto del botón personalizado',           included: false },
-    { label: 'Mensaje de bienvenida en widget',         included: false },
-    { label: 'Modificación del slug del probador',      included: false },
-    { label: 'Integración con sistemas externos',       included: false },
-    { label: 'Soporte prioritario',                     included: false },
-  ],
-  PRO: [
-    { label: '15 productos en el probador',             included: true },
-    { label: '1.200 generaciones por mes',              included: true },
-    { label: 'Logo y colores de marca',                 included: true },
-    { label: 'Template Bare (widget limpio)',            included: true },
-    { label: 'Widget embebible (iframe)',                included: true },
-    { label: 'Analytics de uso',                        included: true },
-    { label: 'Templates Minimal, Modern y Bold',        included: true },
-    { label: 'Texto del botón personalizado',           included: true },
-    { label: 'Mensaje de bienvenida en widget',         included: true },
-    { label: 'Modificación del slug del probador',      included: true },
-    { label: 'Integración con sistemas externos',       included: true },
-    { label: 'Soporte prioritario',                     included: true },
-  ],
-};
-
-const COMPARE_ROWS = [
-  { label: 'Productos en el probador',           basic: '5',     pro: '15'    },
-  { label: 'Generaciones por mes',               basic: '400',   pro: '1.200' },
-  { label: 'Logo y colores de marca',            basic: true,    pro: true    },
-  { label: 'Template Bare',                      basic: true,    pro: true    },
-  { label: 'Templates Minimal, Modern y Bold',   basic: false,   pro: true    },
-  { label: 'Texto del botón personalizado',      basic: false,   pro: true    },
-  { label: 'Mensaje de bienvenida en widget',    basic: false,   pro: true    },
-  { label: 'Modificación del slug del probador', basic: false,   pro: true    },
-  { label: 'Widget embebible (iframe)',           basic: true,    pro: true    },
-  { label: 'Analytics de uso',                   basic: true,    pro: true    },
-  { label: 'Integración con sistemas externos',  basic: false,   pro: true    },
-  { label: 'Soporte prioritario',                basic: false,   pro: true    },
-];
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatCOP(n: number) {
   return '$' + n.toLocaleString('es-CO');
 }
 
-// ── Página ────────────────────────────────────────────────────────────────────
+// ── Componente ────────────────────────────────────────────────────────────────
 
-export default function PlanesClient() {
+interface Props {
+  pricing: PricingConfig;
+}
+
+export default function PlanesClient({ pricing }: Props) {
   const router = useRouter();
   const [selectedMonths, setSelectedMonths] = useState(1);
   const [trialActive, setTrialActive] = useState(false);
+
+  const { basic, pro, descuentos_duracion } = pricing;
+
+  // Duraciones con descuentos desde config
+  const DURATIONS = [
+    { months: 1,  label: '1 mes',    pct: descuentos_duracion.meses_1  },
+    { months: 3,  label: '3 meses',  pct: descuentos_duracion.meses_3  },
+    { months: 6,  label: '6 meses',  pct: descuentos_duracion.meses_6  },
+    { months: 12, label: '12 meses', pct: descuentos_duracion.meses_12 },
+  ];
+
   const duration = DURATIONS.find(d => d.months === selectedMonths)!;
 
   useEffect(() => {
@@ -122,13 +86,20 @@ export default function PlanesClient() {
       .catch(() => setTrialActive(false));
   }, []);
 
-  const proMonthlyPrice = Math.round(250000 * (1 - duration.pct / 100));
-  const proTotalPrice = proMonthlyPrice * selectedMonths;
-  const proOriginalTotal = 250000 * selectedMonths;
+  // Precios calculados dinámicamente
+  const basicMonthlyPrice = precioConDescuento(basic.precio_mensual_cop, selectedMonths, descuentos_duracion);
+  const basicTotalPrice   = basicMonthlyPrice * selectedMonths;
+  const basicOriginalTotal = basic.precio_mensual_cop * selectedMonths;
 
-  const basicMonthlyPrice = Math.round(150000 * (1 - duration.pct / 100));
-  const basicTotalPrice = basicMonthlyPrice * selectedMonths;
-  const basicOriginalTotal = 150000 * selectedMonths;
+  const proMonthlyPrice   = precioConDescuento(pro.precio_mensual_cop, selectedMonths, descuentos_duracion);
+  const proTotalPrice     = proMonthlyPrice * selectedMonths;
+  const proOriginalTotal  = pro.precio_mensual_cop * selectedMonths;
+
+  // Tabla comparativa generada desde features de ambos planes
+  const allFeatures = Array.from(new Set([
+    ...basic.features,
+    ...(basic.features_excluidas ?? []),
+  ]));
 
   return (
     <main className="min-h-screen bg-[#0a0a0a]">
@@ -150,7 +121,7 @@ export default function PlanesClient() {
           </h1>
           <p className="text-[#666] text-base max-w-md mx-auto">
             Precios en pesos. Paga varios meses y ahorra hasta un{' '}
-            <span className="text-[#FF5C3A] font-medium">15%</span>.
+            <span className="text-[#FF5C3A] font-medium">{descuentos_duracion.meses_12}%</span>.
           </p>
         </div>
       </section>
@@ -198,11 +169,11 @@ export default function PlanesClient() {
             {/* Plan Básico */}
             <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-6 md:p-7">
               <div className="font-syne font-bold text-lg text-white mb-1">Básico</div>
-              <p className="text-[13px] text-[#555] mb-5">Para marcas pequeñas en Instagram y WhatsApp</p>
+              <p className="text-[13px] text-[#555] mb-5">{basic.subtitulo}</p>
 
               <div className="mb-1 h-5">
                 {duration.pct > 0 && (
-                  <span className="text-[12px] text-[#444] line-through">{formatCOP(150000)}/mes</span>
+                  <span className="text-[12px] text-[#444] line-through">{formatCOP(basic.precio_mensual_cop)}/mes</span>
                 )}
               </div>
               <div className="font-syne font-extrabold text-[32px] text-white tracking-tight mb-0.5">
@@ -216,24 +187,32 @@ export default function PlanesClient() {
                   {duration.pct > 0 && <span className="ml-1 line-through text-[#333]">{formatCOP(basicOriginalTotal)}</span>}
                 </p>
               )}
-              <p className="text-[12px] text-[#FF5C3A] mb-6">{trialActive ? '7 días de prueba gratuita incluidos' : 'Pago directo — sin período de prueba'}</p>
+              <p className="text-[12px] text-[#FF5C3A] mb-6">
+                {trialActive ? '7 días de prueba gratuita incluidos' : 'Pago directo — sin período de prueba'}
+              </p>
 
               <Link
                 href="/register"
                 className="block w-full text-center py-2.5 border border-[#333] hover:border-[#555] text-[#aaa] hover:text-white text-[13px] font-medium rounded-lg transition-colors mb-6"
               >
-                {trialActive ? 'Empezar gratis — 7 días' : 'Contratar Básico'}
+                {trialActive ? (basic.boton_texto ?? 'Empezar gratis — 7 días') : (basic.boton_texto_sin_trial ?? 'Contratar Básico')}
               </Link>
 
               <ul className="flex flex-col gap-2.5">
-                {PLAN_FEATURES.BASIC.map(f => (
-                  <li key={f.label} className="flex items-center gap-2.5 text-[13px]">
-                    <span className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      f.included ? 'bg-[rgba(255,92,58,0.13)]' : 'bg-[#1a1a1a]'
-                    }`}>
-                      {f.included ? <IconCheck /> : <IconX />}
+                {basic.features.map(f => (
+                  <li key={f} className="flex items-center gap-2.5 text-[13px]">
+                    <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(255,92,58,0.13)]">
+                      <IconCheck />
                     </span>
-                    <span className={f.included ? 'text-[#999]' : 'text-[#444]'}>{f.label}</span>
+                    <span className="text-[#999]">{f}</span>
+                  </li>
+                ))}
+                {(basic.features_excluidas ?? []).map(f => (
+                  <li key={f} className="flex items-center gap-2.5 text-[13px]">
+                    <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-[#1a1a1a]">
+                      <IconX />
+                    </span>
+                    <span className="text-[#444]">{f}</span>
                   </li>
                 ))}
               </ul>
@@ -245,11 +224,11 @@ export default function PlanesClient() {
                 Más popular
               </div>
               <div className="font-syne font-bold text-lg text-white mb-1">Pro</div>
-              <p className="text-[13px] text-[#555] mb-5">Para tiendas online con mayor volumen</p>
+              <p className="text-[13px] text-[#555] mb-5">{pro.subtitulo}</p>
 
               <div className="mb-1 h-5">
                 {duration.pct > 0 && (
-                  <span className="text-[12px] text-[#444] line-through">{formatCOP(250000)}/mes</span>
+                  <span className="text-[12px] text-[#444] line-through">{formatCOP(pro.precio_mensual_cop)}/mes</span>
                 )}
               </div>
               <div className="font-syne font-extrabold text-[32px] text-white tracking-tight mb-0.5">
@@ -269,16 +248,16 @@ export default function PlanesClient() {
                 onClick={() => router.push(`/checkout?plan=PRO&amount=${proTotalPrice}&months=${selectedMonths}`)}
                 className="block w-full text-center py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-medium rounded-lg transition-colors mb-6"
               >
-                Contratar Pro
+                {pro.boton_texto}
               </button>
 
               <ul className="flex flex-col gap-2.5">
-                {PLAN_FEATURES.PRO.map(f => (
-                  <li key={f.label} className="flex items-center gap-2.5 text-[13px]">
+                {pro.features.map(f => (
+                  <li key={f} className="flex items-center gap-2.5 text-[13px]">
                     <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(255,92,58,0.13)]">
                       <IconCheck />
                     </span>
-                    <span className="text-[#999]">{f.label}</span>
+                    <span className="text-[#999]">{f}</span>
                   </li>
                 ))}
               </ul>
@@ -308,21 +287,29 @@ export default function PlanesClient() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1f1f1f]">
-                {COMPARE_ROWS.map(row => (
-                  <tr key={row.label} className="hover:bg-[#1a1a1a] transition-colors">
-                    <td className="px-5 py-3 text-[#777]">{row.label}</td>
-                    <td className="px-5 py-3 text-center">
-                      {typeof row.basic === 'string'
-                        ? <span className="font-medium text-[#888]">{row.basic}</span>
-                        : row.basic ? <IconCheckTable /> : <IconXTable />}
-                    </td>
-                    <td className="px-5 py-3 text-center">
-                      {typeof row.pro === 'string'
-                        ? <span className="font-medium text-[#FF5C3A]">{row.pro}</span>
-                        : row.pro ? <IconCheckTable /> : <IconXTable />}
-                    </td>
-                  </tr>
-                ))}
+                {/* Filas de límites */}
+                <tr className="hover:bg-[#1a1a1a] transition-colors">
+                  <td className="px-5 py-3 text-[#777]">Productos en el probador</td>
+                  <td className="px-5 py-3 text-center"><span className="font-medium text-[#888]">{basic.productos_max}</span></td>
+                  <td className="px-5 py-3 text-center"><span className="font-medium text-[#FF5C3A]">{pro.productos_max}</span></td>
+                </tr>
+                <tr className="hover:bg-[#1a1a1a] transition-colors">
+                  <td className="px-5 py-3 text-[#777]">Generaciones por mes</td>
+                  <td className="px-5 py-3 text-center"><span className="font-medium text-[#888]">{basic.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
+                  <td className="px-5 py-3 text-center"><span className="font-medium text-[#FF5C3A]">{pro.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
+                </tr>
+                {/* Filas de features */}
+                {allFeatures.map(feature => {
+                  const inBasic = basic.features.includes(feature);
+                  const inPro   = pro.features.includes(feature);
+                  return (
+                    <tr key={feature} className="hover:bg-[#1a1a1a] transition-colors">
+                      <td className="px-5 py-3 text-[#777]">{feature}</td>
+                      <td className="px-5 py-3 text-center">{inBasic ? <IconCheckTable /> : <IconXTable />}</td>
+                      <td className="px-5 py-3 text-center">{inPro   ? <IconCheckTable /> : <IconXTable />}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -343,14 +330,17 @@ export default function PlanesClient() {
               : 'Elige el plan que mejor se adapte a tu marca.'}
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <Link href={trialActive ? '/register' : `/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`}
-              className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[14px] font-medium px-7 py-3 rounded-lg transition-colors flex items-center gap-2">
+            <Link
+              href={trialActive ? '/register' : `/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`}
+              className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[14px] font-medium px-7 py-3 rounded-lg transition-colors flex items-center gap-2"
+            >
               {trialActive ? 'Crear cuenta gratis' : 'Contratar Básico'} <IconArrow />
             </Link>
             <button
               onClick={() => router.push(`/checkout?plan=PRO&amount=${proTotalPrice}&months=${selectedMonths}`)}
-              className="text-[#aaa] hover:text-white text-[14px] px-7 py-3 rounded-lg border border-[#333] hover:border-[#555] transition-colors">
-              Contratar Pro ahora
+              className="text-[#aaa] hover:text-white text-[14px] px-7 py-3 rounded-lg border border-[#333] hover:border-[#555] transition-colors"
+            >
+              {pro.boton_texto}
             </button>
           </div>
         </div>
