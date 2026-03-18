@@ -1173,21 +1173,18 @@ function ProbadorAbout({ brand }: { brand: BrandData }) {
   return (
     <section className="py-16 px-6 text-center" style={{ backgroundColor: 'var(--p-bg, #fafafa)' }}>
       <div className="max-w-lg mx-auto">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6 overflow-hidden" style={{ backgroundColor: primary }}>
-          {brand.logo ? (
+        {brand.logo && (
+          <div className="flex justify-center mb-6">
             <BrandLogo
               src={brand.logo_light || brand.logo}
               alt={brand.name}
-              className="w-full h-full object-contain rounded-2xl"
-              fallbackInitials={brand.name.slice(0, 2).toUpperCase()}
-              fallbackBg={primary}
-              fallbackTextColor="#fff"
+              className="h-14 w-auto max-w-[160px] object-contain"
             />
-          ) : (
-            <span className="text-white font-black text-lg" style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>{brand.name.slice(0, 2).toUpperCase()}</span>
-          )}
-        </div>
-        <h2 className="text-3xl font-black mb-4 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.name}</h2>
+          </div>
+        )}
+        {brand.show_brand_name !== false && (
+          <h2 className="text-3xl font-black mb-4 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.name}</h2>
+        )}
         {brand.brand_description && (
           <p className="text-sm font-light leading-relaxed mb-8" style={{ color: 'var(--p-text-muted, #888)' }}>{brand.brand_description}</p>
         )}
