@@ -557,3 +557,16 @@
   - [ ] 50.2 Auditoría de endpoints: verificar que no haya filtración de datos entre marcas
     - Revisar todos los `GET` que devuelven listas — asegurar que siempre filtren por `brand_id` del token
     - _Archivos: backend/src/controllers/ (todos)_
+
+---
+
+- [ ] 55. Error handler en workflow n8n para notificación de créditos agotados
+  - [ ] 55.1 Agregar nodo "Error Trigger" en workflow `wPLypk7KhBcFLicX`
+    - Conectar el nodo de error al flujo principal para capturar fallos del nodo de IA
+    - _Archivos: n8n workflow wPLypk7KhBcFLicX_
+  - [ ] 55.2 Detectar respuesta 402 de OpenRouter en el nodo de IA
+    - Agregar condición: si el error contiene `402` o `credits` o `insufficient` → rama de créditos agotados
+    - _Archivos: n8n workflow wPLypk7KhBcFLicX_
+  - [ ] 55.3 Enviar notificación al admin (webhook o email) con detalle del error
+    - Incluir: timestamp, brandSlug, productId, generationId, mensaje de error de OpenRouter
+    - _Archivos: n8n workflow wPLypk7KhBcFLicX_
