@@ -45,8 +45,8 @@ const TESTIMONIALS = [
   { name: 'Valentina G.', role: 'Tienda de calzado online', text: 'El trial me convenció desde el primer día. Mis clientes pueden ver los zapatos puestos antes de decidir. Ahora tengo el plan Pro.' },
 ];
 
-const BASIC_FEATURES = ['5 productos', '400 generaciones/mes', 'Logo y colores', 'Widget embebible'];
-const PRO_FEATURES = ['15 productos', '1.200 generaciones/mes', 'Templates avanzados', 'Soporte prioritario'];
+const BASIC_FEATURES = ['5 productos', '400 generaciones/mes', 'Logo y colores', 'Widget embebible', 'Compartir con marca Lookitry'];
+const PRO_FEATURES = ['15 productos', '1.200 generaciones/mes', 'Templates avanzados', 'Compartir con tu nombre de marca', 'URL personalizada del widget', 'Soporte prioritario'];
 
 const PRODUCTS = [
   { name: 'Camisa lino beige', price: '$89.000', bg: 'linear-gradient(135deg,#2a2a2a,#444)', active: true },

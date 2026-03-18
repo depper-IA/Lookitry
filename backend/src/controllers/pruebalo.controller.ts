@@ -104,6 +104,7 @@ export class PruebaloController {
         cover_bg_color: (brand as any).cover_bg_color ?? null,
         cover_overlay_opacity: (brand as any).cover_overlay_opacity ?? 0.55,
         show_brand_name: (brand as any).show_brand_name ?? true,
+        plan: brand.plan ?? 'BASIC',
       },
       footer_brand_url: footerBrandUrl,
       products: products.map(product => ({

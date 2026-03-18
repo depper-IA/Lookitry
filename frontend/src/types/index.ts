@@ -115,6 +115,7 @@ export interface TryOnConfigResponse {
     widgetTemplate?: string;
     buttonText?: string;
     welcomeMessage?: string;
+    plan?: string;
     // Mini-landing (task 33)
     brandDescription?: string | null;
     whatsappContact?: string | null;

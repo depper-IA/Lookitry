@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { supabase, supabaseAdmin } from '../config/supabase';
 
 export type NotificationType =
@@ -15,7 +15,9 @@ export type NotificationType =
   | 'multi_month_purchase'
   | 'subscription_expiring'
   | 'service_down'
-  | 'service_recovered';
+  | 'service_recovered'
+  | 'smtp_down'
+  | 'smtp_recovered';
 
 export interface AdminNotification {
   id: string;
@@ -29,15 +31,29 @@ export interface AdminNotification {
   metadata?: Record<string, unknown>;
 }
 
+export interface NotificationPreference {
+  type: NotificationType;
+  enabled: boolean;
+}
+
 const BASIC_LIMIT = 100;
 const PRO_LIMIT = 1200;
 
-export async function getAdminNotifications(_req: any, res: Response): Promise<void> {
+/** Carga las preferencias activas desde Supabase. Devuelve un Set de tipos desactivados. */
+async function getDisabledTypes(): Promise<Set<string>> {
+  const { data } = await supabaseAdmin
+    .from('admin_notification_preferences')
+    .select('type, enabled')
+    .eq('enabled', false);
+  return new Set((data ?? []).map((r: { type: string }) => r.type));
+}
+
+export async function getAdminNotifications(_req: Request, res: Response): Promise<void> {
   try {
     const now = new Date();
     const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    const [brandsRes, generationsRes, paymentsRes, persistentRes] = await Promise.all([
+    const [brandsRes, generationsRes, paymentsRes, persistentRes, disabledTypes] = await Promise.all([
       supabase
         .from('brands')
         .select('id, name, email, plan, subscription_status, trial_end_date, subscription_end_date, created_at, upgrade_requested_at')
@@ -58,7 +74,8 @@ export async function getAdminNotifications(_req: any, res: Response): Promise<v
         .select('*')
         .gte('created_at', last7Days.toISOString())
         .order('created_at', { ascending: false })
-        .limit(100),
+        .limit(200),
+      getDisabledTypes(),
     ]);
 
     const brands = brandsRes.data || [];
@@ -67,58 +84,50 @@ export async function getAdminNotifications(_req: any, res: Response): Promise<v
     const persistentNotifications = persistentRes.data || [];
     const notifications: AdminNotification[] = [];
 
+    const push = (n: AdminNotification) => {
+      if (!disabledTypes.has(n.type)) notifications.push(n);
+    };
+
     // 1. Marcas nuevas (últimos 7 días)
     brands
       .filter(b => new Date(b.created_at) >= last7Days)
-      .forEach(b => {
-        notifications.push({
-          id: 'new_brand_' + b.id,
-          type: 'new_brand',
-          title: 'Nueva marca registrada',
-          message: `${b.name} (${b.email}) se registró en el plan ${b.plan}`,
-          brandId: b.id,
-          brandName: b.name,
-          createdAt: b.created_at,
-          severity: 'info',
-        });
-      });
+      .forEach(b => push({
+        id: 'new_brand_' + b.id,
+        type: 'new_brand',
+        title: 'Nueva marca registrada',
+        message: `${b.name} (${b.email}) se registró en el plan ${b.plan}`,
+        brandId: b.id, brandName: b.name,
+        createdAt: b.created_at, severity: 'info',
+      }));
 
     // 2. Solicitudes de upgrade pendientes
     brands
       .filter(b => b.upgrade_requested_at)
-      .forEach(b => {
-        notifications.push({
-          id: 'upgrade_' + b.id,
-          type: 'upgrade_request',
-          title: 'Solicitud de upgrade a Pro',
-          message: `${b.name} solicitó actualizar al Plan Pro`,
-          brandId: b.id,
-          brandName: b.name,
-          createdAt: b.upgrade_requested_at,
-          severity: 'warning',
-        });
-      });
+      .forEach(b => push({
+        id: 'upgrade_' + b.id,
+        type: 'upgrade_request',
+        title: 'Solicitud de upgrade a Pro',
+        message: `${b.name} solicitó actualizar al Plan Pro`,
+        brandId: b.id, brandName: b.name,
+        createdAt: b.upgrade_requested_at, severity: 'warning',
+      }));
 
     // 3. Trials por vencer (1-3 días)
     brands
       .filter(b => {
         if (!b.trial_end_date) return false;
-        const trialEnd = new Date(b.trial_end_date);
-        const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        const daysLeft = Math.ceil((new Date(b.trial_end_date).getTime() - now.getTime()) / 86400000);
         return daysLeft >= 0 && daysLeft <= 3 && b.subscription_status !== 'active';
       })
       .forEach(b => {
-        const trialEnd = new Date(b.trial_end_date);
-        const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        notifications.push({
+        const daysLeft = Math.ceil((new Date(b.trial_end_date).getTime() - now.getTime()) / 86400000);
+        push({
           id: 'trial_expiring_' + b.id,
           type: 'trial_expiring',
           title: 'Trial por vencer',
           message: `${b.name} tiene ${daysLeft} día${daysLeft !== 1 ? 's' : ''} restante${daysLeft !== 1 ? 's' : ''} de prueba`,
-          brandId: b.id,
-          brandName: b.name,
-          createdAt: now.toISOString(),
-          severity: 'warning',
+          brandId: b.id, brandName: b.name,
+          createdAt: now.toISOString(), severity: 'warning',
         });
       });
 
@@ -126,43 +135,37 @@ export async function getAdminNotifications(_req: any, res: Response): Promise<v
     brands
       .filter(b => {
         if (!b.trial_end_date) return false;
-        const trialEnd = new Date(b.trial_end_date);
-        return trialEnd < now && b.subscription_status !== 'active' && b.subscription_status !== 'suspended';
+        return new Date(b.trial_end_date) < now &&
+          b.subscription_status !== 'active' &&
+          b.subscription_status !== 'suspended';
       })
       .slice(0, 5)
-      .forEach(b => {
-        notifications.push({
-          id: 'trial_expired_' + b.id,
-          type: 'trial_expired',
-          title: 'Trial vencido sin conversión',
-          message: `${b.name} terminó su prueba y no ha contratado un plan`,
-          brandId: b.id,
-          brandName: b.name,
-          createdAt: b.trial_end_date,
-          severity: 'error',
-        });
-      });
+      .forEach(b => push({
+        id: 'trial_expired_' + b.id,
+        type: 'trial_expired',
+        title: 'Trial vencido sin conversión',
+        message: `${b.name} terminó su prueba y no ha contratado un plan`,
+        brandId: b.id, brandName: b.name,
+        createdAt: b.trial_end_date, severity: 'error',
+      }));
 
-    // 5. Suscripción activa por vencer (≤7 días, no trial)
+    // 5. Suscripción activa por vencer (≤7 días)
     brands
       .filter(b => {
         if (!b.subscription_end_date) return false;
         if (b.trial_end_date && b.subscription_status !== 'active') return false;
         if (b.subscription_status !== 'active' && b.subscription_status !== 'expiring_soon') return false;
-        const endDate = new Date(b.subscription_end_date);
-        const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        const daysLeft = Math.ceil((new Date(b.subscription_end_date).getTime() - now.getTime()) / 86400000);
         return daysLeft >= 0 && daysLeft <= 7;
       })
       .forEach(b => {
-        const endDate = new Date(b.subscription_end_date);
-        const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        notifications.push({
+        const daysLeft = Math.ceil((new Date(b.subscription_end_date).getTime() - now.getTime()) / 86400000);
+        push({
           id: 'sub_expiring_' + b.id,
           type: 'subscription_expiring',
           title: 'Suscripción por vencer',
           message: `${b.name} (${b.plan}) vence en ${daysLeft} día${daysLeft !== 1 ? 's' : ''}`,
-          brandId: b.id,
-          brandName: b.name,
+          brandId: b.id, brandName: b.name,
           createdAt: now.toISOString(),
           severity: daysLeft <= 2 ? 'error' : 'warning',
           metadata: { plan: b.plan, daysLeft },
@@ -178,27 +181,23 @@ export async function getAdminNotifications(_req: any, res: Response): Promise<v
       const limit = b.plan === 'PRO' ? PRO_LIMIT : BASIC_LIMIT;
       const pct = (used / limit) * 100;
       if (pct >= 100) {
-        notifications.push({
+        push({
           id: 'credits_exhausted_' + b.id,
           type: 'credits_exhausted',
           title: 'Créditos agotados',
           message: `${b.name} agotó sus ${limit} generaciones del mes`,
-          brandId: b.id,
-          brandName: b.name,
-          createdAt: now.toISOString(),
-          severity: 'error',
+          brandId: b.id, brandName: b.name,
+          createdAt: now.toISOString(), severity: 'error',
           metadata: { used, limit, plan: b.plan },
         });
       } else if (pct >= 80) {
-        notifications.push({
+        push({
           id: 'high_usage_' + b.id,
           type: 'high_usage',
           title: 'Uso alto de generaciones',
           message: `${b.name} usó ${used} de ${limit} generaciones este mes (${Math.round(pct)}%)`,
-          brandId: b.id,
-          brandName: b.name,
-          createdAt: now.toISOString(),
-          severity: 'warning',
+          brandId: b.id, brandName: b.name,
+          createdAt: now.toISOString(), severity: 'warning',
           metadata: { used, limit, pct: Math.round(pct) },
         });
       }
@@ -208,55 +207,48 @@ export async function getAdminNotifications(_req: any, res: Response): Promise<v
     brands
       .filter(b => b.subscription_status === 'suspended')
       .slice(0, 5)
-      .forEach(b => {
-        notifications.push({
-          id: 'suspended_' + b.id,
-          type: 'suspended',
-          title: 'Marca suspendida',
-          message: `${b.name} tiene su cuenta suspendida`,
-          brandId: b.id,
-          brandName: b.name,
-          createdAt: now.toISOString(),
-          severity: 'error',
-        });
-      });
+      .forEach(b => push({
+        id: 'suspended_' + b.id,
+        type: 'suspended',
+        title: 'Marca suspendida',
+        message: `${b.name} tiene su cuenta suspendida`,
+        brandId: b.id, brandName: b.name,
+        createdAt: now.toISOString(), severity: 'error',
+      }));
 
-    // 8. Pagos recibidos (1 mes) y compras multi-mes
+    // 8. Pagos recibidos
     payments.forEach((p: any) => {
       const brandName = p.brands?.name || 'Marca desconocida';
       const months = p.months_paid || 1;
       if (months > 1) {
         const discountPct = months >= 12 ? 15 : months >= 6 ? 10 : months >= 3 ? 5 : 0;
-        notifications.push({
+        push({
           id: 'payment_' + p.id,
           type: 'multi_month_purchase',
           title: `Compra de ${months} meses`,
           message: `${brandName} pagó ${months} meses por adelantado${discountPct > 0 ? ` (${discountPct}% descuento)` : ''}`,
-          brandId: p.brand_id,
-          brandName,
-          createdAt: p.created_at,
-          severity: 'success',
+          brandId: p.brand_id, brandName,
+          createdAt: p.created_at, severity: 'success',
           metadata: { months, amount: p.amount, discountPct },
         });
       } else {
-        notifications.push({
+        push({
           id: 'payment_' + p.id,
           type: 'payment_received',
           title: 'Pago recibido',
           message: `${brandName} realizó un pago de ${Number(p.amount).toLocaleString('es-CO')} COP`,
-          brandId: p.brand_id,
-          brandName,
-          createdAt: p.created_at,
-          severity: 'success',
+          brandId: p.brand_id, brandName,
+          createdAt: p.created_at, severity: 'success',
         });
       }
     });
 
-    // 9. Notificaciones persistentes (acciones del cliente + eventos del sistema)
+    // 9. Notificaciones persistentes (n8n, health, acciones del cliente)
     const dynamicIds = new Set(notifications.map(n => n.id));
     persistentNotifications.forEach((n: any) => {
+      if (disabledTypes.has(n.type)) return;
       if (n.type === 'upgrade_request' && dynamicIds.has('upgrade_' + n.brand_id)) return;
-      notifications.push({
+      push({
         id: 'persistent_' + n.id,
         type: n.type as NotificationType,
         title: n.title,
@@ -274,5 +266,38 @@ export async function getAdminNotifications(_req: any, res: Response): Promise<v
   } catch (error: any) {
     console.error('Error in getAdminNotifications:', error);
     res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener notificaciones' });
+  }
+}
+
+/** GET /api/admin/notification-preferences */
+export async function getNotificationPreferences(_req: Request, res: Response): Promise<void> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('admin_notification_preferences')
+      .select('type, enabled')
+      .order('type');
+    if (error) throw error;
+    res.json({ preferences: data });
+  } catch (error: any) {
+    res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+  }
+}
+
+/** PATCH /api/admin/notification-preferences/:type */
+export async function updateNotificationPreference(req: Request, res: Response): Promise<void> {
+  try {
+    const { type } = req.params;
+    const { enabled } = req.body;
+    if (typeof enabled !== 'boolean') {
+      res.status(400).json({ error: 'INVALID_BODY', message: 'enabled debe ser boolean' });
+      return;
+    }
+    const { error } = await supabaseAdmin
+      .from('admin_notification_preferences')
+      .upsert({ type, enabled, updated_at: new Date().toISOString() }, { onConflict: 'type' });
+    if (error) throw error;
+    res.json({ ok: true, type, enabled });
+  } catch (error: any) {
+    res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
   }
 }

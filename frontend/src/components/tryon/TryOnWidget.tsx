@@ -409,7 +409,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
               </div>
             )}
             {step === 'result' && resultImageUrl && (
-              <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} />
+              <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} brandName={config.brand.name} brandPlan={config.brand.plan} />
             )}
           </div>
         </div>
@@ -490,7 +490,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
             </div>
           )}
           {step === 'result' && resultImageUrl && (
-            <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} />
+            <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} brandName={config.brand.name} brandPlan={config.brand.plan} />
           )}
         </div>
       </div>
@@ -533,7 +533,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
               </div>
             )}
             {step === 'result' && resultImageUrl && (
-              <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} />
+              <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} brandName={config.brand.name} brandPlan={config.brand.plan} />
             )}
           </div>
         )}
@@ -583,7 +583,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
         )}
 
         {step === 'result' && resultImageUrl && (
-          <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} />
+          <ResultDisplay imageUrl={resultImageUrl} productName={selectedProduct?.name || ''} selfiePreview={selfiePreview} onReset={handleReset} primaryColor={primaryColor} generationId={generationId ?? undefined} brandSlug={brandSlug} brandName={config.brand.name} brandPlan={config.brand.plan} />
         )}
       </div>
     </div>

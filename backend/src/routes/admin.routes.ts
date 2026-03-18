@@ -32,7 +32,11 @@ import {
   getPaymentSettings,
   updatePaymentSettings,
 } from '../controllers/paymentSettings.controller';
-import { getAdminNotifications } from '../controllers/notifications.controller';
+import {
+  getAdminNotifications,
+  getNotificationPreferences,
+  updateNotificationPreference,
+} from '../controllers/notifications.controller';
 import {
   getTrialCampaign,
   createTrialCampaign,
@@ -64,6 +68,8 @@ router.patch('/mini-landings/:id/restore', requirePermission('brands'), restoreM
 router.get('/payment-settings', requirePermission('settings'), getPaymentSettings);
 router.put('/payment-settings', requirePermission('settings'), updatePaymentSettings);
 router.get('/notifications', requirePermission('notifications'), getAdminNotifications);
+router.get('/notification-preferences', requirePermission('notifications'), getNotificationPreferences);
+router.patch('/notification-preferences/:type', requirePermission('notifications'), updateNotificationPreference);
 
 // Gestión de admins — solo quien tenga permiso 'admins'
 router.get('/admins', requirePermission('admins'), listAdmins);
