@@ -285,7 +285,7 @@ export default function LandingClient() {
         <div className="max-w-[860px] mx-auto">
           <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Cómo funciona</p>
           <h2 id="how-it-works-heading" style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[32px] text-[#0a0a0a] tracking-tight mb-10">
-            Tres pasos. Cero fricción.
+            Tres pasos. Sin complicaciones.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {STEPS.map((s, i) => (
