@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
+import { registerPostPayment } from '../controllers/auth-post-payment.controller';
 import { authRateLimiter } from '../middleware/rateLimiter';
 import { asyncHandler } from '../middleware/errorHandler';
 import { authMiddleware } from '../middleware/auth';
@@ -9,6 +10,9 @@ const authController = new AuthController();
 
 // POST /api/auth/register
 router.post('/register', authRateLimiter, asyncHandler((req, res) => authController.register(req, res)));
+
+// POST /api/auth/register-post-payment — sin Turnstile, sin anti-abuso, sin rate limiter estricto
+router.post('/register-post-payment', asyncHandler(registerPostPayment));
 
 // POST /api/auth/login
 router.post('/login', authRateLimiter, asyncHandler((req, res) => authController.login(req, res)));
