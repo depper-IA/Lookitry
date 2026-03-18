@@ -336,8 +336,11 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 | GET | `/payment-settings/public` | Público | Config pública de pagos |
 | GET | `/payments/wompi/config` | JWT | Config Wompi para el plan |
 | GET | `/payments/wompi/checkout-url` | JWT/Público | URL de checkout Wompi |
+<<<<<<< HEAD
 | GET | `/payments/wompi/upgrade-preview` | JWT | Calcula prorrateo de upgrade (crédito, monto a pagar, nueva fecha fin) |
 | POST | `/payments/wompi/apply-free-upgrade` | JWT | Aplica upgrade sin cobro cuando crédito cubre el costo total |
+=======
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
 | POST | `/payments/wompi/webhook` | Wompi signature | Webhook de eventos |
 
 ### Subscription (`/api/subscription/*`)
@@ -413,8 +416,12 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 | `/dashboard/analytics` | Métricas de uso |
 | `/dashboard/usage` | Contador del mes |
 | `/dashboard/subscription` | Estado de suscripción |
+<<<<<<< HEAD
 | `/dashboard/checkout` | Checkout interno — renovar plan, upgrade BASIC→PRO con prorrateo |
 | `/dashboard/checkout-landing` | Checkout exclusivo para comprar mini-landing (solo usuarios con plan activo, sin landing) |
+=======
+| `/dashboard/checkout` | Checkout interno (precios dinámicos) |
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
 | `/dashboard/settings` | Configuración del widget |
 | `/dashboard/embed` | Código de integración |
 | `/dashboard/mi-pagina` | Editor de mini-landing |
@@ -487,6 +494,7 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 8. Inserta registro en `subscription_payments`
 9. Usuario ve `/pago-exitoso`
 
+<<<<<<< HEAD
 ### Flujo de Upgrade con Prorrateo (BASIC → PRO)
 1. Usuario con BASIC activo selecciona PRO en `/dashboard/checkout`
 2. Frontend detecta `isUpgrade = true` y llama a `GET /api/payments/wompi/upgrade-preview`
@@ -507,6 +515,8 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 - Las generaciones ya usadas en el mes en curso no se borran ni se recuperan
 - El crédito nunca genera reembolso monetario — solo descuenta del precio del nuevo plan
 
+=======
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
 ### Flujo de Try-On
 1. Usuario sube selfie en el widget (`/pruebalo/[slug]`)
 2. `POST /api/pruebalo/:slug/generate` valida créditos y plan
@@ -584,6 +594,7 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAACsmy7e_yL9iyAXM
 - 6 meses: 10%
 - 12 meses: 15%
 
+<<<<<<< HEAD
 ### Lógica de upgrade con prorrateo (BASIC → PRO)
 
 Implementada en `SubscriptionService` (`backend/src/services/subscription.service.ts`):
@@ -602,6 +613,8 @@ newEndDate = now() + mesesNuevos
 
 La landing page (pago único) no entra en el cálculo — se suma por separado al `amountToPay` si el usuario la agrega en el mismo checkout.
 
+=======
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
 ### Mini-landing
 - `has_landing_page = true` → landing activa
 - `landing_suspended_at` no nulo → suspendida por falta de pago
@@ -678,6 +691,7 @@ python scripts/_deploy_now.py --restart
 ```
 
 **IMPORTANTE**: nunca hacer deploy sin que el usuario lo pida explícitamente.
+<<<<<<< HEAD
 
 ---
 
@@ -746,3 +760,5 @@ SMTP_FROM=Virtual LOOKITRY <info@pruebalo.wilkiedevs.com>
 ### Logo en templates de email
 
 **Cambio:** El `baseTemplate` en `backend/src/templates/email-templates.ts` ahora muestra el logo de Lookitry (`https://pruebalo.wilkiedevs.com/logo.svg`) en el header de todos los emails, en lugar del texto "Virtual Try-On". El logo se carga como `<img>` con `onerror` para degradar graciosamente si no carga. El footer también fue actualizado de "Virtual Try-On SaaS" a "Lookitry".
+=======
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)

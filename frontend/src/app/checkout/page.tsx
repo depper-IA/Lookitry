@@ -133,7 +133,10 @@ function CheckoutContent() {
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>(initialPlan);
   const [selectedMonths, setSelectedMonths] = useState(1);
   const [subPlan, setSubPlan] = useState<SubPlan>('BASIC');
+<<<<<<< HEAD
   const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
+=======
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
@@ -142,6 +145,10 @@ function CheckoutContent() {
   const [sessionInfo, setSessionInfo] = useState<{ name: string; email: string } | null>(null);
   const [pricing, setPricing] = useState<PricingSettings | null>(null);
   const [trm, setTrm] = useState(3900);
+
+  // Precios dinámicos desde la API de pricing
+  const [planBase, setPlanBase] = useState<Record<'BASIC' | 'PRO', number>>(PLAN_BASE_FALLBACK);
+  const [discounts, setDiscounts] = useState(DISCOUNTS_FALLBACK);
 
   // Precios dinámicos desde la API de pricing
   const [planBase, setPlanBase] = useState<Record<'BASIC' | 'PRO', number>>(PLAN_BASE_FALLBACK);
@@ -159,7 +166,11 @@ function CheckoutContent() {
   const [activePromos, setActivePromos] = useState<any[]>([]);
 
   useEffect(() => {
+<<<<<<< HEAD
     // Cargar precios de pago, configuración de pricing y promociones en paralelo
+=======
+    // Cargar precios de pago y configuración de pricing en paralelo
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
     Promise.all([
       fetch(`${API_URL}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
       fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?select=id,data`, {
@@ -168,6 +179,7 @@ function CheckoutContent() {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
         },
       }).then(r => r.ok ? r.json() : null),
+<<<<<<< HEAD
       fetch('/api/promotions').then(r => r.ok ? r.json() : null),
     ]).then(([paySettings, pricingRows, promosRes]) => {
       if (paySettings) {
@@ -175,6 +187,10 @@ function CheckoutContent() {
         if (paySettings.trm) setTrm(paySettings.trm);
       }
       if (promosRes?.ok) setActivePromos(promosRes.data || []);
+=======
+    ]).then(([paySettings, pricingRows]) => {
+      if (paySettings) setPricing(paySettings);
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
       if (Array.isArray(pricingRows)) {
         const basic = pricingRows.find((r: any) => r.id === 'basic')?.data;
         const pro   = pricingRows.find((r: any) => r.id === 'pro')?.data;
@@ -197,6 +213,7 @@ function CheckoutContent() {
     }).catch(() => {});
   }, []);
 
+<<<<<<< HEAD
   useEffect(() => {
     const brandStr = localStorage.getItem('brand');
     setHasSession(!!brandStr);
@@ -208,6 +225,8 @@ function CheckoutContent() {
     }
   }, []);
 
+=======
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
   const landingPrice    = pricing?.landingPrice         ?? 650000;
   const landingOriginal = pricing?.landingOriginalPrice ?? 900000;
   const landingDiscount = Math.round((1 - landingPrice / landingOriginal) * 100);
@@ -233,6 +252,7 @@ function CheckoutContent() {
   }, 0);
 
   // Precio total según plan seleccionado
+<<<<<<< HEAD
   const subMonthDiscount = discounts.find(d => d.months === selectedMonths)?.pct ?? 0;
   
   // Cálculo del total de la suscripción (con descuento por meses y descuento de promo)
@@ -243,6 +263,19 @@ function CheckoutContent() {
   const baseTotalPrice = isLanding
     ? landingPrice + subPlanTotal
     : subPlanTotal;
+=======
+  const isLanding       = selectedPlan === 'LANDING';
+  const subMonthDiscount = discounts.find(d => d.months === selectedMonths)?.pct ?? 0;
+  const subPlanTotal    = Math.round(planBase[isLanding ? subPlan : (selectedPlan as 'BASIC' | 'PRO')] * selectedMonths * (1 - subMonthDiscount / 100));
+  const baseTotalPrice  = isLanding
+    ? landingPrice + subPlanTotal
+    : Math.round(planBase[selectedPlan as 'BASIC' | 'PRO'] * selectedMonths * (1 - subMonthDiscount / 100));
+  const originalPrice   = isLanding
+    ? landingOriginal + planBase[subPlan] * selectedMonths
+    : planBase[selectedPlan as 'BASIC' | 'PRO'] * selectedMonths;
+  const monthlyPrice    = isLanding ? null : planBase[selectedPlan as 'BASIC' | 'PRO'] * (1 - subMonthDiscount / 100);
+  const discountPct     = isLanding ? landingDiscount : subMonthDiscount;
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
 
   const originalPrice = isLanding
     ? landingOriginal + planBase[subPlan] * selectedMonths
@@ -567,10 +600,20 @@ function CheckoutContent() {
                       <div className="text-[13px] font-semibold text-white">{planNames[subPlan]}</div>
                       <div className="text-[11px] text-[#999]">
                         {discounts.find(d => d.months === selectedMonths)?.label}
+<<<<<<< HEAD
                       </div>
                     </div>
                     <div className="text-right">
                       {(subMonthDiscount > 0 || promoDiscountPct > 0) && (
+=======
+                        {subMonthDiscount > 0 && (
+                          <span className="ml-1.5 text-emerald-400">-{subMonthDiscount}%</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {subMonthDiscount > 0 && (
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
                         <div className="text-[11px] text-[#666] line-through">{formatCOP(planBase[subPlan] * selectedMonths)}</div>
                       )}
                       <div className="text-[15px] font-bold text-white">{formatCOP(subPlanTotal)}</div>
@@ -618,6 +661,12 @@ function CheckoutContent() {
                     <div>
                       <div className="text-[14px] font-semibold text-white">{planNames[selectedPlan]}</div>
                       <div className="text-[12px] text-[#555]">{discounts.find(d => d.months === selectedMonths)?.label}</div>
+<<<<<<< HEAD
+=======
+                      {discountPct > 0 && (
+                        <div className="text-[12px] text-emerald-400 mt-0.5">{discountPct}% de descuento</div>
+                      )}
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
                     </div>
                     <div className="text-right">
                       {(subMonthDiscount > 0 || promoDiscountPct > 0) && (
