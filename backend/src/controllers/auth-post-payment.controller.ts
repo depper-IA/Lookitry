@@ -41,7 +41,7 @@ export async function registerPostPayment(req: Request, res: Response) {
       phone: phone || undefined,
       password,
       ip: 'post-payment',
-      fingerprint: null,
+      fingerprint: undefined,
     });
 
     // Enviar email de verificación (async, no bloquea)
