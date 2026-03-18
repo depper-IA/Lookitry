@@ -114,7 +114,7 @@ export default function LandingClient() {
               Ver planes <IconArrow />
             </Link>
           </div>
-          <p className="text-[12px] text-[#666]">Cancela cuando quieras</p>
+          <p className="text-[12px] text-[#666]">Requiere verificación de tarjeta · Cancela cuando quieras</p>
         </div>
       </section>
 
