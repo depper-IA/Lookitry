@@ -138,6 +138,20 @@ Todos los workflows tienen la etiqueta `SaaS`.
 - Archivo de referencia: `templates-webs/flujo5_error_handler_openrouter.json`
 
 
+## Cloudflare Turnstile — antispam registro
+
+| Clave | Valor |
+|-------|-------|
+| Site Key (pública, frontend) | `0x4AAAAAACsmy7e_yL9iyAXM` |
+| Secret Key (privada, backend) | `0x4AAAAAACsmy2ZsVW10HlNhDRP-ihDmo3o` |
+| Dashboard | https://dash.cloudflare.com → Turnstile |
+
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` va en `docker-compose.frontend.yml` como `build arg`
+- `TURNSTILE_SECRET_KEY` y `TURNSTILE_ENABLED` van en `backend/.env`
+- Para activar/desactivar sin redeploy: cambiar `TURNSTILE_ENABLED=true/false` en el VPS y hacer `--restart`
+
+---
+
 ## Sitemap — Regla obligatoria
 
 **Cada vez que se cree una nueva página pública**, actualizar `frontend/src/app/sitemap.ts`:
