@@ -100,7 +100,7 @@ function FriendlyProductSelector({
         <p className="text-base font-semibold text-gray-800">¿Qué quieres probarte hoy?</p>
         <p className="text-sm text-gray-500 mt-0.5">Toca el producto que más te guste</p>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-5 gap-2">
         {products.map(p => {
           const sel = selected?.id === p.id;
           const alreadyGenerated = generatedProducts.has(p.id);
@@ -108,10 +108,10 @@ function FriendlyProductSelector({
             <button
               key={p.id}
               onClick={() => onSelect(p)}
-              className={`rounded-2xl overflow-hidden border-2 text-left transition-all duration-200 bg-white ${
-                sel ? 'scale-[1.03] shadow-lg' : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+              className={`rounded-xl overflow-hidden border-2 text-left transition-all duration-200 bg-white ${
+                sel ? 'scale-[1.04] shadow-lg' : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
               }`}
-              style={sel ? { borderColor: primaryColor, boxShadow: `0 4px 20px ${primaryColor}30` } : {}}
+              style={sel ? { borderColor: primaryColor, boxShadow: `0 4px 16px ${primaryColor}30` } : {}}
             >
               <div className="relative">
                 <img
@@ -121,31 +121,25 @@ function FriendlyProductSelector({
                 />
                 {/* Badge "Ya probado" */}
                 {alreadyGenerated && !sel && (
-                  <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-white text-xs font-semibold shadow-md" style={{ backgroundColor: '#10b981' }}>
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <div className="absolute top-1 left-1 w-5 h-5 rounded-full flex items-center justify-center shadow-md" style={{ backgroundColor: '#10b981' }}>
+                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                    Probado
                   </div>
                 )}
                 {sel && (
                   <div
-                    className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-white text-sm shadow-md"
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-white shadow-md"
                     style={{ backgroundColor: primaryColor }}
                   >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   </div>
                 )}
               </div>
-              <div className="p-3">
-                <p className="font-semibold text-sm text-gray-900 leading-tight">{p.name}</p>
-                {p.category && (
-                  <span className="inline-block mt-1 text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full capitalize">
-                    {p.category}
-                  </span>
-                )}
+              <div className="px-1.5 py-1.5">
+                <p className="font-medium text-[11px] text-gray-900 leading-tight truncate">{p.name}</p>
                 {alreadyGenerated && (
-                  <p className="text-xs mt-1" style={{ color: '#10b981' }}>Ver resultado</p>
+                  <p className="text-[10px] mt-0.5 truncate" style={{ color: '#10b981' }}>Ver resultado</p>
                 )}
               </div>
             </button>
@@ -254,7 +248,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: secondaryColor }}>
+      <div className="flex items-center justify-center py-16" style={{ backgroundColor: secondaryColor }}>
         <div className="text-center">
           <div className="w-14 h-14 border-4 border-gray-200 rounded-full animate-spin mx-auto" style={{ borderTopColor: primaryColor }} />
           <p className="mt-4 text-gray-500 text-sm font-medium">Cargando el probador...</p>
@@ -266,7 +260,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   // ── Error / no encontrado ──────────────────────────────────────────────────
   if (!config) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center py-16 bg-gray-50">
         <div className="text-center p-8 max-w-sm">
           <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -286,9 +280,9 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   // ── Generating (igual para todos los layouts excepto bare) ───────────────
   if (step === 'generating' && layout !== 'bare') {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: secondaryColor }}>
+      <div className="flex flex-col" style={{ backgroundColor: secondaryColor }}>
         <BrandHeader config={config} primaryColor={primaryColor} onReset={handleReset} showReset={false} />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex items-center justify-center py-16">
           <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
         </div>
       </div>
@@ -543,7 +537,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
 
   // ── TOP-BAR layout (minimal — default) ────────────────────────────────────
   return (
-    <div className="min-h-screen" style={{ backgroundColor: secondaryColor }}>
+    <div style={{ backgroundColor: secondaryColor }}>
       <BrandHeader config={config} primaryColor={primaryColor} onReset={handleReset} showReset={step !== 'upload'} />
       <StepBar step={step} primaryColor={primaryColor} />
 

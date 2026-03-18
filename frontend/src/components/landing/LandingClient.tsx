@@ -1,12 +1,10 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import FaqSection from '@/components/landing/FaqSection';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
+import { LandingPricingCard } from '@/components/landing/LandingPricingCard';
+import { ProPlanButton, CtaProButton } from '@/components/landing/LandingCtaButtons';
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 function IconUser() {
@@ -56,22 +54,17 @@ const PRODUCTS = [
   { name: 'Bolso cuero café', price: '$210.000', bg: 'linear-gradient(135deg,#3a2a1a,#5a3a2a)', active: false },
 ];
 
-// ── Componente principal ──────────────────────────────────────────────────────
+const MINI_LANDING_FEATURES = [
+  { icon: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10', title: 'Página pública propia', desc: 'URL en pruebalo.wilkiedevs.com/tu-marca. Compártela en redes, WhatsApp o tu bio de Instagram.' },
+  { icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z', title: 'Catálogo visual', desc: 'Tus productos con foto, precio y badge. Tus clientes los ven y los prueban en segundos.' },
+  { icon: 'M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z', title: 'Probador IA integrado', desc: 'El widget de prueba virtual está embebido directamente. Sin redireccionamientos.' },
+  { icon: 'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z', title: 'WhatsApp flotante', desc: 'Botón de contacto siempre visible. Tus clientes te escriben con un clic.' },
+  { icon: 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01', title: '3 templates de diseño', desc: 'Clásico, Editorial o Moderno. Cambia el diseño desde tu dashboard cuando quieras.' },
+  { icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', title: 'Activación inmediata', desc: 'Pagas y en minutos tu página está activa. Sin esperas, sin procesos manuales.' },
+];
+
+// ── Componente principal (Server Component) ───────────────────────────────────
 export default function LandingClient() {
-  const router = useRouter();
-  const [landingPrice, setLandingPrice] = useState(650000);
-  const [landingOriginal, setLandingOriginal] = useState(900000);
-
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d?.landingPrice) setLandingPrice(d.landingPrice);
-        if (d?.landingOriginalPrice) setLandingOriginal(d.landingOriginalPrice);
-      })
-      .catch(() => {});
-  }, []);
-
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f5f2ee]">
 
@@ -80,6 +73,10 @@ export default function LandingClient() {
 
       {/* HERO */}
       <section className="bg-[#0a0a0a] px-6 md:px-8 pt-16 md:pt-20 pb-16 md:pb-20 text-center relative overflow-hidden">
+        {/* GEO: resumen extractable — qué es Lookitry */}
+        <p className="sr-only">
+          Lookitry es un probador virtual con inteligencia artificial para tiendas de ropa, accesorios y calzado en Latinoamérica. Permite a los clientes probarse prendas de forma virtual subiendo una selfie, sin necesidad de apps ni registro. Las marcas integran el widget en su tienda en menos de 10 minutos, compatible con Shopify, WooCommerce, Wix y cualquier sitio HTML.
+        </p>
         <div
           className="absolute w-[600px] h-[600px] rounded-full pointer-events-none"
           style={{ background: 'radial-gradient(circle, rgba(255,92,58,0.09) 0%, transparent 70%)', top: '-100px', left: '50%', transform: 'translateX(-50%)' }}
@@ -117,7 +114,7 @@ export default function LandingClient() {
               Ver planes <IconArrow />
             </Link>
           </div>
-          <p className="text-[12px] text-[#666]">Cancela cuando quieras</p>
+          <p className="text-[12px] text-[#666]">Requiere verificación de tarjeta · Cancela cuando quieras</p>
         </div>
       </section>
 
@@ -148,7 +145,7 @@ export default function LandingClient() {
                 {PRODUCTS.map(p => (
                   <div
                     key={p.name}
-                    className={`rounded-lg p-2 flex items-center gap-2 cursor-pointer transition-colors border ${p.active ? 'border-[#FF5C3A] bg-[#1f1814]' : 'border-[#2d2d2d] bg-[#222]'}`}
+                    className={`rounded-lg p-2 flex items-center gap-2 border ${p.active ? 'border-[#FF5C3A] bg-[#1f1814]' : 'border-[#2d2d2d] bg-[#222]'}`}
                   >
                     <div className="w-7 h-7 rounded-md flex-shrink-0" style={{ background: p.bg }} aria-hidden="true" />
                     <div>
@@ -159,12 +156,9 @@ export default function LandingClient() {
                 ))}
               </div>
             </div>
-            <button
-              className="col-span-2 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-medium py-2.5 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
-              aria-label="Generar prueba virtual de la prenda seleccionada"
-            >
+            <div className="col-span-2 bg-[#FF5C3A] text-white text-[13px] font-medium py-2.5 rounded-lg text-center" aria-label="Generar prueba virtual de la prenda seleccionada">
               Generar prueba virtual
-            </button>
+            </div>
           </div>
         </div>
       </section>
@@ -188,6 +182,10 @@ export default function LandingClient() {
       {/* PRICING */}
       <section className="bg-[#0a0a0a] py-16 md:py-20 px-6 md:px-8" aria-labelledby="pricing-heading">
         <div className="max-w-[700px] mx-auto">
+          {/* GEO: resumen extractable — precios */}
+          <p className="sr-only">
+            Lookitry ofrece dos planes mensuales: Plan Básico a $150.000 COP con 5 productos y 400 generaciones al mes, incluye 7 días de prueba gratis. Plan Pro a $250.000 COP con 15 productos y 1.200 generaciones al mes, con activación inmediata. Hay descuentos del 5%, 10% y 15% pagando 3, 6 o 12 meses respectivamente.
+          </p>
           <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Planes</p>
           <h2 id="pricing-heading" className="font-syne font-bold text-3xl text-white tracking-tight mb-10">
             Precios simples
@@ -240,12 +238,7 @@ export default function LandingClient() {
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={() => router.push('/checkout?plan=PRO&amount=250000&months=1')}
-                className="block w-full text-center py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-medium rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
-              >
-                Contratar Pro ahora
-              </button>
+              <ProPlanButton />
             </div>
           </div>
           <p className="text-[12px] text-[#666] text-center mt-4">
@@ -258,6 +251,10 @@ export default function LandingClient() {
       {/* CÓMO FUNCIONA */}
       <section className="bg-[#f5f2ee] py-16 md:py-20 px-6 md:px-8" aria-labelledby="how-it-works-heading">
         <div className="max-w-[860px] mx-auto">
+          {/* GEO: resumen extractable — cómo funciona */}
+          <p className="sr-only">
+            Lookitry funciona en tres pasos: el cliente sube una selfie desde su celular o computador, elige el producto del catálogo de la marca, y la inteligencia artificial genera en segundos una imagen realista mostrando cómo le queda la prenda. Sin apps, sin registro, sin fricción. El resultado se puede descargar y compartir directamente.
+          </p>
           <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Cómo funciona</p>
           <h2 id="how-it-works-heading" className="font-syne font-bold text-[32px] text-[#0a0a0a] tracking-tight mb-10">
             Tres pasos. Sin complicaciones.
@@ -272,13 +269,11 @@ export default function LandingClient() {
                     fill
                     className={`object-cover ${s.pos}`}
                     sizes="(max-width: 768px) 100vw, 33vw"
+                    priority={i === 0}
                     loading={i === 0 ? 'eager' : 'lazy'}
                   />
                   <div className="absolute top-3 left-3">
-                    <span
-                      className="font-syne inline-block text-white font-extrabold text-sm px-2.5 py-1 rounded-lg leading-none bg-[#FF5C3A]"
-                      aria-hidden="true"
-                    >
+                    <span className="font-syne inline-block text-white font-extrabold text-sm px-2.5 py-1 rounded-lg leading-none bg-[#FF5C3A]" aria-hidden="true">
                       {s.n}
                     </span>
                   </div>
@@ -307,7 +302,7 @@ export default function LandingClient() {
               <span className="text-[#FF5C3A]">sin pagar un diseñador</span>
             </h2>
             <p className="text-[#666] text-[15px] max-w-lg mx-auto leading-relaxed">
-              Activa tu mini-landing pública por un pago único de <strong className="text-[#0a0a0a]">${landingPrice.toLocaleString('es-CO')} COP</strong> y obtén una página profesional con probador virtual integrado, lista en minutos.
+              Activa tu mini-landing pública por un pago único y obtén una página profesional con probador virtual integrado, lista en minutos.
             </p>
           </div>
 
@@ -315,14 +310,7 @@ export default function LandingClient() {
             {/* Columna izquierda */}
             <div className="space-y-8">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { icon: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z M9 22V12h6v10', title: 'Página pública propia', desc: 'URL en pruebalo.wilkiedevs.com/tu-marca. Compártela en redes, WhatsApp o tu bio de Instagram.' },
-                  { icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z', title: 'Catálogo visual', desc: 'Tus productos con foto, precio y badge. Tus clientes los ven y los prueban en segundos.' },
-                  { icon: 'M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z', title: 'Probador IA integrado', desc: 'El widget de prueba virtual está embebido directamente. Sin redireccionamientos.' },
-                  { icon: 'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 7V5z', title: 'WhatsApp flotante', desc: 'Botón de contacto siempre visible. Tus clientes te escriben con un clic.' },
-                  { icon: 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01', title: '3 templates de diseño', desc: 'Clásico, Editorial o Moderno. Cambia el diseño desde tu dashboard cuando quieras.' },
-                  { icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', title: 'Activación inmediata', desc: 'Pagas y en minutos tu página está activa. Sin esperas, sin procesos manuales.' },
-                ].map(f => (
+                {MINI_LANDING_FEATURES.map(f => (
                   <div key={f.title} className="bg-white border border-[#e8e4df] hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-2xl p-5 flex gap-3">
                     <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: 'rgba(255,92,58,0.1)' }}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF5C3A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -362,70 +350,9 @@ export default function LandingClient() {
               </div>
             </div>
 
-            {/* Columna derecha: card de precio sticky */}
+            {/* Columna derecha: card de precio (Client Component con fetch dinámico) */}
             <div className="lg:sticky lg:top-20">
-              <div className="bg-[#0a0a0a] rounded-3xl overflow-hidden border border-[#2a2a2a]">
-                {/* Preview mockup */}
-                <div className="relative" aria-hidden="true">
-                  <div className="flex items-center gap-1.5 px-4 py-3 border-b border-[#1f1f1f]">
-                    <span className="w-2 h-2 rounded-full bg-[#ff5c5c]" />
-                    <span className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
-                    <span className="w-2 h-2 rounded-full bg-[#28c840]" />
-                    <div className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded px-3 py-1 text-[10px] text-[#444] text-center truncate ml-1">
-                      pruebalo.wilkiedevs.com/sitio/<span className="text-[#FF5C3A]">tu-marca</span>
-                    </div>
-                  </div>
-                  <div className="h-16 flex flex-col items-center justify-center gap-1" style={{ background: 'linear-gradient(135deg,#FF5C3A,#c73d1e)' }}>
-                    <div className="w-16 h-2.5 rounded-full bg-white/70" />
-                    <div className="w-24 h-1.5 rounded-full bg-white/40" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 p-3">
-                    {[0,1,2].map(i => (
-                      <div key={i} className="aspect-square rounded-xl bg-[#1a1a1a] border border-[#2a2a2a]" />
-                    ))}
-                  </div>
-                  <div className="px-3 pb-3">
-                    <div className="w-full h-8 rounded-xl bg-[#FF5C3A]/80 flex items-center justify-center">
-                      <div className="w-20 h-1.5 rounded-full bg-white/50" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Precio y CTA */}
-                <div className="px-6 py-6 border-t border-[#1f1f1f]">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[#555] text-sm line-through">${landingOriginal.toLocaleString('es-CO')} COP</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FF5C3A]/20 text-[#FF5C3A] uppercase tracking-wider">
-                      {Math.round((1 - landingPrice / landingOriginal) * 100)}% OFF
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mb-1">
-                    <span className="font-syne text-4xl font-extrabold text-white">
-                      ${landingPrice.toLocaleString('es-CO')}
-                    </span>
-                    <span className="text-[#555] text-sm">COP</span>
-                  </div>
-                  <p className="text-[12px] text-[#555] mb-5">Pago único · Sin mensualidad adicional</p>
-
-                  <ul className="space-y-2 mb-6">
-                    {['Página pública activa', 'Probador IA integrado', '3 templates incluidos', 'WhatsApp flotante', 'Activación inmediata'].map(f => (
-                      <li key={f} className="flex items-center gap-2 text-[13px] text-[#888]">
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="7" fill="rgba(255,92,58,0.15)"/><path d="M4 7l2 2 4-4" stroke="#FF5C3A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    onClick={() => router.push('/checkout?plan=LANDING')}
-                    className="w-full py-3.5 rounded-2xl text-white text-[14px] font-bold transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
-                    style={{ background: '#FF5C3A', boxShadow: '0 8px 24px rgba(255,92,58,0.35)' }}
-                  >
-                    Obtener mi mini-landing
-                  </button>
-                  <p className="text-[11px] text-[#444] text-center mt-3">Incluido al contratar cualquier plan</p>
-                </div>
-              </div>
+              <LandingPricingCard />
             </div>
           </div>
         </div>
@@ -474,12 +401,7 @@ export default function LandingClient() {
             >
               Crear cuenta gratis
             </Link>
-            <button
-              onClick={() => router.push('/checkout?plan=PRO&amount=250000&months=1')}
-              className="text-[#aaa] hover:text-white text-[15px] px-8 py-3.5 rounded-xl border border-[#333] hover:border-[#555] transition-all duration-200 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
-            >
-              Contratar Pro ahora
-            </button>
+            <CtaProButton />
           </div>
         </div>
       </section>

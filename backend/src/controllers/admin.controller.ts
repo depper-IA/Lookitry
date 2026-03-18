@@ -834,6 +834,20 @@ export const resolveFeedback = async (req: any, res: Response) => {
 };
 
 /**
+ * DELETE /api/admin/feedback/:id
+ * Elimina un feedback del RAG
+ */
+export const deleteFeedback = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    await feedbackService.deleteFeedback(id);
+    return res.status(200).json({ message: 'Feedback eliminado del RAG' });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+  }
+};
+
+/**
  * GET /api/admin/feedback/count-unresolved
  * Conteo de feedbacks sin resolver (para badge en sidebar)
  */

@@ -6,147 +6,28 @@ import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 
 const ARTICLES = [
-  {
-    id: 'art1',
-    title: 'Artículo 1. Identificación del prestador',
-    content: `Lookitry es una plataforma de probador virtual con inteligencia artificial operada por Wilkie Devs SAS, empresa constituida bajo las leyes de la República de Colombia. Para efectos de estos términos, "Lookitry", "nosotros" o "la plataforma" hacen referencia a dicha entidad.
-
-Correo de contacto: info@pruebalo.wilkiedevs.com
-WhatsApp: +57 310 543 6281`,
-  },
-  {
-    id: 'art2',
-    title: 'Artículo 2. Aceptación de los términos',
-    content: `El acceso y uso de la plataforma Lookitry implica la aceptación plena y sin reservas de los presentes Términos y Condiciones. Si no está de acuerdo con alguna de las disposiciones aquí contenidas, debe abstenerse de utilizar el servicio.
-
-Estos términos se rigen por la legislación colombiana, en particular por la Ley 527 de 1999 (comercio electrónico), la Ley 1480 de 2011 (Estatuto del Consumidor) y la Ley 1581 de 2012 (protección de datos personales).`,
-  },
-  {
-    id: 'art3',
-    title: 'Artículo 3. Descripción del servicio',
-    content: `Lookitry ofrece un widget de probador virtual con inteligencia artificial que permite a los usuarios finales visualizar prendas, accesorios y calzado sobre su propia imagen antes de realizar una compra. El servicio se presta bajo modalidad SaaS (Software as a Service) a marcas y tiendas en Latinoamérica.
-
-Los planes disponibles son:
-- Plan Trial: 7 días gratuitos con funcionalidades limitadas.
-- Plan Básico: hasta 5 productos y 400 generaciones por mes.
-- Plan Pro: hasta 15 productos y 1.200 generaciones por mes.
-- Mini-landing: página pública con probador integrado, pago único.`,
-  },
-  {
-    id: 'art4',
-    title: 'Artículo 4. Registro y cuenta de usuario',
-    content: `Para acceder al servicio, el usuario debe crear una cuenta proporcionando información veraz, completa y actualizada. El usuario es responsable de mantener la confidencialidad de sus credenciales de acceso y de todas las actividades realizadas desde su cuenta.
-
-Lookitry se reserva el derecho de suspender o cancelar cuentas que incumplan estos términos, que proporcionen información falsa o que realicen actividades fraudulentas o contrarias a la ley.`,
-  },
-  {
-    id: 'art5',
-    title: 'Artículo 5. Planes, precios y facturación',
-    content: `Los precios de los planes están expresados en pesos colombianos (COP) e incluyen IVA cuando aplique. Los planes de suscripción se cobran de forma anticipada por el período seleccionado (1, 3, 6 o 12 meses).
-
-El plan Mini-landing corresponde a un pago único no recurrente. Los precios pueden variar y serán informados antes de completar cualquier transacción. Los descuentos por período (5%, 10%, 15%) se aplican automáticamente al seleccionar planes multimensuales.`,
-  },
-  {
-    id: 'art6',
-    title: 'Artículo 6. Medios de pago',
-    content: `Los pagos se procesan a través de Wompi, pasarela de pagos certificada en Colombia. Se aceptan tarjetas débito y crédito, PSE y Nequi. Lookitry no almacena datos de tarjetas ni información financiera sensible del usuario.
-
-También se ofrece la posibilidad de coordinar el pago de forma manual a través de WhatsApp o correo electrónico, sujeto a confirmación por parte del equipo de Lookitry.`,
-  },
-  {
-    id: 'art7',
-    title: 'Artículo 7. Derecho de retracto (Art. 47, Ley 1480 de 2011)',
-    content: `De conformidad con el Artículo 47 de la Ley 1480 de 2011 (Estatuto del Consumidor de Colombia), el consumidor tiene derecho a retractarse de una compra realizada a través de medios electrónicos dentro de los cinco (5) días hábiles siguientes a la fecha de la transacción o a la entrega del bien o servicio, lo que ocurra después.
-
-Para ejercer este derecho, el usuario debe comunicarse con nosotros a través de info@pruebalo.wilkiedevs.com o al WhatsApp +57 310 543 6281, indicando el número de transacción y la solicitud de retracto.
-
-Excepciones: El derecho de retracto no aplica cuando el servicio digital ha sido completamente ejecutado con el consentimiento previo y expreso del consumidor, ni cuando el usuario ha hecho uso efectivo del servicio (generaciones de IA realizadas, mini-landing activada y publicada).
-
-El reembolso, cuando proceda, se realizará dentro de los treinta (30) días calendario siguientes a la aceptación de la solicitud, a través del mismo medio de pago utilizado.`,
-  },
-  {
-    id: 'art8',
-    title: 'Artículo 8. Política de reembolsos',
-    content: `Fuera del período de retracto legal, no se realizan reembolsos por períodos de suscripción ya iniciados. En caso de falla técnica imputable a Lookitry que impida el uso del servicio por más de 72 horas continuas, el usuario podrá solicitar una extensión equivalente del período afectado o un crédito proporcional.
-
-Las solicitudes de reembolso deben enviarse a info@pruebalo.wilkiedevs.com con el asunto "Solicitud de reembolso" y serán evaluadas en un plazo máximo de 10 días hábiles.`,
-  },
-  {
-    id: 'art9',
-    title: 'Artículo 9. Uso aceptable del servicio',
-    content: `El usuario se compromete a utilizar el servicio de forma lícita y conforme a estos términos. Está prohibido:
-
-- Usar el servicio para generar contenido ilegal, ofensivo, discriminatorio o que vulnere derechos de terceros.
-- Intentar acceder a sistemas, cuentas o datos de otros usuarios sin autorización.
-- Realizar ingeniería inversa, descompilar o intentar extraer el código fuente de la plataforma.
-- Revender, sublicenciar o transferir el acceso al servicio sin autorización expresa de Lookitry.
-- Superar los límites de generaciones establecidos en el plan contratado mediante automatización o scripts.`,
-  },
-  {
-    id: 'art10',
-    title: 'Artículo 10. Propiedad intelectual',
-    content: `Todos los derechos de propiedad intelectual sobre la plataforma Lookitry, incluyendo su código, diseño, marca, logotipos y tecnología de inteligencia artificial, son propiedad exclusiva de Wilkie Devs SAS o de sus licenciantes.
-
-El usuario conserva todos los derechos sobre las imágenes que sube a la plataforma. Al usar el servicio, el usuario otorga a Lookitry una licencia limitada, no exclusiva y revocable para procesar dichas imágenes con el único fin de prestar el servicio contratado. Las imágenes no serán compartidas con terceros ni utilizadas para entrenar modelos de IA sin consentimiento expreso.`,
-  },
-  {
-    id: 'art11',
-    title: 'Artículo 11. Tratamiento de datos personales (Ley 1581 de 2012)',
-    content: `Lookitry trata los datos personales de sus usuarios de conformidad con la Ley 1581 de 2012 y el Decreto 1377 de 2013. Los datos recopilados (nombre, correo electrónico, imágenes) se utilizan exclusivamente para la prestación del servicio, la gestión de la cuenta y el envío de comunicaciones relacionadas con el servicio.
-
-El usuario tiene derecho a conocer, actualizar, rectificar y suprimir sus datos personales. Para ejercer estos derechos, puede escribir a info@pruebalo.wilkiedevs.com con el asunto "Derechos ARCO".
-
-Los datos no serán vendidos ni cedidos a terceros con fines comerciales. Las imágenes procesadas por el motor de IA se eliminan automáticamente tras la generación del resultado.`,
-  },
-  {
-    id: 'art12',
-    title: 'Artículo 12. Limitación de responsabilidad',
-    content: `Lookitry no garantiza que el servicio esté disponible de forma ininterrumpida o libre de errores. La plataforma se ofrece "tal como está" y "según disponibilidad". En ningún caso Lookitry será responsable por daños indirectos, incidentales, especiales o consecuentes derivados del uso o la imposibilidad de uso del servicio.
-
-La responsabilidad máxima de Lookitry frente al usuario no excederá el valor pagado por el plan en el mes en que ocurrió el daño.`,
-  },
-  {
-    id: 'art13',
-    title: 'Artículo 13. Modificaciones al servicio y a los términos',
-    content: `Lookitry se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento. Los cambios serán notificados al usuario mediante correo electrónico o mediante aviso visible en la plataforma con al menos 15 días de anticipación. El uso continuado del servicio tras la notificación implica la aceptación de los nuevos términos.
-
-Lookitry también puede modificar, suspender o descontinuar funcionalidades del servicio, notificando al usuario con la mayor anticipación posible.`,
-  },
-  {
-    id: 'art14',
-    title: 'Artículo 14. Ley aplicable y jurisdicción',
-    content: `Estos Términos y Condiciones se rigen por las leyes de la República de Colombia. Cualquier controversia derivada de su interpretación o ejecución será resuelta, en primera instancia, mediante negociación directa entre las partes. De no llegarse a un acuerdo, las partes se someten a la jurisdicción de los jueces y tribunales competentes de la ciudad de Bogotá D.C., Colombia.
-
-Para asuntos de consumo, el usuario también puede acudir a la Superintendencia de Industria y Comercio (SIC) a través de www.sic.gov.co.`,
-  },
+  { id: 'art1', title: 'Articulo 1. Identificacion del prestador', content: 'Lookitry es una plataforma de probador virtual con inteligencia artificial operada por Wilkie Devs SAS, empresa constituida bajo las leyes de la Republica de Colombia.\n\nCorreo: info@pruebalo.wilkiedevs.com\nWhatsApp: +57 310 543 6281' },
+  { id: 'art2', title: 'Articulo 2. Aceptacion de los terminos', content: 'El acceso y uso de la plataforma Lookitry implica la aceptacion plena de los presentes Terminos y Condiciones.\n\nEstos terminos se rigen por la legislacion colombiana: Ley 527 de 1999, Ley 1480 de 2011 y Ley 1581 de 2012.' },
+  { id: 'art3', title: 'Articulo 3. Descripcion del servicio', content: 'Lookitry ofrece un widget de probador virtual con IA para visualizar prendas, accesorios y calzado bajo modalidad SaaS.\n\nPlanes: Trial (7 dias), Basico (5 productos, 400 gen/mes), Pro (15 productos, 1.200 gen/mes), Mini-landing (pago unico).' },
+  { id: 'art4', title: 'Articulo 4. Registro y cuenta de usuario', content: 'El usuario debe crear una cuenta con informacion veraz. Es responsable de mantener la confidencialidad de sus credenciales.\n\nLookitry puede suspender cuentas que incumplan estos terminos o realicen actividades fraudulentas.' },
+  { id: 'art5', title: 'Articulo 5. Planes, precios y facturacion', content: 'Los precios estan en pesos colombianos (COP). Los planes se cobran de forma anticipada por el periodo seleccionado (1, 3, 6 o 12 meses).\n\nDescuentos por periodo: 5% (3 meses), 10% (6 meses), 15% (12 meses). Mini-landing es pago unico.' },
+  { id: 'art6', title: 'Articulo 6. Medios de pago', content: 'Los pagos se procesan a traves de Wompi, pasarela certificada en Colombia. Se aceptan tarjetas debito y credito, PSE y Nequi. Lookitry no almacena datos de tarjetas.\n\nTambien se puede coordinar pago manual via WhatsApp o correo.' },
+  { id: 'art7', title: 'Articulo 7. Derecho de retracto (Art. 47, Ley 1480 de 2011)', content: 'El consumidor puede retractarse dentro de los 5 dias habiles siguientes a la transaccion.\n\nContacto: info@pruebalo.wilkiedevs.com o WhatsApp +57 310 543 6281.\n\nNo aplica cuando el servicio fue ejecutado con consentimiento expreso. El reembolso se realiza en 30 dias por el mismo medio de pago.' },
+  { id: 'art8', title: 'Articulo 8. Politica de reembolsos', content: 'Fuera del periodo de retracto, no se realizan reembolsos por periodos ya iniciados. En caso de falla tecnica de Lookitry por mas de 72 horas continuas, el usuario puede solicitar extension o credito proporcional.\n\nSolicitudes a info@pruebalo.wilkiedevs.com con asunto "Solicitud de reembolso". Plazo: 10 dias habiles.' },
+  { id: 'art9', title: 'Articulo 9. Uso aceptable del servicio', content: 'El usuario se compromete a usar el servicio de forma licita. Esta prohibido:\n\n- Generar contenido ilegal, ofensivo o discriminatorio\n- Acceder a cuentas de otros usuarios sin autorizacion\n- Realizar ingenieria inversa o extraer el codigo fuente\n- Revender o sublicenciar el acceso sin autorizacion\n- Superar limites de generaciones mediante automatizacion' },
+  { id: 'art10', title: 'Articulo 10. Propiedad intelectual', content: 'Todos los derechos sobre Lookitry son propiedad de Wilkie Devs SAS o sus licenciantes.\n\nEl usuario conserva los derechos sobre sus imagenes. Otorga a Lookitry una licencia limitada y revocable para procesarlas con el unico fin de prestar el servicio. Las imagenes no se compartiran con terceros ni se usaran para entrenar modelos de IA.' },
+  { id: 'art11', title: 'Articulo 11. Tratamiento de datos personales (Ley 1581 de 2012)', content: 'Lookitry trata los datos conforme a la Ley 1581 de 2012 y el Decreto 1377 de 2013. Los datos se usan exclusivamente para prestar el servicio.\n\nDerechos ARCO: info@pruebalo.wilkiedevs.com con asunto "Derechos ARCO".\n\nLas imagenes procesadas se eliminan automaticamente tras la generacion.' },
+  { id: 'art12', title: 'Articulo 12. Limitacion de responsabilidad', content: 'Lookitry no garantiza disponibilidad ininterrumpida. La plataforma se ofrece tal como esta. No sera responsable por danos indirectos o consecuentes.\n\nLa responsabilidad maxima no excedera el valor pagado por el plan en el mes en que ocurrio el dano.' },
+  { id: 'art13', title: 'Articulo 13. Modificaciones al servicio y a los terminos', content: 'Lookitry puede modificar estos terminos en cualquier momento. Los cambios se notificaran con al menos 15 dias de anticipacion por correo o aviso en la plataforma. El uso continuado implica aceptacion.' },
+  { id: 'art14', title: 'Articulo 14. Ley aplicable y jurisdiccion', content: 'Estos terminos se rigen por las leyes de Colombia. Las controversias se resuelven primero por negociacion directa; de no haber acuerdo, ante los jueces de Bogota D.C.\n\nPara asuntos de consumo: Superintendencia de Industria y Comercio (SIC) en www.sic.gov.co.' },
 ];
-
-function IconDoc() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF5C3A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-      <polyline points="10 9 9 9 8 9" />
-    </svg>
-  );
-}
-
-function IconShield() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-    </svg>
-  );
-}
 
 function IconChevron({ open }: { open: boolean }) {
   return (
     <svg
       width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-      className={`transition-transform duration-200 flex-shrink-0 ${open ? 'rotate-180' : ''}`}
+      style={{ transition: 'transform 0.2s ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }}
       aria-hidden="true"
     >
       <polyline points="6 9 12 15 18 9" />
@@ -156,119 +37,98 @@ function IconChevron({ open }: { open: boolean }) {
 
 export default function TerminosClient() {
   const [activeId, setActiveId] = useState<string | null>(null);
-
   const toggle = (id: string) => setActiveId(prev => (prev === id ? null : id));
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a]">
-
-      {/* NAV */}
+    <>
       <LandingNav />
+      <main className="min-h-screen bg-[#f5f2ee]">
+        <div className="bg-[#0a0a0a] px-6 md:px-8 py-14 md:py-20">
+          <div className="max-w-3xl mx-auto">
+            <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Legal</p>
+            <h1 className="font-syne font-extrabold text-3xl md:text-4xl text-white tracking-tight mb-4">
+              Terminos y Condiciones
+            </h1>
+            <p className="text-[#666] text-sm">
+              Ultima actualizacion: marzo 2026 · Ley 1480 de 2011 · Ley 1581 de 2012 · Colombia
+            </p>
+          </div>
+        </div>
 
-      {/* HERO */}
-      <section className="bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 md:px-8 py-14 md:py-20">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,92,58,0.12)' }}>
-              <IconDoc />
+        <div className="px-6 md:px-8 py-12 md:py-16">
+          <div className="max-w-3xl mx-auto space-y-3">
+
+            <div className="bg-white border border-[#e8e4df] rounded-2xl p-6 mb-8">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-[#FF5C3A] mb-4">Indice</p>
+              <ol className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+                {ARTICLES.map((a, i) => (
+                  <li key={a.id}>
+                    <button
+                      onClick={() => {
+                        setActiveId(a.id);
+                        setTimeout(() => document.getElementById(a.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+                      }}
+                      className="text-left text-[12px] text-[#888] hover:text-[#FF5C3A] transition-colors leading-snug py-0.5 w-full"
+                    >
+                      <span className="text-[#bbb] mr-1.5">{String(i + 1).padStart(2, '0')}.</span>
+                      {a.title.replace(/^Articulo \d+\. /, '')}
+                    </button>
+                  </li>
+                ))}
+              </ol>
             </div>
-            <span className="text-[11px] font-semibold tracking-[.12em] uppercase text-[#FF5C3A]">Documento legal</span>
-          </div>
-          <h1 className="font-syne font-extrabold text-3xl md:text-4xl text-white tracking-tight mb-4">
-            Términos y Condiciones
-          </h1>
-          <p className="text-[#777] text-[14px] leading-relaxed max-w-xl">
-            Última actualización: marzo de 2026. Estos términos regulan el uso de la plataforma Lookitry y son de obligatorio cumplimiento para todos los usuarios.
-          </p>
-          <div className="flex items-center gap-2 mt-5 text-[12px] text-[#555]">
-            <IconShield />
-            Ley 1480 de 2011 · Ley 1581 de 2012 · Ley 527 de 1999 — Colombia
-          </div>
-        </div>
-      </section>
 
-      {/* CONTENIDO */}
-      <div className="max-w-3xl mx-auto px-6 md:px-8 py-12 md:py-16">
-
-        {/* Índice */}
-        <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-5 mb-10">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-[#FF5C3A] mb-4">Índice</p>
-          <ol className="space-y-1.5">
-            {ARTICLES.map((a, i) => (
-              <li key={a.id}>
-                <a
-                  href={`#${a.id}`}
-                  className="text-[13px] text-[#888] hover:text-[#FF5C3A] transition-colors leading-snug block py-0.5"
-                  onClick={e => { e.preventDefault(); setActiveId(a.id); document.getElementById(a.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-                >
-                  <span className="text-[#444] mr-2">{String(i + 1).padStart(2, '0')}.</span>
-                  {a.title.replace(/^Artículo \d+\. /, '')}
-                </a>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        {/* Artículos */}
-        <div className="space-y-3">
-          {ARTICLES.map(a => (
-            <div
-              key={a.id}
-              id={a.id}
-              className="bg-[#141414] border border-[#2a2a2a] rounded-xl overflow-hidden scroll-mt-20"
-            >
-              <button
-                onClick={() => toggle(a.id)}
-                className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-[#1a1a1a] transition-colors"
-                aria-expanded={activeId === a.id}
-              >
-                <span className="font-syne font-semibold text-[14px] text-white leading-snug">
-                  {a.title}
-                </span>
-                <IconChevron open={activeId === a.id} />
-              </button>
-              {activeId === a.id && (
-                <div className="px-5 pb-5 border-t border-[#1f1f1f]">
-                  <div className="pt-4 text-[13px] text-[#999] leading-relaxed whitespace-pre-line">
-                    {a.content}
+            {ARTICLES.map(a => {
+              const isOpen = activeId === a.id;
+              return (
+                <div key={a.id} id={a.id} className="bg-white border border-[#e8e4df] rounded-2xl overflow-hidden scroll-mt-24">
+                  <button
+                    onClick={() => toggle(a.id)}
+                    className="w-full flex items-center justify-between gap-3 px-6 py-5 text-left hover:bg-[#faf8f5] transition-colors"
+                    aria-expanded={isOpen}
+                  >
+                    <span className="font-syne font-semibold text-[14px] text-[#0a0a0a] leading-snug">{a.title}</span>
+                    <span style={{ color: isOpen ? '#FF5C3A' : '#bbb' }}>
+                      <IconChevron open={isOpen} />
+                    </span>
+                  </button>
+                  <div style={{ maxHeight: isOpen ? '600px' : '0px', overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
+                    <div className="px-6 pb-6 border-t border-[#f0ece8]">
+                      <p className="pt-4 text-[13px] text-[#666] leading-relaxed whitespace-pre-line">{a.content}</p>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
+              );
+            })}
 
-        {/* Aviso de privacidad antes del pago */}
-        <div className="mt-10 bg-[#141414] border border-[#2a2a2a] rounded-xl p-5">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'rgba(255,92,58,0.12)' }}>
-              <IconShield />
+            <div className="bg-white border border-[#e8e4df] rounded-2xl p-6 mt-2">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'rgba(255,92,58,0.1)' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF5C3A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-syne font-bold text-[13px] text-[#0a0a0a] mb-1">Aviso de privacidad</p>
+                  <p className="text-[12px] text-[#666] leading-relaxed">
+                    Al realizar un pago en Lookitry, aceptas que tus datos personales sean tratados conforme a nuestra{' '}
+                    <Link href="/politicas-privacidad" className="text-[#FF5C3A] hover:underline">Politica de Privacidad</Link>
+                    , de acuerdo con la Ley 1581 de 2012. Los datos de pago son procesados directamente por Wompi.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="font-syne font-semibold text-[14px] text-white mb-1">
-                Aviso de privacidad
-              </p>
-              <p className="text-[12px] text-[#777] leading-relaxed">
-                Al realizar un pago en Lookitry, aceptas que tus datos personales (nombre, correo, información de pago) sean tratados conforme a nuestra política de privacidad descrita en el Artículo 11, de acuerdo con la Ley 1581 de 2012. Los datos de pago son procesados directamente por Wompi y no son almacenados por Lookitry.
+
+            <div className="text-center pt-4">
+              <p className="text-[12px] text-[#999]">
+                Preguntas:{' '}
+                <a href="mailto:info@pruebalo.wilkiedevs.com" className="text-[#FF5C3A] hover:underline">info@pruebalo.wilkiedevs.com</a>
               </p>
             </div>
           </div>
         </div>
-
-        {/* Contacto */}
-        <div className="mt-6 text-center">
-          <p className="text-[12px] text-[#555]">
-            ¿Tienes preguntas sobre estos términos?{' '}
-            <a href="mailto:info@pruebalo.wilkiedevs.com" className="text-[#FF5C3A] hover:underline">
-              info@pruebalo.wilkiedevs.com
-            </a>
-          </p>
-        </div>
-      </div>
-
-      {/* FOOTER */}
+      </main>
       <LandingFooter />
-
-    </main>
+    </>
   );
 }

@@ -1,0 +1,127 @@
+{
+  "name": "Lookitry - Feedback Embedding (RAG)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "feedback-embedding",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-feedback",
+      "name": "Webhook - Recibir feedback",
+      "webhookId": "feedback-embedding",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 304],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body ?? $input.first().json;\n\nconst errorType = body.error_type ?? 'other';\nconst productCategory = body.product_category ?? 'desconocido';\nconst description = body.description ?? '';\nconst promptUsed = (body.prompt_used ?? '').slice(0, 800);\n\nconst text = `[${errorType}] Producto: ${productCategory}. Error: ${description}. Prompt original: ${promptUsed}`;\n\nreturn [{\n  json: {\n    feedback_id: body.feedback_id,\n    error_type: errorType,\n    product_category: productCategory,\n    description,\n    prompt_used: promptUsed,\n    embedding_text: text\n  }\n}];"
+      },
+      "id": "build-text",
+      "name": "Construir texto para embedding",
+      "type": "n8n-nodes-base.code",
+      "position": [464, 304],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.embedding_text;\nconst feedbackId = $input.first().json.feedback_id;\n\nreturn [{\n  json: {\n    feedback_id: feedbackId,\n    embedding_text: text,\n    ...$input.first().json\n  }\n}];"
+      },
+      "id": "prepare-embedding",
+      "name": "Preparar para embedding",
+      "type": "n8n-nodes-base.code",
+      "position": [688, 304],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      { \"text\": {{ JSON.stringify($json.embedding_text) }} }\n    ]\n  },\n  \"taskType\": \"RETRIEVAL_DOCUMENT\",\n  \"outputDimensionality\": 768\n}",
+        "options": {}
+      },
+      "id": "gemini-embedding",
+      "name": "Gemini - Generar embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [912, 304],
+      "typeVersion": 4.2,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ReWa7OVkhJwwgxXG",
+          "name": "Info.sam API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\n\nconst embedding = response.embedding?.values ?? [];\n\nif (!Array.isArray(embedding) || embedding.length === 0) {\n  throw new Error(`Gemini no devolvio embedding valido. Respuesta: ${JSON.stringify(response).slice(0, 400)}`);\n}\n\nif (embedding.length !== 768) {\n  throw new Error(`Dimension incorrecta: esperadas 768, recibidas ${embedding.length}`);\n}\n\nconst feedbackId = $('Construir texto para embedding').first().json.feedback_id;\n\nif (!feedbackId) {\n  throw new Error('feedback_id no encontrado en el contexto');\n}\n\nreturn [{\n  json: {\n    feedback_id: feedbackId,\n    embedding,\n    dimensions: embedding.length\n  }\n}];"
+      },
+      "id": "extract-embedding",
+      "name": "Extraer y validar embedding",
+      "type": "n8n-nodes-base.code",
+      "position": [1120, 304],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://vkdooutklowctuudjnkl.supabase.co/rest/v1/rpc/update_feedback_embedding",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "***REMOVED-SECRET***"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer ***REMOVED-SECRET***"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ p_id: $json.feedback_id, p_embedding: $json.embedding }) }}",
+        "options": {}
+      },
+      "id": "supabase-update",
+      "name": "Supabase - Guardar embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [1344, 304],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, feedback_id: $('Extraer y validar embedding').first().json.feedback_id, dimensions: $('Extraer y validar embedding').first().json.dimensions } }}",
+        "options": {}
+      },
+      "id": "respond-ok",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1568, 304],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Webhook - Recibir feedback": { "main": [[{ "node": "Construir texto para embedding", "type": "main", "index": 0 }]] },
+    "Construir texto para embedding": { "main": [[{ "node": "Preparar para embedding", "type": "main", "index": 0 }]] },
+    "Preparar para embedding": { "main": [[{ "node": "Gemini - Generar embedding", "type": "main", "index": 0 }]] },
+    "Gemini - Generar embedding": { "main": [[{ "node": "Extraer y validar embedding", "type": "main", "index": 0 }]] },
+    "Extraer y validar embedding": { "main": [[{ "node": "Supabase - Guardar embedding", "type": "main", "index": 0 }]] },
+    "Supabase - Guardar embedding": { "main": [[{ "node": "Responder OK", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

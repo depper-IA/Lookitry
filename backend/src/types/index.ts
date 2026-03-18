@@ -56,6 +56,8 @@ export interface RegisterBrandDto {
   password: string;
   name: string;
   slug: string;
+  contact_name: string;  // Nombre completo del responsable — obligatorio
+  phone?: string;        // Teléfono — opcional
 }
 
 export interface LoginDto {
