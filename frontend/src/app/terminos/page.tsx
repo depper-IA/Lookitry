@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import Image from 'next/image';
+import { LandingNav } from '@/components/landing/LandingNav';
+import { LandingFooter } from '@/components/landing/LandingFooter';
 
 const ARTICLES = [
   {
@@ -162,17 +163,7 @@ export default function TerminosPage() {
     <main style={{ fontFamily: 'DM Sans, sans-serif' }} className="min-h-screen bg-[#0a0a0a]">
 
       {/* NAV */}
-      <nav className="bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-          <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base text-white tracking-tight">
-            Look<span className="text-[#FF5C3A]">itry</span>
-          </span>
-        </Link>
-        <Link href="/" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors">
-          Volver al inicio
-        </Link>
-      </nav>
+      <LandingNav />
 
       {/* HERO */}
       <section className="bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 md:px-8 py-14 md:py-20">
@@ -276,21 +267,7 @@ export default function TerminosPage() {
       </div>
 
       {/* FOOTER */}
-      <footer className="bg-[#050505] border-t border-[#1a1a1a] px-6 md:px-8 py-7">
-        <div className="max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain h-6 w-auto" />
-            <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base leading-none text-white tracking-tight">
-              Look<span className="text-[#FF5C3A]">itry</span>
-            </span>
-          </Link>
-          <div className="flex items-center gap-4 flex-wrap justify-center">
-            <Link href="/" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors">Inicio</Link>
-            <Link href="/planes" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors">Planes</Link>
-            <Link href="/terminos" className="text-[12px] text-[#FF5C3A]">Términos y Condiciones</Link>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
 
     </main>
   );

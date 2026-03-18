@@ -35,7 +35,7 @@ const adminNav = [
     items: [
       { href: '/admin/notifications',  label: 'Notificaciones',  icon: BellIcon },
       { href: '/admin/feedback',       label: 'Feedback IA',     icon: FeedbackIcon },
-      { href: '/admin/trial-campaign', label: 'Configuración',   icon: TrialIcon },
+      { href: '/admin/configuracion', label: 'Configuración',   icon: TrialIcon },
       { href: '/admin/admins',         label: 'Administradores', icon: AdminsIcon },
     ],
   },
