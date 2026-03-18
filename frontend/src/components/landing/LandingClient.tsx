@@ -269,6 +269,7 @@ export default function LandingClient() {
                     fill
                     className={`object-cover ${s.pos}`}
                     sizes="(max-width: 768px) 100vw, 33vw"
+                    priority={i === 0}
                     loading={i === 0 ? 'eager' : 'lazy'}
                   />
                   <div className="absolute top-3 left-3">
