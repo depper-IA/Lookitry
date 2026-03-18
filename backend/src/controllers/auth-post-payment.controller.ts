@@ -38,7 +38,7 @@ export async function registerPostPayment(req: Request, res: Response) {
       name,
       slug,
       email,
-      phone: phone || null,
+      phone: phone || undefined,
       password,
       ip: 'post-payment',
       fingerprint: null,
