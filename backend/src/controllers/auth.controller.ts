@@ -22,8 +22,10 @@ export class AuthController {
       }
 
       // Verificar Turnstile si está habilitado
+      // Se omite en el flujo post-pago (cuando viene con referencia de pago Wompi)
       const turnstileEnabled = process.env.TURNSTILE_ENABLED === 'true';
-      if (turnstileEnabled) {
+      const isPostPayment = !!req.body.ref;
+      if (turnstileEnabled && !isPostPayment) {
         const token = req.body.turnstileToken;
         if (!token) {
           return res.status(400).json({ error: 'CAPTCHA_REQUIRED', message: 'Verificación de seguridad requerida' });
