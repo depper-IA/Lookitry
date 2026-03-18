@@ -269,7 +269,23 @@ export default function RegisterForm() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Nombre de la marca */}
+            {/* 1. Nombre y apellido del responsable */}
+            <div>
+              <label className="block text-[13px] font-medium text-[#888] mb-1.5">
+                Nombre y apellido
+              </label>
+              <input
+                name="contact_name"
+                value={form.contact_name}
+                onChange={handleChange}
+                required
+                minLength={3}
+                placeholder="Juan Pérez"
+                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+              />
+            </div>
+
+            {/* 2. Nombre de la marca */}
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">
                 Nombre de la marca
@@ -284,7 +300,7 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* Slug */}
+            {/* 3. Slug */}
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">
                 Slug (URL del probador)
@@ -304,9 +320,9 @@ export default function RegisterForm() {
               </div>
             </div>
 
-            {/* Email */}
+            {/* 4. Correo electrónico */}
             <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">Email</label>
+              <label className="block text-[13px] font-medium text-[#888] mb-1.5">Correo electrónico</label>
               <input
                 name="email"
                 type="email"
@@ -318,23 +334,7 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* Nombre completo del responsable */}
-            <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">
-                Nombre completo del responsable
-              </label>
-              <input
-                name="contact_name"
-                value={form.contact_name}
-                onChange={handleChange}
-                required
-                minLength={3}
-                placeholder="Juan Pérez"
-                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
-              />
-            </div>
-
-            {/* Teléfono (opcional) */}
+            {/* 5. Teléfono (opcional) */}
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">
                 Teléfono <span className="text-[#555]">(opcional)</span>
@@ -349,7 +349,7 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* Contraseña */}
+            {/* 6. Contraseña */}
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">Contraseña</label>
               <div className="relative">
