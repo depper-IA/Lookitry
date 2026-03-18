@@ -17,6 +17,25 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Todos los campos son requeridos' });
       }
 
+      // Verificar Turnstile si está habilitado
+      const turnstileEnabled = process.env.TURNSTILE_ENABLED === 'true';
+      if (turnstileEnabled) {
+        const token = req.body.turnstileToken;
+        if (!token) {
+          return res.status(400).json({ error: 'CAPTCHA_REQUIRED', message: 'Verificación de seguridad requerida' });
+        }
+        const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || '';
+        const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret: process.env.TURNSTILE_SECRET_KEY, response: token, remoteip: ip }),
+        });
+        const verifyData = await verifyRes.json() as { success: boolean };
+        if (!verifyData.success) {
+          return res.status(400).json({ error: 'CAPTCHA_FAILED', message: 'Verificación de seguridad fallida. Intenta de nuevo.' });
+        }
+      }
+
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(data.email)) {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Formato de email inválido' });
