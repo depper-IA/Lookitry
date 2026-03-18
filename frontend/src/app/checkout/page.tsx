@@ -252,6 +252,16 @@ function CheckoutContent() {
 
       const { checkoutUrl } = await res.json();
       if (!checkoutUrl) throw new Error('No se recibió la URL de pago');
+
+      // Incrementar uses_count del cupón antes de redirigir (fire-and-forget)
+      if (appliedCoupon?.id) {
+        fetch('/api/coupons/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coupon_id: appliedCoupon.id }),
+        }).catch(() => {}); // No bloquear el redirect si falla
+      }
+
       window.location.href = checkoutUrl;
     } catch (err: any) {
       setError(err.message || 'Error al conectar con el servidor de pagos');
