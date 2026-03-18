@@ -34,9 +34,9 @@ function IconCheckSmall() {
 
 // ── Datos estáticos ───────────────────────────────────────────────────────────
 const STEPS = [
-  { n: '01', title: 'Sube tu foto', desc: 'El cliente toma una selfie o sube una imagen desde su celular o computador.', img: '/steps/paso-1.webp', alt: 'Cliente subiendo una selfie al probador virtual' },
-  { n: '02', title: 'Elige el producto', desc: 'Selecciona la prenda, accesorio o calzado del catálogo de tu marca.', img: '/steps/paso-2.webp', alt: 'Selección de producto en el catálogo del probador virtual' },
-  { n: '03', title: 'Ve el resultado', desc: 'La IA genera la imagen en segundos. El cliente puede descargarla y compartirla.', img: '/steps/paso-3.webp', alt: 'Resultado generado por IA del probador virtual de ropa' },
+  { n: '01', title: 'Sube tu foto', desc: 'El cliente toma una selfie o sube una imagen desde su celular o computador.', img: '/steps/paso-1.webp', alt: 'Cliente subiendo una selfie al probador virtual', pos: 'object-top' },
+  { n: '02', title: 'Elige el producto', desc: 'Selecciona la prenda, accesorio o calzado del catálogo de tu marca.', img: '/steps/paso-2.webp', alt: 'Selección de producto en el catálogo del probador virtual', pos: 'object-center' },
+  { n: '03', title: 'Ve el resultado', desc: 'La IA genera la imagen en segundos. El cliente puede descargarla y compartirla.', img: '/steps/paso-3.webp', alt: 'Resultado generado por IA del probador virtual de ropa', pos: 'object-top' },
 ];
 
 const TESTIMONIALS = [
@@ -290,12 +290,12 @@ export default function LandingClient() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {STEPS.map((s, i) => (
               <div key={s.n} className="bg-white border border-[#e8e4df] rounded-2xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-                <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#f0ece8]">
+                <div className="relative w-full aspect-[3/4] overflow-hidden bg-[#f0ece8]">
                   <Image
                     src={s.img}
                     alt={s.alt}
                     fill
-                    className="object-cover"
+                    className={`object-cover ${s.pos}`}
                     sizes="(max-width: 768px) 100vw, 33vw"
                     loading={i === 0 ? 'eager' : 'lazy'}
                   />
