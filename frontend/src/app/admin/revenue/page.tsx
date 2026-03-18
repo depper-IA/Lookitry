@@ -19,9 +19,16 @@ interface RevenueStats {
   };
 }
 interface CostsConfig {
-  costo_vps_cop: number; costo_dominio_cop_mensual: number; costo_openrouter_por_gen_cop: number;
+  costo_vps_cop: number;
+  costo_dominio_cop_mensual: number;
+  costo_openrouter_por_gen_cop: number;
 }
 interface MetaConfig { meta_mensual_cop: number }
+interface PricingMeta {
+  basic_precio: number;
+  pro_precio: number;
+  landing_precio: number;
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -43,9 +50,14 @@ function KpiCard({ label, value, sub, color }: { label: string; value: string; s
   );
 }
 
-// ── Pestaña Ingresos (existente, mejorada) ────────────────────────────────────
+// ── Pestaña Ingresos ─────────────────────────────────────────────────────────
 
-function TabIngresos({ stats }: { stats: RevenueStats }) {
+function TabIngresos({ stats, basicPrecio, proPrecio, landingPrecio }: {
+  stats: RevenueStats;
+  basicPrecio: number;
+  proPrecio: number;
+  landingPrecio: number;
+}) {
   const maxRevenue = Math.max(...stats.monthlyRevenue.map(m => m.total), 1);
   const historico =
     stats.planBreakdown.basic.totalRevenue +
@@ -78,7 +90,7 @@ function TabIngresos({ stats }: { stats: RevenueStats }) {
                   {planLabel}
                 </span>
                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                  {planKey === 'landing' ? 'Pago único' : planKey === 'basic' ? '$150.000/mes' : '$250.000/mes'}
+                  {planKey === 'landing' ? 'Pago único' : planKey === 'basic' ? formatCurrency(basicPrecio) + '/mes' : formatCurrency(proPrecio) + '/mes'}
                 </span>
               </div>
               <div className="space-y-2.5">
@@ -114,7 +126,7 @@ function TabIngresos({ stats }: { stats: RevenueStats }) {
                   <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{formatMonth(month.month)}</span>
                   <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(month.total)}</span>
                 </div>
-                <div className="relative h-6 rounded-full overflow-hidden" style={{ background: 'var(--bg-hover)' }}>
+                <div className="relative h-6 rounded-full overflow-hidden" style={{ background: 'var(--border-color)' }}>
                   <div className="absolute top-0 left-0 h-full bg-[#FF5C3A]/50 rounded-full" style={{ width: `${basicPct}%` }} />
                   <div className="absolute top-0 h-full bg-[#FF5C3A] rounded-full" style={{ left: `${basicPct}%`, width: `${proPct}%` }} />
                   <div className="absolute top-0 h-full bg-[#3b82f6] rounded-full" style={{ left: `${basicPct + proPct}%`, width: `${landingPct}%` }} />
@@ -173,9 +185,10 @@ function TabROI({
   const roi         = costosTotales > 0 ? Math.round(((ingresosMes - costosTotales) / costosTotales) * 100) : 0;
   const arpu        = clientesActivos > 0 ? Math.round(ingresosMes / clientesActivos) : 0;
 
-  // Proyección 3 y 6 meses (promedio últimos 3 meses × tendencia)
+  // Proyección: promedio mensual × número de meses
   const last3 = stats.monthlyRevenue.slice(-3);
   const avg3  = last3.length ? Math.round(last3.reduce((s, m) => s + m.total, 0) / last3.length) : ingresosMes;
+  // proj3 y proj6 = ingreso acumulado proyectado a 3 y 6 meses
   const proj3 = avg3 * 3;
   const proj6 = avg3 * 6;
 
@@ -194,7 +207,7 @@ function TabROI({
         <div className="rounded-2xl border p-5 col-span-2 md:col-span-1" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>% Meta mensual</p>
           <p className="text-3xl font-bold font-syne" style={{ color: metaColor }}>{pctMeta}%</p>
-          <div className="mt-3 h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-hover)' }}>
+          <div className="mt-3 h-2 rounded-full overflow-hidden" style={{ background: 'var(--border-color)' }}>
             <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(pctMeta, 100)}%`, backgroundColor: metaColor }} />
           </div>
           <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
@@ -283,6 +296,9 @@ export default function RevenuePage() {
   const [costs, setCosts]   = useState<CostsConfig | null>(null);
   const [meta, setMeta]     = useState<MetaConfig | null>(null);
   const [trm, setTrm]       = useState(3700);
+  const [basicPrecio, setBasicPrecio]     = useState(150000);
+  const [proPrecio, setProPrecio]         = useState(250000);
+  const [landingPrecio, setLandingPrecio] = useState(650000);
   const [loading, setLoading] = useState(true);
   const [error, setError]   = useState('');
   const [tab, setTab]       = useState<'ingresos' | 'roi'>('ingresos');
@@ -308,10 +324,16 @@ export default function RevenuePage() {
         const pricingJson = await pricingRes.json();
         if (pricingJson.ok) {
           const rows: { id: string; data: Record<string, unknown> }[] = pricingJson.data;
-          const costsRow = rows.find(r => r.id === 'costs')?.data as unknown as CostsConfig;
-          const metaRow  = rows.find(r => r.id === 'meta')?.data  as unknown as MetaConfig;
-          if (costsRow) setCosts(costsRow);
-          if (metaRow)  setMeta(metaRow);
+          const costsRow   = rows.find(r => r.id === 'costs')?.data as unknown as CostsConfig;
+          const metaRow    = rows.find(r => r.id === 'meta')?.data  as unknown as MetaConfig;
+          const basicRow   = rows.find(r => r.id === 'basic')?.data as unknown as { precio_mensual_cop: number };
+          const proRow     = rows.find(r => r.id === 'pro')?.data   as unknown as { precio_mensual_cop: number };
+          const landingRow = rows.find(r => r.id === 'mini_landing')?.data as unknown as { precio_unico_cop: number };
+          if (costsRow)   setCosts(costsRow);
+          if (metaRow)    setMeta(metaRow);
+          if (basicRow?.precio_mensual_cop)   setBasicPrecio(basicRow.precio_mensual_cop);
+          if (proRow?.precio_mensual_cop)     setProPrecio(proRow.precio_mensual_cop);
+          if (landingRow?.precio_unico_cop)   setLandingPrecio(landingRow.precio_unico_cop);
         }
       }
 
@@ -386,7 +408,7 @@ export default function RevenuePage() {
 
       {/* Contenido */}
       {tab === 'ingresos'
-        ? <TabIngresos stats={stats} />
+        ? <TabIngresos stats={stats} basicPrecio={basicPrecio} proPrecio={proPrecio} landingPrecio={landingPrecio} />
         : <TabROI stats={stats} costs={costs} meta={meta} trm={trm} />
       }
 
