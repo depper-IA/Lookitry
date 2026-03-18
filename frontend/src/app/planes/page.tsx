@@ -20,6 +20,23 @@ export const metadata: Metadata = {
   },
 };
 
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${BASE_URL}/` },
+    { '@type': 'ListItem', position: 2, name: 'Planes', item: `${BASE_URL}/planes` },
+  ],
+};
+
 export default function PlanesPage() {
-  return <PlanesClient />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <PlanesClient />
+    </>
+  );
 }

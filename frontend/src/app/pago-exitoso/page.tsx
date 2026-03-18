@@ -20,17 +20,14 @@ function PagoExitosoContent() {
   const ref = searchParams.get('ref');
 
   return (
-    <main
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ fontFamily: 'DM Sans, sans-serif', background: '#0a0a0a' }}
-    >
+    <main className="min-h-screen flex items-center justify-center px-4 bg-[#0a0a0a]">
       <div className="w-full max-w-md">
 
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-            <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
+            <span className="font-syne font-extrabold text-xl text-white tracking-tight">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
@@ -43,7 +40,7 @@ function PagoExitosoContent() {
             <IconCheck />
           </div>
 
-          <h1 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[24px] text-white mb-2">
+          <h1 className="font-syne font-bold text-[24px] text-white mb-2">
             Pago recibido
           </h1>
           <p className="text-[14px] text-[#666] mb-6">

@@ -64,17 +64,14 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{ fontFamily: 'DM Sans, sans-serif', background: '#0a0a0a' }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
       <div className="w-full max-w-md">
 
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-            <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
+            <span className="font-syne font-extrabold text-xl text-white tracking-tight">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
@@ -91,7 +88,7 @@ export default function AdminLoginPage() {
             Panel de administración
           </div>
 
-          <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[22px] text-white mb-1">
+          <h2 className="font-syne font-bold text-[22px] text-white mb-1">
             Acceso admin
           </h2>
           <p className="text-[13px] text-[#555] mb-7">

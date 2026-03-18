@@ -203,13 +203,13 @@ function CheckoutContent() {
   };
 
   return (
-    <main style={{ fontFamily: 'DM Sans, sans-serif' }} className="min-h-screen bg-[#0a0a0a]">
+    <main className="min-h-screen bg-[#0a0a0a]">
 
       {/* Nav */}
       <nav className="bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
         <Link href="/" className="flex items-center gap-2.5">
           <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-          <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base text-white tracking-tight">
+          <span className="font-syne font-extrabold text-base text-white tracking-tight">
             Look<span className="text-[#FF5C3A]">itry</span>
           </span>
         </Link>
@@ -235,7 +235,7 @@ function CheckoutContent() {
 
             {/* Selector de plan */}
             <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-5">
-              <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[16px] text-white mb-4">
+              <h2 className="font-syne font-bold text-[16px] text-white mb-4">
                 Selecciona lo que necesitas
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -271,14 +271,14 @@ function CheckoutContent() {
                       {isLandingOpt ? (
                         <>
                           <div className="text-[11px] text-[#555] line-through">{formatCOP(landingOriginal)}</div>
-                          <div className="text-[16px] font-extrabold text-[#FF5C3A]" style={{ fontFamily: 'Syne, sans-serif' }}>
+                          <div className="font-syne text-[16px] font-extrabold text-[#FF5C3A]">
                             {formatCOP(landingPrice)}
                           </div>
                           <div className="text-[10px] text-[#999] mt-0.5">Pago unico</div>
                         </>
                       ) : (
                         <>
-                          <div className="text-[16px] font-extrabold text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
+                          <div className="font-syne text-[16px] font-extrabold text-white">
                             {formatCOP(PLAN_BASE[p as 'BASIC' | 'PRO'])}
                           </div>
                           <div className="text-[10px] text-[#999] mt-0.5">/mes</div>
@@ -304,7 +304,7 @@ function CheckoutContent() {
             {/* Selector de plan de suscripcion (solo cuando se elige LANDING) */}
             {isLanding && (
               <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-5">
-                <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[15px] text-white mb-1">
+                <h2 className="font-syne font-bold text-[15px] text-white mb-1">
                   Plan de suscripcion incluido
                 </h2>
                 <p className="text-[11px] text-[#555] mb-3">La mini-landing necesita un plan activo para funcionar</p>
@@ -327,7 +327,7 @@ function CheckoutContent() {
                             {isSelected && <div className="w-2 h-2 rounded-full bg-[#FF5C3A]" />}
                           </div>
                         </div>
-                        <div className="text-[15px] font-extrabold text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
+                        <div className="font-syne text-[15px] font-extrabold text-white">
                           {formatCOP(PLAN_BASE[p])}
                         </div>
                         <div className="text-[10px] text-[#555] mt-0.5">/mes</div>
@@ -350,7 +350,7 @@ function CheckoutContent() {
 
             {/* Selector de meses (para BASIC/PRO directo, o para el subPlan cuando es LANDING) */}
             <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-5">
-              <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[15px] text-white mb-1">
+              <h2 className="font-syne font-bold text-[15px] text-white mb-1">
                 Duracion del plan
               </h2>
               {isLanding && (
@@ -461,7 +461,7 @@ function CheckoutContent() {
                       {discountPct > 0 && (
                         <div className="text-[12px] text-[#666] line-through">{formatCOP(originalPrice)}</div>
                       )}
-                      <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[20px] text-white">
+                      <div className="font-syne font-extrabold text-[20px] text-white">
                         {formatCOP(totalPrice)}
                       </div>
                       {selectedMonths > 1 && monthlyPrice && (
@@ -484,7 +484,7 @@ function CheckoutContent() {
 
               <div className="border-t border-[#2a2a2a] pt-4 flex items-center justify-between">
                 <span className="text-[13px] font-medium text-[#999]">Total a pagar</span>
-                <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[22px] text-white">
+                <span className="font-syne font-extrabold text-[22px] text-white">
                   {formatCOP(totalPrice)} COP
                 </span>
               </div>
@@ -494,7 +494,7 @@ function CheckoutContent() {
           {/* Columna derecha: pago */}
           <div className="lg:col-span-2 space-y-4 lg:sticky lg:top-20">
             <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-6">
-              <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[16px] text-white mb-1">
+              <h2 className="font-syne font-bold text-[16px] text-white mb-1">
                 Método de pago
               </h2>
               <p className="text-[12px] text-[#aaa] mb-5">

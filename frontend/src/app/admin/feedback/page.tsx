@@ -104,7 +104,7 @@ export default function FeedbackPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--text-primary)', fontFamily: 'Syne, sans-serif' }}>
+          <h1 className="text-xl font-syne font-semibold" style={{ color: 'var(--text-primary)' }}>
             Feedback de generaciones
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>

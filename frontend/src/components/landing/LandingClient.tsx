@@ -72,7 +72,7 @@ export default function LandingClient() {
   }, []);
 
   return (
-    <main style={{ fontFamily: 'DM Sans, sans-serif' }} className="min-h-screen overflow-x-hidden bg-[#f5f2ee]">
+    <main className="min-h-screen overflow-x-hidden bg-[#f5f2ee]">
 
       {/* NAV */}
       <LandingNav />
@@ -90,8 +90,8 @@ export default function LandingClient() {
             Probador virtual con IA
           </div>
           <h1
-            style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(32px, 6vw, 58px)' }}
-            className="font-extrabold text-white leading-[1.1] tracking-tight mb-5"
+            style={{ fontSize: 'clamp(32px, 6vw, 58px)' }}
+            className="font-syne font-extrabold text-white leading-[1.1] tracking-tight mb-5"
           >
             Tus clientes se prueban<br />
             tu producto <span className="text-[#FF5C3A]">antes de comprar</span>
@@ -177,7 +177,7 @@ export default function LandingClient() {
             { n: '4.8/5', label: 'satisfacción promedio' },
           ].map(s => (
             <div key={s.label} className="text-center min-w-[80px]">
-              <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-3xl md:text-4xl text-[#0a0a0a] tracking-tight">{s.n}</div>
+              <div className="font-syne font-extrabold text-3xl md:text-4xl text-[#0a0a0a] tracking-tight">{s.n}</div>
               <div className="text-[13px] text-[#666] mt-1">{s.label}</div>
             </div>
           ))}
@@ -188,15 +188,15 @@ export default function LandingClient() {
       <section className="bg-[#0a0a0a] py-16 md:py-20 px-6 md:px-8" aria-labelledby="pricing-heading">
         <div className="max-w-[700px] mx-auto">
           <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Planes</p>
-          <h2 id="pricing-heading" style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-3xl text-white tracking-tight mb-10">
+          <h2 id="pricing-heading" className="font-syne font-bold text-3xl text-white tracking-tight mb-10">
             Precios simples
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {/* Básico */}
             <div className="bg-[#141414] border border-[#2a2a2a] hover:border-[#FF5C3A]/60 transition-colors duration-200 rounded-xl p-6 md:p-7">
-              <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-lg text-white mb-1">Básico</div>
-              <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[30px] text-white tracking-tight mb-0.5">
-                $150.000 <span className="text-[13px] font-normal text-[#555]" style={{ fontFamily: 'DM Sans, sans-serif' }}>/ mes</span>
+              <div className="font-syne font-bold text-lg text-white mb-1">Básico</div>
+              <div className="font-syne font-extrabold text-[30px] text-white tracking-tight mb-0.5">
+                $150.000 <span className="text-[13px] font-normal text-[#555]">/ mes</span>
               </div>
               <div className="text-[12px] text-[#FF5C3A] mb-5">7 días de prueba gratis incluidos</div>
               <ul className="flex flex-col gap-2 mb-6">
@@ -224,9 +224,9 @@ export default function LandingClient() {
               >
                 Más popular
               </div>
-              <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-lg text-white mb-1">Pro</div>
-              <div style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[30px] text-white tracking-tight mb-0.5">
-                $250.000 <span className="text-[13px] font-normal text-[#555]" style={{ fontFamily: 'DM Sans, sans-serif' }}>/ mes</span>
+              <div className="font-syne font-bold text-lg text-white mb-1">Pro</div>
+              <div className="font-syne font-extrabold text-[30px] text-white tracking-tight mb-0.5">
+                $250.000 <span className="text-[13px] font-normal text-[#555]">/ mes</span>
               </div>
               <div className="text-[12px] text-[#666] mb-5">Pago directo — activación inmediata</div>
               <ul className="flex flex-col gap-2 mb-6">
@@ -258,7 +258,7 @@ export default function LandingClient() {
       <section className="bg-[#f5f2ee] py-16 md:py-20 px-6 md:px-8" aria-labelledby="how-it-works-heading">
         <div className="max-w-[860px] mx-auto">
           <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Cómo funciona</p>
-          <h2 id="how-it-works-heading" style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[32px] text-[#0a0a0a] tracking-tight mb-10">
+          <h2 id="how-it-works-heading" className="font-syne font-bold text-[32px] text-[#0a0a0a] tracking-tight mb-10">
             Tres pasos. Sin complicaciones.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -275,8 +275,7 @@ export default function LandingClient() {
                   />
                   <div className="absolute top-3 left-3">
                     <span
-                      style={{ fontFamily: 'Syne, sans-serif', background: '#FF5C3A' }}
-                      className="inline-block text-white font-extrabold text-sm px-2.5 py-1 rounded-lg leading-none"
+                      className="font-syne inline-block text-white font-extrabold text-sm px-2.5 py-1 rounded-lg leading-none bg-[#FF5C3A]"
                       aria-hidden="true"
                     >
                       {s.n}
@@ -284,7 +283,7 @@ export default function LandingClient() {
                   </div>
                 </div>
                 <div className="p-5">
-                  <h3 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-base text-[#0a0a0a] mb-1.5">{s.title}</h3>
+                  <h3 className="font-syne font-bold text-base text-[#0a0a0a] mb-1.5">{s.title}</h3>
                   <p className="text-[13px] text-[#666] leading-relaxed">{s.desc}</p>
                 </div>
               </div>
@@ -301,8 +300,8 @@ export default function LandingClient() {
               <span className="w-1.5 h-1.5 bg-[#FF5C3A] rounded-full" aria-hidden="true" />
               Servicio adicional · Pago único
             </div>
-            <h2 id="mini-landing-heading" style={{ fontFamily: 'Syne, sans-serif', fontSize: 'clamp(28px,5vw,46px)' }}
-              className="font-extrabold text-[#0a0a0a] tracking-tight leading-tight mb-4">
+            <h2 id="mini-landing-heading" style={{ fontSize: 'clamp(28px,5vw,46px)' }}
+              className="font-syne font-extrabold text-[#0a0a0a] tracking-tight leading-tight mb-4">
               Tu tienda online,<br />
               <span className="text-[#FF5C3A]">sin pagar un diseñador</span>
             </h2>
@@ -400,7 +399,7 @@ export default function LandingClient() {
                     </span>
                   </div>
                   <div className="flex items-baseline gap-1 mb-1">
-                    <span style={{ fontFamily: 'Syne, sans-serif' }} className="text-4xl font-extrabold text-white">
+                    <span className="font-syne text-4xl font-extrabold text-white">
                       ${landingPrice.toLocaleString('es-CO')}
                     </span>
                     <span className="text-[#555] text-sm">COP</span>
@@ -438,7 +437,7 @@ export default function LandingClient() {
       <section className="bg-[#f5f2ee] py-16 md:py-20 px-6 md:px-8 border-t border-[#e0dcd7]" aria-labelledby="testimonials-heading">
         <div className="max-w-[860px] mx-auto">
           <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Testimonios</p>
-          <h2 id="testimonials-heading" style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[32px] text-[#0a0a0a] tracking-tight mb-10">
+          <h2 id="testimonials-heading" className="font-syne font-bold text-[32px] text-[#0a0a0a] tracking-tight mb-10">
             Lo que dicen las marcas
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -461,7 +460,7 @@ export default function LandingClient() {
           aria-hidden="true"
         />
         <div className="relative z-10 max-w-xl mx-auto">
-          <h2 id="cta-heading" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-[34px] md:text-[38px] text-white tracking-tight mb-3">
+          <h2 id="cta-heading" className="font-syne font-extrabold text-[34px] md:text-[38px] text-white tracking-tight mb-3">
             Empieza hoy sin riesgos
           </h2>
           <p className="text-[15px] text-[#aaa] mb-8">
