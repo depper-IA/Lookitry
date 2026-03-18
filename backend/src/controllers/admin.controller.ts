@@ -730,6 +730,58 @@ export const changeOwnPassword = async (req: any, res: Response) => {
   }
 };
 
+// ── Créditos OpenRouter ───────────────────────────────────────────────────────
+
+/**
+ * GET /api/admin/openrouter-credits
+ * Consulta el balance de créditos en OpenRouter
+ */
+export const getOpenRouterCredits = async (_req: any, res: Response) => {
+  try {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'CONFIG_ERROR', message: 'OPENROUTER_API_KEY no configurada' });
+    }
+
+    const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+
+    if (!response.ok) {
+      return res.status(502).json({ error: 'EXTERNAL_ERROR', message: 'Error al consultar OpenRouter' });
+    }
+
+    const json = await response.json() as { data?: any };
+    const data = json.data ?? {};
+
+    const limit: number | null = data.limit ?? null;
+    const usage: number = data.usage ?? 0;
+    const balance = limit !== null ? Math.max(0, limit - usage) : null;
+
+    // Costo estimado por generación con gemini-2.5-flash-image
+    const COST_PER_GEN = 0.039;
+    const estimatedGenerations = balance !== null ? Math.floor(balance / COST_PER_GEN) : null;
+    const usagePercent = limit ? Math.min(100, Math.round((usage / limit) * 100)) : null;
+
+    return res.status(200).json({
+      label: data.label ?? null,
+      usage: parseFloat(usage.toFixed(4)),
+      limit,
+      balance: balance !== null ? parseFloat(balance.toFixed(4)) : null,
+      is_free_tier: data.is_free_tier ?? false,
+      rate_limit: data.rate_limit ?? null,
+      usage_percent: usagePercent,
+      estimated_generations_remaining: estimatedGenerations,
+      cost_per_generation: COST_PER_GEN,
+      low_balance_alert: balance !== null && limit !== null ? balance < limit * 0.2 : false,
+      critical_balance_alert: balance !== null ? balance < 5 : false,
+    });
+  } catch (error: any) {
+    console.error('Error in getOpenRouterCredits:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener créditos' });
+  }
+};
+
 // ── Feedback de generaciones (51.8) ──────────────────────────────────────────
 
 import { FeedbackService } from '../services/feedback.service';
