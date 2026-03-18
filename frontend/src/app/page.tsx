@@ -15,7 +15,7 @@ const jsonLd = {
         '@type': 'ContactPoint',
         telephone: '+57-310-543-6281',
         contactType: 'customer service',
-        areaServed: ['CO', 'MX', 'AR', 'CL', 'PE'],
+        areaServed: ['CO', 'MX', 'AR', 'CL', 'PE', 'VE'],
         availableLanguage: 'Spanish',
       },
     },
