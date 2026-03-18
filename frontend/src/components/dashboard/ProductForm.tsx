@@ -55,6 +55,23 @@ const AI_CATEGORY_MAP: Record<string, string> = {
   OVEROL: 'other', JUMPSUIT: 'other',
 };
 
+// Mapea la categoría devuelta por n8n: primero match exacto, luego match parcial por palabras
+function mapAICategory(text: string): string | undefined {
+  const normalized = text.toUpperCase().trim();
+  // 1. Match exacto
+  if (AI_CATEGORY_MAP[normalized]) return AI_CATEGORY_MAP[normalized];
+  // 2. Match parcial: buscar si alguna clave está contenida en el texto
+  for (const key of Object.keys(AI_CATEGORY_MAP)) {
+    if (normalized.includes(key)) return AI_CATEGORY_MAP[key];
+  }
+  return undefined;
+}
+
+// Intenta inferir categoría desde el nombre del producto (fallback si n8n no devuelve category)
+function inferCategoryFromName(productName: string): string | undefined {
+  return mapAICategory(productName);
+}
+
 const BADGE_OPTIONS = [
   { value: '', label: 'Sin badge' },
   { value: 'nuevo', label: 'Nuevo' },
@@ -130,17 +147,20 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       let mappedCategory = formData.category;
       let mappedCustom = customCategory;
       if (aiCategory) {
-        const normalized = aiCategory.toUpperCase().trim();
-        const mapped = AI_CATEGORY_MAP[normalized];
+        const mapped = mapAICategory(aiCategory);
         if (mapped) {
           mappedCategory = mapped;
           if (mapped === 'other') {
-            // Capitalizar para mostrar en el campo custom
             mappedCustom = aiCategory.charAt(0).toUpperCase() + aiCategory.slice(1).toLowerCase();
           } else {
             mappedCustom = '';
           }
         }
+      }
+      // Fallback: inferir desde el nombre del producto si n8n no devolvió categoría o no hizo match
+      if (mappedCategory === formData.category && formData.name.trim()) {
+        const inferredFromName = inferCategoryFromName(formData.name.trim());
+        if (inferredFromName) mappedCategory = inferredFromName;
       }
 
       setFormData(p => ({ ...p, description: clean, category: mappedCategory }));
@@ -223,12 +243,16 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       let mappedCategory = category;
       let mappedCustom = '';
       if (aiCategory) {
-        const normalized = aiCategory.toUpperCase().trim();
-        const mapped = AI_CATEGORY_MAP[normalized];
+        const mapped = mapAICategory(aiCategory);
         if (mapped) {
           mappedCategory = mapped;
           if (mapped === 'other') mappedCustom = aiCategory.charAt(0).toUpperCase() + aiCategory.slice(1).toLowerCase();
         }
+      }
+      // Fallback: si n8n no devolvió categoría o no hizo match, inferir desde el nombre del producto
+      if (mappedCategory === category && productName) {
+        const inferredFromName = inferCategoryFromName(productName);
+        if (inferredFromName) mappedCategory = inferredFromName;
       }
       setFormData(p => ({ ...p, description: clean, category: mappedCategory }));
       setShowCustomCategory(mappedCategory === 'other');
