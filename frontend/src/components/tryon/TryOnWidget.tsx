@@ -248,7 +248,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: secondaryColor }}>
+      <div className="flex items-center justify-center py-16" style={{ backgroundColor: secondaryColor }}>
         <div className="text-center">
           <div className="w-14 h-14 border-4 border-gray-200 rounded-full animate-spin mx-auto" style={{ borderTopColor: primaryColor }} />
           <p className="mt-4 text-gray-500 text-sm font-medium">Cargando el probador...</p>
@@ -260,7 +260,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   // ── Error / no encontrado ──────────────────────────────────────────────────
   if (!config) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center py-16 bg-gray-50">
         <div className="text-center p-8 max-w-sm">
           <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -280,9 +280,9 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   // ── Generating (igual para todos los layouts excepto bare) ───────────────
   if (step === 'generating' && layout !== 'bare') {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: secondaryColor }}>
+      <div className="flex flex-col" style={{ backgroundColor: secondaryColor }}>
         <BrandHeader config={config} primaryColor={primaryColor} onReset={handleReset} showReset={false} />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex items-center justify-center py-16">
           <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
         </div>
       </div>
@@ -537,7 +537,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
 
   // ── TOP-BAR layout (minimal — default) ────────────────────────────────────
   return (
-    <div className="min-h-screen" style={{ backgroundColor: secondaryColor }}>
+    <div style={{ backgroundColor: secondaryColor }}>
       <BrandHeader config={config} primaryColor={primaryColor} onReset={handleReset} showReset={step !== 'upload'} />
       <StepBar step={step} primaryColor={primaryColor} />
 

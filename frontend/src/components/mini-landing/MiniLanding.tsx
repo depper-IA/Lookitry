@@ -1152,10 +1152,12 @@ function ProbadorProducts({ products, primaryColor, ctaText, onProductClick, sel
 function ProbadorUploadZone({ brandSlug, primaryColor }: { brandSlug: string; primaryColor: string }) {
   return (
     <section id="probador-tryon" className="border-t border-b py-16 px-6" style={{ backgroundColor: 'var(--p-surface, #fff)', borderColor: 'var(--p-border, #e5e5e5)' }}>
-      <div className="max-w-xl mx-auto text-center">
-        <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: primaryColor }}>Probador IA</p>
-        <h2 className="text-3xl font-black mb-2 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>Pruebatelo ahora</h2>
-        <p className="text-sm font-light mb-8" style={{ color: 'var(--p-text-muted, #888)' }}>Sube tu foto y la IA genera el resultado en segundos</p>
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-8">
+          <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: primaryColor }}>Probador IA</p>
+          <h2 className="text-3xl font-black mb-2 tracking-tight" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>Pruebatelo ahora</h2>
+          <p className="text-sm font-light" style={{ color: 'var(--p-text-muted, #888)' }}>Sube tu foto y la IA genera el resultado en segundos</p>
+        </div>
         <div className="rounded-3xl overflow-hidden shadow-xl border" style={{ borderColor: 'var(--p-border, #e5e5e5)' }}>
           <TryOnWidget brandSlug={brandSlug} />
         </div>
