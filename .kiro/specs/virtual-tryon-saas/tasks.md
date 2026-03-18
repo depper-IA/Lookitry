@@ -668,7 +668,11 @@
     - Formulario de creación/edición por tipo
     - Preview en tiempo real del componente (modal, banner, etc.)
     - _Archivos: frontend/src/app/admin/marketing/promotions/page.tsx_
+<<<<<<< HEAD
   - [x] 59.8 Agregar link "Promociones" al sidebar admin bajo grupo Marketing
+=======
+  - [ ] 59.8 Agregar link "Promociones" al sidebar admin bajo grupo Marketing
+>>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
     - _Archivos: frontend/src/app/admin/layout.tsx_
 
 ---
