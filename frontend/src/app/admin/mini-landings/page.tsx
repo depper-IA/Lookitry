@@ -317,7 +317,10 @@ export default function AdminMiniLandingsPage() {
                     {/* Estado landing */}
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       {estado === 'activa' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                          style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }}
+                        >
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                           Activa
                         </span>

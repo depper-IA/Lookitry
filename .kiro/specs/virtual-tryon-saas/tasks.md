@@ -695,7 +695,7 @@
 
 ---
 
-- [-] 61. Auditoría de datos dinámicos
+- [x] 61. Auditoría de datos dinámicos
   - [x] 61.1 Verificar precios dinámicos en todos los puntos de carga
     - `/checkout` público: confirmar que carga desde `pricing_config` (no hardcodeado)
     - `/dashboard/checkout`: ídem
@@ -718,46 +718,86 @@
 
 ---
 
-- [ ] 62. Auditoría de frontend
-  - [ ] 62.1 Verificar páginas públicas
+- [x] 62. Auditoría de frontend
+  - [x] 62.1 Verificar páginas públicas
     - `/` landing, `/planes`, `/register`, `/login`, `/sobre-nosotros`, `/terminos`, `/politicas-privacidad`
     - `/checkout`, `/pago-exitoso`, `/trial-payment`, `/trial-activado`, `/verify-email`, `/registro-pro`
     - `/pruebalo/[slug]`, `/marca/[slug]`, `/sitio/[slug]`, `/embed/[slug]`
-  - [ ] 62.2 Verificar dashboard (rutas privadas)
+  - [x] 62.2 Verificar dashboard (rutas privadas)
     - Todas las rutas `/dashboard/*` requieren JWT válido
     - Stats correctas en `/dashboard`, límites de plan en `/dashboard/products`
     - Precios dinámicos en `/dashboard/checkout`
-  - [ ] 62.3 Verificar panel admin
+  - [x] 62.3 Verificar panel admin
     - Todas las rutas `/admin/*` requieren Admin JWT
     - Verificar que TODOS los paneles usan variables CSS (`var(--text-primary)`, etc.)
     - Verificar que no hay colores hardcodeados en paneles admin
     - Toggle de tema light/dark funciona correctamente en todos los paneles
-  - [ ] 62.4 Verificar modo light/dark en todos los paneles admin
+  - [x] 62.4 Verificar modo light/dark en todos los paneles admin
     - Recorrer cada página de `/admin/*` en modo light y dark
     - Reportar cualquier panel con colores hardcodeados que no respetan el tema
 
 ---
 
-- [ ] 63. Auditoría de backend
-  - [ ] 63.1 Verificar endpoints de autenticación
-    - `POST /api/auth/register`, `/login`, `/logout`, `/forgot-password`, `/reset-password`, `/verify-email`
-  - [ ] 63.2 Verificar endpoints de marcas y productos
-    - `GET/PUT /api/brands/me`, `GET /api/brands/:slug`
-    - CRUD `/api/products`, `POST /api/upload`
-  - [ ] 63.3 Verificar endpoints de generaciones y pagos
-    - `POST /api/generations`, `GET /api/generations`, `GET /api/generations/:id`
-    - `GET /api/payment-settings/public`, `GET /api/payments/wompi/config`, `GET /api/payments/wompi/checkout-url`, `POST /api/payments/wompi/webhook`
-  - [ ] 63.4 Verificar endpoints de cupones y suscripción
-    - `POST /api/coupons/validate`, CRUD `/api/admin/coupons/*`
-    - `GET /api/subscription`, `POST /api/subscription/activate`
-  - [ ] 63.5 Verificar endpoints de analytics, usage y pruebalo
-    - `GET /api/analytics`, `GET /api/usage`, `GET /api/admin/revenue`
-    - `GET /api/pruebalo/:slug`, `POST /api/pruebalo/:slug/generate`
+- [x] 63. Auditoría de backend
+  - [x] 63.1 Verificar endpoints de autenticación
+    - `POST /api/auth/register` ✓ con Turnstile + rate limiter
+    - `POST /api/auth/login` ✓ con rate limiter
+    - `GET /api/auth/verify-email` ✓
+    - `POST /api/auth/forgot-password` ✓ con rate limiter
+    - `POST /api/auth/reset-password` ✓ con rate limiter
+    - `POST /api/auth/resend-verification` ✓
+    - `POST /api/auth/change-password` ✓ requiere JWT
+    - NOTA: No existe `POST /api/auth/logout` como endpoint separado (el logout es client-side eliminando el JWT)
+  - [x] 63.2 Verificar endpoints de marcas y productos
+    - `GET /api/brands/me` ✓ requiere JWT, sin checkSubscription (marcas suspendidas pueden ver su estado)
+    - `PATCH /api/brands/me` ✓ requiere JWT + suscripción activa
+    - `GET /api/brands/:slug` — NO existe como ruta pública separada; la config pública se sirve desde `GET /api/pruebalo/:slug`
+    - CRUD `/api/products` ✓ GET, POST, PUT, DELETE — todos requieren JWT + suscripción activa
+    - `POST /api/upload` ✓ requiere JWT (también disponible como `POST /api/products/upload`)
+    - `POST /api/brands/request-plan-change` ✓ requiere JWT (sin checkSubscription)
+  - [x] 63.3 Verificar endpoints de generaciones y pagos
+    - `GET /api/generations` ✓ requiere JWT — devuelve solo generaciones SUCCESS con result_image_url
+    - `DELETE /api/generations/:id` ✓ requiere JWT
+    - `DELETE /api/generations` (bulk) ✓ requiere JWT, máx 100 IDs
+    - NOTA: No existe `POST /api/generations` ni `GET /api/generations/:id` como rutas separadas; la generación se hace desde `POST /api/pruebalo/:slug/generate`
+    - `GET /api/payment-settings/public` ✓ público, sin auth
+    - `GET /api/payments/wompi/config` ✓ auth opcional
+    - `GET /api/payments/wompi/checkout-url` ✓ auth opcional
+    - `POST /api/payments/wompi/webhook` ✓ verifica firma HMAC, responde siempre 200 a Wompi
+  - [x] 63.4 Verificar endpoints de cupones y suscripción
+    - `POST /api/coupons/redeem` ✓ público, incrementa uses_count
+    - CRUD `/api/admin/coupons` ✓ GET, POST, PUT, DELETE — todos usan `supabaseAdmin` (correcto)
+    - NOTA: No existe `POST /api/coupons/validate` en el backend Express; la validación de cupones se hace desde una API Route de Next.js (`/api/coupons/validate`)
+    - `GET /api/brands/subscription` ✓ requiere JWT
+    - `GET /api/admin/subscriptions` ✓ requiere Admin JWT
+    - `PATCH /api/admin/subscriptions/:brandId/renew` ✓
+    - `PATCH /api/admin/subscriptions/:brandId/suspend` ✓
+    - `PATCH /api/admin/subscriptions/:brandId/reactivate` ✓
+    - `POST /api/admin/subscriptions/:brandId/payment` ✓
+  - [x] 63.5 Verificar endpoints de analytics, usage y pruebalo
+    - `GET /api/analytics/overview` ✓ requiere JWT + suscripción activa
+    - `GET /api/analytics/generations` ✓ requiere JWT + suscripción activa
+    - `GET /api/analytics/products/most-used` ✓ requiere JWT + suscripción activa
+    - `GET /api/usage/stats` ✓ requiere JWT + suscripción activa
+    - `GET /api/admin/revenue/stats` ✓ requiere Admin JWT — incluye desglose BASIC/PRO/LANDING
+    - `GET /api/admin/revenue/payments` ✓ requiere Admin JWT — filtros por método, estado, fechas, plan
+    - `GET /api/pruebalo/:slug` ✓ público con rate limiter — incluye caché en memoria con invalidación
+    - `POST /api/pruebalo/:slug/generate` ✓ público con rate limiter — valida límites de plan, llama n8n, guarda prompt_used para RAG
+    - `POST /api/pruebalo/:slug/generation/:generationId/feedback` ✓ público — dispara notificación admin si hay 3+ errores del mismo tipo en 24h
+  - HALLAZGOS GENERALES:
+    - Todos los endpoints admin usan `adminAuthMiddleware` + `requirePermission()` correctamente
+    - Todos los endpoints de marca usan `authMiddleware` correctamente
+    - `supabaseAdmin` se usa en operaciones admin (cupones, revenue, subscriptions) — correcto
+    - CORS configurado solo para dominios autorizados + localhost en dev
+    - Security headers básicos presentes (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection)
+    - Rate limiting global + específico por ruta (auth, generaciones, pruebalo)
+    - Webhook Wompi verifica firma HMAC antes de procesar — correcto
+    - El endpoint `GET /api/brands/:slug` documentado en architecture.md no existe como ruta independiente (la info pública de marca se obtiene desde `/api/pruebalo/:slug`)
 
 ---
 
-- [ ] 64. Auditoría de seguridad
-  - [ ] 64.1 Verificar RLS por tabla
+- [-] 64. Auditoría de seguridad
+  - [x] 64.1 Verificar RLS por tabla
     - `brands`, `products`, `generations`, `generation_feedback`, `subscription_payments`, `trial_registrations`: solo la marca dueña puede acceder
     - `coupons`, `promotions`, `pricing_config`, `payment_settings`: solo service role puede escribir
     - `admins`, `admin_notifications`, `admin_notification_preferences`: solo service role / admins

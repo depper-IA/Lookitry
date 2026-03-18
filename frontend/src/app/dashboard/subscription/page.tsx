@@ -11,7 +11,7 @@ import type { SubscriptionInfo } from '@/services/subscription.service';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
-const PLAN_INFO = {
+const PLAN_INFO_STATIC = {
   BASIC: {
     name: 'Plan Básico',
     price: 150000,
@@ -55,7 +55,7 @@ const TRIAL_INFO = {
   ],
 };
 
-type PlanKey = keyof typeof PLAN_INFO;
+type PlanKey = keyof typeof PLAN_INFO_STATIC;
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   active:        { label: 'Activa',      color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
@@ -93,13 +93,17 @@ function calcTotal(basePrice: number, months: number, pct: number) {
 
 // ── Modal cambio de plan ──────────────────────────────────────────────────────
 
-function ChangePlanModal({ currentPlan, onClose }: { currentPlan: PlanKey; onClose: () => void }) {
+function ChangePlanModal({ currentPlan, onClose, dynamicPrices }: { currentPlan: PlanKey; onClose: () => void; dynamicPrices: { BASIC: number; PRO: number } }) {
   const [message, setMessage] = useState('');
   const [selectedMonths, setSelectedMonths] = useState(1);
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const targetKey: PlanKey = currentPlan === 'BASIC' ? 'PRO' : 'BASIC';
+  const PLAN_INFO = {
+    BASIC: { ...PLAN_INFO_STATIC.BASIC, price: dynamicPrices.BASIC },
+    PRO:   { ...PLAN_INFO_STATIC.PRO,   price: dynamicPrices.PRO },
+  };
   const target = PLAN_INFO[targetKey];
   const discount = MONTH_DISCOUNTS.find(d => d.months === selectedMonths)!;
   const total = calcTotal(target.price, selectedMonths, discount.pct);
@@ -238,6 +242,10 @@ export default function SubscriptionPage() {
   const [payments, setPayments] = useState<SubscriptionPayment[]>([]);
   const [loading, setLoading] = useState(true);
   const [showChangePlan, setShowChangePlan] = useState(false);
+  const [dynamicPrices, setDynamicPrices] = useState<{ BASIC: number; PRO: number }>({
+    BASIC: PLAN_INFO_STATIC.BASIC.price,
+    PRO: PLAN_INFO_STATIC.PRO.price,
+  });
   const [paySettings, setPaySettings] = useState<{
     wompiEnabled: boolean;
     wompiPublicKey: string;
@@ -255,16 +263,37 @@ export default function SubscriptionPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [subResult, paymentsResult, settingsResult] = await Promise.allSettled([
+        const [subResult, paymentsResult, settingsResult, pricingResult] = await Promise.allSettled([
           subscriptionService.getSubscriptionInfo(),
           api.get<SubscriptionPayment[]>('/brands/me/payments'),
           fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
             .then(r => r.ok ? r.json() : null),
+          fetch(
+            `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?id=in.(basic,pro)&select=id,config`,
+            {
+              headers: {
+                apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+                Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''}`,
+              },
+            }
+          ).then(r => r.ok ? r.json() : null),
         ]);
         if (subResult.status === 'fulfilled') setInfo(subResult.value);
         if (paymentsResult.status === 'fulfilled') setPayments(paymentsResult.value.data);
         if (settingsResult.status === 'fulfilled' && settingsResult.value) {
           setPaySettings(settingsResult.value);
+        }
+        if (pricingResult.status === 'fulfilled' && Array.isArray(pricingResult.value)) {
+          const prices = { ...dynamicPrices };
+          for (const row of pricingResult.value) {
+            if (row.id === 'basic' && row.config?.precio_mensual_cop) {
+              prices.BASIC = row.config.precio_mensual_cop;
+            }
+            if (row.id === 'pro' && row.config?.precio_mensual_cop) {
+              prices.PRO = row.config.precio_mensual_cop;
+            }
+          }
+          setDynamicPrices(prices);
         }
       } finally {
         setLoading(false);
@@ -289,9 +318,13 @@ export default function SubscriptionPage() {
     );
   }
 
-  const plan = (info.brand.plan as PlanKey) in PLAN_INFO
+  const plan = (info.brand.plan as PlanKey) in PLAN_INFO_STATIC
     ? (info.brand.plan as PlanKey)
     : 'BASIC';
+  const PLAN_INFO = {
+    BASIC: { ...PLAN_INFO_STATIC.BASIC, price: dynamicPrices.BASIC },
+    PRO:   { ...PLAN_INFO_STATIC.PRO,   price: dynamicPrices.PRO },
+  };
   const planInfo = PLAN_INFO[plan];
   const statusInfo = STATUS_LABELS[info.status ?? 'active'] ?? STATUS_LABELS.active;
   const inTrial = info.isInTrial ?? false;
@@ -594,7 +627,7 @@ export default function SubscriptionPage() {
       </div>
 
       {showChangePlan && (
-        <ChangePlanModal currentPlan={plan} onClose={() => setShowChangePlan(false)} />
+        <ChangePlanModal currentPlan={plan} onClose={() => setShowChangePlan(false)} dynamicPrices={dynamicPrices} />
       )}
     </div>
   );

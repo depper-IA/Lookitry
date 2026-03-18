@@ -23,6 +23,8 @@
   --text-sidebar: #d4d0cc;
   --text-sidebar-active: #ffffff;
   --shadow-header: 0 1px 3px rgba(0,0,0,0.08);
+  --bg-hover: #ede9e4;
+  --bg-input: #ffffff;
 }
 
 .dark {
@@ -38,6 +40,8 @@
   --text-sidebar: #a09b96;
   --text-sidebar-active: #ffffff;
   --shadow-header: 0 1px 3px rgba(0,0,0,0.4);
+  --bg-hover: #1a1a1a;
+  --bg-input: #0f0f0f;
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */

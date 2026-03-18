@@ -102,7 +102,12 @@ function Toggle({ value, onChange, disabled }: { value: boolean; onChange: () =>
 
 function CampaignBadge({ active }: { active: boolean }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+    <span
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+      style={active
+        ? { backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }
+        : { backgroundColor: 'rgba(107,114,128,0.12)', color: '#6b7280' }}
+    >
       <span className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-emerald-500' : 'bg-gray-400'}`} />
       {active ? 'Activa' : 'Inactiva'}
     </span>
