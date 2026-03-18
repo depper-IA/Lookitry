@@ -21,7 +21,7 @@ const BASE_URL = 'https://pruebalo.wilkiedevs.com';
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'Lookitry — Probador virtual con IA para tu marca',
+    default: 'Lookitry — Probador virtual con IA para tu tienda online',
     template: '%s | Lookitry',
   },
   description:
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     locale: 'es_CO',
     url: BASE_URL,
     siteName: 'Lookitry',
-    title: 'Lookitry — Probador virtual con IA para tu marca',
+    title: 'Lookitry — Probador virtual con IA para tu tienda online',
     description:
       'Tu cliente se prueba la ropa antes de comprarla. Integra el probador virtual en tu tienda en 10 minutos. Sin apps, sin desarrollo.',
     images: [
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Lookitry — Probador virtual con IA para tu marca',
+    title: 'Lookitry — Probador virtual con IA para tu tienda online',
     description:
       'Tu cliente se prueba la ropa antes de comprarla. Sin apps, sin desarrollo. Para tiendas en Latinoamérica.',
     images: [`${BASE_URL}/og-image.png`],
@@ -75,10 +75,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon.png', type: 'image/png', sizes: '48x48' },
+      { url: '/favicon.png', type: 'image/png', sizes: '64x64' },
     ],
     shortcut: '/favicon.ico',
-    apple: '/favicon.png',
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
 };
 
