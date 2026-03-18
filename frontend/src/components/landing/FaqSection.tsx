@@ -126,7 +126,7 @@ const FAQ_TABS: FaqTab[] = [
     items: [
       {
         q: '¿Cuáles son los precios de los planes?',
-        a: 'Hay tres opciones: Plan Trial (7 días), Plan Básico ($150.000 COP/mes) y Plan Pro ($250.000 COP/mes). El Trial requiere verificación de tarjeta con un cobro de $100 COP reembolsables, y te da acceso completo por 7 días para que pruebes la plataforma.',
+        a: 'Hay tres opciones: Plan Trial (7 días), Plan Básico ($150.000 COP/mes) y Plan Pro ($250.000 COP/mes). El Trial te da acceso completo por 7 días para que pruebes la plataforma sin compromiso.',
       },
       {
         q: '¿Hay descuentos por pagar varios meses?',
