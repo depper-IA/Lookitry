@@ -1,0 +1,61 @@
+{
+  "id": "PNri7NdZYkZhpPnm",
+  "name": "Virtual Try-On - Error Handler (Creditos OpenRouter)",
+  "active": true,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "err-trigger-001",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const err = $input.item.json;\nconst errorMsg = (err.execution?.error?.message || err.error?.message || err.message || JSON.stringify(err)).toLowerCase();\nconst statusCode = err.execution?.error?.statusCode || err.error?.statusCode || err.statusCode || 0;\nconst rawBody = JSON.stringify(err.execution?.error || err.error || err);\n\nconst isCredits =\n  statusCode === 402 ||\n  statusCode === 429 ||\n  errorMsg.includes('402') ||\n  errorMsg.includes('credits') ||\n  errorMsg.includes('insufficient') ||\n  errorMsg.includes('out of credits') ||\n  errorMsg.includes('quota') ||\n  rawBody.toLowerCase().includes('credits') ||\n  rawBody.toLowerCase().includes('insufficient');\n\nlet brandId = null;\nlet productId = null;\ntry {\n  const runData = err.execution?.data?.resultData?.runData || {};\n  const validarNode = runData['Validar Input']?.[0]?.data?.main?.[0]?.[0]?.json;\n  if (validarNode) {\n    brandId = validarNode.brand_id || null;\n    productId = validarNode.product_id || null;\n  }\n} catch(e) {}\n\nconst errorType = isCredits ? 'credits_exhausted' : 'service_down';\nconst severity = isCredits ? 'error' : 'warning';\nconst title = isCredits ? 'Creditos OpenRouter agotados' : 'Error en generacion de imagen';\nconst errorDetail = err.execution?.error?.message || err.error?.message || err.message || 'desconocido';\nconst message = isCredits\n  ? 'Los creditos de OpenRouter se han agotado. El servicio de generacion esta caido. Error: ' + errorDetail\n  : 'Fallo en el workflow de generacion. Tipo: ' + errorType + ' | Error: ' + errorDetail;\n\nreturn { json: {\n  type: errorType,\n  title,\n  message,\n  severity,\n  brand_id: brandId,\n  brand_name: null,\n  metadata: JSON.stringify({\n    product_id: productId,\n    status_code: statusCode,\n    execution_id: err.execution?.id || null,\n    raw_error: rawBody.substring(0, 500),\n    timestamp: new Date().toISOString()\n  })\n}};"
+      },
+      "id": "err-detect-002",
+      "name": "Clasificar Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://vkdooutklowctuudjnkl.supabase.co/rest/v1/admin_notifications",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "{{SUPABASE_SERVICE_KEY}}" },
+            { "name": "Authorization", "value": "Bearer {{SUPABASE_SERVICE_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ type: $json.type, title: $json.title, message: $json.message, severity: $json.severity, brand_id: $json.brand_id || null, brand_name: $json.brand_name || null, metadata: JSON.parse($json.metadata) }) }}",
+        "options": { "timeout": 10000 }
+      },
+      "id": "err-insert-003",
+      "name": "Insertar en Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [[{ "node": "Clasificar Error", "type": "main", "index": 0 }]]
+    },
+    "Clasificar Error": {
+      "main": [[{ "node": "Insertar en Supabase", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null
+}
