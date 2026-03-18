@@ -128,12 +128,12 @@ Verificar en `backend/.env` que `WOMPI_PUBLIC_KEY` empiece con `pub_test_`.
 
 ### Tarjetas de prueba Wompi
 
-| Tipo | Número | CVV | Vencimiento | Resultado |
+| Tipo                 | Número             | CVV   | Vencimiento | Resultado |
 |---|---|---|---|---|
-| Visa aprobada | `4242424242424242` | `123` | `12/29` | Aprobado |
-| Mastercard aprobada | `5555555555554444` | `123` | `12/29` | Aprobado |
-| Visa rechazada | `4111111111111111` | `123` | `12/29` | Rechazado |
-| Fondos insuficientes | `4000000000009995` | `123` | `12/29` | Rechazado |
+| Visa aprobada        | `4242424242424242` | `123` |     `12/29` | Aprobado  |
+| Mastercard aprobada  | `5555555555554444` | `123` |     `12/29` | Aprobado  |
+| Visa rechazada       | `4111111111111111` | `123` |     `12/29` | Rechazado |
+| Fondos insuficientes | `4000000000009995` | `123` |     `12/29` | Rechazado |
 
 **Datos del titular (cualquier valor):**
 ```

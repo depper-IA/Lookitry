@@ -17,6 +17,10 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Todos los campos son requeridos' });
       }
 
+      if (!data.contact_name || data.contact_name.trim().length < 3) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El nombre completo es requerido (mínimo 3 caracteres)' });
+      }
+
       // Verificar Turnstile si está habilitado
       const turnstileEnabled = process.env.TURNSTILE_ENABLED === 'true';
       if (turnstileEnabled) {
@@ -39,6 +43,13 @@ export class AuthController {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(data.email)) {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Formato de email inválido' });
+      }
+
+      // Bloquear dominios de email desechables
+      const disposableDomains = ['mailinator.com','guerrillamail.com','tempmail.com','throwam.com','yopmail.com','sharklasers.com','grr.la','guerrillamail.info','spam4.me','trashmail.com','trashmail.me','dispostable.com','fakeinbox.com','maildrop.cc','mailnull.com','spamgourmet.com','tempr.email','discard.email','10minutemail.com','minutemail.com','throwaway.email','getairmail.com','filzmail.com','spamgourmet.net','spamgourmet.org'];
+      const emailDomain = data.email.split('@')[1]?.toLowerCase();
+      if (emailDomain && disposableDomains.includes(emailDomain)) {
+        return res.status(400).json({ error: 'DISPOSABLE_EMAIL', message: 'No se permiten correos temporales. Usa tu correo real.' });
       }
 
       const slugRegex = /^[a-z0-9-]+$/;
