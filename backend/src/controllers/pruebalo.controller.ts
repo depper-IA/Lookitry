@@ -344,7 +344,21 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
     `- ${rules.replace}`,
     `- ${rules.keep}`,
     `- Do NOT leave any clothing item from the original photo visible if the product replaces it.`,
+  );
 
+  // Refuerzo extra para vestidos: el modelo tiende a dejar chaquetas y pantalones
+  const cat = (product.category || '').toUpperCase();
+  if (cat.includes('VESTIDO') || cat.includes('DRESS')) {
+    lines.push(
+      `[DRESS OVERRIDE — HIGHEST PRIORITY]`,
+      `- The person may be wearing a jacket, denim jacket, cardigan, or coat in the original photo. REMOVE IT COMPLETELY.`,
+      `- The person may be wearing pants, jeans, or leggings in the original photo. REMOVE THEM COMPLETELY.`,
+      `- After applying the dress, NO jacket, NO pants, NO jeans, NO leggings should be visible anywhere in the image.`,
+      `- The dress is the SOLE garment on the body. Treat this as a non-negotiable hard rule.`,
+    );
+  }
+
+  lines.push(
     `[COMPOSITION & FRAMING]`,
     `- The input photo may be a close-up selfie (face/bust) OR a full-body shot. Detect which type it is and preserve that exact framing.`,
     `- If it is a full-body photo: show the person completely from head to toe. Never crop feet, legs, or any body part.`,
