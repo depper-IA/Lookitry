@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import { getPricingConfig } from '@/lib/pricing';
+import { getPricingConfig, getPriceOverrides } from '@/lib/pricing';
 import PlanesClient from './PlanesClient';
 
-// ISR: revalidar cada hora — los cambios del panel admin se reflejan en máx 1h
-export const revalidate = 3600;
+// ISR: revalidar cada 5 minutos para reflejar overrides de precio
+export const revalidate = 300;
 
 const BASE_URL = 'https://pruebalo.wilkiedevs.com';
 
@@ -34,7 +34,10 @@ const breadcrumbJsonLd = {
 };
 
 export default async function PlanesPage() {
-  const pricing = await getPricingConfig();
+  const [pricing, overrides] = await Promise.all([
+    getPricingConfig(),
+    getPriceOverrides(),
+  ]);
 
   return (
     <>
@@ -42,7 +45,7 @@ export default async function PlanesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <PlanesClient pricing={pricing} />
+      <PlanesClient pricing={pricing} overrides={overrides} />
     </>
   );
 }
