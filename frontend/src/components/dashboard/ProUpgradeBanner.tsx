@@ -42,8 +42,8 @@ export function ProUpgradeBanner({ brandName }: ProUpgradeBannerProps) {
           </div>
 
           <h2
-            className="text-xl font-bold leading-tight"
-            style={{ fontFamily: 'Syne, sans-serif', color: 'var(--text-primary)' }}
+            className="text-xl font-syne font-bold leading-tight"
+            style={{ color: 'var(--text-primary)' }}
           >
             Bienvenido al Plan Pro
           </h2>

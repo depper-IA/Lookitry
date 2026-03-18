@@ -14,14 +14,11 @@ export default function TrialActivadoPage() {
   }, [router]);
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{ fontFamily: 'DM Sans, sans-serif', background: '#0a0a0a' }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
       <div className="w-full max-w-md">
 
         <div className="text-center mb-8">
-          <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
+          <Link href="/" className="font-syne font-extrabold text-xl text-white tracking-tight">
             Look<span className="text-[#FF5C3A]">itry</span>
           </Link>
         </div>
@@ -34,7 +31,7 @@ export default function TrialActivadoPage() {
             </svg>
           </div>
 
-          <h1 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[22px] text-white mb-2">
+          <h1 className="font-syne font-bold text-[22px] text-white mb-2">
             Trial activado
           </h1>
           <p className="text-[13px] text-[#555] mb-6 leading-relaxed">

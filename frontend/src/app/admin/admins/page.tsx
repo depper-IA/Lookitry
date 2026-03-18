@@ -162,7 +162,7 @@ export default function AdminsPage() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', margin: 0, fontFamily: 'var(--font-syne, sans-serif)' }}>
+          <h1 className="font-syne" style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
             Administradores
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4, marginBottom: 0 }}>

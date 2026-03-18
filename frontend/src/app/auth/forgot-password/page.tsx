@@ -36,15 +36,12 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{ fontFamily: 'DM Sans, sans-serif', background: '#0a0a0a' }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-            <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
+            <span className="font-syne font-extrabold text-xl text-white tracking-tight">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
@@ -59,7 +56,7 @@ export default function ForgotPasswordPage() {
                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[20px] text-white mb-2">
+              <h2 className="font-syne font-bold text-[20px] text-white mb-2">
                 Revisa tu correo
               </h2>
               <p className="text-[13px] text-[#555] mb-6">
@@ -71,7 +68,7 @@ export default function ForgotPasswordPage() {
             </div>
           ) : (
             <>
-              <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[22px] text-white mb-1">
+              <h2 className="font-syne font-bold text-[22px] text-white mb-1">
                 Recuperar contraseña
               </h2>
               <p className="text-[13px] text-[#555] mb-7">

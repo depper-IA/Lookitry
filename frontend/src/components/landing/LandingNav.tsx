@@ -35,8 +35,7 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
           priority
         />
         <span
-          style={{ fontFamily: 'Syne, sans-serif' }}
-          className="font-extrabold text-base text-white tracking-tight leading-none"
+          className="font-syne font-extrabold text-base text-white tracking-tight leading-none"
         >
           Look<span className="text-[#FF5C3A]">itry</span>
         </span>

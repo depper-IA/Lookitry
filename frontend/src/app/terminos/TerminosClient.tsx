@@ -160,7 +160,7 @@ export default function TerminosClient() {
   const toggle = (id: string) => setActiveId(prev => (prev === id ? null : id));
 
   return (
-    <main style={{ fontFamily: 'DM Sans, sans-serif' }} className="min-h-screen bg-[#0a0a0a]">
+    <main className="min-h-screen bg-[#0a0a0a]">
 
       {/* NAV */}
       <LandingNav />
@@ -174,7 +174,7 @@ export default function TerminosClient() {
             </div>
             <span className="text-[11px] font-semibold tracking-[.12em] uppercase text-[#FF5C3A]">Documento legal</span>
           </div>
-          <h1 style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-3xl md:text-4xl text-white tracking-tight mb-4">
+          <h1 className="font-syne font-extrabold text-3xl md:text-4xl text-white tracking-tight mb-4">
             Términos y Condiciones
           </h1>
           <p className="text-[#777] text-[14px] leading-relaxed max-w-xl">
@@ -222,7 +222,7 @@ export default function TerminosClient() {
                 className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left hover:bg-[#1a1a1a] transition-colors"
                 aria-expanded={activeId === a.id}
               >
-                <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-semibold text-[14px] text-white leading-snug">
+                <span className="font-syne font-semibold text-[14px] text-white leading-snug">
                   {a.title}
                 </span>
                 <IconChevron open={activeId === a.id} />
@@ -245,7 +245,7 @@ export default function TerminosClient() {
               <IconShield />
             </div>
             <div>
-              <p style={{ fontFamily: 'Syne, sans-serif' }} className="font-semibold text-[14px] text-white mb-1">
+              <p className="font-syne font-semibold text-[14px] text-white mb-1">
                 Aviso de privacidad
               </p>
               <p className="text-[12px] text-[#777] leading-relaxed">

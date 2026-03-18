@@ -76,15 +76,12 @@ function ResetPasswordForm() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{ fontFamily: 'DM Sans, sans-serif', background: '#0a0a0a' }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-            <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
+            <span className="font-syne font-extrabold text-xl text-white tracking-tight">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
@@ -98,7 +95,7 @@ function ResetPasswordForm() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[20px] text-white mb-2">
+              <h2 className="font-syne font-bold text-[20px] text-white mb-2">
                 Contraseña actualizada
               </h2>
               <p className="text-[13px] text-[#555]">
@@ -107,7 +104,7 @@ function ResetPasswordForm() {
             </div>
           ) : (
             <>
-              <h2 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[22px] text-white mb-1">
+              <h2 className="font-syne font-bold text-[22px] text-white mb-1">
                 Nueva contraseña
               </h2>
               <p className="text-[13px] text-[#555] mb-7">

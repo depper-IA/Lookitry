@@ -48,14 +48,11 @@ export default function AuthVerifyPage() {
   }, [searchParams, router]);
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{ fontFamily: 'DM Sans, sans-serif', background: '#0a0a0a' }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
       <div className="w-full max-w-md">
 
         <div className="text-center mb-8">
-          <Link href="/" style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
+          <Link href="/" className="font-syne font-extrabold text-xl text-white tracking-tight">
             Look<span className="text-[#FF5C3A]">itry</span>
           </Link>
         </div>
@@ -76,7 +73,7 @@ export default function AuthVerifyPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h1 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[20px] text-white mb-2">
+              <h1 className="font-syne font-bold text-[20px] text-white mb-2">
                 Correo verificado
               </h1>
               <p className="text-[13px] text-[#555] mb-5">{message}</p>
@@ -91,7 +88,7 @@ export default function AuthVerifyPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
               </div>
-              <h1 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[20px] text-white mb-2">
+              <h1 className="font-syne font-bold text-[20px] text-white mb-2">
                 Enlace inválido
               </h1>
               <p className="text-[13px] text-[#555] mb-6">{message}</p>

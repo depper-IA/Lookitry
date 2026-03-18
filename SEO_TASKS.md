@@ -334,7 +334,7 @@ Se estudiarán y aplicarán cuando las páginas de usuarios sean prioridad:
 | 4 | Verificar/crear OG image 1200×630px | Alta | Medio | Pendiente |
 | 5 | Ampliar JSON-LD: FAQPage, featureList, AggregateRating | Alta | Medio | Hecho — commit 1695834 |
 | 6 | Metadata en `/register` | Alta | Bajo | Hecho — commit 1695834 |
-| 7 | Core Web Vitals: INP/LCP (fuentes inline, lazy loading) | Media | Medio | Pendiente |
+| 7 | Core Web Vitals: INP/LCP (fuentes inline, lazy loading) | Media | Medio | Hecho — fuentes inline eliminadas |
 | 8 | LandingClient → Server Components (secciones estáticas) | Media | Alto | Pendiente |
 | 9 | Ampliar disallow en robots.ts | Media | Bajo | Hecho — commit 1695834 |
 | 10 | Breadcrumbs JSON-LD en /planes y /terminos | Media | Bajo | Pendiente |
