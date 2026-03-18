@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import FaqSection from '@/components/landing/FaqSection';
+import { LandingNav } from '@/components/landing/LandingNav';
+import { LandingFooter } from '@/components/landing/LandingFooter';
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 function IconUser() {
@@ -74,34 +75,7 @@ export default function LandingClient() {
     <main style={{ fontFamily: 'DM Sans, sans-serif' }} className="min-h-screen overflow-x-hidden bg-[#f5f2ee]">
 
       {/* NAV */}
-      <nav aria-label="Navegación principal" className="bg-[#0a0a0a] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-          <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-lg leading-none text-white tracking-tight">
-            Look<span className="text-[#FF5C3A]">itry</span>
-          </span>
-        </Link>
-        <div className="flex items-center gap-1 md:gap-2">
-          <Link
-            href="/planes"
-            className="text-[13px] text-[#888] hover:text-white px-2 md:px-3.5 py-1.5 min-h-[44px] flex items-center rounded-md transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A] hidden sm:flex"
-          >
-            Planes
-          </Link>
-          <Link
-            href="/login"
-            className="text-[13px] text-[#888] hover:text-white px-2 md:px-3.5 py-1.5 min-h-[44px] flex items-center rounded-md transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A] hidden sm:flex"
-          >
-            Iniciar sesión
-          </Link>
-          <Link
-            href="/register"
-            className="text-[13px] font-medium bg-[#FF5C3A] hover:bg-[#e84d2c] text-white px-3 md:px-4 py-1.5 min-h-[44px] flex items-center rounded-md transition-all duration-200 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
-          >
-            Empezar gratis
-          </Link>
-        </div>
-      </nav>
+      <LandingNav />
 
       {/* HERO */}
       <section className="bg-[#0a0a0a] px-6 md:px-8 pt-16 md:pt-20 pb-16 md:pb-20 text-center relative overflow-hidden">
@@ -511,38 +485,7 @@ export default function LandingClient() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-[#050505] border-t border-[#1a1a1a] px-6 md:px-8 py-7">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain h-6 w-auto" />
-            <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-base leading-none text-white">
-              Look<span className="text-[#FF5C3A]">itry</span>
-            </span>
-          </Link>
-          <div className="flex items-center gap-4 md:gap-5 flex-wrap justify-center gap-y-3">
-            <Link href="/planes" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]">Planes</Link>
-            <Link href="/login" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]">Iniciar sesión</Link>
-            <a href="mailto:info@pruebalo.wilkiedevs.com" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]">
-              info@pruebalo.wilkiedevs.com
-            </a>
-            <a
-              href="https://wa.me/573105436281"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
-              aria-label="Contactar por WhatsApp al +57 310 543 6281"
-            >
-              +57 310 543 6281
-            </a>
-            <Link href="/admin/login" className="text-[12px] text-[#333] hover:text-[#555] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]">
-              Admin
-            </Link>
-            <Link href="/terminos" className="text-[12px] text-[#666] hover:text-[#aaa] transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]">
-              Términos y Condiciones
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
 
     </main>
   );
