@@ -190,14 +190,14 @@ export default function LandingClient() {
           <h2 id="pricing-heading" className="font-syne font-bold text-3xl text-white tracking-tight mb-10">
             Precios simples
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-start">
             {/* Básico */}
-            <div className="bg-[#141414] border border-[#2a2a2a] hover:border-[#FF5C3A]/60 transition-colors duration-200 rounded-xl p-6 md:p-7">
+            <div className="bg-[#141414] border border-[#2a2a2a] hover:border-[#FF5C3A]/60 transition-colors duration-200 rounded-xl p-6 md:p-7 mt-3">
               <div className="font-syne font-bold text-lg text-white mb-1">Básico</div>
               <div className="font-syne font-extrabold text-[30px] text-white tracking-tight mb-0.5">
                 $150.000 <span className="text-[13px] font-normal text-[#555]">/ mes</span>
               </div>
-              <div className="text-[12px] text-[#FF5C3A] mb-5">7 días de prueba gratis incluidos</div>
+              <div className="text-[12px] text-[#666] mb-5">Pago directo — activación inmediata</div>
               <ul className="flex flex-col gap-2 mb-6">
                 {BASIC_FEATURES.map(f => (
                   <li key={f} className="flex items-center gap-2 text-[13px] text-[#999]">
@@ -209,10 +209,10 @@ export default function LandingClient() {
                 ))}
               </ul>
               <Link
-                href="/register"
-                className="block w-full text-center py-2.5 border border-[#333] hover:border-[#555] text-[#aaa] hover:text-white text-[13px] font-medium rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
+                href="/checkout?plan=BASIC&amount=150000&months=1"
+                className="block w-full text-center py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-medium rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
               >
-                Empezar gratis
+                Contratar Básico
               </Link>
             </div>
             {/* Pro */}
