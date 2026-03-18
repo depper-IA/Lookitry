@@ -26,6 +26,7 @@ import {
   getFeedbackStats,
   resolveFeedback,
   getUnresolvedFeedbackCount,
+  getOpenRouterCredits,
 } from '../controllers/admin.controller';
 import {
   getPaymentSettings,
@@ -84,5 +85,8 @@ router.get('/feedback/count-unresolved', requirePermission('brands'), getUnresol
 router.get('/feedback/stats', requirePermission('brands'), getFeedbackStats);
 router.get('/feedback', requirePermission('brands'), getFeedbacks);
 router.patch('/feedback/:id/resolve', requirePermission('brands'), resolveFeedback);
+
+// Monitor de créditos OpenRouter
+router.get('/openrouter-credits', requirePermission('settings'), getOpenRouterCredits);
 
 export default router;
