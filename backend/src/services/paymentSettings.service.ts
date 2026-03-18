@@ -7,13 +7,18 @@ export interface PaymentSettings {
   landing_original_price: number;
   // URL del footer de mini-landings
   footer_brand_url: string;
-  // Wompi
+  // Wompi — sandbox (pruebas)
   wompi_enabled: boolean;
   wompi_public_key: string;
   wompi_private_key: string;
   wompi_events_secret: string;
   wompi_integrity_secret: string;
   wompi_test_mode: boolean;
+  // Wompi — producción
+  wompi_prod_public_key: string;
+  wompi_prod_private_key: string;
+  wompi_prod_events_secret: string;
+  wompi_prod_integrity_secret: string;
   // PayPal
   paypal_enabled: boolean;
   paypal_email: string;
@@ -53,6 +58,10 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   wompi_events_secret: '',
   wompi_integrity_secret: '',
   wompi_test_mode: true,
+  wompi_prod_public_key: '',
+  wompi_prod_private_key: '',
+  wompi_prod_events_secret: '',
+  wompi_prod_integrity_secret: '',
   paypal_enabled: false,
   paypal_email: '',
   paypal_client_id: '',
@@ -130,7 +139,8 @@ export class PaymentSettingsService {
 
   /**
    * Retorna solo los campos públicos seguros (sin claves privadas)
-   * para exponer al frontend de la marca
+   * para exponer al frontend de la marca.
+   * Si wompi_test_mode=false, expone la llave pública de producción.
    */
   async getPublicSettings(): Promise<{
     landingPrice: number;
@@ -153,11 +163,15 @@ export class PaymentSettingsService {
     currency: string;
   }> {
     const s = await this.getSettings();
+    // En modo producción usar la llave pública de producción
+    const wompiPublicKey = s.wompi_test_mode
+      ? s.wompi_public_key
+      : (s.wompi_prod_public_key || s.wompi_public_key);
     return {
       landingPrice: s.landing_price ?? 650000,
       landingOriginalPrice: s.landing_original_price ?? 900000,
       wompiEnabled: s.wompi_enabled,
-      wompiPublicKey: s.wompi_public_key,
+      wompiPublicKey,
       wompiTestMode: s.wompi_test_mode,
       paypalEnabled: s.paypal_enabled,
       paypalEmail: s.paypal_email,

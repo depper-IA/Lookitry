@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { PaymentSettingsService } from './paymentSettings.service';
 
 /**
  * WompiService
@@ -6,22 +7,58 @@ import crypto from 'crypto';
  * Integración con la pasarela de pagos Wompi (Colombia).
  * Documentación: https://docs.wompi.co
  *
- * Flujo:
- * 1. Frontend abre el widget de Wompi con los datos del pago
- * 2. Wompi procesa el pago y envía un webhook al backend
- * 3. Backend verifica la firma y renueva la suscripción
+ * Las llaves se leen desde payment_settings en Supabase.
+ * Si wompi_test_mode=true → llaves sandbox (wompi_public_key / wompi_private_key)
+ * Si wompi_test_mode=false → llaves producción (wompi_prod_public_key / wompi_prod_private_key)
+ * Fallback a variables de entorno para compatibilidad.
  */
+
+const settingsService = new PaymentSettingsService();
+
 export class WompiService {
-  private readonly publicKey: string;
-  private readonly eventsSecret: string;
-  private readonly integritySecret: string;
   readonly enabled: boolean;
 
   constructor() {
-    this.publicKey = process.env.WOMPI_PUBLIC_KEY || '';
-    this.eventsSecret = process.env.WOMPI_EVENTS_SECRET || '';
-    this.integritySecret = process.env.WOMPI_INTEGRITY_SECRET || process.env.WOMPI_PRIVATE_KEY || '';
     this.enabled = process.env.WOMPI_ENABLED === 'true';
+  }
+
+  /** Obtiene las llaves activas según el modo configurado en payment_settings */
+  private async getActiveKeys(): Promise<{
+    publicKey: string;
+    privateKey: string;
+    eventsSecret: string;
+    integritySecret: string;
+    testMode: boolean;
+  }> {
+    try {
+      const s = await settingsService.getSettings();
+      if (s.wompi_test_mode) {
+        return {
+          publicKey: s.wompi_public_key || process.env.WOMPI_PUBLIC_KEY || '',
+          privateKey: s.wompi_private_key || process.env.WOMPI_PRIVATE_KEY || '',
+          eventsSecret: s.wompi_events_secret || process.env.WOMPI_EVENTS_SECRET || '',
+          integritySecret: s.wompi_integrity_secret || process.env.WOMPI_INTEGRITY_SECRET || '',
+          testMode: true,
+        };
+      } else {
+        return {
+          publicKey: s.wompi_prod_public_key || process.env.WOMPI_PUBLIC_KEY || '',
+          privateKey: s.wompi_prod_private_key || process.env.WOMPI_PRIVATE_KEY || '',
+          eventsSecret: s.wompi_prod_events_secret || process.env.WOMPI_EVENTS_SECRET || '',
+          integritySecret: s.wompi_prod_integrity_secret || process.env.WOMPI_INTEGRITY_SECRET || '',
+          testMode: false,
+        };
+      }
+    } catch {
+      // Fallback a variables de entorno si falla la BD
+      return {
+        publicKey: process.env.WOMPI_PUBLIC_KEY || '',
+        privateKey: process.env.WOMPI_PRIVATE_KEY || '',
+        eventsSecret: process.env.WOMPI_EVENTS_SECRET || '',
+        integritySecret: process.env.WOMPI_INTEGRITY_SECRET || '',
+        testMode: true,
+      };
+    }
   }
 
   /**
@@ -33,7 +70,8 @@ export class WompiService {
     amountInCents: number,
     currency: string = 'COP'
   ): Promise<string> {
-    const data = `${reference}${amountInCents}${currency}${this.integritySecret}`;
+    const { integritySecret } = await this.getActiveKeys();
+    const data = `${reference}${amountInCents}${currency}${integritySecret}`;
     return crypto.createHash('sha256').update(data).digest('hex');
   }
 
@@ -49,11 +87,12 @@ export class WompiService {
    * Verifica la firma del webhook de Wompi.
    * Wompi envía: X-Event-Checksum = SHA256(event_json + events_secret)
    */
-  verifyWebhookSignature(payload: string, checksum: string): boolean {
-    if (!this.eventsSecret) return false;
+  async verifyWebhookSignature(payload: string, checksum: string): Promise<boolean> {
+    const { eventsSecret } = await this.getActiveKeys();
+    if (!eventsSecret) return false;
     const expected = crypto
       .createHash('sha256')
-      .update(payload + this.eventsSecret)
+      .update(payload + eventsSecret)
       .digest('hex');
     return expected === checksum;
   }
@@ -64,10 +103,7 @@ export class WompiService {
    */
   extractBrandIdFromReference(reference: string): string | null {
     const parts = reference.split('-');
-    // TRYON-{uuid-con-guiones}-{timestamp}
-    // El uuid tiene 5 partes separadas por guión, el timestamp es el último
     if (parts.length < 3 || parts[0] !== 'TRYON') return null;
-    // Reconstruir el uuid: partes 1..n-1 (excluir TRYON y timestamp)
     const uuidParts = parts.slice(1, -1);
     return uuidParts.join('-');
   }
@@ -75,11 +111,12 @@ export class WompiService {
   /**
    * Retorna los datos necesarios para inicializar el widget de Wompi en el frontend.
    */
-  getWidgetConfig(brandId: string, amountCOP: number) {
+  async getWidgetConfig(brandId: string, amountCOP: number) {
+    const { publicKey } = await this.getActiveKeys();
     const reference = this.generateReference(brandId);
     const amountInCents = amountCOP * 100;
     return {
-      publicKey: this.publicKey,
+      publicKey,
       reference,
       amountInCents,
       currency: 'COP',
@@ -88,27 +125,17 @@ export class WompiService {
 
   /**
    * Genera la URL del checkout hosted de Wompi.
-   * El usuario es redirigido a esta URL — Wompi maneja todo el flujo de pago.
-   * Documentación: https://docs.wompi.co/docs/colombia/widget-checkout-web
-   *
-   * URL base: https://checkout.wompi.co/p/
-   * Parámetros requeridos:
-   *   public-key, currency, amount-in-cents, reference, signature:integrity, redirect-url
-   *
-   * @param cardOnly - Si true, restringe los métodos de pago a solo CARD (tarjeta débito/crédito).
-   *                   Usar para verificación de trial donde se requiere tarjeta real.
    */
   async getCheckoutUrl(brandId: string, amountCOP: number, redirectUrl: string, cardOnly = false): Promise<string> {
+    const { publicKey } = await this.getActiveKeys();
     const reference = this.generateReference(brandId);
     const amountInCents = amountCOP * 100;
     const currency = 'COP';
     const signature = await this.generateIntegritySignature(reference, amountInCents, currency);
 
-    // URLSearchParams codifica ":" como "%3A", pero Wompi requiere "signature:integrity" literal.
-    // Construimos la query string manualmente para preservar los dos puntos.
     const encode = (v: string) => encodeURIComponent(v);
     const params = [
-      `public-key=${encode(this.publicKey)}`,
+      `public-key=${encode(publicKey)}`,
       `currency=${encode(currency)}`,
       `amount-in-cents=${encode(String(amountInCents))}`,
       `reference=${encode(reference)}`,
@@ -116,7 +143,6 @@ export class WompiService {
       `redirect-url=${encode(redirectUrl)}`,
     ];
 
-    // Restringir a solo tarjeta cuando se requiere verificación de tarjeta real
     if (cardOnly) {
       params.push(`payment-methods=${encode('CARD')}`);
     }
