@@ -1176,7 +1176,7 @@ function ProbadorAbout({ brand }: { brand: BrandData }) {
         {brand.logo && (
           <div className="flex justify-center mb-6">
             <BrandLogo
-              src={brand.logo_light || brand.logo}
+              src={brand.logo_dark || brand.logo}
               alt={brand.name}
               className="h-14 w-auto max-w-[160px] object-contain"
             />
