@@ -972,19 +972,12 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
   return (
     <nav className="sticky top-0 z-50 h-14 flex items-center justify-between px-6 border-b" style={{ backgroundColor: 'var(--p-surface, #fff)', borderColor: 'var(--p-border, #e5e5e5)' }}>
       <div className="flex items-center gap-2.5">
-        {brand.logo ? (
+        {brand.logo && (
           <BrandLogo
             src={brand.logo_dark || brand.logo}
             alt={brand.name}
-            className="h-8 w-auto max-w-[120px] object-contain"
-            fallbackInitials={brand.name.slice(0, 2).toUpperCase()}
-            fallbackBg={primary}
-            fallbackTextColor="#fff"
+            className="h-8 w-auto max-w-[140px] object-contain"
           />
-        ) : (
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: primary }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-          </div>
         )}
         {brand.show_brand_name !== false && (
           <span className="font-bold text-base" style={{ fontFamily: "'Playfair Display', Georgia, serif", color: 'var(--p-text, #0f0f0f)' }}>{brand.name}</span>
