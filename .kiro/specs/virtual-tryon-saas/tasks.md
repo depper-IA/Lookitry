@@ -612,7 +612,7 @@
     - Hero, stats, pricing, steps, testimonials, FAQ pueden ser Server Components
     - Solo el selector de precio y botones con `router.push` deben quedar como Client Components
     - _Archivos: frontend/src/components/landing/LandingClient.tsx_
-  - [-] 57.9 GEO: agregar resúmenes extractables de 50-70 palabras por sección clave
+  - [x] 57.9 GEO: agregar resúmenes extractables de 50-70 palabras por sección clave
     - Secciones: qué es Lookitry, cómo funciona, precios
     - Formato extractable por AI engines (Google AI Overviews, ChatGPT, Perplexity)
     - _Archivos: frontend/src/components/landing/LandingClient.tsx_
