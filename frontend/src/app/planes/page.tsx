@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
+import { getPricingConfig } from '@/lib/pricing';
 import PlanesClient from './PlanesClient';
+
+// ISR: revalidar cada hora — los cambios del panel admin se reflejan en máx 1h
+export const revalidate = 3600;
 
 const BASE_URL = 'https://pruebalo.wilkiedevs.com';
 
@@ -29,14 +33,16 @@ const breadcrumbJsonLd = {
   ],
 };
 
-export default function PlanesPage() {
+export default async function PlanesPage() {
+  const pricing = await getPricingConfig();
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <PlanesClient />
+      <PlanesClient pricing={pricing} />
     </>
   );
 }

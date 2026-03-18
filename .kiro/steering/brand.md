@@ -50,7 +50,7 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 
 ## Tipografía
 
-- Títulos / marca: **Syne** (`--font-syne`) — pesos 400–800
+- Títulos / marca: **Plus Jakarta Sans** (`--font-jakarta`) — pesos 400–800
 - Cuerpo / UI: **DM Sans** (`--font-dm-sans`) — pesos 300–500
 
 ## Variables CSS del sistema de diseño
