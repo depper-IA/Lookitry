@@ -31,7 +31,7 @@ export class WompiController {
         : JSON.stringify(req.body);
 
       // Verificar firma HMAC antes de procesar nada
-      if (!checksum || !wompiService.verifyWebhookSignature(rawBody, checksum)) {
+      if (!checksum || !(await wompiService.verifyWebhookSignature(rawBody, checksum))) {
         console.warn('[Wompi] Firma inválida o ausente. Checksum recibido:', checksum);
         res.status(401).json({ error: 'Firma inválida' });
         return;
