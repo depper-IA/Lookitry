@@ -52,19 +52,19 @@ const RULES_BY_CATEGORY: Record<string, PromptRule> = {
   // Un vestido cubre de hombros a rodillas/tobillos → reemplaza TODO lo que hay debajo
   VESTIDO: {
     replacement:
-      'The product is a DRESS that covers the entire body from shoulders to knees or ankles.',
+      'The product is a DRESS that covers the entire body from shoulders to knees or ankles. A dress is a ONE-PIECE garment — it replaces EVERYTHING the person is wearing.',
     replace:
-      'REPLACE the complete outfit: remove the top/shirt, remove the pants/jeans/leggings, and remove the shoes/footwear. The dress replaces ALL clothing items.',
+      'CRITICAL — FULL OUTFIT REMOVAL REQUIRED: (1) Remove the jacket, blazer, cardigan, or any outer layer. (2) Remove the top, shirt, blouse, or t-shirt underneath. (3) Remove the pants, jeans, leggings, or skirt. (4) Remove the shoes and footwear. The dress is the ONLY garment visible on the body. Do NOT leave any original clothing item visible under or over the dress.',
     keep:
-      'KEEP the person\'s face, hair, skin tone, body proportions, pose, and background IDENTICAL to the original photo.',
+      'KEEP the person\'s face, hair, skin tone, body proportions, pose, and background IDENTICAL to the original photo. Do NOT change anything about the person except their clothing.',
   },
   DRESS: {
     replacement:
-      'The product is a DRESS that covers the entire body from shoulders to knees or ankles.',
+      'The product is a DRESS that covers the entire body from shoulders to knees or ankles. A dress is a ONE-PIECE garment — it replaces EVERYTHING the person is wearing.',
     replace:
-      'REPLACE the complete outfit: remove the top/shirt, remove the pants/jeans/leggings, and remove the shoes/footwear. The dress replaces ALL clothing items.',
+      'CRITICAL — FULL OUTFIT REMOVAL REQUIRED: (1) Remove the jacket, blazer, cardigan, or any outer layer. (2) Remove the top, shirt, blouse, or t-shirt underneath. (3) Remove the pants, jeans, leggings, or skirt. (4) Remove the shoes and footwear. The dress is the ONLY garment visible on the body. Do NOT leave any original clothing item visible under or over the dress.',
     keep:
-      'KEEP the person\'s face, hair, skin tone, body proportions, pose, and background IDENTICAL to the original photo.',
+      'KEEP the person\'s face, hair, skin tone, body proportions, pose, and background IDENTICAL to the original photo. Do NOT change anything about the person except their clothing.',
   },
 
   // ── CAMISAS / TOPS / BLUSAS ───────────────────────────────────────────────
