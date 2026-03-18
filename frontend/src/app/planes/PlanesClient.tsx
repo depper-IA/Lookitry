@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
@@ -66,7 +65,6 @@ interface Props {
 export default function PlanesClient({ pricing, overrides = [] }: Props) {
   const router = useRouter();
   const [selectedMonths, setSelectedMonths] = useState(1);
-  const [trialActive, setTrialActive] = useState(false);
 
   const { basic, pro, descuentos_duracion } = pricing;
 
@@ -83,13 +81,6 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
   ];
 
   const duration = DURATIONS.find(d => d.months === selectedMonths)!;
-
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`)
-      .then(r => r.json())
-      .then(d => setTrialActive(d.active === true))
-      .catch(() => setTrialActive(false));
-  }, []);
 
   // Precios calculados dinámicamente (con override si aplica)
   const basicBasePrice    = basicOverride ? basicOverride.override_price : basic.precio_mensual_cop;
@@ -112,8 +103,8 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
     <main className="min-h-screen bg-[#0a0a0a]">
 
       <LandingNav
-        ctaHref={trialActive ? '/register' : `/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`}
-        ctaLabel={trialActive ? 'Empezar gratis' : 'Contratar ahora'}
+        ctaHref={`/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`}
+        ctaLabel="Contratar ahora"
       />
 
       {/* Hero */}
@@ -206,16 +197,16 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                   {duration.pct > 0 && <span className="ml-1 line-through text-[#333]">{formatCOP(basicOriginalTotal)}</span>}
                 </p>
               )}
-              <p className="text-[12px] text-[#FF5C3A] mb-6">
-                {trialActive ? '7 días de prueba gratuita incluidos' : 'Pago directo — sin período de prueba'}
+              <p className="text-[12px] text-[#444] mb-6">
+                Pago directo — activación inmediata
               </p>
 
-              <Link
-                href="/register"
-                className="block w-full text-center py-2.5 border border-[#333] hover:border-[#555] text-[#aaa] hover:text-white text-[13px] font-medium rounded-lg transition-colors mb-6"
+              <button
+                onClick={() => router.push(`/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`)}
+                className="block w-full text-center py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-medium rounded-lg transition-colors mb-6"
               >
-                {trialActive ? (basic.boton_texto ?? 'Empezar gratis — 7 días') : (basic.boton_texto_sin_trial ?? 'Contratar Básico')}
-              </Link>
+                {basic.boton_texto_sin_trial ?? 'Contratar plan Básico ahora'}
+              </button>
 
               <ul className="flex flex-col gap-2.5">
                 {basic.features.map(f => (
@@ -353,20 +344,18 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
           style={{ width: '500px', height: '300px', background: 'radial-gradient(ellipse, rgba(255,92,58,0.06) 0%, transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }} />
         <div className="relative z-10 max-w-xl mx-auto">
           <h2 className="font-syne font-extrabold text-[32px] text-white tracking-tight mb-3">
-            {trialActive ? 'Empieza hoy sin riesgos' : 'Empieza hoy'}
+            Empieza hoy
           </h2>
           <p className="text-[15px] text-[#555] mb-8">
-            {trialActive
-              ? 'Plan Básico con 7 días gratis. Plan Pro con pago directo y seguro.'
-              : 'Elige el plan que mejor se adapte a tu marca.'}
+            Elige el plan que mejor se adapte a tu marca.
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
-            <Link
-              href={trialActive ? '/register' : `/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`}
+            <button
+              onClick={() => router.push(`/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`)}
               className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[14px] font-medium px-7 py-3 rounded-lg transition-colors flex items-center gap-2"
             >
-              {trialActive ? 'Crear cuenta gratis' : 'Contratar Básico'} <IconArrow />
-            </Link>
+              Contratar plan Básico ahora <IconArrow />
+            </button>
             <button
               onClick={() => router.push(`/checkout?plan=PRO&amount=${proTotalPrice}&months=${selectedMonths}`)}
               className="text-[#aaa] hover:text-white text-[14px] px-7 py-3 rounded-lg border border-[#333] hover:border-[#555] transition-colors"
