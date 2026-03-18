@@ -174,14 +174,13 @@ export default function RegisterForm() {
   if (trialActive === false) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center px-4 py-12"
-        style={{ fontFamily: 'DM Sans, sans-serif', background: '#0a0a0a' }}
+        className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]"
       >
         <div className="w-full max-w-md">
           <div className="flex justify-center mb-8">
             <Link href="/" className="flex items-center gap-2.5">
               <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-              <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
+              <span className="font-syne font-extrabold text-xl text-white tracking-tight">
                 Look<span className="text-[#FF5C3A]">itry</span>
               </span>
             </Link>
@@ -192,7 +191,7 @@ export default function RegisterForm() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
               </svg>
             </div>
-            <h1 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[20px] text-white mb-2">
+            <h1 className="font-syne font-bold text-[20px] text-white mb-2">
               No hay prueba gratuita activa
             </h1>
             <p className="text-[13px] text-[#555] mb-7 leading-relaxed">
@@ -220,22 +219,21 @@ export default function RegisterForm() {
   // ── Formulario de registro ─────────────────────────────────────────────────
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{ fontFamily: 'DM Sans, sans-serif', background: '#0a0a0a' }}
+      className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]"
     >
       <div className="w-full max-w-md">
 
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-            <span style={{ fontFamily: 'Syne, sans-serif' }} className="font-extrabold text-xl text-white tracking-tight">
+            <span className="font-syne font-extrabold text-xl text-white tracking-tight">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
         </div>
 
         <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8">
-          <h1 style={{ fontFamily: 'Syne, sans-serif' }} className="font-bold text-[22px] text-white mb-1">
+          <h1 className="font-syne font-bold text-[22px] text-white mb-1">
             Crear cuenta
           </h1>
           <p className="text-[13px] text-[#FF5C3A] mb-6">

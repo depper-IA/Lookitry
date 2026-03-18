@@ -273,8 +273,7 @@ export default function FaqSection() {
           Preguntas frecuentes
         </p>
         <h2
-          style={{ fontFamily: 'Syne, sans-serif' }}
-          className="font-bold text-3xl text-white tracking-tight mb-10"
+          className="font-syne font-bold text-3xl text-white tracking-tight mb-10"
         >
           Todo lo que necesitas saber
         </h2>

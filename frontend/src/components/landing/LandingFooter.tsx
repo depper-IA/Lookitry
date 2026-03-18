@@ -14,8 +14,7 @@ export function LandingFooter() {
             className="object-contain h-[22px] w-auto"
           />
           <span
-            style={{ fontFamily: 'Syne, sans-serif' }}
-            className="font-extrabold text-sm text-white tracking-tight"
+            className="font-syne font-extrabold text-sm text-white tracking-tight"
           >
             Look<span className="text-[#FF5C3A]">itry</span>
           </span>
