@@ -36,6 +36,24 @@ jest.mock('../config/supabase', () => ({
   supabaseAdmin: {},
 }));
 
+jest.mock('../services/paymentSettings.service', () => ({
+  PaymentSettingsService: jest.fn().mockImplementation(() => ({
+    getSettings: jest.fn().mockImplementation(() =>
+      Promise.resolve({
+        wompi_test_mode: true,
+        wompi_public_key: process.env.WOMPI_PUBLIC_KEY || 'pub_test_key',
+        wompi_private_key: 'prv_test_key',
+        wompi_events_secret: process.env.WOMPI_EVENTS_SECRET || '',
+        wompi_integrity_secret: process.env.WOMPI_INTEGRITY_SECRET || '',
+        wompi_prod_public_key: '',
+        wompi_prod_private_key: '',
+        wompi_prod_events_secret: '',
+        wompi_prod_integrity_secret: '',
+      })
+    ),
+  })),
+}));
+
 // Importar DESPUÉS de los mocks
 import { WompiController } from '../controllers/wompi.controller';
 import { wompiService } from '../services/wompi.service';
@@ -87,28 +105,28 @@ describe('WompiService', () => {
   });
 
   describe('verifyWebhookSignature', () => {
-    it('acepta firma válida', () => {
+    it('acepta firma válida', async () => {
       const payload = JSON.stringify({ event: 'transaction.updated' });
       const checksum = buildChecksum(payload, EVENTS_SECRET);
-      expect(service.verifyWebhookSignature(payload, checksum)).toBe(true);
+      expect(await service.verifyWebhookSignature(payload, checksum)).toBe(true);
     });
 
-    it('rechaza firma inválida', () => {
+    it('rechaza firma inválida', async () => {
       const payload = JSON.stringify({ event: 'transaction.updated' });
-      expect(service.verifyWebhookSignature(payload, 'firma-incorrecta')).toBe(false);
+      expect(await service.verifyWebhookSignature(payload, 'firma-incorrecta')).toBe(false);
     });
 
-    it('rechaza cuando no hay events secret configurado', () => {
+    it('rechaza cuando no hay events secret configurado', async () => {
       process.env.WOMPI_EVENTS_SECRET = '';
       const svc = new WompiService();
       const checksum = buildChecksum('{}', EVENTS_SECRET);
-      expect(svc.verifyWebhookSignature('{}', checksum)).toBe(false);
+      expect(await svc.verifyWebhookSignature('{}', checksum)).toBe(false);
     });
 
-    it('rechaza payload alterado aunque el checksum sea de otro payload', () => {
+    it('rechaza payload alterado aunque el checksum sea de otro payload', async () => {
       const original = JSON.stringify({ amount: 100 });
       const checksum = buildChecksum(original, EVENTS_SECRET);
-      expect(service.verifyWebhookSignature(JSON.stringify({ amount: 999 }), checksum)).toBe(false);
+      expect(await service.verifyWebhookSignature(JSON.stringify({ amount: 999 }), checksum)).toBe(false);
     });
   });
 
@@ -189,7 +207,7 @@ describe('WompiController.handleWebhook', () => {
     renewMock?.mockReset();
 
     // Defaults: firma válida, brandId correcto, renovación exitosa
-    mockedWompi.verifyWebhookSignature.mockReturnValue(true);
+    mockedWompi.verifyWebhookSignature.mockResolvedValue(true);
     mockedWompi.extractBrandIdFromReference.mockReturnValue(BRAND_ID);
     renewMock?.mockResolvedValue({ id: BRAND_ID });
   });
@@ -320,7 +338,7 @@ describe('WompiController.handleWebhook', () => {
 
   describe('Seguridad - verificación de firma', () => {
     it('rechaza webhook sin header x-event-checksum (401)', async () => {
-      mockedWompi.verifyWebhookSignature.mockReturnValue(false);
+      mockedWompi.verifyWebhookSignature.mockResolvedValue(false);
       const controller = new WompiController();
       const event = buildTransactionEvent('APPROVED', `TRYON-${BRAND_ID}-8`);
       const { req, res } = buildReqRes(event, {});
@@ -332,7 +350,7 @@ describe('WompiController.handleWebhook', () => {
     });
 
     it('rechaza webhook con firma incorrecta (401)', async () => {
-      mockedWompi.verifyWebhookSignature.mockReturnValue(false);
+      mockedWompi.verifyWebhookSignature.mockResolvedValue(false);
       const controller = new WompiController();
       const event = buildTransactionEvent('APPROVED', `TRYON-${BRAND_ID}-9`);
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'firma-falsa' });
@@ -344,7 +362,7 @@ describe('WompiController.handleWebhook', () => {
     });
 
     it('no procesa el pago si la firma falla aunque el evento sea APPROVED', async () => {
-      mockedWompi.verifyWebhookSignature.mockReturnValue(false);
+      mockedWompi.verifyWebhookSignature.mockResolvedValue(false);
       const controller = new WompiController();
       const event = buildTransactionEvent('APPROVED', `TRYON-${BRAND_ID}-10`, 15000000);
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'invalido' });
