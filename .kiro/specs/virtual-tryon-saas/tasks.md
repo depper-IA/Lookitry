@@ -570,3 +570,51 @@
   - [x] 55.3 Enviar notificación al admin (webhook o email) con detalle del error
     - Incluir: timestamp, brandSlug, productId, generationId, mensaje de error de OpenRouter
     - _Archivos: n8n workflow wPLypk7KhBcFLicX_
+
+---
+
+- [-] 56. Widget TryOn y mini-landing: fixes de layout y espacio en blanco
+  - [x] 56.1 Eliminar `min-h-screen` del layout top-bar (default) en `TryOnWidget.tsx`
+    - El wrapper del layout top-bar usaba `min-h-screen` generando espacio en blanco enorme cuando el widget se embebe dentro de la mini-landing
+    - _Archivos: frontend/src/components/tryon/TryOnWidget.tsx_
+  - [x] 56.2 Corregir estado `generating` del layout top-bar
+    - También usaba `min-h-screen flex flex-col` con `flex-1` — reemplazado por `flex flex-col` con `py-16`
+    - _Archivos: frontend/src/components/tryon/TryOnWidget.tsx_
+  - [x] 56.3 Corregir estados loading y error del widget
+    - Ambos usaban `min-h-screen` — reemplazados por `py-16` para adaptarse al contexto embebido
+    - _Archivos: frontend/src/components/tryon/TryOnWidget.tsx_
+  - [x] 56.4 Ampliar contenedor del widget en `ProbadorUploadZone` (mini-landing template Moderno)
+    - `max-w-xl` → `max-w-2xl`, texto del encabezado separado del contenedor del widget
+    - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
+
+---
+
+- [-] 57. SEO técnico: correcciones y verificaciones
+  - [x] 57.1 Corregir canonical URL relativa en `terminos/page.tsx`
+    - Tenía `canonical: '/terminos'` (relativa) — corregido a `${BASE_URL}/terminos` (absoluta)
+    - _Archivos: frontend/src/app/terminos/page.tsx_
+  - [x] 57.2 Agregar breadcrumb JSON-LD en `terminos/page.tsx`
+    - Faltaba `BreadcrumbList` schema (ya existía en `/planes`)
+    - _Archivos: frontend/src/app/terminos/page.tsx_
+  - [x] 57.3 Corregir bug de duplicación de código en `terminos/page.tsx`
+    - `strReplace` anterior appendeó contenido en lugar de reemplazar → 10 errores TypeScript
+    - Archivo reescrito limpio con `fsWrite`
+    - _Archivos: frontend/src/app/terminos/page.tsx_
+  - [ ] 57.4 Verificar OG image visualmente con https://www.opengraph.xyz/
+    - El archivo existe (`/public/og-image.png`, 74KB) pero no se ha validado visualmente
+    - Acción manual tras el próximo deploy
+  - [x] 57.5 Verificar que el logo en `LandingNav` tenga prop `priority` en `<Image>`
+    - _Archivos: frontend/src/components/landing/LandingNav.tsx_
+  - [x] 57.6 Imágenes `/steps/paso-*.webp` — verificar `sizes` y `loading="lazy"`
+    - _Archivos: frontend/src/components/landing/LandingClient.tsx_
+  - [x] 57.7 Auditar scripts de terceros que bloqueen el main thread (analytics, chat widgets)
+  - [x] 57.8 LandingClient → convertir secciones estáticas a Server Components
+    - Hero, stats, pricing, steps, testimonials, FAQ pueden ser Server Components
+    - Solo el selector de precio y botones con `router.push` deben quedar como Client Components
+    - _Archivos: frontend/src/components/landing/LandingClient.tsx_
+  - [-] 57.9 GEO: agregar resúmenes extractables de 50-70 palabras por sección clave
+    - Secciones: qué es Lookitry, cómo funciona, precios
+    - Formato extractable por AI engines (Google AI Overviews, ChatGPT, Perplexity)
+    - _Archivos: frontend/src/components/landing/LandingClient.tsx_
+  - [ ] 57.10 Verificar en Google Search Console y Bing Webmaster Tools
+    - Acción manual — enviar sitemap tras el próximo deploy

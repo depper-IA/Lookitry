@@ -329,25 +329,39 @@ Se estudiarán y aplicarán cuando las páginas de usuarios sean prioridad:
 | # | Tarea | Prioridad | Esfuerzo | Estado |
 |---|-------|-----------|----------|--------|
 | 1 | Adquirir dominio propio (lookitry.com) | Alta | Alto | A corto plazo |
-| 2 | Metadata en `/planes` y `/terminos` | Alta | Medio | Hecho — commit 1695834 |
-| 3 | Ampliar sitemap (/terminos, /register) | Alta | Bajo | Hecho — commit 1695834 |
-| 4 | Verificar/crear OG image 1200×630px | Alta | Medio | Pendiente |
-| 5 | Ampliar JSON-LD: FAQPage, featureList, AggregateRating | Alta | Medio | Hecho — commit 1695834 |
-| 6 | Metadata en `/register` | Alta | Bajo | Hecho — commit 1695834 |
-| 7 | Core Web Vitals: INP/LCP (fuentes inline, lazy loading) | Media | Medio | Hecho — fuentes inline eliminadas |
+| 2 | Metadata en `/planes` y `/terminos` | Alta | Medio | Hecho — verificado |
+| 3 | Ampliar sitemap (/terminos, /register) | Alta | Bajo | Hecho — verificado |
+| 4 | Verificar/crear OG image 1200×630px | Alta | Medio | Hecho — /public/og-image.png existe, 74KB |
+| 5 | Ampliar JSON-LD: FAQPage, featureList, AggregateRating | Alta | Medio | Hecho — verificado en page.tsx |
+| 6 | Metadata en `/register` | Alta | Bajo | Hecho — verificado |
+| 7 | Core Web Vitals: fontFamily inline eliminados en LandingClient | Media | Medio | Hecho — verificado, sin fontFamily inline |
 | 8 | LandingClient → Server Components (secciones estáticas) | Media | Alto | Pendiente |
-| 9 | Ampliar disallow en robots.ts | Media | Bajo | Hecho — commit 1695834 |
-| 10 | Breadcrumbs JSON-LD en /planes y /terminos | Media | Bajo | Pendiente |
+| 9 | Ampliar disallow en robots.ts | Media | Bajo | Hecho — verificado, 11 rutas bloqueadas |
+| 10 | Breadcrumbs JSON-LD en /planes y /terminos | Media | Bajo | Hecho — /planes verificado, /terminos agregado ahora |
 | 11 | GEO: resúmenes extractables + consistencia de hechos | Media | Medio | Pendiente |
-| 12 | Hreflang es-VE | Baja | Bajo | Hecho — commit 8ba2d8e |
-| 13 | Página 404 personalizada | Baja | Bajo | Pendiente |
-| 14 | Verificar en GSC y Bing Webmaster Tools | Baja | Bajo | Pendiente |
+| 12 | Hreflang es-VE | Baja | Bajo | Hecho — verificado en layout.tsx |
+| 13 | Página 404 personalizada | Baja | Bajo | Hecho — not-found.tsx existe con nav y links |
+| 14 | Verificar en GSC y Bing Webmaster Tools | Baja | Bajo | Pendiente — acción manual |
 | 15 | ISR en mini-landings (revalidate: 60) | Baja | Bajo | Pendiente (páginas usuarios) |
 | 16 | Canonical en /pruebalo/[slug] y /sitio/[slug] | — | Bajo | Pendiente (páginas usuarios) |
 | 17 | OG dinámico para mini-landings | — | Medio | Pendiente (páginas usuarios) |
 | 18 | Alt text en imágenes de mini-landings | — | Bajo | Pendiente (páginas usuarios) |
 | 19 | Schema LocalBusiness en mini-landings | — | Bajo | Pendiente (páginas usuarios) |
 | 20 | Blog con contenido editorial | — | Muy alto | Pendiente (largo plazo) |
+| 21 | Verificar OG image visualmente con opengraph.xyz | Alta | Bajo | Pendiente — acción manual |
+| 22 | Verificar logo en LandingNav tiene prop `priority` en `<Image>` | Media | Bajo | Pendiente |
+| 23 | Imágenes `/steps/paso-*.webp` — agregar `sizes` y `loading="lazy"` | Media | Bajo | Pendiente |
+| 24 | Auditar scripts de terceros que bloqueen main thread | Media | Medio | Pendiente |
+| 25 | `terminos/page.tsx` — bug de duplicación de código corregido (10 errores TS) | Alta | Bajo | Hecho |
+
+---
+
+## Notas de verificación (mar 2026)
+
+- `terminos/page.tsx`: canonical tenía URL relativa (`/terminos`) — corregido a URL absoluta con `${BASE_URL}/terminos`. Breadcrumb JSON-LD agregado.
+- `og-image.png`: existe en `/public`, pesa 74KB (dentro del límite de 200KB). Verificar visualmente con https://www.opengraph.xyz/
+- `LandingClient.tsx`: sin `fontFamily` inline — correcto. Sigue siendo Client Component (tarea 8 pendiente).
+- `MiniLanding.tsx`: tiene `fontFamily` inline con Playfair Display e Inter — son fuentes de las mini-landings de clientes, no afectan CWV de las páginas propias de Lookitry.
 
 ---
 
@@ -358,3 +372,4 @@ Se estudiarán y aplicarán cuando las páginas de usuarios sean prioridad:
 | `8ba2d8e` | mar 2026 | Venezuela en areaServed, keywords VE, hreflang es-VE en layout.tsx |
 | `7eb5632` | mar 2026 | SEO_TASKS.md reescrito con fuentes verificadas, GEO, CWV 2026 |
 | `1695834` | mar 2026 | Metadata /planes + /terminos (Server+Client), sitemap +/terminos, robots.ts +8 disallow, metadata /register, JSON-LD: FAQPage (6 preguntas) + featureList + AggregateRating + eligibleRegion VE |
+| —        | mar 2026 | Breadcrumb JSON-LD en /terminos + canonical URL absoluta corregida |
