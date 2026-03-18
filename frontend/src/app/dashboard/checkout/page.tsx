@@ -12,7 +12,7 @@ import type { WompiWidgetResult } from '@/types/wompi';
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
-const PLAN_INFO: Record<PlanType, { name: string; price: number; features: string[] }> = {
+const PLAN_INFO_FALLBACK: Record<PlanType, { name: string; price: number; features: string[] }> = {
   BASIC: {
     name: 'Plan Básico',
     price: 150000,
@@ -49,10 +49,14 @@ const MONTH_DISCOUNTS = [
 ];
 
 // Precio a cobrar según plan actual → plan destino
-function getEffectivePrice(targetPlan: PlanType, currentPlan: PlanType | null): number {
-  const target = PLAN_INFO[targetPlan].price;
+function getEffectivePrice(
+  targetPlan: PlanType,
+  currentPlan: PlanType | null,
+  planInfo: Record<PlanType, { name: string; price: number; features: string[] }>
+): number {
+  const target = planInfo[targetPlan].price;
   if (!currentPlan || currentPlan === targetPlan) return target;
-  const current = PLAN_INFO[currentPlan]?.price ?? 0;
+  const current = planInfo[currentPlan]?.price ?? 0;
   return target > current ? target - current : target;
 }
 
@@ -64,7 +68,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planParam = (searchParams.get('plan') ?? 'BASIC').toUpperCase() as PlanType;
-  const initialPlan: PlanType = planParam in PLAN_INFO ? planParam : 'BASIC';
+  const initialPlan: PlanType = planParam in PLAN_INFO_FALLBACK ? planParam : 'BASIC';
 
   // plan es estado local — el usuario puede cambiarlo desde el selector
   const [selectedPlan, setSelectedPlan] = useState<PlanType>(initialPlan);
@@ -79,12 +83,14 @@ export default function CheckoutPage() {
   const [includeLanding, setIncludeLanding] = useState(false);
   const [miniLandingPrice, setMiniLandingPrice] = useState(MINI_LANDING_PRICE_FALLBACK);
 
+  // Precios dinámicos desde pricing_config de Supabase
+  const [planInfo, setPlanInfo] = useState(PLAN_INFO_FALLBACK);
+
   const plan = selectedPlan;
-  const planInfo = PLAN_INFO[plan];
   const monthDiscount = MONTH_DISCOUNTS.find(d => d.months === selectedMonths)!;
-  const effectivePlanPrice = isInTrial ? planInfo.price : getEffectivePrice(plan, currentPlan);
+  const effectivePlanPrice = isInTrial ? planInfo[plan].price : getEffectivePrice(plan, currentPlan, planInfo);
   const planTotal = Math.round(effectivePlanPrice * selectedMonths * (1 - monthDiscount.pct / 100));
-  const isUpgrade = !isInTrial && currentPlan !== null && currentPlan !== plan && effectivePlanPrice < planInfo.price;
+  const isUpgrade = !isInTrial && currentPlan !== null && currentPlan !== plan && effectivePlanPrice < planInfo[plan].price;
   const totalPrice = planTotal + (includeLanding ? miniLandingPrice : 0);
 
   useEffect(() => {
@@ -98,10 +104,29 @@ export default function CheckoutPage() {
       .then(() => setWompiEnabled(true))
       .catch(() => setWompiEnabled(false));
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.landingPrice) setMiniLandingPrice(d.landingPrice); })
-      .catch(() => {});
+    // Cargar precios dinámicos en paralelo
+    Promise.all([
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
+        .then(r => r.ok ? r.json() : null),
+      fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?select=id,data`, {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        },
+      }).then(r => r.ok ? r.json() : null),
+    ]).then(([paySettings, pricingRows]) => {
+      if (paySettings?.landingPrice) setMiniLandingPrice(paySettings.landingPrice);
+      if (Array.isArray(pricingRows)) {
+        const basic = pricingRows.find((r: any) => r.id === 'basic')?.data;
+        const pro   = pricingRows.find((r: any) => r.id === 'pro')?.data;
+        if (basic?.precio_mensual_cop || pro?.precio_mensual_cop) {
+          setPlanInfo(prev => ({
+            BASIC: { ...prev.BASIC, price: basic?.precio_mensual_cop ?? prev.BASIC.price },
+            PRO:   { ...prev.PRO,   price: pro?.precio_mensual_cop   ?? prev.PRO.price },
+          }));
+        }
+      }
+    }).catch(() => {});
   }, [plan]);
 
   const handleSuccess = (result: WompiWidgetResult) => {
@@ -191,10 +216,10 @@ export default function CheckoutPage() {
           <h1 className="text-xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>Checkout</h1>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             {isInTrial
-              ? `Activar ${planInfo.name} — desde tu período de prueba`
+              ? `Activar ${planInfo[plan].name} — desde tu período de prueba`
               : isUpgrade
-                ? `Upgrade de ${PLAN_INFO[currentPlan!].name} a ${planInfo.name}`
-                : `Activa tu suscripción — ${planInfo.name}`}
+                ? `Upgrade de ${planInfo[currentPlan!].name} a ${planInfo[plan].name}`
+                : `Activa tu suscripción — ${planInfo[plan].name}`}
           </p>
         </div>
       </div>
@@ -209,8 +234,8 @@ export default function CheckoutPage() {
           <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Puedes cambiar de plan antes de pagar</p>
         </div>
         <div className="p-4 grid grid-cols-2 gap-3">
-          {(Object.keys(PLAN_INFO) as PlanType[]).map((p) => {
-            const info = PLAN_INFO[p];
+          {(Object.keys(PLAN_INFO_FALLBACK) as PlanType[]).map((p) => {
+            const info = planInfo[p];
             const isSelected = selectedPlan === p;
             return (
               <button
@@ -308,7 +333,7 @@ export default function CheckoutPage() {
           {/* Línea del plan */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{planInfo.name}</p>
+              <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{planInfo[plan].name}</p>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                 {selectedMonths === 1
                   ? 'Suscripción mensual — 30 días'
@@ -319,14 +344,14 @@ export default function CheckoutPage() {
               <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(planTotal)}</p>
               {selectedMonths > 1 && (
                 <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                  {formatCurrency(planInfo.price)}/mes × {selectedMonths}
+                  {formatCurrency(planInfo[plan].price)}/mes × {selectedMonths}
                 </p>
               )}
             </div>
           </div>
 
           <ul className="space-y-2 pt-2 border-t" style={{ borderColor: 'var(--border-color)' }}>
-            {planInfo.features.map((f) => (
+            {planInfo[plan].features.map((f) => (
               <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                 <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                 {f}
@@ -390,12 +415,12 @@ export default function CheckoutPage() {
           {isUpgrade ? (
             <div className="pt-3 border-t space-y-2" style={{ borderColor: 'var(--border-color)' }}>
               <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
-                <span>Precio {planInfo.name} × {selectedMonths} mes{selectedMonths > 1 ? 'es' : ''}</span>
-                <span>{formatCurrency(Math.round(planInfo.price * selectedMonths * (1 - monthDiscount.pct / 100)))}</span>
+                <span>Precio {planInfo[plan].name} × {selectedMonths} mes{selectedMonths > 1 ? 'es' : ''}</span>
+                <span>{formatCurrency(Math.round(planInfo[plan].price * selectedMonths * (1 - monthDiscount.pct / 100)))}</span>
               </div>
               <div className="flex items-center justify-between text-sm text-emerald-600">
-                <span>Ya pagaste ({PLAN_INFO[currentPlan!].name})</span>
-                <span>− {formatCurrency(PLAN_INFO[currentPlan!].price)}</span>
+                <span>Ya pagaste ({planInfo[currentPlan!].name})</span>
+                <span>− {formatCurrency(planInfo[currentPlan!].price)}</span>
               </div>
               {includeLanding && (
                 <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
