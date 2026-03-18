@@ -56,7 +56,7 @@ const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 
 export default function RegisterForm() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', email: '', password: '', slug: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', slug: '', contact_name: '', phone: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
@@ -314,6 +314,37 @@ export default function RegisterForm() {
                 onChange={handleChange}
                 required
                 placeholder="hola@mimarca.com"
+                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+              />
+            </div>
+
+            {/* Nombre completo del responsable */}
+            <div>
+              <label className="block text-[13px] font-medium text-[#888] mb-1.5">
+                Nombre completo del responsable
+              </label>
+              <input
+                name="contact_name"
+                value={form.contact_name}
+                onChange={handleChange}
+                required
+                minLength={3}
+                placeholder="Juan Pérez"
+                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+              />
+            </div>
+
+            {/* Teléfono (opcional) */}
+            <div>
+              <label className="block text-[13px] font-medium text-[#888] mb-1.5">
+                Teléfono <span className="text-[#555]">(opcional)</span>
+              </label>
+              <input
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="+57 300 000 0000"
                 className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
               />
             </div>
