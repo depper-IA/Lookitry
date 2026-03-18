@@ -138,6 +138,14 @@ function CheckoutContent() {
   const [error, setError] = useState('');
   const [pricing, setPricing] = useState<PricingSettings | null>(null);
 
+  // Cupón
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    id: string; code: string; discount_type: 'pct' | 'fixed'; discount_value: number;
+  } | null>(null);
+
   useEffect(() => {
     fetch(`${API_URL}/api/payment-settings/public`)
       .then(r => r.ok ? r.json() : null)
@@ -151,10 +159,9 @@ function CheckoutContent() {
 
   // Precio total según plan seleccionado
   const isLanding = selectedPlan === 'LANDING';
-  // Cuando es LANDING: precio landing + plan de suscripción elegido
   const subMonthDiscount = DISCOUNTS.find(d => d.months === selectedMonths)?.pct ?? 0;
   const subPlanTotal = Math.round(PLAN_BASE[isLanding ? subPlan : (selectedPlan as 'BASIC' | 'PRO')] * selectedMonths * (1 - subMonthDiscount / 100));
-  const totalPrice = isLanding
+  const baseTotalPrice = isLanding
     ? landingPrice + subPlanTotal
     : calcTotal(selectedPlan as 'BASIC' | 'PRO', selectedMonths);
   const originalPrice = isLanding
@@ -164,6 +171,36 @@ function CheckoutContent() {
   const discountPct = isLanding
     ? landingDiscount
     : (DISCOUNTS.find(d => d.months === selectedMonths)?.pct ?? 0);
+
+  // Descuento por cupón
+  const couponDiscount = appliedCoupon
+    ? appliedCoupon.discount_type === 'pct'
+      ? Math.round(baseTotalPrice * appliedCoupon.discount_value / 100)
+      : Math.min(appliedCoupon.discount_value, baseTotalPrice)
+    : 0;
+  const totalPrice = Math.max(0, baseTotalPrice - couponDiscount);
+
+  const handleValidateCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true);
+    setCouponError('');
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: couponCode.trim(), plan: selectedPlan }),
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Cupón inválido');
+      setAppliedCoupon(data.coupon);
+      setCouponError('');
+    } catch (err: any) {
+      setCouponError(err.message || 'Error al validar el cupón');
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
 
   const handlePagar = async () => {
     setLoading(true);
@@ -482,11 +519,70 @@ function CheckoutContent() {
                 </div>
               )}
 
-              <div className="border-t border-[#2a2a2a] pt-4 flex items-center justify-between">
-                <span className="text-[13px] font-medium text-[#999]">Total a pagar</span>
-                <span className="font-syne font-extrabold text-[22px] text-white">
-                  {formatCOP(totalPrice)} COP
-                </span>
+              {/* Campo de cupón */}
+              <div className="border-t border-[#2a2a2a] pt-4 mb-4">
+                <p className="text-[11px] font-semibold text-[#666] uppercase tracking-wide mb-2">Cupón de descuento</p>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-[#0d1f0d] border border-emerald-800/50 rounded-lg px-3 py-2">
+                    <div>
+                      <span className="text-[12px] font-bold text-emerald-400">{appliedCoupon.code}</span>
+                      <span className="text-[11px] text-emerald-600 ml-2">
+                        {appliedCoupon.discount_type === 'pct'
+                          ? `−${appliedCoupon.discount_value}%`
+                          : `−${formatCOP(appliedCoupon.discount_value)}`}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => { setAppliedCoupon(null); setCouponCode(''); }}
+                      className="text-[11px] text-[#666] hover:text-[#ff6b6b] transition-colors"
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                      onKeyDown={e => e.key === 'Enter' && handleValidateCoupon()}
+                      placeholder="CÓDIGO"
+                      className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-[12px] text-white placeholder-[#444] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+                    />
+                    <button
+                      onClick={handleValidateCoupon}
+                      disabled={couponLoading || !couponCode.trim()}
+                      className="px-3 py-2 rounded-lg text-[12px] font-semibold text-white transition-all disabled:opacity-50"
+                      style={{ backgroundColor: '#FF5C3A' }}
+                    >
+                      {couponLoading ? '...' : 'Aplicar'}
+                    </button>
+                  </div>
+                )}
+                {couponError && (
+                  <p className="text-[11px] text-[#ff6b6b] mt-1.5">{couponError}</p>
+                )}
+              </div>
+
+              <div className="border-t border-[#2a2a2a] pt-4 space-y-2">
+                {couponDiscount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] text-[#999]">Subtotal</span>
+                    <span className="text-[13px] text-[#999]">{formatCOP(baseTotalPrice)} COP</span>
+                  </div>
+                )}
+                {couponDiscount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[12px] text-emerald-400">Descuento ({appliedCoupon?.code})</span>
+                    <span className="text-[13px] text-emerald-400">−{formatCOP(couponDiscount)} COP</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] font-medium text-[#999]">Total a pagar</span>
+                  <span className="font-syne font-extrabold text-[22px] text-white">
+                    {formatCOP(totalPrice)} COP
+                  </span>
+                </div>
               </div>
             </div>
           </div>

@@ -14,6 +14,7 @@ import cleanupRoutes from './routes/cleanup.routes';
 import revenueRoutes from './routes/revenue.routes';
 import wompiRoutes from './routes/wompi.routes';
 import trialRoutes from './routes/trial.routes';
+import couponsRoutes from './routes/coupons.routes';
 import { getPublicPaymentSettings } from './controllers/paymentSettings.controller';
 import { getHealthStatus } from './controllers/health.controller';
 import { getTrialStatus } from './controllers/trialCampaign.controller';
@@ -109,6 +110,7 @@ app.post('/api/upload/selfie', multerMemory.single('file'), (req, res) => upload
 // Estado público del trial (sin auth — el frontend lo consulta para mostrar/ocultar el botón)
 app.get('/api/trial/status', getTrialStatus);
 app.use('/api/trial', trialRoutes);
+app.use('/api/admin/coupons', couponsRoutes);
 
 // Sitemap — slugs de mini-landings activas (sin auth, para Next.js sitemap.ts)
 app.get('/api/sitemap/landings', async (_req, res) => {

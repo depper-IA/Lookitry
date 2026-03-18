@@ -143,6 +143,16 @@ const DEFAULTS: PricingConfig = {
   },
 };
 
+// ── Price Override (promoción temporal por plan) ──────────────────────────────
+
+export interface PlanPriceOverride {
+  plan: 'BASIC' | 'PRO';
+  override_price: number;       // precio especial
+  original_price: number;       // precio tachado
+  ends_at?: string;             // ISO — cuándo expira
+  label?: string;               // ej: "Oferta de lanzamiento"
+}
+
 // ── Fetch principal ───────────────────────────────────────────────────────────
 
 /**
@@ -217,4 +227,35 @@ export function margenPorCliente(
 /** Precio en USD usando TRM */
 export function precioEnUSD(precioCop: number, trm: number): number {
   return Math.round((precioCop / trm) * 100) / 100;
+}
+
+/**
+ * Obtiene overrides de precio activos desde la tabla promotions.
+ * Usar en Server Components con revalidate corto (ej: 300s).
+ */
+export async function getPriceOverrides(): Promise<PlanPriceOverride[]> {
+  try {
+    const now = new Date().toISOString();
+    const url =
+      `${SUPABASE_URL}/rest/v1/promotions` +
+      `?type=eq.plan_override` +
+      `&active=eq.true` +
+      `&or=(starts_at.is.null,starts_at.lte.${now})` +
+      `&or=(ends_at.is.null,ends_at.gte.${now})` +
+      `&select=config,ends_at`;
+
+    const res = await fetch(url, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      next: { revalidate: 300 },
+    });
+
+    if (!res.ok) return [];
+    const rows: { config: PlanPriceOverride; ends_at?: string }[] = await res.json();
+    return rows.map(r => ({ ...r.config, ends_at: r.config.ends_at ?? r.ends_at }));
+  } catch {
+    return [];
+  }
 }

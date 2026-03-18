@@ -1,4 +1,6 @@
 import LandingClient from '@/components/landing/LandingClient';
+import { PromoBanner } from '@/components/landing/PromoBanner';
+import { PromoModal } from '@/components/landing/PromoModal';
 
 const BASE_URL = 'https://pruebalo.wilkiedevs.com';
 
@@ -141,7 +143,9 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <PromoBanner />
       <LandingClient />
+      <PromoModal />
     </>
   );
 }
