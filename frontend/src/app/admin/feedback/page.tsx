@@ -54,6 +54,7 @@ export default function FeedbackPage() {
   const [stats, setStats]             = useState<StatRow[]>([]);
   const [loading, setLoading]         = useState(true);
   const [resolving, setResolving]     = useState<string | null>(null);
+  const [deleting, setDeleting]       = useState<string | null>(null);
   const [expanded, setExpanded]       = useState<string | null>(null);
 
   // Filtros
@@ -94,6 +95,23 @@ export default function FeedbackPage() {
       setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, resolved: true, resolved_at: new Date().toISOString() } : f));
     } finally {
       setResolving(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setDeleting(id);
+    try {
+      await fetch(`${API}/api/admin/feedback/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+      setFeedbacks(prev => prev.filter(f => f.id !== id));
+      // Refrescar stats
+      const stRes = await fetch(`${API}/api/admin/feedback/stats`, { headers: authHeaders() });
+      const stData = await stRes.json();
+      setStats(stData.stats ?? []);
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -259,14 +277,25 @@ export default function FeedbackPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       {!f.resolved && (
-                        <button
-                          onClick={e => { e.stopPropagation(); handleResolve(f.id); }}
-                          disabled={resolving === f.id}
-                          className="px-2.5 py-1 rounded-lg text-xs font-medium text-white transition-opacity hover:opacity-80 disabled:opacity-50"
-                          style={{ backgroundColor: '#FF5C3A' }}
-                        >
-                          {resolving === f.id ? '...' : 'Resolver'}
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={e => { e.stopPropagation(); handleResolve(f.id); }}
+                            disabled={resolving === f.id || deleting === f.id}
+                            className="px-2.5 py-1 rounded-lg text-xs font-medium text-white transition-opacity hover:opacity-80 disabled:opacity-50"
+                            style={{ backgroundColor: '#FF5C3A' }}
+                          >
+                            {resolving === f.id ? '...' : 'Resolver'}
+                          </button>
+                          <button
+                            onClick={e => { e.stopPropagation(); handleDelete(f.id); }}
+                            disabled={resolving === f.id || deleting === f.id}
+                            className="px-2.5 py-1 rounded-lg text-xs font-medium transition-opacity hover:opacity-80 disabled:opacity-50 border"
+                            style={{ borderColor: '#ef444455', color: '#ef4444', backgroundColor: 'transparent' }}
+                            title="Eliminar del RAG"
+                          >
+                            {deleting === f.id ? '...' : 'Eliminar RAG'}
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
