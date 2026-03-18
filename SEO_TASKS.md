@@ -1,154 +1,193 @@
 # Auditoría SEO — Lookitry
-> Fecha: marzo 2026 | Dominio: pruebalo.wilkiedevs.com
-> Mercado objetivo: Latinoamérica (CO, MX, AR, CL, PE, **VE**)
+> Fecha: marzo 2026 | Dominio actual: pruebalo.wilkiedevs.com
+> Mercado objetivo: Latinoamérica (CO, MX, AR, CL, PE, VE)
+> Enfoque actual: páginas propias de Lookitry (landing, planes, términos, register)
+> Páginas de usuarios (mini-landings /sitio/[slug], /pruebalo/[slug]): pendientes para el futuro
 
 ---
 
-## Fundamentos y fuentes de referencia
+## Fuentes verificadas (top resultados de búsqueda — marzo 2026)
 
-Esta auditoría se basa en investigación actualizada a 2026:
-
-- **SEO en Latam** — [bluethings.co](https://www.bluethings.co/blog/seo-in-latin-america-complete-guide):
-  Google tiene >95% de market share en Latam. Más del 90% de búsquedas se realizan desde móvil.
-  WhatsApp es parte del funnel de conversión. Cada país debe tratarse como un programa SEO separado.
-
-- **Venezuela 2026** — [datareportal.com](https://datareportal.com/reports/digital-2026-venezuela):
-  28.5M de población. 17.6M usuarios de internet (61.6% de penetración). 21.8M conexiones móviles (76.3%).
-  16.6M usuarios de redes sociales. 88.6% urbano. Mediana de edad: 29.4 años.
-
-- **Core Web Vitals 2026** — [veduis.com](https://veduis.com/blog/core-web-vitals-seo-impact-guide/):
-  Los 3 pilares son LCP, INP (reemplazó a FID en marzo 2024) y CLS.
-  INP <200ms = bueno. En Latam con redes 3G/4G el impacto es mayor que en mercados desarrollados.
-
-- **Schema markup para SaaS 2026** — [agentberlin.ai](https://agentberlin.ai/blog/schema-markup-saas-2026):
-  6 schemas esenciales: SoftwareApplication, FAQPage, HowTo, Organization, Product/Offer, Review/AggregateRating.
-  El schema markup aumenta el CTR un 40% y la visibilidad SEO un 36.6%.
-
-- **AI Overviews / SGE**:
-  Aparecen en más del 50% de resultados. Reducen el CTR entre 20-40% en queries informacionales.
-  Los featured snippets tienen 75% más probabilidad de ser citados en AI Overviews.
-  FAQ schema + resúmenes de 50-70 palabras aumentan la probabilidad de inclusión.
-
-- **Google ranking factors 2026**:
-  Contenido de calidad, velocidad, backlinks, mobile-friendliness, keyword optimization,
-  estructura, HTTPS, UX, search intent, video, internal links.
+| # | Fuente | URL | Tema |
+|---|--------|-----|------|
+| 1 | bluethings.co | https://www.bluethings.co/blog/seo-in-latin-america-complete-guide | SEO Latam 2026 |
+| 2 | digitalapplied.com | https://www.digitalapplied.com/blog/core-web-vitals-2026-inp-lcp-cls-optimization-guide | Core Web Vitals 2026 |
+| 3 | agentberlin.ai | https://agentberlin.ai/blog/schema-markup-saas-2026 | Schema SaaS 2026 |
+| 4 | growtika.com | https://growtika.com/blog/saas-seo-guide | SaaS SEO 2026 |
+| 5 | pipelineroad.com | https://pipelineroad.com/agency/blog/saas-seo-strategy | SaaS SEO estrategia 2026 |
+| 6 | datareportal.com | https://datareportal.com/reports/digital-2026-venezuela | Venezuela Digital 2026 |
+| 7 | clickcentricseo.com | https://clickcentricseo.com/blog/generative-engine-optimization-guide | GEO / AI Overviews 2026 |
+| 8 | aiappbuilder.com | https://aiappbuilder.com/insights/nextjs-seo-performance-checklist-for-faster-growth | Next.js SEO 2026 |
 
 ---
 
-## Estado actual (resumen ejecutivo)
+## Hallazgos clave por fuente
 
-El proyecto tiene una base SEO razonable: metadata global en `layout.tsx`, JSON-LD en homepage,
-`robots.ts` y `sitemap.ts` funcionales, Open Graph y Twitter Cards configurados, fuentes con
-`display: swap`, y `lang="es"` en el HTML. Sin embargo, hay brechas importantes que limitan
-el posicionamiento en búsquedas competitivas de Latam.
+### 1. SEO en Latam — bluethings.co
+- Google tiene >95% de market share en toda Latinoamérica.
+- El 93% de las experiencias online comienzan con una búsqueda; el 80% de las decisiones de compra inician en Google.
+- El tráfico orgánico representa ~53% de las visitas globales — sigue siendo el canal de adquisición más fuerte.
+- Más de un tercio de los suscriptores móviles en Latam aún usan 3G o teléfonos básicos → Core Web Vitals son críticos.
+- Cada país debe tratarse como un programa SEO separado (CO, MX, AR, CL, PE, VE tienen comportamientos distintos).
+- Las brechas urbano/rural afectan la intención de búsqueda: misma query puede significar distinta disposición de compra.
+- WhatsApp y MercadoLibre forman parte del funnel de conversión en la región.
+
+### 2. Core Web Vitals 2026 — digitalapplied.com
+- INP reemplazó a FID en marzo 2024. Es el CWV más difícil: **43% de sitios web aún fallan** el umbral de 200ms.
+- Tasas de aprobación actuales (CrUX data, early 2026):
+  - INP: 57% pasa (43% falla) — el más crítico
+  - LCP: 68% pasa (32% falla)
+  - CLS: 78% pasa (22% falla)
+- Umbrales "bueno": LCP ≤ 2.5s | INP ≤ 200ms | CLS ≤ 0.1
+- Google evalúa CWV a nivel de grupo de URLs usando datos CrUX — páginas con alto tráfico y mal rendimiento arrastran todo el sitio.
+- Para e-commerce: cada 100ms de mejora en LCP puede aumentar conversiones hasta 8%.
+- Las 4 correcciones de mayor impacto para LCP: preload de imágenes, CSS crítico inline, preload de fuentes con display swap, y server-side rendering.
+- INP falla principalmente por: tareas largas de JavaScript, hidratación de frameworks, scripts de terceros.
+
+### 3. Schema markup para SaaS — agentberlin.ai
+- En 2026 los motores de IA (ChatGPT, Perplexity, Google AI Overviews) usan structured data para verificar precios, features y pasos.
+- Los 6 schemas esenciales para SaaS: SoftwareApplication, FAQPage, HowTo, Organization, Product/Offer, Review/AggregateRating.
+- SoftwareApplication: usar en cada página de producto con `applicationCategory: "BusinessApplication"`, `operatingSystem: "Web"`, offers alineados con precios visibles.
+- FAQPage: superficie preguntas reales de clientes sobre precios, seguridad y onboarding — genera rich results expandibles.
+- Organization: establece la entidad de marca, logo y perfiles verificados.
+- Product/Offer: publicar nombres de planes, precios, monedas y ventanas de validez con precisión.
+- Review/AggregateRating: mejora CTR y confianza en AI summaries.
+- Beneficio medible: schema markup aumenta CTR ~40% y visibilidad SEO ~36.6%.
+
+### 4. SaaS SEO 2026 — growtika.com
+- SaaS SEO tiene 4 pilares en 2026: Technical SEO, On-page SEO, Off-page SEO, y **GEO (Generative Engine Optimization)**.
+- Si no eres citado en respuestas de AI Overviews, no existes cuando los compradores están listos para comprar.
+- Las queries comerciales ocurren al final del buyer journey — son las "money pages" donde más importa la citación en AI.
+- Regla 70/30 para GEO: 70% de consistencia de hechos + 30% de variación natural entre fuentes.
+- Keywords de nicho con 10-50 búsquedas/mes convierten mejor que términos de alto volumen.
+- Construir un "Trust Hub": menciones en Reddit, foros del sector, directorios de SaaS para que los LLMs reconozcan la marca.
+
+### 5. SaaS SEO estrategia — pipelineroad.com
+- El modelo de topic clusters es la estructura correcta: pillar page (3.000-5.000 palabras) + cluster pages (1.000-2.500 palabras) + internal links.
+- B2B SaaS con inversión en contenido orgánico tiene 61% menor costo por lead vs. canales pagados después de 12 meses (HubSpot, 2025).
+- El universo de keywords para SaaS es pequeño — hay que dominar cada keyword de la categoría, incluso las de 50 búsquedas/mes.
+- Cada página necesita un "next step" claro: demo, trial, guía siguiente.
+- GEO es lo que "casi nadie en SaaS SEO está hablando todavía" — estructurar contenido para ser extraído y citado por AI engines.
+
+### 6. Venezuela Digital 2026 — datareportal.com
+- Población: 28.5M | Usuarios de internet: 17.6M (61.6% penetración)
+- Conexiones móviles: 21.8M (76.3%) | Usuarios de redes sociales: 16.6M
+- 88.6% urbano | Mediana de edad: 29.4 años — audiencia joven y digital-first
+- Alta dependencia de móvil → CWV y velocidad son críticos para este mercado.
+
+### 7. GEO / AI Overviews — clickcentricseo.com
+- GEO = optimizar contenido para que motores de AI (Google AI Overviews, ChatGPT, Perplexity, Claude, Gemini) lo encuentren, entiendan y citen.
+- Diferencia con SEO tradicional: SEO rankea en "blue links", GEO asegura visibilidad en respuestas generadas por AI.
+- Tácticas clave: resúmenes de 50-70 palabras por sección, FAQ schema, contenido factual y citable, structured data completo.
+
+### 8. Next.js SEO 2026 — aiappbuilder.com
+- Generar sitemap y robots dinámicamente con route handler de Next.js App Router.
+- Anotar `noindex` en variantes filtradas o paginadas.
+- JSON-LD via Metadata API o componente dedicado: cubrir Organization, BreadcrumbList, Product y FAQ.
+- Validar siempre con Google Rich Results Test antes de publicar.
+- Server Components resuelven el problema de contenido no indexable de Client Components.
 
 ---
 
-## PRIORIDAD ALTA — Impacto directo en ranking
+## Estado actual del proyecto
 
-### 1. Dominio — Cambiar a dominio propio
-- **Problema:** El sitio vive en `pruebalo.wilkiedevs.com` (subdominio de marca de agencia).
-  Google trata subdominios como entidades separadas y la autoridad de dominio no se acumula en Lookitry.
-- **Acción:** Registrar `lookitry.com` o `lookitry.co` y migrar con redirecciones 301 permanentes.
-- **Archivos a actualizar:** `layout.tsx`, `robots.ts`, `sitemap.ts`, `page.tsx` (BASE_URL).
-- **Impacto:** Muy alto — es la acción de mayor retorno a largo plazo.
-- **Fuente:** Práctica estándar de SEO técnico; confirmado por Google Search Central.
+Base SEO existente (lo que ya está bien):
+- Metadata global en `layout.tsx` con title template, description, keywords, OG y Twitter Cards
+- JSON-LD en homepage: Organization, WebSite, SoftwareApplication con offers
+- `robots.ts` y `sitemap.ts` funcionales
+- `lang="es"` en el HTML
+- Fuentes con `display: swap` via `next/font`
+- `areaServed` actualizado: CO, MX, AR, CL, PE, VE
+- Keywords con Venezuela incluida
+- Hreflang con `es-VE`
 
-### 2. Páginas `'use client'` sin metadata — `/planes` y `/terminos`
-- **Problema:** Ambas páginas son Client Components y no exportan `metadata`.
-  Next.js no permite exportar `metadata` desde Client Components.
-- **Acción:** Arquitectura Server + Client: Server Component exporta `metadata`, Client Component maneja interactividad.
+Brechas identificadas (ordenadas por impacto):
+
+---
+
+## PRIORIDAD ALTA — Acción inmediata (páginas propias de Lookitry)
+
+### 1. Dominio propio — lookitry.com o lookitry.co
+- **Problema:** El sitio vive en `pruebalo.wilkiedevs.com`. Google trata subdominios como entidades
+  separadas — la autoridad de dominio no se acumula en la marca Lookitry.
+- **Estado:** A corto plazo — adquirir el dominio pronto.
+- **Acción cuando se adquiera:** Migrar con redirecciones 301 permanentes. Actualizar `BASE_URL`
+  en `layout.tsx`, `robots.ts`, `sitemap.ts`, `page.tsx`. Reenviar sitemap en Google Search Console.
+- **Fuente:** Google Search Central — subdominios vs. subdirectorios; bluethings.co — autoridad de dominio en Latam.
+- **Impacto:** Muy alto — mayor retorno a largo plazo.
+
+### 2. Metadata en `/planes` y `/terminos`
+- **Problema:** Ambas páginas son `'use client'` y no exportan `metadata`. Next.js no permite
+  exportar `metadata` desde Client Components — Google las indexa sin title/description optimizados.
+- **Acción:** Arquitectura Server + Client: Server Component exporta `metadata`, Client Component
+  maneja la interactividad.
 - **Metadata sugerida para `/planes`:**
   ```ts
   export const metadata: Metadata = {
     title: 'Planes y precios — Probador virtual IA para tiendas',
     description: 'Elige el plan de probador virtual con IA para tu tienda. Básico desde $150.000 COP/mes. Pro desde $250.000 COP/mes. 7 días gratis.',
     alternates: { canonical: 'https://[dominio]/planes' },
+    openGraph: { type: 'website', title: '...', description: '...' },
   };
   ```
 - **Metadata sugerida para `/terminos`:**
   ```ts
   export const metadata: Metadata = {
     title: 'Términos y Condiciones — Lookitry',
-    description: 'Términos y condiciones de uso de la plataforma Lookitry. Ley 1480 de 2011, Ley 1581 de 2012 — Colombia.',
+    description: 'Términos y condiciones de uso de Lookitry. Ley 1480 de 2011, Ley 1581 de 2012 — Colombia.',
     robots: { index: true, follow: false },
   };
   ```
+- **Archivos:** `src/app/planes/page.tsx`, `src/app/terminos/page.tsx`
+- **Fuente:** aiappbuilder.com — Next.js SEO 2026; surajon.dev — Metadata API en Server Components.
 
 ### 3. Sitemap incompleto
-- **Problema:** El sitemap solo incluye 4 URLs. Faltan `/terminos`, `/register` y las mini-landings activas.
-- **Acción:** Ampliar `sitemap.ts`:
+- **Problema:** El sitemap solo incluye 4 URLs. Faltan `/terminos` y `/register`.
+  (Las mini-landings de marcas se agregan en el futuro cuando se prioricen páginas de usuarios.)
+- **Acción:** Agregar rutas estáticas faltantes en `sitemap.ts`:
   ```ts
   { url: `${BASE_URL}/terminos`, changeFrequency: 'yearly', priority: 0.3 },
-  // Generar dinámicamente mini-landings activas:
-  const brands = await fetch(`${API_URL}/api/public/brands/active`).then(r => r.json());
-  brands.map(b => ({ url: `${BASE_URL}/sitio/${b.slug}`, changeFrequency: 'weekly', priority: 0.6 }))
+  { url: `${BASE_URL}/register`, changeFrequency: 'yearly', priority: 0.4 },
   ```
 - **Archivo:** `src/app/sitemap.ts`
-- **Fuente:** Google recomienda sitemaps completos para facilitar el crawl budget.
+- **Fuente:** aiappbuilder.com — generar sitemap dinámico con route handler de Next.js.
 
-### 4. Imagen OG faltante o genérica
-- **Problema:** El layout referencia `/og-image.png` pero no hay certeza de que exista ni esté optimizada.
-  Una OG image bien diseñada aumenta el CTR desde redes sociales.
+### 4. Imagen OG — verificar y optimizar
+- **Problema:** El layout referencia `/og-image.png` pero no hay certeza de que exista ni esté
+  optimizada. Una OG image bien diseñada aumenta el CTR desde redes sociales y resultados de búsqueda.
 - **Acción:** Crear OG image de 1200×630px con logo, tagline y mockup del widget.
-  Generar OG images dinámicas para mini-landings con `next/og` (ImageResponse).
-- **Archivo:** `src/app/sitio/[brandSlug]/opengraph-image.tsx`
+  Verificar que exista en `/public/og-image.png` y que pese menos de 200KB.
+- **Herramienta de verificación:** https://www.opengraph.xyz/
+- **Fuente:** Práctica estándar — OG images aumentan CTR en redes sociales y WhatsApp (canal clave en Latam según bluethings.co).
 
-### 5. Canonical tags en páginas dinámicas
-- **Problema:** `/sitio/[brandSlug]` y `/pruebalo/[brandSlug]` pueden servir contenido duplicado.
-  Google puede penalizar por contenido duplicado.
-- **Acción:** Canonical apuntando siempre a `/sitio/[slug]`. En `/pruebalo/[slug]` agregar
-  `robots: { index: false }` o canonical hacia `/sitio/[slug]`.
-- **Archivos:** `src/app/pruebalo/[brandSlug]/page.tsx`, `src/app/sitio/[brandSlug]/page.tsx`
-
----
-
-## PRIORIDAD MEDIA — Mejoras de contenido y estructura
-
-### 6. Keywords de cola larga para Latam + Venezuela
-- **Problema:** Las keywords actuales son genéricas. Para Latam hay términos con menor competencia
-  y mayor intención de compra. Venezuela tiene 17.6M usuarios de internet con mediana de edad 29.4 años
-  — audiencia joven y digital-first ideal para e-commerce de moda.
-- **Acción:** Agregar al array `keywords` en `layout.tsx`:
-  ```ts
-  'probador virtual Colombia',
-  'probador virtual México',
-  'probador virtual Venezuela',
-  'probador virtual ropa online',
-  'widget prueba virtual tienda online',
-  'probador virtual para Instagram',
-  'probador virtual para tienda Shopify',
-  'probador virtual para WooCommerce',
-  'aumentar ventas tienda ropa online',
-  'reducir devoluciones tienda online',
-  'virtual try-on Latam',
-  'probador virtual sin app',
-  'probador de ropa virtual Venezuela',
-  'tienda ropa online Venezuela IA',
+### 5. Ampliar JSON-LD — FAQPage y featureList
+- **Problema:** El JSON-LD actual tiene Organization, WebSite y SoftwareApplication básico.
+  Faltan schemas de alto valor para SaaS que aumentan visibilidad en AI Overviews.
+- **Acciones en `page.tsx`:**
+  - Agregar `FAQPage` schema con las preguntas del `FaqSection` de la landing.
+  - Agregar `featureList` al SoftwareApplication existente.
+  - Agregar `priceValidUntil` y `eligibleRegion` (CO, MX, AR, CL, PE, VE) a los offers.
+  - Agregar `AggregateRating` con los testimonios existentes.
+- **Ejemplo FAQPage:**
+  ```json
+  {
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "¿Cómo integro el probador virtual en mi tienda?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Copia el código del widget desde tu dashboard y pégalo en tu tienda. Funciona con cualquier plataforma: Shopify, WooCommerce, Wix, o HTML puro. Sin apps, sin desarrollo adicional."
+        }
+      }
+    ]
+  }
   ```
-- **Fuente:** [bluethings.co](https://www.bluethings.co/blog/seo-in-latin-america-complete-guide) —
-  tratar cada país como programa SEO separado; [datareportal.com](https://datareportal.com/reports/digital-2026-venezuela) — Venezuela: 16.6M usuarios de redes sociales.
+- **Fuente:** agentberlin.ai — FAQPage aumenta CTR ~40%; stackmatix.com — FAQ schema para AI Overviews.
 
-### 7. Estructura de encabezados (H1/H2/H3) en LandingClient
-- **Problema:** `LandingClient.tsx` es Client Component — el crawler puede tener dificultades
-  para indexar contenido renderizado en cliente.
-- **Acción:** Convertir secciones estáticas (hero, stats, pricing, steps, testimonials) a Server Components.
-  Solo partes interactivas (selector de precio, botones con router.push) deben ser Client Components.
-- **Beneficio:** HTML puro mejora tiempo de indexación y Core Web Vitals (LCP).
-- **Fuente:** [veduis.com](https://veduis.com/blog/core-web-vitals-seo-impact-guide/) — LCP es pilar de CWV 2026.
-
-### 8. JSON-LD — Ampliar schemas
-- **Problema:** El JSON-LD tiene Organization, WebSite y SoftwareApplication, pero faltan schemas
-  de alto valor para SaaS en Latam.
-- **Acciones:**
-  - Agregar `FAQPage` schema con las preguntas del `FaqSection` — alto impacto para featured snippets.
-  - Agregar `PriceSpecification` con `validFrom`, `eligibleRegion` (CO, MX, AR, CL, PE, **VE**).
-  - En `/planes`, agregar schema `Product` con `offers` para cada plan.
-  - En mini-landings, agregar schema `LocalBusiness` o `Store` con datos de la marca.
-- **Fuente:** [agentberlin.ai](https://agentberlin.ai/blog/schema-markup-saas-2026) —
-  schema markup aumenta CTR 40% y visibilidad SEO 36.6%.
-
-### 9. Página `/register` sin metadata
+### 6. Metadata en `/register`
+- **Problema:** La página de registro no tiene metadata exportada.
 - **Acción:**
   ```ts
   export const metadata: Metadata = {
@@ -157,58 +196,39 @@ el posicionamiento en búsquedas competitivas de Latam.
     robots: { index: true, follow: false },
   };
   ```
-
-### 10. Atributos `alt` en imágenes de mini-landings
-- **Problema:** Imágenes de productos probablemente usan alt genérico o vacío.
-- **Acción:** En `MiniLanding`, usar `alt={product.name}` y `alt={brand.name}` en imágenes de marca.
-
-### 11. Velocidad de carga — Core Web Vitals
-- **Problema:** Estilos inline `fontFamily: 'Syne, sans-serif'` crean dependencia redundante
-  cuando las fuentes ya están cargadas con `next/font`.
-- **Acciones:**
-  - Eliminar todos los `style={{ fontFamily: 'Syne, sans-serif' }}` inline.
-  - Reemplazar por clases CSS (`font-syne`, `font-dm-sans`) usando variables CSS (`--font-syne`, `--font-dm-sans`).
-  - Revisar que imágenes de `/steps/paso-*.webp` usen `sizes` correctos y `loading="lazy"`.
-- **Fuente:** [veduis.com](https://veduis.com/blog/core-web-vitals-seo-impact-guide/) —
-  INP <200ms = bueno. En Latam con 3G/4G el impacto es mayor. Venezuela: 76.3% conexiones móviles.
-
-### 12. Breadcrumbs en páginas internas
-- **Problema:** No hay breadcrumbs en `/planes`, `/terminos` ni mini-landings.
-- **Acción:** Agregar `BreadcrumbList` JSON-LD:
-  ```json
-  { "@type": "BreadcrumbList", "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://[dominio]/" },
-    { "@type": "ListItem", "position": 2, "name": "Planes", "item": "https://[dominio]/planes" }
-  ]}
-  ```
+- **Archivo:** `src/app/register/page.tsx`
 
 ---
 
-## PRIORIDAD BAJA — Optimizaciones adicionales
+## PRIORIDAD MEDIA — Mejoras de rendimiento y estructura
 
-### 13. Hreflang para variantes regionales — incluir Venezuela
-- **Problema:** El sitio apunta a múltiples países de Latam pero no tiene hreflang.
-  Google puede mostrar la versión incorrecta según el país del usuario.
-- **Acción:** Agregar `alternates.languages` en el metadata global:
-  ```ts
-  alternates: {
-    canonical: BASE_URL,
-    languages: {
-      'es': BASE_URL,
-      'es-CO': BASE_URL,
-      'es-MX': BASE_URL,
-      'es-AR': BASE_URL,
-      'es-CL': BASE_URL,
-      'es-PE': BASE_URL,
-      'es-VE': BASE_URL,  // Venezuela — 17.6M usuarios de internet
-    }
-  }
-  ```
-- **Fuente:** [bluethings.co](https://www.bluethings.co/blog/seo-in-latin-america-complete-guide) —
-  tratar cada país como programa SEO separado.
+### 7. Core Web Vitals — INP y LCP
+- **Problema:** 43% de sitios web fallan INP (≤200ms). En Latam con redes 3G/4G el impacto
+  es mayor. Venezuela tiene 76.3% de conexiones móviles — velocidad es crítica.
+- **Acciones concretas:**
+  - Eliminar todos los `style={{ fontFamily: 'Syne, sans-serif' }}` inline — reemplazar por
+    clases CSS (`font-syne`, `font-dm-sans`) usando variables CSS ya definidas.
+  - Verificar que el logo en `LandingNav` tenga `priority` en el `<Image>`.
+  - Revisar que imágenes de `/steps/paso-*.webp` usen `sizes` correctos y `loading="lazy"`.
+  - Auditar scripts de terceros que bloqueen el main thread (analytics, chat widgets).
+- **Umbrales objetivo:** LCP ≤ 2.5s | INP ≤ 200ms | CLS ≤ 0.1
+- **Herramienta:** PageSpeed Insights + Chrome DevTools Performance panel.
+- **Fuente:** digitalapplied.com — 43% de sitios fallan INP; pagespeedmatters.com — 100ms mejora en LCP = +8% conversiones.
 
-### 14. Robots.txt — Agregar rutas adicionales a disallow
-- **Acción:** Agregar a `disallow`:
+### 8. Estructura de encabezados — LandingClient a Server Components
+- **Problema:** `LandingClient.tsx` es Client Component — el crawler puede tener dificultades
+  para indexar contenido renderizado en cliente. Afecta LCP (contenido no disponible en HTML inicial).
+- **Acción:** Convertir secciones estáticas (hero, stats, pricing, steps, testimonials, FAQ)
+  a Server Components. Solo partes interactivas (selector de precio, botones con router.push)
+  deben ser Client Components.
+- **Beneficio:** HTML puro mejora tiempo de indexación y LCP.
+- **Fuente:** nikola-arsic.com — "server-rendering alone isn't enough but it's the foundation";
+  aiappbuilder.com — Server Components para contenido indexable.
+
+### 9. Robots.txt — Agregar rutas a disallow
+- **Problema:** El robots.txt actual bloquea `/admin/`, `/dashboard/` y `/api/`.
+  Faltan rutas que no deben indexarse.
+- **Acción:** Agregar a `disallow` en `src/app/robots.ts`:
   ```
   /checkout/
   /pago-exitoso/
@@ -219,43 +239,88 @@ el posicionamiento en búsquedas competitivas de Latam.
   /verify-email/
   /embed/
   ```
-- **Archivo:** `src/app/robots.ts`
 
-### 15. Página 404 personalizada
+### 10. Breadcrumbs JSON-LD en páginas internas
+- **Problema:** No hay breadcrumbs en `/planes` ni `/terminos`.
+  Google los muestra en los resultados y mejoran la navegación.
+- **Acción:** Agregar `BreadcrumbList` JSON-LD en `/planes` y `/terminos`:
+  ```json
+  {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://[dominio]/" },
+      { "@type": "ListItem", "position": 2, "name": "Planes", "item": "https://[dominio]/planes" }
+    ]
+  }
+  ```
+- **Fuente:** aiappbuilder.com — BreadcrumbList es uno de los schemas prioritarios para Next.js SEO.
+
+### 11. GEO — Generative Engine Optimization
+- **Problema:** En 2026, si Lookitry no es citado en AI Overviews (Google), ChatGPT o Perplexity,
+  no existe cuando los compradores están listos para comprar.
+- **Acciones:**
+  - Escribir resúmenes de 50-70 palabras al inicio de cada sección clave de la landing
+    (qué es, cómo funciona, precios) — formato extractable por AI engines.
+  - Implementar FAQPage schema (tarea #5) — featured snippets tienen 75% más probabilidad
+    de ser citados en AI Overviews.
+  - Asegurar consistencia de hechos (nombre, precio, features) en todas las páginas del sitio.
+  - A futuro: conseguir menciones en directorios de SaaS (G2, Product Hunt, Capterra) para
+    que los LLMs reconozcan Lookitry como entidad confiable.
+- **Fuente:** growtika.com — "If you're not cited inside AI answers, you don't exist";
+  clickcentricseo.com — GEO guide 2026; pipelineroad.com — GEO es el nuevo frontier del SaaS SEO.
+
+---
+
+## PRIORIDAD BAJA — Optimizaciones adicionales
+
+### 12. Hreflang — ya implementado
+- **Estado:** Implementado en `layout.tsx` con es, es-CO, es-MX, es-AR, es-CL, es-PE, es-VE.
+- **Pendiente:** Actualizar cuando se adquiera el dominio propio.
+
+### 13. Página 404 personalizada
 - **Problema:** No existe `src/app/not-found.tsx`.
 - **Acción:** Crear con nav, mensaje claro y links a homepage y `/planes`.
 
-### 16. Sitemap de imágenes
-- **Problema:** Google Images es canal de tráfico relevante para plataforma de moda.
-- **Acción:** Extender sitemap principal con imágenes de `/steps/paso-*.webp` y OG image.
-
-### 17. Performance — Eliminar `cache: 'no-store'` en mini-landings
-- **Problema:** `sitio/[brandSlug]/page.tsx` usa `cache: 'no-store'` — deshabilita caché de Next.js
-  y aumenta el TTFB. Crítico en Venezuela donde la latencia de red es mayor.
-- **Acción:** Cambiar a `revalidate: 60` (ISR). Agregar endpoint de revalidación manual.
-
-### 18. Verificación en Google Search Console y Bing Webmaster Tools
+### 14. Verificación en Google Search Console y Bing Webmaster Tools
 - **Acción:**
   - Verificar en [Google Search Console](https://search.google.com/search-console)
-  - Verificar en [Bing Webmaster Tools](https://www.bing.com/webmasters) — Bing tiene cuota relevante en MX y AR
+  - Verificar en [Bing Webmaster Tools](https://www.bing.com/webmasters) — Bing tiene cuota
+    relevante en MX y AR
   - Enviar sitemap manualmente tras cada deploy importante
+  - Configurar alertas de cobertura de indexación
 
-### 19. Schema de Reviews/Ratings
-- **Problema:** Los testimonios en la landing no tienen markup estructurado.
-- **Acción:** Agregar schema `Review` o `AggregateRating` en JSON-LD de homepage.
-  Puede generar estrellas en resultados de búsqueda.
-- **Fuente:** [agentberlin.ai](https://agentberlin.ai/blog/schema-markup-saas-2026) —
-  Review/AggregateRating es uno de los 6 schemas esenciales para SaaS.
+### 15. ISR en mini-landings — PENDIENTE (páginas de usuarios)
+- **Estado:** Pendiente para cuando se prioricen las páginas de usuarios.
+- **Nota:** `sitio/[brandSlug]/page.tsx` usa `cache: 'no-store'` — cambiar a `revalidate: 60`.
 
-### 20. Página de blog / contenido SEO
-- **Problema:** Sin contenido editorial no hay captura de tráfico orgánico de cola larga.
-- **Acción (largo plazo):** Crear sección `/blog` con artículos orientados a keywords como:
+---
+
+## PENDIENTE — Páginas de usuarios (futuro)
+
+Las siguientes tareas aplican a las mini-landings y páginas de marcas clientes.
+Se estudiarán y aplicarán cuando las páginas de usuarios sean prioridad:
+
+- Canonical tags en `/pruebalo/[slug]` y `/sitio/[slug]` (contenido duplicado)
+- OG images dinámicas para mini-landings con `next/og` (ImageResponse)
+- Alt text en imágenes de productos de mini-landings
+- Schema `LocalBusiness` o `Store` en mini-landings
+- Sitemap dinámico con mini-landings activas
+- ISR (`revalidate: 60`) en mini-landings
+- Schema `Product` con offers en `/planes` (cuando se integre con páginas de usuarios)
+
+---
+
+## PENDIENTE — Largo plazo
+
+### Blog / contenido editorial
+- **Estado:** Pendiente a largo plazo.
+- **Cuando se implemente:** Crear sección `/blog` con topic clusters orientados a keywords como:
   - "cómo aumentar ventas en tienda de ropa online"
   - "probador virtual para Instagram: guía completa"
   - "reducir devoluciones en tienda online con IA"
-  - "cómo integrar un widget de prueba virtual en tu tienda"
   - "probador virtual de ropa para tiendas en Venezuela"
-- **Fuente:** Contenido editorial es el canal más efectivo para tráfico orgánico de cola larga en Latam.
+- **Fuente:** pipelineroad.com — B2B SaaS con contenido orgánico tiene 61% menor costo por lead
+  vs. canales pagados después de 12 meses (HubSpot, 2025).
 
 ---
 
@@ -263,23 +328,23 @@ el posicionamiento en búsquedas competitivas de Latam.
 
 | # | Tarea | Prioridad | Esfuerzo | Estado |
 |---|-------|-----------|----------|--------|
-| 1 | Migrar a dominio propio (lookitry.com) | Alta | Alto | Pendiente |
+| 1 | Adquirir dominio propio (lookitry.com) | Alta | Alto | A corto plazo |
 | 2 | Metadata en `/planes` y `/terminos` | Alta | Medio | Pendiente |
-| 3 | Ampliar sitemap con rutas faltantes y mini-landings | Alta | Bajo | Pendiente |
-| 4 | Crear/verificar OG image + OG dinámico para mini-landings | Alta | Medio | Pendiente |
-| 5 | Canonical en `/pruebalo/[slug]` y `/sitio/[slug]` | Alta | Bajo | Pendiente |
-| 6 | Ampliar keywords Latam + Venezuela en layout.tsx | Media | Bajo | Pendiente |
-| 7 | Convertir secciones estáticas de landing a Server Components | Media | Alto | Pendiente |
-| 8 | Ampliar JSON-LD: FAQPage, Product, LocalBusiness | Media | Medio | Pendiente |
-| 9 | Metadata en `/register` | Media | Bajo | Pendiente |
-| 10 | Alt text en imágenes de mini-landings | Media | Bajo | Pendiente |
-| 11 | Eliminar fontFamily inline, usar clases CSS | Media | Medio | Pendiente |
-| 12 | Breadcrumbs JSON-LD en páginas internas | Media | Bajo | Pendiente |
-| 13 | Hreflang básico + es-VE en metadata global | Baja | Bajo | Pendiente |
-| 14 | Ampliar disallow en robots.ts | Baja | Bajo | Pendiente |
-| 15 | Crear página 404 personalizada | Baja | Bajo | Pendiente |
-| 16 | Sitemap de imágenes | Baja | Bajo | Pendiente |
-| 17 | ISR en mini-landings (revalidate: 60) | Baja | Bajo | Pendiente |
-| 18 | Verificar en GSC y Bing Webmaster Tools | Baja | Bajo | Pendiente |
-| 19 | Schema Reviews/AggregateRating | Baja | Bajo | Pendiente |
-| 20 | Sección de blog con contenido editorial | Baja | Muy alto | Pendiente |
+| 3 | Ampliar sitemap (/terminos, /register) | Alta | Bajo | Pendiente |
+| 4 | Verificar/crear OG image 1200×630px | Alta | Medio | Pendiente |
+| 5 | Ampliar JSON-LD: FAQPage, featureList, AggregateRating | Alta | Medio | Pendiente |
+| 6 | Metadata en `/register` | Alta | Bajo | Pendiente |
+| 7 | Core Web Vitals: INP/LCP (fuentes inline, lazy loading) | Media | Medio | Pendiente |
+| 8 | LandingClient → Server Components (secciones estáticas) | Media | Alto | Pendiente |
+| 9 | Ampliar disallow en robots.ts | Media | Bajo | Pendiente |
+| 10 | Breadcrumbs JSON-LD en /planes y /terminos | Media | Bajo | Pendiente |
+| 11 | GEO: resúmenes extractables + consistencia de hechos | Media | Medio | Pendiente |
+| 12 | Hreflang es-VE | Baja | Bajo | Hecho |
+| 13 | Página 404 personalizada | Baja | Bajo | Pendiente |
+| 14 | Verificar en GSC y Bing Webmaster Tools | Baja | Bajo | Pendiente |
+| 15 | ISR en mini-landings (revalidate: 60) | Baja | Bajo | Pendiente (páginas usuarios) |
+| 16 | Canonical en /pruebalo/[slug] y /sitio/[slug] | — | Bajo | Pendiente (páginas usuarios) |
+| 17 | OG dinámico para mini-landings | — | Medio | Pendiente (páginas usuarios) |
+| 18 | Alt text en imágenes de mini-landings | — | Bajo | Pendiente (páginas usuarios) |
+| 19 | Schema LocalBusiness en mini-landings | — | Bajo | Pendiente (páginas usuarios) |
+| 20 | Blog con contenido editorial | — | Muy alto | Pendiente (largo plazo) |
