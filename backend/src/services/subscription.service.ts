@@ -119,10 +119,12 @@ export class SubscriptionService {
   }
 
   /**
-   * Renueva la suscripción de una marca por 30 días adicionales
+   * Renueva la suscripción de una marca por N meses
    * 
    * @param brandId - ID de la marca
    * @param paymentData - Datos del pago realizado
+   * @param months - Meses a activar (1, 3, 6 o 12)
+   * @param plan - Plan a activar ('BASIC' | 'PRO'). Si se omite, mantiene el plan actual.
    * @returns Marca actualizada con nueva fecha de vencimiento
    * 
    * Requirements: 11.6, 11.14
@@ -130,11 +132,12 @@ export class SubscriptionService {
   async renewSubscription(
     brandId: string,
     paymentData: CreatePaymentDto,
-    months: number = 1
+    months: number = 1,
+    plan?: string
   ): Promise<Brand> {
     // Validar meses permitidos
-    if (![1, 3, 6].includes(months)) {
-      throw new Error('Los períodos permitidos son 1, 3 o 6 meses');
+    if (![1, 3, 6, 12].includes(months)) {
+      throw new Error('Los períodos permitidos son 1, 3, 6 o 12 meses');
     }
 
     // Obtener marca actual
@@ -166,6 +169,11 @@ export class SubscriptionService {
       last_payment_date: paymentData.payment_date || now.toISOString(),
       next_payment_date: newEndDate.toISOString(),
     };
+
+    // Actualizar plan si se especificó uno válido
+    if (plan && ['BASIC', 'PRO'].includes(plan.toUpperCase())) {
+      updateData.plan = plan.toUpperCase();
+    }
 
     // Si la marca tenía mini-landing suspendida hace menos de 90 días, restaurarla
     if (brand.landing_suspended_at) {
@@ -452,6 +460,7 @@ export class SubscriptionService {
         payment_method: paymentData.payment_method || null,
         status: paymentData.status || 'completed',
         notes: paymentData.notes || null,
+        months_paid: paymentData.months_paid || 1,
       })
       .select()
       .single();
