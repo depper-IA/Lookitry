@@ -29,7 +29,10 @@ export interface MiniLandingConfig {
 }
 
 export interface MetaConfig {
-  meta_mensual_cop: number;
+  /** Gastos personales/de vida mensuales (alquiler, comida, servicios, etc.) */
+  gastos_personales_cop: number;
+  /** Meta de ingreso bruto mensual del negocio (lo que quieres facturar en total) */
+  meta_ingreso_cop: number;
   trm_referencia: number;
   trm_auto: boolean;
 }
@@ -122,7 +125,8 @@ const DEFAULTS: PricingConfig = {
     ],
   },
   meta: {
-    meta_mensual_cop: 1400000,
+    gastos_personales_cop: 1400000,
+    meta_ingreso_cop: 2000000,
     trm_referencia: 3700,
     trm_auto: true,
   },
