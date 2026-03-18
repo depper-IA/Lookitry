@@ -81,6 +81,12 @@ function IconGlobe({ className }: { className?: string }) {
 function IconWifi({ className }: { className?: string }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>;
 }
+function IconTag({ className }: { className?: string }) {
+  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" /></svg>;
+}
+function IconLink({ className }: { className?: string }) {
+  return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>;
+}
 // ── Toggle switch ─────────────────────────────────────────────────────────────
 
 function Toggle({ value, onChange, disabled }: { value: boolean; onChange: () => void; disabled?: boolean }) {
@@ -173,6 +179,12 @@ export default function SystemConfigPage() {
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loadingHealth, setLoadingHealth] = useState(true);
 
+  // Precio mini-landing y footer URL
+  const [landingPrice, setLandingPrice] = useState<number>(650000);
+  const [landingOriginalPrice, setLandingOriginalPrice] = useState<number>(900000);
+  const [footerBrandUrl, setFooterBrandUrl] = useState<string>('https://pruebalo.wilkiedevs.com');
+  const [savingLandingConfig, setSavingLandingConfig] = useState(false);
+
   // Créditos OpenRouter
   const [credits, setCredits] = useState<OpenRouterCredits | null>(null);
   const [loadingCredits, setLoadingCredits] = useState(true);
@@ -228,6 +240,9 @@ export default function SystemConfigPage() {
         const data = await res.json();
         setBypassIp(data.bypass_ip_protection ?? false);
         setIpWhitelist(data.ip_whitelist ?? '');
+        if (data.landing_price) setLandingPrice(data.landing_price);
+        if (data.landing_original_price) setLandingOriginalPrice(data.landing_original_price);
+        if (data.footer_brand_url) setFooterBrandUrl(data.footer_brand_url);
       }
     } catch { /* silencioso */ }
   }, []);
@@ -319,6 +334,23 @@ export default function SystemConfigPage() {
       flash('Whitelist de IPs guardada', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
     finally { setSavingWhitelist(false); }
+  }
+
+  async function handleSaveLandingConfig() {
+    setSavingLandingConfig(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({
+          landing_price: landingPrice,
+          landing_original_price: landingOriginalPrice,
+          footer_brand_url: footerBrandUrl,
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json()).message || 'Error');
+      flash('Configuración de landing guardada', 'ok');
+    } catch (err: any) { flash(err.message, 'err'); }
+    finally { setSavingLandingConfig(false); }
   }
 
   function formatDate(iso: string) {
@@ -504,7 +536,125 @@ export default function SystemConfigPage() {
         </div>
       </Section>
 
-      {/* ── SECCIÓN 3: Créditos OpenRouter ── */}
+      {/* ── SECCIÓN 3: Precio de Mini-landing ── */}
+      <Section title="Precio de Mini-landing" icon={<IconTag className="w-4 h-4" />}>
+        <div className="space-y-4">
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+            Este precio aparece en la landing pública, en el checkout y en todos los mensajes promocionales.
+            El precio original se muestra tachado para generar contraste de valor.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Precio de venta (COP)</label>
+              <input
+                type="number"
+                min={1000}
+                step={1000}
+                value={landingPrice}
+                onChange={e => setLandingPrice(Number(e.target.value))}
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+              />
+              <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Valor real que paga el cliente</p>
+            </div>
+            <div>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Precio original / tachado (COP)</label>
+              <input
+                type="number"
+                min={1000}
+                step={1000}
+                value={landingOriginalPrice}
+                onChange={e => setLandingOriginalPrice(Number(e.target.value))}
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+              />
+              <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Se muestra tachado para mostrar el descuento</p>
+            </div>
+          </div>
+          {landingPrice > 0 && landingOriginalPrice > 0 && landingPrice < landingOriginalPrice && (
+            <div className="flex items-center gap-2 text-sm text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
+              <IconCheck className="w-4 h-4 flex-shrink-0" />
+              Descuento visible: {Math.round((1 - landingPrice / landingOriginalPrice) * 100)}% OFF —
+              el cliente ve <span className="line-through opacity-60 mx-1">${landingOriginalPrice.toLocaleString('es-CO')}</span>
+              y paga <strong>${landingPrice.toLocaleString('es-CO')}</strong>
+            </div>
+          )}
+          <div className="flex justify-end">
+            <button
+              onClick={handleSaveLandingConfig}
+              disabled={savingLandingConfig}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
+            >
+              {savingLandingConfig
+                ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                : <IconCheck className="w-4 h-4" />}
+              Guardar
+            </button>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── SECCIÓN 4: URL del footer de mini-landings ── */}
+      <Section title="URL del footer de mini-landings" icon={<IconLink className="w-4 h-4" />}>
+        <div className="space-y-4">
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+            Esta URL aparece en el footer de todas las mini-landings como "Probador virtual impulsado por ...".
+            Cámbiala cuando migres a un dominio propio. Todos los templates se actualizan automáticamente.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 items-start">
+            <div className="flex-1">
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">URL del footer</label>
+              <input
+                type="url"
+                value={footerBrandUrl}
+                onChange={e => setFooterBrandUrl(e.target.value)}
+                placeholder="https://pruebalo.wilkiedevs.com"
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
+              />
+              <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Incluye el protocolo (https://). Se mostrará sin el protocolo en el footer.</p>
+            </div>
+            {footerBrandUrl && (
+              <div className="sm:mt-6 flex-shrink-0">
+                <a
+                  href={footerBrandUrl.startsWith('http') ? footerBrandUrl : `https://${footerBrandUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', background: 'var(--bg-hover)' }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm transition-colors hover:opacity-80"
+                >
+                  <IconExternalLink className="w-4 h-4" />
+                  Verificar
+                </a>
+              </div>
+            )}
+          </div>
+          {/* Preview */}
+          <div style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }} className="p-3 rounded-xl border border-dashed text-center">
+            <p style={{ color: 'var(--text-muted)' }} className="text-xs">
+              Vista previa:{' '}
+              <span style={{ color: 'var(--text-secondary)' }}>Probador virtual impulsado por </span>
+              <span className="font-medium" style={{ color: '#FF5C3A' }}>
+                {(footerBrandUrl || 'pruebalo.wilkiedevs.com').replace(/^https?:\/\//, '')}
+              </span>
+            </p>
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={handleSaveLandingConfig}
+              disabled={savingLandingConfig}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
+            >
+              {savingLandingConfig
+                ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                : <IconCheck className="w-4 h-4" />}
+              Guardar
+            </button>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── SECCIÓN 5: Créditos OpenRouter ── */}
       <Section title="Créditos OpenRouter" icon={<IconCreditCard className="w-4 h-4" />}>
         <div className="space-y-4">
           {/* Alertas */}
@@ -609,7 +759,7 @@ export default function SystemConfigPage() {
         </div>
       </Section>
 
-      {/* ── SECCIÓN 4: Estado del sistema ── */}
+      {/* ── SECCIÓN 6: Estado del sistema ── */}
       <Section title="Estado del sistema" icon={<IconServer className="w-4 h-4" />}>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
