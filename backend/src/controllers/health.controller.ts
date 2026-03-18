@@ -81,14 +81,22 @@ function overallStatus(services: Record<string, ServiceResult>): ServiceStatus {
 const SERVICE_LABELS: Record<string, string> = {
   supabase: 'Base de datos (Supabase)',
   n8n: 'Automatizaciones (n8n)',
-  email: 'Servicio de email',
+  email: 'Servicio de email (SMTP)',
+};
+
+// Mapeo de servicio → tipo de notificación (down/recovered)
+const SERVICE_NOTIF_TYPE: Record<string, { down: string; recovered: string }> = {
+  supabase: { down: 'service_down', recovered: 'service_recovered' },
+  n8n:      { down: 'service_down', recovered: 'service_recovered' },
+  email:    { down: 'smtp_down',    recovered: 'smtp_recovered' },
 };
 
 async function notifyServiceChange(name: string, prev: ServiceStatus, current: ServiceStatus) {
   if (prev === current) return;
+  const types = SERVICE_NOTIF_TYPE[name] ?? { down: 'service_down', recovered: 'service_recovered' };
   if (current === 'down' || current === 'degraded') {
     await createAdminNotification({
-      type: 'service_down',
+      type: types.down as any,
       title: `Servicio caído: ${SERVICE_LABELS[name] || name}`,
       message: `${SERVICE_LABELS[name] || name} está ${current === 'down' ? 'caído' : 'degradado'}. Verifica el estado del servicio.`,
       severity: current === 'down' ? 'error' : 'warning',
@@ -96,7 +104,7 @@ async function notifyServiceChange(name: string, prev: ServiceStatus, current: S
     });
   } else if (current === 'ok' && (prev === 'down' || prev === 'degraded')) {
     await createAdminNotification({
-      type: 'service_recovered',
+      type: types.recovered as any,
       title: `Servicio recuperado: ${SERVICE_LABELS[name] || name}`,
       message: `${SERVICE_LABELS[name] || name} volvió a funcionar correctamente.`,
       severity: 'success',
