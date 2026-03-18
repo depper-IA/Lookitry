@@ -132,7 +132,7 @@ function RegistroProContent() {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, fingerprint }),
+        body: JSON.stringify({ ...form, fingerprint, ref: ref || undefined }),
       });
       const data = await res.json();
       if (!res.ok) { setApiError(data.message || 'Error al crear la cuenta'); return; }
