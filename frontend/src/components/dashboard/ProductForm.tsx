@@ -24,14 +24,35 @@ const N8N_DESCRIPTOR_URL = process.env.NEXT_PUBLIC_N8N_DESCRIPTOR_URL || '';
 
 // Mapa de categorías devueltas por n8n → valores del select
 const AI_CATEGORY_MAP: Record<string, string> = {
-  VESTIDO: 'other', DRESS: 'other',
-  CAMISA: 'tshirt', SHIRT: 'tshirt', TOP: 'tshirt', TSHIRT: 'tshirt',
-  PANTALON: 'pants', PANTS: 'pants',
-  ZAPATOS: 'shoes', SHOES: 'shoes',
-  HOODIE: 'hoodie',
-  CHAQUETA: 'jacket', JACKET: 'jacket',
+  // Camisetas / tops
+  CAMISA: 'tshirt', SHIRT: 'tshirt', TOP: 'tshirt', TSHIRT: 'tshirt', 'T-SHIRT': 'tshirt',
+  BLUSA: 'tshirt', BLOUSE: 'tshirt',
+  // Pantalones
+  PANTALON: 'pants', PANTS: 'pants', JEANS: 'pants', SHORTS: 'pants', FALDA: 'pants', SKIRT: 'pants',
+  // Zapatos
+  ZAPATOS: 'shoes', SHOES: 'shoes', SNEAKERS: 'shoes', BOOTS: 'shoes', BOTAS: 'shoes',
+  SANDALS: 'shoes', SANDALIAS: 'shoes', TENIS: 'shoes',
+  // Hoodie
+  HOODIE: 'hoodie', SUDADERA: 'hoodie', SWEATSHIRT: 'hoodie',
+  // Chaqueta
+  CHAQUETA: 'jacket', JACKET: 'jacket', COAT: 'jacket', ABRIGO: 'jacket',
+  // Accesorios — incluye cascos, gorras, bolsos, etc.
   ACCESORIOS: 'accessories', ACCESSORIES: 'accessories',
-  CONJUNTO: 'other', SET: 'other',
+  CASCO: 'accessories', HELMET: 'accessories',
+  GORRA: 'accessories', HAT: 'accessories', CAP: 'accessories',
+  BOLSO: 'accessories', BAG: 'accessories', PURSE: 'accessories',
+  CINTURON: 'accessories', BELT: 'accessories',
+  BUFANDA: 'accessories', SCARF: 'accessories',
+  GAFAS: 'accessories', GLASSES: 'accessories', SUNGLASSES: 'accessories',
+  RELOJ: 'accessories', WATCH: 'accessories',
+  COLLAR: 'accessories', NECKLACE: 'accessories',
+  PULSERA: 'accessories', BRACELET: 'accessories',
+  ARETES: 'accessories', EARRINGS: 'accessories',
+  GUANTES: 'accessories', GLOVES: 'accessories',
+  // Vestidos / conjuntos → other
+  VESTIDO: 'other', DRESS: 'other',
+  CONJUNTO: 'other', SET: 'other', OUTFIT: 'other',
+  OVEROL: 'other', JUMPSUIT: 'other',
 };
 
 const BADGE_OPTIONS = [
@@ -56,6 +77,20 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canDescribeWithAI = !!formData.imageUrl && !!formData.name.trim() && !!N8N_DESCRIPTOR_URL;
+
+  // Auto-disparar cuando el usuario termina de escribir el nombre y ya hay imagen
+  const autoTriggeredRef = useRef(false);
+  useEffect(() => {
+    if (!formData.imageUrl || !formData.name.trim() || !N8N_DESCRIPTOR_URL) {
+      autoTriggeredRef.current = false;
+      return;
+    }
+    if (autoTriggeredRef.current || aiGenerated || describingWithAI) return;
+    autoTriggeredRef.current = true;
+    const category = formData.category === 'other' ? customCategory : formData.category;
+    triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), category);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.imageUrl, formData.name]);
 
   const handleDescribeWithAI = async () => {
     if (!canDescribeWithAI) return;
@@ -261,6 +296,27 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
           <Input label="Nombre" name="name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Ej: Camiseta Logo" required />
 
           <div>
+            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Imagen del Producto</label>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={compressing} size="sm">
+                  {compressing ? 'Procesando...' : 'Subir imagen'}
+                </Button>
+                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>o ingresa una URL</span>
+              </div>
+              <Input name="imageUrl" value={formData.imageUrl} onChange={handleChange} error={errors.imageUrl} placeholder="https://ejemplo.com/imagen.jpg" required />
+              <input ref={fileInputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={e => e.target.files?.[0] && handleImageFile(e.target.files[0])} />
+              {compressionInfo && <p className="text-xs" style={{ color: '#10b981' }}>{compressionInfo}</p>}
+              {imagePreview && (
+                <div>
+                  <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>Vista previa:</p>
+                  <img src={imagePreview} alt="Preview" className="w-full max-w-[200px] object-cover rounded-lg border" style={{ borderColor: 'var(--border-color)' }} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Descripción</label>
               <div className="flex items-center gap-2">
@@ -345,27 +401,6 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                 Agrega nombre e imagen para habilitar la descripción con IA
               </p>
             )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Imagen del Producto</label>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 flex-wrap">
-                <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={compressing} size="sm">
-                  {compressing ? 'Procesando...' : 'Subir imagen'}
-                </Button>
-                <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>o ingresa una URL</span>
-              </div>
-              <Input name="imageUrl" value={formData.imageUrl} onChange={handleChange} error={errors.imageUrl} placeholder="https://ejemplo.com/imagen.jpg" required />
-              <input ref={fileInputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={e => e.target.files?.[0] && handleImageFile(e.target.files[0])} />
-              {compressionInfo && <p className="text-xs" style={{ color: '#10b981' }}>{compressionInfo}</p>}
-              {imagePreview && (
-                <div>
-                  <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>Vista previa:</p>
-                  <img src={imagePreview} alt="Preview" className="w-full max-w-[200px] object-cover rounded-lg border" style={{ borderColor: 'var(--border-color)' }} />
-                </div>
-              )}
-            </div>
           </div>
 
           <div>
