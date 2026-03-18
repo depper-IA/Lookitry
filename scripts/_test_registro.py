@@ -61,6 +61,8 @@ code, data = post(f"{BASE}/api/auth/register", {
     "email": EMAIL,
     "password": "Test1234!",
     "slug": SLUG,
+    "contact_name": "Juan Pérez Test",
+    "phone": "+57 300 000 0000",
     "fingerprint": f"fp_{rand}",
     "turnstileToken": None
 })
@@ -83,6 +85,7 @@ code2, data2 = post(f"{BASE}/api/auth/register", {
     "email": EMAIL,
     "password": "Test1234!",
     "slug": SLUG + "-dup",
+    "contact_name": "Test Dup",
     "fingerprint": f"fp_{rand}",
 })
 print(f"    HTTP: {code2} | error: {data2.get('error')} {'OK' if code2 == 409 else 'FALLO'}")
