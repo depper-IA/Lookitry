@@ -1,8 +1,8 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Image from 'next/image';
 
 function IconCheck() {
@@ -15,9 +15,18 @@ function IconCheck() {
 
 function PagoExitosoContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const plan = searchParams.get('plan') || 'PRO';
   const months = Number(searchParams.get('months') || 1);
   const ref = searchParams.get('ref');
+  const [hasSession, setHasSession] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
+    setHasSession(!!token);
+  }, []);
+
+  const dashboardHref = hasSession ? '/dashboard' : '/login';
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-[#0a0a0a]">
@@ -44,8 +53,8 @@ function PagoExitosoContent() {
             Pago recibido
           </h1>
           <p className="text-[14px] text-[#666] mb-6">
-            Tu pago fue procesado correctamente. En breve activaremos tu Plan {plan} por{' '}
-            {months} {months === 1 ? 'mes' : 'meses'}.
+            Tu pago fue procesado correctamente. Tu Plan {plan} por{' '}
+            {months} {months === 1 ? 'mes' : 'meses'} ya está activo.
           </p>
 
           {ref && (
@@ -65,7 +74,7 @@ function PagoExitosoContent() {
 
           <div className="flex flex-col gap-3">
             <Link
-              href="/login"
+              href={dashboardHref}
               className="block w-full py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white font-medium rounded-lg transition-colors text-[13px]"
             >
               Ir al dashboard

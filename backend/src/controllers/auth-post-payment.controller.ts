@@ -66,7 +66,6 @@ export async function registerPostPayment(req: Request, res: Response) {
     }
 
     // 5. Crear la cuenta usando el email del pending
-    // authService.register no acepta plan/months — el webhook de Wompi activará la suscripción
     const result = await authService.register({
       contact_name,
       name,
@@ -78,7 +77,35 @@ export async function registerPostPayment(req: Request, res: Response) {
       fingerprint: fingerprint || undefined,
     });
 
-    // 6. Enviar email de verificación (async, no bloquea)
+    // 6. Activar suscripción inmediatamente con los datos del pending
+    // (el webhook de Wompi no puede activarla porque en ese momento el brandId era visitor_)
+    try {
+      const { SubscriptionService } = await import('../services/subscription.service');
+      const subscriptionService = new SubscriptionService();
+      const months = pending.months || 1;
+      const plan = pending.plan || 'BASIC';
+      await subscriptionService.renewSubscription(
+        result.brand.id,
+        {
+          brand_id: result.brand.id,
+          amount: 0, // El monto real ya fue registrado por el webhook en pending_registrations
+          currency: 'COP',
+          payment_date: new Date().toISOString(),
+          payment_method: 'wompi',
+          status: 'completed',
+          months_paid: months,
+          notes: `Activación post-registro. Plan: ${plan}. Meses: ${months}. Ref: ${ref}`,
+        },
+        months,
+        plan
+      );
+      console.log(`[PostPayment] Suscripción activada para brand ${result.brand.id} — Plan: ${plan}, Meses: ${months}`);
+    } catch (subError) {
+      // No bloquear el registro si falla la activación — se puede activar manualmente
+      console.error('[PostPayment] Error activando suscripción:', subError);
+    }
+
+    // 8. Enviar email de verificación (async, no bloquea)
     if (result.verificationToken) {
       const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
       const verifyUrl = `${frontendUrl}/auth/verify?token=${result.verificationToken}`;
