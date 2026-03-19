@@ -131,6 +131,7 @@ function CheckoutContent() {
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>(initialPlan);
   const [selectedMonths, setSelectedMonths] = useState(1);
   const [subPlan, setSubPlan] = useState<SubPlan>('BASIC');
+  const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [email, setEmail] = useState('');
@@ -714,12 +715,33 @@ function CheckoutContent() {
           {/* Columna derecha: pago */}
           <div className="lg:col-span-2 space-y-4 lg:sticky lg:top-20">
             <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-6">
-              <h2 className="font-syne font-bold text-[16px] text-white mb-1">
+              <h2 className="font-syne font-bold text-[16px] text-white mb-4">
                 Método de pago
               </h2>
+
+              {/* Selector de método */}
+              <div className="flex gap-2 mb-6">
+                <button
+                  onClick={() => setPaymentMethod('wompi')}
+                  className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all ${paymentMethod === 'wompi' ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[#2a2a2a] bg-[#1a1a1a] opacity-60'}`}
+                >
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/Wompi_logo.png" alt="Wompi" className="h-4 w-auto brightness-200" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white">Tarjetas / PSE</span>
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('paypal')}
+                  className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-[#0070ba] bg-[#0070ba]/5' : 'border-[#2a2a2a] bg-[#1a1a1a] opacity-60'}`}
+                >
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 w-auto" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white">PayPal / USD</span>
+                </button>
+              </div>
+
               <p className="text-[12px] text-[#aaa] mb-5">
-                Serás redirigido a Wompi para completar el pago de forma segura.
-                Aceptamos tarjetas débito, crédito, PSE y Nequi.
+                {paymentMethod === 'wompi' 
+                  ? 'Serás redirigido a Wompi para completar el pago de forma segura en COP.'
+                  : `Paga de forma segura con PayPal. El total se convertirá a USD usando la TRM actual ($${trm} COP).`
+                }
               </p>
 
               {error && (
@@ -766,20 +788,24 @@ function CheckoutContent() {
               <button
                 onClick={handlePagar}
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-[#FF5C3A] hover:bg-[#e84d2c] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl transition-colors text-[14px]"
-                style={{ boxShadow: '0 6px 20px rgba(255,92,58,0.3)' }}
+                className="w-full flex items-center justify-center gap-2 disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl transition-all text-[14px]"
+                style={{ 
+                  backgroundColor: paymentMethod === 'wompi' ? '#FF5C3A' : '#0070ba',
+                  boxShadow: paymentMethod === 'wompi' ? '0 6px 20px rgba(255,92,58,0.3)' : '0 6px 20px rgba(0,112,186,0.3)'
+                }}
               >
                 {loading ? <IconSpinner /> : null}
                 {loading
                   ? 'Redirigiendo...'
-                  : isLanding
-                    ? `Pagar ${formatCOP(totalPrice)} COP — Landing + ${planNames[subPlan]}`
-                    : `Pagar ${formatCOP(totalPrice)} COP`}
+                  : paymentMethod === 'wompi'
+                    ? `Pagar ${formatCOP(totalPrice)} COP`
+                    : `Pagar USD $${(totalPrice / trm).toFixed(2)} con PayPal`
+                }
               </button>
 
               <div className="flex items-center justify-center gap-1.5 mt-3 text-[11px] text-[#666]">
                 <IconLock />
-                Pago procesado por Wompi — 100% seguro
+                Pago 100% seguro y encriptado
               </div>
             </div>
 
