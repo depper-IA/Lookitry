@@ -247,6 +247,8 @@ function PlanSection({
   );
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+
 // ── Página principal ──────────────────────────────────────────────────────────
 
 export default function PricingAdminPage() {
@@ -267,8 +269,9 @@ export default function PricingAdminPage() {
   const load = useCallback(async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('adminToken');
       const [pricingRes, trmRes] = await Promise.all([
-        fetch('/api/pricing'),
+        fetch(`${API_URL}/api/admin/pricing`, { headers: { Authorization: `Bearer ${token}` } }),
         fetch('/api/pricing/trm'),
       ]);
       if (!pricingRes.ok) throw new Error('Error al cargar precios');
@@ -310,13 +313,13 @@ export default function PricingAdminPage() {
     setSaving(id);
     try {
       const token = localStorage.getItem('adminToken');
-      const res = await fetch('/api/pricing', {
+      const res = await fetch(`${API_URL}/api/admin/pricing`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ id, data }),
       });
       const json = await res.json();
-      if (!json.ok) throw new Error(json.error);
+      if (!json.ok) throw new Error(json.error || 'Error al guardar');
       setSaved(id);
       setTimeout(() => setSaved(null), 2500);
     } catch (err: unknown) {

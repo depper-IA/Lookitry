@@ -34,6 +34,8 @@ import {
   createPromotion,
   updatePromotion,
   deletePromotion,
+  getPricingConfig,
+  updatePricingConfig,
 } from '../controllers/admin.controller';
 import {
   getPaymentSettings,
@@ -117,5 +119,9 @@ router.get('/promotions', requirePermission('settings'), getAllPromotions);
 router.post('/promotions', requirePermission('settings'), createPromotion);
 router.put('/promotions/:id', requirePermission('settings'), updatePromotion);
 router.delete('/promotions/:id', requirePermission('settings'), deletePromotion);
+
+// Gestión de precios (pricing_config)
+router.get('/pricing', requirePermission('settings'), getPricingConfig);
+router.put('/pricing', requirePermission('settings'), updatePricingConfig);
 
 export default router;
