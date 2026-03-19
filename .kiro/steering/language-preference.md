@@ -25,7 +25,11 @@ Regla general: en fondos oscuros, el texto más tenue visible debe ser al menos 
 
 # Nombre de Marca
 
-El nombre del proyecto es **Lookitry**. En el código JSX se escribe como:
+El nombre del proyecto es **Lookitry**. NUNCA usar "Virtual Try-On SaaS", "VirtualTryOn" ni variantes antiguas en ningún lugar — ni en emails, ni en UI, ni en comentarios de código visibles al usuario.
+
+Dirección de email para tests: **imfeermejias@gmail.com** — todos los tests de correo electrónico deben enviarse a esta dirección.
+
+En el código JSX se escribe como:
 ```jsx
 Look<span className="text-[#FF5C3A]">itry</span>
 ```

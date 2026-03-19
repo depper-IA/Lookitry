@@ -438,7 +438,7 @@ export default function SubscriptionPage() {
         <div style={{ borderColor: 'var(--border-color)' }} className="px-5 py-4 border-b">
           <h3 style={{ color: 'var(--text-primary)' }} className="font-semibold">Historial de pagos</h3>
         </div>
-        {payments.length === 0 ? (
+        {(!Array.isArray(payments) || payments.length === 0) ? (
           <div className="text-center py-10" style={{ color: 'var(--text-muted)' }}>
             <p className="text-sm">Sin historial de pagos aún</p>
           </div>
@@ -454,7 +454,7 @@ export default function SubscriptionPage() {
                 </tr>
               </thead>
               <tbody style={{ borderColor: 'var(--border-color)' }} className="divide-y">
-                {payments.map(p => {
+                {Array.isArray(payments) && payments.map(p => {
                   const st = PAYMENT_STATUS[p.status] ?? { label: p.status, color: 'text-gray-500' };
                   return (
                     <tr key={p.id} className="hover:opacity-80 transition-opacity">

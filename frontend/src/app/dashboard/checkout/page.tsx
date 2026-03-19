@@ -172,7 +172,9 @@ export default function CheckoutPage() {
     // Usamos el precio mensual del plan actual × 30 días × daysRemaining como proxy
     // El backend lo calcula con las fechas reales de la BD
     const newPlanPricePerMonth = planInfo['PRO'].price;
-    const currentPlanPriceTotal = Math.round(planInfo['BASIC'].price * 12); // worst case: 12 meses
+    // Estimamos el precio pagado por el plan actual basado en los meses seleccionados
+    // El backend lo sobreescribe con el valor real de subscription_payments si existe
+    const currentPlanPriceTotal = Math.round(planInfo['BASIC'].price * selectedMonths);
 
     fetch(
       `${apiUrl}/api/payments/wompi/upgrade-preview?newPlan=PRO&newMonths=${selectedMonths}&newPlanPricePerMonth=${newPlanPricePerMonth}&currentPlanPriceTotal=${currentPlanPriceTotal}`,

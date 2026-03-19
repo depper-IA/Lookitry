@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { supabase, supabaseAdmin } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 import { RegisterBrandDto, LoginDto, AuthResponse, Brand } from '../types';
 import { generateToken } from '../utils/jwt';
 
@@ -8,7 +8,7 @@ import { generateToken } from '../utils/jwt';
 
 async function getActiveCampaign() {
   const now = new Date().toISOString();
-  const { data } = await supabase
+  const { data } = await supabaseAdmin
     .from('trial_campaigns')
     .select('id, trial_days, trial_generations_limit')
     .eq('active', true)
@@ -43,7 +43,7 @@ async function isTrialAbuse(ip: string, fingerprint: string | null): Promise<boo
   const since = new Date();
   since.setDate(since.getDate() - 30);
 
-  const { data: byIp } = await supabase
+  const { data: byIp } = await supabaseAdmin
     .from('trial_registrations')
     .select('id')
     .eq('ip_address', ip)
@@ -55,7 +55,7 @@ async function isTrialAbuse(ip: string, fingerprint: string | null): Promise<boo
 
   // Verificar fingerprint si se proporcionó
   if (fingerprint) {
-    const { data: byFp } = await supabase
+    const { data: byFp } = await supabaseAdmin
       .from('trial_registrations')
       .select('id')
       .eq('fingerprint', fingerprint)
@@ -70,7 +70,7 @@ async function isTrialAbuse(ip: string, fingerprint: string | null): Promise<boo
 }
 
 async function recordTrialRegistration(brandId: string, ip: string, fingerprint: string | null, campaignId: string) {
-  await supabase.from('trial_registrations').insert({
+  await supabaseAdmin.from('trial_registrations').insert({
     brand_id: brandId,
     ip_address: ip,
     fingerprint: fingerprint || null,
@@ -80,8 +80,8 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
 
 export class AuthService {
   async register(data: RegisterBrandDto & { ip?: string; fingerprint?: string }): Promise<AuthResponse> {
-    // Validar que el email no exista
-    const { data: existingBrand } = await supabase
+    // Validar que el email no exista — supabaseAdmin para bypassear RLS
+    const { data: existingBrand } = await supabaseAdmin
       .from('brands')
       .select('id')
       .eq('email', data.email)
@@ -92,7 +92,7 @@ export class AuthService {
     }
 
     // Validar que el slug no exista
-    const { data: existingSlug } = await supabase
+    const { data: existingSlug } = await supabaseAdmin
       .from('brands')
       .select('id')
       .eq('slug', data.slug)
@@ -123,8 +123,8 @@ export class AuthService {
       trialEndDate.setDate(trialEndDate.getDate() + campaign.trial_days);
     }
 
-    // Crear marca
-    const { data: newBrand, error } = await supabase
+    // Crear marca — supabaseAdmin para bypassear RLS en INSERT
+    const { data: newBrand, error } = await supabaseAdmin
       .from('brands')
       .insert({
         email: data.email,
@@ -161,7 +161,7 @@ export class AuthService {
 
     // Verificar si la campaña activa requiere verificación de tarjeta
     const { data: campaignFull } = campaign
-      ? await supabase
+      ? await supabaseAdmin
           .from('trial_campaigns')
           .select('require_card_verification')
           .eq('id', campaign.id)
@@ -186,8 +186,8 @@ export class AuthService {
   }
 
   async login(data: LoginDto): Promise<AuthResponse> {
-    // Buscar marca por email
-    const { data: brand, error } = await supabase
+    // Buscar marca por email — usar supabaseAdmin para bypassear RLS
+    const { data: brand, error } = await supabaseAdmin
       .from('brands')
       .select('*')
       .eq('email', data.email)
@@ -226,7 +226,7 @@ export class AuthService {
   }
 
   async verifyEmail(token: string): Promise<{ ok: boolean; message: string }> {
-    const { data: brand } = await supabase
+    const { data: brand } = await supabaseAdmin
       .from('brands')
       .select('id, email_verified')
       .eq('email_verification_token', token)
@@ -240,7 +240,7 @@ export class AuthService {
       return { ok: true, message: 'El correo ya fue verificado anteriormente' };
     }
 
-    await supabase
+    await supabaseAdmin
       .from('brands')
       .update({ email_verified: true, email_verification_token: null })
       .eq('id', brand.id);
@@ -249,7 +249,7 @@ export class AuthService {
   }
 
   async getBrandById(brandId: string): Promise<Brand | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .select('*')
       .eq('id', brandId)
@@ -263,7 +263,7 @@ export class AuthService {
   }
 
   async requestPasswordReset(email: string): Promise<void> {
-    const { data: brand } = await supabase
+    const { data: brand } = await supabaseAdmin
       .from('brands')
       .select('id, name, email')
       .eq('email', email)
@@ -275,7 +275,7 @@ export class AuthService {
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
-    await supabase
+    await supabaseAdmin
       .from('brands')
       .update({ reset_token: token, reset_token_expires_at: expiresAt.toISOString() })
       .eq('id', brand.id);
@@ -289,7 +289,8 @@ export class AuthService {
   }
 
   async requestPasswordResetGetToken(email: string): Promise<{ brand: { name: string; email: string } | null; token: string | null }> {
-    const { data: brand } = await supabase
+    // Usar supabaseAdmin para bypassear RLS y encontrar la marca por email
+    const { data: brand } = await supabaseAdmin
       .from('brands')
       .select('id, name, email')
       .eq('email', email)
@@ -300,7 +301,7 @@ export class AuthService {
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
 
-    await supabase
+    await supabaseAdmin
       .from('brands')
       .update({ reset_token: token, reset_token_expires_at: expiresAt.toISOString() })
       .eq('id', brand.id);
@@ -309,7 +310,7 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
-    const { data: brand } = await supabase
+    const { data: brand } = await supabaseAdmin
       .from('brands')
       .select('id, reset_token_expires_at')
       .eq('reset_token', token)
@@ -322,14 +323,14 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    await supabase
+    await supabaseAdmin
       .from('brands')
       .update({ password: hashedPassword, reset_token: null, reset_token_expires_at: null })
       .eq('id', brand.id);
   }
 
   async resendVerificationEmail(email: string): Promise<{ brand: { name: string; email: string } | null; token: string | null }> {
-    const { data: brand } = await supabase
+    const { data: brand } = await supabaseAdmin
       .from('brands')
       .select('id, name, email, email_verified, email_verification_token')
       .eq('email', email)
@@ -341,7 +342,7 @@ export class AuthService {
     let token = brand.email_verification_token;
     if (!token) {
       token = crypto.randomBytes(32).toString('hex');
-      await supabase
+      await supabaseAdmin
         .from('brands')
         .update({ email_verification_token: token })
         .eq('id', brand.id);
@@ -351,7 +352,7 @@ export class AuthService {
   }
 
   async changePassword(brandId: string, currentPassword: string, newPassword: string): Promise<void> {
-    const { data: brand } = await supabase
+    const { data: brand } = await supabaseAdmin
       .from('brands')
       .select('id, password')
       .eq('id', brandId)
@@ -363,7 +364,7 @@ export class AuthService {
     if (!isValid) throw new Error('WRONG_PASSWORD');
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await supabase
+    await supabaseAdmin
       .from('brands')
       .update({ password: hashedPassword })
       .eq('id', brandId);

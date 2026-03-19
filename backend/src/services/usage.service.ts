@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 import { getPlanByType } from '../config/plans';
 
 export interface UsageStats {
@@ -15,7 +15,7 @@ export interface UsageStats {
 export class UsageService {
   async checkGenerationLimit(brandId: string): Promise<boolean> {
     // Obtener el plan de la marca
-    const { data: brand } = await supabase
+    const { data: brand } = await supabaseAdmin
       .from('brands')
       .select('plan, email_verified')
       .eq('id', brandId)
@@ -34,7 +34,7 @@ export class UsageService {
     const currentMonth = this.getCurrentMonthRange();
 
     // Contar generaciones exitosas del mes actual
-    const { count } = await supabase
+    const { count } = await supabaseAdmin
       .from('generations')
       .select('*', { count: 'exact', head: true })
       .eq('brand_id', brandId)
@@ -46,7 +46,7 @@ export class UsageService {
   }
 
   async checkProductLimit(brandId: string): Promise<boolean> {
-    const { data: brand } = await supabase
+    const { data: brand } = await supabaseAdmin
       .from('brands')
       .select('plan, trial_end_date, trial_generations_limit, subscription_status')
       .eq('id', brandId)
@@ -59,7 +59,7 @@ export class UsageService {
     const plan = getPlanByType(brand.plan);
     const productsLimit = inTrial ? 1 : plan.maxProducts;
 
-    const { count } = await supabase
+    const { count } = await supabaseAdmin
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('brand_id', brandId)
@@ -70,7 +70,7 @@ export class UsageService {
 
   async getUsageStats(brandId: string): Promise<UsageStats> {
     // Obtener el plan y datos de trial de la marca
-    const { data: brand } = await supabase
+    const { data: brand } = await supabaseAdmin
       .from('brands')
       .select('plan, trial_end_date, trial_generations_limit, subscription_status')
       .eq('id', brandId)
@@ -93,14 +93,14 @@ export class UsageService {
     const currentMonth = this.getCurrentMonthRange();
 
     // Contar productos activos
-    const { count: productsCount } = await supabase
+    const { count: productsCount } = await supabaseAdmin
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('brand_id', brandId)
       .eq('is_active', true);
 
     // Contar generaciones exitosas del mes actual
-    const { count: generationsUsed } = await supabase
+    const { count: generationsUsed } = await supabaseAdmin
       .from('generations')
       .select('*', { count: 'exact', head: true })
       .eq('brand_id', brandId)

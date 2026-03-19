@@ -305,8 +305,8 @@ export class BrandsController {
       }).catch(err => console.error('[requestUpgrade] Error enviando email:', err));
 
       // Guardar timestamp de la solicitud
-      const { supabase } = await import('../config/supabase');
-      await supabase.from('brands').update({ upgrade_requested_at: new Date().toISOString() }).eq('id', brand.id);
+      const { supabaseAdmin } = await import('../config/supabase');
+      await supabaseAdmin.from('brands').update({ upgrade_requested_at: new Date().toISOString() }).eq('id', brand.id);
 
       // Notificación persistente en el panel admin
       createAdminNotification({
@@ -398,8 +398,8 @@ export class BrandsController {
       });
 
       // Guardar timestamp de la solicitud en la marca
-      const { supabase } = await import('../config/supabase');
-      await supabase.from('brands').update({ upgrade_requested_at: new Date().toISOString() }).eq('id', req.brand.id);
+      const { supabaseAdmin } = await import('../config/supabase');
+      await supabaseAdmin.from('brands').update({ upgrade_requested_at: new Date().toISOString() }).eq('id', req.brand.id);
 
       // Notificación persistente en el panel admin
       const notifTitle = monthsCount > 1

@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 
 export interface GenerationsByBrandStats {
   brandId: string;
@@ -37,7 +37,7 @@ export class AnalyticsService {
    */
   async getGenerationsByBrand(brandId: string): Promise<GenerationsByBrandStats> {
     // Obtener información de la marca
-    const { data: brand } = await supabase
+    const { data: brand } = await supabaseAdmin
       .from('brands')
       .select('id, name')
       .eq('id', brandId)
@@ -48,20 +48,20 @@ export class AnalyticsService {
     }
 
     // Contar todas las generaciones
-    const { count: totalGenerations } = await supabase
+    const { count: totalGenerations } = await supabaseAdmin
       .from('generations')
       .select('*', { count: 'exact', head: true })
       .eq('brand_id', brandId);
 
     // Contar generaciones exitosas
-    const { count: successfulGenerations } = await supabase
+    const { count: successfulGenerations } = await supabaseAdmin
       .from('generations')
       .select('*', { count: 'exact', head: true })
       .eq('brand_id', brandId)
       .eq('status', 'SUCCESS');
 
     // Contar generaciones fallidas
-    const { count: failedGenerations } = await supabase
+    const { count: failedGenerations } = await supabaseAdmin
       .from('generations')
       .select('*', { count: 'exact', head: true })
       .eq('brand_id', brandId)
@@ -87,7 +87,7 @@ export class AnalyticsService {
    */
   async getMostUsedProducts(brandId: string, limit = 10): Promise<ProductUsageStats[]> {
     // Obtener generaciones agrupadas por producto
-    const { data: generations, error } = await supabase
+    const { data: generations, error } = await supabaseAdmin
       .from('generations')
       .select(`
         product_id,
@@ -195,7 +195,7 @@ export class AnalyticsService {
     const now = new Date();
     const startDate = new Date(now.getFullYear(), now.getMonth() - monthsBack + 1, 1);
 
-    const { data: generations, error } = await supabase
+    const { data: generations, error } = await supabaseAdmin
       .from('generations')
       .select('generated_at, status')
       .eq('brand_id', brandId)

@@ -1,97 +1,115 @@
-/**
- * Script para probar todos los templates de email.
- * Envía cada tipo de notificación a la dirección de prueba.
- *
- * Uso: npm run test:emails
- */
-import dotenv from 'dotenv';
-dotenv.config();
+import * as dotenv from 'dotenv';
+import path from 'path';
 
-import { NotificationService } from '../services/notification.service';
-import { Brand } from '../types';
+// Cargar variables de entorno antes de importar servicios
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
-const TEST_EMAIL = 'Info.samwilkie@gmail.com';
+import { emailService } from '../services/email.service';
+import * as templates from '../templates/email-templates';
 
-const mockBrand: Brand = {
-  id: 'test-brand-id',
+const TEST_EMAIL = 'info.samwilkie@gmail.com';
+const BRAND_INFO = {
   name: 'Marca de Prueba',
-  email: TEST_EMAIL,
-  password: 'hashed-password',
-  slug: 'marca-prueba',
-  plan: 'BASIC',
-  logo: null,
-  primary_color: '#FF5C3A',
-  secondary_color: '#1a1a1a',
-  widget_template: 'default',
-  button_text: 'Probar ahora',
-  welcome_message: 'Bienvenido',
-  subscription_start_date: null,
-  subscription_end_date: null,
-  subscription_status: 'active',
-  last_payment_date: null,
-  next_payment_date: null,
-  trial_end_date: null,
-  trial_generations_limit: 10,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  email: TEST_EMAIL
 };
 
-async function runEmailTests() {
-  const notificationService = new NotificationService();
+async function runTests() {
+  console.log('--- Iniciando Test de Sistema de Correos ---');
+  console.log('Destinatario:', TEST_EMAIL);
 
-  const tests: Array<{ name: string; fn: () => Promise<void> }> = [
+  const connectionOk = await emailService.verifyConnection();
+  if (!connectionOk) {
+    console.error('Error: No se pudo establecer conexión con el servidor SMTP.');
+    process.exit(1);
+  }
+
+  const tests = [
     {
-      name: 'Email de bienvenida',
-      fn: () => notificationService.sendWelcomeEmail(mockBrand),
+      name: 'Verificación de Email',
+      subject: 'Confirma tu correo electrónico - Lookitry',
+      html: templates.verifyEmailTemplate(BRAND_INFO, 'https://pruebalo.wilkiedevs.com/verify?token=test-token')
+    },
+    {
+      name: 'Bienvenida (Registro)',
+      subject: 'Bienvenido a Lookitry',
+      html: templates.welcomeEmail(BRAND_INFO, 'PRO', '$250.000 COP', 30)
     },
     {
       name: 'Recordatorio 7 días',
-      fn: () => notificationService.sendExpirationReminder(mockBrand, 7),
+      subject: 'Tu suscripción vence en 7 días',
+      html: templates.reminder7DaysEmail(BRAND_INFO, 7, '$250.000 COP')
     },
     {
-      name: 'Recordatorio 3 días',
-      fn: () => notificationService.sendExpirationReminder(mockBrand, 3),
+      name: 'Recordatorio 3 días (Urgente)',
+      subject: 'Renovación Urgente Requerida',
+      html: templates.reminder3DaysEmail(BRAND_INFO, 3, '$250.000 COP')
     },
     {
-      name: 'Vencimiento hoy (0 días)',
-      fn: () => notificationService.sendExpirationReminder(mockBrand, 0),
+      name: 'Vencimiento Hoy',
+      subject: 'Tu Suscripción Vence Hoy',
+      html: templates.expirationTodayEmail(BRAND_INFO, '$250.000 COP')
     },
     {
-      name: 'Notificación de suspensión',
-      fn: () => notificationService.sendSuspensionNotice(mockBrand),
+      name: 'Cuenta Suspendida',
+      subject: 'Tu cuenta ha sido suspendida',
+      html: templates.suspensionEmail(BRAND_INFO, '$250.000 COP')
     },
     {
-      name: 'Confirmación de renovación',
-      fn: () => notificationService.sendRenewalConfirmation(mockBrand),
+      name: 'Confirmación de Renovación',
+      subject: 'Suscripción Renovada Exitosamente',
+      html: templates.renewalConfirmationEmail(BRAND_INFO, '2026-04-19', '$250.000 COP', 30)
     },
     {
-      name: 'Alerta de uso 80%',
-      fn: () => notificationService.sendUsageAlert(mockBrand, 80, 80, 100),
+      name: 'Alerta Uso 80%',
+      subject: 'Alerta de Uso: 80% alcanzado',
+      html: templates.usageAlert80Email(BRAND_INFO, 960, 1200, 15, '$250.000 COP')
     },
     {
-      name: 'Alerta de uso 100%',
-      fn: () => notificationService.sendUsageAlert(mockBrand, 100, 100, 100),
+      name: 'Alerta Uso 100%',
+      subject: 'Límite de Generaciones Alcanzado',
+      html: templates.usageAlert100Email(BRAND_INFO, 1200, 10, '$250.000 COP')
     },
+    {
+      name: 'Bienvenida Admin (Manual)',
+      subject: 'Tus credenciales de acceso a Lookitry',
+      html: templates.adminWelcomeEmail(BRAND_INFO, 'Pass123*', 'PRO', 7, '2026-03-26')
+    },
+    {
+      name: 'Reset Password Admin',
+      subject: 'Nueva contraseña de administrador',
+      html: templates.adminPasswordResetEmail('Admin Test', TEST_EMAIL, 'TempPass99#')
+    },
+    {
+      name: 'Aviso Eliminación Landing (75 días)',
+      subject: 'Tu mini-landing será eliminada pronto',
+      html: templates.landingDeletionWarningEmail(BRAND_INFO, 15, 'https://pruebalo.wilkiedevs.com')
+    },
+    {
+      name: 'Reset Password Usuario',
+      subject: 'Restablecer contraseña - Lookitry',
+      html: templates.passwordResetTemplate(BRAND_INFO, 'https://pruebalo.wilkiedevs.com/reset?token=test-token')
+    },
+    {
+      name: 'Notificación Landing Eliminada (90 días)',
+      subject: 'Tu mini-landing ha sido eliminada',
+      html: templates.landingDeletedNoticeEmail(BRAND_INFO)
+    }
   ];
-
-  console.log(`\nEnviando ${tests.length} emails de prueba a ${TEST_EMAIL}...\n`);
-
-  let passed = 0;
-  let failed = 0;
 
   for (const test of tests) {
     try {
-      await test.fn();
-      console.log(`[OK] ${test.name}`);
-      passed++;
-    } catch (error: any) {
-      console.error(`[FAIL] ${test.name}: ${error.message}`);
-      failed++;
+      console.log(`Enviando: ${test.name}...`);
+      await emailService.sendEmail({
+        to: TEST_EMAIL,
+        subject: test.subject,
+        html: test.html
+      });
+    } catch (err: any) {
+      console.error(`Error enviando ${test.name}:`, err.message);
     }
   }
 
-  console.log(`\nResultado: ${passed} enviados, ${failed} fallidos\n`);
-  process.exit(failed > 0 ? 1 : 0);
+  console.log('--- Test Finalizado ---');
 }
 
-runEmailTests();
+runTests().catch(console.error);

@@ -78,7 +78,7 @@ export class AuthController {
         const verifyUrl = `${frontendUrl}/auth/verify?token=${result.verificationToken}`;
         emailService.sendEmail({
           to: result.brand.email,
-          subject: 'Confirma tu correo — Virtual Try-On',
+          subject: 'Confirma tu correo — Lookitry',
           html: verifyEmailTemplate({ name: result.brand.name, email: result.brand.email }, verifyUrl),
         }).catch(err => console.error('[Auth] Error enviando email de verificación:', err));
       }
@@ -161,7 +161,7 @@ export class AuthController {
         const resetUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
         emailService.sendEmail({
           to: brand.email,
-          subject: 'Recuperar contraseña — Virtual Try-On',
+          subject: 'Recuperar contraseña — Lookitry',
           html: passwordResetTemplate({ name: brand.name, email: brand.email }, resetUrl),
         }).catch(err => console.error('[Auth] Error enviando email de reset:', err));
       }

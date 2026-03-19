@@ -11,7 +11,11 @@ interface MonthlyRevenue {
 interface RevenueStats {
   monthlyRevenue: MonthlyRevenue[];
   currentMonth: { month: string; total: number; basic: number; pro: number; landing: number; paymentsCount: number };
-  projection: { nextMonth: string; total: number; basic: number; pro: number; activeSubscriptions: number };
+  projection: { 
+    nextMonth: string; total: number; basic: number; pro: number; 
+    activeSubscriptions: number;
+    activeLandings: number;
+  };
   planBreakdown: {
     basic:   { totalRevenue: number; paymentsCount: number; averagePayment: number };
     pro:     { totalRevenue: number; paymentsCount: number; averagePayment: number };
@@ -204,7 +208,7 @@ function TabConfig({
           <Field
             label="Notas (opcional)"
             value={costs.notas ?? ''}
-            onChange={v => onCostsChange({ ...costs, notas: v })}
+            onChange={v => onCostsChange({ ...costs, notes: v })}
           />
         </div>
         <div className="flex justify-end">
@@ -312,9 +316,10 @@ function TabIngresos({ stats, basicPrecio, proPrecio, landingPrecio }: {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <KpiCard label="Mes actual" value={formatCurrency(stats.currentMonth.total)} sub={`${stats.currentMonth.paymentsCount} pagos`} />
         <KpiCard label="Proyección próximo mes" value={formatCurrency(stats.projection.total)} sub={`${stats.projection.activeSubscriptions} suscripciones activas`} color="#FF5C3A" />
+        <KpiCard label="Landings activas" value={String(stats.projection.activeLandings)} sub="Total de landings publicadas" color="#10b981" />
         <KpiCard label="Total histórico" value={formatCurrency(historico)} sub={`${stats.planBreakdown.basic.paymentsCount + stats.planBreakdown.pro.paymentsCount + stats.planBreakdown.landing.paymentsCount} pagos totales`} />
       </div>
 
@@ -322,15 +327,15 @@ function TabIngresos({ stats, basicPrecio, proPrecio, landingPrecio }: {
         {(['basic', 'pro', 'landing'] as const).map(planKey => {
           const planLabel = planKey === 'basic' ? 'BASIC' : planKey === 'pro' ? 'PRO' : 'LANDING';
           const data = stats.planBreakdown[planKey];
+          // Colores diferenciales: BASIC (Azul #3b82f6), PRO (Púrpura #8b5cf6), LANDING (Verde #10b981)
+          const planColor = planKey === 'basic' ? '#3b82f6' : planKey === 'pro' ? '#8b5cf6' : '#10b981';
+          const planBg    = planKey === 'basic' ? 'rgba(59,130,246,0.12)' : planKey === 'pro' ? 'rgba(139,92,246,0.12)' : 'rgba(16,185,129,0.12)';
+          
           return (
             <div key={planKey} className="rounded-2xl border p-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
               <div className="flex items-center gap-2 mb-4">
                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                  style={planKey === 'pro'
-                    ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
-                    : planKey === 'landing'
-                    ? { backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }
-                    : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>
+                  style={{ backgroundColor: planBg, color: planColor }}>
                   {planLabel}
                 </span>
                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -370,21 +375,26 @@ function TabIngresos({ stats, basicPrecio, proPrecio, landingPrecio }: {
                   <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(month.total)}</span>
                 </div>
                 <div className="relative h-6 rounded-full overflow-hidden" style={{ background: 'var(--border-color)' }}>
-                  <div className="absolute top-0 left-0 h-full bg-[#FF5C3A]/50 rounded-full" style={{ width: `${basicPct}%` }} />
-                  <div className="absolute top-0 h-full bg-[#FF5C3A] rounded-full" style={{ left: `${basicPct}%`, width: `${proPct}%` }} />
-                  <div className="absolute top-0 h-full bg-[#3b82f6] rounded-full" style={{ left: `${basicPct + proPct}%`, width: `${landingPct}%` }} />
+                  {/* Colores diferenciales en la barra: BASIC (Azul), PRO (Púrpura), LANDING (Verde) */}
+                  <div className="absolute top-0 left-0 h-full bg-[#3b82f6] rounded-l-full" style={{ width: `${basicPct}%` }} />
+                  <div className="absolute top-0 h-full bg-[#8b5cf6]" style={{ left: `${basicPct}%`, width: `${proPct}%` }} />
+                  <div className="absolute top-0 h-full bg-[#10b981] rounded-r-full" style={{ left: `${basicPct + proPct}%`, width: `${landingPct}%` }} />
                 </div>
                 <div className="flex justify-between mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
-                  <span>BASIC: {formatCurrency(month.basic)}</span>
-                  <span>PRO: {formatCurrency(month.pro)}</span>
-                  {month.landing > 0 && <span style={{ color: '#3b82f6' }}>LANDING: {formatCurrency(month.landing)}</span>}
+                  <span style={{ color: '#3b82f6' }}>BASIC: {formatCurrency(month.basic)}</span>
+                  <span style={{ color: '#8b5cf6' }}>PRO: {formatCurrency(month.pro)}</span>
+                  {month.landing > 0 && <span style={{ color: '#10b981' }}>LANDING: {formatCurrency(month.landing)}</span>}
                 </div>
               </div>
             );
           })}
         </div>
         <div className="flex items-center justify-center gap-6 mt-6 pt-6 border-t flex-wrap" style={{ borderColor: 'var(--border-color)' }}>
-          {[['#FF5C3A', 'Plan BASIC'], ['#FF5C3A', 'Plan PRO'], ['#3b82f6', 'Landing']].map(([color, label]) => (
+          {[
+            ['#3b82f6', 'Plan BASIC'], 
+            ['#8b5cf6', 'Plan PRO'], 
+            ['#10b981', 'Landing']
+          ].map(([color, label]) => (
             <div key={label} className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
               <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{label}</span>
@@ -454,27 +464,27 @@ function TabROI({
           <div className="flex justify-between items-end mb-2">
             <div>
               <span className="text-3xl font-bold font-syne" style={{ color: metaColor }}>{pctMeta}%</span>
-              <span className="text-sm ml-2" style={{ color: 'var(--text-muted)' }}>de la meta</span>
+              <span className="text-sm ml-2" style={{ color: 'var(--text-muted)' }}>de la meta alcanzada</span>
             </div>
-            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Meta: {formatCurrency(metaCop)}</span>
+            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Objetivo: {formatCurrency(metaCop)}</span>
           </div>
           <div className="h-4 rounded-full overflow-hidden" style={{ background: 'var(--bg-base)' }}>
             <div className="h-full rounded-full transition-all duration-500"
               style={{ width: `${Math.min(pctMeta, 100)}%`, backgroundColor: metaColor }} />
           </div>
           <div className="flex justify-between mt-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-            <span>Ingresos este mes: <strong style={{ color: 'var(--text-primary)' }}>{formatCurrency(ingresosMes)}</strong></span>
+            <span>Facturación este mes: <strong style={{ color: 'var(--text-primary)' }}>{formatCurrency(ingresosMes)}</strong></span>
             {brechaVsMeta > 0
-              ? <span style={{ color: '#ef4444' }}>Faltan {formatCurrency(brechaVsMeta)} para la meta</span>
-              : <span style={{ color: '#10b981' }}>Meta superada en {formatCurrency(Math.abs(brechaVsMeta))}</span>
+              ? <span style={{ color: '#ef4444' }}>Faltan {formatCurrency(brechaVsMeta)} para el objetivo</span>
+              : <span style={{ color: '#10b981' }}>¡Objetivo superado en {formatCurrency(Math.abs(brechaVsMeta))}!</span>
             }
           </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5 pt-5 border-t" style={{ borderColor: 'var(--border-color)' }}>
           {[
             { label: 'Ingresos brutos', value: formatCurrency(ingresosMes), color: 'var(--text-primary)' },
-            { label: 'Total a cubrir',  value: formatCurrency(totalNecesario), color: '#ef4444' },
-            { label: 'Lo que sobra',    value: formatCurrency(gananciaReal), color: gananciaReal >= 0 ? '#10b981' : '#ef4444' },
+            { label: 'Costos + Vida',  value: formatCurrency(totalNecesario), color: '#ef4444' },
+            { label: 'Ganancia neta',    value: formatCurrency(gananciaReal), color: gananciaReal >= 0 ? '#10b981' : '#ef4444' },
             { label: 'ROI operativo',   value: `${roi}%`, color: roiColor },
           ].map(item => (
             <div key={item.label} className="text-center">
@@ -488,55 +498,55 @@ function TabROI({
       {/* 2. Desglose de gastos */}
       <div className="rounded-2xl border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Desglose de gastos del mes</h3>
+          <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Desglose de gastos y punto de equilibrio</h3>
           <button
             onClick={onGoToConfig}
-            className="text-xs font-medium"
-            style={{ color: '#FF5C3A', background: 'none', border: 'none', cursor: 'pointer' }}
+            className="text-xs font-medium px-3 py-1 rounded-lg border border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/5 transition-colors"
+            style={{ color: '#FF5C3A' }}
           >
-            Editar →
+            Ajustar costos →
           </button>
         </div>
         <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-muted)' }}>
-          Costos operativos del negocio
+          Costos operativos (Infraestructura)
         </p>
-        <CostRow label="VPS Hostinger" valor={costoVps} tipo="Fijo" />
-        <CostRow label="Dominio" valor={costoDom} tipo="Fijo" />
+        <CostRow label="Servidor VPS" valor={costoVps} tipo="Fijo" />
+        <CostRow label="Dominio y SSL" valor={costoDom} tipo="Fijo" />
         <CostRow
-          label="IA — OpenRouter" valor={costoOpenRouter} tipo="Variable"
-          sub={`${clientesActivos} clientes × 400 gen × ${formatCurrency(costoGenCop)}/gen`}
+          label="API IA (OpenRouter)" valor={costoOpenRouter} tipo="Variable"
+          sub={`${clientesActivos} clientes × 400 usos × ${formatCurrency(costoGenCop)}/uso`}
         />
         <div className="flex justify-between text-sm font-medium py-2 mb-4" style={{ color: 'var(--text-secondary)' }}>
-          <span>Subtotal operativo</span>
+          <span>Subtotal operativo mensual</span>
           <span style={{ color: 'var(--text-primary)' }}>{formatCurrency(costosOperativos)}</span>
         </div>
         <p className="text-[11px] font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-muted)' }}>
-          Gastos personales / costo de vida
+          Gastos personales (Costo de vida)
         </p>
         <CostRow
-          label="Alquiler, comida, servicios y otros" valor={gastosPers} tipo="Fijo"
-          sub="Configurable en la pestaña Configuración"
+          label="Alquiler, alimentación, salud, etc." valor={gastosPers} tipo="Fijo"
+          sub="Lo que necesitas retirar del negocio para vivir"
         />
         <div className="mt-4 pt-4 border-t space-y-2" style={{ borderColor: 'var(--border-color)' }}>
           <div className="flex justify-between text-sm">
-            <span style={{ color: 'var(--text-secondary)' }}>Costos operativos</span>
+            <span style={{ color: 'var(--text-secondary)' }}>Mantenimiento del negocio</span>
             <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{formatCurrency(costosOperativos)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span style={{ color: 'var(--text-secondary)' }}>Gastos personales</span>
+            <span style={{ color: 'var(--text-secondary)' }}>Costo de vida personal</span>
             <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{formatCurrency(gastosPers)}</span>
           </div>
           <div className="flex justify-between text-base font-bold pt-2 border-t" style={{ borderColor: 'var(--border-color)' }}>
-            <span style={{ color: 'var(--text-primary)' }}>Total a cubrir</span>
+            <span style={{ color: 'var(--text-primary)' }}>Punto de equilibrio mensual</span>
             <span style={{ color: '#ef4444' }}>{formatCurrency(totalNecesario)}</span>
           </div>
-          <div className="flex justify-between text-base font-bold">
-            <span style={{ color: 'var(--text-primary)' }}>Lo que sobra este mes</span>
+          <div className="flex justify-between text-lg font-bold">
+            <span style={{ color: 'var(--text-primary)' }}>Excedente real (Neto)</span>
             <span style={{ color: gananciaReal >= 0 ? '#10b981' : '#ef4444' }}>{formatCurrency(gananciaReal)}</span>
           </div>
         </div>
         <div className="mt-4 p-3 rounded-xl flex items-center justify-between" style={{ background: 'var(--bg-base)' }}>
-          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Margen operativo (sin gastos personales)</span>
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Margen de beneficio operativo</span>
           <span className="text-lg font-bold font-syne" style={{ color: margenColor }}>{margenPct}%</span>
         </div>
       </div>
@@ -544,20 +554,16 @@ function TabROI({
       {/* 3. Clientes necesarios */}
       <div>
         <div className="mb-4">
-          <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>¿Cuántos clientes necesito?</h3>
+          <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Hitos de crecimiento</h3>
           <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-            Para cubrir costos: {formatCurrency(totalNecesario)}/mes (operativos + vida personal).
-            Para la meta: {formatCurrency(metaCop)}/mes. Ajusta en{' '}
-            <button onClick={onGoToConfig} style={{ color: '#FF5C3A', background: 'none', border: 'none', cursor: 'pointer', fontSize: 'inherit' }}>
-              Configuración
-            </button>.
+            Cálculo de volumen necesario para alcanzar la sostenibilidad y los objetivos de facturación.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ClientesCard
             planLabel="Plan Básico" precio={basicPrecio}
             clientesParaCostos={peqBasicReal} clientesParaMeta={clientesMetaBasic}
-            clientesActuales={clientesActivos} color="#FF5C3A"
+            clientesActuales={clientesActivos} color="#3b82f6"
           />
           <ClientesCard
             planLabel="Plan Pro" precio={proPrecio}
@@ -566,33 +572,32 @@ function TabROI({
           />
         </div>
         <p className="text-[11px] mt-3" style={{ color: 'var(--text-muted)' }}>
-          Los clientes actuales ({clientesActivos}) son los que tienen suscripción activa según la proyección.
-          El cálculo asume que todos son del mismo plan — en la realidad el mix puede variar.
+          Basado en {clientesActivos} clientes con suscripción activa. El análisis asume una composición de cartera uniforme por plan.
         </p>
       </div>
 
       {/* 4. Proyección */}
       <div className="rounded-2xl border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
         <h3 className="text-base font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
-          Proyección (promedio últimos 3 meses)
+          Resumen histórico y Proyecciones
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 rounded-xl" style={{ background: 'var(--bg-base)' }}>
-            <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Ingreso promedio/mes</p>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Media de ingresos (3 meses)</p>
             <p className="text-xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>{formatCurrency(avg3)}</p>
-            <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>{pct(avg3, metaCop)}% de la meta</p>
+            <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>{pct(avg3, metaCop)}% del objetivo mensual</p>
           </div>
           <div className="p-4 rounded-xl" style={{ background: 'var(--bg-base)' }}>
-            <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Lo que sobra promedio/mes</p>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Neto proyectado/mes</p>
             <p className="text-xl font-bold font-syne" style={{ color: (avg3 - totalNecesario) >= 0 ? '#10b981' : '#ef4444' }}>
               {formatCurrency(avg3 - totalNecesario)}
             </p>
-            <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>después de {formatCurrency(totalNecesario)} en total</p>
+            <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>Después de cubrir {formatCurrency(totalNecesario)}</p>
           </div>
           <div className="p-4 rounded-xl" style={{ background: 'var(--bg-base)' }}>
-            <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>TRM de referencia</p>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Tasa TRM aplicada</p>
             <p className="text-xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>{trm.toLocaleString('es-CO')}</p>
-            <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>COP/USD — Superfinanciera</p>
+            <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>COP/USD — Referencia Superfinanciera</p>
           </div>
         </div>
       </div>

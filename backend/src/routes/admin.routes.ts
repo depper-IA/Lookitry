@@ -28,6 +28,8 @@ import {
   deleteFeedback,
   getUnresolvedFeedbackCount,
   getOpenRouterCredits,
+  sendBrandResetEmail,
+  getPayments,
 } from '../controllers/admin.controller';
 import {
   getPaymentSettings,
@@ -48,6 +50,11 @@ const router = Router();
 
 router.post('/auth/login', adminLogin);
 
+// Ruta de verificación de token (usada por Next.js API routes)
+router.get('/verify', adminAuthMiddleware, (req: any, res) => {
+  return res.status(200).json({ ok: true, admin: req.admin });
+});
+
 router.use(adminAuthMiddleware);
 
 router.get('/stats', requirePermission('conversion'), getGlobalStats);
@@ -61,6 +68,7 @@ router.patch('/brands/:id/plan', requirePermission('subscriptions'), changeBrand
 router.patch('/brands/:id/activate-plan', requirePermission('subscriptions'), activateBrandPlan);
 router.patch('/brands/:id/landing-page', requirePermission('brands'), toggleLandingPage);
 router.patch('/brands/:id/modal-config', requirePermission('brands'), updateModalConfig);
+router.post('/brands/:id/send-reset-email', requirePermission('brands'), sendBrandResetEmail);
 
 // Mini-landings — panel de control
 router.get('/mini-landings', requirePermission('brands'), getMiniLandingsAdmin);
@@ -96,5 +104,8 @@ router.delete('/feedback/:id', requirePermission('brands'), deleteFeedback);
 
 // Monitor de créditos OpenRouter
 router.get('/openrouter-credits', requirePermission('settings'), getOpenRouterCredits);
+
+// Historial de pagos global (Auditoría Marzo 2026)
+router.get('/revenue/payments', requirePermission('subscriptions'), getPayments);
 
 export default router;

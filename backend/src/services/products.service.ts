@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 import { Product } from '../types';
 import { PLANS } from '../config/plans';
 
@@ -25,7 +25,7 @@ export class ProductsService {
    * Obtener todos los productos activos de una marca
    */
   async getProductsByBrand(brandId: string): Promise<any[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('products')
       .select('*')
       .eq('brand_id', brandId)
@@ -56,7 +56,7 @@ export class ProductsService {
    * Obtener un producto por ID
    */
   async getProductById(productId: string): Promise<Product | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('products')
       .select('*')
       .eq('id', productId)
@@ -73,7 +73,7 @@ export class ProductsService {
    * Contar productos activos de una marca
    */
   async countActiveProducts(brandId: string): Promise<number> {
-    const { count, error } = await supabase
+    const { count, error } = await supabaseAdmin
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('brand_id', brandId)
@@ -92,7 +92,7 @@ export class ProductsService {
    */
   async canCreateProduct(brandId: string): Promise<{ canCreate: boolean; currentCount: number; limit: number }> {
     // Obtener el plan y datos de trial de la marca
-    const { data: brand, error: brandError } = await supabase
+    const { data: brand, error: brandError } = await supabaseAdmin
       .from('brands')
       .select('plan, trial_end_date, subscription_status')
       .eq('id', brandId)
@@ -147,7 +147,7 @@ export class ProductsService {
     }
 
     // Crear el producto
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('products')
       .insert({
         brand_id: brandId,
@@ -218,7 +218,7 @@ export class ProductsService {
     if (updates.badge !== undefined) updateData.badge = updates.badge ?? null;
 
     // Actualizar el producto
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('products')
       .update(updateData)
       .eq('id', productId)
@@ -262,7 +262,7 @@ export class ProductsService {
     }
 
     // Soft delete: marcar como inactivo
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('products')
       .update({ is_active: false })
       .eq('id', productId);
