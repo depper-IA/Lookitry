@@ -19,6 +19,8 @@ interface PricingSettings {
   landingOriginalPrice: number;
   wompiEnabled: boolean;
   wompiPublicKey: string;
+  paypalEnabled: boolean;
+  paypalEmail: string;
   manualEnabled: boolean;
   manualWhatsapp: string;
   manualEmail: string;
@@ -168,7 +170,10 @@ function CheckoutContent() {
       }).then(r => r.ok ? r.json() : null),
       fetch('/api/promotions').then(r => r.ok ? r.json() : null),
     ]).then(([paySettings, pricingRows, promosRes]) => {
-      if (paySettings) setPricing(paySettings);
+      if (paySettings) {
+        setPricing(paySettings);
+        if (paySettings.trm) setTrm(paySettings.trm);
+      }
       if (promosRes?.ok) setActivePromos(promosRes.data || []);
       if (Array.isArray(pricingRows)) {
         const basic = pricingRows.find((r: any) => r.id === 'basic')?.data;
