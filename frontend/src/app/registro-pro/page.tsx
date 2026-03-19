@@ -158,7 +158,7 @@ function RegistroProContent() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('brandToken', data.token);
       localStorage.setItem('brand', JSON.stringify(data.brand));
-      router.push(`/pago-exitoso?plan=PRO&months=${months}&ref=${ref}`);
+      router.push('/dashboard');
     } catch {
       setApiError('Error de conexión. Intenta de nuevo.');
     } finally {
