@@ -148,6 +148,28 @@ export class WompiService {
   }
 
   /**
+   * Consulta una transacción por referencia en la API de Wompi.
+   * Retorna el primer elemento del array data[], o null si está vacío.
+   * Lanza error si la llamada de red falla.
+   */
+  async getTransactionByReference(reference: string): Promise<{ status: string } | null> {
+    try {
+      const { privateKey } = await this.getActiveKeys();
+      const url = `https://sandbox.wompi.co/v1/transactions?reference=${encodeURIComponent(reference)}`;
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${privateKey}`,
+        },
+      });
+      const json = await response.json() as { data: { status: string }[] };
+      if (!json.data || json.data.length === 0) return null;
+      return json.data[0];
+    } catch {
+      throw new Error('Error al verificar el pago con Wompi');
+    }
+  }
+
+  /**
    * Genera la URL del checkout hosted de Wompi.
    */
   async getCheckoutUrl(brandId: string, amountCOP: number, redirectUrl: string, cardOnly = false, months: number = 1, plan: string = 'BASIC'): Promise<string> {
