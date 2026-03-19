@@ -133,6 +133,9 @@ function CheckoutContent() {
   const [subPlan, setSubPlan] = useState<SubPlan>('BASIC');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [hasSession, setHasSession] = useState(false);
   const [pricing, setPricing] = useState<PricingSettings | null>(null);
 
   // Precios dinámicos desde la API de pricing
@@ -179,6 +182,11 @@ function CheckoutContent() {
         }
       }
     }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
+    setHasSession(!!token);
   }, []);
 
   const landingPrice    = pricing?.landingPrice         ?? 650000;
@@ -228,9 +236,29 @@ function CheckoutContent() {
     }
   };
 
+  function isValidEmail(value: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  }
+
   const handlePagar = async () => {
     setLoading(true);
     setError('');
+
+    // Si no hay sesión, validar email
+    if (!hasSession) {
+      if (!email.trim()) {
+        setEmailError('El correo electrónico es requerido');
+        setLoading(false);
+        return;
+      }
+      if (!isValidEmail(email)) {
+        setEmailError('Formato de correo inválido');
+        setLoading(false);
+        return;
+      }
+    }
+    setEmailError('');
+
     try {
       const token = typeof window !== 'undefined'
         ? (localStorage.getItem('token') || localStorage.getItem('brandToken'))
@@ -239,8 +267,9 @@ function CheckoutContent() {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
+      const emailParam = !hasSession && email.trim() ? `&email=${encodeURIComponent(email.trim())}` : '';
       const res = await fetch(
-        `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${isLanding ? selectedMonths : selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}`,
+        `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}`,
         { headers }
       );
 
@@ -637,6 +666,28 @@ function CheckoutContent() {
               {error && (
                 <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[12px] rounded-lg px-3 py-2 mb-4">
                   {error}
+                </div>
+              )}
+
+              {/* Campo de email para usuarios sin sesión */}
+              {!hasSession && (
+                <div className="mb-4">
+                  <label className="block text-[12px] font-medium text-[#888] mb-1.5">
+                    Correo electrónico
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => { setEmail(e.target.value); setEmailError(''); }}
+                    placeholder="hola@mimarca.com"
+                    className={`w-full bg-[#0f0f0f] border ${emailError ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'} rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
+                  />
+                  {emailError && (
+                    <p className="text-[11px] text-[#ff6b6b] mt-1">{emailError}</p>
+                  )}
+                  <p className="text-[11px] text-[#444] mt-1">
+                    Lo usaremos para vincular tu pago con tu cuenta.
+                  </p>
                 </div>
               )}
 

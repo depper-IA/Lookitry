@@ -115,8 +115,8 @@ Implementación incremental del flujo de pago para usuarios nuevos en Lookitry. 
     - Usar `fc.oneof(fc.string().filter(s => !s.includes('@')), fc.constant(''), fc.constant('   '))` para emails inválidos
     - Verificar que `isValidEmail(invalidEmail) === false` para todos los casos generados
 
-- [~] 8. Modificar frontend `/checkout` — agregar campo email para usuarios sin sesión
-  - [~] 8.1 Actualizar el componente de checkout público (`frontend/src/app/checkout/page.tsx` o equivalente)
+- [-] 8. Modificar frontend `/checkout` — agregar campo email para usuarios sin sesión
+  - [x] 8.1 Actualizar el componente de checkout público (`frontend/src/app/checkout/page.tsx` o equivalente)
     - Agregar estado `email` y `emailError`
     - Detectar sesión: `const hasSession = !!localStorage.getItem('token')`
     - Si `!hasSession` → renderizar campo de email antes del botón "Pagar"
