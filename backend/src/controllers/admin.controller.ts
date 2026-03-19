@@ -1018,13 +1018,17 @@ export const createPromotion = async (req: any, res: Response) => {
 export const updatePromotion = async (req: any, res: Response) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const { type, name, config, active, starts_at, ends_at } = req.body;
 
     const { data, error } = await supabaseAdmin
       .from('promotions')
       .update({
-        ...updateData,
-        updated_at: new Date().toISOString()
+        type,
+        name,
+        config: config ?? {},
+        active: active ?? false,
+        starts_at: starts_at || null,
+        ends_at: ends_at || null
       })
       .eq('id', id)
       .select()
@@ -1032,12 +1036,14 @@ export const updatePromotion = async (req: any, res: Response) => {
 
     if (error) throw error;
 
-    await auditService.log({
-      admin_id: req.admin.id,
-      admin_email: req.admin.email,
-      action: 'system.config_update',
-      details: { promo_id: id, action: 'update', changes: Object.keys(updateData) }
-    });
+    if (req.admin) {
+      await auditService.log({
+        admin_id: req.admin.id,
+        admin_email: req.admin.email,
+        action: 'system.config_update',
+        details: { promo_id: id, action: 'update' }
+      });
+    }
 
     return res.json({ ok: true, data });
   } catch (error: any) {
