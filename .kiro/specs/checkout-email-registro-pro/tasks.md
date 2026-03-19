@@ -99,8 +99,8 @@ Implementación incremental del flujo de pago para usuarios nuevos en Lookitry. 
     - Usar `fc.record({ plan: fc.constantFrom('BASIC', 'PRO'), months: fc.integer({ min: 1, max: 12 }) })`
     - Verificar que `authService.register` recibe el `plan` y `months` del pending
 
-- [~] 7. Modificar frontend `/registro-pro` — eliminar email y teléfono, validar `ref`
-  - [~] 7.1 Actualizar `frontend/src/app/registro-pro/page.tsx`
+- [x] 7. Modificar frontend `/registro-pro` — eliminar email y teléfono, validar `ref`
+  - [x] 7.1 Actualizar `frontend/src/app/registro-pro/page.tsx`
     - Eliminar `email` y `phone` del estado `form` y del JSX
     - Eliminar la validación de email del método `validate()`
     - Si `!ref` al montar el componente → renderizar bloque de error en lugar del formulario (mensaje: "Referencia de pago requerida. Accede desde el enlace de confirmación de tu pago.")
