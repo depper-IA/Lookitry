@@ -139,6 +139,7 @@ function CheckoutContent() {
   const [hasSession, setHasSession] = useState(false);
   const [sessionInfo, setSessionInfo] = useState<{ name: string; email: string } | null>(null);
   const [pricing, setPricing] = useState<PricingSettings | null>(null);
+  const [trm, setTrm] = useState(3900);
 
   // Precios dinámicos desde la API de pricing
   const [planBase, setPlanBase] = useState<Record<'BASIC' | 'PRO', number>>(PLAN_BASE_FALLBACK);
@@ -306,6 +307,20 @@ function CheckoutContent() {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
+      // --- FLUJO PAYPAL ---
+      if (paymentMethod === 'paypal') {
+        const paypalEmail = pricing?.paypalEmail || 'pagos@wilkiedevs.com';
+        const amountUSD = (totalPrice / trm).toFixed(2);
+        const itemName = isLanding ? `Mini-landing + ${planNames[subPlan]}` : planNames[selectedPlan];
+        const reference = `TRYON-${Date.now()}`; // Referencia simple para PayPal
+
+        const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(paypalEmail)}&item_name=${encodeURIComponent(itemName)}&amount=${amountUSD}&currency_code=USD&button_subtype=services&no_note=0&bn=PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest&custom=${reference}`;
+        
+        window.location.href = paypalUrl;
+        return;
+      }
+
+      // --- FLUJO WOMPI ---
       const emailParam = !hasSession && email.trim() ? `&email=${encodeURIComponent(email.trim())}` : '';
       const landingParam = isLanding ? '&includes_landing=true' : '';
       const res = await fetch(
