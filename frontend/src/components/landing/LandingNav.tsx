@@ -141,7 +141,7 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
           /* Sin sesión */
           <Link
             href="/login"
-            className="text-[13px] text-[#888] hover:text-white px-2 md:px-3.5 py-1.5 rounded-md transition-colors hidden sm:block"
+            className="text-[13px] text-[#888] hover:text-white px-2 md:px-3.5 py-1.5 rounded-md transition-colors"
           >
             Iniciar sesión
           </Link>

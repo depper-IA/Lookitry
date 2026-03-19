@@ -187,6 +187,7 @@ function PromoForm({ initial, onSave, onCancel, saving }: {
           <Field label="Texto del banner" value={String(cfg.text ?? '')} onChange={v => setConfig('text', v)} />
           <Field label="Color de fondo (hex)" value={String(cfg.bg_color ?? '#FF5C3A')} onChange={v => setConfig('bg_color', v)} />
           <Field label="Color de texto (hex)" value={String(cfg.text_color ?? '#ffffff')} onChange={v => setConfig('text_color', v)} />
+          <Field label="Código de cupón (opcional)" value={String(cfg.coupon_code ?? '')} onChange={v => setConfig('coupon_code', v)} />
           <Field label="Texto del CTA (opcional)" value={String(cfg.cta_text ?? '')} onChange={v => setConfig('cta_text', v)} />
           <Field label="URL del CTA (opcional)" value={String(cfg.cta_url ?? '')} onChange={v => setConfig('cta_url', v)} />
         </>)}
@@ -336,7 +337,7 @@ export default function PromotionsPage() {
 
   const loadPromos = useCallback(async () => {
     const token = getToken();
-    const res = await fetch('/api/admin/promotions', { headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch(`${API_URL}/api/admin/promotions`, { headers: { Authorization: `Bearer ${token}` } });
     if (res.ok) { const d = await res.json(); setPromos(d.data ?? []); }
   }, []);
 
@@ -358,7 +359,7 @@ export default function PromotionsPage() {
     try {
       const token = getToken();
       const isEdit = !!editingPromo;
-      const url = isEdit ? `/api/admin/promotions/${editingPromo!.id}` : '/api/admin/promotions';
+      const url = isEdit ? `${API_URL}/api/admin/promotions/${editingPromo!.id}` : `${API_URL}/api/admin/promotions`;
       const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
       if (!res.ok) throw new Error((await res.json()).error || 'Error al guardar');
       setShowPromoForm(false); setEditingPromo(null); await loadPromos();
@@ -367,14 +368,14 @@ export default function PromotionsPage() {
 
   const handleTogglePromo = async (promo: Promotion) => {
     const token = getToken();
-    await fetch(`/api/admin/promotions/${promo.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ active: !promo.active }) });
+    await fetch(`${API_URL}/api/admin/promotions/${promo.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ active: !promo.active }) });
     await loadPromos();
   };
 
   const handleDeletePromo = async (id: string) => {
     if (!confirm('¿Eliminar esta promoción?')) return;
     const token = getToken();
-    await fetch(`/api/admin/promotions/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    await fetch(`${API_URL}/api/admin/promotions/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
     await loadPromos();
   };
 
