@@ -29,14 +29,14 @@ export function PaymentTrustBadges() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-60 hover:opacity-100 transition-opacity duration-500">
+        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-14 opacity-80 hover:opacity-100 transition-opacity duration-500">
           {LOGOS.map((logo) => (
             <img
               key={logo.name}
               src={logo.url}
               alt={logo.name}
               title={logo.name}
-              className={`h-6 md:h-8 w-auto object-contain grayscale brightness-200 hover:grayscale-0 hover:brightness-100 transition-all duration-300`}
+              className="h-8 md:h-10 w-auto object-contain transition-all duration-300 hover:scale-110"
             />
           ))}
         </div>
