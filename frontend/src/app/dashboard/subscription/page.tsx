@@ -78,161 +78,7 @@ function formatDate(d?: string | null): string {
   });
 }
 
-// ── Descuentos por meses ─────────────────────────────────────────────────────
-
-const MONTH_DISCOUNTS: { months: number; pct: number; label: string }[] = [
-  { months: 1,  pct: 0,  label: '1 mes' },
-  { months: 3,  pct: 5,  label: '3 meses' },
-  { months: 6,  pct: 10, label: '6 meses' },
-  { months: 12, pct: 15, label: '12 meses' },
-];
-
-function calcTotal(basePrice: number, months: number, pct: number) {
-  return Math.round(basePrice * months * (1 - pct / 100));
-}
-
-// ── Modal cambio de plan ──────────────────────────────────────────────────────
-
-function ChangePlanModal({ currentPlan, onClose, dynamicPrices }: { currentPlan: PlanKey; onClose: () => void; dynamicPrices: { BASIC: number; PRO: number } }) {
-  const [message, setMessage] = useState('');
-  const [selectedMonths, setSelectedMonths] = useState(1);
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const targetKey: PlanKey = currentPlan === 'BASIC' ? 'PRO' : 'BASIC';
-  const PLAN_INFO = {
-    BASIC: { ...PLAN_INFO_STATIC.BASIC, price: dynamicPrices.BASIC },
-    PRO:   { ...PLAN_INFO_STATIC.PRO,   price: dynamicPrices.PRO },
-  };
-  const target = PLAN_INFO[targetKey];
-  const discount = MONTH_DISCOUNTS.find(d => d.months === selectedMonths)!;
-  const total = calcTotal(target.price, selectedMonths, discount.pct);
-
-  const handleSend = async () => {
-    if (!message.trim()) return;
-    setLoading(true);
-    setError('');
-    try {
-      const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/brands/request-plan-change`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ targetPlan: targetKey, message, months: selectedMonths }),
-        }
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al enviar solicitud');
-      setSent(true);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl shadow-2xl w-full max-w-md border">
-        <div className={`bg-gradient-to-r ${target.gradient} rounded-t-2xl px-6 py-5`}>
-          <h3 className="text-white font-syne font-bold text-lg">Solicitar cambio a {target.name}</h3>
-          <p className="text-white/70 text-sm mt-1">{formatCurrency(target.price)}/mes</p>
-        </div>
-        <div className="p-6">
-          {sent ? (
-            <div className="text-center py-4">
-              <div className="flex justify-center mb-3">
-                <CheckCircle className="w-12 h-12 text-emerald-500" />
-              </div>
-              <p style={{ color: 'var(--text-primary)' }} className="font-semibold">Solicitud enviada</p>
-              <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-2">
-                Nos pondremos en contacto contigo en las próximas 24 horas para coordinar el cambio.
-              </p>
-              <button onClick={onClose} className="mt-5 w-full py-2.5 min-h-[44px] rounded-xl bg-[#FF5C3A] text-white font-medium text-sm hover:bg-[#e04e30] transition-colors">
-                Cerrar
-              </button>
-            </div>
-          ) : (
-            <>
-              <p style={{ color: 'var(--text-secondary)' }} className="text-sm mb-4">
-                Cuéntanos por qué quieres cambiar al <strong>{target.name}</strong> y nos contactaremos para coordinar el cambio.
-              </p>
-
-              {/* Selector de meses con descuento */}
-              <div className="mb-4">
-                <p style={{ color: 'var(--text-muted)' }} className="text-xs font-medium mb-2">Meses a contratar</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {MONTH_DISCOUNTS.map(d => (
-                    <button
-                      key={d.months}
-                      onClick={() => setSelectedMonths(d.months)}
-                      style={{
-                        borderColor: selectedMonths === d.months ? '#FF5C3A' : 'var(--border-color)',
-                        background: selectedMonths === d.months ? 'rgba(255,92,58,0.08)' : 'var(--bg-hover)',
-                      }}
-                      className="relative py-2.5 rounded-xl border-2 text-center transition-all min-h-[44px]"
-                    >
-                      <span style={{ color: 'var(--text-primary)' }} className="block text-sm font-bold">{d.months}</span>
-                      <span style={{ color: 'var(--text-muted)' }} className="block text-xs">mes{d.months > 1 ? 'es' : ''}</span>
-                      {d.pct > 0 && (
-                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap">
-                          -{d.pct}%
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-                {discount.pct > 0 && (
-                  <div className="mt-2.5 flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
-                    <span className="text-xs text-emerald-600">Total con {discount.pct}% descuento</span>
-                    <span className="text-sm font-bold text-emerald-600">{formatCurrency(total)}</span>
-                  </div>
-                )}
-                {discount.pct === 0 && (
-                  <div style={{ background: 'var(--bg-hover)' }} className="mt-2.5 flex items-center justify-between rounded-xl px-3 py-2">
-                    <span style={{ color: 'var(--text-muted)' }} className="text-xs">Total</span>
-                    <span style={{ color: 'var(--text-primary)' }} className="text-sm font-bold">{formatCurrency(total)}</span>
-                  </div>
-                )}
-              </div>
-
-              <textarea
-                value={message}
-                onChange={e => setMessage(e.target.value)}
-                placeholder="Ej: Necesito más productos y generaciones para mi tienda..."
-                rows={3}
-                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                className="w-full px-3 py-2.5 border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
-              />
-              {error && <p className="text-xs text-red-600 bg-red-500/10 px-3 py-2 rounded-lg mt-2">{error}</p>}
-              <p style={{ color: 'var(--text-muted)' }} className="mt-1.5 text-xs">
-                Tu solicitud se enviará a{' '}
-                <a href="mailto:info@pruebalo.wilkiedevs.com" className="text-[#FF5C3A] hover:underline">
-                  info@pruebalo.wilkiedevs.com
-                </a>
-              </p>
-              <div className="flex gap-3 mt-4">
-                <button onClick={onClose}
-                  style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
-                  className="flex-1 py-2.5 min-h-[44px] rounded-xl border text-sm hover:opacity-80 transition-opacity">
-                  Cancelar
-                </button>
-                <button
-                  onClick={handleSend}
-                  disabled={!message.trim() || loading}
-                  className="flex-1 py-2.5 min-h-[44px] rounded-xl bg-[#FF5C3A] text-white font-medium text-sm hover:bg-[#e04e30] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  {loading ? 'Enviando...' : 'Enviar solicitud'}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+// El cambio de plan se hace directamente via checkout con Wompi (/dashboard/checkout?plan=XXX)
 
 // ── Página principal ──────────────────────────────────────────────────────────
 
@@ -241,7 +87,6 @@ export default function SubscriptionPage() {
   const [info, setInfo] = useState<SubscriptionInfo | null>(null);
   const [payments, setPayments] = useState<SubscriptionPayment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showChangePlan, setShowChangePlan] = useState(false);
   const [dynamicPrices, setDynamicPrices] = useState<{ BASIC: number; PRO: number }>({
     BASIC: PLAN_INFO_STATIC.BASIC.price,
     PRO: PLAN_INFO_STATIC.PRO.price,
@@ -433,7 +278,7 @@ export default function SubscriptionPage() {
             // Suscripción normal
             <>
               <button
-                onClick={() => setShowChangePlan(true)}
+                onClick={() => router.push(`/dashboard/checkout?plan=${plan === 'BASIC' ? 'PRO' : 'BASIC'}`)}
                 className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-white/20 hover:bg-white/30 text-white text-sm font-medium transition-colors border border-white/30"
               >
                 {plan === 'BASIC'
@@ -626,9 +471,6 @@ export default function SubscriptionPage() {
         )}
       </div>
 
-      {showChangePlan && (
-        <ChangePlanModal currentPlan={plan} onClose={() => setShowChangePlan(false)} dynamicPrices={dynamicPrices} />
-      )}
     </div>
   );
 }
