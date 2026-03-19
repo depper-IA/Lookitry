@@ -151,11 +151,14 @@ export class WompiController {
    * Genera y retorna la URL del checkout hosted de Wompi.
    * El frontend redirige al usuario a esa URL — Wompi maneja todo el flujo.
    * Auth opcional: si hay token válido se usa el brandId real, si no se usa un ID temporal.
+   *
+   * Query params: amount, months, plan, email (opcional, solo para usuarios sin sesión)
    */
   async getCheckoutUrl(req: Request, res: Response): Promise<void> {
     try {
       const brand = (req as any).brand;
       const { amount, months, plan } = req.query;
+      const email = req.query.email as string | undefined;
 
       const amountCOP = amount ? parseInt(amount as string, 10) : 250000;
       const monthsNum = months ? parseInt(months as string, 10) : 1;
@@ -163,14 +166,38 @@ export class WompiController {
 
       const brandId = brand?.id ?? `visitor_${Date.now()}`;
 
-      // Después del pago: si tiene sesión → /pago-exitoso, si no → /registro-pro
+      // Generar la referencia antes de llamar al servicio para poder guardarla en pending_registrations
+      const reference = wompiService.generateReference(brandId, monthsNum, planStr);
+
       const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
-      const successPath = brand?.id
-        ? `/pago-exitoso?plan=${planStr}&months=${monthsNum}`
-        : `/registro-pro?plan=${planStr}&months=${monthsNum}`;
+      let successPath: string;
+
+      if (!brand?.id && email) {
+        // Usuario sin sesión con email → guardar pending_registration
+        const { error: insertError } = await supabaseAdmin
+          .from('pending_registrations')
+          .insert({ email, reference, plan: planStr, months: monthsNum });
+
+        if (insertError) {
+          console.error('[Wompi] Error al guardar pending_registration:', insertError);
+          res.status(500).json({ error: 'Error al guardar el registro pendiente' });
+          return;
+        }
+
+        // Incluir la referencia en la URL de redirect para que /registro-pro la reciba
+        successPath = `/registro-pro?ref=${reference}`;
+      } else if (!brand?.id) {
+        // Usuario sin sesión sin email → flujo legacy
+        successPath = `/registro-pro?plan=${planStr}&months=${monthsNum}`;
+      } else {
+        // Usuario con sesión → flujo actual
+        successPath = `/pago-exitoso?plan=${planStr}&months=${monthsNum}`;
+      }
+
       const redirectUrl = `${frontendUrl}${successPath}`;
 
-      const checkoutUrl = await wompiService.getCheckoutUrl(brandId, amountCOP, redirectUrl, false, monthsNum, planStr);
+      // Pasar la referencia pre-generada para que la URL de Wompi use la misma referencia
+      const checkoutUrl = await wompiService.getCheckoutUrl(brandId, amountCOP, redirectUrl, false, monthsNum, planStr, reference);
 
       res.json({ checkoutUrl });
     } catch (error) {
