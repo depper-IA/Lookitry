@@ -38,7 +38,7 @@ Implementación incremental del flujo de pago para usuarios nuevos en Lookitry. 
     - Si no hay `email` y no hay sesión → mantener flujo legacy sin crear pending
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-  - [ ]* 3.2 Escribir test de propiedad para round-trip de pending_registration
+  - [x] 3.2 Escribir test de propiedad para round-trip de pending_registration
     - **Property 2: Pending registration round-trip**
     - **Validates: Requirements 2.1, 2.5**
     - Archivo: `backend/src/__tests__/properties/checkout-email-registro-pro.property.test.ts`
