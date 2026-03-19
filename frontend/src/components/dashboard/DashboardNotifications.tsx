@@ -40,7 +40,7 @@ function IconX({ className }: { className?: string }) {
 }
 
 export function DashboardNotifications() {
-  const { subscriptionInfo, getDaysRemaining, isInTrial, loading: subLoading } = useSubscription();
+  const { subscriptionInfo, getDaysRemaining, isInTrial, isLoading: subLoading } = useSubscription();
   const [usageStats, setUsageStats] = useState<UsageStats | null>(null);
   const [loadingUsage, setLoadingUsage] = useState(true);
 
