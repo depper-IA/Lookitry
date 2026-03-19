@@ -81,8 +81,6 @@ function RegistroProContent() {
     contact_name: '',
     name: '',
     slug: '',
-    email: '',
-    phone: '',
     password: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -94,6 +92,28 @@ function RegistroProContent() {
   useEffect(() => {
     getFingerprint().then(setFingerprint);
   }, []);
+
+  // Si no hay ref, mostrar error en lugar del formulario
+  if (!ref) {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
+        <div className="w-full max-w-md text-center">
+          <div className="flex justify-center mb-6">
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
+              <span className="font-syne font-extrabold text-xl text-white tracking-tight">
+                Look<span className="text-[#FF5C3A]">itry</span>
+              </span>
+            </Link>
+          </div>
+          <div className="bg-[#1f0f0f] border border-[#5a1a1a] rounded-xl p-8">
+            <p className="text-[#ff6b6b] font-semibold text-[15px] mb-2">Referencia de pago requerida</p>
+            <p className="text-[#666] text-[13px]">Accede desde el enlace de confirmación de tu pago.</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -117,7 +137,6 @@ function RegistroProContent() {
     if (!form.contact_name.trim() || form.contact_name.trim().length < 3) e.contact_name = 'Mínimo 3 caracteres';
     if (!form.name.trim() || form.name.trim().length < 2) e.name = 'Mínimo 2 caracteres';
     if (!/^[a-z0-9-]{3,}$/.test(form.slug)) e.slug = 'Solo minúsculas, números y guiones (mín. 3 caracteres)';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Email inválido';
     if (form.password.length < 6) e.password = 'Mínimo 6 caracteres';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -217,29 +236,6 @@ function RegistroProContent() {
               </div>
               {errors.slug && <p className="text-[11px] text-[#ff6b6b] mt-1">{errors.slug}</p>}
               <p className="text-[11px] text-[#333] mt-1">Con Plan Pro puedes cambiarlo después desde tu dashboard.</p>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">Correo electrónico</label>
-              <input
-                name="email" type="email" value={form.email} onChange={handleChange}
-                placeholder="hola@mimarca.com" required
-                className={`w-full bg-[#0f0f0f] border ${errors.email ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'} rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
-              />
-              {errors.email && <p className="text-[11px] text-[#ff6b6b] mt-1">{errors.email}</p>}
-            </div>
-
-            {/* Teléfono (opcional) */}
-            <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">
-                Teléfono <span className="text-[#555]">(opcional)</span>
-              </label>
-              <input
-                name="phone" type="tel" value={form.phone} onChange={handleChange}
-                placeholder="+57 300 000 0000"
-                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
-              />
             </div>
 
             {/* Contraseña */}

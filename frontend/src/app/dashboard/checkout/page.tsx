@@ -490,6 +490,8 @@ export default function CheckoutPage() {
             </p>
             <WompiButton
               plan={plan}
+              months={selectedMonths}
+              amount={totalPrice}
               onSuccess={handleSuccess}
               onError={handleError}
               className="w-full py-3 min-h-[44px] rounded-xl text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2"

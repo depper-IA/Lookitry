@@ -1,9 +1,12 @@
 import { Request, Response } from 'express';
 import { wompiService } from '../services/wompi.service';
 import { SubscriptionService } from '../services/subscription.service';
+import { EmailService } from '../services/email.service';
+import { verifyEmailTemplate } from '../templates/email-templates';
 import { supabase, supabaseAdmin } from '../config/supabase';
 
 const subscriptionService = new SubscriptionService();
+const emailService = new EmailService();
 
 /**
  * WompiController
@@ -83,12 +86,30 @@ export class WompiController {
 
       // Renovar suscripción o activar trial según el monto
       if (amountInCents === 100) {
-        // Pago de tokenización de trial (100 COP)
-        await supabase
+        // Pago de tokenización de trial (100 COP) — confirmar y enviar email de verificación
+        const { data: updatedBrand } = await supabase
           .from('brands')
           .update({ trial_payment_status: 'active' })
-          .eq('id', brandId);
+          .eq('id', brandId)
+          .select('id, email, name, email_verification_token, email_verified')
+          .single();
+
         console.log(`[Wompi] Trial activado para brand ${brandId}`);
+
+        // Enviar email de verificación ahora que el pago fue confirmado
+        // (no se envió en el registro para evitar la brecha de seguridad)
+        if (updatedBrand && !updatedBrand.email_verified && updatedBrand.email_verification_token) {
+          const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+          const verifyUrl = `${frontendUrl}/auth/verify?token=${updatedBrand.email_verification_token}`;
+          emailService.sendEmail({
+            to: updatedBrand.email,
+            subject: 'Confirma tu correo — Lookitry',
+            html: verifyEmailTemplate(
+              { name: updatedBrand.name, email: updatedBrand.email },
+              verifyUrl
+            ),
+          }).catch(err => console.error('[Wompi] Error enviando email de verificación post-trial:', err));
+        }
       } else {
         // Determinar si incluye activación de landing (plan LANDING en referencia legacy)
         // En el nuevo formato, plan ya viene como BASIC o PRO (el subPlan del checkout)

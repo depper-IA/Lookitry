@@ -7,6 +7,8 @@ import type { PlanType } from '@/types';
 
 interface WompiButtonProps {
   plan: PlanType;
+  months?: number;
+  amount?: number;
   onSuccess: (result: WompiWidgetResult) => void;
   onError?: (error: string) => void;
   disabled?: boolean;
@@ -34,6 +36,8 @@ function loadWompiScript(): Promise<void> {
 
 export default function WompiButton({
   plan,
+  months = 1,
+  amount,
   onSuccess,
   onError,
   disabled = false,
@@ -55,7 +59,7 @@ export default function WompiButton({
     setLoading(true);
 
     try {
-      const config = await wompiService.getWidgetConfig(plan);
+      const config = await wompiService.getWidgetConfig(plan, months, amount);
 
       if (!window.WidgetCheckout) {
         throw new Error('El widget de Wompi no está disponible');

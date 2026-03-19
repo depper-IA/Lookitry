@@ -12,9 +12,13 @@ class WompiService {
   /**
    * Obtiene la configuración del widget de Wompi desde el backend.
    * El backend genera la referencia y la firma de integridad.
+   * Se pasan plan, months y amount para que la referencia los incluya
+   * y el webhook pueda extraerlos correctamente al activar la suscripción.
    */
-  async getWidgetConfig(plan: 'BASIC' | 'PRO'): Promise<WompiWidgetConfig> {
-    const response = await api.get<WompiWidgetConfig>(`/payments/wompi/config?plan=${plan}`);
+  async getWidgetConfig(plan: 'BASIC' | 'PRO', months: number = 1, amount?: number): Promise<WompiWidgetConfig> {
+    let url = `/payments/wompi/config?plan=${plan}&months=${months}`;
+    if (amount) url += `&amount=${amount}`;
+    const response = await api.get<WompiWidgetConfig>(url);
     return response.data;
   }
 }
