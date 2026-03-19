@@ -81,6 +81,51 @@ class PayPalService {
       throw new Error('Error al generar el pago con PayPal');
     }
   }
+
+  /**
+   * Captura un pago autorizado previamente (intent=CAPTURE)
+   */
+  async captureOrder(orderId: string) {
+    try {
+      const { token, baseUrl } = await this.getAccessToken();
+
+      const response = await axios({
+        url: `${baseUrl}/v2/checkout/orders/${orderId}/capture`,
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error: any) {
+      console.error('[PayPal] Error al capturar orden:', error.response?.data || error.message);
+      throw new Error('No se pudo confirmar el pago con PayPal');
+    }
+  }
+
+  /**
+   * Obtiene los detalles de una orden para verificar su estado
+   */
+  async getOrder(orderId: string) {
+    try {
+      const { token, baseUrl } = await this.getAccessToken();
+
+      const response = await axios({
+        url: `${baseUrl}/v2/checkout/orders/${orderId}`,
+        method: 'get',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error: any) {
+      console.error('[PayPal] Error al obtener orden:', error.response?.data || error.message);
+      throw new Error('Error al consultar el estado del pago en PayPal');
+    }
+  }
 }
 
 export const paypalService = new PayPalService();

@@ -18,15 +18,22 @@ function PagoExitosoContent() {
   const plan = searchParams.get('plan') || 'PRO';
   const months = Number(searchParams.get('months') || 1);
   const ref = searchParams.get('ref');
+  const method = searchParams.get('method');
+  const paypalToken = searchParams.get('token'); // PayPal devuelve el orderId en el param 'token'
+  
   const [dashboardHref, setDashboardHref] = useState<string>('/login');
 
   useEffect(() => {
     const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-    const isVisitor = ref?.includes('visitor_');
+    const isVisitor = ref?.includes('visitor_') || !token;
 
     if (isVisitor && ref) {
       // Usuario nuevo sin cuenta — debe completar el registro
-      setDashboardHref(`/registro-pro?ref=${encodeURIComponent(ref)}&months=${months}`);
+      let url = `/registro-pro?ref=${encodeURIComponent(ref)}&months=${months}`;
+      if (method === 'paypal' && paypalToken) {
+        url += `&method=paypal&orderId=${paypalToken}`;
+      }
+      setDashboardHref(url);
     } else if (token) {
       // Ya tiene sesión activa — ir directo al dashboard
       setDashboardHref('/dashboard');
@@ -34,7 +41,7 @@ function PagoExitosoContent() {
       // Tiene cuenta pero no está logueado
       setDashboardHref('/login');
     }
-  }, [ref, months]);
+  }, [ref, months, method, paypalToken]);
 
   const dashboardLabel = dashboardHref.startsWith('/registro-pro')
     ? 'Crear mi cuenta'
