@@ -336,6 +336,8 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 | GET | `/payment-settings/public` | Público | Config pública de pagos |
 | GET | `/payments/wompi/config` | JWT | Config Wompi para el plan |
 | GET | `/payments/wompi/checkout-url` | JWT/Público | URL de checkout Wompi |
+| GET | `/payments/wompi/upgrade-preview` | JWT | Calcula prorrateo de upgrade (crédito, monto a pagar, nueva fecha fin) |
+| POST | `/payments/wompi/apply-free-upgrade` | JWT | Aplica upgrade sin cobro cuando crédito cubre el costo total |
 | POST | `/payments/wompi/webhook` | Wompi signature | Webhook de eventos |
 
 ### Subscription (`/api/subscription/*`)
@@ -411,7 +413,8 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 | `/dashboard/analytics` | Métricas de uso |
 | `/dashboard/usage` | Contador del mes |
 | `/dashboard/subscription` | Estado de suscripción |
-| `/dashboard/checkout` | Checkout interno (precios dinámicos) |
+| `/dashboard/checkout` | Checkout interno — renovar plan, upgrade BASIC→PRO con prorrateo |
+| `/dashboard/checkout-landing` | Checkout exclusivo para comprar mini-landing (solo usuarios con plan activo, sin landing) |
 | `/dashboard/settings` | Configuración del widget |
 | `/dashboard/embed` | Código de integración |
 | `/dashboard/mi-pagina` | Editor de mini-landing |
@@ -483,6 +486,26 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 7. Backend verifica firma, activa suscripción en `brands`
 8. Inserta registro en `subscription_payments`
 9. Usuario ve `/pago-exitoso`
+
+### Flujo de Upgrade con Prorrateo (BASIC → PRO)
+1. Usuario con BASIC activo selecciona PRO en `/dashboard/checkout`
+2. Frontend detecta `isUpgrade = true` y llama a `GET /api/payments/wompi/upgrade-preview`
+3. Backend calcula:
+   - `pricePerDay = precioTotalPagadoPlanActual / díasTotalesDelPlan`
+   - `creditAmount = pricePerDay × díasRestantes`
+   - `amountToPay = max(0, precioNuevoPlan - creditAmount)`
+   - `newEndDate = now() + mesesNuevos` (siempre desde hoy, no acumula sobre fecha anterior)
+4. Frontend muestra desglose: precio PRO, crédito descontado, total a pagar
+5a. Si `amountToPay = 0` → botón "Activar sin costo" → `POST /api/payments/wompi/apply-free-upgrade` → plan cambia inmediatamente, se registra pago con monto $0 en `subscription_payments`
+5b. Si `amountToPay > 0` → se genera URL de Wompi con el monto prorateado → flujo normal de pago
+6. Webhook detecta automáticamente si es upgrade comparando `plan` de la referencia vs `brand.plan` actual → llama `renewSubscription(..., isUpgrade: true)`
+7. `renewSubscription` con `isUpgrade: true` usa `newStartDate = now()` en lugar de extender desde la fecha de fin anterior
+
+**Reglas clave del prorrateo:**
+- La landing page (pago único) no entra en el cálculo del crédito — se suma por separado si el usuario la agrega
+- Los límites del nuevo plan (generaciones/mes, productos activos) aplican inmediatamente al cambiar el plan
+- Las generaciones ya usadas en el mes en curso no se borran ni se recuperan
+- El crédito nunca genera reembolso monetario — solo descuenta del precio del nuevo plan
 
 ### Flujo de Try-On
 1. Usuario sube selfie en el widget (`/pruebalo/[slug]`)
@@ -560,6 +583,24 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAACsmy7e_yL9iyAXM
 - 3 meses: 5%
 - 6 meses: 10%
 - 12 meses: 15%
+
+### Lógica de upgrade con prorrateo (BASIC → PRO)
+
+Implementada en `SubscriptionService` (`backend/src/services/subscription.service.ts`):
+
+- `calculateUpgradeProration(brandId, newPlan, newMonths, newPlanPricePerMonth, currentPlanPriceTotal)` — calcula crédito proporcional y monto a cobrar
+- `applyFreeUpgrade(brandId, newPlan, newMonths, creditAmount, newPlanTotal, reference)` — aplica upgrade sin cobro, registra en `subscription_payments` con `amount=0` y `payment_method='credit_proration'`
+- `renewSubscription(..., isUpgrade: true)` — cuando es upgrade, `newStartDate = now()` (no acumula sobre fecha anterior)
+
+Fórmula del crédito:
+```
+pricePerDay = precioTotalPagado / díasTotalesDelPlan
+creditAmount = pricePerDay × díasRestantes
+amountToPay = max(0, precioNuevoPlan - creditAmount)
+newEndDate = now() + mesesNuevos
+```
+
+La landing page (pago único) no entra en el cálculo — se suma por separado al `amountToPay` si el usuario la agrega en el mismo checkout.
 
 ### Mini-landing
 - `has_landing_page = true` → landing activa
