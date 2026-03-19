@@ -168,31 +168,36 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Contenido principal */}
       <div className="lg:pl-60 flex flex-col min-h-screen">
-        {/* Banner de verificación de email — dentro del área de contenido para respetar el padding del sidebar */}
+        {/* Banner de verificación de email — elegante y minimalista */}
         {showVerificationBanner && (
-          <div className="w-full bg-[#1a1200] border-b border-[#3d2e00] px-4 py-2.5 flex items-center justify-between gap-4 flex-shrink-0">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <svg className="w-4 h-4 text-[#f5a623] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <p className="text-[12px] text-[#f5a623] truncate">
-                Verifica tu correo <span className="font-medium">{brand?.email}</span> para usar las generaciones.{' '}
+          <div className="w-full bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 py-3 flex items-center justify-between gap-4 flex-shrink-0 animate-in fade-in slide-in-from-top duration-500">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center shrink-0">
+                <svg className="w-4 h-4 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p className="text-[13px] text-gray-300">
+                <span className="font-semibold text-white">Verifica tu cuenta:</span> Hemos enviado un correo a <span className="text-[#FF5C3A] font-medium">{brand?.email}</span>.{' '}
                 {resendSent ? (
-                  <span className="text-emerald-400">Correo enviado.</span>
+                  <span className="text-emerald-400 font-medium ml-1 inline-flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                    Reenviado con éxito
+                  </span>
                 ) : (
                   <button
                     onClick={handleResendVerification}
                     disabled={resendSending}
-                    className="underline hover:text-[#ffc04d] transition-colors disabled:opacity-50 bg-transparent border-0 p-0 cursor-pointer text-[#f5a623] text-[12px]"
+                    className="underline decoration-[#FF5C3A]/30 hover:decoration-[#FF5C3A] hover:text-white transition-all disabled:opacity-50 bg-transparent border-0 p-0 cursor-pointer text-gray-400 text-[13px] ml-1"
                   >
-                    {resendSending ? 'Enviando...' : 'Reenviar correo'}
+                    {resendSending ? 'Enviando...' : '¿No lo recibiste? Reenviar ahora'}
                   </button>
                 )}
               </p>
             </div>
             <button
               onClick={() => setVerificationBannerDismissed(true)}
-              className="shrink-0 text-[#f5a623] hover:text-[#ffc04d] transition-colors"
+              className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
               aria-label="Cerrar aviso"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
