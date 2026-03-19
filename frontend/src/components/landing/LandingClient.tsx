@@ -120,45 +120,45 @@ export default function LandingClient() {
 
       {/* DEMO MOCKUP */}
       <section className="bg-[#0a0a0a] px-6 md:px-8 pb-16 md:pb-20 flex justify-center" aria-label="Demo del probador virtual">
-        <div className="bg-[#141414] border border-[#2a2a2a] hover:border-[#FF5C3A]/40 transition-colors duration-300 rounded-2xl p-5 md:p-6 w-full max-w-[560px]">
+        <div className="bg-[#1c1c1c] border border-[#333] hover:border-[#FF5C3A]/50 shadow-[0_0_40px_rgba(0,0,0,0.5)] transition-all duration-300 rounded-2xl p-5 md:p-6 w-full max-w-[560px]">
           <div className="flex items-center gap-2 mb-5" aria-hidden="true">
             <span className="w-2.5 h-2.5 rounded-full bg-[#ff5c5c]" />
             <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
             <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
-            <div className="flex-1 bg-[#1f1f1f] border border-[#2a2a2a] rounded-md px-3 py-1 text-[11px] text-[#555] text-center truncate">
+            <div className="flex-1 bg-[#262626] border border-[#333] rounded-md px-3 py-1 text-[11px] text-[#888] text-center truncate">
               pruebalo.wilkiedevs.com/mi-marca
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-3.5">
-              <p className="text-[10px] text-[#555] uppercase tracking-widest mb-2.5">Tu foto</p>
-              <div className="bg-[#242424] border-2 border-dashed border-[#333] rounded-lg h-28 flex flex-col items-center justify-center gap-1.5 text-[#444] text-[11px]">
-                <div className="w-7 h-7 bg-[#2a2a2a] rounded-full flex items-center justify-center">
+            <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3.5">
+              <p className="text-[10px] text-[#aaa] font-bold uppercase tracking-widest mb-2.5">Tu foto</p>
+              <div className="bg-[#333] border-2 border-dashed border-[#444] rounded-lg h-28 flex flex-col items-center justify-center gap-1.5 text-[#888] text-[11px]">
+                <div className="w-7 h-7 bg-[#444] rounded-full flex items-center justify-center">
                   <IconUser />
                 </div>
-                <span>Sube una selfie</span>
+                <span className="font-medium">Sube una selfie</span>
               </div>
             </div>
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-3.5">
-              <p className="text-[10px] text-[#555] uppercase tracking-widest mb-2.5">Elige producto</p>
+            <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3.5">
+              <p className="text-[10px] text-[#aaa] font-bold uppercase tracking-widest mb-2.5">Elige producto</p>
               <div className="flex flex-col gap-1.5">
                 {PRODUCTS.map(p => (
                   <div
                     key={p.name}
-                    className={`rounded-lg p-2 flex items-center gap-2 border ${p.active ? 'border-[#FF5C3A] bg-[#1f1814]' : 'border-[#2d2d2d] bg-[#222]'}`}
+                    className={`rounded-lg p-2 flex items-center gap-2 border ${p.active ? 'border-[#FF5C3A] bg-[#2d1f1a]' : 'border-[#3a3a3a] bg-[#333]'}`}
                   >
                     <div className="w-7 h-7 rounded-md flex-shrink-0" style={{ background: p.bg }} aria-hidden="true" />
                     <div>
-                      <div className="text-[11px] text-[#bbb] leading-tight">{p.name}</div>
-                      <div className="text-[10px] text-[#555]">{p.price}</div>
+                      <div className={`text-[11px] leading-tight font-medium ${p.active ? 'text-white' : 'text-[#bbb]'}`}>{p.name}</div>
+                      <div className="text-[10px] text-[#888]">{p.price}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="col-span-2 bg-[#FF5C3A] text-white text-[13px] font-medium py-2.5 rounded-lg text-center" aria-label="Generar prueba virtual de la prenda seleccionada">
+            <button className="col-span-2 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-bold py-2.5 rounded-lg text-center transition-transform active:scale-[0.98]" aria-label="Generar prueba virtual de la prenda seleccionada">
               Generar prueba virtual
-            </div>
+            </button>
           </div>
         </div>
       </section>

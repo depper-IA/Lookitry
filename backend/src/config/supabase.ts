@@ -26,13 +26,15 @@ export const supabase = createClient(
 
 // Cliente de Supabase con service role key (para operaciones admin)
 // Este cliente bypasea RLS y debe usarse con cuidado
-if (!process.env.SUPABASE_SERVICE_KEY) {
-  console.error('[Supabase] ADVERTENCIA CRÍTICA: SUPABASE_SERVICE_KEY no está definida. Las operaciones admin fallarán.');
+const serviceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!serviceKey) {
+  console.error('[Supabase] ERROR CRÍTICO: No se encontró SUPABASE_SERVICE_KEY ni SUPABASE_SERVICE_ROLE_KEY en el entorno.');
 }
 
 export const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY!,
+  serviceKey || 'INVALID_KEY',
   {
     auth: {
       persistSession: false,
