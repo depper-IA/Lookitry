@@ -5,9 +5,9 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 /**
  * GET /api/promotions
- * Devuelve promociones activas y vigentes (público, ISR 300s).
+ * Devuelve promociones activas y vigentes (público, ISR 10s).
  */
-export const revalidate = 300;
+export const revalidate = 10;
 
 export async function GET() {
   try {
@@ -25,7 +25,7 @@ export async function GET() {
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
       },
-      next: { revalidate: 300 },
+      next: { revalidate: 10 },
     });
 
     if (!res.ok) throw new Error(`Supabase ${res.status}`);

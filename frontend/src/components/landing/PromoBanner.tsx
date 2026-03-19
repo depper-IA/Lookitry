@@ -44,11 +44,13 @@ export function PromoBanner() {
     const dismissed = sessionStorage.getItem('promo_banner_dismissed');
     if (dismissed) return;
 
-    fetch('/api/promotions')
+    // Añadimos timestamp para evitar cache del navegador
+    fetch(`/api/promotions?t=${Date.now()}`)
       .then(r => r.ok ? r.json() : null)
       .then((d: { ok: boolean; data: Promotion[] } | null) => {
         if (!d?.ok) return;
-        const banner = d.data.find(p => p.type === 'banner');
+        // Buscamos el banner que esté marcado como activo
+        const banner = d.data.find(p => p.type === 'banner' && p.active);
         if (!banner) return;
         setPromo(banner);
         setVisible(true);

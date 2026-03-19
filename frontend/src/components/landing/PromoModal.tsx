@@ -96,11 +96,13 @@ export function PromoModal() {
     const dismissed = sessionStorage.getItem('promo_modal_dismissed');
     if (dismissed) return;
 
-    fetch('/api/promotions')
+    // Añadimos timestamp para evitar cache del navegador
+    fetch(`/api/promotions?t=${Date.now()}`)
       .then(r => r.ok ? r.json() : null)
       .then((d: { ok: boolean; data: Promotion[] } | null) => {
         if (!d?.ok) return;
-        const modal = d.data.find(p => p.type === 'modal_timer' || p.type === 'launch_offer');
+        // Buscamos el modal que esté marcado como activo
+        const modal = d.data.find(p => (p.type === 'modal_timer' || p.type === 'launch_offer') && p.active);
         if (!modal) return;
 
         setPromo(modal);
