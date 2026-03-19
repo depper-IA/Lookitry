@@ -1,23 +1,26 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
 import { EmailService } from '../services/email.service';
+import { SubscriptionService } from '../services/subscription.service';
 import { verifyEmailTemplate } from '../templates/email-templates';
 import { supabaseAdmin } from '../config/supabase';
 import { wompiService } from '../services/wompi.service';
 
 const authService = new AuthService();
 const emailService = new EmailService();
+const subscriptionService = new SubscriptionService();
 
 /**
  * Registro exclusivo para el flujo post-pago.
  * Sin Turnstile, sin anti-abuso de trial, sin rate limiter estricto.
  * El usuario ya pagó — no tiene sentido bloquearlo.
  *
- * Nuevo flujo:
+ * Flujo:
  * 1. Recibe `ref` (referencia de Wompi) en lugar de `email`
  * 2. Busca el email en `pending_registrations` por esa referencia
  * 3. Verifica que la transacción esté APPROVED en Wompi
  * 4. Crea la cuenta con el email del pending
+ * 5. Activa la suscripción inmediatamente (el webhook no puede hacerlo porque el brandId era visitor_)
  */
 export async function registerPostPayment(req: Request, res: Response) {
   try {
@@ -45,7 +48,7 @@ export async function registerPostPayment(req: Request, res: Response) {
     // 3. Buscar pending_registration por referencia
     const { data: pending, error: pendingError } = await supabaseAdmin
       .from('pending_registrations')
-      .select('email, plan, months')
+      .select('email, plan, months, includes_landing')
       .eq('reference', ref)
       .maybeSingle();
 
@@ -77,35 +80,41 @@ export async function registerPostPayment(req: Request, res: Response) {
       fingerprint: fingerprint || undefined,
     });
 
-    // 6. Activar suscripción inmediatamente con los datos del pending
+    // 6. Activar suscripción inmediatamente con el plan y meses del pending
     // (el webhook de Wompi no puede activarla porque en ese momento el brandId era visitor_)
     try {
-      const { SubscriptionService } = await import('../services/subscription.service');
-      const subscriptionService = new SubscriptionService();
-      const months = pending.months || 1;
-      const plan = pending.plan || 'BASIC';
       await subscriptionService.renewSubscription(
         result.brand.id,
         {
           brand_id: result.brand.id,
-          amount: 0, // El monto real ya fue registrado por el webhook en pending_registrations
+          amount: 0, // el monto real ya fue cobrado por Wompi
           currency: 'COP',
-          payment_date: new Date().toISOString(),
           payment_method: 'wompi',
           status: 'completed',
-          months_paid: months,
-          notes: `Activación post-registro. Plan: ${plan}. Meses: ${months}. Ref: ${ref}`,
+          months_paid: pending.months,
+          payment_date: new Date().toISOString(),
+          notes: `Activación post-registro. Plan: ${pending.plan}. Meses: ${pending.months}. Ref: ${ref}`,
         },
-        months,
-        plan
+        pending.months,
+        pending.plan
       );
-      console.log(`[PostPayment] Suscripción activada para brand ${result.brand.id} — Plan: ${plan}, Meses: ${months}`);
+
+      // Si el pending incluye landing, activarla también
+      if (pending.includes_landing) {
+        await supabaseAdmin
+          .from('brands')
+          .update({ has_landing_page: true, landing_suspended_at: null })
+          .eq('id', result.brand.id);
+        console.log(`[PostPayment] Mini-landing activada para brand=${result.brand.id}`);
+      }
+
+      console.log(`[PostPayment] Suscripción activada: brand=${result.brand.id} plan=${pending.plan} months=${pending.months}`);
     } catch (subError) {
-      // No bloquear el registro si falla la activación — se puede activar manualmente
+      // No bloquear el registro si falla la activación — se puede corregir manualmente
       console.error('[PostPayment] Error activando suscripción:', subError);
     }
 
-    // 8. Enviar email de verificación (async, no bloquea)
+    // 7. Enviar email de verificación (async, no bloquea)
     if (result.verificationToken) {
       const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
       const verifyUrl = `${frontendUrl}/auth/verify?token=${result.verificationToken}`;
