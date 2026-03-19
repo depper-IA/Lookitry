@@ -13,8 +13,8 @@ Implementación incremental del flujo de pago para usuarios nuevos en Lookitry. 
   - El archivo debe ser ejecutable manualmente en el SQL Editor de Supabase
   - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [~] 2. Agregar `getTransactionByReference` a `WompiService`
-  - [~] 2.1 Implementar el método en `backend/src/services/wompi.service.ts`
+- [x] 2. Agregar `getTransactionByReference` a `WompiService`
+  - [x] 2.1 Implementar el método en `backend/src/services/wompi.service.ts`
     - Firma: `async getTransactionByReference(reference: string): Promise<{ status: string } | null>`
     - Llamar a `GET https://sandbox.wompi.co/v1/transactions?reference={reference}` con el header `Authorization: Bearer {WOMPI_PRIVATE_KEY}`
     - Retornar el primer elemento de `data` o `null` si el array está vacío o la llamada falla
