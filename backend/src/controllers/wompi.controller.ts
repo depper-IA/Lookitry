@@ -217,6 +217,7 @@ export class WompiController {
       const amountCOP = amount ? parseInt(amount as string, 10) : 250000;
       const monthsNum = months ? parseInt(months as string, 10) : 1;
       const planStr = (plan as string)?.toUpperCase() || 'BASIC';
+      const isLandingPurchase = (req.query.includes_landing as string) === 'true';
 
       const brandId = brand?.id ?? `visitor_${Date.now()}`;
 
@@ -230,7 +231,7 @@ export class WompiController {
         // Usuario sin sesión con email → guardar pending_registration
         const { error: insertError } = await supabaseAdmin
           .from('pending_registrations')
-          .insert({ email, reference, plan: planStr, months: monthsNum });
+          .insert({ email, reference, plan: planStr, months: monthsNum, includes_landing: isLandingPurchase });
 
         if (insertError) {
           console.error('[Wompi] Error al guardar pending_registration:', insertError);
