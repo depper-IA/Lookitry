@@ -3,6 +3,29 @@
 import React, { useState, useEffect } from 'react';
 import { downloadImage } from '@/utils/download';
 
+// ── Marca de agua dinámica ──────────────────────────────────────────────────
+function Watermark({ plan, brandName }: { plan?: string; brandName?: string }) {
+  if (plan !== 'BASIC' && plan !== 'TRIAL') return null;
+
+  return (
+    <div className="absolute inset-0 pointer-events-none select-none z-10 p-4">
+      {plan === 'BASIC' && (
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-80">
+          <img src="/logo.svg" alt="Lookitry" className="h-5 w-auto brightness-0 invert drop-shadow-md" />
+        </div>
+      )}
+      {plan === 'TRIAL' && (
+        <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center gap-1 opacity-70">
+          <img src="/logo.svg" alt="Lookitry" className="h-6 w-auto brightness-0 invert drop-shadow-lg" />
+          <p className="text-[10px] font-bold text-white uppercase tracking-[0.2em] drop-shadow-lg">
+            {brandName ?? 'Lookitry'}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Imagen con skeleton de carga ──────────────────────────────────────────────
 function ResultImage({
   imageUrl,
@@ -11,6 +34,8 @@ function ResultImage({
   onOpen,
   aspectRatio,
   compact = false,
+  brandPlan,
+  brandName,
 }: {
   imageUrl: string;
   productName: string;
@@ -18,6 +43,8 @@ function ResultImage({
   onOpen: () => void;
   aspectRatio?: string;
   compact?: boolean;
+  brandPlan?: string;
+  brandName?: string;
 }) {
   const [loaded, setLoaded] = useState(false);
 
@@ -36,6 +63,10 @@ function ResultImage({
           {!compact && <p className="text-xs text-gray-400 font-medium">Cargando imagen...</p>}
         </div>
       )}
+      
+      {/* Marcador de agua (solo si está cargada) */}
+      {loaded && <Watermark plan={brandPlan} brandName={brandName} />}
+
       <img
         src={imageUrl}
         alt={`Prueba virtual de ${productName}`}
