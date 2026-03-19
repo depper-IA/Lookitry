@@ -171,10 +171,11 @@ export class WompiService {
 
   /**
    * Genera la URL del checkout hosted de Wompi.
+   * Si se pasa `referenceOverride`, se usa esa referencia en lugar de generar una nueva.
    */
-  async getCheckoutUrl(brandId: string, amountCOP: number, redirectUrl: string, cardOnly = false, months: number = 1, plan: string = 'BASIC'): Promise<string> {
+  async getCheckoutUrl(brandId: string, amountCOP: number, redirectUrl: string, cardOnly = false, months: number = 1, plan: string = 'BASIC', referenceOverride?: string): Promise<string> {
     const { publicKey } = await this.getActiveKeys();
-    const reference = this.generateReference(brandId, months, plan);
+    const reference = referenceOverride ?? this.generateReference(brandId, months, plan);
     const amountInCents = amountCOP * 100;
     const currency = 'COP';
     const signature = await this.generateIntegritySignature(reference, amountInCents, currency);
