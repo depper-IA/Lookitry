@@ -433,22 +433,72 @@ export default function MiPaginaPage() {
               Activa
             </span>
           ) : (
-            <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}>
-              Sin activar
+            <span
+              className="text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5"
+              style={{ backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.3)' }}
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+              No comprada
             </span>
           )}
         </div>
         <CopyableUrl url={pageUrl} />
-        {!hasLandingPage && (
-          <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            Tu página ya es visible pero muestra un banner de activación. Para removerlo, activa tu página
-            {landingPrice !== null
-              ? <> por <strong style={{ color: 'var(--text-primary)' }}>${landingPrice.toLocaleString('es-CO')} COP</strong></>
-              : null
-            }{' '}contactando a soporte.
-          </p>
-        )}
       </div>
+
+      {/* Banner de activación cuando no se ha comprado la landing */}
+      {!hasLandingPage && !landingSuspendedAt && (
+        <div
+          className="rounded-2xl border overflow-hidden"
+          style={{ borderColor: 'rgba(255,92,58,0.25)', backgroundColor: 'rgba(255,92,58,0.04)' }}
+        >
+          <div className="px-5 py-4 flex items-start gap-4">
+            <div
+              className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(255,92,58,0.12)' }}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#FF5C3A" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                Tu mini-landing aún no está activa
+              </p>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                Actívala para que tus clientes puedan encontrarte en línea con tu probador virtual integrado.
+                {landingPrice !== null && (
+                  <> Pago único de <strong style={{ color: 'var(--text-primary)' }}>${landingPrice.toLocaleString('es-CO')} COP</strong> — sin costo mensual adicional.</>
+                )}
+              </p>
+              <div className="flex items-center gap-3 mt-3 flex-wrap">
+                <a
+                  href="/dashboard/checkout?landing=1"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-semibold transition-opacity hover:opacity-85"
+                  style={{ backgroundColor: '#FF5C3A' }}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  Activar mini-landing
+                  {landingPrice !== null && <span style={{ opacity: 0.8 }}>— ${landingPrice.toLocaleString('es-CO')}</span>}
+                </a>
+                <a
+                  href={pageUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs transition-opacity hover:opacity-70"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  <ExternalLinkIcon className="w-3.5 h-3.5" />
+                  Ver previa
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Banner de suspensión de mini-landing */}
       {landingSuspendedAt && (
