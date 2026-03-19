@@ -65,7 +65,6 @@ function PagoExitosoContent() {
           setDashboardHref('/login');
         }
       }
-    }
 
     validatePayment();
   }, [ref, months, method, paypalToken]);

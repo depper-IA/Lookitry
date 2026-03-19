@@ -261,7 +261,18 @@ export async function getAdminNotifications(_req: Request, res: Response): Promi
       });
     });
 
-    notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    notifications.sort((a, b) => {
+      // Prioridad: 1=cliente (pagos, upgrades, nuevas marcas), 2=alertas, 3=sistema
+      const priority = (n: AdminNotification): number => {
+        if (['payment_received', 'multi_month_purchase', 'upgrade_request', 'plan_change_request', 'trial_converted', 'new_brand'].includes(n.type)) return 1;
+        if (['credits_exhausted', 'suspended', 'trial_expired', 'subscription_expiring'].includes(n.type)) return 2;
+        if (['trial_expiring', 'high_usage'].includes(n.type)) return 3;
+        return 4; // sistema
+      };
+      const pa = priority(a), pb = priority(b);
+      if (pa !== pb) return pa - pb;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
     res.json({ notifications, total: notifications.length });
   } catch (error: any) {
     console.error('Error in getAdminNotifications:', error);
