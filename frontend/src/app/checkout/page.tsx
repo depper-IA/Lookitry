@@ -314,14 +314,15 @@ function CheckoutContent() {
 
       // --- FLUJO PAYPAL ---
       if (paymentMethod === 'paypal') {
-        const paypalEmail = pricing?.paypalEmail || 'pagos@wilkiedevs.com';
-        const amountUSD = (totalPrice / trm).toFixed(2);
-        const itemName = isLanding ? `Mini-landing + ${planNames[subPlan]}` : planNames[selectedPlan];
-        const reference = `TRYON-${Date.now()}`; // Referencia simple para PayPal
-
-        const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${encodeURIComponent(paypalEmail)}&item_name=${encodeURIComponent(itemName)}&amount=${amountUSD}&currency_code=USD&button_subtype=services&no_note=0&bn=PP-BuyNowBF:btn_buynowCC_LG.gif:NonHostedGuest&custom=${reference}`;
-        
-        window.location.href = paypalUrl;
+        const emailParam = !hasSession && email.trim() ? `&email=${encodeURIComponent(email.trim())}` : '';
+        const landingParam = isLanding ? '&includes_landing=true' : '';
+        const res = await fetch(
+          `${API_URL}/api/payments/paypal/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}${landingParam}&trm=${trm}`,
+          { headers }
+        );
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al generar link de PayPal');
+        window.location.href = data.checkoutUrl;
         return;
       }
 
