@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { supabaseAdmin } from '../config/supabase';
 import { AdminService } from '../services/admin.service';
 import { notificationService } from '../services/notification.service';
 import { auditService } from '../services/audit.service';
