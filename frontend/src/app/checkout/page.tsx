@@ -136,6 +136,7 @@ function CheckoutContent() {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [hasSession, setHasSession] = useState(false);
+  const [sessionInfo, setSessionInfo] = useState<{ name: string; email: string } | null>(null);
   const [pricing, setPricing] = useState<PricingSettings | null>(null);
 
   // Precios dinámicos desde la API de pricing
@@ -187,6 +188,12 @@ function CheckoutContent() {
   useEffect(() => {
     const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
     setHasSession(!!token);
+    if (token) {
+      try {
+        const brand = JSON.parse(localStorage.getItem('brand') || 'null');
+        if (brand) setSessionInfo({ name: brand.name || '', email: brand.email || '' });
+      } catch {}
+    }
   }, []);
 
   const landingPrice    = pricing?.landingPrice         ?? 650000;
@@ -268,8 +275,9 @@ function CheckoutContent() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
       const emailParam = !hasSession && email.trim() ? `&email=${encodeURIComponent(email.trim())}` : '';
+      const landingParam = isLanding ? '&includes_landing=true' : '';
       const res = await fetch(
-        `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}`,
+        `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}${landingParam}`,
         { headers }
       );
 
@@ -669,8 +677,21 @@ function CheckoutContent() {
                 </div>
               )}
 
-              {/* Campo de email para usuarios sin sesión */}
-              {!hasSession && (
+              {/* Sesión activa o campo de email */}
+              {hasSession && sessionInfo ? (
+                <div className="mb-4 flex items-center gap-3 bg-[#0f1a0f] border border-emerald-900/40 rounded-lg px-3 py-2.5">
+                  <div className="w-7 h-7 rounded-full bg-[#FF5C3A] flex items-center justify-center flex-shrink-0">
+                    <span className="text-[11px] font-bold text-white">
+                      {sessionInfo.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase() || '?'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-white truncate">{sessionInfo.name}</p>
+                    <p className="text-[11px] text-[#666] truncate">{sessionInfo.email}</p>
+                  </div>
+                  <span className="text-[10px] text-emerald-500 font-medium flex-shrink-0">Sesión activa</span>
+                </div>
+              ) : !hasSession ? (
                 <div className="mb-4">
                   <label className="block text-[12px] font-medium text-[#888] mb-1.5">
                     Correo electrónico
@@ -689,7 +710,7 @@ function CheckoutContent() {
                     Lo usaremos para vincular tu pago con tu cuenta.
                   </p>
                 </div>
-              )}
+              ) : null}
 
               <button
                 onClick={handlePagar}
