@@ -26,9 +26,10 @@ interface PricingSettings {
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
-const PLAN_BASE: Record<'BASIC' | 'PRO', number> = { BASIC: 150000, PRO: 250000 };
+// Fallback estático — se sobreescribe con datos dinámicos de la API
+const PLAN_BASE_FALLBACK: Record<'BASIC' | 'PRO', number> = { BASIC: 150000, PRO: 250000 };
 
-const DISCOUNTS: { months: number; pct: number; label: string }[] = [
+const DISCOUNTS_FALLBACK: { months: number; pct: number; label: string }[] = [
   { months: 1,  pct: 0,  label: '1 mes' },
   { months: 3,  pct: 5,  label: '3 meses' },
   { months: 6,  pct: 10, label: '6 meses' },
@@ -69,11 +70,7 @@ function formatCOP(n: number) {
   return '$' + n.toLocaleString('es-CO');
 }
 
-function calcTotal(plan: 'BASIC' | 'PRO', months: number): number {
-  const base = PLAN_BASE[plan];
-  const disc = DISCOUNTS.find(d => d.months === months)?.pct ?? 0;
-  return Math.round(base * months * (1 - disc / 100));
-}
+// calcTotal eliminada — usar planBase (estado dinámico) directamente
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 
@@ -133,10 +130,18 @@ function CheckoutContent() {
 
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>(initialPlan);
   const [selectedMonths, setSelectedMonths] = useState(1);
-  const [subPlan, setSubPlan] = useState<SubPlan>('BASIC'); // plan de suscripción cuando se elige LANDING
+  const [subPlan, setSubPlan] = useState<SubPlan>('BASIC');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [hasSession, setHasSession] = useState(false);
+  const [sessionInfo, setSessionInfo] = useState<{ name: string; email: string } | null>(null);
   const [pricing, setPricing] = useState<PricingSettings | null>(null);
+
+  // Precios dinámicos desde la API de pricing
+  const [planBase, setPlanBase] = useState<Record<'BASIC' | 'PRO', number>>(PLAN_BASE_FALLBACK);
+  const [discounts, setDiscounts] = useState(DISCOUNTS_FALLBACK);
 
   // Cupón
   const [couponCode, setCouponCode] = useState('');
@@ -147,30 +152,66 @@ function CheckoutContent() {
   } | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/payment-settings/public`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => d && setPricing(d))
-      .catch(() => {});
+    // Cargar precios de pago y configuración de pricing en paralelo
+    Promise.all([
+      fetch(`${API_URL}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
+      fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?select=id,data`, {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        },
+      }).then(r => r.ok ? r.json() : null),
+    ]).then(([paySettings, pricingRows]) => {
+      if (paySettings) setPricing(paySettings);
+      if (Array.isArray(pricingRows)) {
+        const basic = pricingRows.find((r: any) => r.id === 'basic')?.data;
+        const pro   = pricingRows.find((r: any) => r.id === 'pro')?.data;
+        const desc  = pricingRows.find((r: any) => r.id === 'descuentos_duracion')?.data;
+        if (basic?.precio_mensual_cop || pro?.precio_mensual_cop) {
+          setPlanBase({
+            BASIC: basic?.precio_mensual_cop ?? PLAN_BASE_FALLBACK.BASIC,
+            PRO:   pro?.precio_mensual_cop   ?? PLAN_BASE_FALLBACK.PRO,
+          });
+        }
+        if (desc) {
+          setDiscounts([
+            { months: 1,  pct: desc.meses_1  ?? 0,  label: '1 mes' },
+            { months: 3,  pct: desc.meses_3  ?? 5,  label: '3 meses' },
+            { months: 6,  pct: desc.meses_6  ?? 10, label: '6 meses' },
+            { months: 12, pct: desc.meses_12 ?? 15, label: '12 meses' },
+          ]);
+        }
+      }
+    }).catch(() => {});
   }, []);
 
-  const landingPrice = pricing?.landingPrice ?? 650000;
+  useEffect(() => {
+    const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
+    setHasSession(!!token);
+    if (token) {
+      try {
+        const brand = JSON.parse(localStorage.getItem('brand') || 'null');
+        if (brand) setSessionInfo({ name: brand.name || '', email: brand.email || '' });
+      } catch {}
+    }
+  }, []);
+
+  const landingPrice    = pricing?.landingPrice         ?? 650000;
   const landingOriginal = pricing?.landingOriginalPrice ?? 900000;
   const landingDiscount = Math.round((1 - landingPrice / landingOriginal) * 100);
 
   // Precio total según plan seleccionado
-  const isLanding = selectedPlan === 'LANDING';
-  const subMonthDiscount = DISCOUNTS.find(d => d.months === selectedMonths)?.pct ?? 0;
-  const subPlanTotal = Math.round(PLAN_BASE[isLanding ? subPlan : (selectedPlan as 'BASIC' | 'PRO')] * selectedMonths * (1 - subMonthDiscount / 100));
-  const baseTotalPrice = isLanding
+  const isLanding       = selectedPlan === 'LANDING';
+  const subMonthDiscount = discounts.find(d => d.months === selectedMonths)?.pct ?? 0;
+  const subPlanTotal    = Math.round(planBase[isLanding ? subPlan : (selectedPlan as 'BASIC' | 'PRO')] * selectedMonths * (1 - subMonthDiscount / 100));
+  const baseTotalPrice  = isLanding
     ? landingPrice + subPlanTotal
-    : calcTotal(selectedPlan as 'BASIC' | 'PRO', selectedMonths);
-  const originalPrice = isLanding
-    ? landingOriginal + PLAN_BASE[subPlan] * selectedMonths
-    : PLAN_BASE[selectedPlan as 'BASIC' | 'PRO'] * selectedMonths;
-  const monthlyPrice = isLanding ? null : PLAN_BASE[selectedPlan as 'BASIC' | 'PRO'] * (1 - (DISCOUNTS.find(d => d.months === selectedMonths)?.pct ?? 0) / 100);
-  const discountPct = isLanding
-    ? landingDiscount
-    : (DISCOUNTS.find(d => d.months === selectedMonths)?.pct ?? 0);
+    : Math.round(planBase[selectedPlan as 'BASIC' | 'PRO'] * selectedMonths * (1 - subMonthDiscount / 100));
+  const originalPrice   = isLanding
+    ? landingOriginal + planBase[subPlan] * selectedMonths
+    : planBase[selectedPlan as 'BASIC' | 'PRO'] * selectedMonths;
+  const monthlyPrice    = isLanding ? null : planBase[selectedPlan as 'BASIC' | 'PRO'] * (1 - subMonthDiscount / 100);
+  const discountPct     = isLanding ? landingDiscount : subMonthDiscount;
 
   // Descuento por cupón
   const couponDiscount = appliedCoupon
@@ -202,9 +243,29 @@ function CheckoutContent() {
     }
   };
 
+  function isValidEmail(value: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  }
+
   const handlePagar = async () => {
     setLoading(true);
     setError('');
+
+    // Si no hay sesión, validar email
+    if (!hasSession) {
+      if (!email.trim()) {
+        setEmailError('El correo electrónico es requerido');
+        setLoading(false);
+        return;
+      }
+      if (!isValidEmail(email)) {
+        setEmailError('Formato de correo inválido');
+        setLoading(false);
+        return;
+      }
+    }
+    setEmailError('');
+
     try {
       const token = typeof window !== 'undefined'
         ? (localStorage.getItem('token') || localStorage.getItem('brandToken'))
@@ -213,8 +274,9 @@ function CheckoutContent() {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
+      const emailParam = !hasSession && email.trim() ? `&email=${encodeURIComponent(email.trim())}` : '';
       const res = await fetch(
-        `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${isLanding ? 1 : selectedMonths}&plan=${selectedPlan}`,
+        `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}`,
         { headers }
       );
 
@@ -226,6 +288,16 @@ function CheckoutContent() {
 
       const { checkoutUrl } = await res.json();
       if (!checkoutUrl) throw new Error('No se recibió la URL de pago');
+
+      // Incrementar uses_count del cupón antes de redirigir (fire-and-forget)
+      if (appliedCoupon?.id) {
+        fetch('/api/coupons/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ coupon_id: appliedCoupon.id }),
+        }).catch(() => {}); // No bloquear el redirect si falla
+      }
+
       window.location.href = checkoutUrl;
     } catch (err: any) {
       setError(err.message || 'Error al conectar con el servidor de pagos');
@@ -316,7 +388,7 @@ function CheckoutContent() {
                       ) : (
                         <>
                           <div className="font-syne text-[16px] font-extrabold text-white">
-                            {formatCOP(PLAN_BASE[p as 'BASIC' | 'PRO'])}
+                            {formatCOP(planBase[p as 'BASIC' | 'PRO'])}
                           </div>
                           <div className="text-[10px] text-[#999] mt-0.5">/mes</div>
                         </>
@@ -365,7 +437,7 @@ function CheckoutContent() {
                           </div>
                         </div>
                         <div className="font-syne text-[15px] font-extrabold text-white">
-                          {formatCOP(PLAN_BASE[p])}
+                          {formatCOP(planBase[p])}
                         </div>
                         <div className="text-[10px] text-[#555] mt-0.5">/mes</div>
                         <ul className="mt-2 space-y-1">
@@ -394,7 +466,7 @@ function CheckoutContent() {
                 <p className="text-[11px] text-[#555] mb-3">Elige cuantos meses de suscripcion quieres activar</p>
               )}
               <div className="grid grid-cols-4 gap-2 mt-3">
-                {DISCOUNTS.map(d => (
+                {discounts.map(d => (
                   <button
                     key={d.months}
                     onClick={() => setSelectedMonths(d.months)}
@@ -441,7 +513,7 @@ function CheckoutContent() {
                     <div>
                       <div className="text-[13px] font-semibold text-white">{planNames[subPlan]}</div>
                       <div className="text-[11px] text-[#999]">
-                        {DISCOUNTS.find(d => d.months === selectedMonths)?.label}
+                        {discounts.find(d => d.months === selectedMonths)?.label}
                         {subMonthDiscount > 0 && (
                           <span className="ml-1.5 text-emerald-400">-{subMonthDiscount}%</span>
                         )}
@@ -449,7 +521,7 @@ function CheckoutContent() {
                     </div>
                     <div className="text-right">
                       {subMonthDiscount > 0 && (
-                        <div className="text-[11px] text-[#666] line-through">{formatCOP(PLAN_BASE[subPlan] * selectedMonths)}</div>
+                        <div className="text-[11px] text-[#666] line-through">{formatCOP(planBase[subPlan] * selectedMonths)}</div>
                       )}
                       <div className="text-[15px] font-bold text-white">{formatCOP(subPlanTotal)}</div>
                     </div>
@@ -489,7 +561,7 @@ function CheckoutContent() {
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <div className="text-[14px] font-semibold text-white">{planNames[selectedPlan]}</div>
-                      <div className="text-[12px] text-[#555]">{DISCOUNTS.find(d => d.months === selectedMonths)?.label}</div>
+                      <div className="text-[12px] text-[#555]">{discounts.find(d => d.months === selectedMonths)?.label}</div>
                       {discountPct > 0 && (
                         <div className="text-[12px] text-emerald-400 mt-0.5">{discountPct}% de descuento</div>
                       )}
@@ -603,6 +675,41 @@ function CheckoutContent() {
                   {error}
                 </div>
               )}
+
+              {/* Sesión activa o campo de email */}
+              {hasSession && sessionInfo ? (
+                <div className="mb-4 flex items-center gap-3 bg-[#0f1a0f] border border-emerald-900/40 rounded-lg px-3 py-2.5">
+                  <div className="w-7 h-7 rounded-full bg-[#FF5C3A] flex items-center justify-center flex-shrink-0">
+                    <span className="text-[11px] font-bold text-white">
+                      {sessionInfo.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase() || '?'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-white truncate">{sessionInfo.name}</p>
+                    <p className="text-[11px] text-[#666] truncate">{sessionInfo.email}</p>
+                  </div>
+                  <span className="text-[10px] text-emerald-500 font-medium flex-shrink-0">Sesión activa</span>
+                </div>
+              ) : !hasSession ? (
+                <div className="mb-4">
+                  <label className="block text-[12px] font-medium text-[#888] mb-1.5">
+                    Correo electrónico
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => { setEmail(e.target.value); setEmailError(''); }}
+                    placeholder="hola@mimarca.com"
+                    className={`w-full bg-[#0f0f0f] border ${emailError ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'} rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
+                  />
+                  {emailError && (
+                    <p className="text-[11px] text-[#ff6b6b] mt-1">{emailError}</p>
+                  )}
+                  <p className="text-[11px] text-[#444] mt-1">
+                    Lo usaremos para vincular tu pago con tu cuenta.
+                  </p>
+                </div>
+              ) : null}
 
               <button
                 onClick={handlePagar}
