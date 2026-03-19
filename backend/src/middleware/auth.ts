@@ -67,3 +67,36 @@ export const authMiddleware = async (
     });
   }
 };
+
+/**
+ * optionalAuth
+ * Middleware que intenta autenticar si hay un token, pero no falla si no lo hay.
+ */
+export const optionalAuth = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const payload = verifyToken(token);
+      if (payload.brandId) {
+        const brand = await authService.getBrandById(payload.brandId);
+        if (brand) {
+          req.brand = {
+            id: brand.id,
+            email: brand.email,
+            slug: (brand as any).slug,
+            plan: (brand as any).plan,
+          };
+        }
+      }
+    }
+    next();
+  } catch {
+    // Si falla el token en optionalAuth, simplemente seguimos sin req.brand
+    next();
+  }
+};

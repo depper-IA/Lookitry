@@ -12,11 +12,11 @@ class PayPalService {
     const settings = await new PaymentSettingsService().getSettings();
     const clientId = process.env.PAYPAL_CLIENT_ID || settings.paypal_client_id;
     const secret = process.env.PAYPAL_SECRET || settings.paypal_client_secret;
-    const mode = settings.paypal_mode || (process.env.NODE_ENV === 'production' ? 'live' : 'sandbox');
+    const isSandbox = settings.paypal_sandbox ?? true;
 
-    const baseUrl = mode === 'live' 
-      ? 'https://api-m.paypal.com' 
-      : 'https://api-m.sandbox.paypal.com';
+    const baseUrl = isSandbox
+      ? 'https://api-m.sandbox.paypal.com'
+      : 'https://api-m.paypal.com';
 
     const auth = Buffer.from(`${clientId}:${secret}`).toString('base64');
 

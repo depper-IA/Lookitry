@@ -27,15 +27,32 @@ export function SelfieUploader({ onUpload, primaryColor = '#6366f1', welcomeMess
     setError(null);
     const validation = validateImageFile(file);
     if (!validation.valid) { setError(validation.error || 'Archivo inválido'); return; }
+    
     try {
       setCompressing(true);
-      const compressed = await compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.9, maxSizeMB: 5 });
+      // Pequeño delay para asegurar que el buffer del archivo de la cámara esté listo
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      const compressed = await compressImage(file, { 
+        maxWidth: 1600, // Reducido un poco para mayor velocidad en móviles
+        maxHeight: 1600, 
+        quality: 0.8, 
+        maxSizeMB: 2 
+      });
+
       const reader = new FileReader();
-      reader.onload = (e) => setEditingSrc(e.target?.result as string);
+      reader.onload = (e) => {
+        setEditingSrc(e.target?.result as string);
+        setCompressing(false); // Limpiar aquí para asegurar transición suave
+      };
+      reader.onerror = () => {
+        setError('Error al leer el archivo de imagen');
+        setCompressing(false);
+      };
       reader.readAsDataURL(compressed);
     } catch (err: any) {
-      setError(err.message || 'Error al procesar la imagen');
-    } finally {
+      console.error('[SelfieUploader] Error:', err);
+      setError('No pudimos procesar la foto. Intenta con una imagen de la galería.');
       setCompressing(false);
     }
   };
