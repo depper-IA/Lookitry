@@ -64,8 +64,8 @@ Implementación incremental del flujo de pago para usuarios nuevos en Lookitry. 
 - [x] 5. Checkpoint — verificar backend hasta aquí
   - Asegurarse de que todos los tests pasen. Consultar al usuario si hay dudas antes de continuar con el controlador de registro.
 
-- [~] 6. Modificar `POST /api/auth/register-post-payment` — flujo con `ref`
-  - [~] 6.1 Reescribir `registerPostPayment` en `backend/src/controllers/auth-post-payment.controller.ts`
+- [x] 6. Modificar `POST /api/auth/register-post-payment` — flujo con `ref`
+  - [x] 6.1 Reescribir `registerPostPayment` en `backend/src/controllers/auth-post-payment.controller.ts`
     - Cambiar body esperado: recibir `ref` en lugar de `email` (eliminar `email` y `phone` del destructuring)
     - Validar que `ref` esté presente → si no, retornar 400 `"La referencia de pago es requerida"`
     - Buscar en `pending_registrations` con `supabaseAdmin` donde `reference = ref`
