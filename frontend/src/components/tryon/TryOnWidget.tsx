@@ -592,8 +592,9 @@ function BrandHeader({ config, primaryColor, onReset, showReset }: {
     <div className="bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-lg mx-auto px-4 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
+          {/* Logo — oculto en móvil para evitar redundancia */}
           {config.brand.logo && (
-            <img src={config.brand.logo} alt={config.brand.name} className="h-9 w-auto object-contain"
+            <img src={config.brand.logo} alt={config.brand.name} className="hidden sm:block h-9 w-auto object-contain"
               onError={e => { e.currentTarget.style.display = 'none'; }} />
           )}
           <div>
