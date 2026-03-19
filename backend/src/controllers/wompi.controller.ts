@@ -141,15 +141,18 @@ export class WompiController {
   async getWidgetConfig(req: Request, res: Response): Promise<void> {
     try {
       const brand = (req as any).brand;
-      const { plan, amount } = req.query;
+      const { plan, amount, months } = req.query;
 
+      const planStr = (plan as string)?.toUpperCase() || 'BASIC';
+      const monthsNum = months ? parseInt(months as string, 10) : 1;
       const planAmounts: Record<string, number> = { BASIC: 150000, PRO: 250000 };
       const amountCOP = amount
         ? parseInt(amount as string, 10)
-        : planAmounts[(plan as string)?.toUpperCase()] ?? 150000;
+        : planAmounts[planStr] ?? 150000;
 
       const brandId = brand?.id ?? `visitor_${Date.now()}`;
-      const config = await wompiService.getWidgetConfig(brandId, amountCOP);
+      // Pasar months y plan para que la referencia los incluya y el webhook los pueda extraer
+      const config = await wompiService.getWidgetConfig(brandId, amountCOP, monthsNum, planStr);
       const signature = await wompiService.generateIntegritySignature(
         config.reference,
         config.amountInCents,
