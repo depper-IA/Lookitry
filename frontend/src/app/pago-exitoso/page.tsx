@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -15,18 +15,30 @@ function IconCheck() {
 
 function PagoExitosoContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const plan = searchParams.get('plan') || 'PRO';
   const months = Number(searchParams.get('months') || 1);
   const ref = searchParams.get('ref');
-  const [hasSession, setHasSession] = useState(false);
+  const [dashboardHref, setDashboardHref] = useState<string>('/login');
 
   useEffect(() => {
     const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-    setHasSession(!!token);
-  }, []);
+    const isVisitor = ref?.includes('visitor_');
 
-  const dashboardHref = hasSession ? '/dashboard' : '/login';
+    if (isVisitor && ref) {
+      // Usuario nuevo sin cuenta — debe completar el registro
+      setDashboardHref(`/registro-pro?ref=${encodeURIComponent(ref)}&months=${months}`);
+    } else if (token) {
+      // Ya tiene sesión activa — ir directo al dashboard
+      setDashboardHref('/dashboard');
+    } else {
+      // Tiene cuenta pero no está logueado
+      setDashboardHref('/login');
+    }
+  }, [ref, months]);
+
+  const dashboardLabel = dashboardHref.startsWith('/registro-pro')
+    ? 'Crear mi cuenta'
+    : 'Ir al dashboard';
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-[#0a0a0a]">
@@ -44,7 +56,6 @@ function PagoExitosoContent() {
 
         <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8 text-center">
 
-          {/* Icono */}
           <div className="w-16 h-16 bg-[rgba(255,92,58,0.1)] border border-[rgba(255,92,58,0.2)] rounded-full flex items-center justify-center mx-auto mb-5">
             <IconCheck />
           </div>
@@ -53,8 +64,9 @@ function PagoExitosoContent() {
             Pago recibido
           </h1>
           <p className="text-[14px] text-[#666] mb-6">
-            Tu pago fue procesado correctamente. Tu Plan {plan} por{' '}
-            {months} {months === 1 ? 'mes' : 'meses'} ya está activo.
+            {dashboardHref.startsWith('/registro-pro')
+              ? 'Tu pago fue confirmado. Ahora crea tu cuenta para activar el plan.'
+              : `Tu pago fue procesado correctamente. Tu Plan ${plan} por ${months} ${months === 1 ? 'mes' : 'meses'} ya está activo.`}
           </p>
 
           {ref && (
@@ -77,7 +89,7 @@ function PagoExitosoContent() {
               href={dashboardHref}
               className="block w-full py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white font-medium rounded-lg transition-colors text-[13px]"
             >
-              Ir al dashboard
+              {dashboardLabel}
             </Link>
             <Link
               href="/"
