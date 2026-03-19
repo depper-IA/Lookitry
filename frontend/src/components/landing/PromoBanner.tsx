@@ -59,7 +59,7 @@ export function PromoBanner() {
 
   return (
     <div
-      className="relative w-full flex items-center justify-center px-10 py-2.5 text-sm font-medium"
+      className="sticky top-0 z-[60] w-full flex items-center justify-center px-10 py-2.5 text-sm font-medium shadow-md transition-all duration-300"
       style={{ backgroundColor: bg, color: textColor }}
       role="banner"
     >

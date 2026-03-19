@@ -411,8 +411,8 @@ export const toggleLandingPage = async (req: any, res: Response) => {
       });
     }
 
-    const { supabase } = await import('../config/supabase');
-    const { data, error } = await supabase
+    const { supabaseAdmin } = await import('../config/supabase');
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .update({ has_landing_page })
       .eq('id', id)
@@ -453,8 +453,8 @@ export const updateModalConfig = async (req: any, res: Response) => {
     const { id } = req.params;
     const { modal_title, modal_description, modal_features } = req.body;
 
-    const { supabase } = await import('../config/supabase');
-    const { data, error } = await supabase
+    const { supabaseAdmin } = await import('../config/supabase');
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .update({ modal_title, modal_description, modal_features })
       .eq('id', id)
@@ -857,5 +857,96 @@ export const getUnresolvedFeedbackCount = async (_req: any, res: Response) => {
     return res.status(200).json({ count: feedbacks.length });
   } catch (error: any) {
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 0 });
+  }
+};
+
+/**
+ * POST /api/admin/brands/:id/send-reset-email
+ * Envía email de recuperación de contraseña a una marca desde el panel admin
+ */
+export const sendBrandResetEmail = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { supabaseAdmin } = await import('../config/supabase');
+
+    const { data: brand, error } = await supabaseAdmin
+      .from('brands')
+      .select('id, name, email')
+      .eq('id', id)
+      .single();
+
+    if (error || !brand) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+    }
+
+    const crypto = await import('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    await supabaseAdmin
+      .from('brands')
+      .update({ reset_token: token, reset_token_expires_at: expiresAt.toISOString() })
+      .eq('id', brand.id);
+
+    const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+
+    await emailService.sendEmail({
+      to: brand.email,
+      subject: 'Recuperación de contraseña — Lookitry',
+      html: `
+        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+          <h2 style="color:#FF5C3A;margin-bottom:8px">Recuperación de contraseña</h2>
+          <p style="color:#6b7280;margin-bottom:24px">
+            Hola <strong>${brand.name}</strong>, recibiste este correo porque se solicitó un restablecimiento de contraseña para tu cuenta.
+          </p>
+          <a href="${resetUrl}" style="display:inline-block;background:#FF5C3A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin-bottom:24px">
+            Restablecer contraseña
+          </a>
+          <p style="color:#9ca3af;font-size:13px">
+            Este enlace expira en 1 hora. Si no solicitaste este cambio, puedes ignorar este correo.
+          </p>
+        </div>
+      `,
+    });
+
+    auditService.log({
+      admin_id: req.admin?.id ?? 'unknown',
+      admin_email: req.admin?.email ?? 'unknown',
+      action: 'brand.send_reset_email',
+      target_brand_id: id,
+      details: { brand_email: brand.email },
+    });
+
+    return res.status(200).json({ message: 'Email de recuperación enviado exitosamente' });
+  } catch (error: any) {
+    console.error('Error in sendBrandResetEmail:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al enviar email de recuperación' });
+  }
+};
+
+/**
+ * GET /api/admin/revenue/payments
+ * Obtener historial de pagos global con filtros
+ */
+export const getPayments = async (req: any, res: Response) => {
+  try {
+    const { brand_id, status, payment_method, limit, offset } = req.query;
+    
+    const result = await adminService.getPayments({
+      brand_id: brand_id as string | undefined,
+      status: status as string | undefined,
+      payment_method: payment_method as string | undefined,
+      limit: limit ? parseInt(limit as string) : 50,
+      offset: offset ? parseInt(offset as string) : 0,
+    });
+
+    return res.status(200).json(result);
+  } catch (error: any) {
+    console.error('Error in getPayments:', error);
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Error al obtener pagos',
+    });
   }
 };

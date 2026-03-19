@@ -62,12 +62,18 @@ export default function AdminBrandsPage() {
   const [modalConfigBrand, setModalConfigBrand] = useState<Brand | null>(null);
   const [modalConfigForm, setModalConfigForm] = useState({ modal_title: '', modal_description: '', modal_features: ['', '', ''] });
   const [savingModalConfig, setSavingModalConfig] = useState(false);
+  const [sendingReset, setSendingReset] = useState<string | null>(null);
+  const [resetToast, setResetToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPlan, setFilterPlan] = useState<FilterPlan>('all');
   const [filterTrial, setFilterTrial] = useState<FilterTrial>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Ordenamiento
+  const [sortField, setSortField] = useState<'name' | 'plan' | 'status' | 'products' | 'generations'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Selección masiva
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -81,11 +87,11 @@ export default function AdminBrandsPage() {
     fetchBrands();
     fetchLandingPrice();
   }, []);
-  useEffect(() => { applyFilters(); }, [brands, searchTerm, filterPlan, filterTrial]);
+  useEffect(() => { applyFilters(); }, [brands, searchTerm, filterPlan, filterTrial, sortField, sortOrder]);
   useEffect(() => { setCurrentPage(1); setSelected(new Set()); }, [searchTerm, filterPlan, filterTrial]);
 
   const applyFilters = () => {
-    let filtered = brands;
+    let filtered = [...brands];
     if (searchTerm) {
       filtered = filtered.filter(b =>
         b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -98,7 +104,44 @@ export default function AdminBrandsPage() {
     if (filterTrial === 'trial') filtered = filtered.filter(b => b.is_in_trial);
     else if (filterTrial === 'active') filtered = filtered.filter(b => b.subscription_status === 'active' || b.subscription_status === 'expiring_soon');
     else if (filterTrial === 'suspended') filtered = filtered.filter(b => b.subscription_status === 'suspended' || b.subscription_status === 'expired');
+    
+    // Ordenamiento
+    filtered.sort((a, b) => {
+      let valA: any = '';
+      let valB: any = '';
+
+      if (sortField === 'name') {
+        valA = a.name.toLowerCase();
+        valB = b.name.toLowerCase();
+      } else if (sortField === 'plan') {
+        valA = a.plan;
+        valB = b.plan;
+      } else if (sortField === 'status') {
+        valA = a.subscription_status || '';
+        valB = b.subscription_status || '';
+      } else if (sortField === 'products') {
+        valA = a.stats.productsCount;
+        valB = b.stats.productsCount;
+      } else if (sortField === 'generations') {
+        valA = a.stats.generationsCount;
+        valB = b.stats.generationsCount;
+      }
+
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
     setFilteredBrands(filtered);
+  };
+
+  const toggleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
   };
 
   const fetchBrands = async () => {
@@ -302,6 +345,26 @@ export default function AdminBrandsPage() {
     } finally { setActivating(false); }
   };
 
+  const handleSendResetEmail = async (brand: Brand) => {
+    setSendingReset(brand.id);
+    try {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${API_URL}/api/admin/brands/${brand.id}/send-reset-email`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error al enviar email');
+      setResetToast({ message: `Email de recuperación enviado a ${brand.email}`, type: 'success' });
+      setTimeout(() => setResetToast(null), 4000);
+    } catch (err: any) {
+      setResetToast({ message: err.message || 'Error al enviar email', type: 'error' });
+      setTimeout(() => setResetToast(null), 4000);
+    } finally {
+      setSendingReset(null);
+    }
+  };
+
   // ── Selección masiva ──────────────────────────────────────────────────────
   const toggleSelect = (id: string) => {
     setSelected(prev => {
@@ -499,8 +562,29 @@ export default function AdminBrandsPage() {
                   onChange={toggleSelectAll}
                   className="w-4 h-4 rounded cursor-pointer" style={{ accentColor: '#FF5C3A' }} />
               </th>
-              {['Marca', 'Email', 'Plan', 'Estado', 'Productos', 'Generaciones', 'Acciones'].map(h => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>{h}</th>
+              {[
+                { label: 'Marca', field: 'name' as const },
+                { label: 'Email', field: null },
+                { label: 'Plan', field: 'plan' as const },
+                { label: 'Estado', field: 'status' as const },
+                { label: 'Productos', field: 'products' as const },
+                { label: 'Generaciones', field: 'generations' as const },
+                { label: 'Acciones', field: null },
+              ].map(h => (
+                <th key={h.label} 
+                  onClick={() => h.field && toggleSort(h.field)}
+                  className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide ${h.field ? 'cursor-pointer hover:bg-black/5' : ''}`} 
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  <div className="flex items-center gap-1">
+                    {h.label}
+                    {h.field && (
+                      <svg className={`w-3 h-3 ${sortField === h.field ? 'text-[#FF5C3A]' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                      </svg>
+                    )}
+                  </div>
+                </th>
               ))}
             </tr>
           </thead>
@@ -526,10 +610,10 @@ export default function AdminBrandsPage() {
                       brand.is_in_trial
                         ? { backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }
                         : brand.plan === 'PRO'
-                        ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
+                        ? { backgroundColor: 'rgba(168,85,247,0.12)', color: '#a855f7' }
                         : brand.plan === 'LANDING'
                         ? { backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }
-                        : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }
+                        : { backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }
                     }>
                     {brand.is_in_trial ? 'TRIAL' : brand.plan}
                   </span>
@@ -569,25 +653,39 @@ export default function AdminBrandsPage() {
                   <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{brand.stats.generationsThisMonth} este mes</div>
                 </td>
                 <td className="px-4 py-3.5 whitespace-nowrap">
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => handleViewDetails(brand)} className="p-1.5 rounded-lg transition-all duration-150 hover:opacity-80" style={{ color: '#3b82f6' }} title="Ver detalles">
+                  <div className="flex items-center justify-center gap-1">
+                    <button onClick={() => handleViewDetails(brand)} className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 transition-all duration-150" title="Ver detalles">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                     </button>
-                    <button onClick={() => handleViewProducts(brand)} className="p-1.5 rounded-lg transition-all duration-150 hover:opacity-80" style={{ color: '#10b981' }} title="Ver productos">
+                    <button onClick={() => handleViewProducts(brand)} className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-all duration-150" title="Ver productos">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                     </button>
                     {brand.is_in_trial ? (
-                      <button onClick={() => handleOpenActivate(brand)} className="p-1.5 rounded-lg transition-all duration-150 hover:opacity-80" style={{ color: '#10b981' }} title="Activar plan">
+                      <button onClick={() => handleOpenActivate(brand)} className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 transition-all duration-150" title="Activar plan">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                       </button>
                     ) : (
                       <button onClick={() => handleChangePlan(brand.id, brand.plan === 'BASIC' ? 'PRO' : 'BASIC')} disabled={changingPlan === brand.id}
-                        className="p-1.5 rounded-lg transition-all duration-150 hover:opacity-80 disabled:opacity-50" style={{ color: '#FF5C3A' }} title={`Cambiar a ${brand.plan === 'BASIC' ? 'PRO' : 'BASIC'}`}>
+                        className="p-1.5 rounded-lg bg-[#FF5C3A]/10 text-[#FF5C3A] hover:bg-[#FF5C3A]/20 transition-all duration-150 disabled:opacity-50" title={`Cambiar a ${brand.plan === 'BASIC' ? 'PRO' : 'BASIC'}`}>
                         {changingPlan === brand.id
                           ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
                           : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>}
                       </button>
                     )}
+                    <button onClick={() => handleOpenModalConfig(brand)} className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-all duration-150" title="Configurar Modal">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    </button>
+                    <button
+                      onClick={() => handleSendResetEmail(brand)}
+                      disabled={sendingReset === brand.id}
+                      className="p-1.5 rounded-lg bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 transition-all duration-150 disabled:opacity-50"
+                      title="Enviar email de recuperación"
+                    >
+                      {sendingReset === brand.id
+                        ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#f59e0b', borderTopColor: 'transparent' }} />
+                        : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                      }
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -1067,6 +1165,17 @@ export default function AdminBrandsPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast de reset email */}
+      {resetToast && (
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white transition-all ${resetToast.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`}>
+          {resetToast.type === 'success'
+            ? <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+            : <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          }
+          {resetToast.message}
         </div>
       )}
     </div>

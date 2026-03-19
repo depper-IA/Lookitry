@@ -94,7 +94,7 @@ export class NotificationService {
 
       await emailService.sendEmail({
         to: brand.email,
-        subject: '¡Bienvenido a Virtual Try-On SaaS!',
+        subject: '¡Bienvenido a Lookitry!',
         html,
       });
 
@@ -279,7 +279,7 @@ export class NotificationService {
 
       await emailService.sendEmail({
         to: brand.email,
-        subject: '✅ Renovación Exitosa - Virtual Try-On SaaS',
+        subject: '✅ Renovación Exitosa - Lookitry',
         html,
       });
 
@@ -392,7 +392,7 @@ export class NotificationService {
 
       await emailService.sendEmail({
         to: brand.email,
-        subject: 'Bienvenido a Virtual Try-On SaaS — Tus datos de acceso',
+        subject: 'Bienvenido a Lookitry — Tus datos de acceso',
         html,
       });
 

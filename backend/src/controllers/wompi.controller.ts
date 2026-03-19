@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
 import { wompiService } from '../services/wompi.service';
 import { SubscriptionService } from '../services/subscription.service';
+import { NotificationService } from '../services/notification.service';
 import { EmailService } from '../services/email.service';
 import { verifyEmailTemplate } from '../templates/email-templates';
-import { supabase, supabaseAdmin } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 
 const subscriptionService = new SubscriptionService();
+const notificationService = new NotificationService();
 const emailService = new EmailService();
 
 /**
@@ -99,7 +101,7 @@ export class WompiController {
       // Renovar suscripción o activar trial según el monto
       if (amountInCents === 100) {
         // Pago de tokenización de trial (100 COP) — confirmar y enviar email de verificación
-        const { data: updatedBrand } = await supabase
+        const { data: updatedBrand } = await supabaseAdmin
           .from('brands')
           .update({ trial_payment_status: 'active' })
           .eq('id', brandId)
@@ -132,7 +134,7 @@ export class WompiController {
 
         // Renovar suscripción normal con meses y plan extraídos de la referencia
         // Si el plan cambió respecto al actual → es un upgrade, resetear fecha desde hoy
-        const { data: currentBrand } = await supabase
+        const { data: currentBrand } = await supabaseAdmin
           .from('brands')
           .select('plan')
           .eq('id', brandId)
@@ -167,6 +169,18 @@ export class WompiController {
         }
 
         console.log(`[Wompi] Suscripción renovada para brand ${brandId} — Plan: ${effectivePlan}, Meses: ${months}`);
+
+        // Enviar email de confirmación de compra
+        const { data: updatedBrandForEmail } = await supabaseAdmin
+          .from('brands')
+          .select('id, email, name, plan, subscription_end_date')
+          .eq('id', brandId)
+          .single();
+
+        if (updatedBrandForEmail) {
+          notificationService.sendRenewalConfirmation(updatedBrandForEmail as any)
+            .catch(err => console.error('[Wompi] Error enviando email de confirmación de compra:', err));
+        }
       }
       res.status(200).json({ received: true });
     } catch (error) {

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { supabase, supabaseAdmin } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 
 export type NotificationType =
   | 'new_brand'

@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 import { Brand } from '../types';
 
 export interface UpdateBrandDto {
@@ -46,7 +46,7 @@ export interface UpdateBrandDto {
 
 export class BrandsService {
   async getBrandById(brandId: string): Promise<Brand | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .select('*')
       .eq('id', brandId)
@@ -83,7 +83,7 @@ export class BrandsService {
     }
 
     // Intentar actualización completa primero
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .update(updates)
       .eq('id', brandId)
@@ -114,7 +114,7 @@ export class BrandsService {
           return current;
         }
 
-        const { data: fallbackData, error: fallbackError } = await supabase
+        const { data: fallbackData, error: fallbackError } = await supabaseAdmin
           .from('brands')
           .update(baseUpdates)
           .eq('id', brandId)
@@ -138,7 +138,7 @@ export class BrandsService {
   }
 
   async getBrandBySlug(slug: string): Promise<Brand | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .select('*')
       .eq('slug', slug)

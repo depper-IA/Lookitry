@@ -512,7 +512,11 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                             </div>
                             <p style={{ color: 'var(--text-primary)' }} className="text-xs font-semibold">{tpl.name}</p>
                             <p style={{ color: 'var(--text-muted)' }} className="text-xs leading-tight mt-0.5">{tpl.description}</p>
-                            {locked && <span className="absolute top-2 right-2 text-xs bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-full font-medium">Pro</span>}
+                            {locked && (
+                              <span className="absolute top-2 right-2 text-[10px] bg-[#ef4444] text-white px-2 py-0.5 rounded-full font-bold shadow-sm">
+                                PRO
+                              </span>
+                            )}
                             {selected && !locked && (
                               <div className="absolute top-2 right-2 w-4 h-4 bg-[#FF5C3A] rounded-full flex items-center justify-center">
                                 <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>

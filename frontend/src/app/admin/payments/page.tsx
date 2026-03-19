@@ -8,18 +8,20 @@ import { formatCurrency } from '@/utils/currency';
 
 interface Payment {
   id: string;
-  brandId: string;
-  brandName: string;
-  brandEmail: string;
-  brandSlug: string;
-  brandPlan: 'BASIC' | 'PRO';
+  brand_id: string;
+  brands: {
+    name: string;
+    email: string;
+    slug: string;
+    plan: 'BASIC' | 'PRO';
+  };
   amount: number;
   currency: string;
-  paymentDate: string;
-  paymentMethod: string;
+  payment_date: string;
+  payment_method: string;
   status: 'completed' | 'pending' | 'failed' | 'refunded';
   notes: string | null;
-  createdAt: string;
+  created_at: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -58,7 +60,8 @@ export default function AdminPaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [total, setTotal] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
 
   // Filtros
   const [search, setSearch] = useState('');
@@ -75,7 +78,7 @@ export default function AdminPaymentsPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (methodFilter !== 'all') params.set('method', methodFilter);
+      if (methodFilter !== 'all') params.set('payment_method', methodFilter);
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (fromDate) params.set('from', fromDate);
       if (toDate) params.set('to', toDate);
@@ -85,7 +88,8 @@ export default function AdminPaymentsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al cargar pagos');
       setPayments(data.payments ?? []);
-      setTotal(data.total ?? 0);
+      setTotalRevenue(data.stats?.total_revenue ?? 0);
+      setCompletedCount(data.stats?.completed_count ?? 0);
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -101,7 +105,7 @@ export default function AdminPaymentsPage() {
 
   // Resumen por método
   const byMethod = payments.reduce<Record<string, { count: number; total: number }>>((acc, p) => {
-    const m = p.paymentMethod || 'otro';
+    const m = p.payment_method || 'otro';
     if (!acc[m]) acc[m] = { count: 0, total: 0 };
     if (p.status === 'completed') { acc[m].count++; acc[m].total += p.amount; }
     return acc;
@@ -142,8 +146,8 @@ export default function AdminPaymentsPage() {
         })}
         <div className="bg-[#FF5C3A] rounded-2xl px-5 py-4 text-white">
           <p className="text-xs font-medium uppercase tracking-wide opacity-80 mb-2">Total completados</p>
-          <p className="text-xl font-bold">{formatCurrency(total)}</p>
-          <p className="text-xs opacity-70 mt-0.5">{payments.filter(p => p.status === 'completed').length} pagos</p>
+          <p className="text-xl font-bold">{formatCurrency(totalRevenue)}</p>
+          <p className="text-xs opacity-70 mt-0.5">{completedCount} pago{completedCount !== 1 ? 's' : ''}</p>
         </div>
       </div>
 
@@ -222,17 +226,18 @@ export default function AdminPaymentsPage() {
                 </thead>
                 <tbody style={{ borderColor: 'var(--border-color)' }} className="divide-y">
                   {paginated.map(p => {
-                    const methodCfg = METHOD_LABELS[p.paymentMethod] ?? { label: p.paymentMethod, icon: <Banknote className="w-3.5 h-3.5" /> };
+                    const methodCfg = METHOD_LABELS[p.payment_method] ?? { label: p.payment_method, icon: <Banknote className="w-3.5 h-3.5" /> };
                     const statusCfg = STATUS_CONFIG[p.status] ?? { label: p.status, style: { backgroundColor: 'rgba(107,114,128,0.12)', color: '#6b7280' }, icon: null };
+                    const brand = p.brands || { name: '—', email: '—', plan: '—' };
                     return (
                       <tr key={p.id} className="hover:opacity-80 transition-opacity">
                         <td className="px-5 py-3.5">
-                          <p style={{ color: 'var(--text-primary)' }} className="font-medium">{p.brandName}</p>
-                          <p style={{ color: 'var(--text-muted)' }} className="text-xs">{p.brandEmail}</p>
+                          <p style={{ color: 'var(--text-primary)' }} className="font-medium">{brand.name}</p>
+                          <p style={{ color: 'var(--text-muted)' }} className="text-xs">{brand.email}</p>
                         </td>
                         <td className="px-5 py-3.5">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.brandPlan === 'PRO' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                            {p.brandPlan}
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${brand.plan === 'PRO' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                            {brand.plan}
                           </span>
                         </td>
                         <td style={{ color: 'var(--text-primary)' }} className="px-5 py-3.5 font-semibold">{formatCurrency(p.amount)}</td>
@@ -241,7 +246,7 @@ export default function AdminPaymentsPage() {
                             {methodCfg.icon} {methodCfg.label}
                           </span>
                         </td>
-                        <td style={{ color: 'var(--text-secondary)' }} className="px-5 py-3.5">{formatDate(p.paymentDate)}</td>
+                        <td style={{ color: 'var(--text-secondary)' }} className="px-5 py-3.5">{formatDate(p.payment_date)}</td>
                         <td className="px-5 py-3.5">
                           <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold w-fit" style={statusCfg.style}>
                             {statusCfg.icon} {statusCfg.label}

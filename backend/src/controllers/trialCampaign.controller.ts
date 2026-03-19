@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { supabase } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 
 /**
  * Gestión de campañas de trial gratuito.
@@ -14,7 +14,7 @@ import { supabase } from '../config/supabase';
 
 async function getActiveCampaign() {
   const now = new Date().toISOString();
-  const { data } = await supabase
+  const { data } = await supabaseAdmin
     .from('trial_campaigns')
     .select('*')
     .eq('active', true)
@@ -33,7 +33,7 @@ async function getActiveCampaign() {
  */
 export const getTrialCampaign = async (_req: any, res: Response) => {
   try {
-    const { data: campaigns, error } = await supabase
+    const { data: campaigns, error } = await supabaseAdmin
       .from('trial_campaigns')
       .select('*')
       .order('created_at', { ascending: false })
@@ -66,10 +66,10 @@ export const createTrialCampaign = async (req: any, res: Response) => {
     const trialGenerations = Math.min(500, Math.max(1, Number(trial_generations_limit) || 50));
 
     // Desactivar campañas anteriores
-    await supabase.from('trial_campaigns').update({ active: false }).eq('active', true);
+    await supabaseAdmin.from('trial_campaigns').update({ active: false }).eq('active', true);
 
     // Crear nueva campaña activa
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('trial_campaigns')
       .insert({
         name: name.trim(),
@@ -106,7 +106,7 @@ export const updateTrialCampaign = async (req: any, res: Response) => {
     if (typeof active === 'boolean') {
       if (active) {
         // Desactivar otras antes de activar esta
-        await supabase.from('trial_campaigns').update({ active: false }).eq('active', true);
+        await supabaseAdmin.from('trial_campaigns').update({ active: false }).eq('active', true);
       }
       updates.active = active;
     }
@@ -124,7 +124,7 @@ export const updateTrialCampaign = async (req: any, res: Response) => {
       return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Nada que actualizar' });
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('trial_campaigns')
       .update(updates)
       .eq('id', id)

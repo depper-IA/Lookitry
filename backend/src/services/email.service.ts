@@ -7,81 +7,69 @@ export interface EmailOptions {
 }
 
 export class EmailService {
-  private transporter: Transporter | null = null;
-
-  constructor() {}
-
   /**
-   * Obtiene la dirección "from" configurada
+   * Crea un transporter fresco en cada llamada para garantizar que las
+   * variables de entorno estén cargadas y que un fallo previo no bloquee
+   * los envíos siguientes.
    */
+  private createTransporter(): Transporter {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      throw new Error('Credenciales SMTP no configuradas. Configura SMTP_USER y SMTP_PASS en el archivo .env');
+    }
+
+    const port = parseInt(process.env.SMTP_PORT || '465');
+    // Puerto 465 siempre usa SSL (secure=true). Otros puertos usan STARTTLS (secure=false).
+    const secure = port === 465 ? true : process.env.SMTP_SECURE === 'true';
+
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.hostinger.com',
+      port,
+      secure,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+      // Timeout generoso para evitar cuelgues silenciosos
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+    });
+  }
+
   private getFromAddress(): string {
     return process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@pruebalo.com';
   }
 
-  /**
-   * Inicializa el transporter con la configuración actual
-   * Se llama cada vez para asegurar que las variables de entorno estén cargadas
-   */
-  private getTransporter(): Transporter {
-    if (!this.transporter) {
-      // Validar que las credenciales existan
-      if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-        throw new Error('Credenciales SMTP no configuradas. Configura SMTP_USER y SMTP_PASS en el archivo .env');
-      }
-
-      // Configurar transporter con variables de entorno
-      this.transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_SECURE === 'true', // true para 465, false para otros puertos
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-    }
-    return this.transporter;
-  }
-
-  /**
-   * Envía un email
-   * @param options - Opciones del email (to, subject, html)
-   * @returns Promise con el resultado del envío
-   */
   async sendEmail(options: EmailOptions): Promise<void> {
+    const transporter = this.createTransporter();
     try {
-      const transporter = this.getTransporter();
-      const mailOptions = {
+      const info = await transporter.sendMail({
         from: this.getFromAddress(),
         to: options.to,
         subject: options.subject,
         html: options.html,
-      };
-
-      const info = await transporter.sendMail(mailOptions);
-      console.log('✅ Email enviado exitosamente:', info.messageId);
-    } catch (error) {
-      console.error('❌ Error al enviar email:', error);
-      throw new Error('Error al enviar email');
+      });
+      console.log('[Email] Enviado:', info.messageId, '→', options.to);
+    } catch (error: any) {
+      console.error('[Email] Error al enviar a', options.to, ':', error?.message || error);
+      throw new Error('Error al enviar email: ' + (error?.message || 'desconocido'));
+    } finally {
+      transporter.close();
     }
   }
 
-  /**
-   * Verifica la conexión con el servidor SMTP
-   * @returns Promise<boolean>
-   */
   async verifyConnection(): Promise<boolean> {
     try {
-      const transporter = this.getTransporter();
+      const transporter = this.createTransporter();
       await transporter.verify();
-      console.log('✅ Conexión SMTP verificada correctamente');
+      transporter.close();
+      console.log('[Email] Conexión SMTP verificada correctamente');
       return true;
-    } catch (error) {
-      console.error('❌ Error al verificar conexión SMTP:', error);
+    } catch (error: any) {
+      console.error('[Email] Error al verificar conexión SMTP:', error?.message || error);
       return false;
     }
   }
 }
 
-// Exportar instancia singleton
 export const emailService = new EmailService();
