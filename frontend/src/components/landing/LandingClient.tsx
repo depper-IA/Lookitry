@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import FaqSection from '@/components/landing/FaqSection';
+import { PaymentTrustBadges } from '@/components/landing/PaymentTrustBadges';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { LandingPricingCard } from '@/components/landing/LandingPricingCard';
@@ -250,6 +251,9 @@ export default function LandingClient() {
           </p>
         </div>
       </section>
+
+      {/* MEDIOS DE PAGO (Trust Badges) */}
+      <PaymentTrustBadges />
 
       {/* CÓMO FUNCIONA */}
       <section className="bg-[#f5f2ee] py-16 md:py-20 px-6 md:px-8" aria-labelledby="how-it-works-heading">
