@@ -11,13 +11,13 @@ function Watermark({ plan, brandName }: { plan?: string; brandName?: string }) {
     <div className="absolute inset-0 pointer-events-none select-none z-10 p-4">
       {plan === 'BASIC' && (
         <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-80">
-          <img src="/logo.svg" alt="Lookitry" className="h-5 w-auto brightness-0 invert drop-shadow-md" />
+          <img src="/logo.svg" alt="Lookitry" className="h-5 w-auto brightness-0 invert" />
         </div>
       )}
       {plan === 'TRIAL' && (
         <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center gap-1 opacity-70">
-          <img src="/logo.svg" alt="Lookitry" className="h-6 w-auto brightness-0 invert drop-shadow-lg" />
-          <p className="text-[10px] font-bold text-white uppercase tracking-[0.2em] drop-shadow-lg">
+          <img src="/logo.svg" alt="Lookitry" className="h-6 w-auto brightness-0 invert" />
+          <p className="text-[10px] font-bold text-white uppercase tracking-[0.2em]">
             {brandName ?? 'Lookitry'}
           </p>
         </div>
@@ -260,6 +260,8 @@ export function ResultDisplay({
           productName={productName}
           primaryColor={primaryColor}
           onOpen={() => setLightboxOpen(true)}
+          brandPlan={brandPlan}
+          brandName={brandName}
         />
 
         {/* Comparación antes/después — debajo de la imagen principal */}
@@ -277,6 +279,8 @@ export function ResultDisplay({
                 onOpen={() => setLightboxOpen(true)}
                 aspectRatio="aspect-[3/4]"
                 compact
+                brandPlan={brandPlan}
+                brandName={brandName}
               />
               <div className="absolute bottom-2 left-2 text-white text-xs px-2 py-0.5 rounded-full pointer-events-none" style={{ backgroundColor: `${primaryColor}cc` }}>Con el producto</div>
             </div>
