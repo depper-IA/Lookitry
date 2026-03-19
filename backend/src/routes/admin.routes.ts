@@ -30,6 +30,10 @@ import {
   getOpenRouterCredits,
   sendBrandResetEmail,
   getPayments,
+  getAllPromotions,
+  createPromotion,
+  updatePromotion,
+  deletePromotion,
 } from '../controllers/admin.controller';
 import {
   getPaymentSettings,
@@ -107,5 +111,11 @@ router.get('/openrouter-credits', requirePermission('settings'), getOpenRouterCr
 
 // Historial de pagos global (Auditoría Marzo 2026)
 router.get('/revenue/payments', requirePermission('subscriptions'), getPayments);
+
+// Gestión de promociones (Nueva ruta centralizada en backend)
+router.get('/promotions', requirePermission('settings'), getAllPromotions);
+router.post('/promotions', requirePermission('settings'), createPromotion);
+router.put('/promotions/:id', requirePermission('settings'), updatePromotion);
+router.delete('/promotions/:id', requirePermission('settings'), deletePromotion);
 
 export default router;
