@@ -4,12 +4,12 @@
 import React from 'react';
 
 const LOGOS = [
-  { name: 'Visa', url: 'https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg' },
-  { name: 'Mastercard', url: 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg' },
-  { name: 'PSE', url: 'https://www.pse.com.co/images/pse-logo.png' },
-  { name: 'Nequi', url: 'https://www.nequi.com.co/wp-content/uploads/2022/05/logo-nequi.png' },
-  { name: 'Bancolombia', url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Bancolombia_logo.svg/2560px-Bancolombia_logo.svg.png' },
-  { name: 'PayPal', url: 'https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg' },
+  { name: 'Visa', url: '/payment-visa.svg' },
+  { name: 'Mastercard', url: '/payment-mastercard.svg' },
+  { name: 'PSE', url: '/payment-pse.svg' },
+  { name: 'Nequi', url: '/payment-nequi.svg' },
+  { name: 'Bancolombia', url: '/payment-bancolombia.svg' },
+  { name: 'PayPal', url: '/payment-paypal.svg' },
 ];
 
 export function PaymentTrustBadges() {
