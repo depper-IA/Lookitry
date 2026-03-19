@@ -61,7 +61,7 @@ Implementación incremental del flujo de pago para usuarios nuevos en Lookitry. 
     - Usar `fc.string({ minLength: 1, maxLength: 20 })` para generar sufijos de `visitor_`
     - Mockear `supabaseAdmin.from('brands').update` y verificar que nunca se llama cuando el brandId empieza con `visitor_`
 
-- [~] 5. Checkpoint — verificar backend hasta aquí
+- [x] 5. Checkpoint — verificar backend hasta aquí
   - Asegurarse de que todos los tests pasen. Consultar al usuario si hay dudas antes de continuar con el controlador de registro.
 
 - [~] 6. Modificar `POST /api/auth/register-post-payment` — flujo con `ref`
