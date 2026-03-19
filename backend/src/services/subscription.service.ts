@@ -133,7 +133,8 @@ export class SubscriptionService {
     brandId: string,
     paymentData: CreatePaymentDto,
     months: number = 1,
-    plan?: string
+    plan?: string,
+    isUpgrade: boolean = false
   ): Promise<Brand> {
     // Validar meses permitidos
     if (![1, 3, 6, 12].includes(months)) {
@@ -153,11 +154,15 @@ export class SubscriptionService {
 
     // Calcular nueva fecha de inicio y vencimiento
     const now = new Date();
-    const newStartDate = brand.subscription_end_date 
-      ? new Date(brand.subscription_end_date) > now
-        ? new Date(brand.subscription_end_date) // Si aún no venció, extender desde la fecha actual de vencimiento
-        : now // Si ya venció, empezar desde ahora
-      : now;
+    // En upgrade: siempre desde hoy (el crédito ya fue descontado del precio)
+    // En renovación normal: extender desde la fecha de fin actual si no venció
+    const newStartDate = isUpgrade
+      ? now
+      : brand.subscription_end_date
+        ? new Date(brand.subscription_end_date) > now
+          ? new Date(brand.subscription_end_date)
+          : now
+        : now;
 
     const newEndDate = this.calculateExpirationDate(newStartDate, months);
 
@@ -204,6 +209,117 @@ export class SubscriptionService {
       brand_id: brandId,
       payment_date: paymentData.payment_date || now.toISOString(),
       status: paymentData.status || 'completed',
+    });
+
+    return updatedBrand as Brand;
+  }
+
+  /**
+   * Calcula el prorrateo para un upgrade de plan.
+   * El crédito se basa en el precio diario del plan actual × días restantes.
+   * El monto a cobrar = precio del nuevo plan - crédito (mínimo 0).
+   * La nueva fecha de fin = now() + meses nuevos (siempre desde hoy, no acumula).
+   *
+   * @param brandId - ID de la marca
+   * @param newPlan - Plan destino ('PRO')
+   * @param newMonths - Meses a contratar del nuevo plan
+   * @param newPlanPricePerMonth - Precio mensual del nuevo plan en COP
+   * @param currentPlanPriceTotal - Precio total pagado por el plan actual en COP
+   */
+  async calculateUpgradeProration(
+    brandId: string,
+    newPlan: string,
+    newMonths: number,
+    newPlanPricePerMonth: number,
+    currentPlanPriceTotal: number
+  ): Promise<{
+    daysRemaining: number;
+    creditAmount: number;
+    newPlanTotal: number;
+    amountToPay: number;
+    newEndDate: string;
+    isFree: boolean;
+  }> {
+    const { data: brand, error } = await supabaseAdmin
+      .from('brands')
+      .select('subscription_end_date, subscription_start_date')
+      .eq('id', brandId)
+      .single();
+
+    if (error || !brand) throw new Error('Marca no encontrada');
+
+    const now = new Date();
+    const endDate = brand.subscription_end_date ? new Date(brand.subscription_end_date) : now;
+    const startDate = brand.subscription_start_date ? new Date(brand.subscription_start_date) : now;
+
+    // Días totales del plan actual y días restantes
+    const totalDays = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+    const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+    // Precio por día del plan actual (basado en lo que pagó realmente)
+    const pricePerDay = currentPlanPriceTotal / totalDays;
+    const creditAmount = Math.round(pricePerDay * daysRemaining);
+
+    // Precio total del nuevo plan (sin descuento por duración — el frontend ya lo calcula)
+    const newPlanTotal = Math.round(newPlanPricePerMonth * newMonths);
+
+    // Monto a cobrar: diferencia, mínimo 0
+    const amountToPay = Math.max(0, newPlanTotal - creditAmount);
+
+    // Nueva fecha de fin: siempre desde hoy + meses nuevos
+    const newEndDate = this.calculateExpirationDate(now, newMonths);
+
+    return {
+      daysRemaining,
+      creditAmount,
+      newPlanTotal,
+      amountToPay,
+      newEndDate: newEndDate.toISOString(),
+      isFree: amountToPay === 0,
+    };
+  }
+
+  /**
+   * Aplica un upgrade gratuito (cuando el crédito cubre el costo del nuevo plan).
+   * Cambia el plan y resetea la fecha de fin desde hoy.
+   */
+  async applyFreeUpgrade(
+    brandId: string,
+    newPlan: string,
+    newMonths: number,
+    creditAmount: number,
+    newPlanTotal: number,
+    reference: string
+  ): Promise<Brand> {
+    const now = new Date();
+    const newEndDate = this.calculateExpirationDate(now, newMonths);
+
+    const { data: updatedBrand, error } = await supabaseAdmin
+      .from('brands')
+      .update({
+        plan: newPlan.toUpperCase(),
+        subscription_start_date: now.toISOString(),
+        subscription_end_date: newEndDate.toISOString(),
+        subscription_status: 'active',
+        last_payment_date: now.toISOString(),
+        next_payment_date: newEndDate.toISOString(),
+      })
+      .eq('id', brandId)
+      .select()
+      .single();
+
+    if (error || !updatedBrand) throw new Error('Error al aplicar upgrade: ' + error?.message);
+
+    // Registrar en historial con monto $0 (crédito cubrió todo)
+    await this.createPaymentRecord({
+      brand_id: brandId,
+      amount: 0,
+      currency: 'COP',
+      payment_date: now.toISOString(),
+      payment_method: 'credit_proration',
+      status: 'completed',
+      months_paid: newMonths,
+      notes: `Upgrade gratuito por prorrateo. Plan: ${newPlan}. Crédito aplicado: $${creditAmount}. Valor plan: $${newPlanTotal}. Ref: ${reference}`,
     });
 
     return updatedBrand as Brand;

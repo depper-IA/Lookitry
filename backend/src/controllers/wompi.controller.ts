@@ -131,6 +131,15 @@ export class WompiController {
         const activateLanding = plan === 'LANDING';
 
         // Renovar suscripción normal con meses y plan extraídos de la referencia
+        // Si el plan cambió respecto al actual → es un upgrade, resetear fecha desde hoy
+        const { data: currentBrand } = await supabase
+          .from('brands')
+          .select('plan')
+          .eq('id', brandId)
+          .single();
+
+        const isUpgrade = currentBrand?.plan !== effectivePlan;
+
         await subscriptionService.renewSubscription(
           brandId,
           {
@@ -144,7 +153,8 @@ export class WompiController {
             notes: `Pago automático Wompi. Plan: ${effectivePlan}. Meses: ${months}. Ref: ${reference}. ID: ${transaction.id}`,
           },
           months,
-          effectivePlan
+          effectivePlan,
+          isUpgrade
         );
 
         // Si el pago incluía landing, activarla
@@ -163,6 +173,98 @@ export class WompiController {
       console.error('[Wompi] Error procesando webhook:', error);
       // Siempre responder 200 a Wompi para evitar reintentos innecesarios
       res.status(200).json({ received: true, error: 'Error interno' });
+    }
+  }
+
+  /**
+   * GET /api/payments/wompi/upgrade-preview
+   *
+   * Calcula el prorrateo de un upgrade antes de que el usuario pague.
+   * Requiere auth (JWT de marca con suscripción activa).
+   *
+   * Query params: newPlan, newMonths, newPlanPricePerMonth, currentPlanPriceTotal
+   */
+  async getUpgradePreview(req: Request, res: Response): Promise<void> {
+    try {
+      const brand = (req as any).brand;
+      if (!brand?.id) {
+        res.status(401).json({ error: 'Autenticación requerida' });
+        return;
+      }
+
+      const { newPlan, newMonths, newPlanPricePerMonth, currentPlanPriceTotal } = req.query;
+
+      if (!newPlan || !newMonths || !newPlanPricePerMonth || !currentPlanPriceTotal) {
+        res.status(400).json({ error: 'Parámetros requeridos: newPlan, newMonths, newPlanPricePerMonth, currentPlanPriceTotal' });
+        return;
+      }
+
+      const preview = await subscriptionService.calculateUpgradeProration(
+        brand.id,
+        (newPlan as string).toUpperCase(),
+        parseInt(newMonths as string, 10),
+        parseInt(newPlanPricePerMonth as string, 10),
+        parseInt(currentPlanPriceTotal as string, 10)
+      );
+
+      res.json(preview);
+    } catch (error) {
+      console.error('[Wompi] Error calculando upgrade preview:', error);
+      res.status(500).json({ error: 'Error interno' });
+    }
+  }
+
+  /**
+   * POST /api/payments/wompi/apply-free-upgrade
+   *
+   * Aplica un upgrade gratuito cuando el crédito cubre el costo total del nuevo plan.
+   * Requiere auth (JWT de marca).
+   *
+   * Body: { newPlan, newMonths, creditAmount, newPlanTotal }
+   */
+  async applyFreeUpgrade(req: Request, res: Response): Promise<void> {
+    try {
+      const brand = (req as any).brand;
+      if (!brand?.id) {
+        res.status(401).json({ error: 'Autenticación requerida' });
+        return;
+      }
+
+      const { newPlan, newMonths, creditAmount, newPlanTotal } = req.body;
+
+      if (!newPlan || !newMonths || creditAmount === undefined || newPlanTotal === undefined) {
+        res.status(400).json({ error: 'Parámetros requeridos: newPlan, newMonths, creditAmount, newPlanTotal' });
+        return;
+      }
+
+      // Re-calcular para verificar que efectivamente es gratuito (evitar manipulación)
+      const preview = await subscriptionService.calculateUpgradeProration(
+        brand.id,
+        (newPlan as string).toUpperCase(),
+        parseInt(newMonths as string, 10),
+        Math.round(parseInt(newPlanTotal as string, 10) / parseInt(newMonths as string, 10)),
+        parseInt(creditAmount as string, 10) + parseInt(newPlanTotal as string, 10) // reconstruir currentPlanPriceTotal
+      );
+
+      if (!preview.isFree) {
+        res.status(400).json({ error: 'Este upgrade requiere pago', amountToPay: preview.amountToPay });
+        return;
+      }
+
+      const reference = wompiService.generateReference(brand.id, parseInt(newMonths as string, 10), newPlan as string);
+      const updatedBrand = await subscriptionService.applyFreeUpgrade(
+        brand.id,
+        (newPlan as string).toUpperCase(),
+        parseInt(newMonths as string, 10),
+        parseInt(creditAmount as string, 10),
+        parseInt(newPlanTotal as string, 10),
+        reference
+      );
+
+      res.json({ success: true, brand: updatedBrand });
+    } catch (error) {
+      console.error('[Wompi] Error aplicando free upgrade:', error);
+      res.status(500).json({ error: 'Error interno' });
     }
   }
 
