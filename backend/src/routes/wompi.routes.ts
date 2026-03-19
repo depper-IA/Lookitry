@@ -37,6 +37,18 @@ async function optionalAuth(req: Request, _res: Response, next: NextFunction) {
 router.post('/webhook', (req, res) => wompiController.handleWebhook(req, res));
 
 /**
+ * GET /api/payments/wompi/upgrade-preview
+ * Calcula el prorrateo de un upgrade. Requiere auth de marca.
+ */
+router.get('/upgrade-preview', optionalAuth, (req, res) => wompiController.getUpgradePreview(req, res));
+
+/**
+ * POST /api/payments/wompi/apply-free-upgrade
+ * Aplica upgrade gratuito cuando el crédito cubre el costo. Requiere auth de marca.
+ */
+router.post('/apply-free-upgrade', optionalAuth, (req, res) => wompiController.applyFreeUpgrade(req, res));
+
+/**
  * GET /api/payments/wompi/config
  * Auth opcional: adjunta brand si hay token válido, pero no bloquea visitantes.
  */

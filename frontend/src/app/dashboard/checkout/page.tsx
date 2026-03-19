@@ -76,6 +76,18 @@ export default function CheckoutPage() {
   const [planInfo, setPlanInfo] = useState(PLAN_INFO_FALLBACK);
   const [monthDiscounts, setMonthDiscounts] = useState(MONTH_DISCOUNTS_FALLBACK);
 
+  // Prorrateo de upgrade
+  const [prorationPreview, setProrationPreview] = useState<{
+    daysRemaining: number;
+    creditAmount: number;
+    newPlanTotal: number;
+    amountToPay: number;
+    newEndDate: string;
+    isFree: boolean;
+  } | null>(null);
+  const [loadingProration, setLoadingProration] = useState(false);
+  const [applyingFreeUpgrade, setApplyingFreeUpgrade] = useState(false);
+
   const plan = selectedPlan;
   const monthDiscount = monthDiscounts.find(d => d.months === selectedMonths) ?? monthDiscounts[0];
   const planTotal = Math.round(planInfo[plan].price * selectedMonths * (1 - monthDiscount.pct / 100));
@@ -87,8 +99,9 @@ export default function CheckoutPage() {
   const isDowngrade = hasActiveSub && currentPlan !== null && selectedPlan !== currentPlan && selectedPlan === 'BASIC';
   const isRenewal = hasActiveSub && selectedPlan === currentPlan;
 
-  // Precio total según modo
-  const totalPrice = planTotal + (includeLanding ? miniLandingPrice : 0);
+  // En upgrade: el monto a pagar viene del prorrateo, no del precio normal
+  const effectivePlanTotal = isUpgrade && prorationPreview ? prorationPreview.amountToPay : planTotal;
+  const totalPrice = effectivePlanTotal + (includeLanding ? miniLandingPrice : 0);
 
   useEffect(() => {
     subscriptionService.getSubscriptionInfo().then((info) => {
@@ -145,6 +158,62 @@ export default function CheckoutPage() {
       }
     }).catch(() => {});
   }, []);
+
+  // Calcular prorrateo cuando es upgrade
+  useEffect(() => {
+    if (!isUpgrade || loadingInfo) {
+      setProrationPreview(null);
+      return;
+    }
+    setLoadingProration(true);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    // currentPlanPriceTotal: estimamos el precio que pagó basado en el plan actual y meses
+    // Usamos el precio mensual del plan actual × 30 días × daysRemaining como proxy
+    // El backend lo calcula con las fechas reales de la BD
+    const newPlanPricePerMonth = planInfo['PRO'].price;
+    const currentPlanPriceTotal = Math.round(planInfo['BASIC'].price * 12); // worst case: 12 meses
+
+    fetch(
+      `${apiUrl}/api/payments/wompi/upgrade-preview?newPlan=PRO&newMonths=${selectedMonths}&newPlanPricePerMonth=${newPlanPricePerMonth}&currentPlanPriceTotal=${currentPlanPriceTotal}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setProrationPreview(data); })
+      .catch(() => {})
+      .finally(() => setLoadingProration(false));
+  }, [isUpgrade, selectedMonths, loadingInfo, planInfo]);
+
+  const handleFreeUpgrade = async () => {
+    if (!prorationPreview || !prorationPreview.isFree) return;
+    setApplyingFreeUpgrade(true);
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    try {
+      const res = await fetch(`${apiUrl}/api/payments/wompi/apply-free-upgrade`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          newPlan: 'PRO',
+          newMonths: selectedMonths,
+          creditAmount: prorationPreview.creditAmount,
+          newPlanTotal: prorationPreview.newPlanTotal,
+        }),
+      });
+      if (res.ok) {
+        setState('success');
+      } else {
+        const err = await res.json();
+        setErrorMsg(err.error || 'Error al aplicar el upgrade');
+        setState('error');
+      }
+    } catch {
+      setErrorMsg('Error de conexión');
+      setState('error');
+    } finally {
+      setApplyingFreeUpgrade(false);
+    }
+  };
 
   const handleSuccess = (result: WompiWidgetResult) => {
     console.log('[Wompi] Pago aprobado:', result.transaction.id);
@@ -263,34 +332,74 @@ export default function CheckoutPage() {
       </div>
 
       {/* Banner informativo para usuarios con sub activa */}
-      {hasActiveSub && (
+      {hasActiveSub && !isUpgrade && (
         <div
           className="rounded-2xl border px-5 py-4 flex items-start gap-3"
-          style={{
-            background: isUpgrade ? 'rgba(99,102,241,0.06)' : 'rgba(16,185,129,0.06)',
-            borderColor: isUpgrade ? 'rgba(99,102,241,0.25)' : 'rgba(16,185,129,0.2)',
-          }}
+          style={{ background: 'rgba(16,185,129,0.06)', borderColor: 'rgba(16,185,129,0.2)' }}
         >
-          {isUpgrade
-            ? <ArrowUpCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: '#6366f1' }} />
-            : <RefreshCw className="w-5 h-5 mt-0.5 flex-shrink-0 text-emerald-500" />
-          }
+          <RefreshCw className="w-5 h-5 mt-0.5 flex-shrink-0 text-emerald-500" />
           <div>
-            <p className="text-sm font-semibold" style={{ color: isUpgrade ? '#6366f1' : '#059669' }}>
-              {isUpgrade
-                ? `Upgrade: ${planInfo['BASIC'].name} → ${planInfo['PRO'].name}`
-                : `${planInfo[currentPlan!]?.name ?? ''} activo${daysRemaining != null ? ` · ${daysRemaining} días restantes` : ''}`
-              }
+            <p className="text-sm font-semibold" style={{ color: '#059669' }}>
+              {planInfo[currentPlan!]?.name ?? ''} activo{daysRemaining != null ? ` · ${daysRemaining} días restantes` : ''}
             </p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              {isUpgrade
-                ? `Tus ${daysRemaining ?? 0} días restantes se conservan. El plan cambia a PRO inmediatamente al confirmar el pago. Pagas ${selectedMonths} ${selectedMonths === 1 ? 'mes' : 'meses'} de PRO que se suman encima.`
-                : isRenewal
-                  ? `Los nuevos meses se suman a tu fecha de vencimiento actual.`
-                  : `El cambio de plan aplica desde el próximo período.`
-              }
+              {isRenewal ? 'Los nuevos meses se suman a tu fecha de vencimiento actual.' : 'El cambio de plan aplica desde el próximo período.'}
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Panel de prorrateo — solo visible en upgrade */}
+      {isUpgrade && (
+        <div
+          className="rounded-2xl border overflow-hidden"
+          style={{ borderColor: 'rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.04)' }}
+        >
+          <div className="px-5 py-4 flex items-center gap-3 border-b" style={{ borderColor: 'rgba(99,102,241,0.2)' }}>
+            <ArrowUpCircle className="w-5 h-5 flex-shrink-0" style={{ color: '#6366f1' }} />
+            <div>
+              <p className="text-sm font-semibold" style={{ color: '#6366f1' }}>
+                Upgrade: {planInfo['BASIC'].name} → {planInfo['PRO'].name}
+              </p>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                Tu crédito restante se descuenta del precio del Plan Pro
+              </p>
+            </div>
+          </div>
+
+          {loadingProration ? (
+            <div className="px-5 py-4 flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+              <svg className="animate-spin h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+              </svg>
+              Calculando prorrateo...
+            </div>
+          ) : prorationPreview ? (
+            <div className="px-5 py-4 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span style={{ color: 'var(--text-muted)' }}>Plan Pro · {selectedMonths} {selectedMonths === 1 ? 'mes' : 'meses'}</span>
+                <span style={{ color: 'var(--text-primary)' }}>{formatCurrency(prorationPreview.newPlanTotal)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span style={{ color: 'var(--text-muted)' }}>
+                  Crédito por {prorationPreview.daysRemaining} días restantes del Plan Básico
+                </span>
+                <span className="font-medium" style={{ color: '#10b981' }}>− {formatCurrency(prorationPreview.creditAmount)}</span>
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t font-semibold" style={{ borderColor: 'rgba(99,102,241,0.2)' }}>
+                <span style={{ color: 'var(--text-primary)' }}>Total a pagar</span>
+                <span style={{ color: prorationPreview.isFree ? '#10b981' : '#6366f1', fontSize: '1.1rem' }}>
+                  {prorationPreview.isFree ? 'Sin costo adicional' : formatCurrency(prorationPreview.amountToPay)}
+                </span>
+              </div>
+              {prorationPreview.isFree && (
+                <p className="text-xs pt-1" style={{ color: 'var(--text-muted)' }}>
+                  Tu crédito cubre el costo completo del Plan Pro. El upgrade se aplica inmediatamente.
+                </p>
+              )}
+            </div>
+          ) : null}
         </div>
       )}
 
@@ -460,6 +569,12 @@ export default function CheckoutPage() {
                 <span>{formatCurrency(miniLandingPrice)}</span>
               </div>
             )}
+            {isUpgrade && prorationPreview && (
+              <div className="flex items-center justify-between text-sm" style={{ color: '#10b981' }}>
+                <span>Crédito plan actual ({prorationPreview.daysRemaining} días)</span>
+                <span>− {formatCurrency(prorationPreview.creditAmount)}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Total a pagar</p>
               <p className="text-xl font-bold" style={{ color: '#FF5C3A' }}>{formatCurrency(totalPrice)}</p>
@@ -468,14 +583,48 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-      <PaymentSection
-        wompiEnabled={wompiEnabled}
-        plan={plan}
-        months={selectedMonths}
-        amount={totalPrice}
-        onSuccess={handleSuccess}
-        onError={handleError}
-      />
+      {/* Sección de pago — en upgrade gratuito muestra botón directo */}
+      {isUpgrade && prorationPreview?.isFree ? (
+        <div className="rounded-2xl border px-6 py-5 space-y-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <div className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+            <ArrowUpCircle className="w-5 h-5" style={{ color: '#6366f1' }} />
+            <h2 className="font-semibold">Confirmar upgrade</h2>
+          </div>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Tu crédito cubre el costo completo. No se realizará ningún cobro.
+          </p>
+          <button
+            onClick={handleFreeUpgrade}
+            disabled={applyingFreeUpgrade}
+            className="w-full py-3 min-h-[44px] rounded-xl text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2"
+            style={{ background: '#6366f1' }}
+          >
+            {applyingFreeUpgrade ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                Aplicando upgrade...
+              </>
+            ) : (
+              <>
+                <ArrowUpCircle className="w-4 h-4" />
+                Activar Plan Pro sin costo adicional
+              </>
+            )}
+          </button>
+        </div>
+      ) : (
+        <PaymentSection
+          wompiEnabled={wompiEnabled}
+          plan={plan}
+          months={selectedMonths}
+          amount={totalPrice}
+          onSuccess={handleSuccess}
+          onError={handleError}
+        />
+      )}
 
       <div className="flex items-center gap-2 text-xs justify-center" style={{ color: 'var(--text-muted)' }}>
         <ShieldCheck className="w-4 h-4" />
