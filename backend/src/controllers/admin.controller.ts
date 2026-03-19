@@ -1067,16 +1067,76 @@ export const deletePromotion = async (req: any, res: Response) => {
 
     if (error) throw error;
 
-    await auditService.log({
-      admin_id: req.admin.id,
-      admin_email: req.admin.email,
-      action: 'system.config_update',
-      details: { promo_id: id, action: 'delete' }
-    });
+    if (req.admin) {
+      await auditService.log({
+        admin_id: req.admin.id,
+        admin_email: req.admin.email,
+        action: 'system.config_update',
+        details: { promo_id: id, action: 'delete' }
+      });
+    }
 
     return res.json({ ok: true, message: 'Promoción eliminada' });
   } catch (error: any) {
     console.error('Error in deletePromotion:', error);
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al eliminar promoción' });
+  }
+};
+
+/**
+ * GET /api/admin/pricing
+ * Obtener toda la configuración de precios
+ */
+export const getPricingConfig = async (req: any, res: Response) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('pricing_config')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+    return res.json({ ok: true, data: data || [] });
+  } catch (error: any) {
+    console.error('Error in getPricingConfig:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener precios' });
+  }
+};
+
+/**
+ * PUT /api/admin/pricing
+ * Actualizar una configuración de precio específica
+ */
+export const updatePricingConfig = async (req: any, res: Response) => {
+  try {
+    const { id, data: configData } = req.body;
+    if (!id || !configData) {
+      return res.status(400).json({ error: 'INVALID_BODY', message: 'Faltan campos id o data' });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('pricing_config')
+      .update({
+        data: configData,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    if (req.admin) {
+      await auditService.log({
+        admin_id: req.admin.id,
+        admin_email: req.admin.email,
+        action: 'system.config_update',
+        details: { pricing_id: id, action: 'update_pricing' }
+      });
+    }
+
+    return res.json({ ok: true, data });
+  } catch (error: any) {
+    console.error('Error in updatePricingConfig:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al actualizar precios' });
   }
 };
