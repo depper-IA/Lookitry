@@ -60,6 +60,24 @@ export class WompiController {
         return;
       }
 
+      // Si el brandId empieza con 'visitor_', es un usuario nuevo sin cuenta aún
+      if (brandId.startsWith('visitor_')) {
+        // Verificar si existe en pending_registrations
+        const { data: pending } = await supabaseAdmin
+          .from('pending_registrations')
+          .select('id')
+          .eq('reference', reference)
+          .maybeSingle();
+
+        if (pending) {
+          console.log('[Wompi] Pending sin marca, ignorando activación:', reference);
+        } else {
+          console.warn('[Wompi] Referencia visitor_ sin pending conocido:', reference);
+        }
+        res.status(200).json({ received: true });
+        return;
+      }
+
       // Extraer meses y plan de la referencia
       const { months, plan } = wompiService.extractMetaFromReference(reference);
 

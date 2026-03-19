@@ -45,8 +45,8 @@ Implementación incremental del flujo de pago para usuarios nuevos en Lookitry. 
     - Usar `fc.record({ email: fc.emailAddress(), plan: fc.constantFrom('BASIC', 'PRO'), months: fc.integer({ min: 1, max: 12 }) })`
     - Mockear `supabaseAdmin` y verificar que el INSERT recibe exactamente los valores generados
 
-- [~] 4. Modificar `POST /api/payments/wompi/webhook` — ignorar referencias `visitor_`
-  - [~] 4.1 Actualizar `handleWebhook` en `backend/src/controllers/wompi.controller.ts`
+- [x] 4. Modificar `POST /api/payments/wompi/webhook` — ignorar referencias `visitor_`
+  - [x] 4.1 Actualizar `handleWebhook` en `backend/src/controllers/wompi.controller.ts`
     - Después de extraer `brandId`, verificar si empieza con `visitor_`
     - Si empieza con `visitor_` → consultar `pending_registrations` con `supabaseAdmin` donde `reference = reference`
     - Si existe el pending → `console.log('[Wompi] Pending sin marca, ignorando activación')` y retornar `res.status(200).json({ received: true })`
