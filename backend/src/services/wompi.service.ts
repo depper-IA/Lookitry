@@ -86,16 +86,33 @@ export class WompiService {
 
   /**
    * Verifica la firma del webhook de Wompi.
-   * Wompi envía: X-Event-Checksum = SHA256(event_json + events_secret)
+   * Wompi calcula: SHA256(transaction.id + transaction.status + transaction.amount_in_cents + transaction.currency + events_secret)
+   * Ref: https://docs.wompi.co/en/docs/colombia/eventos/
    */
   async verifyWebhookSignature(payload: string, checksum: string): Promise<boolean> {
     const { eventsSecret } = await this.getActiveKeys();
     if (!eventsSecret) return false;
-    const expected = crypto
+
+    // Intentar parsear el body para extraer los campos de la transacción
+    try {
+      const event = JSON.parse(payload);
+      const tx = event?.data?.transaction;
+      if (tx) {
+        // Fórmula oficial Wompi: id + status + amount_in_cents + currency + events_secret
+        const data = `${tx.id}${tx.status}${tx.amount_in_cents}${tx.currency}${eventsSecret}`;
+        const expected = crypto.createHash('sha256').update(data).digest('hex');
+        if (expected === checksum) return true;
+      }
+    } catch {
+      // Si falla el parse, caer al método legacy
+    }
+
+    // Fallback: método legacy body + secret (por compatibilidad)
+    const expectedLegacy = crypto
       .createHash('sha256')
       .update(payload + eventsSecret)
       .digest('hex');
-    return expected === checksum;
+    return expectedLegacy === checksum;
   }
 
   /**
