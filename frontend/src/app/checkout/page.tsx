@@ -746,7 +746,7 @@ function CheckoutContent() {
                   onClick={() => setPaymentMethod('wompi')}
                   className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all ${paymentMethod === 'wompi' ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[#2a2a2a] bg-[#1a1a1a] opacity-60'}`}
                 >
-                  <img src="/wompi-logo.svg" alt="Wompi" className="h-4 w-auto invert brightness-200" />
+                  <img src="/wompi-logo.svg" alt="Wompi" className="h-8 md:h-10 w-auto invert brightness-200" />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-white">Tarjetas / PSE</span>
                 </button>
                 <button
