@@ -34,8 +34,20 @@ export class WompiController {
         : JSON.stringify(req.body);
 
       // Verificar firma HMAC antes de procesar nada
-      if (!checksum || !(await wompiService.verifyWebhookSignature(rawBody, checksum))) {
-        console.warn('[Wompi] Firma inválida o ausente. Checksum recibido:', checksum);
+      const firmaValida = await wompiService.verifyWebhookSignature(rawBody, checksum);
+      if (!checksum || !firmaValida) {
+        // Log detallado para debug
+        try {
+          const bodyParsed = JSON.parse(rawBody);
+          const tx = bodyParsed?.data?.transaction;
+          if (tx) {
+            console.warn(`[Wompi] Firma inválida. Recibido: ${checksum} | tx.id=${tx.id} tx.status=${tx.status} tx.amount=${tx.amount_in_cents} tx.currency=${tx.currency}`);
+          } else {
+            console.warn('[Wompi] Firma inválida o ausente. Checksum recibido:', checksum);
+          }
+        } catch {
+          console.warn('[Wompi] Firma inválida o ausente. Checksum recibido:', checksum);
+        }
         res.status(401).json({ error: 'Firma inválida' });
         return;
       }
