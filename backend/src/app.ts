@@ -13,6 +13,7 @@ import generationsRoutes from './routes/generations.routes';
 import cleanupRoutes from './routes/cleanup.routes';
 import revenueRoutes from './routes/revenue.routes';
 import wompiRoutes from './routes/wompi.routes';
+import paypalRoutes from './routes/paypal.routes';
 import trialRoutes from './routes/trial.routes';
 import couponsRoutes from './routes/coupons.routes';
 import { getPublicPaymentSettings } from './controllers/paymentSettings.controller';
@@ -98,6 +99,7 @@ app.use('/api', subscriptionRoutes);
 app.use('/api/cleanup', cleanupRoutes);
 app.use('/api/admin/revenue', revenueRoutes);
 app.use('/api/payments/wompi', wompiRoutes);
+app.use('/api/payments/paypal', paypalRoutes);
 
 // Configuración pública de medios de pago (sin auth, para el frontend de marcas)
 app.get('/api/payment-settings/public', getPublicPaymentSettings);
