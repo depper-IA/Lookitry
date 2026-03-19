@@ -69,8 +69,11 @@ export class AuthController {
         fingerprint: req.body.fingerprint || null,
       });
 
-      // Enviar email de verificación (async, no bloquea la respuesta)
-      if (result.verificationToken) {
+      // Enviar email de verificación solo si NO requiere verificación de tarjeta.
+      // Si requireCardVerification=true, el email se envía desde el webhook de Wompi
+      // una vez que el pago de $100 sea confirmado. Esto cierra la brecha donde un
+      // usuario podía verificar el email sin haber completado el pago.
+      if (result.verificationToken && !result.requireCardVerification) {
         const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
         const verifyUrl = `${frontendUrl}/auth/verify?token=${result.verificationToken}`;
         emailService.sendEmail({
