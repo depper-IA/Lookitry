@@ -66,32 +66,58 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
     const user = localStorage.getItem('adminUser');
+
     if (!token && pathname !== '/admin/login') {
       router.push('/admin/login');
       return;
     }
-    if (user) setAdminUser(JSON.parse(user));
-    setLoading(false);
 
-    // Cargar conteo de feedbacks sin resolver y notificaciones
-    if (token) {
+    // Verificar que el token sigue siendo válido haciendo una llamada ligera
+    if (token && pathname !== '/admin/login') {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
       const headers = { Authorization: `Bearer ${token}` };
-      Promise.all([
-        fetch(`${apiBase}/api/admin/feedback/count-unresolved`, { headers }).then(r => r.ok ? r.json() : null),
-        fetch(`${apiBase}/api/admin/notifications`, { headers }).then(r => r.ok ? r.json() : null),
-      ]).then(([fbData, notifData]) => {
-        if (fbData?.count) setFeedbackCount(fbData.count);
-        if (notifData?.notifications) {
-          // Contar no leídas usando localStorage
-          try {
-            const readRaw = localStorage.getItem('admin_notifications_read');
-            const readIds: Set<string> = readRaw ? new Set(JSON.parse(readRaw)) : new Set();
-            const unread = (notifData.notifications as any[]).filter((n: any) => !readIds.has(n.id)).length;
-            setNotifCount(unread);
-          } catch { setNotifCount(notifData.notifications.length); }
-        }
-      }).catch(() => {});
+
+      // Verificar token con una llamada al perfil del admin
+      fetch(`${apiBase}/api/admin/stats`, { headers })
+        .then(r => {
+          if (r.status === 401) {
+            // Token expirado o inválido — limpiar y redirigir
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            router.push('/admin/login');
+            return null;
+          }
+          return r.ok ? r.json() : null;
+        })
+        .then(profileData => {
+          if (!profileData) return;
+          if (user) setAdminUser(JSON.parse(user));
+          setLoading(false);
+
+          // Cargar conteo de feedbacks sin resolver y notificaciones
+          Promise.all([
+            fetch(`${apiBase}/api/admin/feedback/count-unresolved`, { headers }).then(r => r.ok ? r.json() : null),
+            fetch(`${apiBase}/api/admin/notifications`, { headers }).then(r => r.ok ? r.json() : null),
+          ]).then(([fbData, notifData]) => {
+            if (fbData?.count) setFeedbackCount(fbData.count);
+            if (notifData?.notifications) {
+              try {
+                const readRaw = localStorage.getItem('admin_notifications_read');
+                const readIds: Set<string> = readRaw ? new Set(JSON.parse(readRaw)) : new Set();
+                const unread = (notifData.notifications as any[]).filter((n: any) => !readIds.has(n.id)).length;
+                setNotifCount(unread);
+              } catch { setNotifCount(notifData.notifications.length); }
+            }
+          }).catch(() => {});
+        })
+        .catch(() => {
+          // Error de red — igual mostrar el panel (no redirigir por error de red)
+          if (user) setAdminUser(JSON.parse(user));
+          setLoading(false);
+        });
+    } else {
+      if (user) setAdminUser(JSON.parse(user));
+      setLoading(false);
     }
   }, [pathname, router]);
 
