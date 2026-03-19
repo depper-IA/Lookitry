@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { supabase } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 
 interface CleanupConfig {
   productImageRetentionDays: number; // Días para mantener imágenes de productos
@@ -23,7 +23,7 @@ export class CleanupService {
       console.log('[Cleanup] Iniciando limpieza de imágenes de productos eliminados...');
 
       // Obtener productos eliminados (deleted_at no es null)
-      const { data: deletedProducts, error } = await supabase
+      const { data: deletedProducts, error } = await supabaseAdmin
         .from('products')
         .select('id, image_url, deleted_at')
         .not('deleted_at', 'is', null);
@@ -74,7 +74,7 @@ export class CleanupService {
       cutoffDate.setDate(cutoffDate.getDate() - this.config.productImageRetentionDays);
 
       // Obtener productos antiguos eliminados
-      const { data: oldProducts, error } = await supabase
+      const { data: oldProducts, error } = await supabaseAdmin
         .from('products')
         .select('id, image_url, deleted_at')
         .not('deleted_at', 'is', null)

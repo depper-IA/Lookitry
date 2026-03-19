@@ -252,7 +252,7 @@ export class SubscriptionController {
   async registerPayment(req: AdminAuthRequest, res: Response): Promise<Response> {
     try {
       const { brandId } = req.params;
-      const { amount, currency, payment_method, payment_date, notes, months } = req.body;
+      const { amount, currency, payment_method, payment_date, notes, months, plan } = req.body;
 
       if (!amount || amount <= 0) {
         return res.status(400).json({
@@ -281,7 +281,26 @@ export class SubscriptionController {
             : undefined,
       };
 
-      const updatedBrand = await subscriptionService.renewSubscription(brandId, paymentData, periodMonths);
+      // Pasar el plan al renewSubscription para que lo actualice en BD
+      const planToApply = plan && ['BASIC', 'PRO'].includes(String(plan).toUpperCase())
+        ? String(plan).toUpperCase()
+        : undefined;
+
+      const updatedBrand = await subscriptionService.renewSubscription(brandId, paymentData, periodMonths, planToApply);
+
+      // Enviar email de confirmación de compra (igual que en renovación PATCH)
+      notificationService.sendRenewalConfirmation(updatedBrand).catch((err) =>
+        console.error('[Subscription] Error enviando email de confirmación de pago:', err)
+      );
+
+      // Auditoría
+      auditService.log({
+        admin_id: (req as any).admin?.id ?? 'unknown',
+        admin_email: (req as any).admin?.email ?? 'unknown',
+        action: 'subscription.renew',
+        target_brand_id: brandId,
+        details: { amount: finalAmount, payment_method: paymentData.payment_method, months: periodMonths, plan: planToApply },
+      });
 
       return res.json({
         message: 'Pago registrado y suscripción renovada exitosamente',
@@ -291,6 +310,7 @@ export class SubscriptionController {
         brand: {
           id: updatedBrand.id,
           name: updatedBrand.name,
+          plan: updatedBrand.plan,
           subscription_status: updatedBrand.subscription_status,
           subscription_end_date: updatedBrand.subscription_end_date,
         },

@@ -155,6 +155,9 @@ function RenewModal({
 }: { brand: Subscription; onClose: () => void; onSuccess: () => void }) {
   const baseAmount = brand.plan === 'PRO' ? 250000 : 150000;
   const [months, setMonths] = useState(1);
+  const [selectedPlan, setSelectedPlan] = useState<'BASIC' | 'PRO'>(
+    brand.is_in_trial ? 'BASIC' : (brand.plan as 'BASIC' | 'PRO')
+  );
   const [form, setForm] = useState({
     payment_date: new Date().toISOString().split('T')[0],
     payment_method: 'transferencia',
@@ -163,8 +166,9 @@ function RenewModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const planBaseAmount = selectedPlan === 'PRO' ? 250000 : 150000;
   const selectedPeriod = PERIOD_OPTIONS.find(p => p.months === months)!;
-  const discountedAmount = Math.round(baseAmount * months * (1 - selectedPeriod.discount / 100));
+  const discountedAmount = Math.round(planBaseAmount * months * (1 - selectedPeriod.discount / 100));
 
   const handleSubmit = async () => {
     setLoading(true); setError('');
@@ -174,6 +178,7 @@ function RenewModal({
         body: JSON.stringify({
           amount: discountedAmount,
           months,
+          plan: selectedPlan,
           currency: 'COP',
           status: 'completed',
           ...form,
@@ -200,6 +205,27 @@ function RenewModal({
         </div>
         <div className="px-6 py-5 space-y-4">
           {error && <p className="text-sm text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
+
+          {/* Selector de plan */}
+          <div>
+            <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-2">Plan a activar</label>
+            <div className="grid grid-cols-2 gap-2">
+              {(['BASIC', 'PRO'] as const).map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setSelectedPlan(p)}
+                  style={selectedPlan !== p ? { borderColor: 'var(--border-color)' } : {}}
+                  className={`rounded-xl border-2 px-3 py-2.5 text-center transition-all ${
+                    selectedPlan === p ? 'border-[#FF5C3A] bg-[rgba(255,92,58,0.08)]' : 'hover:opacity-80'
+                  }`}
+                >
+                  <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">{p}</p>
+                  <p style={{ color: 'var(--text-muted)' }} className="text-xs">{formatPlanPrice(p)}/mes</p>
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Selector de período */}
           <div>
@@ -368,6 +394,10 @@ export default function AdminSubscriptionsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // Ordenamiento
+  const [sortField, setSortField] = useState<'name' | 'plan' | 'vencimiento'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
   // Selección masiva
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
@@ -396,6 +426,15 @@ export default function AdminSubscriptionsPage() {
       setError(e.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleSort = (field: 'name' | 'plan' | 'vencimiento') => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
     }
   };
 
@@ -466,8 +505,29 @@ export default function AdminSubscriptionsPage() {
     return matchStatus && matchSearch;
   });
 
-  const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  // Ordenamiento
+  const sorted = [...filtered].sort((a, b) => {
+    let valA: any = '';
+    let valB: any = '';
+
+    if (sortField === 'name') {
+      valA = a.name.toLowerCase();
+      valB = b.name.toLowerCase();
+    } else if (sortField === 'plan') {
+      valA = a.plan;
+      valB = b.plan;
+    } else if (sortField === 'vencimiento') {
+      valA = new Date(a.subscription_end_date || 0).getTime();
+      valB = new Date(b.subscription_end_date || 0).getTime();
+    }
+
+    if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+    if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const totalPages = Math.ceil(sorted.length / itemsPerPage);
+  const paginated = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const counts = {
     all: subscriptions.length,
@@ -560,19 +620,34 @@ export default function AdminSubscriptionsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="border-b">
-                <th className="px-4 py-3 w-10">
+                <th className="px-4 py-3 w-10 text-center">
                   <input type="checkbox"
                     checked={paginated.length > 0 && selected.size === paginated.length}
                     ref={el => { if (el) el.indeterminate = selected.size > 0 && selected.size < paginated.length; }}
                     onChange={toggleSelectAll}
                     className="w-4 h-4 rounded border-gray-300 accent-[#FF5C3A] cursor-pointer" />
                 </th>
-                <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Marca</th>
-                <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Plan</th>
-                <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Vencimiento</th>
+                <th onClick={() => toggleSort('name')} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide cursor-pointer hover:bg-black/5 transition-colors">
+                  <div className="flex items-center gap-1">
+                    Marca
+                    <ArrowUpDown className={`w-3 h-3 ${sortField === 'name' ? 'text-[#FF5C3A]' : 'text-gray-400'}`} />
+                  </div>
+                </th>
+                <th onClick={() => toggleSort('plan')} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide cursor-pointer hover:bg-black/5 transition-colors">
+                  <div className="flex items-center gap-1">
+                    Plan
+                    <ArrowUpDown className={`w-3 h-3 ${sortField === 'plan' ? 'text-[#FF5C3A]' : 'text-gray-400'}`} />
+                  </div>
+                </th>
+                <th onClick={() => toggleSort('vencimiento')} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide cursor-pointer hover:bg-black/5 transition-colors">
+                  <div className="flex items-center gap-1">
+                    Vencimiento
+                    <ArrowUpDown className={`w-3 h-3 ${sortField === 'vencimiento' ? 'text-[#FF5C3A]' : 'text-gray-400'}`} />
+                  </div>
+                </th>
                 <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Días</th>
                 <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Estado</th>
-                <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Acciones</th>
+                <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide">Acciones</th>
               </tr>
             </thead>
             <tbody style={{ borderColor: 'var(--border-color)' }} className="divide-y">
@@ -581,7 +656,7 @@ export default function AdminSubscriptionsPage() {
                   background: selected.has(s.id) ? 'rgba(255,92,58,0.05)' :
                     (s.daysRemaining >= 0 && s.daysRemaining <= 3) ? 'rgba(239,68,68,0.05)' : undefined,
                 }} className="hover:opacity-90 transition-opacity">
-                  <td className="px-4 py-3.5">
+                  <td className="px-4 py-3.5 text-center">
                     <input type="checkbox" checked={selected.has(s.id)} onChange={() => toggleSelect(s.id)}
                       className="w-4 h-4 rounded border-gray-300 accent-[#FF5C3A] cursor-pointer" />
                   </td>
@@ -604,24 +679,24 @@ export default function AdminSubscriptionsPage() {
                   </td>
                   <td className="px-5 py-3.5"><StatusBadge status={s.subscription_status} /></td>
                   <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <button onClick={() => setRenewTarget(s)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-500 text-xs font-medium hover:bg-emerald-500/20 transition-colors">
-                        <RefreshCw className="w-3.5 h-3.5" /> Renovar
+                    <div className="flex items-center justify-center gap-1.5">
+                      <button onClick={() => setRenewTarget(s)} title="Renovar / Registrar pago"
+                        className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-colors">
+                        <RefreshCw className="w-4 h-4" />
                       </button>
-                      <button onClick={() => setChangePlanTarget(s)}
-                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#FF5C3A]/10 text-[#FF5C3A] text-xs font-medium hover:bg-[#FF5C3A]/20 transition-colors">
-                        <ArrowUpDown className="w-3.5 h-3.5" /> Plan
+                      <button onClick={() => setChangePlanTarget(s)} title="Cambiar Plan"
+                        className="p-2 rounded-xl bg-[#FF5C3A]/10 text-[#FF5C3A] hover:bg-[#FF5C3A]/20 transition-colors">
+                        <ArrowUpDown className="w-4 h-4" />
                       </button>
                       {s.subscription_status === 'suspended' ? (
-                        <button onClick={() => setConfirmAction({ brand: s, action: 'reactivate' })}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-blue-500/10 text-blue-400 text-xs font-medium hover:bg-blue-500/20 transition-colors">
-                          <RotateCcw className="w-3.5 h-3.5" /> Reactivar
+                        <button onClick={() => setConfirmAction({ brand: s, action: 'reactivate' })} title="Reactivar"
+                          className="p-2 rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors">
+                          <RotateCcw className="w-4 h-4" />
                         </button>
                       ) : (
-                        <button onClick={() => setConfirmAction({ brand: s, action: 'suspend' })}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-red-500/10 text-red-500 text-xs font-medium hover:bg-red-500/20 transition-colors">
-                          <Ban className="w-3.5 h-3.5" /> Suspender
+                        <button onClick={() => setConfirmAction({ brand: s, action: 'suspend' })} title="Suspender"
+                          className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors">
+                          <Ban className="w-4 h-4" />
                         </button>
                       )}
                     </div>

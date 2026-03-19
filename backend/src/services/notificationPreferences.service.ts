@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 import { NotificationPreferences, UpdateNotificationPreferencesDto } from '../types';
 
 /**
@@ -18,7 +18,7 @@ export class NotificationPreferencesService {
    * @returns Preferencias de notificaciones
    */
   async getPreferences(brandId: string): Promise<NotificationPreferences> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('notification_preferences')
       .select('*')
       .eq('brand_id', brandId)
@@ -51,7 +51,7 @@ export class NotificationPreferencesService {
       usage_alerts: true,
     };
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('notification_preferences')
       .insert(defaultPreferences)
       .select()
@@ -91,7 +91,7 @@ export class NotificationPreferencesService {
     await this.getPreferences(brandId);
 
     // Actualizar preferencias
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('notification_preferences')
       .update(updates)
       .eq('brand_id', brandId)
@@ -140,7 +140,7 @@ export class NotificationPreferencesService {
    * @param brandId - ID de la marca
    */
   async deletePreferences(brandId: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('notification_preferences')
       .delete()
       .eq('brand_id', brandId);

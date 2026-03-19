@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { authMiddleware } from '../middleware/auth';
-import { supabase } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 import { wompiService } from '../services/wompi.service';
 
 const router = Router();
@@ -13,7 +13,7 @@ const router = Router();
  */
 router.get('/status', asyncHandler(async (req, res) => {
   const now = new Date().toISOString();
-  const { data } = await supabase
+  const { data } = await supabaseAdmin
     .from('trial_campaigns')
     .select('id, trial_days, name, ends_at, require_card_verification')
     .eq('active', true)
@@ -49,7 +49,7 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
 
   // Obtener campaña activa y verificar si requiere tarjeta
   const now = new Date().toISOString();
-  const { data: campaign } = await supabase
+  const { data: campaign } = await supabaseAdmin
     .from('trial_campaigns')
     .select('id, trial_days, require_card_verification')
     .eq('active', true)
@@ -60,7 +60,7 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
 
   // Modo test: sin verificación de tarjeta → activar trial directamente
   if (!campaign || campaign.require_card_verification === false) {
-    await supabase
+    await supabaseAdmin
       .from('brands')
       .update({ trial_payment_status: 'active' })
       .eq('id', brand.id);
@@ -68,7 +68,7 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
   }
 
   // Marcar trial como pendiente de pago
-  await supabase
+  await supabaseAdmin
     .from('brands')
     .update({ trial_payment_status: 'pending_payment' })
     .eq('id', brand.id);

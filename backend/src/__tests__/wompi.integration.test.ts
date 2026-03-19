@@ -24,6 +24,7 @@ jest.mock('../services/wompi.service', () => {
     wompiService: {
       verifyWebhookSignature: jest.fn(),
       extractBrandIdFromReference: jest.fn(),
+      extractMetaFromReference: jest.fn(), // Añadido
       getWidgetConfig: jest.fn(),
       generateIntegritySignature: jest.fn(),
       enabled: true,
@@ -33,7 +34,14 @@ jest.mock('../services/wompi.service', () => {
 
 jest.mock('../config/supabase', () => ({
   supabase: {},
-  supabaseAdmin: {},
+  supabaseAdmin: {
+    from: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    update: jest.fn().mockReturnThis(),
+    eq: jest.fn().mockReturnThis(),
+    single: jest.fn().mockResolvedValue({ data: {}, error: null }),
+    maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+  },
 }));
 
 jest.mock('../services/paymentSettings.service', () => ({
@@ -204,11 +212,13 @@ describe('WompiController.handleWebhook', () => {
   beforeEach(() => {
     mockedWompi.verifyWebhookSignature.mockReset();
     mockedWompi.extractBrandIdFromReference.mockReset();
+    mockedWompi.extractMetaFromReference.mockReset(); // Añadido
     renewMock?.mockReset();
 
     // Defaults: firma válida, brandId correcto, renovación exitosa
     mockedWompi.verifyWebhookSignature.mockResolvedValue(true);
     mockedWompi.extractBrandIdFromReference.mockReturnValue(BRAND_ID);
+    mockedWompi.extractMetaFromReference.mockReturnValue({ months: 1, plan: 'BASIC' }); // Añadido
     renewMock?.mockResolvedValue({ id: BRAND_ID });
   });
 

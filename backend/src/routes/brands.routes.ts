@@ -2,9 +2,11 @@ import { Router } from 'express';
 import { BrandsController } from '../controllers/brands.controller';
 import { authMiddleware } from '../middleware/auth';
 import { checkActiveSubscription } from '../middleware/checkSubscription';
+import { SubscriptionService } from '../services/subscription.service';
 
 const router = Router();
 const brandsController = new BrandsController();
+const subscriptionService = new SubscriptionService();
 
 // Todas las rutas de brands requieren autenticación
 router.use(authMiddleware);
@@ -12,6 +14,18 @@ router.use(authMiddleware);
 // GET /api/brands/me - Obtener datos de la marca autenticada
 // No requiere verificación de suscripción para que marcas suspendidas puedan ver su estado
 router.get('/me', (req, res) => brandsController.getMe(req, res));
+
+// GET /api/brands/me/payments - Historial de pagos de la marca autenticada
+router.get('/me/payments', async (req: any, res) => {
+  try {
+    const brandId = req.brand?.id;
+    if (!brandId) return res.status(401).json({ error: 'No autenticado' });
+    const payments = await subscriptionService.getPaymentHistory(brandId);
+    return res.json({ payments });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message || 'Error al obtener pagos' });
+  }
+});
 
 // POST /api/brands/request-plan-change - Solicitar cambio de plan (upgrade o downgrade)
 // Fuera de checkActiveSubscription para que marcas suspendidas/vencidas también puedan solicitarlo

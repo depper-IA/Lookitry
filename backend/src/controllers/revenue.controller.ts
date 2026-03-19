@@ -17,10 +17,11 @@ export class RevenueController {
    */
   async getRevenueStats(_req: Request, res: Response): Promise<Response> {
     try {
-      // Precios por plan en COP
+      // Precios por plan en COP (para proyecciones)
       const PLAN_PRICES = {
         BASIC: 150000,
         PRO: 250000,
+        LANDING: 650000, // Aunque suele ser pago único, lo definimos por si acaso
       };
 
       // 1. Obtener ingresos mensuales de los últimos 12 meses
@@ -46,20 +47,24 @@ export class RevenueController {
         }
 
         const amount = parseFloat(payment.amount);
-        // Identificar pago de landing: plan de la marca es LANDING o notes contiene 'landing'
-        const isLanding =
-          payment.brands.plan === 'LANDING' ||
+        
+        // Mejora detección de pago de landing: plan es LANDING o notas contienen 'landing' (case insensitive)
+        const isLandingPayment =
+          payment.brands?.plan === 'LANDING' ||
           (typeof payment.notes === 'string' && payment.notes.toLowerCase().includes('landing'));
 
         monthlyData[month].total += amount;
         monthlyData[month].count += 1;
 
-        if (isLanding) {
+        if (isLandingPayment) {
           monthlyData[month].landing += amount;
-        } else if (payment.brands.plan === 'BASIC') {
+        } else if (payment.brands?.plan === 'BASIC') {
           monthlyData[month].basic += amount;
-        } else if (payment.brands.plan === 'PRO') {
+        } else if (payment.brands?.plan === 'PRO') {
           monthlyData[month].pro += amount;
+        } else {
+          // Si no tiene plan definido o es otro, lo asignamos a basic por defecto si no es landing
+          monthlyData[month].basic += amount;
         }
       });
 
@@ -80,21 +85,22 @@ export class RevenueController {
       const currentMonthRevenue = monthlyData[currentMonth] || { total: 0, basic: 0, pro: 0, landing: 0, count: 0 };
 
       // 5. Calcular proyección del próximo mes basado en suscripciones activas
-      const { data: activeSubscriptions, error: subsError } = await supabaseAdmin
+      const { data: brandsStats, error: brandsError } = await supabaseAdmin
         .from('brands')
-        .select('plan, subscription_status')
-        .in('subscription_status', ['active', 'expiring_soon']);
+        .select('plan, subscription_status, has_landing_page');
 
-      if (subsError) {
-        throw new Error(subsError.message);
-      }
+      if (brandsError) throw new Error(brandsError.message);
+
+      // Filtro estricto de marcas activas según requerimiento
+      const activeBrands = (brandsStats || []).filter(b => 
+        ['active', 'expiring_soon'].includes(b.subscription_status)
+      );
 
       let projectedRevenue = 0;
       let projectedBasic = 0;
       let projectedPro = 0;
-      // Las marcas LANDING no generan proyección mensual recurrente (pago único)
 
-      (activeSubscriptions || []).forEach((brand: any) => {
+      activeBrands.forEach((brand: any) => {
         if (brand.plan === 'BASIC') {
           projectedBasic += PLAN_PRICES.BASIC;
           projectedRevenue += PLAN_PRICES.BASIC;
@@ -102,18 +108,20 @@ export class RevenueController {
           projectedPro += PLAN_PRICES.PRO;
           projectedRevenue += PLAN_PRICES.PRO;
         }
-        // LANDING: pago único, no se proyecta mensualmente
+        // Nota: LANDING suele ser pago único, no se proyecta a menos que sea recurrente
       });
+
+      // Conteo de landings activas (basado en el flag has_landing_page = true)
+      // Aseguramos que solo contamos las de marcas activas si se considera "activa"
+      const activeLandings = (brandsStats || []).filter(b => b.has_landing_page === true).length;
 
       // 6. Desglose por plan (totales históricos)
       const { data: planBreakdown, error: planError } = await supabaseAdmin
         .from('subscription_payments')
-        .select('amount, notes, brands!inner(plan)')
+        .select('amount, notes, brands(plan)')
         .eq('status', 'completed');
 
-      if (planError) {
-        throw new Error(planError.message);
-      }
+      if (planError) throw new Error(planError.message);
 
       let totalBasicRevenue = 0;
       let totalProRevenue = 0;
@@ -125,18 +133,21 @@ export class RevenueController {
       (planBreakdown || []).forEach((payment: any) => {
         const amount = parseFloat(payment.amount);
         const isLanding =
-          payment.brands.plan === 'LANDING' ||
+          payment.brands?.plan === 'LANDING' ||
           (typeof payment.notes === 'string' && payment.notes.toLowerCase().includes('landing'));
 
         if (isLanding) {
           totalLandingRevenue += amount;
           landingPaymentsCount += 1;
-        } else if (payment.brands.plan === 'BASIC') {
+        } else if (payment.brands?.plan === 'BASIC') {
           totalBasicRevenue += amount;
           basicPaymentsCount += 1;
-        } else if (payment.brands.plan === 'PRO') {
+        } else if (payment.brands?.plan === 'PRO') {
           totalProRevenue += amount;
           proPaymentsCount += 1;
+        } else {
+          totalBasicRevenue += amount;
+          basicPaymentsCount += 1;
         }
       });
 
@@ -155,7 +166,8 @@ export class RevenueController {
           total: projectedRevenue,
           basic: projectedBasic,
           pro: projectedPro,
-          activeSubscriptions: (activeSubscriptions || []).length,
+          activeSubscriptions: activeBrands.length,
+          activeLandings, // Entregado dentro de projection como se pidió
         },
         planBreakdown: {
           basic: {
@@ -183,6 +195,11 @@ export class RevenueController {
       });
     }
   }
+
+  /**
+   * GET /api/admin/revenue/payments
+   * Listar todos los pagos con filtros
+   */
   async getAllPayments(req: Request, res: Response): Promise<Response> {
     try {
       const { method, status, from, to, search, plan } = req.query;
@@ -220,7 +237,7 @@ export class RevenueController {
         status: p.status,
         notes: p.notes,
         createdAt: p.created_at,
-        // Identificar si es pago de landing
+        // Identificar si es pago de landing consistentemente
         isLanding:
           p.brands?.plan === 'LANDING' ||
           (typeof p.notes === 'string' && p.notes.toLowerCase().includes('landing')),

@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 import { Brand, SubscriptionPayment, CreatePaymentDto } from '../types';
 
 /**
@@ -20,7 +20,7 @@ export class SubscriptionService {
    * Requirements: 11.1, 11 (Opción C)
    */
   async checkSubscriptionStatus(brandId: string): Promise<boolean> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .select('subscription_status, trial_end_date')
       .eq('id', brandId)
@@ -57,7 +57,7 @@ export class SubscriptionService {
    * @returns true si el trial está activo y no ha vencido
    */
   async isInTrial(brandId: string): Promise<boolean> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .select('trial_end_date, subscription_status')
       .eq('id', brandId)
@@ -86,7 +86,7 @@ export class SubscriptionService {
    * @returns días restantes del trial, o null si no aplica
    */
   async getTrialDaysRemaining(brandId: string): Promise<number | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .select('trial_end_date')
       .eq('id', brandId)
@@ -178,6 +178,8 @@ export class SubscriptionService {
     // Actualizar plan si se especificó uno válido
     if (plan && ['BASIC', 'PRO'].includes(plan.toUpperCase())) {
       updateData.plan = plan.toUpperCase();
+      // Limpiar trial al activar plan pagado
+      updateData.trial_end_date = null;
     }
 
     // Si la marca tenía mini-landing suspendida hace menos de 90 días, restaurarla
@@ -231,7 +233,7 @@ export class SubscriptionService {
     newPlan: string,
     newMonths: number,
     newPlanPricePerMonth: number,
-    currentPlanPriceTotal: number
+    currentPlanPriceTotalFallback: number
   ): Promise<{
     daysRemaining: number;
     creditAmount: number;
@@ -256,11 +258,29 @@ export class SubscriptionService {
     const totalDays = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
     const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
+    // Obtener el monto real pagado desde subscription_payments (el más reciente completado)
+    const { data: lastPayment } = await supabaseAdmin
+      .from('subscription_payments')
+      .select('amount, months_paid')
+      .eq('brand_id', brandId)
+      .eq('status', 'completed')
+      .neq('payment_method', 'credit_proration') // excluir upgrades gratuitos previos
+      .order('payment_date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    // Usar el monto real del último pago; si no hay registro, usar el fallback del frontend
+    const currentPlanPriceTotal = lastPayment?.amount && lastPayment.amount > 0
+      ? lastPayment.amount
+      : currentPlanPriceTotalFallback;
+
+    console.log(`[Proration] brandId=${brandId} lastPayment=${lastPayment?.amount} fallback=${currentPlanPriceTotalFallback} using=${currentPlanPriceTotal} totalDays=${totalDays} daysRemaining=${daysRemaining}`);
+
     // Precio por día del plan actual (basado en lo que pagó realmente)
     const pricePerDay = currentPlanPriceTotal / totalDays;
     const creditAmount = Math.round(pricePerDay * daysRemaining);
 
-    // Precio total del nuevo plan (sin descuento por duración — el frontend ya lo calcula)
+    // Precio total del nuevo plan (el frontend ya aplica descuentos por duración)
     const newPlanTotal = Math.round(newPlanPricePerMonth * newMonths);
 
     // Monto a cobrar: diferencia, mínimo 0
@@ -359,7 +379,7 @@ export class SubscriptionService {
    * Requirement 11.10: Mostrar días restantes en dashboard
    */
   async getDaysRemaining(brandId: string): Promise<number | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .select('subscription_end_date')
       .eq('id', brandId)
@@ -423,7 +443,7 @@ export class SubscriptionService {
     trialEndDate: string | null;
     trialDaysRemaining: number | null;
   }> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .select(
         'subscription_status, subscription_start_date, subscription_end_date, last_payment_date, next_payment_date, trial_end_date'
@@ -597,7 +617,7 @@ export class SubscriptionService {
    * Requirement 11.14: Mostrar historial de pagos
    */
   async getPaymentHistory(brandId: string): Promise<SubscriptionPayment[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('subscription_payments')
       .select('*')
       .eq('brand_id', brandId)

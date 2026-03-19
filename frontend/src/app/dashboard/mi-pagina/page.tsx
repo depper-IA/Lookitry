@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { brandsService } from '@/services/brands.service';
 import { authService } from '@/services/auth.service';
@@ -429,18 +430,18 @@ export default function MiPaginaPage() {
             URL de tu página
           </p>
           {hasLandingPage ? (
-            <span className="text-xs px-2.5 py-1 rounded-full font-medium text-white" style={{ backgroundColor: '#22c55e' }}>
+            <span className="text-xs px-2.5 py-1 rounded-full font-medium text-white" style={{ backgroundColor: '#10b981' }}>
               Activa
             </span>
           ) : (
             <span
-              className="text-xs px-2.5 py-1 rounded-full font-semibold flex items-center gap-1.5"
-              style={{ backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.3)' }}
+              className="text-xs px-2.5 py-1 rounded-full font-bold flex items-center gap-1.5 shadow-sm"
+              style={{ backgroundColor: '#ef4444', color: '#ffffff' }}
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
-              No comprada
+              PENDIENTE
             </span>
           )}
         </div>
@@ -450,40 +451,39 @@ export default function MiPaginaPage() {
       {/* Banner de activación cuando no se ha comprado la landing */}
       {!hasLandingPage && !landingSuspendedAt && (
         <div
-          className="rounded-2xl border overflow-hidden"
-          style={{ borderColor: 'rgba(255,92,58,0.25)', backgroundColor: 'rgba(255,92,58,0.04)' }}
+          className="rounded-2xl border overflow-hidden shadow-sm"
+          style={{ borderColor: '#FF5C3A20', backgroundColor: '#ffffff' }}
         >
           <div className="px-5 py-4 flex items-start gap-4">
             <div
-              className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: 'rgba(255,92,58,0.12)' }}
+              className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
+              style={{ backgroundColor: '#FF5C3A10' }}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#FF5C3A" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              <p className="text-sm font-semibold" style={{ color: '#FF5C3A' }}>
                 Tu mini-landing aún no está activa
               </p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                Actívala para que tus clientes puedan encontrarte en línea con tu probador virtual integrado.
+              <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
+                Obtén tu URL personalizada y branding profesional para tu marca.
                 {landingPrice !== null && (
-                  <> Pago único de <strong style={{ color: 'var(--text-primary)' }}>${landingPrice.toLocaleString('es-CO')} COP</strong> — sin costo mensual adicional.</>
+                  <> Pago único de <strong style={{ color: 'var(--text-primary)' }}>${landingPrice.toLocaleString('es-CO')} COP</strong>.</>
                 )}
               </p>
               <div className="flex items-center gap-3 mt-3 flex-wrap">
-                <a
-                  href="/dashboard/checkout?landing=1"
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-xs font-semibold transition-opacity hover:opacity-85"
+                <Link
+                  href="/dashboard/checkout-landing"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-lg shadow-[#FF5C3A]/20 transition-all hover:scale-[1.02]"
                   style={{ backgroundColor: '#FF5C3A' }}
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  Activar mini-landing
-                  {landingPrice !== null && <span style={{ opacity: 0.8 }}>— ${landingPrice.toLocaleString('es-CO')}</span>}
-                </a>
+                  Activar ahora
+                </Link>
                 <a
                   href={pageUrl}
                   target="_blank"

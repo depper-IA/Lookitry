@@ -151,8 +151,11 @@ function CheckoutContent() {
     id: string; code: string; discount_type: 'pct' | 'fixed'; discount_value: number;
   } | null>(null);
 
+  // Promociones activas
+  const [activePromos, setActivePromos] = useState<any[]>([]);
+
   useEffect(() => {
-    // Cargar precios de pago y configuración de pricing en paralelo
+    // Cargar precios de pago, configuración de pricing y promociones en paralelo
     Promise.all([
       fetch(`${API_URL}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
       fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?select=id,data`, {
@@ -161,8 +164,10 @@ function CheckoutContent() {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
         },
       }).then(r => r.ok ? r.json() : null),
-    ]).then(([paySettings, pricingRows]) => {
+      fetch('/api/promotions').then(r => r.ok ? r.json() : null),
+    ]).then(([paySettings, pricingRows, promosRes]) => {
       if (paySettings) setPricing(paySettings);
+      if (promosRes?.ok) setActivePromos(promosRes.data || []);
       if (Array.isArray(pricingRows)) {
         const basic = pricingRows.find((r: any) => r.id === 'basic')?.data;
         const pro   = pricingRows.find((r: any) => r.id === 'pro')?.data;
@@ -200,20 +205,46 @@ function CheckoutContent() {
   const landingOriginal = pricing?.landingOriginalPrice ?? 900000;
   const landingDiscount = Math.round((1 - landingPrice / landingOriginal) * 100);
 
-  // Precio total según plan seleccionado
   const isLanding       = selectedPlan === 'LANDING';
+
+  // ── Lógica de Promociones Dinámicas ────────────────────────────────────────
+
+  const currentPlanKey = isLanding ? subPlan : (selectedPlan as 'BASIC' | 'PRO');
+  
+  // 1. Buscar Overrides de precio
+  const overridePromo = activePromos.find(p => p.type === 'plan_override' && p.config?.plan === currentPlanKey);
+  const currentPlanBase = overridePromo?.config?.override_price 
+    ? Number(overridePromo.config.override_price) 
+    : planBase[currentPlanKey];
+
+  // 2. Buscar Descuentos porcentuales globales (launch_offer, modal_timer)
+  const promoDiscountPct = activePromos.reduce((max, p) => {
+    if ((['launch_offer', 'modal_timer'].includes(p.type)) && p.config?.discount_pct) {
+      return Math.max(max, Number(p.config.discount_pct));
+    }
+    return max;
+  }, 0);
+
+  // Precio total según plan seleccionado
   const subMonthDiscount = discounts.find(d => d.months === selectedMonths)?.pct ?? 0;
-  const subPlanTotal    = Math.round(planBase[isLanding ? subPlan : (selectedPlan as 'BASIC' | 'PRO')] * selectedMonths * (1 - subMonthDiscount / 100));
-  const baseTotalPrice  = isLanding
+  
+  // Cálculo del total de la suscripción (con descuento por meses y descuento de promo)
+  const subPlanTotal = Math.round(
+    currentPlanBase * selectedMonths * (1 - subMonthDiscount / 100) * (1 - promoDiscountPct / 100)
+  );
+
+  const baseTotalPrice = isLanding
     ? landingPrice + subPlanTotal
-    : Math.round(planBase[selectedPlan as 'BASIC' | 'PRO'] * selectedMonths * (1 - subMonthDiscount / 100));
-  const originalPrice   = isLanding
+    : subPlanTotal;
+
+  const originalPrice = isLanding
     ? landingOriginal + planBase[subPlan] * selectedMonths
     : planBase[selectedPlan as 'BASIC' | 'PRO'] * selectedMonths;
-  const monthlyPrice    = isLanding ? null : planBase[selectedPlan as 'BASIC' | 'PRO'] * (1 - subMonthDiscount / 100);
-  const discountPct     = isLanding ? landingDiscount : subMonthDiscount;
 
-  // Descuento por cupón
+  const monthlyPrice = isLanding ? null : (currentPlanBase * (1 - subMonthDiscount / 100) * (1 - promoDiscountPct / 100));
+  const discountPct = isLanding ? landingDiscount : (subMonthDiscount + promoDiscountPct);
+
+  // Descuento por cupón (se aplica sobre el precio ya promocionado)
   const couponDiscount = appliedCoupon
     ? appliedCoupon.discount_type === 'pct'
       ? Math.round(baseTotalPrice * appliedCoupon.discount_value / 100)
@@ -515,37 +546,40 @@ function CheckoutContent() {
                       <div className="text-[13px] font-semibold text-white">{planNames[subPlan]}</div>
                       <div className="text-[11px] text-[#999]">
                         {discounts.find(d => d.months === selectedMonths)?.label}
-                        {subMonthDiscount > 0 && (
-                          <span className="ml-1.5 text-emerald-400">-{subMonthDiscount}%</span>
-                        )}
                       </div>
                     </div>
                     <div className="text-right">
-                      {subMonthDiscount > 0 && (
+                      {(subMonthDiscount > 0 || promoDiscountPct > 0) && (
                         <div className="text-[11px] text-[#666] line-through">{formatCOP(planBase[subPlan] * selectedMonths)}</div>
                       )}
                       <div className="text-[15px] font-bold text-white">{formatCOP(subPlanTotal)}</div>
                     </div>
                   </div>
+
+                  {/* Detalle de Descuentos Aplicados */}
+                  {(subMonthDiscount > 0 || promoDiscountPct > 0) && (
+                    <div className="mt-2 space-y-1 bg-[#1a1a1a] rounded-lg p-2.5 border border-[#2a2a2a]">
+                      <p className="text-[10px] font-bold text-[#FF5C3A] uppercase mb-1">Ahorros aplicados</p>
+                      {subMonthDiscount > 0 && (
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-[#aaa]">Ahorro por permanencia ({selectedMonths} meses)</span>
+                          <span className="text-emerald-400 font-medium">-{subMonthDiscount}%</span>
+                        </div>
+                      )}
+                      {promoDiscountPct > 0 && (
+                        <div className="flex justify-between text-[11px]">
+                          <span className="text-[#aaa]">Oferta especial de bienvenida</span>
+                          <span className="text-emerald-400 font-medium">-{promoDiscountPct}%</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Features landing */}
                   <div className="pt-2 border-t border-[#1f1f1f]">
                     <p className="text-[10px] font-semibold text-[#666] uppercase tracking-wide mb-2">Mini-landing incluye</p>
                     <ul className="space-y-1.5">
                       {PLAN_FEATURES.LANDING.map(f => (
-                        <li key={f} className="flex items-start gap-2 text-[12px] text-[#bbb]">
-                          <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-[rgba(255,92,58,0.13)]">
-                            <IconCheck />
-                          </span>
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  {/* Features subPlan */}
-                  <div className="pt-2 border-t border-[#1f1f1f]">
-                    <p className="text-[10px] font-semibold text-[#666] uppercase tracking-wide mb-2">{planNames[subPlan]} incluye</p>
-                    <ul className="space-y-1.5">
-                      {PLAN_FEATURES[subPlan].map(f => (
                         <li key={f} className="flex items-start gap-2 text-[12px] text-[#bbb]">
                           <span className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-[rgba(255,92,58,0.13)]">
                             <IconCheck />
@@ -563,22 +597,39 @@ function CheckoutContent() {
                     <div>
                       <div className="text-[14px] font-semibold text-white">{planNames[selectedPlan]}</div>
                       <div className="text-[12px] text-[#555]">{discounts.find(d => d.months === selectedMonths)?.label}</div>
-                      {discountPct > 0 && (
-                        <div className="text-[12px] text-emerald-400 mt-0.5">{discountPct}% de descuento</div>
-                      )}
                     </div>
                     <div className="text-right">
-                      {discountPct > 0 && (
+                      {(subMonthDiscount > 0 || promoDiscountPct > 0) && (
                         <div className="text-[12px] text-[#666] line-through">{formatCOP(originalPrice)}</div>
                       )}
                       <div className="font-syne font-extrabold text-[20px] text-white">
-                        {formatCOP(totalPrice)}
+                        {formatCOP(subPlanTotal)}
                       </div>
                       {selectedMonths > 1 && monthlyPrice && (
                         <div className="text-[11px] text-[#999]">{formatCOP(Math.round(monthlyPrice))}/mes</div>
                       )}
                     </div>
                   </div>
+
+                  {/* Detalle de Descuentos Aplicados */}
+                  {(subMonthDiscount > 0 || promoDiscountPct > 0) && (
+                    <div className="mb-4 space-y-1 bg-[#1a1a1a] rounded-lg p-3 border border-[#2a2a2a]">
+                      <p className="text-[10px] font-bold text-[#FF5C3A] uppercase mb-1">Ahorros aplicados</p>
+                      {subMonthDiscount > 0 && (
+                        <div className="flex justify-between text-[12px]">
+                          <span className="text-[#aaa]">Ahorro por permanencia ({selectedMonths} meses)</span>
+                          <span className="text-emerald-400 font-bold">-{subMonthDiscount}%</span>
+                        </div>
+                      )}
+                      {promoDiscountPct > 0 && (
+                        <div className="flex justify-between text-[12px]">
+                          <span className="text-[#aaa]">Oferta especial por tiempo limitado</span>
+                          <span className="text-emerald-400 font-bold">-{promoDiscountPct}%</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <ul className="space-y-2">
                     {PLAN_FEATURES[selectedPlan].map(f => (
                       <li key={f} className="flex items-start gap-2.5 text-[12px] text-[#bbb]">

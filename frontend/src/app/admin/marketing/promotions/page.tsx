@@ -179,6 +179,7 @@ function PromoForm({ initial, onSave, onCancel, saving }: {
           <Field label="Descripción" value={String(cfg.description ?? '')} onChange={v => setConfig('description', v)} />
           <Field label="Texto del botón CTA" value={String(cfg.cta_text ?? '')} onChange={v => setConfig('cta_text', v)} />
           <Field label="URL del CTA" value={String(cfg.cta_url ?? '/checkout')} onChange={v => setConfig('cta_url', v)} />
+          <Field label="Porcentaje de descuento (%)" value={String(cfg.discount_pct ?? '')} onChange={v => setConfig('discount_pct', Number(v))} type="number" />
           <Field label="Delay antes de mostrar (segundos)" value={String(cfg.delay_seconds ?? '5')} onChange={v => setConfig('delay_seconds', Number(v))} type="number" />
         </>)}
 

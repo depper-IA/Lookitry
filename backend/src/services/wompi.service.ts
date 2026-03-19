@@ -171,8 +171,12 @@ export class WompiService {
    */
   async getTransactionByReference(reference: string): Promise<{ status: string } | null> {
     try {
-      const { privateKey } = await this.getActiveKeys();
-      const url = `https://sandbox.wompi.co/v1/transactions?reference=${encodeURIComponent(reference)}`;
+      const { privateKey, testMode } = await this.getActiveKeys();
+      const baseUrl = testMode ? 'https://sandbox.wompi.co' : 'https://production.wompi.co';
+      const url = `${baseUrl}/v1/transactions?reference=${encodeURIComponent(reference)}`;
+      
+      console.log(`[Wompi] Verificando transacción: ref=${reference} env=${testMode ? 'sandbox' : 'production'}`);
+      
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${privateKey}`,
@@ -181,7 +185,8 @@ export class WompiService {
       const json = await response.json() as { data: { status: string }[] };
       if (!json.data || json.data.length === 0) return null;
       return json.data[0];
-    } catch {
+    } catch (error) {
+      console.error('[Wompi] Error al verificar el pago con Wompi:', error);
       throw new Error('Error al verificar el pago con Wompi');
     }
   }

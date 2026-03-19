@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 import bcrypt from 'bcryptjs';
 
 export interface Admin {
@@ -186,7 +186,7 @@ export class AdminService {
   async getAllBrandsWithStats(): Promise<any[]> {
     try {
       // 1. Obtener todas las marcas
-      const { data: brands, error } = await supabase
+      const { data: brands, error } = await supabaseAdmin
         .from('brands')
         .select('*')
         .order('created_at', { ascending: false });
@@ -204,18 +204,18 @@ export class AdminService {
 
       const [productsData, generationsData, monthlyData] = await Promise.all([
         // Productos por marca
-        supabase
+        supabaseAdmin
           .from('products')
           .select('brand_id')
           .in('brand_id', brandIds)
           .eq('is_active', true),
         // Generaciones totales por marca
-        supabase
+        supabaseAdmin
           .from('generations')
           .select('brand_id')
           .in('brand_id', brandIds),
         // Generaciones del mes por marca
-        supabase
+        supabaseAdmin
           .from('generations')
           .select('brand_id')
           .in('brand_id', brandIds)
@@ -292,7 +292,7 @@ export class AdminService {
    */
   async changeBrandPlan(brandId: string, newPlan: 'BASIC' | 'PRO'): Promise<void> {
     // Leer fechas actuales para no pisarlas si ya existen
-    const { data: current } = await supabase
+    const { data: current } = await supabaseAdmin
       .from('brands')
       .select('subscription_start_date, subscription_end_date, subscription_status')
       .eq('id', brandId)
@@ -312,7 +312,7 @@ export class AdminService {
       if (!current?.subscription_end_date) updatePayload.subscription_end_date = endDate.toISOString();
     }
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('brands')
       .update(updatePayload)
       .eq('id', brandId);
@@ -327,23 +327,23 @@ export class AdminService {
    */
   async getGlobalStats() {
     // Total de marcas
-    const { count: totalBrands } = await supabase
+    const { count: totalBrands } = await supabaseAdmin
       .from('brands')
       .select('*', { count: 'exact', head: true });
 
     // Total de productos
-    const { count: totalProducts } = await supabase
+    const { count: totalProducts } = await supabaseAdmin
       .from('products')
       .select('*', { count: 'exact', head: true })
       .eq('is_active', true);
 
     // Total de generaciones
-    const { count: totalGenerations } = await supabase
+    const { count: totalGenerations } = await supabaseAdmin
       .from('generations')
       .select('*', { count: 'exact', head: true });
 
     // Generaciones exitosas
-    const { count: successfulGenerations } = await supabase
+    const { count: successfulGenerations } = await supabaseAdmin
       .from('generations')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'SUCCESS');
@@ -352,36 +352,36 @@ export class AdminService {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    const { count: monthlyGenerations } = await supabase
+    const { count: monthlyGenerations } = await supabaseAdmin
       .from('generations')
       .select('*', { count: 'exact', head: true })
       .gte('generated_at', startOfMonth.toISOString());
 
     // Marcas por plan
-    const { count: basicBrands } = await supabase
+    const { count: basicBrands } = await supabaseAdmin
       .from('brands')
       .select('*', { count: 'exact', head: true })
       .eq('plan', 'BASIC');
 
-    const { count: proBrands } = await supabase
+    const { count: proBrands } = await supabaseAdmin
       .from('brands')
       .select('*', { count: 'exact', head: true })
       .eq('plan', 'PRO');
 
     // Mini-landings: activas
-    const { count: landingsActive } = await supabase
+    const { count: landingsActive } = await supabaseAdmin
       .from('brands')
       .select('*', { count: 'exact', head: true })
       .eq('has_landing_page', true);
 
     // Mini-landings: suspendidas
-    const { count: landingsSuspended } = await supabase
+    const { count: landingsSuspended } = await supabaseAdmin
       .from('brands')
       .select('*', { count: 'exact', head: true })
       .not('landing_suspended_at', 'is', null);
 
     // Mini-landings: sin activar (has_landing_page = false y landing_suspended_at = null)
-    const { count: landingsInactive } = await supabase
+    const { count: landingsInactive } = await supabaseAdmin
       .from('brands')
       .select('*', { count: 'exact', head: true })
       .eq('has_landing_page', false)
@@ -411,7 +411,7 @@ export class AdminService {
    * Obtener productos de una marca específica
    */
   async getBrandProducts(brandId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('products')
       .select('*')
       .eq('brand_id', brandId)
@@ -510,7 +510,7 @@ export class AdminService {
     const endDate = new Date(now);
     endDate.setDate(endDate.getDate() + 30);
 
-    const { data: updatedBrand, error } = await supabase
+    const { data: updatedBrand, error } = await supabaseAdmin
       .from('brands')
       .update({
         plan: options.plan,
@@ -530,7 +530,7 @@ export class AdminService {
 
     // Registrar pago si hay monto
     if (options.amount > 0) {
-      await supabase.from('subscription_payments').insert({
+      await supabaseAdmin.from('subscription_payments').insert({
         brand_id: brandId,
         amount: options.amount,
         currency: 'COP',
@@ -559,7 +559,7 @@ export class AdminService {
     contact_name?: string;
   }) {
     // Validar email único
-    const { data: existingEmail } = await supabase
+    const { data: existingEmail } = await supabaseAdmin
       .from('brands')
       .select('id')
       .eq('email', data.email)
@@ -570,7 +570,7 @@ export class AdminService {
     }
 
     // Validar slug único
-    const { data: existingSlug } = await supabase
+    const { data: existingSlug } = await supabaseAdmin
       .from('brands')
       .select('id')
       .eq('slug', data.slug)
@@ -586,7 +586,7 @@ export class AdminService {
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + trialDays);
 
-    const { data: newBrand, error } = await supabase
+    const { data: newBrand, error } = await supabaseAdmin
       .from('brands')
       .insert({
         email: data.email,
@@ -596,6 +596,7 @@ export class AdminService {
         plan: data.plan || 'BASIC',
         phone: data.phone || null,
         contact_name: data.contact_name || null,
+        subscription_status: 'trial', // Asegurar estado trial explícito
         trial_end_date: trialEndDate.toISOString(),
         trial_generations_limit: 30,
       })
@@ -617,7 +618,7 @@ export class AdminService {
   async getTrialBrands() {
     const now = new Date().toISOString();
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('brands')
       .select('id, name, email, slug, plan, trial_end_date, subscription_status, created_at')
       .gt('trial_end_date', now)
@@ -641,7 +642,7 @@ export class AdminService {
    * Requirement 29.2
    */
   async getConversionStats() {
-    const { data: brands, error } = await supabase
+    const { data: brands, error } = await supabaseAdmin
       .from('brands')
       .select('id, plan, subscription_status, trial_end_date, created_at')
       .order('created_at', { ascending: true });
@@ -708,6 +709,57 @@ export class AdminService {
       converted: converted.length,
       conversionRate,
       conversionsByMonth,
+    };
+  }
+
+  /**
+   * Obtener historial de pagos global con filtros y estadísticas
+   */
+  async getPayments(filters: {
+    brand_id?: string;
+    status?: string;
+    payment_method?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    // 1. Consulta para el total de ingresos (independiente de la paginación)
+    let statsQuery = supabaseAdmin
+      .from('subscription_payments')
+      .select('amount')
+      .eq('status', 'completed');
+
+    if (filters.brand_id) statsQuery = statsQuery.eq('brand_id', filters.brand_id);
+    if (filters.payment_method) statsQuery = statsQuery.eq('payment_method', filters.payment_method);
+
+    const { data: statsData } = await statsQuery;
+    const totalRevenue = (statsData || []).reduce((sum, p) => sum + Number(p.amount), 0);
+
+    // 2. Consulta paginada para la tabla (incluyendo plan)
+    let query = supabaseAdmin
+      .from('subscription_payments')
+      .select('*, brands(name, email, slug, plan)', { count: 'exact' })
+      .order('payment_date', { ascending: false });
+
+    if (filters.brand_id) query = query.eq('brand_id', filters.brand_id);
+    if (filters.status) query = query.eq('status', filters.status);
+    if (filters.payment_method) query = query.eq('payment_method', filters.payment_method);
+    
+    const limit = filters.limit || 50;
+    const offset = filters.offset || 0;
+    
+    query = query.range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
+
+    if (error) throw new Error('Error al obtener pagos: ' + error.message);
+
+    return {
+      payments: data || [],
+      count: count || 0,
+      stats: {
+        total_revenue: totalRevenue,
+        completed_count: statsData?.length || 0
+      }
     };
   }
 }
