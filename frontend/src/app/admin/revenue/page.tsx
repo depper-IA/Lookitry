@@ -208,7 +208,7 @@ function TabConfig({
           <Field
             label="Notas (opcional)"
             value={costs.notas ?? ''}
-            onChange={v => onCostsChange({ ...costs, notes: v })}
+            onChange={v => onCostsChange({ ...costs, notas: v })}
           />
         </div>
         <div className="flex justify-end">
