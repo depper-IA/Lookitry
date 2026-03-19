@@ -54,15 +54,15 @@ export async function getAdminNotifications(_req: Request, res: Response): Promi
     const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const [brandsRes, generationsRes, paymentsRes, persistentRes, disabledTypes] = await Promise.all([
-      supabase
+      supabaseAdmin
         .from('brands')
         .select('id, name, email, plan, subscription_status, trial_end_date, subscription_end_date, created_at, upgrade_requested_at')
         .order('created_at', { ascending: false }),
-      supabase
+      supabaseAdmin
         .from('generations')
         .select('brand_id, generated_at')
         .gte('generated_at', last7Days.toISOString()),
-      supabase
+      supabaseAdmin
         .from('subscription_payments')
         .select('id, brand_id, amount, status, months_paid, created_at, brands(name)')
         .eq('status', 'completed')
