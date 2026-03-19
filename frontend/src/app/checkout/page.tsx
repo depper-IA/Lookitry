@@ -275,8 +275,9 @@ function CheckoutContent() {
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
       const emailParam = !hasSession && email.trim() ? `&email=${encodeURIComponent(email.trim())}` : '';
+      const landingParam = isLanding ? '&includes_landing=true' : '';
       const res = await fetch(
-        `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}`,
+        `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}${landingParam}`,
         { headers }
       );
 

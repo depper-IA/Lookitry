@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
 import { EmailService } from '../services/email.service';
+import { SubscriptionService } from '../services/subscription.service';
 import { verifyEmailTemplate } from '../templates/email-templates';
 import { supabaseAdmin } from '../config/supabase';
 import { wompiService } from '../services/wompi.service';
 
 const authService = new AuthService();
 const emailService = new EmailService();
+const subscriptionService = new SubscriptionService();
 
 /**
  * Registro exclusivo para el flujo post-pago.
@@ -45,7 +47,7 @@ export async function registerPostPayment(req: Request, res: Response) {
     // 3. Buscar pending_registration por referencia
     const { data: pending, error: pendingError } = await supabaseAdmin
       .from('pending_registrations')
-      .select('email, plan, months')
+      .select('email, plan, months, includes_landing')
       .eq('reference', ref)
       .maybeSingle();
 
@@ -66,7 +68,6 @@ export async function registerPostPayment(req: Request, res: Response) {
     }
 
     // 5. Crear la cuenta usando el email del pending
-    // authService.register no acepta plan/months — el webhook de Wompi activará la suscripción
     const result = await authService.register({
       contact_name,
       name,
@@ -78,7 +79,40 @@ export async function registerPostPayment(req: Request, res: Response) {
       fingerprint: fingerprint || undefined,
     });
 
-    // 6. Enviar email de verificación (async, no bloquea)
+    // 6. Activar suscripción inmediatamente con el plan y meses del pending
+    try {
+      await subscriptionService.renewSubscription(
+        result.brand.id,
+        {
+          brand_id: result.brand.id,
+          amount: 0, // el monto real ya fue cobrado por Wompi
+          currency: 'COP',
+          payment_method: 'wompi',
+          status: 'completed',
+          months_paid: pending.months,
+          payment_date: new Date().toISOString(),
+          reference: ref,
+        },
+        pending.months,
+        pending.plan
+      );
+
+      // Si el pending incluye landing, activarla también
+      if (pending.includes_landing) {
+        await supabaseAdmin
+          .from('brands')
+          .update({ has_landing_page: true, landing_suspended_at: null })
+          .eq('id', result.brand.id);
+        console.log(`[PostPayment] Mini-landing activada para brand=${result.brand.id}`);
+      }
+
+      console.log(`[PostPayment] Suscripción activada: brand=${result.brand.id} plan=${pending.plan} months=${pending.months}`);
+    } catch (subError) {
+      // No bloquear el registro si falla la activación — se puede corregir manualmente
+      console.error('[PostPayment] Error activando suscripción:', subError);
+    }
+
+    // 7. Enviar email de verificación (async, no bloquea)
     if (result.verificationToken) {
       const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
       const verifyUrl = `${frontendUrl}/auth/verify?token=${result.verificationToken}`;
