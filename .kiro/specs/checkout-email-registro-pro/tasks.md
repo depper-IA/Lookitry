@@ -28,8 +28,8 @@ Implementación incremental del flujo de pago para usuarios nuevos en Lookitry. 
     - Usar `fc.oneof(fc.constant('DECLINED'), fc.constant('VOIDED'), fc.constant('ERROR'), fc.constant(null))` para estados no aprobados
     - Mockear `wompiService.getTransactionByReference` para retornar cada estado y verificar que el controlador retorna 402
 
-- [~] 3. Modificar `GET /api/payments/wompi/checkout-url` — crear pending_registration
-  - [~] 3.1 Actualizar `getCheckoutUrl` en `backend/src/controllers/wompi.controller.ts`
+- [x] 3. Modificar `GET /api/payments/wompi/checkout-url` — crear pending_registration
+  - [x] 3.1 Actualizar `getCheckoutUrl` en `backend/src/controllers/wompi.controller.ts`
     - Leer `email` desde `req.query` (opcional)
     - Si `!brand?.id` (sin sesión) **y** hay `email` → insertar en `pending_registrations` usando `supabaseAdmin` con `{ email, reference, plan: planStr, months: monthsNum }`
     - La `reference` se extrae de la `checkoutUrl` generada por `wompiService.getCheckoutUrl` (o generarla antes de llamar al servicio)
