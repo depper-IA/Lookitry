@@ -120,14 +120,48 @@ export default function CheckoutPage() {
     Promise.all([
       fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
         .then(r => r.ok ? r.json() : null),
-      // ... (rest of parallel fetch)
+      fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?select=id,data`, {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        },
+      }).then(r => r.ok ? r.json() : null),
     ]).then(([paySettings, pricingRows]) => {
       if (paySettings) {
         if (paySettings.landingPrice) setMiniLandingPrice(paySettings.landingPrice);
         if (paySettings.trm) setTrm(paySettings.trm);
         setPaypalEnabled(paySettings.paypalEnabled ?? true);
       }
-      // ... (rest of logic)
+      
+      if (Array.isArray(pricingRows)) {
+        const basicData = pricingRows.find((r: any) => r.id === 'basic')?.data;
+        const proData   = pricingRows.find((r: any) => r.id === 'pro')?.data;
+        const descData  = pricingRows.find((r: any) => r.id === 'descuentos_duracion')?.data;
+        
+        if (basicData || proData) {
+          setPlanInfo({
+            BASIC: {
+              ...PLAN_INFO_FALLBACK.BASIC,
+              price: basicData?.precio_mensual_cop ?? PLAN_INFO_FALLBACK.BASIC.price,
+              features: basicData?.features ?? PLAN_INFO_FALLBACK.BASIC.features,
+            },
+            PRO: {
+              ...PLAN_INFO_FALLBACK.PRO,
+              price: proData?.precio_mensual_cop ?? PLAN_INFO_FALLBACK.PRO.price,
+              features: proData?.features ?? PLAN_INFO_FALLBACK.PRO.features,
+            }
+          });
+        }
+        
+        if (descData) {
+          setMonthDiscounts([
+            { months: 1,  pct: descData.meses_1  ?? 0,  label: '1 mes' },
+            { months: 3,  pct: descData.meses_3  ?? 5,  label: '3 meses' },
+            { months: 6,  pct: descData.meses_6  ?? 10, label: '6 meses' },
+            { months: 12, pct: descData.meses_12 ?? 15, label: '12 meses' },
+          ]);
+        }
+      }
     });
   }, []);
 
