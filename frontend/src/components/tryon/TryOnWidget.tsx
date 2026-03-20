@@ -590,17 +590,15 @@ function BrandHeader({ config, primaryColor, onReset, showReset }: {
 }) {
   return (
     <div className="bg-white border-b border-gray-100 shadow-sm">
-      <div className="max-w-lg mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between min-h-[56px]">
         <div className="flex items-center gap-3">
-          {/* Logo — oculto en móvil para evitar redundancia */}
-          {config.brand.logo && (
-            <img src={config.brand.logo} alt={config.brand.name} className="hidden sm:block h-9 w-auto object-contain"
+          {/* Único elemento: Logo de la marca */}
+          {config.brand.logo ? (
+            <img src={config.brand.logo} alt={config.brand.name} className="h-8 md:h-9 w-auto object-contain"
               onError={e => { e.currentTarget.style.display = 'none'; }} />
+          ) : (
+            <span className="font-bold text-gray-900">{config.brand.name}</span>
           )}
-          <div>
-            <h1 className="font-bold text-gray-900 text-base leading-tight">{config.brand.name}</h1>
-            <p className="text-xs text-gray-400">Probador Virtual</p>
-          </div>
         </div>
         {showReset && (
           <button onClick={onReset} className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-100">
