@@ -102,6 +102,38 @@ function IconBrain({ className }: { className?: string }) {
   );
 }
 
+function IconCopy({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+    </svg>
+  );
+}
+
+const DEFAULT_BASE_PROMPT = `You are a professional virtual try-on AI specialized in fashion photography.
+Your task: generate a single photorealistic image of the person in the selfie wearing the exact product shown in the reference image.
+
+ABSOLUTE RULES — follow all of them without exception:
+[CLOTHING REPLACEMENT — MANDATORY]
+- Do NOT leave any clothing item from the original photo visible if the product replaces it.
+
+[COMPOSITION & FRAMING]
+- Maintain the exact same pose, body position, background, and spatial composition as the original photo.
+- Fill every pixel of the frame with the scene — no empty space.
+
+[OUTPUT DIMENSIONS]
+- The output image MUST match the EXACT aspect ratio of the input selfie.
+- NEVER add white borders, black bars, or any kind of margin.
+
+[PRODUCT FIDELITY]
+- Reproduce the garment EXACTLY as shown in the reference image: same colors, patterns, textures, logos, stitching, cuts, and fit.
+
+[PERSON & REALISM]
+- Keep the person's face, skin tone, hair, body proportions, and expression IDENTICAL to the selfie.
+- Photorealistic quality only — no illustrations, no stylization.
+
+Output: the final try-on image only. No text, no watermarks, no UI overlays.`;
+
 // ── Toggle switch ─────────────────────────────────────────────────────────────
 
 function Toggle({ value, onChange, disabled }: { value: boolean; onChange: () => void; disabled?: boolean }) {
@@ -441,6 +473,15 @@ export default function SystemConfigPage() {
       flash('Configuración de IA guardada', 'ok');
     } catch (err: any) { flash(err.message || 'Error al guardar', 'err'); }
     finally { setSavingAIConfig(false); }
+  }
+
+  async function handleCopyPrompt() {
+    try {
+      await navigator.clipboard.writeText(DEFAULT_BASE_PROMPT);
+      flash('Prompt base copiado al portapapeles', 'ok');
+    } catch {
+      flash('Error al copiar el prompt', 'err');
+    }
   }
 
   function formatDate(iso: string) {
@@ -831,57 +872,83 @@ export default function SystemConfigPage() {
 
       {/* ── TAB: Motor de IA ── */}
       {activeTab === 'ai' && (
-      <Section title="Configuración del Motor de IA" icon={<IconBrain className="w-4 h-4" />}>
-        <div className="space-y-6">
-          <p style={{ color: 'var(--text-muted)' }} className="text-sm">
-            Define las instrucciones globales que regirán el comportamiento de la IA en todas las generaciones. 
-            Estos prompts actúan como la "personalidad" y los "límites" del sistema.
-          </p>
-
-          <div>
-            <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-2">Master Prompt (Instrucciones globales)</label>
-            <textarea
-              value={aiPromptMaster}
-              onChange={e => setAiPromptMaster(e.target.value)}
-              placeholder="Ej: Eres un experto en moda y marketing digital. Genera descripciones persuasivas..."
-              rows={8}
-              style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-              className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm resize-none"
-            />
-            <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-2">
-              Este prompt se envía siempre al inicio de cada petición a la IA. Define el tono, estilo y conocimientos base.
+      <div className="space-y-6">
+        <Section title="Configuración del Motor de IA" icon={<IconBrain className="w-4 h-4" />}>
+          <div className="space-y-6">
+            <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+              Define las instrucciones globales que regirán el comportamiento de la IA en todas las generaciones. 
+              Estos prompts actúan como la "personalidad" y los "límites" del sistema.
             </p>
-          </div>
 
-          <div>
-            <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-2">Prompt Negativo (Lo que se debe evitar)</label>
-            <textarea
-              value={aiPromptNegative}
-              onChange={e => setAiPromptNegative(e.target.value)}
-              placeholder="Ej: No uses lenguaje técnico aburrido. No menciones competidores..."
-              rows={4}
-              style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-              className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm resize-none"
-            />
-            <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-2">
-              Instrucciones explícitas sobre qué NO debe hacer la IA bajo ninguna circunstancia.
+            <div>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-2">Master Prompt (Instrucciones globales)</label>
+              <textarea
+                value={aiPromptMaster}
+                onChange={e => setAiPromptMaster(e.target.value)}
+                placeholder="Ej: Eres un experto en moda y marketing digital. Genera descripciones persuasivas..."
+                rows={8}
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm resize-none"
+              />
+              <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-2">
+                Este prompt se envía siempre al inicio de cada petición a la IA. Define el tono, estilo y conocimientos base.
+              </p>
+            </div>
+
+            <div>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-2">Prompt Negativo (Lo que se debe evitar)</label>
+              <textarea
+                value={aiPromptNegative}
+                onChange={e => setAiPromptNegative(e.target.value)}
+                placeholder="Ej: No uses lenguaje técnico aburrido. No menciones competidores..."
+                rows={4}
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm resize-none"
+              />
+              <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-2">
+                Instrucciones explícitas sobre qué NO debe hacer la IA bajo ninguna circunstancia.
+              </p>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={handleSaveAIConfig}
+                disabled={savingAIConfig}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
+              >
+                {savingAIConfig
+                  ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                  : <IconCheck className="w-4 h-4" />}
+                Guardar configuración de IA
+              </button>
+            </div>
+          </div>
+        </Section>
+
+        <Section title="Prompt Base Predeterminado (Referencia)" icon={<IconShield className="w-4 h-4" />}>
+          <div className="space-y-4">
+            <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+              Este es el prompt base inmutable que utiliza el backend para orquestar la generación. 
+              Puedes copiarlo para usarlo como base en tu Master Prompt si deseas extenderlo.
             </p>
+            <div className="relative group">
+              <pre 
+                style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+                className="p-4 rounded-xl border text-xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-[400px]"
+              >
+                {DEFAULT_BASE_PROMPT}
+              </pre>
+              <button
+                onClick={handleCopyPrompt}
+                className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FF5C3A] text-white text-xs font-semibold hover:bg-[#e04e30] transition-colors shadow-lg opacity-0 group-hover:opacity-100"
+              >
+                <IconCopy className="w-3.5 h-3.5" />
+                Copiar prompt
+              </button>
+            </div>
           </div>
-
-          <div className="flex justify-end">
-            <button
-              onClick={handleSaveAIConfig}
-              disabled={savingAIConfig}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
-            >
-              {savingAIConfig
-                ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
-                : <IconCheck className="w-4 h-4" />}
-              Guardar configuración de IA
-            </button>
-          </div>
-        </div>
-      </Section>
+        </Section>
+      </div>
       )} {/* fin tab ai */}
 
       {/* ── TAB: Créditos IA ── */}
