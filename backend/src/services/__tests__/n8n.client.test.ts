@@ -116,7 +116,7 @@ describe('N8nClient', () => {
 
       // Act & Assert
       await expect(n8nClient.callTryOnWebhook(mockPayload)).rejects.toThrow(
-        'n8n error: Error al procesar la imagen con IA'
+        'n8n error 500: Error al procesar la imagen con IA'
       );
 
       expect(mockedAxios.post).toHaveBeenCalledTimes(1);
@@ -140,7 +140,7 @@ describe('N8nClient', () => {
 
       // Act & Assert
       await expect(n8nClient.callTryOnWebhook(mockPayload)).rejects.toThrow(
-        'n8n error: Internal server error'
+        'n8n error 500: Internal server error'
       );
     });
 
