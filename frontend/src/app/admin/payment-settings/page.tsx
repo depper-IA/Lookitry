@@ -351,25 +351,6 @@ export default function PaymentSettingsPage() {
                     </div>
                   </div>
 
-                  {/* Bloque Producción */}
-                  <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border-color)' }}>
-                    <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--border-color)', background: !settings.paypal_sandbox ? 'rgba(34,197,94,0.08)' : 'var(--bg-input)' }}>
-                      <span className={`w-2 h-2 rounded-full ${!settings.paypal_sandbox ? 'bg-green-500' : 'bg-gray-400'}`} />
-                      <span className="text-sm font-medium" style={{ color: !settings.paypal_sandbox ? '#22c55e' : 'var(--text-muted)' }}>
-                        Credenciales Producción (pagos reales)
-                      </span>
-                      {!settings.paypal_sandbox && (
-                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 border border-green-500/20">
-                          Activo
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-4 grid grid-cols-1 gap-4">
-                      <Field label="Client ID Producción" value={settings.paypal_prod_client_id} onChange={v => set('paypal_prod_client_id', v)} placeholder="AXxx..." />
-                      <SecretField label="Client Secret Producción" fieldKey="paypal_prod_secret" value={settings.paypal_prod_client_secret} onChange={v => set('paypal_prod_client_secret', v)} show={showSecrets['paypal_prod_secret']} onToggle={() => toggleSecret('paypal_prod_secret')} placeholder="EXxx..." />
-                    </div>
-                  </div>
-
                   <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm text-blue-400">
                     Obtén tus credenciales en{' '}
                     <a href="https://developer.paypal.com" target="_blank" rel="noopener noreferrer" className="underline font-medium">developer.paypal.com</a>
