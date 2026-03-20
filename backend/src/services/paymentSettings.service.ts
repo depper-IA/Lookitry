@@ -24,6 +24,8 @@ export interface PaymentSettings {
   paypal_email: string;
   paypal_client_id: string;
   paypal_client_secret: string;
+  paypal_prod_client_id: string;
+  paypal_prod_client_secret: string;
   paypal_sandbox: boolean;
   // Pago manual
   manual_enabled: boolean;
@@ -66,6 +68,8 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   paypal_email: '',
   paypal_client_id: '',
   paypal_client_secret: '',
+  paypal_prod_client_id: '',
+  paypal_prod_client_secret: '',
   paypal_sandbox: true,
   manual_enabled: true,
   manual_instructions: 'Realiza el pago y envía el comprobante por WhatsApp o email.',

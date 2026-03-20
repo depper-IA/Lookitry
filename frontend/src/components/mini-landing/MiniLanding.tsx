@@ -269,7 +269,7 @@ function WhatsAppFAB({ phone, message }: { phone: string; message?: string | nul
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contactar por WhatsApp"
-      className="fixed bottom-6 right-6 z-50 group"
+      className="hidden sm:block fixed bottom-6 right-6 z-50 group"
     >
       <div className="relative">
         {/* Tooltip */}

@@ -285,7 +285,7 @@ export default function PaymentSettingsPage() {
 
           {/* PAYPAL */}
           {activeTab === 'paypal' && (
-            <div className="space-y-5">
+            <div className="space-y-6">
               <div style={{ borderColor: 'var(--border-color)' }} className="flex items-center justify-between pb-4 border-b">
                 <div>
                   <h3 style={{ color: 'var(--text-primary)' }} className="font-semibold">PayPal</h3>
@@ -293,21 +293,83 @@ export default function PaymentSettingsPage() {
                 </div>
                 <Toggle enabled={settings.paypal_enabled} onChange={v => set('paypal_enabled', v)} />
               </div>
+
               {settings.paypal_enabled && (
                 <>
-                  <div className="flex items-center gap-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                    <svg className="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <p className="text-sm text-amber-500">Modo {settings.paypal_sandbox ? 'sandbox (prueba)' : 'producción'} activo.</p>
-                    <label className="ml-auto flex items-center gap-2 text-sm text-amber-500 cursor-pointer">
-                      <input type="checkbox" checked={!settings.paypal_sandbox} onChange={e => set('paypal_sandbox', !e.target.checked)} className="rounded" />
-                      Producción
-                    </label>
+                  {/* Selector de modo activo */}
+                  <div className="flex items-center gap-3 p-4 rounded-xl border" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-input)' }}>
+                    <div className="flex-1">
+                      <p style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">Modo activo</p>
+                      <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
+                        {settings.paypal_sandbox
+                          ? 'Sandbox — los pagos son simulados para pruebas.'
+                          : 'Producción — los pagos son reales a través de PayPal.'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 p-1 rounded-lg border" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-card)' }}>
+                      <button
+                        onClick={() => set('paypal_sandbox', true)}
+                        className="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+                        style={settings.paypal_sandbox
+                          ? { background: '#f59e0b', color: '#fff' }
+                          : { color: 'var(--text-muted)' }}
+                      >
+                        Sandbox
+                      </button>
+                      <button
+                        onClick={() => set('paypal_sandbox', false)}
+                        className="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+                        style={!settings.paypal_sandbox
+                          ? { background: '#22c55e', color: '#fff' }
+                          : { color: 'var(--text-muted)' }}
+                      >
+                        Producción
+                      </button>
+                    </div>
                   </div>
+
                   <div className="grid grid-cols-1 gap-4">
-                    <Field label="Email de PayPal" value={settings.paypal_email} onChange={v => set('paypal_email', v)} placeholder="tu@email.com" hint="Los clientes pueden enviarte pagos directamente a este email." type="email" />
-                    <Field label="Client ID (opcional)" value={settings.paypal_client_id} onChange={v => set('paypal_client_id', v)} placeholder="AXxx..." hint="Solo necesario para integración avanzada con botón de PayPal." />
-                    <SecretField label="Client Secret (opcional)" fieldKey="paypal_secret" value={settings.paypal_client_secret} onChange={v => set('paypal_client_secret', v)} show={showSecrets['paypal_secret']} onToggle={() => toggleSecret('paypal_secret')} placeholder="EXxx..." />
+                    <Field label="Email de cuenta PayPal" value={settings.paypal_email} onChange={v => set('paypal_email', v)} placeholder="tu@email.com" hint="Email donde recibirás las notificaciones de pago." type="email" />
                   </div>
+
+                  {/* Bloque Sandbox */}
+                  <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border-color)' }}>
+                    <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--border-color)', background: settings.paypal_sandbox ? 'rgba(245,158,11,0.08)' : 'var(--bg-input)' }}>
+                      <span className={`w-2 h-2 rounded-full ${settings.paypal_sandbox ? 'bg-amber-500' : 'bg-gray-400'}`} />
+                      <span className="text-sm font-medium" style={{ color: settings.paypal_sandbox ? '#f59e0b' : 'var(--text-muted)' }}>
+                        Credenciales Sandbox (pruebas)
+                      </span>
+                      {settings.paypal_sandbox && (
+                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                          Activo
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-4 grid grid-cols-1 gap-4">
+                      <Field label="Client ID Sandbox" value={settings.paypal_client_id} onChange={v => set('paypal_client_id', v)} placeholder="AXxx..." />
+                      <SecretField label="Client Secret Sandbox" fieldKey="paypal_secret" value={settings.paypal_client_secret} onChange={v => set('paypal_client_secret', v)} show={showSecrets['paypal_secret']} onToggle={() => toggleSecret('paypal_secret')} placeholder="EXxx..." />
+                    </div>
+                  </div>
+
+                  {/* Bloque Producción */}
+                  <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border-color)' }}>
+                    <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--border-color)', background: !settings.paypal_sandbox ? 'rgba(34,197,94,0.08)' : 'var(--bg-input)' }}>
+                      <span className={`w-2 h-2 rounded-full ${!settings.paypal_sandbox ? 'bg-green-500' : 'bg-gray-400'}`} />
+                      <span className="text-sm font-medium" style={{ color: !settings.paypal_sandbox ? '#22c55e' : 'var(--text-muted)' }}>
+                        Credenciales Producción (pagos reales)
+                      </span>
+                      {!settings.paypal_sandbox && (
+                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 border border-green-500/20">
+                          Activo
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-4 grid grid-cols-1 gap-4">
+                      <Field label="Client ID Producción" value={settings.paypal_prod_client_id} onChange={v => set('paypal_prod_client_id', v)} placeholder="AXxx..." />
+                      <SecretField label="Client Secret Producción" fieldKey="paypal_prod_secret" value={settings.paypal_prod_client_secret} onChange={v => set('paypal_prod_client_secret', v)} show={showSecrets['paypal_prod_secret']} onToggle={() => toggleSecret('paypal_prod_secret')} placeholder="EXxx..." />
+                    </div>
+                  </div>
+
                   <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm text-blue-400">
                     Obtén tus credenciales en{' '}
                     <a href="https://developer.paypal.com" target="_blank" rel="noopener noreferrer" className="underline font-medium">developer.paypal.com</a>
