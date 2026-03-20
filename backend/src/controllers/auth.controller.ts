@@ -8,6 +8,26 @@ import { AuthRequest } from '../middleware/auth';
 const authService = new AuthService();
 const emailService = new EmailService();
 
+/** Emite el JWT como cookie HTTP-Only segura */
+const IS_PROD = process.env.NODE_ENV === 'production';
+const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+
+function setCookieToken(res: Response, token: string): void {
+  const cookieOptions: any = {
+    httpOnly: true,
+    secure: IS_PROD,           // Solo HTTPS en producción
+    sameSite: IS_PROD ? 'none' : 'lax', // 'none' cross-origin en prod (requiere secure)
+    maxAge: 30 * 24 * 60 * 60 * 1000,  // 30 días en ms
+    path: '/',
+  };
+
+  if (COOKIE_DOMAIN && IS_PROD) {
+    cookieOptions.domain = COOKIE_DOMAIN;
+  }
+
+  res.cookie('token', token, cookieOptions);
+}
+
 export class AuthController {
   async register(req: Request, res: Response) {
     try {
@@ -31,13 +51,19 @@ export class AuthController {
           return res.status(400).json({ error: 'CAPTCHA_REQUIRED', message: 'Verificación de seguridad requerida' });
         }
         const ip = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || '';
+        const formData = new URLSearchParams();
+        formData.append('secret', process.env.TURNSTILE_SECRET_KEY || '');
+        formData.append('response', token);
+        if (ip) formData.append('remoteip', ip);
+
         const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ secret: process.env.TURNSTILE_SECRET_KEY, response: token, remoteip: ip }),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData.toString(),
         });
-        const verifyData = await verifyRes.json() as { success: boolean };
+        const verifyData = await verifyRes.json() as { success: boolean; 'error-codes'?: string[] };
         if (!verifyData.success) {
+          console.error('[Turnstile] Verificación fallida:', verifyData['error-codes']);
           return res.status(400).json({ error: 'CAPTCHA_FAILED', message: 'Verificación de seguridad fallida. Intenta de nuevo.' });
         }
       }
@@ -83,6 +109,8 @@ export class AuthController {
         }).catch(err => console.error('[Auth] Error enviando email de verificación:', err));
       }
 
+      // Emitir token como cookie HTTP-Only (más seguro que localStorage)
+      if (result.token) setCookieToken(res, result.token);
       return res.status(201).json(result);
     } catch (error: any) {
       console.error('Error en register:', error);
@@ -130,6 +158,8 @@ export class AuthController {
       }
 
       const result = await authService.login(data);
+      // Emitir token como cookie HTTP-Only (más seguro que localStorage)
+      if (result.token) setCookieToken(res, result.token);
       return res.status(200).json(result);
     } catch (error: any) {
       console.error('Error en login:', error);

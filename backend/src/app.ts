@@ -24,6 +24,8 @@ import { listCoupons, createCoupon, updateCoupon, deleteCoupon, redeemCoupon, va
 import { authMiddleware } from './middleware/auth';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { globalRateLimiter } from './middleware/rateLimiter';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -33,16 +35,14 @@ const app = express();
 // Necesario para que express-rate-limit funcione correctamente detrás de Traefik/Nginx
 app.set('trust proxy', 1);
 
-// Security headers básicos (sin helmet)
-app.use((_req, res, next) => {
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-  res.removeHeader('X-Powered-By');
-  next();
-});
+// ── Seguridad: Helmet (reemplaza los headers manuales y añade muchos más) ──────
+app.use(helmet({
+  crossOriginEmbedderPolicy: false, // Permite que el embed iframe de marcas funcione
+  contentSecurityPolicy: false,     // CSP se configura opcionalmente en el gateway/nginx
+}));
+
+// ── Cookie Parser (necesario para leer cookies HTTP-Only del JWT) ──────────────
+app.use(cookieParser());
 
 // Rate limiting global (debe ir antes de otros middlewares)
 app.use(globalRateLimiter);

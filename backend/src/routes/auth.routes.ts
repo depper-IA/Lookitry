@@ -32,4 +32,10 @@ router.post('/resend-verification', authRateLimiter, asyncHandler((req, res) => 
 // POST /api/auth/change-password (requiere auth)
 router.post('/change-password', authMiddleware, asyncHandler((req, res) => authController.changePassword(req as any, res)));
 
+// POST /api/auth/logout — limpia la cookie HTTP-Only del lado del servidor
+router.post('/logout', (_req, res) => {
+  res.clearCookie('token', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' });
+  res.json({ ok: true });
+});
+
 export default router;

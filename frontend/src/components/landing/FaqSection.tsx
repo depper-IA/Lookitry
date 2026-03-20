@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { PricingConfig } from '@/lib/pricing';
+import { formatCurrency } from '@/utils/currency';
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 
@@ -87,7 +89,7 @@ function IconShirt() {
 
 // ── Datos del FAQ ─────────────────────────────────────────────────────────────
 
-const FAQ_TABS: FaqTab[] = [
+const getFaqTabs = (pricing?: PricingConfig): FaqTab[] => [
   {
     id: 'mini-landing',
     label: 'Mini-Landing',
@@ -126,15 +128,15 @@ const FAQ_TABS: FaqTab[] = [
     items: [
       {
         q: '¿Cuáles son los precios de los planes?',
-        a: 'Hay tres opciones: Plan Trial (7 días), Plan Básico ($150.000 COP/mes) y Plan Pro ($250.000 COP/mes). El Trial te da acceso completo por 7 días para que pruebes la plataforma sin compromiso.',
+        a: `Hay tres opciones: Plan Trial (7 días), Plan Básico (${formatCurrency(pricing?.basic?.precio_mensual_cop ?? 150000)}/mes) y Plan Pro (${formatCurrency(pricing?.pro?.precio_mensual_cop ?? 250000)}/mes). El Trial te da acceso completo por 7 días para que pruebes la plataforma sin compromiso.`,
       },
       {
         q: '¿Hay descuentos por pagar varios meses?',
-        a: 'Sí. Al pagar 3 meses obtienes 5% de descuento, 6 meses un 10% y 12 meses un 15%. Los descuentos se aplican automáticamente en el checkout.',
+        a: `Sí. Al pagar 3 meses obtienes ${pricing?.descuentos_duracion?.meses_3 ?? 5}% de descuento, 6 meses un ${pricing?.descuentos_duracion?.meses_6 ?? 10}% y 12 meses un ${pricing?.descuentos_duracion?.meses_12 ?? 15}%. Los descuentos se aplican automáticamente en el checkout.`,
       },
       {
         q: '¿Qué métodos de pago aceptan?',
-        a: 'Procesamos los pagos a través de Wompi, que acepta tarjetas débito y crédito (Visa, Mastercard, Amex), PSE y Nequi. También puedes contactarnos por WhatsApp o correo para coordinar un pago manual.',
+        a: 'Aceptamos pagos a través de Wompi (tarjetas débito y crédito como Visa, Mastercard, Amex; además de PSE y Nequi) y PayPal (para pagos en dólares USD). También puedes contactarnos por WhatsApp o correo para coordinar un pago manual.',
       },
       {
         q: '¿El pago es seguro?',
@@ -161,7 +163,7 @@ const FAQ_TABS: FaqTab[] = [
       },
       {
         q: '¿Cuántas generaciones incluye cada plan?',
-        a: 'El Plan Básico incluye 400 generaciones por mes. El Plan Pro incluye 1.200 generaciones por mes. El contador se reinicia el primer día de cada mes.',
+        a: `El Plan Básico incluye ${(pricing?.basic?.generaciones_mensuales ?? 400).toLocaleString('es-CO')} generaciones por mes. El Plan Pro incluye ${(pricing?.pro?.generaciones_mensuales ?? 1200).toLocaleString('es-CO')} generaciones por mes. El contador se reinicia el primer día de cada mes.`,
       },
       {
         q: '¿Qué pasa si agoto mis generaciones?',
@@ -208,7 +210,7 @@ const FAQ_TABS: FaqTab[] = [
       },
       {
         q: '¿Cuántos productos puedo tener en el probador?',
-        a: 'El Plan Básico permite hasta 5 productos activos. El Plan Pro permite hasta 15 productos. Puedes agregar, editar y desactivar productos desde tu dashboard en cualquier momento.',
+        a: `El Plan Básico permite hasta ${pricing?.basic?.productos_max ?? 5} productos activos. El Plan Pro permite hasta ${pricing?.pro?.productos_max ?? 15} productos. Puedes agregar, editar y desactivar productos desde tu dashboard en cualquier momento.`,
       },
     ],
   },
@@ -249,11 +251,12 @@ function AccordionItem({ item, isOpen, onToggle }: { item: FaqItem; isOpen: bool
 
 // ── Componente principal ──────────────────────────────────────────────────────
 
-export default function FaqSection() {
+export default function FaqSection({ pricing }: { pricing?: PricingConfig }) {
   const [activeTab, setActiveTab] = useState('mini-landing');
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-  const currentTab = FAQ_TABS.find(t => t.id === activeTab) ?? FAQ_TABS[0];
+  const tabs = getFaqTabs(pricing);
+  const currentTab = tabs.find(t => t.id === activeTab) ?? tabs[0];
 
   const handleTabChange = (id: string) => {
     setActiveTab(id);
@@ -280,7 +283,7 @@ export default function FaqSection() {
 
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {FAQ_TABS.map(tab => {
+          {tabs.map(tab => {
             const isActive = tab.id === activeTab;
             return (
               <button

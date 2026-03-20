@@ -1,4 +1,4 @@
-﻿import { authService } from './auth.service';
+import { authService } from './auth.service';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
@@ -19,6 +19,7 @@ async function apiFetch<T>(
   const res = await fetch(`${API_URL}/api${path}`, {
     method,
     headers,
+    credentials: 'include',
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 

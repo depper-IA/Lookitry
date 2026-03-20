@@ -202,7 +202,7 @@ export class AdminService {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      const [productsData, generationsData, monthlyData] = await Promise.all([
+      const [productsData, generationsData, monthlyData, successData, failedData] = await Promise.all([
         // Productos por marca
         supabaseAdmin
           .from('products')
@@ -220,12 +220,26 @@ export class AdminService {
           .select('brand_id')
           .in('brand_id', brandIds)
           .gte('generated_at', startOfMonth.toISOString()),
+        // Exitosas
+        supabaseAdmin
+          .from('generations')
+          .select('brand_id')
+          .in('brand_id', brandIds)
+          .eq('status', 'SUCCESS'),
+        // Fallidas
+        supabaseAdmin
+          .from('generations')
+          .select('brand_id')
+          .in('brand_id', brandIds)
+          .eq('status', 'FAILED'),
       ]);
 
       // 4. Contar por marca
       const productCounts: Record<string, number> = {};
       const generationCounts: Record<string, number> = {};
       const monthlyCounts: Record<string, number> = {};
+      const successCounts: Record<string, number> = {};
+      const failedCounts: Record<string, number> = {};
 
       productsData.data?.forEach(p => {
         productCounts[p.brand_id] = (productCounts[p.brand_id] || 0) + 1;
@@ -237,6 +251,14 @@ export class AdminService {
 
       monthlyData.data?.forEach(m => {
         monthlyCounts[m.brand_id] = (monthlyCounts[m.brand_id] || 0) + 1;
+      });
+
+      successData.data?.forEach(s => {
+        successCounts[s.brand_id] = (successCounts[s.brand_id] || 0) + 1;
+      });
+
+      failedData.data?.forEach(f => {
+        failedCounts[f.brand_id] = (failedCounts[f.brand_id] || 0) + 1;
       });
 
       // 5. Combinar datos
@@ -272,6 +294,13 @@ export class AdminService {
           modal_title: brand.modal_title ?? null,
           modal_description: brand.modal_description ?? null,
           modal_features: brand.modal_features ?? null,
+          // Propiedades aplanadas para el frontend (AdminAnalyticsPage)
+          totalGenerations: generationCounts[brand.id] || 0,
+          successfulGenerations: successCounts[brand.id] || 0,
+          failedGenerations: failedCounts[brand.id] || 0,
+          generationsThisMonth: monthlyCounts[brand.id] || 0,
+          productsCount: productCounts[brand.id] || 0,
+          // Mantener objeto stats por retrocompatibilidad
           stats: {
             productsCount: productCounts[brand.id] || 0,
             generationsCount: generationCounts[brand.id] || 0,
@@ -387,6 +416,35 @@ export class AdminService {
       .eq('has_landing_page', false)
       .is('landing_suspended_at', null);
 
+    // Generaciones por mes (últimos 6 meses)
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const { data: recentGenerations } = await supabaseAdmin
+      .from('generations')
+      .select('generated_at, status')
+      .gte('generated_at', sixMonthsAgo.toISOString());
+
+    const monthlyMap = new Map<string, { total: number; success: number; failed: number }>();
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      monthlyMap.set(key, { total: 0, success: 0, failed: 0 });
+    }
+
+    recentGenerations?.forEach(g => {
+      const d = new Date(g.generated_at);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (monthlyMap.has(key)) {
+        const stats = monthlyMap.get(key)!;
+        stats.total++;
+        if (g.status === 'SUCCESS') stats.success++;
+        else if (g.status === 'FAILED') stats.failed++;
+      }
+    });
+
+    const generationsByMonth = Array.from(monthlyMap.entries())
+      .map(([month, s]) => ({ month, ...s }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+
     return {
       totalBrands: totalBrands || 0,
       totalProducts: totalProducts || 0,
@@ -404,6 +462,7 @@ export class AdminService {
         suspended: landingsSuspended || 0,
         inactive: landingsInactive || 0,
       },
+      generationsByMonth,
     };
   }
 

@@ -47,15 +47,20 @@ export default function AdminLoginPage() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/admin/auth/login`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }
+        { 
+          method: 'POST', 
+          headers: { 'Content-Type': 'application/json' }, 
+          body: JSON.stringify(formData),
+          credentials: 'include' // ── Seguridad: Cookies HTTP-Only (P1)
+        }
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al iniciar sesión');
-      if (data.token) {
-        localStorage.setItem('adminToken', data.token);
-        localStorage.setItem('adminUser', JSON.stringify(data.admin));
-        router.push('/admin/dashboard');
-      }
+      
+      // El token viene por cookie HTTP-Only, ya no lo guardamos en localStorage
+      // Mantenemos solo la info básica del usuario para la UI
+      localStorage.setItem('adminUser', JSON.stringify(data.admin));
+      router.push('/admin/dashboard');
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión');
     } finally {

@@ -37,8 +37,8 @@ interface AdminAnalyticsData {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function adminFetch(path: string) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') ?? '' : '';
-  return fetch(`${API_URL}/api${path}`, { headers: { Authorization: `Bearer ${token}` } });
+  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+  return fetch(`${base}/api${path}`, { credentials: 'include' });
 }
 
 function formatMonth(key: string) {

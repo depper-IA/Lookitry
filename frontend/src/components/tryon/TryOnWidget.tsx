@@ -165,6 +165,39 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   // Productos ya generados en esta sesión: productId → imageUrl
   const [generatedProducts, setGeneratedProducts] = useState<Map<string, string>>(new Map());
 
+  // Cargar productos generados previos de localStorage al montar o cambiar selfie
+  useEffect(() => {
+    if (!brandSlug) return;
+    const key = `tryon_gen_${brandSlug}`;
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try {
+        const { selfie, products } = JSON.parse(saved);
+        // Solo restaurar si la selfie es la misma (o si no hay selfie aún)
+        if (!selfiePreview || selfie === selfiePreview) {
+          setGeneratedProducts(new Map(Object.entries(products)));
+        } else if (selfiePreview && selfie !== selfiePreview) {
+          // Si la selfie cambió, limpiar storage para esta marca
+          localStorage.removeItem(key);
+          setGeneratedProducts(new Map());
+        }
+      } catch (e) {
+        console.error('Error parsing generated products', e);
+      }
+    }
+  }, [brandSlug, selfiePreview]);
+
+  // Guardar productos generados en localStorage cuando cambien
+  useEffect(() => {
+    if (!brandSlug || generatedProducts.size === 0) return;
+    const key = `tryon_gen_${brandSlug}`;
+    const data = {
+      selfie: selfiePreview,
+      products: Object.fromEntries(generatedProducts)
+    };
+    localStorage.setItem(key, JSON.stringify(data));
+  }, [generatedProducts, brandSlug, selfiePreview]);
+
   useEffect(() => { loadConfig(); }, [brandSlug]);
 
   useEffect(() => {
@@ -233,6 +266,8 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   };
 
   const handleReset = () => {
+    const key = `tryon_gen_${brandSlug}`;
+    localStorage.removeItem(key);
     setSelfieFile(null); setSelfiePreview(null); setSelectedProduct(null);
     setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false);
     setGeneratedProducts(new Map());

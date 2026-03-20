@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { adminAuthMiddleware, requirePermission } from '../middleware/adminAuth';
 import {
   adminLogin,
+  adminLogout,
   getAllBrands,
   changeBrandPlan,
   getGlobalStats,
@@ -52,9 +53,12 @@ import {
   updateTrialCampaign,
 } from '../controllers/trialCampaign.controller';
 
+import { authRateLimiter } from '../middleware/rateLimiter';
+
 const router = Router();
 
-router.post('/auth/login', adminLogin);
+router.post('/auth/login', authRateLimiter, adminLogin);
+router.post('/auth/logout', adminLogout);
 
 // Ruta de verificación de token (usada por Next.js API routes)
 router.get('/verify', adminAuthMiddleware, (req: any, res) => {

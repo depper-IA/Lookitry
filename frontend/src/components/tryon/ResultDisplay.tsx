@@ -9,15 +9,17 @@ function Watermark({ plan }: { plan?: string }) {
 
   if (plan === 'BASIC') {
     return (
-      <div className="absolute bottom-4 left-4 w-20 pointer-events-none select-none z-10 opacity-40">
-        <img src="/watermark-basic.webp" alt="Lookitry" className="w-full h-auto" />
+      <div className="absolute bottom-[3.5%] right-[3.5%] w-[12%] pointer-events-none select-none z-10 opacity-70">
+        <img src="/watermark-basic.webp" alt="Lookitry Basic" className="w-full h-auto drop-shadow-md" />
       </div>
     );
   }
 
   return (
-    <div className="absolute bottom-0 left-0 w-full pointer-events-none select-none z-10 opacity-60">
-      <img src="/watermark-trial.webp" alt="Lookitry" className="w-full h-auto" />
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
+      <div className="w-[45%] opacity-50">
+        <img src="/watermark-trial.webp" alt="Lookitry Trial" className="w-full h-auto drop-shadow-lg" />
+      </div>
     </div>
   );
 }
@@ -145,18 +147,21 @@ export function ResultDisplay({
         wmImg.crossOrigin = 'anonymous';
         wmImg.onload = () => {
           if (brandPlan === 'BASIC') {
-            // BASIC: Esquina inferior izquierda, sutil
-            const wmWidth = canvas.width * 0.15;
+            // BASIC: Esquina inferior derecha (bot-right), 12% width, opacidad 70%
+            const wmWidth = canvas.width * 0.12;
             const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            const padding = 20;
-            ctx.globalAlpha = 0.4;
-            ctx.drawImage(wmImg, padding, canvas.height - wmHeight - padding, wmWidth, wmHeight);
+            const paddingX = canvas.width * 0.035;
+            const paddingY = canvas.height * 0.035;
+            ctx.globalAlpha = 0.7;
+            ctx.drawImage(wmImg, canvas.width - wmWidth - paddingX, canvas.height - wmHeight - paddingY, wmWidth, wmHeight);
           } else if (brandPlan === 'TRIAL') {
-            // TRIAL: Parte baja, opacidad 60%
-            const wmWidth = canvas.width;
+            // TRIAL: Centro, 45% width, opacidad 50%
+            const wmWidth = canvas.width * 0.45;
             const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            ctx.globalAlpha = 0.6;
-            ctx.drawImage(wmImg, 0, canvas.height - wmHeight, wmWidth, wmHeight);
+            const x = (canvas.width - wmWidth) / 2;
+            const y = (canvas.height - wmHeight) / 2;
+            ctx.globalAlpha = 0.5;
+            ctx.drawImage(wmImg, x, y, wmWidth, wmHeight);
           }
           resolve(canvas.toDataURL('image/jpeg', 1.0));
         };
@@ -217,7 +222,7 @@ export function ResultDisplay({
     setFeedbackSending(true);
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      await fetch(`${apiBase}/api/pruebalo/${brandSlug}/generation/${generationId}/feedback`, {
+      const res = await fetch(`${apiBase}/api/pruebalo/${brandSlug}/generation/${generationId}/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -225,9 +230,18 @@ export function ResultDisplay({
           description: feedbackDesc.trim() || undefined,
         }),
       });
-      setFeedbackSent(true);
-    } catch {
-      setFeedbackSent(true);
+      if (res.ok) {
+        setFeedbackSent(true);
+        // Cerrar modal automáticamente después de 2.5s
+        setTimeout(() => {
+          handleFeedbackClose();
+        }, 2500);
+      } else {
+        throw new Error('Error al enviar');
+      }
+    } catch (err) {
+      console.error('Error enviando feedback:', err);
+      alert('No se pudo enviar el reporte. Por favor intenta de nuevo.');
     } finally {
       setFeedbackSending(false);
     }
@@ -343,12 +357,19 @@ export function ResultDisplay({
             Probar otro producto
           </button>
 
-          {generationId && brandSlug && !feedbackSent && (
+          {generationId && brandSlug && (
             <button
               onClick={() => setFeedbackOpen(true)}
-              className="w-full py-2.5 rounded-2xl text-xs text-gray-400 hover:text-gray-600 transition-all flex items-center justify-center gap-1.5"
+              className={`w-full py-2.5 rounded-2xl text-xs transition-all flex items-center justify-center gap-1.5 ${feedbackSent ? 'text-green-600 bg-green-50' : 'text-gray-400 hover:text-gray-600'}`}
             >
-              Reportar problema con la imagen
+              {feedbackSent ? (
+                <>
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Reporte enviado correctamente
+                </>
+              ) : 'Reportar problema con la imagen'}
             </button>
           )}
         </div>
@@ -356,19 +377,47 @@ export function ResultDisplay({
 
       {feedbackOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={handleFeedbackClose}>
-          <div className="bg-white rounded-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-lg mb-4">¿Qué salió mal?</h3>
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {ERROR_TYPES.map(et => (
-                <button key={et.value} onClick={() => setFeedbackType(et.value)} className={`p-3 rounded-xl border text-sm transition-all ${feedbackType === et.value ? 'bg-orange-50 border-orange-200 text-orange-700' : 'bg-white border-gray-100'}`}>
-                  {et.label}
+          <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            {!feedbackSent ? (
+              <>
+                <h3 className="font-bold text-xl text-gray-900 mb-2">¿Algo no salió bien?</h3>
+                <p className="text-sm text-gray-500 mb-5">Cuéntanos qué falló para que nuestra IA aprenda a hacerlo mejor.</p>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  {ERROR_TYPES.map(et => (
+                    <button key={et.value} onClick={() => setFeedbackType(et.value)} className={`p-3 rounded-2xl border text-sm font-medium transition-all ${feedbackType === et.value ? 'bg-orange-50 border-orange-300 text-orange-700 ring-2 ring-orange-100' : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100 text-left'}`}>
+                      {et.label}
+                    </button>
+                  ))}
+                  <button onClick={() => setFeedbackType(OTHER_VALUE)} className={`col-span-2 p-3 rounded-2xl border text-sm font-medium transition-all ${feedbackType === OTHER_VALUE ? 'bg-orange-50 border-orange-300 text-orange-700 ring-2 ring-orange-100' : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100 text-left'}`}>
+                    Otro detalle
+                  </button>
+                </div>
+                {feedbackType === OTHER_VALUE && (
+                  <textarea value={feedbackDesc} onChange={e => setFeedbackDesc(e.target.value)} placeholder="Dinos qué viste mal..." className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 mb-4 h-28 text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-300 transition-all" />
+                )}
+                <div className="flex flex-col gap-2">
+                  <button onClick={handleFeedbackSubmit} disabled={feedbackSending || (!feedbackType) || (feedbackType === OTHER_VALUE && !feedbackDesc.trim())} className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold shadow-lg shadow-gray-200 disabled:opacity-50 active:scale-95 transition-all">
+                    {feedbackSending ? 'Enviando reporte...' : 'Enviar reporte'}
+                  </button>
+                  <button onClick={handleFeedbackClose} className="w-full py-3 text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors">
+                    Cancelar
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="py-8 text-center animate-in fade-in zoom-in duration-300">
+                <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4 border-2 border-green-100">
+                  <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-xl text-gray-900 mb-2">¡Reporte enviado!</h3>
+                <p className="text-sm text-gray-500 px-4">Gracias por ayudarnos a mejorar Lookitry AI. Analizaremos tu caso de inmediato.</p>
+                <button onClick={handleFeedbackClose} className="mt-8 w-full py-4 bg-green-500 text-white rounded-2xl font-bold shadow-lg shadow-green-100 active:scale-95 transition-all">
+                  Entendido
                 </button>
-              ))}
-            </div>
-            <textarea value={feedbackDesc} onChange={e => setFeedbackDesc(e.target.value)} placeholder="Opcional: danos más detalles..." className="w-full p-3 rounded-xl border border-gray-100 mb-4 h-24 text-sm" />
-            <button onClick={handleFeedbackSubmit} disabled={feedbackSending} className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold disabled:opacity-50">
-              {feedbackSending ? 'Enviando...' : 'Enviar reporte'}
-            </button>
+              </div>
+            )}
           </div>
         </div>
       )}

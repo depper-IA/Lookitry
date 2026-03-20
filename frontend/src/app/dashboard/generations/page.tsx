@@ -73,16 +73,19 @@ function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: str
         wmImg.crossOrigin = 'anonymous';
         wmImg.onload = () => {
           if (brandPlan === 'BASIC') {
-            const wmWidth = canvas.width * 0.15;
+            const wmWidth = canvas.width * 0.12;
             const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            const padding = 20;
-            ctx.globalAlpha = 0.4;
-            ctx.drawImage(wmImg, padding, canvas.height - wmHeight - padding, wmWidth, wmHeight);
+            const paddingX = canvas.width * 0.035;
+            const paddingY = canvas.height * 0.035;
+            ctx.globalAlpha = 0.7;
+            ctx.drawImage(wmImg, canvas.width - wmWidth - paddingX, canvas.height - wmHeight - paddingY, wmWidth, wmHeight);
           } else if (brandPlan === 'TRIAL') {
-            const wmWidth = canvas.width;
+            const wmWidth = canvas.width * 0.45;
             const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            ctx.globalAlpha = 0.6;
-            ctx.drawImage(wmImg, 0, canvas.height - wmHeight, wmWidth, wmHeight);
+            const x = (canvas.width - wmWidth) / 2;
+            const y = (canvas.height - wmHeight) / 2;
+            ctx.globalAlpha = 0.5;
+            ctx.drawImage(wmImg, x, y, wmWidth, wmHeight);
           }
           resolve(canvas.toDataURL('image/jpeg', 1.0));
         };
@@ -129,13 +132,15 @@ function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: str
           onClick={e => e.stopPropagation()}
         />
         {brandPlan === 'BASIC' && (
-          <div className="absolute bottom-4 left-4 w-20 pointer-events-none select-none z-10 opacity-40">
-            <img src="/watermark-basic.webp" alt="Lookitry" className="w-full h-auto" />
+          <div className="absolute bottom-[3.5%] right-[3.5%] w-[12%] pointer-events-none select-none z-10 opacity-70">
+            <img src="/watermark-basic.webp" alt="Lookitry Basic" className="w-full h-auto drop-shadow-md" />
           </div>
         )}
         {brandPlan === 'TRIAL' && (
-          <div className="absolute bottom-0 left-0 w-full pointer-events-none select-none z-10 opacity-60">
-            <img src="/watermark-trial.webp" alt="Lookitry" className="w-full h-auto" />
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
+            <div className="w-[45%] opacity-50">
+              <img src="/watermark-trial.webp" alt="Lookitry Trial" className="w-full h-auto drop-shadow-lg" />
+            </div>
           </div>
         )}
       </div>
@@ -197,16 +202,19 @@ function GenerationCard({
         wmImg.crossOrigin = 'anonymous';
         wmImg.onload = () => {
           if (brandPlan === 'BASIC') {
-            const wmWidth = canvas.width * 0.15;
+            const wmWidth = canvas.width * 0.12;
             const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            const padding = 20;
-            ctx.globalAlpha = 0.4;
-            ctx.drawImage(wmImg, padding, canvas.height - wmHeight - padding, wmWidth, wmHeight);
+            const paddingX = canvas.width * 0.035;
+            const paddingY = canvas.height * 0.035;
+            ctx.globalAlpha = 0.7;
+            ctx.drawImage(wmImg, canvas.width - wmWidth - paddingX, canvas.height - wmHeight - paddingY, wmWidth, wmHeight);
           } else if (brandPlan === 'TRIAL') {
-            const wmWidth = canvas.width;
+            const wmWidth = canvas.width * 0.45;
             const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            ctx.globalAlpha = 0.6;
-            ctx.drawImage(wmImg, 0, canvas.height - wmHeight, wmWidth, wmHeight);
+            const x = (canvas.width - wmWidth) / 2;
+            const y = (canvas.height - wmHeight) / 2;
+            ctx.globalAlpha = 0.5;
+            ctx.drawImage(wmImg, x, y, wmWidth, wmHeight);
           }
           resolve(canvas.toDataURL('image/jpeg', 1.0));
         };

@@ -64,25 +64,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [notifCount, setNotifCount] = useState(0);
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
     const user = localStorage.getItem('adminUser');
 
-    if (!token && pathname !== '/admin/login') {
+    if (!user && pathname !== '/admin/login') {
       router.push('/admin/login');
       return;
     }
 
-    // Verificar que el token sigue siendo válido haciendo una llamada ligera
-    if (token && pathname !== '/admin/login') {
+    // Verificar que el token (cookie) sigue siendo válido haciendo una llamada ligera
+    if (pathname !== '/admin/login') {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-      const headers = { Authorization: `Bearer ${token}` };
-
-      // Verificar token con una llamada al perfil del admin
-      fetch(`${apiBase}/api/admin/stats`, { headers })
+      
+      // Verificar token (cookie) con una llamada al perfil o stats
+      fetch(`${apiBase}/api/admin/verify`, { credentials: 'include' })
         .then(r => {
           if (r.status === 401) {
-            // Token expirado o inválido — limpiar y redirigir
-            localStorage.removeItem('adminToken');
+            // Cookie expirada o inválida — limpiar y redirigir
             localStorage.removeItem('adminUser');
             router.push('/admin/login');
             return null;
@@ -96,8 +93,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           // Cargar conteo de feedbacks sin resolver y notificaciones
           Promise.all([
-            fetch(`${apiBase}/api/admin/feedback/count-unresolved`, { headers }).then(r => r.ok ? r.json() : null),
-            fetch(`${apiBase}/api/admin/notifications`, { headers }).then(r => r.ok ? r.json() : null),
+            fetch(`${apiBase}/api/admin/feedback/count-unresolved`, { credentials: 'include' }).then(r => r.ok ? r.json() : null),
+            fetch(`${apiBase}/api/admin/notifications`, { credentials: 'include' }).then(r => r.ok ? r.json() : null),
           ]).then(([fbData, notifData]) => {
             if (fbData?.count) setFeedbackCount(fbData.count);
             if (notifData?.notifications) {
@@ -121,8 +118,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [pathname, router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+  const handleLogout = async () => {
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+      await fetch(`${apiBase}/api/admin/auth/logout`, { method: 'POST', credentials: 'include' });
+    } catch (e) { console.error('Error logging out:', e); }
+
     localStorage.removeItem('adminUser');
     router.push('/admin/login');
   };

@@ -1,13 +1,11 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { Eye, EyeOff, KeyRound, CheckCircle } from 'lucide-react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
-function getToken() {
-  return localStorage.getItem('adminToken') || localStorage.getItem('token') || '';
-}
+
 
 export default function AdminProfilePage() {
   const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -34,9 +32,9 @@ export default function AdminProfilePage() {
     try {
       const res = await fetch(`${API}/api/admin/admins/me/password`, {
         method: 'PUT',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({
           currentPassword: form.currentPassword,

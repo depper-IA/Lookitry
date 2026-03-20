@@ -77,11 +77,11 @@ export class WompiService {
 
   /**
    * Genera una referencia única para el pago.
-   * Formato: TRYON-{brandId}-M{months}-P{plan}-{timestamp}
-   * Ejemplo: TRYON-uuid-M3-PPRO-1748000000000
+   * Formato: TRYON-{brandId}-M{months}-P{plan}[-LANDING]-{timestamp}
+   * Ejemplo: TRYON-uuid-M3-PPRO-LANDING-1748000000000
    */
-  generateReference(brandId: string, months: number = 1, plan: string = 'BASIC'): string {
-    return `TRYON-${brandId}-M${months}-P${plan.toUpperCase()}-${Date.now()}`;
+  generateReference(brandId: string, months: number = 1, plan: string = 'BASIC', includesLanding: boolean = false): string {
+    return `TRYON-${brandId}-M${months}-P${plan.toUpperCase()}${includesLanding ? '-LANDING' : ''}-${Date.now()}`;
   }
 
   /**
@@ -138,15 +138,16 @@ export class WompiService {
    * Extrae months y plan de la referencia de pago.
    * Retorna defaults si la referencia es formato legacy.
    */
-  extractMetaFromReference(reference: string): { months: number; plan: string } {
+  extractMetaFromReference(reference: string): { months: number; plan: string; includesLanding: boolean } {
     const parts = reference.split('-');
     const mIdx = parts.findIndex((p, i) => i > 0 && /^M\d+$/.test(p));
+    const includesLanding = parts.includes('LANDING');
     if (mIdx > 1 && parts[mIdx + 1]?.startsWith('P')) {
       const months = parseInt(parts[mIdx].slice(1), 10) || 1;
       const plan = parts[mIdx + 1].slice(1) || 'BASIC';
-      return { months, plan };
+      return { months, plan, includesLanding };
     }
-    return { months: 1, plan: 'BASIC' };
+    return { months: 1, plan: 'BASIC', includesLanding };
   }
 
   /**

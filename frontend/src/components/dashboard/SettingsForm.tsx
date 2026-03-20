@@ -27,8 +27,8 @@ const TEMPLATES: Array<{
     name: 'Bare',
     description: 'Sin header ni sidebar — widget limpio, ideal para embed',
     layout: 'bare',
-    defaultPrimary: '#6366F1',
-    defaultSecondary: '#F9FAFB',
+    defaultPrimary: '#000000',
+    defaultSecondary: '#FFFFFF',
   },
   {
     id: 'minimal',

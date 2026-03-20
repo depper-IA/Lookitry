@@ -98,8 +98,8 @@ export class WompiController {
         return;
       }
 
-      // Extraer meses y plan de la referencia
-      const { months, plan } = wompiService.extractMetaFromReference(reference);
+      // Extraer meses, plan e incluye_landing de la referencia
+      const { months, plan, includesLanding } = wompiService.extractMetaFromReference(reference);
 
       // Renovar suscripción o activar trial según el monto
       if (amountInCents === 100) {
@@ -114,7 +114,6 @@ export class WompiController {
         console.log(`[Wompi] Trial activado para brand ${brandId}`);
 
         // Enviar email de verificación ahora que el pago fue confirmado
-        // (no se envió en el registro para evitar la brecha de seguridad)
         if (updatedBrand && !updatedBrand.email_verified && updatedBrand.email_verification_token) {
           const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
           const verifyUrl = `${frontendUrl}/auth/verify?token=${updatedBrand.email_verification_token}`;
@@ -128,12 +127,8 @@ export class WompiController {
           }).catch(err => console.error('[Wompi] Error enviando email de verificación post-trial:', err));
         }
       } else {
-        // Determinar si incluye activación de landing (plan LANDING en referencia legacy)
-        // En el nuevo formato, plan ya viene como BASIC o PRO (el subPlan del checkout)
-        // La activación de landing se detecta por el monto: landing_price + sub_price
-        // Por simplicidad, si el plan en la referencia es LANDING, activar landing + BASIC
         const effectivePlan = plan === 'LANDING' ? 'BASIC' : plan;
-        const activateLanding = plan === 'LANDING';
+        const activateLanding = plan === 'LANDING' || includesLanding;
 
         // Renovar suscripción normal con meses y plan extraídos de la referencia
         // Si el plan cambió respecto al actual → es un upgrade, resetear fecha desde hoy
@@ -341,7 +336,7 @@ export class WompiController {
       const brandId = brand?.id ?? `visitor_${Date.now()}`;
 
       // Generar la referencia antes de llamar al servicio para poder guardarla en pending_registrations
-      const reference = wompiService.generateReference(brandId, monthsNum, planStr);
+      const reference = wompiService.generateReference(brandId, monthsNum, planStr, isLandingPurchase);
 
       const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
       let successPath: string;

@@ -58,6 +58,25 @@ export const adminLogin = async (req: any, res: Response) => {
       email: admin.email,
     });
 
+    // ── Seguridad: Cookie HTTP-Only ──────────────────────────────────────────
+    // Se envía como cookie segura para proteger contra XSS (P1 Hallazgo Auditoría)
+    const IS_PROD = process.env.NODE_ENV === 'production';
+    const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+
+    const cookieOptions: any = {
+      httpOnly: true,
+      secure: IS_PROD,
+      sameSite: IS_PROD ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    };
+
+    if (COOKIE_DOMAIN && IS_PROD) {
+      cookieOptions.domain = COOKIE_DOMAIN;
+    }
+
+    res.cookie('admin_token', token, cookieOptions);
+
     // Auditoría de login
     auditService.log({
       admin_id: admin.id,
@@ -66,6 +85,8 @@ export const adminLogin = async (req: any, res: Response) => {
     });
 
     return res.status(200).json({
+      // Mantenemos el token en el JSON por retrocompatibilidad, 
+      // pero el frontend ahora debe usar credentials: 'include'
       token,
       admin: {
         id: admin.id,
@@ -83,6 +104,45 @@ export const adminLogin = async (req: any, res: Response) => {
   }
 };
 
+/**
+ * POST /api/admin/auth/logout
+ * Cerrar sesión de administrador
+ */
+export const adminLogout = async (_req: any, res: Response) => {
+  try {
+    const IS_PROD = process.env.NODE_ENV === 'production';
+    const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+
+    const cookieOptions: any = {
+      httpOnly: true,
+      secure: IS_PROD,
+      sameSite: IS_PROD ? 'none' : 'lax',
+      expires: new Date(0),
+      path: '/',
+    };
+
+    if (COOKIE_DOMAIN && IS_PROD) {
+      cookieOptions.domain = COOKIE_DOMAIN;
+    }
+
+    res.cookie('admin_token', '', cookieOptions);
+
+    // Audit log (optional, if admin ID is available from middleware)
+    // auditService.log({
+    //   admin_id: _req.admin?.id ?? 'unknown',
+    //   admin_email: _req.admin?.email ?? 'unknown',
+    //   action: 'admin.logout',
+    // });
+
+    return res.status(200).json({ message: 'Sesión cerrada exitosamente' });
+  } catch (error: any) {
+    console.error('Error in adminLogout:', error);
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Error interno del servidor al cerrar sesión',
+    });
+  }
+};
 
 /**
  * GET /api/admin/brands
