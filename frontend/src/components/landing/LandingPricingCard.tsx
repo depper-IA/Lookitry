@@ -2,20 +2,37 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { formatPrice } from '@/utils/currency';
 
 export function LandingPricingCard() {
   const router = useRouter();
   const [landingPrice, setLandingPrice] = useState(650000);
   const [landingOriginal, setLandingOriginal] = useState(900000);
+  const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
+  const [trm, setTrm] = useState(3900);
 
   useEffect(() => {
+    // 1. Cargar precios y TRM
     fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.landingPrice) setLandingPrice(d.landingPrice);
         if (d?.landingOriginalPrice) setLandingOriginal(d.landingOriginalPrice);
+        if (d?.trm) setTrm(d.trm);
       })
       .catch(() => {});
+
+    // 2. Detectar moneda actual
+    const saved = localStorage.getItem('currency') as 'COP' | 'USD';
+    if (saved) setCurrency(saved);
+
+    const handleCurrencyChange = () => {
+      const current = localStorage.getItem('currency') as 'COP' | 'USD';
+      if (current) setCurrency(current);
+    };
+
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
   }, []);
 
   const discountPct = Math.round((1 - landingPrice / landingOriginal) * 100);
@@ -51,16 +68,17 @@ export function LandingPricingCard() {
       {/* Precio y CTA */}
       <div className="px-6 py-6 border-t border-[#1f1f1f]">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[#555] text-sm line-through">${landingOriginal.toLocaleString('es-CO')} COP</span>
+          <span className="text-[#555] text-sm line-through">
+            {formatPrice(landingOriginal, currency, trm)}
+          </span>
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FF5C3A]/20 text-[#FF5C3A] uppercase tracking-wider">
             {discountPct}% OFF
           </span>
         </div>
         <div className="flex items-baseline gap-1 mb-1">
           <span className="font-syne text-4xl font-extrabold text-white">
-            ${landingPrice.toLocaleString('es-CO')}
+            {formatPrice(landingPrice, currency, trm)}
           </span>
-          <span className="text-[#555] text-sm">COP</span>
         </div>
         <p className="text-[12px] text-[#555] mb-5">Pago único · Sin mensualidad adicional</p>
 
@@ -83,7 +101,7 @@ export function LandingPricingCard() {
         >
           Obtener mi mini-landing
         </button>
-        <p className="text-[11px] text-[#444] text-center mt-3">Incluido al contratar cualquier plan</p>
+        <p className="text-[11px] text-[#444] text-center mt-3">Servicio adicional · Pago único</p>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { CheckCircle, XCircle, CreditCard, ShieldCheck, ArrowLeft, Globe, ArrowU
 import WompiButton from '@/components/payments/WompiButton';
 import { subscriptionService } from '@/services/subscription.service';
 import { api } from '@/services/api';
-import { formatCurrency } from '@/utils/currency';
+import { formatCurrency, formatPrice } from '@/utils/currency';
 import type { PlanType } from '@/types';
 import type { WompiWidgetResult } from '@/types/wompi';
 
@@ -124,10 +124,17 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     subscriptionService.getSubscriptionInfo().then((info) => {
-      // ... (logic)
+      if (info) {
+        setCurrentPlan(info.plan);
+        setIsInTrial(info.isInTrial);
+        setHasActiveSub(info.status === 'active' || info.status === 'expiring_soon');
+        setHasLandingPage(info.hasLandingPage);
+        setDaysRemaining(info.daysRemaining);
+      }
+      setLoadingInfo(false);
     });
 
-    api.get(`/payments/wompi/config?plan=${plan}`)
+    api.get(`/payments/wompi/config?plan=${initialPlan}`)
       .then(() => setWompiEnabled(true))
       .catch(() => setWompiEnabled(false));
 
@@ -408,18 +415,18 @@ export default function CheckoutPage() {
             <div className="px-5 py-4 space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span style={{ color: 'var(--text-muted)' }}>Plan Pro · {selectedMonths} {selectedMonths === 1 ? 'mes' : 'meses'}</span>
-                <span style={{ color: 'var(--text-primary)' }}>{formatCurrency(prorationPreview.newPlanTotal)}</span>
+                <span style={{ color: 'var(--text-primary)' }}>{formatPrice(prorationPreview.newPlanTotal, paymentMethod, trm)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span style={{ color: 'var(--text-muted)' }}>
                   Crédito por {prorationPreview.daysRemaining} días restantes del Plan Básico
                 </span>
-                <span className="font-medium" style={{ color: '#10b981' }}>− {formatCurrency(prorationPreview.creditAmount)}</span>
+                <span className="font-medium" style={{ color: '#10b981' }}>− {formatPrice(prorationPreview.creditAmount, paymentMethod, trm)}</span>
               </div>
               <div className="flex items-center justify-between pt-2 border-t font-semibold" style={{ borderColor: 'rgba(99,102,241,0.2)' }}>
                 <span style={{ color: 'var(--text-primary)' }}>Total a pagar</span>
                 <span style={{ color: prorationPreview.isFree ? '#10b981' : '#6366f1', fontSize: '1.1rem' }}>
-                  {prorationPreview.isFree ? 'Sin costo adicional' : formatCurrency(prorationPreview.amountToPay)}
+                  {prorationPreview.isFree ? 'Sin costo adicional' : formatPrice(prorationPreview.amountToPay, paymentMethod, trm)}
                 </span>
               </div>
               {prorationPreview.isFree && (
@@ -473,7 +480,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
                 <p className="text-lg font-bold" style={{ color: isSelected ? '#FF5C3A' : 'var(--text-primary)' }}>
-                  {formatCurrency(info.price)}
+                  {formatPrice(info.price, paymentMethod, trm)}
                   <span className="text-xs font-normal ml-1" style={{ color: 'var(--text-muted)' }}>/mes</span>
                 </p>
                 <ul className="mt-2 space-y-1">
@@ -525,7 +532,7 @@ export default function CheckoutPage() {
             <div className="mt-3 flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
               <span className="text-xs text-emerald-600">Ahorro con {monthDiscount.pct}% de descuento</span>
               <span className="text-sm font-bold text-emerald-600">
-                − {formatCurrency(Math.round(planInfo[plan].price * selectedMonths * (monthDiscount.pct / 100)))}
+                − {formatPrice(Math.round(planInfo[plan].price * selectedMonths * (monthDiscount.pct / 100)), paymentMethod, trm)}
               </span>
             </div>
           )}
@@ -547,7 +554,7 @@ export default function CheckoutPage() {
                   : `${selectedMonths} meses${monthDiscount.pct > 0 ? ` · ${monthDiscount.pct}% descuento` : ''}`}
               </p>
             </div>
-            <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(planTotal)}</p>
+            <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{formatPrice(planTotal, paymentMethod, trm)}</p>
           </div>
 
           <ul className="space-y-2 pt-2 border-t" style={{ borderColor: 'var(--border-color)' }}>
@@ -581,7 +588,7 @@ export default function CheckoutPage() {
                       <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Mini-landing personalizada</span>
                       <span className="text-xs px-1.5 py-0.5 rounded font-medium" style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}>Pago único</span>
                     </div>
-                    <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(miniLandingPrice)}</span>
+                    <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{formatPrice(miniLandingPrice, paymentMethod, trm)}</span>
                   </div>
                   <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
                     Página pública en pruebalo.wilkiedevs.com/tu-marca con hero, galería, probador virtual y contacto.
@@ -595,18 +602,18 @@ export default function CheckoutPage() {
             {includeLanding && (
               <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
                 <span>Mini-landing (pago único)</span>
-                <span>{formatCurrency(miniLandingPrice)}</span>
+                <span>{formatPrice(miniLandingPrice, paymentMethod, trm)}</span>
               </div>
             )}
             {isUpgrade && prorationPreview && (
               <div className="flex items-center justify-between text-sm" style={{ color: '#10b981' }}>
                 <span>Crédito plan actual ({prorationPreview.daysRemaining} días)</span>
-                <span>− {formatCurrency(prorationPreview.creditAmount)}</span>
+                <span>− {formatPrice(prorationPreview.creditAmount, paymentMethod, trm)}</span>
               </div>
             )}
             <div className="flex items-center justify-between">
               <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Total a pagar</p>
-              <p className="text-xl font-bold" style={{ color: '#FF5C3A' }}>{formatCurrency(totalPrice)}</p>
+              <p className="text-xl font-bold" style={{ color: '#FF5C3A' }}>{formatPrice(totalPrice, paymentMethod, trm)}</p>
             </div>
           </div>
         </div>
