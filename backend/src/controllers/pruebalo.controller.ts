@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { supabaseAdmin } from '../config/supabase';
 import { getCachedBrandConfig, setCachedBrandConfig, invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { BrandsService } from '../services/brands.service';
 import { ProductsService } from '../services/products.service';
