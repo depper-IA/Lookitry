@@ -14,7 +14,7 @@ const LOGOS = [
 
 export function PaymentTrustBadges() {
   return (
-    <section className="py-12 bg-[#0a0a0a] border-t border-[#1a1a1a]">
+    <section className="py-12 pb-24 bg-[#0a0a0a]">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex flex-col items-center text-center mb-8">
           <div className="flex items-center gap-2 mb-2 text-[#10b981]">

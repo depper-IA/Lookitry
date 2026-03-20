@@ -2,16 +2,25 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { formatCurrency } from '@/utils/currency';
+import { 
+  CreditCard, 
+  Palette, 
+  Settings, 
+  TrendingUp, 
+  RefreshCw,
+  X
+} from 'lucide-react';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
 interface PlanConfig {
   precio_mensual_cop: number;
+  precio_original_cop?: number;
+  descuento_porcentaje?: number;
   productos_max: number;
   generaciones_mensuales: number;
   subtitulo: string;
   boton_texto: string;
-  boton_texto_sin_trial?: string;
   features: string[];
   features_excluidas?: string[];
 }
@@ -30,6 +39,13 @@ interface MetaConfig {
   meta_ingreso_cop: number;
   trm_referencia: number;
   trm_auto: boolean;
+  trial_days?: number;
+  trial_generations_limit?: number;
+  trial_products_max?: number;
+  social_instagram?: string;
+  social_tiktok?: string;
+  social_youtube?: string;
+  social_x?: string;
 }
 
 interface CostsConfig {
@@ -187,15 +203,24 @@ function PlanSection({
     clientes,
   );
 
+  // Cálculo automático de descuento
+  const autoDiscount = plan.precio_original_cop && plan.precio_original_cop > plan.precio_mensual_cop
+    ? Math.round((1 - (plan.precio_mensual_cop / plan.precio_original_cop)) * 100)
+    : 0;
+
   return (
     <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
       <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</h3>
 
       {/* Cálculos automáticos — solo lectura */}
-      <div className="grid grid-cols-3 gap-3 p-4 rounded-xl" style={{ background: 'var(--bg-base)' }}>
+      <div className="grid grid-cols-4 gap-3 p-4 rounded-xl" style={{ background: 'var(--bg-base)' }}>
         <div>
           <p className="text-[11px] mb-0.5" style={{ color: 'var(--text-muted)' }}>Precio en USD</p>
           <p className="text-sm font-bold" style={{ color: '#FF5C3A' }}>${usd}</p>
+        </div>
+        <div>
+          <p className="text-[11px] mb-0.5" style={{ color: 'var(--text-muted)' }}>Descuento auto.</p>
+          <p className="text-sm font-bold" style={{ color: '#FF5C3A' }}>{autoDiscount}%</p>
         </div>
         <div>
           <p className="text-[11px] mb-0.5" style={{ color: 'var(--text-muted)' }}>Clientes p/meta</p>
@@ -213,7 +238,19 @@ function PlanSection({
         <Field
           label="Precio mensual (COP)" type="number" prefix="$"
           value={plan.precio_mensual_cop}
-          onChange={v => onChange({ ...plan, precio_mensual_cop: Number(v) })}
+          onChange={v => onChange({ ...plan, precio_mensual_cop: Number(v), descuento_porcentaje: autoDiscount })}
+        />
+        <Field
+          label="Precio original / tachado (COP)" type="number" prefix="$"
+          value={plan.precio_original_cop ?? 0}
+          onChange={v => onChange({ ...plan, precio_original_cop: Number(v), descuento_porcentaje: autoDiscount })}
+        />
+        <Field
+          label="Descuento % (Solo lectura)" type="number" suffix="%"
+          value={autoDiscount}
+          disabled={true}
+          onChange={() => {}}
+          hint="Se calcula automáticamente basado en el precio original."
         />
         <Field
           label="Máx. productos" type="number"
@@ -231,14 +268,9 @@ function PlanSection({
           onChange={v => onChange({ ...plan, subtitulo: v })}
         />
         <Field
-          label="Texto botón (con trial)"
+          label="Texto del botón"
           value={plan.boton_texto}
           onChange={v => onChange({ ...plan, boton_texto: v })}
-        />
-        <Field
-          label="Texto botón (sin trial)"
-          value={plan.boton_texto_sin_trial ?? ''}
-          onChange={v => onChange({ ...plan, boton_texto_sin_trial: v })}
         />
       </div>
 
@@ -260,11 +292,14 @@ export default function PricingAdminPage() {
   const [trm, setTrm]               = useState(3700);
   const [trmAuto, setTrmAuto]       = useState(true);
   const [trmLive, setTrmLive]       = useState(3700);
+  const [activeTab, setActiveTab]   = useState<'plans' | 'landing' | 'config'>('plans');
 
   const [basic, setBasic]               = useState<PlanConfig | null>(null);
   const [pro, setPro]                   = useState<PlanConfig | null>(null);
   const [miniLanding, setMiniLanding]   = useState<MiniLandingConfig | null>(null);
   const [descuentos, setDescuentos]     = useState<DescuentosConfig | null>(null);
+  const [meta, setMeta]                 = useState<MetaConfig | null>(null);
+  const [costs, setCosts]               = useState<CostsConfig | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -287,9 +322,13 @@ export default function PricingAdminPage() {
         if (row.id === 'descuentos_duracion') setDescuentos(row.data as unknown as DescuentosConfig);
         if (row.id === 'meta') {
           const m = row.data as unknown as MetaConfig;
+          setMeta(m);
           setTrm(m.trm_referencia);
           setTrmAuto(m.trm_auto);
           autoEnabled = m.trm_auto;
+        }
+        if (row.id === 'costs' || row.id === 'costos_operativos') {
+          setCosts(row.data as unknown as CostsConfig);
         }
       }
 
@@ -339,8 +378,10 @@ export default function PricingAdminPage() {
     );
   }
 
-  const costsObj = { costo_vps_cop: 37000, costo_dominio_cop_mensual: 5000, costo_openrouter_por_gen_cop: 25 };
-  const metaCop  = 2000000;
+  if (!basic || !pro) return null;
+
+  const costsObj = costs || { costo_vps_cop: 37000, costo_dominio_cop_mensual: 5000, costo_openrouter_por_gen_cop: 25 };
+  const metaCop  = meta?.meta_ingreso_cop ?? 2000000;
 
   return (
     <div className="space-y-8 max-w-4xl">
@@ -376,94 +417,250 @@ export default function PricingAdminPage() {
         </div>
       )}
 
-      {/* ── Plan Básico ── */}
-      {basic && (
-        <div className="space-y-3">
-          <PlanSection title="Plan Básico" plan={basic} trm={trm} meta={metaCop} costs={costsObj} onChange={setBasic} />
-          <div className="flex justify-end">
-            <SaveBtn id="basic" data={basic as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
-          </div>
-        </div>
-      )}
+      {/* Tabs */}
+      <div className="flex items-center gap-1 border-b" style={{ borderColor: 'var(--border-color)' }}>
+        {[
+          { id: 'plans', label: 'Suscripciones', icon: CreditCard },
+          { id: 'landing', label: 'Mini-Landing', icon: Palette },
+          { id: 'config', label: 'Configuración & ROI', icon: Settings },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`px-4 py-3 text-sm font-medium transition-all border-b-2 -mb-[2px] flex items-center gap-2.5`}
+            style={{
+              borderColor: activeTab === tab.id ? '#FF5C3A' : 'transparent',
+              color: activeTab === tab.id ? '#FF5C3A' : 'var(--text-muted)',
+            }}
+          >
+            <tab.icon className="w-4 h-4" />
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-      {/* ── Plan Pro ── */}
-      {pro && (
-        <div className="space-y-3">
-          <PlanSection title="Plan Pro" plan={pro} trm={trm} meta={metaCop} costs={costsObj} onChange={setPro} />
-          <div className="flex justify-end">
-            <SaveBtn id="pro" data={pro as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+      <div className="pt-2">
+        {/* ── TAB: Suscripciones ── */}
+        {activeTab === 'plans' && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {basic && (
+              <div className="space-y-3">
+                <PlanSection title="Plan Básico" plan={basic} trm={trm} meta={metaCop} costs={costsObj} onChange={setBasic} />
+                <div className="flex justify-end">
+                  <SaveBtn id="basic" data={basic as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                </div>
+              </div>
+            )}
+            {pro && (
+              <div className="space-y-3">
+                <PlanSection title="Plan Pro" plan={pro} trm={trm} meta={metaCop} costs={costsObj} onChange={setPro} />
+                <div className="flex justify-end">
+                  <SaveBtn id="pro" data={pro as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Mini-Landing ── */}
-      {miniLanding && (
-        <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <div>
-            <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Mini-Landing (pago único)</h3>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              Precio en USD: <strong style={{ color: '#FF5C3A' }}>${precioEnUSD(miniLanding.precio_unico_cop, trm)}</strong>
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field
-              label="Precio único (COP)" type="number" prefix="$"
-              value={miniLanding.precio_unico_cop}
-              onChange={v => setMiniLanding({ ...miniLanding, precio_unico_cop: Number(v) })}
-            />
-            <Field
-              label="Precio original / tachado (COP)" type="number" prefix="$"
-              value={miniLanding.precio_original_cop}
-              onChange={v => setMiniLanding({ ...miniLanding, precio_original_cop: Number(v) })}
-            />
-            <Field
-              label="Descuento %" type="number" suffix="%"
-              value={miniLanding.descuento_porcentaje}
-              onChange={v => setMiniLanding({ ...miniLanding, descuento_porcentaje: Number(v) })}
-              hint="Se muestra como badge en la tarjeta de la landing"
-            />
-            <Field
-              label="Subtítulo"
-              value={miniLanding.subtitulo}
-              onChange={v => setMiniLanding({ ...miniLanding, subtitulo: v })}
-            />
-            <Field
-              label="Texto del botón"
-              value={miniLanding.boton_texto}
-              onChange={v => setMiniLanding({ ...miniLanding, boton_texto: v })}
-            />
-          </div>
-          <FeaturesList features={miniLanding.features} onChange={f => setMiniLanding({ ...miniLanding, features: f })} />
-          <div className="flex justify-end">
-            <SaveBtn id="mini_landing" data={miniLanding as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
-          </div>
-        </div>
-      )}
+        {/* ── TAB: Mini-Landing ── */}
+        {activeTab === 'landing' && miniLanding && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+              <div>
+                <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Mini-Landing (pago único)</h3>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  Precio en USD: <strong style={{ color: '#FF5C3A' }}>${precioEnUSD(miniLanding.precio_unico_cop, trm)}</strong>
+                </p>
+              </div>
+              
+              <div className="p-4 rounded-xl max-w-xs" style={{ background: 'var(--bg-base)' }}>
+                <p className="text-[11px] mb-0.5" style={{ color: 'var(--text-muted)' }}>Descuento automático</p>
+                <p className="text-sm font-bold" style={{ color: '#FF5C3A' }}>
+                  {miniLanding.precio_original_cop > miniLanding.precio_unico_cop 
+                    ? Math.round((1 - (miniLanding.precio_unico_cop / miniLanding.precio_original_cop)) * 100) 
+                    : 0}%
+                </p>
+              </div>
 
-      {/* ── Descuentos por duración ── */}
-      {descuentos && (
-        <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <div>
-            <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Descuentos por duración de suscripción</h3>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              Se aplican al precio mensual en el checkout según el período elegido.
-            </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field
+                  label="Precio único (COP)" type="number" prefix="$"
+                  value={miniLanding.precio_unico_cop}
+                  onChange={v => {
+                    const val = Number(v);
+                    const desc = miniLanding.precio_original_cop > val ? Math.round((1 - (val / miniLanding.precio_original_cop)) * 100) : 0;
+                    setMiniLanding({ ...miniLanding, precio_unico_cop: val, descuento_porcentaje: desc });
+                  }}
+                />
+                <Field
+                  label="Precio original / tachado (COP)" type="number" prefix="$"
+                  value={miniLanding.precio_original_cop}
+                  onChange={v => {
+                    const val = Number(v);
+                    const desc = val > miniLanding.precio_unico_cop ? Math.round((1 - (miniLanding.precio_unico_cop / val)) * 100) : 0;
+                    setMiniLanding({ ...miniLanding, precio_original_cop: val, descuento_porcentaje: desc });
+                  }}
+                />
+                <Field
+                  label="Descuento % (Solo lectura)" type="number" suffix="%"
+                  value={miniLanding.descuento_porcentaje}
+                  disabled={true}
+                  onChange={() => {}}
+                  hint="Se calcula automáticamente basado en el precio original."
+                />
+                <Field
+                  label="Subtítulo"
+                  value={miniLanding.subtitulo}
+                  onChange={v => setMiniLanding({ ...miniLanding, subtitulo: v })}
+                />
+                <Field
+                  label="Texto del botón"
+                  value={miniLanding.boton_texto}
+                  onChange={v => setMiniLanding({ ...miniLanding, boton_texto: v })}
+                />
+              </div>
+              <FeaturesList features={miniLanding.features} onChange={f => setMiniLanding({ ...miniLanding, features: f })} />
+              <div className="flex justify-end">
+                <SaveBtn id="mini_landing" data={miniLanding as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Field label="1 mes" type="number" suffix="%" value={descuentos.meses_1}
-              onChange={v => setDescuentos({ ...descuentos, meses_1: Number(v) })} />
-            <Field label="3 meses" type="number" suffix="%" value={descuentos.meses_3}
-              onChange={v => setDescuentos({ ...descuentos, meses_3: Number(v) })} />
-            <Field label="6 meses" type="number" suffix="%" value={descuentos.meses_6}
-              onChange={v => setDescuentos({ ...descuentos, meses_6: Number(v) })} />
-            <Field label="12 meses" type="number" suffix="%" value={descuentos.meses_12}
-              onChange={v => setDescuentos({ ...descuentos, meses_12: Number(v) })} />
+        )}
+
+        {/* ── TAB: Configuración & ROI ── */}
+        {activeTab === 'config' && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {/* Plan Trial */}
+            {meta && (
+              <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+                <div>
+                  <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Plan Trial (Periodo de prueba)</h3>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                    Configura los límites para las marcas que se registran gratis.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Field
+                    label="Días de duración" type="number" suffix="días"
+                    value={meta.trial_days ?? 7}
+                    onChange={v => setMeta({ ...meta, trial_days: Number(v) })}
+                  />
+                  <Field
+                    label="Máx. productos activos" type="number"
+                    value={meta.trial_products_max ?? 1}
+                    onChange={v => setMeta({ ...meta, trial_products_max: Number(v) })}
+                  />
+                  <Field
+                    label="Límite generaciones" type="number" suffix="gen"
+                    value={meta.trial_generations_limit ?? 30}
+                    onChange={v => setMeta({ ...meta, trial_generations_limit: Number(v) })}
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <SaveBtn id="meta" data={meta as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                </div>
+              </div>
+            )}
+
+            {/* Descuentos por duración */}
+            {descuentos && (
+              <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+                <div>
+                  <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Descuentos por duración</h3>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                    Ahorro aplicado según los meses de suscripción.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <Field label="1 mes" type="number" suffix="%" value={descuentos.meses_1}
+                    onChange={v => setDescuentos({ ...descuentos, meses_1: Number(v) })} />
+                  <Field label="3 meses" type="number" suffix="%" value={descuentos.meses_3}
+                    onChange={v => setDescuentos({ ...descuentos, meses_3: Number(v) })} />
+                  <Field label="6 meses" type="number" suffix="%" value={descuentos.meses_6}
+                    onChange={v => setDescuentos({ ...descuentos, meses_6: Number(v) })} />
+                  <Field label="12 meses" type="number" suffix="%" value={descuentos.meses_12}
+                    onChange={v => setDescuentos({ ...descuentos, meses_12: Number(v) })} />
+                </div>
+                <div className="flex justify-end">
+                  <SaveBtn id="descuentos_duracion" data={descuentos as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                </div>
+              </div>
+            )}
+
+            {/* Metas de Negocio & ROI */}
+            {meta && (
+              <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-[#FF5C3A]" />
+                  <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Metas de Negocio & ROI</h3>
+                </div>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  Objetivos financieros para cálculos de margen y excedentes en el panel de control.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field
+                    label="Meta de ingreso mensual (COP)" type="number" prefix="$"
+                    value={meta.meta_ingreso_cop}
+                    onChange={v => setMeta({ ...meta, meta_ingreso_cop: Number(v) })}
+                    hint="Usado para calcular el % de cumplimiento en el dashboard"
+                  />
+                  <Field
+                    label="Gastos personales / Costo de vida (COP)" type="number" prefix="$"
+                    value={meta.gastos_personales_cop}
+                    onChange={v => setMeta({ ...meta, gastos_personales_cop: Number(v) })}
+                    hint="Usado para calcular el excedente real (neto)"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <SaveBtn id="meta" data={meta as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                </div>
+              </div>
+            )}
+
+            {/* Redes Sociales */}
+            {meta && (
+              <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+                <div className="flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-[#FF5C3A]" />
+                  <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Redes Sociales</h3>
+                </div>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  Enlaces que aparecerán en el pie de página del sitio.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field
+                    label="Instagram"
+                    value={meta.social_instagram ?? '#'}
+                    onChange={v => setMeta({ ...meta, social_instagram: v })}
+                    hint="Ej: https://instagram.com/tu-marca"
+                  />
+                  <Field
+                    label="TikTok"
+                    value={meta.social_tiktok ?? '#'}
+                    onChange={v => setMeta({ ...meta, social_tiktok: v })}
+                    hint="Ej: https://tiktok.com/@tu-marca"
+                  />
+                  <Field
+                    label="YouTube"
+                    value={meta.social_youtube ?? ''}
+                    onChange={v => setMeta({ ...meta, social_youtube: v })}
+                    hint="Ej: https://youtube.com/@tu-canal"
+                  />
+                  <Field
+                    label="X (Twitter)"
+                    value={meta.social_x ?? ''}
+                    onChange={v => setMeta({ ...meta, social_x: v })}
+                    hint="Ej: https://x.com/tu-marca"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <SaveBtn id="meta" data={meta as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                </div>
+              </div>
+            )}
           </div>
-          <div className="flex justify-end">
-            <SaveBtn id="descuentos_duracion" data={descuentos as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Última actualización */}
       {rows.length > 0 && (

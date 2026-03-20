@@ -1,5 +1,15 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { 
+  Mail, 
+  Phone, 
+  Instagram, 
+  Youtube, 
+  Twitter
+} from 'lucide-react';
 
 const NAV_PRODUCTO = [
   { label: 'Inicio', href: '/' },
@@ -14,32 +24,46 @@ const NAV_EMPRESA = [
   { label: 'Política de Privacidad', href: '/politicas-privacidad' },
 ];
 
-function IconMail() {
+// Icono personalizado para TikTok (Lucide no lo tiene por defecto en versiones antiguas o es diferente)
+function IconTikTok() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-      <polyline points="22,6 12,13 2,6" />
-    </svg>
-  );
-}
-
-function IconPhone() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
-    </svg>
-  );
-}
-
-function IconArrow() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-      <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
     </svg>
   );
 }
 
 export function LandingFooter() {
+  const [socials, setSocials] = useState<{
+    instagram?: string;
+    tiktok?: string;
+    youtube?: string;
+    x?: string;
+  }>({ instagram: '#', tiktok: '#' });
+
+  useEffect(() => {
+    // Cargar config desde Supabase (vía API pública de pricing)
+    fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?id=eq.meta&select=data`, {
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+      },
+    })
+      .then(r => r.json())
+      .then(rows => {
+        if (rows && rows[0]?.data) {
+          const d = rows[0].data;
+          setSocials({
+            instagram: d.social_instagram || '#',
+            tiktok: d.social_tiktok || '#',
+            youtube: d.social_youtube,
+            x: d.social_x,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <footer className="bg-[#080808] border-t border-[#161616]">
 
@@ -66,6 +90,34 @@ export function LandingFooter() {
             Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica.
           </p>
 
+          {/* RRSS */}
+          <div className="flex items-center gap-3 mb-8">
+            {socials.instagram && (
+              <a href={socials.instagram} target="_blank" rel="noopener noreferrer" 
+                className="w-8 h-8 rounded-full bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all">
+                <Instagram size={14} />
+              </a>
+            )}
+            {socials.tiktok && (
+              <a href={socials.tiktok} target="_blank" rel="noopener noreferrer" 
+                className="w-8 h-8 rounded-full bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all">
+                <IconTikTok />
+              </a>
+            )}
+            {socials.youtube && socials.youtube !== '#' && (
+              <a href={socials.youtube} target="_blank" rel="noopener noreferrer" 
+                className="w-8 h-8 rounded-full bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all">
+                <Youtube size={14} />
+              </a>
+            )}
+            {socials.x && socials.x !== '#' && (
+              <a href={socials.x} target="_blank" rel="noopener noreferrer" 
+                className="w-8 h-8 rounded-full bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all">
+                <Twitter size={14} />
+              </a>
+            )}
+          </div>
+
           {/* Contacto */}
           <div className="flex flex-col gap-3">
             <a
@@ -73,7 +125,7 @@ export function LandingFooter() {
               className="inline-flex items-center gap-2.5 text-[12px] text-[#666] hover:text-[#FF5C3A] transition-colors group"
             >
               <span className="w-7 h-7 rounded-lg bg-[#111] border border-[#1e1e1e] flex items-center justify-center flex-shrink-0 group-hover:border-[#FF5C3A]/30 transition-colors">
-                <IconMail />
+                <Mail size={13} />
               </span>
               info@pruebalo.wilkiedevs.com
             </a>
@@ -84,7 +136,7 @@ export function LandingFooter() {
               className="inline-flex items-center gap-2.5 text-[12px] text-[#666] hover:text-[#FF5C3A] transition-colors group"
             >
               <span className="w-7 h-7 rounded-lg bg-[#111] border border-[#1e1e1e] flex items-center justify-center flex-shrink-0 group-hover:border-[#FF5C3A]/30 transition-colors">
-                <IconPhone />
+                <Phone size={13} />
               </span>
               +57 310 543 6281
             </a>

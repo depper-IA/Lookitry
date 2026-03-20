@@ -820,7 +820,7 @@ function CheckoutContent() {
                   ? 'Redirigiendo...'
                   : paymentMethod === 'wompi'
                     ? `Pagar ${formatCOP(totalPrice)} COP`
-                    : `Pagar USD $${(totalPrice / trm).toFixed(2)} con PayPal`
+                    : `Pagar USD $${Math.ceil(totalPrice / trm)} con PayPal`
                 }
               </button>
 

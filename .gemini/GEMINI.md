@@ -972,5 +972,14 @@ Páginas públicas actuales en el sitemap:
 
 
 
+## Continuidad y Auditoría
+
+Para asegurar la coherencia en el desarrollo y evitar la pérdida de contexto entre sesiones, se han establecido las siguientes reglas obligatorias:
+
+1. **Lectura de Historial:** Al iniciar cualquier tarea, es OBLIGATORIO leer el archivo `CHANGELOG_GEMINI.md` en la raíz del proyecto. Este archivo contiene el estado real de los cambios aplicados y las tareas pendientes.
+2. **Registro de Cambios:** Después de cada modificación significativa, la IA debe actualizar el archivo `CHANGELOG_GEMINI.md` documentando lo realizado y lo que queda pendiente.
+3. **Verificación de Escritura:** Debido a posibles inconsistencias en el entorno, tras realizar una escritura (`write_file` o `replace`), se debe verificar físicamente el contenido del archivo con `read_file` antes de confirmar la tarea al usuario.
+4. **Acceso Exclusivo:** El trabajo se limita EXCLUSIVAMENTE a la ruta `C:\Users\Matt\Mostrador_wilkiedevs`.
+
 ---
 *Este archivo debe actualizarse ante cambios estructurales en la base de datos o flujos críticos.*
