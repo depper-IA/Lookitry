@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 
@@ -38,6 +38,17 @@ interface OpenRouterCredits {
   cost_per_generation: number;
   low_balance_alert: boolean;
   critical_balance_alert: boolean;
+}
+
+interface PaymentSettings {
+  bypass_ip_protection: boolean;
+  ip_whitelist: string;
+  landing_price: number;
+  landing_original_price: number;
+  footer_brand_url: string;
+  currency: string;
+  ai_prompt_master: string;
+  ai_prompt_negative: string;
 }
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
@@ -83,6 +94,14 @@ function IconLink({ className }: { className?: string }) {
 function IconCoin({ className }: { className?: string }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7v1m0 8v1m-3-5h6m-6 0a3 3 0 006 0" /></svg>;
 }
+function IconBrain({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+    </svg>
+  );
+}
+
 // ── Toggle switch ─────────────────────────────────────────────────────────────
 
 function Toggle({ value, onChange, disabled }: { value: boolean; onChange: () => void; disabled?: boolean }) {
@@ -190,6 +209,11 @@ export default function SystemConfigPage() {
   const [currency, setCurrency] = useState<string>('COP');
   const [savingCurrency, setSavingCurrency] = useState(false);
 
+  // Motor de IA
+  const [aiPromptMaster, setAiPromptMaster] = useState<string>('');
+  const [aiPromptNegative, setAiPromptNegative] = useState<string>('');
+  const [savingAIConfig, setSavingAIConfig] = useState(false);
+
   // Créditos OpenRouter
   const [credits, setCredits] = useState<OpenRouterCredits | null>(null);
   const [loadingCredits, setLoadingCredits] = useState(true);
@@ -242,13 +266,15 @@ export default function SystemConfigPage() {
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, { headers });
       if (res.ok) {
-        const data = await res.json();
+        const data: PaymentSettings = await res.json();
         setBypassIp(data.bypass_ip_protection ?? false);
         setIpWhitelist(data.ip_whitelist ?? '');
         if (data.landing_price) setLandingPrice(data.landing_price);
         if (data.landing_original_price) setLandingOriginalPrice(data.landing_original_price);
         if (data.footer_brand_url) setFooterBrandUrl(data.footer_brand_url);
         if (data.currency) setCurrency(data.currency);
+        if (data.ai_prompt_master) setAiPromptMaster(data.ai_prompt_master);
+        if (data.ai_prompt_negative) setAiPromptNegative(data.ai_prompt_negative);
       }
     } catch { /* silencioso */ }
   }, []);
@@ -314,7 +340,37 @@ export default function SystemConfigPage() {
     finally { setSavingCard(false); }
   }
 
-  // ── Bypass IP ──────────────────────────────────────────────────────────────
+  // ── Guardado Global / Específico ───────────────────────────────────────────
+
+  async function handleGlobalSave() {
+    setSavingAIConfig(true);
+    setSavingLandingConfig(true);
+    setSavingCurrency(true);
+    setSavingWhitelist(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({
+          bypass_ip_protection: bypassIp,
+          ip_whitelist: ipWhitelist,
+          landing_price: landingPrice,
+          landing_original_price: landingOriginalPrice,
+          footer_brand_url: footerBrandUrl,
+          currency: currency,
+          ai_prompt_master: aiPromptMaster,
+          ai_prompt_negative: aiPromptNegative,
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json()).message || 'Error');
+      flash('Configuración global guardada correctamente', 'ok');
+    } catch (err: any) { flash(err.message || 'Error al guardar', 'err'); }
+    finally {
+      setSavingAIConfig(false);
+      setSavingLandingConfig(false);
+      setSavingCurrency(false);
+      setSavingWhitelist(false);
+    }
+  }
 
   async function handleToggleBypass() {
     const newVal = !bypassIp;
@@ -371,13 +427,29 @@ export default function SystemConfigPage() {
     finally { setSavingCurrency(false); }
   }
 
+  async function handleSaveAIConfig() {
+    setSavingAIConfig(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({
+          ai_prompt_master: aiPromptMaster,
+          ai_prompt_negative: aiPromptNegative,
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json()).message || 'Error');
+      flash('Configuración de IA guardada', 'ok');
+    } catch (err: any) { flash(err.message || 'Error al guardar', 'err'); }
+    finally { setSavingAIConfig(false); }
+  }
+
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  type SysTab = 'trial' | 'debug' | 'landing' | 'credits' | 'health';
+  type SysTab = 'trial' | 'debug' | 'landing' | 'credits' | 'ai' | 'health';
   const [activeTab, setActiveTab] = useState<SysTab>('trial');
 
   const TABS: { id: SysTab; label: string; icon: React.ReactNode }[] = [
@@ -385,16 +457,31 @@ export default function SystemConfigPage() {
     { id: 'debug',   label: 'Debugging',    icon: <IconShield className="w-4 h-4" /> },
     { id: 'landing', label: 'Landing',      icon: <IconTag className="w-4 h-4" /> },
     { id: 'credits', label: 'Créditos IA',  icon: <IconCreditCard className="w-4 h-4" /> },
+    { id: 'ai',      label: 'Motor de IA',  icon: <IconBrain className="w-4 h-4" /> },
     { id: 'health',  label: 'Servicios',    icon: <IconServer className="w-4 h-4" /> },
   ];
+
+  const isSaving = savingAIConfig || savingLandingConfig || savingCurrency || savingWhitelist;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
 
       {/* Header */}
-      <div>
-        <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-bold">Configuración del sistema</h1>
-        <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">Campañas, debugging, landing y estado de servicios.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-bold">Configuración del sistema</h1>
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">Campañas, debugging, landing y estado de servicios.</p>
+        </div>
+        <button
+          onClick={handleGlobalSave}
+          disabled={isSaving}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors shadow-sm"
+        >
+          {isSaving
+            ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
+            : <IconCheck className="w-4 h-4" />}
+          Guardar cambios
+        </button>
       </div>
 
       {/* Alertas */}
@@ -741,6 +828,61 @@ export default function SystemConfigPage() {
         </div>
       </Section>
       </>)} {/* fin tab landing */}
+
+      {/* ── TAB: Motor de IA ── */}
+      {activeTab === 'ai' && (
+      <Section title="Configuración del Motor de IA" icon={<IconBrain className="w-4 h-4" />}>
+        <div className="space-y-6">
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+            Define las instrucciones globales que regirán el comportamiento de la IA en todas las generaciones. 
+            Estos prompts actúan como la "personalidad" y los "límites" del sistema.
+          </p>
+
+          <div>
+            <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-2">Master Prompt (Instrucciones globales)</label>
+            <textarea
+              value={aiPromptMaster}
+              onChange={e => setAiPromptMaster(e.target.value)}
+              placeholder="Ej: Eres un experto en moda y marketing digital. Genera descripciones persuasivas..."
+              rows={8}
+              style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm resize-none"
+            />
+            <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-2">
+              Este prompt se envía siempre al inicio de cada petición a la IA. Define el tono, estilo y conocimientos base.
+            </p>
+          </div>
+
+          <div>
+            <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-2">Prompt Negativo (Lo que se debe evitar)</label>
+            <textarea
+              value={aiPromptNegative}
+              onChange={e => setAiPromptNegative(e.target.value)}
+              placeholder="Ej: No uses lenguaje técnico aburrido. No menciones competidores..."
+              rows={4}
+              style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm resize-none"
+            />
+            <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-2">
+              Instrucciones explícitas sobre qué NO debe hacer la IA bajo ninguna circunstancia.
+            </p>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              onClick={handleSaveAIConfig}
+              disabled={savingAIConfig}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
+            >
+              {savingAIConfig
+                ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                : <IconCheck className="w-4 h-4" />}
+              Guardar configuración de IA
+            </button>
+          </div>
+        </div>
+      </Section>
+      )} {/* fin tab ai */}
 
       {/* ── TAB: Créditos IA ── */}
       {activeTab === 'credits' && (

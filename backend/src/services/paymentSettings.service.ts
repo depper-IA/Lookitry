@@ -44,6 +44,9 @@ export interface PaymentSettings {
   transfer_nit: string;
   // General
   currency: string;
+  // IA Prompting
+  ai_prompt_master: string;
+  ai_prompt_negative: string;
   // Pruebas y desarrollo
   bypass_ip_protection: boolean;
   ip_whitelist: string; // IPs separadas por coma que siempre pasan el check
@@ -85,6 +88,8 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   transfer_account_holder: '',
   transfer_nit: '',
   currency: 'COP',
+  ai_prompt_master: '',
+  ai_prompt_negative: '',
   bypass_ip_protection: false,
   ip_whitelist: '',
 };
