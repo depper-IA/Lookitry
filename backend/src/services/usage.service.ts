@@ -84,12 +84,27 @@ export class UsageService {
     const hasPaidSub = brand.subscription_status === 'active' || brand.subscription_status === 'expiring_soon';
     const inTrial = !hasPaidSub && brand.trial_end_date && new Date(brand.trial_end_date) > new Date();
 
-    // Límites del trial: 1 producto, generaciones = trial_generations_limit (default 30)
+    // Obtener configuración global de trial
+    let trialProductsLimit = 1;
+    if (inTrial) {
+      const { data: pricingMeta } = await supabaseAdmin
+        .from('pricing_config')
+        .select('data')
+        .eq('id', 'meta')
+        .single();
+      
+      if (pricingMeta?.data) {
+        const meta = pricingMeta.data as any;
+        trialProductsLimit = meta.trial_products_max ?? 1;
+      }
+    }
+
+    // Límites del trial: dinámicos desde la configuración global
     const plan = getPlanByType(brand.plan);
     const generationsLimit = inTrial
       ? (brand.trial_generations_limit ?? 30)
       : plan.maxGenerationsPerMonth;
-    const productsLimit = inTrial ? 1 : plan.maxProducts;
+    const productsLimit = inTrial ? trialProductsLimit : plan.maxProducts;
     const currentMonth = this.getCurrentMonthRange();
 
     // Contar productos activos

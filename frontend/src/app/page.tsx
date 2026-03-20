@@ -1,6 +1,7 @@
 import LandingClient from '@/components/landing/LandingClient';
 import { PromoBanner } from '@/components/landing/PromoBanner';
 import { PromoModal } from '@/components/landing/PromoModal';
+import { LandingNav } from '@/components/landing/LandingNav';
 import { getPricingConfig } from '@/lib/pricing';
 
 const BASE_URL = 'https://pruebalo.wilkiedevs.com';
@@ -123,6 +124,7 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <PromoBanner />
+      <LandingNav />
       <LandingClient pricing={pricing} />
       <PromoModal />
     </>

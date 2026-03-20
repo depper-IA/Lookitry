@@ -28,12 +28,13 @@ export default function CheckoutLandingPage() {
   const { brand } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [pricing, setPricing] = useState({ landingPrice: 650000, landingOriginalPrice: 900000 });
+  const [pricing, setPricing] = useState({ landingPrice: 650000, landingOriginalPrice: 900000, trm: 3900 });
+  const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment-settings/public`)
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setPricing({ landingPrice: data.landingPrice, landingOriginalPrice: data.landingOriginalPrice }); })
+      .then(data => { if (data) setPricing({ landingPrice: data.landingPrice, landingOriginalPrice: data.landingOriginalPrice, trm: data.trm || 3900 }); })
       .catch(() => {});
   }, []);
 
@@ -42,6 +43,18 @@ export default function CheckoutLandingPage() {
     setError('');
     try {
       const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
+      
+      if (paymentMethod === 'paypal') {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/payments/paypal/checkout-url?amount=${pricing.landingPrice}&plan=LANDING&includes_landing=true&trm=${pricing.trm}`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al generar link de PayPal');
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/checkout-url?amount=${pricing.landingPrice}&plan=LANDING&includes_landing=true`,
         { headers: { 'Authorization': `Bearer ${token}` } }
@@ -117,6 +130,27 @@ export default function CheckoutLandingPage() {
               </div>
             </div>
 
+            {/* Selector de método de pago */}
+            <div className="p-6 rounded-3xl border space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+              <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Elige tu método de pago</h3>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setPaymentMethod('wompi')}
+                  className={`flex-1 flex flex-col items-center gap-2 py-4 rounded-2xl border-2 transition-all ${paymentMethod === 'wompi' ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[#2a2a2a] bg-[#1a1a1a] opacity-60'}`}
+                >
+                  <img src="/wompi-logo.svg" alt="Wompi" className="h-6 w-auto invert brightness-200" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white">Tarjetas / PSE</span>
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('paypal')}
+                  className={`flex-1 flex flex-col items-center gap-2 py-4 rounded-2xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-[#0070ba] bg-[#0070ba]/5' : 'border-[#2a2a2a] bg-[#1a1a1a] opacity-60'}`}
+                >
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 w-auto" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white">PayPal / USD</span>
+                </button>
+              </div>
+            </div>
+
             {error && (
               <div className="p-4 bg-[#ef4444]10 border border-[#ef4444]20 text-[#ef4444] text-xs rounded-2xl">
                 {error}
@@ -127,8 +161,13 @@ export default function CheckoutLandingPage() {
               onClick={handlePagar}
               disabled={loading}
               className="w-full py-4 bg-[#FF5C3A] hover:opacity-90 text-white font-bold rounded-2xl transition-all shadow-lg shadow-[#FF5C3A]/20 flex items-center justify-center gap-2 disabled:opacity-50"
+              style={{ backgroundColor: paymentMethod === 'wompi' ? '#FF5C3A' : '#0070ba' }}
             >
-              {loading ? <Spinner size="sm" /> : 'Pagar Mini-landing ahora'}
+              {loading ? <Spinner size="sm" /> : (
+                paymentMethod === 'wompi' 
+                  ? `Pagar ${formatCurrency(pricing.landingPrice)} COP con Wompi`
+                  : `Pagar USD $${Math.ceil(pricing.landingPrice / pricing.trm)} con PayPal`
+              )}
             </button>
           </div>
 

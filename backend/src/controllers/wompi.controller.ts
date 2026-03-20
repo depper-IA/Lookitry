@@ -79,17 +79,20 @@ export class WompiController {
 
       // Si el brandId empieza con 'visitor_', es un usuario nuevo sin cuenta aún
       if (brandId.startsWith('visitor_')) {
-        // Verificar si existe en pending_registrations
-        const { data: pending } = await supabaseAdmin
+        // MARCAR REGISTRO COMO PAGADO DE FORMA SEGURA
+        const { error: updateError } = await supabaseAdmin
           .from('pending_registrations')
-          .select('id')
-          .eq('reference', reference)
-          .maybeSingle();
+          .update({ 
+            status: 'paid', 
+            payment_id: transaction.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('reference', reference);
 
-        if (pending) {
-          console.log('[Wompi] Pending sin marca, ignorando activación:', reference);
+        if (updateError) {
+          console.error('[Wompi] Error al marcar registro como pagado:', updateError.message);
         } else {
-          console.warn('[Wompi] Referencia visitor_ sin pending conocido:', reference);
+          console.log(`[Wompi] Pago de visitante VERIFICADO vía Webhook: ${reference}`);
         }
         res.status(200).json({ received: true });
         return;

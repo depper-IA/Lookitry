@@ -22,30 +22,84 @@ function PagoExitosoContent() {
   const paypalToken = searchParams.get('token'); // PayPal devuelve el orderId en el param 'token'
   
   const [dashboardHref, setDashboardHref] = useState<string>('/login');
+  const [loading, setLoading] = useState<boolean>(method === 'paypal');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-    const isVisitor = ref?.includes('visitor_') || !token;
-
-    if (isVisitor && ref) {
-      // Usuario nuevo sin cuenta — debe completar el registro
-      let url = `/registro-pro?ref=${encodeURIComponent(ref)}&months=${months}`;
+    async function validatePayment() {
       if (method === 'paypal' && paypalToken) {
-        url += `&method=paypal&orderId=${paypalToken}`;
+        try {
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+          const res = await fetch(`${API_URL}/api/payments/paypal/capture`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId: paypalToken, reference: ref }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || 'Error al capturar el pago');
+          
+          const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
+          const isVisitor = ref?.includes('visitor_') || !token;
+
+          if (isVisitor && ref) {
+            setDashboardHref(`/registro-pro?ref=${encodeURIComponent(ref)}&months=${months}&method=paypal&orderId=${paypalToken}`);
+          } else if (token) {
+            setDashboardHref('/dashboard');
+          } else {
+            setDashboardHref('/login');
+          }
+        } catch (err: any) {
+          setError(err.message || 'No se pudo confirmar tu pago. Contacta a soporte.');
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
+        const isVisitor = ref?.includes('visitor_') || !token;
+
+        if (isVisitor && ref) {
+          setDashboardHref(`/registro-pro?ref=${encodeURIComponent(ref)}&months=${months}`);
+        } else if (token) {
+          setDashboardHref('/dashboard');
+        } else {
+          setDashboardHref('/login');
+        }
       }
-      setDashboardHref(url);
-    } else if (token) {
-      // Ya tiene sesión activa — ir directo al dashboard
-      setDashboardHref('/dashboard');
-    } else {
-      // Tiene cuenta pero no está logueado
-      setDashboardHref('/login');
     }
+
+    validatePayment();
   }, [ref, months, method, paypalToken]);
 
   const dashboardLabel = dashboardHref.startsWith('/registro-pro')
     ? 'Crear mi cuenta'
     : 'Ir al dashboard';
+
+  if (loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-4 bg-[#0a0a0a]">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-t-transparent border-[#FF5C3A] rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-white font-syne text-xl">Validando tu pago con PayPal...</h2>
+          <p className="text-[#666] text-sm mt-2">Esto tomará solo unos segundos.</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-4 bg-[#0a0a0a]">
+        <div className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-xl p-8 text-center">
+          <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-5 text-red-500">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
+          </div>
+          <h1 className="text-white font-syne text-xl mb-4">¡Ups! Algo salió mal</h1>
+          <p className="text-[#666] text-sm mb-8">{error}</p>
+          <Link href="/checkout" className="block w-full py-2.5 bg-[#FF5C3A] text-white font-medium rounded-lg">Volver al checkout</Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-[#0a0a0a]">

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 const ARTICLES = [
   { id: 'art1', title: 'Articulo 1. Identificacion del prestador', content: 'Lookitry es una plataforma de probador virtual con inteligencia artificial operada por Wilkie Devs SAS, empresa constituida bajo las leyes de la Republica de Colombia.\n\nCorreo: info@pruebalo.wilkiedevs.com\nWhatsApp: +57 310 543 6281' },
@@ -28,7 +29,6 @@ function IconChevron({ open }: { open: boolean }) {
       width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
       style={{ transition: 'transform 0.2s ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', flexShrink: 0 }}
-      aria-hidden="true"
     >
       <polyline points="6 9 12 15 18 9" />
     </svg>
@@ -36,93 +36,67 @@ function IconChevron({ open }: { open: boolean }) {
 }
 
 export default function TerminosClient() {
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const toggle = (id: string) => setActiveId(prev => (prev === id ? null : id));
+  const [openId, setOpenId] = useState<string | null>(null);
 
   return (
     <>
       <LandingNav />
       <main className="min-h-screen bg-[#f5f2ee]">
-        <div className="bg-[#0a0a0a] px-6 md:px-8 py-14 md:py-20">
+
+        {/* Header */}
+        <div className="bg-[#0a0a0a] px-6 md:px-8 py-14 md:py-20 border-b border-[#1a1a1a]">
           <div className="max-w-3xl mx-auto">
+            <Breadcrumbs items={[{ label: 'Términos y Condiciones' }]} light className="mb-8" />
             <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Legal</p>
-            <h1 className="font-syne font-extrabold text-3xl md:text-4xl text-white tracking-tight mb-4">
-              Terminos y Condiciones
+            <h1 className="font-syne font-extrabold text-3xl md:text-4xl text-white tracking-tight">
+              Términos y Condiciones
             </h1>
-            <p className="text-[#666] text-sm">
-              Ultima actualizacion: marzo 2026 · Ley 1480 de 2011 · Ley 1581 de 2012 · Colombia
-            </p>
           </div>
         </div>
 
         <div className="px-6 md:px-8 py-12 md:py-16">
-          <div className="max-w-3xl mx-auto space-y-3">
-
-            <div className="bg-white border border-[#e8e4df] rounded-2xl p-6 mb-8">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-[#FF5C3A] mb-4">Indice</p>
-              <ol className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
-                {ARTICLES.map((a, i) => (
-                  <li key={a.id}>
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-white border border-[#e8e4df] rounded-2xl overflow-hidden divide-y divide-[#e8e4df]">
+              {ARTICLES.map((art) => {
+                const isOpen = openId === art.id;
+                return (
+                  <div key={art.id} className="transition-colors">
                     <button
-                      onClick={() => {
-                        setActiveId(a.id);
-                        setTimeout(() => document.getElementById(a.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-                      }}
-                      className="text-left text-[12px] text-[#888] hover:text-[#FF5C3A] transition-colors leading-snug py-0.5 w-full"
+                      onClick={() => setOpenId(isOpen ? null : art.id)}
+                      className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[#faf9f7] transition-colors group"
                     >
-                      <span className="text-[#bbb] mr-1.5">{String(i + 1).padStart(2, '0')}.</span>
-                      {a.title.replace(/^Articulo \d+\. /, '')}
-                    </button>
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            {ARTICLES.map(a => {
-              const isOpen = activeId === a.id;
-              return (
-                <div key={a.id} id={a.id} className="bg-white border border-[#e8e4df] rounded-2xl overflow-hidden scroll-mt-24">
-                  <button
-                    onClick={() => toggle(a.id)}
-                    className="w-full flex items-center justify-between gap-3 px-6 py-5 text-left hover:bg-[#faf8f5] transition-colors"
-                    aria-expanded={isOpen}
-                  >
-                    <span className="font-syne font-semibold text-[14px] text-[#0a0a0a] leading-snug">{a.title}</span>
-                    <span style={{ color: isOpen ? '#FF5C3A' : '#bbb' }}>
+                      <span className={`font-syne font-bold text-sm ${isOpen ? 'text-[#FF5C3A]' : 'text-[#0a0a0a] group-hover:text-[#FF5C3A]'}`}>
+                        {art.title}
+                      </span>
                       <IconChevron open={isOpen} />
-                    </span>
-                  </button>
-                  <div style={{ maxHeight: isOpen ? '600px' : '0px', overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
-                    <div className="px-6 pb-6 border-t border-[#f0ece8]">
-                      <p className="pt-4 text-[13px] text-[#666] leading-relaxed whitespace-pre-line">{a.content}</p>
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+                    >
+                      <div className="px-6 pb-6 pt-1 text-[13px] text-[#555] leading-relaxed whitespace-pre-line">
+                        {art.content}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-
-            <div className="bg-white border border-[#e8e4df] rounded-2xl p-6 mt-2">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: 'rgba(255,92,58,0.1)' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF5C3A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-syne font-bold text-[13px] text-[#0a0a0a] mb-1">Aviso de privacidad</p>
-                  <p className="text-[12px] text-[#666] leading-relaxed">
-                    Al realizar un pago en Lookitry, aceptas que tus datos personales sean tratados conforme a nuestra{' '}
-                    <Link href="/politicas-privacidad" className="text-[#FF5C3A] hover:underline">Politica de Privacidad</Link>
-                    , de acuerdo con la Ley 1581 de 2012. Los datos de pago son procesados directamente por Wompi.
-                  </p>
-                </div>
-              </div>
+                );
+              })}
             </div>
 
-            <div className="text-center pt-4">
-              <p className="text-[12px] text-[#999]">
-                Preguntas:{' '}
-                <a href="mailto:info@pruebalo.wilkiedevs.com" className="text-[#FF5C3A] hover:underline">info@pruebalo.wilkiedevs.com</a>
+            <div className="mt-8 text-center">
+              <p className="text-[12px] text-[#888] mb-4">
+                ¿Tienes dudas sobre nuestros términos?
+              </p>
+              <Link
+                href="/sobre-nosotros"
+                className="inline-flex items-center gap-2 bg-[#0a0a0a] text-white text-[12px] font-medium px-5 py-2.5 rounded-lg hover:bg-[#1a1a1a] transition-colors"
+              >
+                Conoce más sobre nosotros
+              </Link>
+            </div>
+
+            <div className="mt-12 pt-8 border-t border-[#e8e4df] text-center">
+              <p className="text-[11px] text-[#aaa]">
+                Ultima actualizacion: 18 de marzo de 2026 · Lookitry / Wilkie Devs SAS
               </p>
             </div>
           </div>
