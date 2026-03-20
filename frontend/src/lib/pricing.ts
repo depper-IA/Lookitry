@@ -198,8 +198,8 @@ export async function getPricingConfig(): Promise<PricingConfig> {
 
     if (globalDiscountPct > 0) {
       const factor = 1 - globalDiscountPct / 100;
-      config.basic.precio_mensual_cop = Math.round(config.basic.precio_mensual_cop * factor);
-      config.pro.precio_mensual_cop = Math.round(config.pro.precio_mensual_cop * factor);
+      config.basic.precio_mensual_cop = Math.ceil(config.basic.precio_mensual_cop * factor);
+      config.pro.precio_mensual_cop = Math.ceil(config.pro.precio_mensual_cop * factor);
       // Opcional: podrías aplicar también a mini_landing si lo deseas
     }
 
@@ -223,7 +223,7 @@ export function precioConDescuento(
     meses === 6  ? descuentos.meses_6  :
     meses === 3  ? descuentos.meses_3  :
     descuentos.meses_1;
-  return Math.round(precioBase * (1 - pct / 100));
+  return Math.ceil(precioBase * (1 - pct / 100));
 }
 
 /** Cuántos clientes de un plan se necesitan para cubrir la meta */
@@ -246,7 +246,7 @@ export function margenPorCliente(
 
 /** Precio en USD usando TRM */
 export function precioEnUSD(precioCop: number, trm: number): number {
-  return Math.round((precioCop / trm) * 100) / 100;
+  return Math.ceil(precioCop / trm);
 }
 
 /**

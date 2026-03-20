@@ -5,14 +5,8 @@
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
-function getAdminToken(): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem('adminToken') ?? '';
-}
-
 function handleUnauthorized() {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem('adminToken');
   localStorage.removeItem('adminUser');
   window.location.href = '/admin/login';
 }
@@ -21,21 +15,20 @@ export async function adminFetch<T = any>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = getAdminToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers as Record<string, string> || {}),
   };
 
   const res = await fetch(`${API_BASE}/api${path}`, {
     ...options,
     headers,
+    credentials: 'include',
   });
 
   if (res.status === 401) {
     handleUnauthorized();
-    throw new Error('Token inválido o expirado. Redirigiendo al login...');
+    throw new Error('Sesión inválida o expirada. Redirigiendo al login...');
   }
 
   const data = await res.json().catch(() => ({}));

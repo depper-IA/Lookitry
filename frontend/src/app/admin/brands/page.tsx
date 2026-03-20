@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 
@@ -146,9 +146,8 @@ export default function AdminBrandsPage() {
 
   const fetchBrands = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/brands`, {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al cargar marcas');
@@ -162,9 +161,8 @@ export default function AdminBrandsPage() {
 
   const fetchLandingPrice = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
       if (!res.ok) return;
       const data = await res.json();
@@ -177,9 +175,8 @@ export default function AdminBrandsPage() {
   const handleViewProducts = async (brand: Brand) => {
     setSelectedBrand(brand); setShowProductsModal(true); setLoadingProducts(true); setProducts([]);
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/brands/${brand.id}/products`, {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
       const data = await res.json();
       setProducts(data.products);
@@ -190,10 +187,10 @@ export default function AdminBrandsPage() {
     if (!confirm(`¿Cambiar plan a ${newPlan}?`)) return;
     setChangingPlan(brandId);
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/brands/${brandId}/plan`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: newPlan }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
@@ -208,10 +205,9 @@ export default function AdminBrandsPage() {
     if (!confirm('¿Eliminar este producto permanentemente? Esta acción no se puede deshacer.')) return;
     setDeletingProduct(productId);
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/brands/${selectedBrand.id}/products/${productId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
       setProducts(prev => prev.filter(p => p.id !== productId));
@@ -229,10 +225,10 @@ export default function AdminBrandsPage() {
     }
     setCreating(true);
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/brands`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: createForm.name,
           email: createForm.email,
@@ -266,10 +262,10 @@ export default function AdminBrandsPage() {
     const newValue = !(brand as any).has_landing_page;
     setTogglingLanding(true);
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/brands/${brand.id}/landing-page`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ has_landing_page: newValue }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
@@ -302,10 +298,10 @@ export default function AdminBrandsPage() {
     if (!modalConfigBrand) return;
     setSavingModalConfig(true);
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/brands/${modalConfigBrand.id}/modal-config`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           modal_title: modalConfigForm.modal_title || null,
           modal_description: modalConfigForm.modal_description || null,
@@ -325,10 +321,10 @@ export default function AdminBrandsPage() {
     if (!selectedBrand) return;
     setActivating(true);
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/brands/${selectedBrand.id}/activate-plan`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           plan: activateForm.plan,
           amount: Number(activateForm.amount),
@@ -348,10 +344,9 @@ export default function AdminBrandsPage() {
   const handleSendResetEmail = async (brand: Brand) => {
     setSendingReset(brand.id);
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/brands/${brand.id}/send-reset-email`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al enviar email');
@@ -386,7 +381,6 @@ export default function AdminBrandsPage() {
 
   const handleBulkAction = async (action: 'suspend' | 'reactivate' | 'delete') => {
     setBulkLoading(true);
-    const token = localStorage.getItem('adminToken');
     const ids = Array.from(selected);
     let ok = 0; let fail = 0;
 
@@ -395,13 +389,14 @@ export default function AdminBrandsPage() {
         if (action === 'delete') {
           const res = await fetch(`${API_URL}/api/admin/brands/${id}`, {
             method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include',
           });
           if (!res.ok) throw new Error();
         } else {
           const res = await fetch(`${API_URL}/api/admin/subscriptions/${id}/${action}`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({}),
           });
           if (!res.ok) throw new Error();

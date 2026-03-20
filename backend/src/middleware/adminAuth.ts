@@ -29,12 +29,18 @@ export const adminAuthMiddleware = async (
   next: NextFunction
 ): Promise<Response | void> => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Token de autenticación requerido' });
+    // ── Prioridad: Cookie HTTP-Only (P1 Hallazgo Auditoría) ─────────────────
+    let token = req.cookies?.admin_token;
+
+    // ── Fallback: Header Authorization (Bearer Token) ───────────────────────
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.substring(7);
     }
 
-    const token = authHeader.substring(7);
+    if (!token) {
+      return res.status(401).json({ error: 'UNAUTHORIZED', message: 'No se encontró token de administración' });
+    }
+
     const payload = verifyToken(token);
 
     if (!(payload as any).adminId) {

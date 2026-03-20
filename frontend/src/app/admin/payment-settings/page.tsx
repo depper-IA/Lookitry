@@ -54,9 +54,8 @@ export default function PaymentSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al cargar configuración');
@@ -73,10 +72,10 @@ export default function PaymentSettingsPage() {
     setSaving(true);
     setError('');
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),
       });
       const data = await res.json();

@@ -71,7 +71,7 @@ export function LandingFooter() {
       <div className="max-w-6xl mx-auto px-6 md:px-8 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr] gap-10 lg:gap-16">
 
         {/* Columna 1 — Marca + contacto */}
-        <div>
+        <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
           {/* Logo */}
           <Link href="/" className="inline-flex items-center gap-2 mb-5 group">
             <Image
@@ -86,12 +86,12 @@ export function LandingFooter() {
             </span>
           </Link>
 
-          <p className="text-[13px] text-[#777] leading-relaxed mb-6 max-w-[280px]">
+          <p className="text-[13px] text-[#777] leading-relaxed mb-6 max-w-[280px] mx-auto sm:mx-0">
             Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica.
           </p>
 
           {/* RRSS */}
-          <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center justify-center sm:justify-start gap-3 mb-8">
             {socials.instagram && (
               <a href={socials.instagram} target="_blank" rel="noopener noreferrer" 
                 className="w-8 h-8 rounded-full bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all">
@@ -144,7 +144,7 @@ export function LandingFooter() {
         </div>
 
         {/* Columna 2 — Producto */}
-        <div>
+        <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
           <p className="text-[10px] font-semibold uppercase tracking-[.12em] text-[#444] mb-5">Producto</p>
           <ul className="flex flex-col gap-3">
             {NAV_PRODUCTO.map(l => (
@@ -161,7 +161,7 @@ export function LandingFooter() {
         </div>
 
         {/* Columna 3 — Empresa */}
-        <div>
+        <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
           <p className="text-[10px] font-semibold uppercase tracking-[.12em] text-[#444] mb-5">Empresa</p>
           <ul className="flex flex-col gap-3">
             {NAV_EMPRESA.map(l => (

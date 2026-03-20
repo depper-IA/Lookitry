@@ -9,6 +9,7 @@ export interface Brand {
   logo: string | null;
   primary_color: string;
   secondary_color: string;
+  header_color: string | null;
   // Campos de personalización del widget (Requirement 25)
   widget_template: string | null;
   button_text: string | null;
@@ -24,6 +25,7 @@ export interface Brand {
   trial_generations_limit: number;
   created_at: string;
   updated_at: string;
+  custom_domain: string | null;
 }
 
 export interface Product {

@@ -101,9 +101,8 @@ export default function AdminMiniLandingsPage() {
 
   const fetchBrands = useCallback(async () => {
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/mini-landings`, {
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al cargar');
@@ -147,25 +146,25 @@ export default function AdminMiniLandingsPage() {
   const handleAction = async (brand: LandingBrand, action: 'activate' | 'deactivate' | 'suspend' | 'restore') => {
     setActionLoading(brand.id + action);
     setConfirmModal(null);
-    const token = localStorage.getItem('adminToken');
 
     try {
       let res: Response;
       if (action === 'activate' || action === 'deactivate') {
         res = await fetch(`${API_URL}/api/admin/brands/${brand.id}/landing-page`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ has_landing_page: action === 'activate' }),
         });
       } else if (action === 'suspend') {
         res = await fetch(`${API_URL}/api/admin/mini-landings/${brand.id}/suspend`, {
           method: 'PATCH',
-          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
         });
       } else {
         res = await fetch(`${API_URL}/api/admin/mini-landings/${brand.id}/restore`, {
           method: 'PATCH',
-          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
         });
       }
       if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
@@ -293,7 +292,15 @@ export default function AdminMiniLandingsPage() {
                   <tr key={brand.id} className="border-t" style={{ borderColor: 'var(--border-color)' }}>
                     {/* Marca */}
                     <td className="px-4 py-3.5">
-                      <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{brand.name}</div>
+                      <a 
+                        href={`${FRONTEND_URL}/sitio/${brand.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-bold hover:underline decoration-[#FF5C3A]/40 underline-offset-4 transition-all"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
+                        {brand.name}
+                      </a>
                       <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{brand.email}</div>
                       <div className="text-xs font-mono mt-0.5" style={{ color: 'var(--text-secondary)' }}>{brand.slug}</div>
                     </td>

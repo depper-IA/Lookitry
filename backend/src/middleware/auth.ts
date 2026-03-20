@@ -13,23 +13,30 @@ export interface AuthRequest extends Request {
   };
 }
 
+/** Extrae el token JWT de la cookie HTTP-Only o del header Authorization como fallback */
+function extractToken(req: Request): string | null {
+  // 1️⃣ Cookie HTTP-Only (más seguro — no accesible por JS)
+  if ((req as any).cookies?.token) return (req as any).cookies.token;
+  // 2️⃣ Fallback: header Bearer (compatibilidad con Postman, apps móviles, admin panel)
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith('Bearer ')) return authHeader.substring(7);
+  return null;
+}
+
 export const authMiddleware = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<Response | void> => {
   try {
-    // Obtener token del header
-    const authHeader = req.headers.authorization;
+    const token = extractToken(req);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       return res.status(401).json({
         error: 'UNAUTHORIZED',
         message: 'Token de autenticación requerido',
       });
     }
-
-    const token = authHeader.substring(7); // Remover "Bearer "
 
     // Verificar token
     const payload = verifyToken(token);
@@ -70,7 +77,7 @@ export const authMiddleware = async (
 
 /**
  * optionalAuth
- * Middleware que intenta autenticar si hay un token, pero no falla si no lo hay.
+ * Middleware que intenta autenticar si hay un token (cookie o header), pero no falla si no lo hay.
  */
 export const optionalAuth = async (
   req: AuthRequest,
@@ -78,9 +85,8 @@ export const optionalAuth = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
+    const token = extractToken(req);
+    if (token) {
       const payload = verifyToken(token);
       if (payload.brandId) {
         const brand = await authService.getBrandById(payload.brandId);

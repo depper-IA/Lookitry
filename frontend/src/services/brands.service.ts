@@ -20,6 +20,7 @@ class BrandsService {
       nextPaymentDate: response.data.next_payment_date,
       trialEndDate: response.data.trial_end_date,
       trialGenerationsLimit: response.data.trial_generations_limit,
+      headerColor: response.data.header_color,
       emailVerified: response.data.email_verified,
     };
     
@@ -50,6 +51,7 @@ class BrandsService {
       widget_template: data.widgetTemplate,
       button_text: data.buttonText,
       welcome_message: data.welcomeMessage,
+      header_color: data.headerColor,
     };
     
     const response = await api.patch<any>('/brands/me', backendData);
@@ -69,6 +71,7 @@ class BrandsService {
       nextPaymentDate: response.data.next_payment_date,
       trialEndDate: response.data.trial_end_date,
       trialGenerationsLimit: response.data.trial_generations_limit,
+      headerColor: response.data.header_color,
     };
     
     return brandData;

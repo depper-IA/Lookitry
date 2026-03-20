@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle, XCircle, RefreshCw, Ban, RotateCcw, ArrowUpDown } from 'lucide-react';
@@ -28,12 +28,11 @@ type FilterStatus = 'all' | 'active' | 'expiring_soon' | 'expired' | 'suspended'
 
 function adminApi(path: string, options: RequestInit = {}) {
   const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') ?? '' : '';
   return fetch(`${base}/api${path}`, {
     ...options,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
       ...(options.headers ?? {}),
     },
   });
@@ -168,7 +167,7 @@ function RenewModal({
 
   const planBaseAmount = selectedPlan === 'PRO' ? 250000 : 150000;
   const selectedPeriod = PERIOD_OPTIONS.find(p => p.months === months)!;
-  const discountedAmount = Math.round(planBaseAmount * months * (1 - selectedPeriod.discount / 100));
+  const discountedAmount = Math.ceil(planBaseAmount * months * (1 - selectedPeriod.discount / 100));
 
   const handleSubmit = async () => {
     setLoading(true); setError('');

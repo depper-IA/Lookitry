@@ -14,9 +14,9 @@ export interface Brand {
   name: string;
   slug: string;
   plan: PlanType;
-  logo?: string;
   primaryColor: string;
   secondaryColor: string;
+  headerColor?: string | null;
   widgetTemplate?: string;
   buttonText?: string;
   welcomeMessage?: string;
@@ -31,6 +31,7 @@ export interface Brand {
   trialGenerationsLimit?: number;
   // Email verification
   emailVerified?: boolean;
+  customDomain?: string | null;
 }
 
 // Product types
@@ -88,6 +89,8 @@ export interface UpdateBrandConfigDto {
   widgetTemplate?: string;
   buttonText?: string;
   welcomeMessage?: string;
+  headerColor?: string | null;
+  customDomain?: string | null;
 }
 
 // Widget templates
@@ -112,6 +115,7 @@ export interface TryOnConfigResponse {
     logo?: string;
     primaryColor: string;
     secondaryColor: string;
+    headerColor?: string | null;
     widgetTemplate?: string;
     buttonText?: string;
     welcomeMessage?: string;
@@ -122,6 +126,7 @@ export interface TryOnConfigResponse {
     coverImageUrl?: string | null;
     socialLinks?: Record<string, string>;
     hasLandingPage?: boolean;
+    customDomain?: string | null;
   };
   products: Array<{
     id: string;

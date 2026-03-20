@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { formatPrice } from '@/utils/currency';
 
 export function LandingPricingCard() {
@@ -40,29 +41,8 @@ export function LandingPricingCard() {
   return (
     <div className="bg-[#0a0a0a] rounded-3xl overflow-hidden border border-[#2a2a2a]">
       {/* Preview mockup */}
-      <div className="relative" aria-hidden="true">
-        <div className="flex items-center gap-1.5 px-4 py-3 border-b border-[#1f1f1f]">
-          <span className="w-2 h-2 rounded-full bg-[#ff5c5c]" />
-          <span className="w-2 h-2 rounded-full bg-[#ffbd2e]" />
-          <span className="w-2 h-2 rounded-full bg-[#28c840]" />
-          <div className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded px-3 py-1 text-[10px] text-[#444] text-center truncate ml-1">
-            pruebalo.wilkiedevs.com/sitio/<span className="text-[#FF5C3A]">tu-marca</span>
-          </div>
-        </div>
-        <div className="h-16 flex flex-col items-center justify-center gap-1" style={{ background: 'linear-gradient(135deg,#FF5C3A,#c73d1e)' }}>
-          <div className="w-16 h-2.5 rounded-full bg-white/70" />
-          <div className="w-24 h-1.5 rounded-full bg-white/40" />
-        </div>
-        <div className="grid grid-cols-3 gap-2 p-3">
-          {[0, 1, 2].map(i => (
-            <div key={i} className="aspect-square rounded-xl bg-[#1a1a1a] border border-[#2a2a2a]" />
-          ))}
-        </div>
-        <div className="px-3 pb-3">
-          <div className="w-full h-8 rounded-xl bg-[#FF5C3A]/80 flex items-center justify-center">
-            <div className="w-20 h-1.5 rounded-full bg-white/50" />
-          </div>
-        </div>
+      <div className="relative w-full aspect-[4/3] border-b border-[#1f1f1f]" aria-hidden="true">
+        <Image src="/hero/promo_landing.png" alt="Demo de Mini-Landing" fill className="object-cover" sizes="(max-width: 768px) 100vw, 420px" />
       </div>
 
       {/* Precio y CTA */}

@@ -104,14 +104,13 @@ export class BrandsController {
         'rating', 'total_reviews', 'schedule', 'slogan', 'landing_template',
         'modal_title', 'modal_description', 'modal_features',
         'logo_light', 'logo_dark', 'cover_bg_color', 'cover_overlay_opacity',
-        'show_brand_name',
+        'show_brand_name', 'header_color',
       ];
       for (const field of landingFields) {
         if (req.body[field] !== undefined) {
           (updates as any)[field] = req.body[field];
         }
       }
-
       // Slug personalizado — solo Plan PRO
       if (req.body.slug !== undefined) {
         if (req.brand.plan !== 'PRO') {
@@ -128,6 +127,38 @@ export class BrandsController {
           });
         }
         updates.slug = slug;
+      }
+
+      // Dominio personalizado — solo Plan PRO
+      if (req.body.custom_domain !== undefined) {
+        if (req.brand.plan !== 'PRO') {
+          return res.status(403).json({
+            error: 'FORBIDDEN',
+            message: 'La configuración de dominio personalizado requiere Plan Pro',
+          });
+        }
+        
+        const domain = req.body.custom_domain ? String(req.body.custom_domain).trim().toLowerCase() : null;
+        
+        if (domain) {
+          if (!brandsService.isValidDomain(domain)) {
+            return res.status(400).json({
+              error: 'VALIDATION_ERROR',
+              message: 'El formato del dominio es inválido (ej: tumarca.com)',
+            });
+          }
+          
+          // Verificar unicidad
+          const existing = await brandsService.getBrandByCustomDomain(domain);
+          if (existing && existing.id !== req.brand.id) {
+            return res.status(400).json({
+              error: 'CONFLICT',
+              message: 'Ese dominio ya está configurado por otra marca',
+            });
+          }
+        }
+        
+        updates.custom_domain = domain;
       }
 
       // Verificar que hay algo que actualizar

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { Trash2, Plus, Shield, ShieldOff, Mail, Loader2 } from 'lucide-react';
@@ -30,10 +30,10 @@ interface Admin {
 
 function adminFetch(path: string, options?: RequestInit) {
   const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') ?? '' : '';
   return fetch(`${base}/api${path}`, {
     ...options,
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(options?.headers || {}) },
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...(options?.headers || {}) },
   });
 }
 

@@ -50,7 +50,9 @@ type CheckoutState = 'idle' | 'success' | 'error';
 
 // ── Componente principal ──────────────────────────────────────────────────────
 
-export default function CheckoutPage() {
+import { Suspense } from 'react';
+
+function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planParam = (searchParams.get('plan') ?? 'BASIC').toUpperCase() as PlanType;
@@ -101,12 +103,10 @@ export default function CheckoutPage() {
     setRedirecting(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-      const token = localStorage.getItem('token');
       const landingParam = includeLanding ? '&includes_landing=true' : '';
-      
       const res = await fetch(
         `${apiUrl}/api/payments/paypal/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${selectedPlan}${landingParam}&trm=${trm}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { credentials: 'include' }
       );
       const data = await res.json();
       if (data.checkoutUrl) {
@@ -182,7 +182,10 @@ export default function CheckoutPage() {
             { months: 12, pct: descData.meses_12 ?? 15, label: '12 meses' },
           ]);
         }
+        setMonthDiscounts(prev => prev); // Fallback ya definido
       }
+    }).catch(err => {
+      console.error('[Checkout] Error loading external settings:', err);
     });
   }, []);
 
@@ -194,18 +197,12 @@ export default function CheckoutPage() {
     }
     setLoadingProration(true);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    // currentPlanPriceTotal: estimamos el precio que pagó basado en el plan actual y meses
-    // Usamos el precio mensual del plan actual × 30 días × daysRemaining como proxy
-    // El backend lo calcula con las fechas reales de la BD
     const newPlanPricePerMonth = planInfo['PRO'].price;
-    // Estimamos el precio pagado por el plan actual basado en los meses seleccionados
-    // El backend lo sobreescribe con el valor real de subscription_payments si existe
-    const currentPlanPriceTotal = Math.round(planInfo['BASIC'].price * selectedMonths);
+    const currentPlanPriceTotal = Math.ceil(planInfo['BASIC'].price * selectedMonths);
 
     fetch(
       `${apiUrl}/api/payments/wompi/upgrade-preview?newPlan=PRO&newMonths=${selectedMonths}&newPlanPricePerMonth=${newPlanPricePerMonth}&currentPlanPriceTotal=${currentPlanPriceTotal}`,
-      { headers: { Authorization: `Bearer ${token}` } }
+      { credentials: 'include' }
     )
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setProrationPreview(data); })
@@ -326,7 +323,7 @@ export default function CheckoutPage() {
 
   const plan = selectedPlan;
   const monthDiscount = monthDiscounts.find(d => d.months === selectedMonths) || { months: 1, pct: 0 };
-  const planTotal = Math.round(planInfo[plan].price * selectedMonths * (1 - monthDiscount.pct / 100));
+  const planTotal = Math.ceil(planInfo[plan].price * selectedMonths * (1 - monthDiscount.pct / 100));
   const totalPrice = isUpgrade && prorationPreview 
     ? (prorationPreview.amountToPay + (includeLanding ? miniLandingPrice : 0))
     : (planTotal + (includeLanding ? miniLandingPrice : 0));
@@ -532,7 +529,7 @@ export default function CheckoutPage() {
             <div className="mt-3 flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
               <span className="text-xs text-emerald-600">Ahorro con {monthDiscount.pct}% de descuento</span>
               <span className="text-sm font-bold text-emerald-600">
-                − {formatPrice(Math.round(planInfo[plan].price * selectedMonths * (monthDiscount.pct / 100)), paymentMethod, trm)}
+                − {formatPrice(Math.ceil(planInfo[plan].price * selectedMonths * (monthDiscount.pct / 100)), paymentMethod, trm)}
               </span>
             </div>
           )}
@@ -799,5 +796,21 @@ function PaymentSection({
         </div>
       )}
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-lg mx-auto py-16 flex items-center justify-center gap-3">
+        <svg className="animate-spin h-5 w-5" style={{ color: '#FF5C3A' }} viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+        </svg>
+        <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Cargando checkout...</span>
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   );
 }

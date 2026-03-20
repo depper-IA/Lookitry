@@ -7,6 +7,7 @@ export interface UpdateBrandDto {
   logo?: string;
   primary_color?: string;
   secondary_color?: string;
+  header_color?: string | null;
   widget_template?: string;
   button_text?: string;
   welcome_message?: string;
@@ -42,6 +43,7 @@ export interface UpdateBrandDto {
   modal_description?: string | null;
   modal_features?: string[] | null;
   show_brand_name?: boolean | null;
+  custom_domain?: string | null;
 }
 
 export class BrandsService {
@@ -151,8 +153,28 @@ export class BrandsService {
     return data as Brand;
   }
 
+  async getBrandByCustomDomain(domain: string): Promise<Brand | null> {
+    const { data, error } = await supabaseAdmin
+      .from('brands')
+      .select('*')
+      .eq('custom_domain', domain)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data as Brand;
+  }
+
   private isValidHexColor(color: string): boolean {
     const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
     return hexColorRegex.test(color);
+  }
+
+  isValidDomain(domain: string): boolean {
+    // Regex para dominios simples (ej: tumarca.com, staging.tumarca.net)
+    const domainRegex = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,10}$/i;
+    return domainRegex.test(domain);
   }
 }

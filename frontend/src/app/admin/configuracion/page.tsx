@@ -254,15 +254,14 @@ export default function SystemConfigPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : '';
-  const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+  const headers = { 'Content-Type': 'application/json' };
 
   // ── Loaders ────────────────────────────────────────────────────────────────
 
   const loadCampaigns = useCallback(async () => {
     setLoadingCampaigns(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/trial-campaign`, { headers });
+      const res = await fetch(`${API_URL}/api/admin/trial-campaign`, { credentials: 'include', headers });
       const data = await res.json();
       const list: Campaign[] = data.campaigns ?? [];
       setCampaigns(list);
@@ -288,7 +287,7 @@ export default function SystemConfigPage() {
   const loadCredits = useCallback(async () => {
     setLoadingCredits(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/openrouter-credits`, { headers });
+      const res = await fetch(`${API_URL}/api/admin/openrouter-credits`, { credentials: 'include', headers });
       if (res.ok) setCredits(await res.json());
     } catch { /* silencioso */ }
     finally { setLoadingCredits(false); }
@@ -296,7 +295,7 @@ export default function SystemConfigPage() {
 
   const loadPaymentSettings = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, { headers });
+      const res = await fetch(`${API_URL}/api/admin/payment-settings`, { credentials: 'include', headers });
       if (res.ok) {
         const data: PaymentSettings = await res.json();
         setBypassIp(data.bypass_ip_protection ?? false);
@@ -331,7 +330,7 @@ export default function SystemConfigPage() {
     setSavingCampaign(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/trial-campaign`, {
-        method: 'POST', headers,
+        method: 'POST', credentials: 'include', headers,
         body: JSON.stringify({ name: formName, trial_days: formDays, trial_generations_limit: formGenerations, ends_at: formEndsAt || null, active: true, require_card_verification: requireCard }),
       });
       if (!res.ok) throw new Error((await res.json()).message);
@@ -345,7 +344,7 @@ export default function SystemConfigPage() {
   async function handleToggleCampaign(c: Campaign) {
     setSavingCampaign(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/trial-campaign/${c.id}`, { method: 'PATCH', headers, body: JSON.stringify({ active: !c.active }) });
+      const res = await fetch(`${API_URL}/api/admin/trial-campaign/${c.id}`, { method: 'PATCH', credentials: 'include', headers, body: JSON.stringify({ active: !c.active }) });
       if (!res.ok) throw new Error((await res.json()).message);
       flash(c.active ? 'Campaña desactivada' : 'Campaña activada', 'ok');
       await loadCampaigns();
@@ -362,7 +361,7 @@ export default function SystemConfigPage() {
       const targets = campaigns.filter(c => c.active);
       if (targets.length > 0) {
         await Promise.all(targets.map(c =>
-          fetch(`${API_URL}/api/admin/trial-campaign/${c.id}`, { method: 'PATCH', headers, body: JSON.stringify({ require_card_verification: newVal }) })
+          fetch(`${API_URL}/api/admin/trial-campaign/${c.id}`, { method: 'PATCH', credentials: 'include', headers, body: JSON.stringify({ require_card_verification: newVal }) })
         ));
       }
       setRequireCard(newVal);
@@ -381,7 +380,7 @@ export default function SystemConfigPage() {
     setSavingWhitelist(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', headers,
+        method: 'PUT', credentials: 'include', headers,
         body: JSON.stringify({
           bypass_ip_protection: bypassIp,
           ip_whitelist: ipWhitelist,
@@ -409,7 +408,7 @@ export default function SystemConfigPage() {
     setSavingBypass(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', headers, body: JSON.stringify({ bypass_ip_protection: newVal }),
+        method: 'PUT', credentials: 'include', headers, body: JSON.stringify({ bypass_ip_protection: newVal }),
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Error');
       setBypassIp(newVal);
@@ -422,7 +421,7 @@ export default function SystemConfigPage() {
     setSavingWhitelist(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', headers, body: JSON.stringify({ ip_whitelist: ipWhitelist }),
+        method: 'PUT', credentials: 'include', headers, body: JSON.stringify({ ip_whitelist: ipWhitelist }),
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Error');
       flash('Whitelist de IPs guardada', 'ok');
@@ -434,7 +433,7 @@ export default function SystemConfigPage() {
     setSavingLandingConfig(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', headers,
+        method: 'PUT', credentials: 'include', headers,
         body: JSON.stringify({
           landing_price: landingPrice,
           landing_original_price: landingOriginalPrice,
@@ -451,7 +450,7 @@ export default function SystemConfigPage() {
     setSavingCurrency(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', headers, body: JSON.stringify({ currency }),
+        method: 'PUT', credentials: 'include', headers, body: JSON.stringify({ currency }),
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Error');
       flash('Moneda del sistema guardada', 'ok');
@@ -463,7 +462,7 @@ export default function SystemConfigPage() {
     setSavingAIConfig(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', headers,
+        method: 'PUT', credentials: 'include', headers,
         body: JSON.stringify({
           ai_prompt_master: aiPromptMaster,
           ai_prompt_negative: aiPromptNegative,
@@ -716,108 +715,49 @@ export default function SystemConfigPage() {
       )} {/* fin tab debug */}
 
       {/* ── TAB: Landing ── */}
-      {activeTab === 'landing' && (<>
-      <Section title="Precio de Mini-landing" icon={<IconTag className="w-4 h-4" />}>
-        <div className="space-y-4">
+      {activeTab === 'landing' && (
+      <Section title="URL Pública de la Empresa" icon={<IconLink className="w-4 h-4" />}>
+        <div className="space-y-6">
           <p style={{ color: 'var(--text-muted)' }} className="text-sm">
-            Este precio aparece en la landing pública, en el checkout y en todos los mensajes promocionales.
-            El precio original se muestra tachado para generar contraste de valor.
+            Esta es la dirección pública de tu plataforma. Aparece en el footer de todas las mini-landings y es el enlace principal para tus clientes.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Precio de venta (COP)</label>
-              <input
-                type="number"
-                min={1000}
-                step={1000}
-                value={landingPrice}
-                onChange={e => setLandingPrice(Number(e.target.value))}
-                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
-              />
-              <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Valor real que paga el cliente</p>
-            </div>
-            <div>
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Precio original / tachado (COP)</label>
-              <input
-                type="number"
-                min={1000}
-                step={1000}
-                value={landingOriginalPrice}
-                onChange={e => setLandingOriginalPrice(Number(e.target.value))}
-                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
-              />
-              <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Se muestra tachado para mostrar el descuento</p>
-            </div>
-          </div>
-          {landingPrice > 0 && landingOriginalPrice > 0 && landingPrice < landingOriginalPrice && (
-            <div className="flex items-center gap-2 text-sm text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
-              <IconCheck className="w-4 h-4 flex-shrink-0" />
-              Descuento visible: {Math.round((1 - landingPrice / landingOriginalPrice) * 100)}% OFF —
-              el cliente ve <span className="line-through opacity-60 mx-1">${landingOriginalPrice.toLocaleString('es-CO')}</span>
-              y paga <strong>${landingPrice.toLocaleString('es-CO')}</strong>
-            </div>
-          )}
-          <div className="flex justify-end">
-            <button
-              onClick={handleSaveLandingConfig}
-              disabled={savingLandingConfig}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
-            >
-              {savingLandingConfig
-                ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
-                : <IconCheck className="w-4 h-4" />}
-              Guardar
-            </button>
-          </div>
-        </div>
-      </Section>
-      <Section title="URL del footer de mini-landings" icon={<IconLink className="w-4 h-4" />}>
-        <div className="space-y-4">
-          <p style={{ color: 'var(--text-muted)' }} className="text-sm">
-            Esta URL aparece en el footer de todas las mini-landings como "Probador virtual impulsado por ...".
-            Cámbiala cuando migres a un dominio propio. Todos los templates se actualizan automáticamente.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 items-start">
+          
+          <div className="flex flex-col sm:flex-row gap-4 items-center p-4 rounded-xl border border-dashed" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }}>
             <div className="flex-1">
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">URL del footer</label>
-              <input
-                type="url"
-                value={footerBrandUrl}
-                onChange={e => setFooterBrandUrl(e.target.value)}
-                placeholder="https://pruebalo.wilkiedevs.com"
-                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
-              />
-              <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Incluye el protocolo (https://). Se mostrará sin el protocolo en el footer.</p>
-            </div>
-            {footerBrandUrl && (
-              <div className="sm:mt-6 flex-shrink-0">
-                <a
-                  href={footerBrandUrl.startsWith('http') ? footerBrandUrl : `https://${footerBrandUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', background: 'var(--bg-hover)' }}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm transition-colors hover:opacity-80"
-                >
-                  <IconExternalLink className="w-4 h-4" />
-                  Verificar
-                </a>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-1">URL de Marca (Footer)</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="url"
+                  value={footerBrandUrl}
+                  onChange={e => setFooterBrandUrl(e.target.value)}
+                  placeholder="https://pruebalo.wilkiedevs.com"
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="flex-1 px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
+                />
               </div>
-            )}
+            </div>
+            <a
+              href={footerBrandUrl.startsWith('http') ? footerBrandUrl : `https://${footerBrandUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#FF5C3A] text-white text-sm font-bold hover:bg-[#e04e30] transition-all shadow-sm active:scale-95 w-full sm:w-auto justify-center"
+            >
+              <IconExternalLink className="w-4 h-4" />
+              Visitar Empresa
+            </a>
           </div>
-          {/* Preview */}
-          <div style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }} className="p-3 rounded-xl border border-dashed text-center">
+
+          <div style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }} className="p-4 rounded-xl border text-center">
             <p style={{ color: 'var(--text-muted)' }} className="text-xs">
-              Vista previa:{' '}
+              Vista previa en mini-landings:{' '}
               <span style={{ color: 'var(--text-secondary)' }}>Probador virtual impulsado por </span>
               <span className="font-medium" style={{ color: '#FF5C3A' }}>
                 {(footerBrandUrl || 'pruebalo.wilkiedevs.com').replace(/^https?:\/\//, '')}
               </span>
             </p>
           </div>
-          <div className="flex justify-end">
+
+          <div className="flex justify-end pt-2">
             <button
               onClick={handleSaveLandingConfig}
               disabled={savingLandingConfig}
@@ -826,49 +766,12 @@ export default function SystemConfigPage() {
               {savingLandingConfig
                 ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
                 : <IconCheck className="w-4 h-4" />}
-              Guardar
+              Guardar Cambios
             </button>
           </div>
         </div>
       </Section>
-      <Section title="Moneda del sistema" icon={<IconCoin className="w-4 h-4" />}>
-        <div className="space-y-4">
-          <p style={{ color: 'var(--text-muted)' }} className="text-sm">
-            Define la moneda base que se usa en precios, checkouts y reportes. Afecta la visualización en toda la plataforma.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 items-end">
-            <div className="flex-1">
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Moneda</label>
-              <select
-                value={currency}
-                onChange={e => setCurrency(e.target.value)}
-                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
-              >
-                <option value="COP">COP — Peso colombiano</option>
-                <option value="USD">USD — Dólar estadounidense</option>
-                <option value="MXN">MXN — Peso mexicano</option>
-                <option value="PEN">PEN — Sol peruano</option>
-                <option value="CLP">CLP — Peso chileno</option>
-                <option value="ARS">ARS — Peso argentino</option>
-                <option value="BRL">BRL — Real brasileño</option>
-                <option value="EUR">EUR — Euro</option>
-              </select>
-            </div>
-            <button
-              onClick={handleSaveCurrency}
-              disabled={savingCurrency}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
-            >
-              {savingCurrency
-                ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
-                : <IconCheck className="w-4 h-4" />}
-              Guardar
-            </button>
-          </div>
-        </div>
-      </Section>
-      </>)} {/* fin tab landing */}
+      )} {/* fin tab landing */}
 
       {/* ── TAB: Motor de IA ── */}
       {activeTab === 'ai' && (
