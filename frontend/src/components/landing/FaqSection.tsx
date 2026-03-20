@@ -251,13 +251,13 @@ function AccordionItem({ item, isOpen, onToggle }: { item: FaqItem; isOpen: bool
 
 export default function FaqSection() {
   const [activeTab, setActiveTab] = useState('mini-landing');
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const currentTab = FAQ_TABS.find(t => t.id === activeTab) ?? FAQ_TABS[0];
 
   const handleTabChange = (id: string) => {
     setActiveTab(id);
-    setOpenIndex(0);
+    setOpenIndex(null);
   };
 
   const handleToggle = (i: number) => {

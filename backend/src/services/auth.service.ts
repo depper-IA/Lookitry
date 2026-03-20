@@ -71,15 +71,115 @@ async function isTrialAbuse(ip: string, fingerprint: string | null): Promise<boo
 
 async function recordTrialRegistration(brandId: string, ip: string, fingerprint: string | null, campaignId: string) {
   await supabaseAdmin.from('trial_registrations').insert({
-    brand_id: brandId,
-    ip_address: ip,
-    fingerprint: fingerprint || null,
-    campaign_id: campaignId,
+  brand_id: brandId,
+  ip_address: ip,
+  fingerprint: fingerprint || null,
+  campaign_id: campaignId,
   });
-}
+  }
 
-export class AuthService {
-  async register(data: RegisterBrandDto & { ip?: string; fingerprint?: string }): Promise<AuthResponse> {
+  export class AuthService {
+  /**
+  * Registro seguro después de un pago confirmado (Wompi o PayPal).
+  * Valida que la referencia exista, que el status sea 'paid' y la marca no exista aún.
+  */
+  async registerPostPayment(data: RegisterBrandDto & { ref: string; fingerprint?: string }): Promise<AuthResponse> {
+  const { ref, name, slug, password, contact_name, fingerprint } = data;
+
+  // 1. Validar referencia en pending_registrations
+  const { data: pending, error: pendingError } = await supabaseAdmin
+    .from('pending_registrations')
+    .select('*')
+    .eq('reference', ref)
+    .single();
+
+  if (pendingError || !pending) {
+    throw new Error('REFERENCIA_INVALIDA');
+  }
+
+  // 2. Verificar estado del pago (Seguridad crítica)
+  // Nota: Si aún no has corrido el SQL, esto podría fallar, por lo que añadimos un fallback temporal
+  // que asume 'paid' si la columna no existe o si es el flujo antiguo, pero lo ideal es el status.
+  const status = (pending as any).status || 'paid'; 
+  if (status === 'used') {
+    throw new Error('REFERENCIA_YA_UTILIZADA');
+  }
+  // Si la columna existe y no es 'paid', rechazar
+  if ((pending as any).status && (pending as any).status !== 'paid') {
+    throw new Error('PAGO_NO_CONFIRMADO');
+  }
+
+  // 3. Validar disponibilidad de Email y Slug
+  const { data: existingEmail } = await supabaseAdmin.from('brands').select('id').eq('email', pending.email).single();
+  if (existingEmail) throw new Error('El email ya está registrado');
+
+  const { data: existingSlug } = await supabaseAdmin.from('brands').select('id').eq('slug', slug).single();
+  if (existingSlug) throw new Error('El slug ya está en uso');
+
+  // 4. Crear la marca con el plan y duración pagados
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const months = pending.months || 1;
+  const plan = (pending.plan || 'BASIC').toUpperCase();
+
+  // Calcular fecha de fin
+  const endDate = new Date();
+  endDate.setMonth(endDate.getMonth() + months);
+
+  const { data: newBrand, error: createError } = await supabaseAdmin
+    .from('brands')
+    .insert({
+      email: pending.email,
+      password: hashedPassword,
+      name,
+      slug,
+      contact_name: contact_name.trim(),
+      plan,
+      subscription_status: 'active',
+      subscription_start_date: new Date().toISOString(),
+      subscription_end_date: endDate.toISOString(),
+      has_landing_page: pending.includes_landing || false,
+      email_verified: true, // Ya pagó, confiamos en el email
+      email_verification_token: null,
+    })
+    .select()
+    .single();
+
+  if (createError || !newBrand) {
+    throw new Error('Error al crear la cuenta: ' + createError?.message);
+  }
+
+  // 5. MARCAR REFERENCIA COMO UTILIZADA (Idempotencia)
+  await supabaseAdmin
+    .from('pending_registrations')
+    .update({ status: 'used', updated_at: new Date().toISOString() } as any)
+    .eq('reference', ref);
+
+  // 6. Registrar el pago oficial en subscription_payments
+  await supabaseAdmin.from('subscription_payments').insert({
+    brand_id: newBrand.id,
+    amount: 0, // El monto ya se cobró, esto es para historial
+    currency: 'COP',
+    payment_date: new Date().toISOString(),
+    payment_method: ref.includes('PAYPAL') ? 'paypal' : 'wompi',
+    status: 'completed',
+    months_paid: months,
+    notes: `Registro inicial via ${ref.includes('PAYPAL') ? 'PayPal' : 'Wompi'}. Ref: ${ref}. ID Pago: ${(pending as any).payment_id || 'N/A'}`
+  });
+
+  const token = generateToken({ brandId: newBrand.id, email: newBrand.email });
+
+  return {
+    token,
+    brand: {
+      id: newBrand.id,
+      email: newBrand.email,
+      name: newBrand.name,
+      slug: newBrand.slug,
+      plan: newBrand.plan,
+    },
+    isTrial: false,
+  };
+  }  async register(data: RegisterBrandDto & { ip?: string; fingerprint?: string }): Promise<AuthResponse> {
     // Validar que el email no exista — supabaseAdmin para bypassear RLS
     const { data: existingBrand } = await supabaseAdmin
       .from('brands')

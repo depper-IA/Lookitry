@@ -10,4 +10,8 @@ const controller = new PaypalController();
 // Genera el link de pago oficial de PayPal
 router.get('/checkout-url', optionalAuth, controller.getCheckoutUrl);
 
+// POST /api/payments/paypal/capture
+// Captura el pago después de la aprobación del usuario
+router.post('/capture', controller.captureOrder);
+
 export default router;

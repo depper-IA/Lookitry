@@ -10,6 +10,8 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export interface PlanConfig {
   precio_mensual_cop: number;
+  precio_original_cop?: number;
+  descuento_porcentaje?: number;
   productos_max: number;
   generaciones_mensuales: number;
   subtitulo: string;
