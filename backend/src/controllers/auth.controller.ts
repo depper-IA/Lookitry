@@ -8,6 +8,18 @@ import { AuthRequest } from '../middleware/auth';
 const authService = new AuthService();
 const emailService = new EmailService();
 
+/** Emite el JWT como cookie HTTP-Only segura */
+const IS_PROD = process.env.NODE_ENV === 'production';
+function setCookieToken(res: Response, token: string): void {
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: IS_PROD,           // Solo HTTPS en producción
+    sameSite: IS_PROD ? 'none' : 'lax', // 'none' cross-origin en prod (requiere secure)
+    maxAge: 30 * 24 * 60 * 60 * 1000,  // 30 días en ms
+    path: '/',
+  });
+}
+
 export class AuthController {
   async register(req: Request, res: Response) {
     try {
@@ -83,6 +95,8 @@ export class AuthController {
         }).catch(err => console.error('[Auth] Error enviando email de verificación:', err));
       }
 
+      // Emitir token como cookie HTTP-Only (más seguro que localStorage)
+      if (result.token) setCookieToken(res, result.token);
       return res.status(201).json(result);
     } catch (error: any) {
       console.error('Error en register:', error);
@@ -130,6 +144,8 @@ export class AuthController {
       }
 
       const result = await authService.login(data);
+      // Emitir token como cookie HTTP-Only (más seguro que localStorage)
+      if (result.token) setCookieToken(res, result.token);
       return res.status(200).json(result);
     } catch (error: any) {
       console.error('Error en login:', error);
