@@ -451,38 +451,38 @@ export default function MiPaginaPage() {
       {/* Banner de activación cuando no se ha comprado la landing */}
       {!hasLandingPage && !landingSuspendedAt && (
         <div
-          className="rounded-2xl border overflow-hidden shadow-sm"
-          style={{ borderColor: '#FF5C3A20', backgroundColor: '#ffffff' }}
+          className="rounded-2xl border overflow-hidden shadow-md"
+          style={{ borderColor: '#FF5C3A40', backgroundColor: '#FF5C3A08' }}
         >
-          <div className="px-5 py-4 flex items-start gap-4">
+          <div className="px-5 py-5 flex items-start gap-4">
             <div
-              className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-              style={{ backgroundColor: '#FF5C3A10' }}
+              className="flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
+              style={{ backgroundColor: '#FF5C3A' }}
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#FF5C3A" strokeWidth={2}>
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="#ffffff" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold" style={{ color: '#FF5C3A' }}>
-                Tu mini-landing aún no está activa
+              <p className="text-base font-bold" style={{ color: '#FF5C3A' }}>
+                ¡Tu mini-landing aún no está activa!
               </p>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                Obtén tu URL personalizada y branding profesional para tu marca.
+              <p className="text-sm mt-1" style={{ color: 'var(--text-primary)' }}>
+                Obtén tu propia URL pública y branding profesional. 
                 {landingPrice !== null && (
-                  <> Pago único de <strong style={{ color: 'var(--text-primary)' }}>${landingPrice.toLocaleString('es-CO')} COP</strong>.</>
+                  <> Pago único de <strong style={{ color: '#FF5C3A' }}>${landingPrice.toLocaleString('es-CO')} COP</strong>.</>
                 )}
               </p>
-              <div className="flex items-center gap-3 mt-3 flex-wrap">
+              <div className="flex items-center gap-3 mt-4 flex-wrap">
                 <Link
                   href="/dashboard/checkout-landing"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-xs font-bold shadow-lg shadow-[#FF5C3A]/20 transition-all hover:scale-[1.02]"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-white text-sm font-extrabold shadow-lg shadow-[#FF5C3A]/30 transition-all hover:scale-[1.03] active:scale-95"
                   style={{ backgroundColor: '#FF5C3A' }}
                 >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  Activar ahora
+                  ACTIVAR MI PÁGINA AHORA
                 </Link>
                 <a
                   href={pageUrl}

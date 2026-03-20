@@ -544,7 +544,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
       {/* Guía contextual */}
       <div className="max-w-lg mx-auto px-4 pt-4">
         <div className="rounded-2xl px-4 py-3 text-center text-sm font-medium" style={{ backgroundColor: primaryColor + '15', color: primaryColor }}>
-          {step === 'upload' && 'Sube una foto tuya de frente'}
+          {step === 'upload' && 'Sube o toma una foto para empezar'}
           {step === 'select' && 'Elige el producto que quieres probarte'}
           {step === 'result' && 'Aquí está tu prueba virtual'}
         </div>

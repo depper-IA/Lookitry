@@ -194,11 +194,28 @@ export class PruebaloController {
     // 7. Llamar a n8n con selfieBase64 y prompt
     const startTime = Date.now();
     try {
-      // Construir prompt base con reglas de categoría
-      const basePrompt = buildTryOnPrompt(product);
+      // 7.1 Obtener configuración de IA desde payment_settings para refinamiento global
+      const { data: globalSettings } = await supabaseAdmin
+        .from('payment_settings')
+        .select('ai_prompt_master, ai_prompt_negative')
+        .eq('id', 1)
+        .single();
 
-      // Enriquecer con RAG (aprendizaje de errores anteriores) — timeout 4s, no bloquea
-      const prompt = await promptRagService.enrichPrompt(basePrompt, product.category ?? null);
+      // 7.2 Construir prompt base con reglas de categoría
+      let finalPrompt = buildTryOnPrompt(product);
+
+      // 7.3 Aplicar refinamientos globales del Administrador (Master Prompt)
+      if (globalSettings?.ai_prompt_master) {
+        finalPrompt += `\n\n[ADMIN MASTER RULES — HIGHEST PRIORITY]\n- ${globalSettings.ai_prompt_master}`;
+      }
+
+      // 7.4 Aplicar prompt negativo global
+      if (globalSettings?.ai_prompt_negative) {
+        finalPrompt += `\n\n[NEGATIVE PROMPT — DO NOT GENERATE]\n${globalSettings.ai_prompt_negative}`;
+      }
+
+      // 7.5 Enriquecer con RAG (aprendizaje de errores anteriores) — timeout 4s, no bloquea
+      const prompt = await promptRagService.enrichPrompt(finalPrompt, product.category ?? null);
 
       const n8nResult = await n8nClient.callTryOnWebhook({
         brandId: brand.id,
