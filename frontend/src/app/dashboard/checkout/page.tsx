@@ -647,11 +647,17 @@ export default function CheckoutPage() {
       ) : (
         <PaymentSection
           wompiEnabled={wompiEnabled}
+          paypalEnabled={paypalEnabled}
           plan={plan}
           months={selectedMonths}
           amount={totalPrice}
+          trm={trm}
+          redirecting={redirecting}
           onSuccess={handleSuccess}
           onError={handleError}
+          onPaypal={handlePagarPaypal}
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
         />
       )}
 
