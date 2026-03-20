@@ -691,6 +691,7 @@ function TemplateClassic({ brandSlug, brand, products, footerUrl }: { brandSlug:
 // ----------------------------------------------------------------------------
 
 function EditorialHeader({ brand }: { brand: BrandData }) {
+  const primary = brand.primary_color || '#FF5C3A';
   const socialLinks = brand.social_links || {};
   const entries = Object.entries(socialLinks).filter(([, url]) => !!url);
   const icons: Record<string, React.ReactNode> = {
@@ -699,7 +700,10 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
     tiktok:    <TikTokIcon    className="w-3.5 h-3.5" />,
   };
   return (
-    <header className="bg-white border-b border-gray-100 px-5 h-16 flex items-center justify-between sticky top-0 z-50">
+    <header 
+      className="bg-white px-5 h-16 flex items-center justify-between sticky top-0 z-50 border-b-2" 
+      style={{ borderBottomColor: primary }}
+    >
       <div className="flex items-center gap-2.5">
         {brand.logo ? (
           <BrandLogo
@@ -711,7 +715,10 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
             fallbackTextColor="#fff"
           />
         ) : (
-          <div className="h-9 w-9 rounded-lg bg-gray-900 flex items-center justify-center text-white font-bold text-sm">
+          <div 
+            className="h-9 w-9 rounded-lg flex items-center justify-center text-white font-bold text-sm"
+            style={{ backgroundColor: primary }}
+          >
             {brand.name.slice(0, 2).toUpperCase()}
           </div>
         )}
@@ -723,7 +730,8 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
         <div className="flex items-center gap-1.5">
           {entries.map(([platform, url]) => (
             <a key={platform} href={url} target="_blank" rel="noopener noreferrer" title={platform}
-              className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110"
+              style={{ backgroundColor: primary + '15', color: primary, border: `1px solid ${primary}33` }}>
               {icons[platform.toLowerCase()] ?? null}
             </a>
           ))}
