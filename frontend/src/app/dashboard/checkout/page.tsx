@@ -81,7 +81,21 @@ export default function CheckoutPage() {
   const [planInfo, setPlanInfo] = useState(PLAN_INFO_FALLBACK);
   const [monthDiscounts, setMonthDiscounts] = useState(MONTH_DISCOUNTS_FALLBACK);
 
-  // ... (rest of states) ...
+  // Prorrateo y Upgrades
+  const [prorationPreview, setProrationPreview] = useState<{
+    creditAmount: number;
+    amountToPay: number;
+    newPlanTotal: number;
+    daysRemaining: number;
+    isFree: boolean;
+  } | null>(null);
+  const [loadingProration, setLoadingProration] = useState(false);
+  const [applyingFreeUpgrade, setApplyingFreeUpgrade] = useState(false);
+
+  // Lógica de suscripción
+  const isUpgrade   = hasActiveSub && currentPlan === 'BASIC' && selectedPlan === 'PRO';
+  const isDowngrade = hasActiveSub && currentPlan === 'PRO' && selectedPlan === 'BASIC';
+  const isRenewal   = hasActiveSub && currentPlan === selectedPlan;
 
   const handlePagarPaypal = async () => {
     setRedirecting(true);
