@@ -77,7 +77,7 @@ describe('NotificationService', () => {
       expect(emailService.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
           to: mockBrand.email,
-          subject: '¡Bienvenido a Virtual Try-On SaaS!',
+          subject: '¡Bienvenido a Lookitry!',
           html: expect.stringContaining(mockBrand.name),
         })
       );
@@ -166,7 +166,7 @@ describe('NotificationService', () => {
       expect(emailService.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
           to: mockBrand.email,
-          subject: '✅ Renovación Exitosa - Virtual Try-On SaaS',
+          subject: '✅ Renovación Exitosa - Lookitry',
           html: expect.stringContaining(mockBrand.name),
         })
       );

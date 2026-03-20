@@ -34,6 +34,15 @@ jest.mock('../../services/wompi.service', () => ({
     getCheckoutUrl: mockGetCheckoutUrl,
     generateReference: mockGenerateReference,
   })),
+  wompiService: {
+    getCheckoutUrl: (...args: any[]) => mockGetCheckoutUrl(...args),
+    generateReference: (...args: any[]) => mockGenerateReference(...args),
+    verifyWebhookSignature: jest.fn().mockResolvedValue(true),
+    extractBrandIdFromReference: jest.fn().mockReturnValue(null),
+    extractMetaFromReference: jest.fn().mockReturnValue({ months: 1, plan: 'BASIC' }),
+    getWidgetConfig: jest.fn(),
+    generateIntegritySignature: jest.fn(),
+  },
 }));
 
 // ── Importar el controlador DESPUÉS de los mocks ──────────────────────────────
