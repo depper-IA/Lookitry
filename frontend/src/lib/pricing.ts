@@ -157,25 +157,27 @@ export interface PlanPriceOverride {
 
 /**
  * Obtiene la configuración completa de precios desde Supabase.
- * Usar en Server Components con `export const revalidate = 3600`.
+ * Usar en Server Components con revalidate corto.
  * Incluye fallback a DEFAULTS si la consulta falla.
  */
 export async function getPricingConfig(): Promise<PricingConfig> {
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/pricing_config?select=id,data`,
-      {
-        headers: {
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-        },
-        next: { revalidate: 3600, tags: ['pricing'] },
-      }
-    );
+    // 1. Obtener configuración base y promociones en paralelo
+    const [configRes, promosRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/pricing_config?select=id,data`, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+        next: { revalidate: 300, tags: ['pricing'] },
+      }),
+      fetch(`${SUPABASE_URL}/rest/v1/promotions?active=eq.true&select=type,config`, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+        next: { revalidate: 300, tags: ['pricing'] },
+      })
+    ]);
 
-    if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
+    if (!configRes.ok) throw new Error(`Supabase error: ${configRes.status}`);
 
-    const rows: { id: string; data: Record<string, unknown> }[] = await res.json();
+    const rows: { id: string; data: Record<string, unknown> }[] = await configRes.json();
+    const promos: { type: string; config: any }[] = promosRes.ok ? await promosRes.json() : [];
 
     const config = { ...DEFAULTS };
     for (const row of rows) {
@@ -183,6 +185,22 @@ export async function getPricingConfig(): Promise<PricingConfig> {
         (config as Record<string, unknown>)[row.id] = row.data;
       }
     }
+
+    // 2. Aplicar descuentos de promociones globales (launch_offer, modal_timer) si existen
+    const globalDiscountPct = promos.reduce((max, p) => {
+      if (['launch_offer', 'modal_timer'].includes(p.type) && p.config?.discount_pct) {
+        return Math.max(max, Number(p.config.discount_pct));
+      }
+      return max;
+    }, 0);
+
+    if (globalDiscountPct > 0) {
+      const factor = 1 - globalDiscountPct / 100;
+      config.basic.precio_mensual_cop = Math.round(config.basic.precio_mensual_cop * factor);
+      config.pro.precio_mensual_cop = Math.round(config.pro.precio_mensual_cop * factor);
+      // Opcional: podrías aplicar también a mini_landing si lo deseas
+    }
+
     return config;
   } catch (err) {
     console.error('[pricing] Error cargando config, usando defaults:', err);
