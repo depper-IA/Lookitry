@@ -269,6 +269,13 @@ export default function CheckoutPage() {
 
   // ── Helpers de UI ─────────────────────────────────────────────────────────
 
+  const plan = selectedPlan;
+  const monthDiscount = monthDiscounts.find(d => d.months === selectedMonths) || { months: 1, pct: 0 };
+  const planTotal = Math.round(planInfo[plan].price * selectedMonths * (1 - monthDiscount.pct / 100));
+  const totalPrice = isUpgrade && prorationPreview 
+    ? (prorationPreview.amountToPay + (includeLanding ? miniLandingPrice : 0))
+    : (planTotal + (includeLanding ? miniLandingPrice : 0));
+
   // Etiqueta de acción según el modo
   const actionLabel = (() => {
     if (!hasActiveSub) return 'Activar suscripción';
