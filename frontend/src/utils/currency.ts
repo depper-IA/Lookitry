@@ -1,22 +1,51 @@
 /**
- * Utilidades para formateo de moneda en pesos colombianos (COP)
+ * Utilidades para formateo de moneda en pesos colombianos (COP) y dólares (USD)
  */
 
 /**
- * Formatea un número como moneda en pesos colombianos
+ * Formatea un número como moneda
  * @param amount - Monto a formatear
- * @returns String formateado como $XXX.XXX COP
- * @example
- * formatCurrency(150000) // "$150.000 COP"
- * formatCurrency(250000) // "$250.000 COP"
+ * @param currency - Moneda ('COP' o 'USD')
+ * @returns String formateado
  */
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number, currency: 'COP' | 'USD' = 'COP'): string {
+  if (currency === 'USD') {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  }
+
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+/**
+ * Convierte y formatea un monto basado en el método de pago y la TRM
+ * @param amountInCOP - Monto original en pesos colombianos
+ * @param paymentMethodOrCurrency - 'wompi', 'paypal' o moneda directa 'COP' | 'USD'
+ * @param trm - Tasa de cambio actual (COP -> 1 USD)
+ * @returns String formateado con redondeo en dólares
+ */
+export function formatPrice(
+  amountInCOP: number, 
+  paymentMethodOrCurrency: 'wompi' | 'paypal' | 'COP' | 'USD', 
+  trm: number
+): string {
+  const isUSD = paymentMethodOrCurrency === 'paypal' || paymentMethodOrCurrency === 'USD';
+  
+  if (isUSD) {
+    const amountInUSD = Math.ceil(amountInCOP / trm); // Redondeo hacia arriba solicitado
+    return formatCurrency(amountInUSD, 'USD');
+  }
+  
+  return formatCurrency(amountInCOP, 'COP');
 }
 
 /**

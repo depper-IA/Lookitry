@@ -64,11 +64,26 @@ function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: str
         const ctx = canvas.getContext('2d');
         if (!ctx) return reject('No context');
         ctx.drawImage(img, 0, 0);
-        if (brandPlan === 'PRO') return resolve(canvas.toDataURL('image/jpeg', 1.0));
+
+        if (brandPlan !== 'BASIC' && brandPlan !== 'TRIAL') {
+          return resolve(canvas.toDataURL('image/jpeg', 1.0));
+        }
+
         const wmImg = new Image();
         wmImg.crossOrigin = 'anonymous';
         wmImg.onload = () => {
-          ctx.drawImage(wmImg, 0, 0, canvas.width, canvas.height);
+          if (brandPlan === 'BASIC') {
+            const wmWidth = canvas.width * 0.15;
+            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
+            const padding = 20;
+            ctx.globalAlpha = 0.4;
+            ctx.drawImage(wmImg, padding, canvas.height - wmHeight - padding, wmWidth, wmHeight);
+          } else if (brandPlan === 'TRIAL') {
+            const wmWidth = canvas.width;
+            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
+            ctx.globalAlpha = 0.6;
+            ctx.drawImage(wmImg, 0, canvas.height - wmHeight, wmWidth, wmHeight);
+          }
           resolve(canvas.toDataURL('image/jpeg', 1.0));
         };
         wmImg.onerror = () => resolve(canvas.toDataURL('image/jpeg', 1.0));
@@ -113,13 +128,14 @@ function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: str
           className="w-full h-full object-contain rounded-xl shadow-2xl"
           onClick={e => e.stopPropagation()}
         />
-        {(brandPlan === 'BASIC' || brandPlan === 'TRIAL') && (
-          <div className="absolute inset-0 pointer-events-none">
-            <img 
-              src={brandPlan === 'BASIC' ? '/watermark-basic.webp' : '/watermark-trial.webp'} 
-              className="w-full h-full object-contain opacity-80" 
-              alt=""
-            />
+        {brandPlan === 'BASIC' && (
+          <div className="absolute bottom-4 left-4 w-20 pointer-events-none select-none z-10 opacity-40">
+            <img src="/watermark-basic.webp" alt="Lookitry" className="w-full h-auto" />
+          </div>
+        )}
+        {brandPlan === 'TRIAL' && (
+          <div className="absolute bottom-0 left-0 w-full pointer-events-none select-none z-10 opacity-60">
+            <img src="/watermark-trial.webp" alt="Lookitry" className="w-full h-auto" />
           </div>
         )}
       </div>
@@ -172,11 +188,26 @@ function GenerationCard({
         const ctx = canvas.getContext('2d');
         if (!ctx) return reject('No context');
         ctx.drawImage(img, 0, 0);
-        if (brandPlan === 'PRO') return resolve(canvas.toDataURL('image/jpeg', 1.0));
+
+        if (brandPlan !== 'BASIC' && brandPlan !== 'TRIAL') {
+          return resolve(canvas.toDataURL('image/jpeg', 1.0));
+        }
+
         const wmImg = new Image();
         wmImg.crossOrigin = 'anonymous';
         wmImg.onload = () => {
-          ctx.drawImage(wmImg, 0, 0, canvas.width, canvas.height);
+          if (brandPlan === 'BASIC') {
+            const wmWidth = canvas.width * 0.15;
+            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
+            const padding = 20;
+            ctx.globalAlpha = 0.4;
+            ctx.drawImage(wmImg, padding, canvas.height - wmHeight - padding, wmWidth, wmHeight);
+          } else if (brandPlan === 'TRIAL') {
+            const wmWidth = canvas.width;
+            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
+            ctx.globalAlpha = 0.6;
+            ctx.drawImage(wmImg, 0, canvas.height - wmHeight, wmWidth, wmHeight);
+          }
           resolve(canvas.toDataURL('image/jpeg', 1.0));
         };
         wmImg.onerror = () => resolve(canvas.toDataURL('image/jpeg', 1.0));
