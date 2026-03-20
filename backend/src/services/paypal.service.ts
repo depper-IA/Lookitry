@@ -10,9 +10,15 @@ import { PaymentSettingsService } from './paymentSettings.service';
 class PayPalService {
   private async getAccessToken() {
     const settings = await new PaymentSettingsService().getSettings();
-    const clientId = process.env.PAYPAL_CLIENT_ID || settings.paypal_client_id;
-    const secret = process.env.PAYPAL_SECRET || settings.paypal_client_secret;
     const isSandbox = settings.paypal_sandbox ?? true;
+    
+    const clientId = isSandbox 
+      ? (process.env.PAYPAL_CLIENT_ID || settings.paypal_client_id)
+      : (process.env.PAYPAL_PROD_CLIENT_ID || settings.paypal_prod_client_id || settings.paypal_client_id);
+      
+    const secret = isSandbox
+      ? (process.env.PAYPAL_SECRET || settings.paypal_client_secret)
+      : (process.env.PAYPAL_PROD_SECRET || settings.paypal_prod_client_secret || settings.paypal_client_secret);
 
     const baseUrl = isSandbox
       ? 'https://api-m.sandbox.paypal.com'

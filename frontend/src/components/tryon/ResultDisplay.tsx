@@ -132,22 +132,109 @@ export function ResultDisplay({
   const [feedbackSending, setFeedbackSending] = useState(false);
   const [feedbackSent, setFeedbackSent]       = useState(false);
 
+  // ── Aplicar marca de agua física a la imagen para descarga/compartir ──────────
+  const applyWatermark = async (srcUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject('No context');
+
+        // Dibujar imagen original
+        ctx.drawImage(img, 0, 0);
+
+        // Si el plan es PRO, no ponemos marca de agua (opcional, según tu lógica)
+        if (brandPlan === 'PRO') {
+          return resolve(canvas.toDataURL('image/jpeg', 0.9));
+        }
+
+        // Cargar logo para marca de agua
+        const logo = new Image();
+        logo.crossOrigin = 'anonymous';
+        logo.onload = () => {
+          // Configuración según plan
+          if (brandPlan === 'BASIC') {
+            // Logo arriba a la derecha, pequeño
+            const logoW = canvas.width * 0.15;
+            const logoH = logo.height * (logoW / logo.width);
+            ctx.globalAlpha = 0.6;
+            ctx.drawImage(logo, canvas.width - logoW - 20, 20, logoW, logoH);
+          } else {
+            // Plan TRIAL: Logo abajo al centro con texto
+            const logoW = canvas.width * 0.25;
+            const logoH = logo.height * (logoW / logo.width);
+            ctx.globalAlpha = 0.5;
+            const x = (canvas.width - logoW) / 2;
+            const y = canvas.height - logoH - 40;
+            ctx.drawImage(logo, x, y, logoW, logoH);
+            
+            // Texto de la marca
+            ctx.font = `bold ${Math.round(canvas.width * 0.025)}px Arial`;
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.fillText((brandName ?? 'LOOKITRY').toUpperCase(), canvas.width / 2, canvas.height - 20);
+          }
+          resolve(canvas.toDataURL('image/jpeg', 0.9));
+        };
+        logo.onerror = () => resolve(canvas.toDataURL('image/jpeg', 0.9)); // Si falla el logo, devolvemos imagen limpia
+        logo.src = '/logo.svg'; // Usamos el logo local
+      };
+      img.onerror = reject;
+      img.src = srcUrl;
+    });
+  };
+
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      await downloadImage(
-        imageUrl,
-        `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`
-      );
-    } catch {
-      // silencioso
+      // Aplicar marca de agua antes de descargar
+      const watermarkedUrl = await applyWatermark(imageUrl);
+      
+      const link = document.createElement('a');
+      link.href = watermarkedUrl;
+      link.download = `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error descargando imagen:', err);
+      // Fallback a descarga normal si falla el canvas
+      await downloadImage(imageUrl, `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`);
     } finally {
       setDownloading(false);
     }
   };
 
-  const handleFeedbackSubmit = async () => {
-    if (!feedbackType || !generationId || !brandSlug) return;
+  const handleShare = async () => {
+    if (!navigator.share) {
+      setShareOpen(true);
+      return;
+    }
+
+    setSharing(true);
+    try {
+      // Aplicar marca de agua antes de compartir
+      const watermarkedUrl = await applyWatermark(imageUrl);
+      const res = await fetch(watermarkedUrl);
+      const blob = await res.blob();
+      const file = new File([blob], 'prueba-virtual.jpg', { type: 'image/jpeg' });
+
+      await navigator.share({
+        title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
+        text: `Mira cómo me queda este producto: ${productName}`,
+        files: [file],
+      });
+    } catch (error) {
+      console.error('Error al compartir:', error);
+      setShareOpen(true);
+    } finally {
+      setSharing(false);
+    }
+  };
     if (feedbackType === OTHER_VALUE && !feedbackDesc.trim()) return;
     setFeedbackSending(true);
     try {
