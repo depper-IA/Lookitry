@@ -158,13 +158,13 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
             )}
           </div>
         ) : (
-          <Link href="/login" className="text-[13px] text-[#888] hover:text-white px-2 md:px-3.5 py-1.5 rounded-md transition-colors">
+          <Link href="/login" className="text-[13px] bg-[#FF5C3A] sm:bg-transparent text-white sm:text-[#888] sm:hover:text-white font-medium sm:font-normal px-4 sm:px-3.5 py-1.5 rounded-md transition-colors">
             Iniciar sesión
           </Link>
         )}
 
         {!session && (
-          <Link href={resolvedCtaHref} className="text-[13px] font-medium bg-[#FF5C3A] hover:bg-[#e84d2c] text-white px-3 md:px-4 py-1.5 rounded-md transition-colors">
+          <Link href={resolvedCtaHref} className="hidden sm:block text-[13px] font-medium bg-[#FF5C3A] hover:bg-[#e84d2c] text-white px-3 md:px-4 py-1.5 rounded-md transition-colors">
             {resolvedCtaLabel}
           </Link>
         )}

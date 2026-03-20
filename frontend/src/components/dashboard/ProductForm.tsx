@@ -320,13 +320,34 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
           <Input label="Nombre" name="name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Ej: Camiseta Logo" required />
 
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Imagen del Producto</label>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Imagen del Producto</label>
+              <div className="group relative flex items-center cursor-help">
+                <svg className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {/* TOOLTIP */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1a1a1a] border border-[#333] text-white text-xs rounded-xl p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-50 text-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                  <p className="mb-2 leading-relaxed">Para asegurar una generación de calidad y exitosa asegurate de subir tus prendas y/o las de tu cliente a estas medidas <a href="#" target="_blank" className="text-[#FF5C3A] font-semibold hover:underline">ver medidas</a>.</p>
+                  <p className="text-[10px] text-[#888] pb-0.5 border-t border-[#333] pt-2">Recuerda decirle de esto a tus cliente con una nota o un aviso en tu sitio.</p>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#333]"></div>
+                </div>
+              </div>
+            </div>
             <div className="space-y-3">
               <div className="flex items-center gap-3 flex-wrap">
                 <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={compressing} size="sm">
-                  {compressing ? 'Procesando...' : 'Subir imagen'}
+                  {compressing ? 'Procesando...' : 'Subir prenda'}
                 </Button>
                 <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>o ingresa una URL</span>
+                
+                {/* Botón sugerido quitar fondo */}
+                <a href="https://www.photoroom.com/tools/background-remover" target="_blank" rel="noopener noreferrer" className="ml-auto text-[11px] font-semibold text-[#FF5C3A] hover:bg-[#FF5C3A]/10 border border-[#FF5C3A]/30 px-2 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                  </svg>
+                  Quitar fondo a la imagen
+                </a>
               </div>
               <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                 💡 <strong>Recomendación:</strong> Usa imágenes en formato vertical (proporción 3:4 o 768x1024px). Asegúrate de que el producto esté centrado y se vea completo para un mejor resultado.

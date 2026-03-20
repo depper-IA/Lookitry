@@ -309,9 +309,8 @@ export default function PricingAdminPage() {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('adminToken');
       const [pricingRes, trmRes] = await Promise.all([
-        fetch(`${API_URL}/api/admin/pricing`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/admin/pricing`, { credentials: 'include' }),
         fetch('/api/pricing/trm'),
       ]);
       if (!pricingRes.ok) throw new Error('Error al cargar precios');
@@ -356,10 +355,10 @@ export default function PricingAdminPage() {
   const handleSave = useCallback(async (id: string, data: Record<string, unknown>) => {
     setSaving(id);
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(`${API_URL}/api/admin/pricing`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, data }),
       });
       const json = await res.json();

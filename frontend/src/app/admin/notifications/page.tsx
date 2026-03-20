@@ -89,8 +89,7 @@ function saveStoredReadIds(ids: Set<string>) {
 }
 
 function authHeaders(): Record<string, string> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
-  return token ? { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } : { 'Content-Type': 'application/json' };
+  return { 'Content-Type': 'application/json' };
 }
 
 function SeverityIcon({ severity }: { severity: Severity }) {
@@ -143,7 +142,7 @@ export default function NotificationsPage() {
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${apiBase}/api/admin/notifications`, { headers: authHeaders() });
+      const res = await fetch(`${apiBase}/api/admin/notifications`, { credentials: 'include', headers: authHeaders() });
       const data = await res.json();
       setNotifications(data.notifications || []);
       setReadIds(getStoredReadIds());
@@ -153,7 +152,7 @@ export default function NotificationsPage() {
   const fetchPreferences = useCallback(async () => {
     try {
       setPrefLoading(true);
-      const res = await fetch(`${apiBase}/api/admin/notification-preferences`, { headers: authHeaders() });
+      const res = await fetch(`${apiBase}/api/admin/notification-preferences`, { credentials: 'include', headers: authHeaders() });
       const data = await res.json();
       setPreferences(data.preferences || []);
     } catch { } finally { setPrefLoading(false); }
@@ -166,8 +165,8 @@ export default function NotificationsPage() {
       if (filterType) params.set('error_type', filterType);
       if (filterResolved !== '') params.set('resolved', filterResolved);
       const [fbRes, stRes] = await Promise.all([
-        fetch(`${apiBase}/api/admin/feedback?${params}`, { headers: authHeaders() }),
-        fetch(`${apiBase}/api/admin/feedback/stats`, { headers: authHeaders() }),
+        fetch(`${apiBase}/api/admin/feedback?${params}`, { credentials: 'include', headers: authHeaders() }),
+        fetch(`${apiBase}/api/admin/feedback/stats`, { credentials: 'include', headers: authHeaders() }),
       ]);
       const fbData = await fbRes.json();
       const stData = await stRes.json();
@@ -185,7 +184,7 @@ export default function NotificationsPage() {
     setTogglingType(type);
     try {
       await fetch(`${apiBase}/api/admin/notification-preferences/${type}`, {
-        method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ enabled: newEnabled }),
+        method: 'PATCH', credentials: 'include', headers: authHeaders(), body: JSON.stringify({ enabled: newEnabled }),
       });
       setPreferences(prev => prev.map(p => p.type === type ? { ...p, enabled: newEnabled } : p));
     } catch { } finally { setTogglingType(null); }
@@ -207,7 +206,7 @@ export default function NotificationsPage() {
   const handleResolve = async (id: string) => {
     setResolving(id);
     try {
-      await fetch(`${apiBase}/api/admin/feedback/${id}/resolve`, { method: 'PATCH', headers: authHeaders() });
+      await fetch(`${apiBase}/api/admin/feedback/${id}/resolve`, { method: 'PATCH', credentials: 'include', headers: authHeaders() });
       setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, resolved: true, resolved_at: new Date().toISOString() } : f));
     } finally { setResolving(null); }
   };
@@ -215,9 +214,9 @@ export default function NotificationsPage() {
   const handleDelete = async (id: string) => {
     setDeleting(id);
     try {
-      await fetch(`${apiBase}/api/admin/feedback/${id}`, { method: 'DELETE', headers: authHeaders() });
+      await fetch(`${apiBase}/api/admin/feedback/${id}`, { method: 'DELETE', credentials: 'include', headers: authHeaders() });
       setFeedbacks(prev => prev.filter(f => f.id !== id));
-      const stRes = await fetch(`${apiBase}/api/admin/feedback/stats`, { headers: authHeaders() });
+      const stRes = await fetch(`${apiBase}/api/admin/feedback/stats`, { credentials: 'include', headers: authHeaders() });
       const stData = await stRes.json();
       setStats(stData.stats ?? []);
     } finally { setDeleting(null); }

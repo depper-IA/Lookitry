@@ -32,6 +32,7 @@ interface BrandData {
   cover_bg_color?: string | null;
   cover_overlay_opacity?: number | null;
   show_brand_name?: boolean | null;
+  header_color?: string | null;
 }
 
 interface ProductData {
@@ -424,12 +425,34 @@ function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
   const overlayOpacity = brand.cover_overlay_opacity ?? 0.55;
   return (
     <section
-      className="relative w-full min-h-[420px] md:min-h-[520px] flex flex-col items-center justify-center text-center px-6 py-20 overflow-hidden"
-      style={{ background: brand.cover_bg_color || `linear-gradient(135deg, ${primary}ee 0%, ${primary}99 100%)` }}
+      className="relative w-full min-h-[420px] md:min-h-[520px] flex flex-col px-0 overflow-hidden"
+      style={{ background: brand.cover_bg_color || `#FAFAF9` }}
     >
-      {hasCover && (
-        <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
-      )}
+      {/* Header Clásico con Glassmorphism Premium */}
+      <header 
+        className="sticky top-0 z-50 w-full px-6 py-4 flex items-center justify-between backdrop-blur-xl transition-all duration-300"
+        style={{ 
+          backgroundColor: brand.header_color ? `${brand.header_color}99` : 'rgba(255,255,255,0.4)',
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.05)',
+        }}
+      >
+        <div className="flex items-center gap-3">
+          {brand.logo ? (
+            <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-8 object-contain" />
+          ) : (
+             <span className="font-bold text-lg" style={{ color: brand.primary_color }}>{brand.name}</span>
+          )}
+        </div>
+        <button onClick={onScrollDown} className="text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-full border transition-all hover:bg-black/5" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
+          Explorar
+        </button>
+      </header>
+
+      <div className="flex-1 relative flex flex-col items-center justify-center text-center px-6 py-12">
+        {hasCover && (
+          <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
+        )}
       {(hasCover && overlayOpacity > 0) && (
         <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity})` }} />
       )}
@@ -451,7 +474,8 @@ function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
           {brand.cta_button_text || 'Probarme un producto'}
         </button>
       </div>
-      <button onClick={onScrollDown} className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 hover:text-white/90 transition-colors animate-bounce" aria-label="Ver mas">
+    </div>
+    <button onClick={onScrollDown} className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 hover:text-white/90 transition-colors animate-bounce" aria-label="Ver mas">
         <ChevronDownIcon className="w-7 h-7" />
       </button>
     </section>
@@ -637,7 +661,30 @@ function TemplateClassic({ brandSlug, brand, products, footerUrl }: { brandSlug:
   const primary = brand.primary_color || '#FF5C3A';
   const scrollToTryOn = () => document.getElementById('tryon-section')?.scrollIntoView({ behavior: 'smooth' });
   const [previewMode, setPreviewMode] = useState(false);
+  const [previewExpired, setPreviewExpired] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem(`preview_expired_${brandSlug}`)) {
+      setPreviewExpired(true);
+    }
+  }, [brandSlug]);
+
   const showModal = !brand.has_landing_page && !previewMode;
+
+  const handlePreviewExpired = () => {
+    setPreviewMode(false);
+    setPreviewExpired(true);
+    localStorage.setItem(`preview_expired_${brandSlug}`, 'true');
+    window.location.href = '/checkout?plan=LANDING';
+  };
+
+  const startPreview = () => {
+    if (previewExpired) {
+      window.location.href = '/checkout?plan=LANDING';
+      return;
+    }
+    setPreviewMode(true);
+  };
 
   // Rebloqueo al llegar al final del scroll
   useEffect(() => {
@@ -665,11 +712,11 @@ function TemplateClassic({ brandSlug, brand, products, footerUrl }: { brandSlug:
           modalTitle={brand.modal_title}
           modalDescription={brand.modal_description}
           modalFeatures={brand.modal_features}
-          onPreview={() => setPreviewMode(true)}
+          onPreview={previewExpired ? undefined : startPreview}
         />
       )}
       {previewMode && (
-        <PreviewBanner primaryColor={primary} onExpired={() => setPreviewMode(false)} />
+        <PreviewBanner primaryColor={primary} onExpired={handlePreviewExpired} />
       )}
       <div style={previewMode ? { paddingTop: '40px' } : {}}>
         <ClassicHero brand={brand} onScrollDown={scrollToTryOn} />
@@ -701,8 +748,12 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
   };
   return (
     <header 
-      className="bg-white px-5 h-16 flex items-center justify-between sticky top-0 z-50 border-b-2" 
-      style={{ borderBottomColor: primary }}
+      className="px-5 h-20 flex items-center justify-between sticky top-0 z-50 backdrop-blur-2xl transition-all" 
+      style={{ 
+        backgroundColor: brand.header_color ? `${brand.header_color}80` : 'rgba(255,255,255,0.3)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)'
+      }}
     >
       <div className="flex items-center gap-2.5">
         {brand.logo ? (
@@ -876,7 +927,30 @@ function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { brandSlu
   };
 
   const [previewMode, setPreviewMode] = useState(false);
+  const [previewExpired, setPreviewExpired] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem(`preview_expired_${brandSlug}`)) {
+      setPreviewExpired(true);
+    }
+  }, [brandSlug]);
+
   const showModal = !brand.has_landing_page && !previewMode;
+
+  const handlePreviewExpired = () => {
+    setPreviewMode(false);
+    setPreviewExpired(true);
+    localStorage.setItem(`preview_expired_${brandSlug}`, 'true');
+    window.location.href = '/checkout?plan=LANDING';
+  };
+
+  const startPreview = () => {
+    if (previewExpired) {
+      window.location.href = '/checkout?plan=LANDING';
+      return;
+    }
+    setPreviewMode(true);
+  };
 
   useEffect(() => {
     if (!previewMode) return;
@@ -903,11 +977,11 @@ function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { brandSlu
           modalTitle={brand.modal_title}
           modalDescription={brand.modal_description}
           modalFeatures={brand.modal_features}
-          onPreview={() => setPreviewMode(true)}
+          onPreview={previewExpired ? undefined : startPreview}
         />
       )}
       {previewMode && (
-        <PreviewBanner primaryColor={primary} onExpired={() => setPreviewMode(false)} />
+        <PreviewBanner primaryColor={primary} onExpired={handlePreviewExpired} />
       )}
       <div style={previewMode ? { paddingTop: '40px' } : {}}>
       <EditorialHeader brand={brand} />
@@ -980,7 +1054,12 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
   // Usar cover_bg_color si está definido, si no usar un tono oscuro derivado del primary
   const navBg = brand.cover_bg_color || '#0f0f0f';
   return (
-    <nav className="sticky top-0 z-50 h-14 flex items-center justify-between px-6 border-b" style={{ backgroundColor: navBg, borderColor: 'rgba(255,255,255,0.08)' }}>
+    <nav className="sticky top-0 z-50 h-20 flex items-center justify-between px-6 backdrop-blur-3xl transition-colors duration-500" 
+      style={{ 
+        backgroundColor: brand.header_color ? `${brand.header_color}66` : 'rgba(15,15,15,0.2)', 
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)'
+      }}>
       <div className="flex items-center gap-2.5">
         {brand.logo && (
           <BrandLogo
@@ -1278,7 +1357,30 @@ function TemplateModerno({ brandSlug, brand, products, footerUrl }: { brandSlug:
   const primary = brand.primary_color || '#FF5C3A';
   const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id ?? null);
   const [previewMode, setPreviewMode] = useState(false);
+  const [previewExpired, setPreviewExpired] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem(`preview_expired_${brandSlug}`)) {
+      setPreviewExpired(true);
+    }
+  }, [brandSlug]);
+
   const showModal = !brand.has_landing_page && !previewMode;
+
+  const handlePreviewExpired = () => {
+    setPreviewMode(false);
+    setPreviewExpired(true);
+    localStorage.setItem(`preview_expired_${brandSlug}`, 'true');
+    window.location.href = '/checkout?plan=LANDING';
+  };
+
+  const startPreview = () => {
+    if (previewExpired) {
+      window.location.href = '/checkout?plan=LANDING';
+      return;
+    }
+    setPreviewMode(true);
+  };
 
   const scrollToTryOn = () => document.getElementById('probador-tryon')?.scrollIntoView({ behavior: 'smooth' });
   const handleProductClick = (id: string) => {
@@ -1314,11 +1416,11 @@ function TemplateModerno({ brandSlug, brand, products, footerUrl }: { brandSlug:
           modalTitle={brand.modal_title}
           modalDescription={brand.modal_description}
           modalFeatures={brand.modal_features}
-          onPreview={() => setPreviewMode(true)}
+          onPreview={previewExpired ? undefined : startPreview}
         />
       )}
       {previewMode && (
-        <PreviewBanner primaryColor={primary} onExpired={() => setPreviewMode(false)} />
+        <PreviewBanner primaryColor={primary} onExpired={handlePreviewExpired} />
       )}
       <div style={previewMode ? { paddingTop: '40px' } : {}}>
         <ProbadorNav brand={brand} />
@@ -1346,7 +1448,7 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
 
   useEffect(() => {
     if (initialData) return;
-    fetch(`${API_URL}/api/pruebalo/${brandSlug}`)
+    fetch(`${API_URL}/api/pruebalo/${brandSlug}`, { cache: 'no-store' })
       .then(r => r.ok ? r.json() : null)
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));

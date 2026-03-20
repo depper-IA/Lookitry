@@ -45,8 +45,7 @@ interface StatRow {
 }
 
 function authHeaders() {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : '';
-  return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+  return { 'Content-Type': 'application/json' };
 }
 
 export default function FeedbackPage() {
@@ -69,8 +68,8 @@ export default function FeedbackPage() {
       if (filterResolved !== '') params.set('resolved', filterResolved);
 
       const [fbRes, stRes] = await Promise.all([
-        fetch(`${API}/api/admin/feedback?${params}`, { headers: authHeaders() }),
-        fetch(`${API}/api/admin/feedback/stats`, { headers: authHeaders() }),
+        fetch(`${API}/api/admin/feedback?${params}`, { credentials: 'include', headers: authHeaders() }),
+        fetch(`${API}/api/admin/feedback/stats`, { credentials: 'include', headers: authHeaders() }),
       ]);
       const fbData = await fbRes.json();
       const stData = await stRes.json();
@@ -90,6 +89,7 @@ export default function FeedbackPage() {
     try {
       await fetch(`${API}/api/admin/feedback/${id}/resolve`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: authHeaders(),
       });
       setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, resolved: true, resolved_at: new Date().toISOString() } : f));
@@ -103,11 +103,12 @@ export default function FeedbackPage() {
     try {
       await fetch(`${API}/api/admin/feedback/${id}`, {
         method: 'DELETE',
+        credentials: 'include',
         headers: authHeaders(),
       });
       setFeedbacks(prev => prev.filter(f => f.id !== id));
       // Refrescar stats
-      const stRes = await fetch(`${API}/api/admin/feedback/stats`, { headers: authHeaders() });
+      const stRes = await fetch(`${API}/api/admin/feedback/stats`, { credentials: 'include', headers: authHeaders() });
       const stData = await stRes.json();
       setStats(stData.stats ?? []);
     } finally {

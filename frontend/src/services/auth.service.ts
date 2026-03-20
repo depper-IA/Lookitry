@@ -1,4 +1,4 @@
-﻿const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
 export interface RegisterData {
   email: string;
@@ -23,8 +23,13 @@ export interface AuthResponse {
   };
 }
 
+/**
+ * apiFetch — wrapper de fetch que siempre envía cookies (credentials: 'include').
+ * Esto es necesario para que el backend reciba/envíe la cookie HTTP-Only del JWT.
+ */
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
+    credentials: 'include', // ← enviar y recibir cookies cross-origin
     headers: { 'Content-Type': 'application/json', ...(options?.headers || {}) },
     ...options,
   });
@@ -39,9 +44,14 @@ class AuthService {
       method: 'POST',
       body: JSON.stringify(data),
     });
-    if (response.token) {
-      localStorage.setItem('token', response.token);
+    // El token llega como cookie HTTP-Only → no se guarda en localStorage en producción.
+    // Solo guardamos los datos públicos de la marca para mostrar en la UI.
+    if (response.brand) {
       localStorage.setItem('brand', JSON.stringify(response.brand));
+    }
+    // En desarrollo: guardamos el token para bypass de cookies bloqueadas en localhost
+    if (response.token && process.env.NODE_ENV === 'development') {
+      localStorage.setItem('token', response.token);
     }
     return response;
   }
@@ -51,22 +61,33 @@ class AuthService {
       method: 'POST',
       body: JSON.stringify(data),
     });
-    if (response.token) {
-      localStorage.setItem('token', response.token);
+    // El token llega como cookie HTTP-Only → no se guarda en localStorage en producción.
+    if (response.brand) {
       localStorage.setItem('brand', JSON.stringify(response.brand));
+    }
+    // En desarrollo: guardamos el token para bypass de cookies bloqueadas en localhost
+    if (response.token && process.env.NODE_ENV === 'development') {
+      localStorage.setItem('token', response.token);
     }
     return response;
   }
 
   logout(): void {
-    localStorage.removeItem('token');
     localStorage.removeItem('brand');
-    localStorage.removeItem('brandToken');
+    localStorage.removeItem('brand_plan');
+    localStorage.removeItem('token'); // Limpiar token de desarrollo
+    // Llamar al backend para limpiar la cookie HTTP-Only
+    fetch(`${API_URL}/api/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    }).catch(() => {});
   }
 
+  /** @deprecated El token ya viaja como cookie HTTP-Only. Solo se mantiene para retrocompatibilidad con código legacy. */
   getToken(): string | null {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('token') || localStorage.getItem('brandToken');
+    // fallback por si algún lugar todavía almacena el token antiguo
+    return localStorage.getItem('token') || localStorage.getItem('brandToken') || null;
   }
 
   getBrand(): AuthResponse['brand'] | null {
@@ -76,7 +97,9 @@ class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    // Con cookies HTTP-Only no podemos verificar en cliente directamente;
+    // comprobamos si tenemos datos de marca guardados (indicio de sesión activa).
+    return !!this.getBrand();
   }
 }
 

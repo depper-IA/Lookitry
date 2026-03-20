@@ -110,7 +110,7 @@ export default function SubscriptionPage() {
       try {
         const [subResult, paymentsResult, settingsResult, pricingResult] = await Promise.allSettled([
           subscriptionService.getSubscriptionInfo(),
-          api.get<SubscriptionPayment[]>('/brands/me/payments'),
+          subscriptionService.getPayments(),
           fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
             .then(r => r.ok ? r.json() : null),
           fetch(
@@ -124,7 +124,7 @@ export default function SubscriptionPage() {
           ).then(r => r.ok ? r.json() : null),
         ]);
         if (subResult.status === 'fulfilled') setInfo(subResult.value);
-        if (paymentsResult.status === 'fulfilled') setPayments(paymentsResult.value.data);
+        if (paymentsResult.status === 'fulfilled') setPayments(paymentsResult.value);
         if (settingsResult.status === 'fulfilled' && settingsResult.value) {
           setPaySettings(settingsResult.value);
         }

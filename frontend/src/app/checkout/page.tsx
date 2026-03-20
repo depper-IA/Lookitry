@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -198,11 +198,11 @@ function CheckoutContent() {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-    setHasSession(!!token);
-    if (token) {
+    const brandStr = localStorage.getItem('brand');
+    setHasSession(!!brandStr);
+    if (brandStr) {
       try {
-        const brand = JSON.parse(localStorage.getItem('brand') || 'null');
+        const brand = JSON.parse(brandStr);
         if (brand) setSessionInfo({ name: brand.name || '', email: brand.email || '' });
       } catch {}
     }
@@ -236,7 +236,7 @@ function CheckoutContent() {
   const subMonthDiscount = discounts.find(d => d.months === selectedMonths)?.pct ?? 0;
   
   // Cálculo del total de la suscripción (con descuento por meses y descuento de promo)
-  const subPlanTotal = Math.round(
+  const subPlanTotal = Math.ceil(
     currentPlanBase * selectedMonths * (1 - subMonthDiscount / 100) * (1 - promoDiscountPct / 100)
   );
 
@@ -254,7 +254,7 @@ function CheckoutContent() {
   // Descuento por cupón (se aplica sobre el precio ya promocionado)
   const couponDiscount = appliedCoupon
     ? appliedCoupon.discount_type === 'pct'
-      ? Math.round(baseTotalPrice * appliedCoupon.discount_value / 100)
+      ? Math.ceil(baseTotalPrice * appliedCoupon.discount_value / 100)
       : Math.min(appliedCoupon.discount_value, baseTotalPrice)
     : 0;
   const totalPrice = Math.max(0, baseTotalPrice - couponDiscount);
@@ -305,20 +305,16 @@ function CheckoutContent() {
     setEmailError('');
 
     try {
-      const token = typeof window !== 'undefined'
-        ? (localStorage.getItem('token') || localStorage.getItem('brandToken'))
-        : null;
-
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
       // --- FLUJO PAYPAL ---
       if (paymentMethod === 'paypal') {
         const emailParam = !hasSession && email.trim() ? `&email=${encodeURIComponent(email.trim())}` : '';
         const landingParam = isLanding ? '&includes_landing=true' : '';
         const res = await fetch(
           `${API_URL}/api/payments/paypal/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}${landingParam}&trm=${trm}`,
-          { headers }
+          { 
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          }
         );
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Error al generar link de PayPal');
@@ -331,7 +327,10 @@ function CheckoutContent() {
       const landingParam = isLanding ? '&includes_landing=true' : '';
       const res = await fetch(
         `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}${landingParam}`,
-        { headers }
+        { 
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
 
       if (!res.ok) {
@@ -628,7 +627,7 @@ function CheckoutContent() {
                         {formatCOP(subPlanTotal)}
                       </div>
                       {selectedMonths > 1 && monthlyPrice && (
-                        <div className="text-[11px] text-[#999]">{formatCOP(Math.round(monthlyPrice))}/mes</div>
+                        <div className="text-[11px] text-[#999]">{formatCOP(Math.ceil(monthlyPrice))}/mes</div>
                       )}
                     </div>
                   </div>

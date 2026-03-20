@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { Users, TrendingUp, UserCheck, BarChart2, Image, Package, Globe, PauseCircle, MinusCircle } from 'lucide-react';
@@ -15,8 +15,7 @@ interface ConversionStats {
 
 function adminFetch(path: string) {
   const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-  const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') ?? '' : '';
-  return fetch(`${base}/api${path}`, { headers: { Authorization: `Bearer ${token}` } });
+  return fetch(`${base}/api${path}`, { credentials: 'include' });
 }
 
 function formatMonth(key: string) {

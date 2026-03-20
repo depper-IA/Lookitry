@@ -106,6 +106,21 @@ export class PaypalController {
             .update({ has_landing_page: true, landing_suspended_at: null })
             .eq('id', brandIdOrVisitor);
         }
+
+        // Enviar email de confirmación de compra
+        const { NotificationService } = await import('../services/notification.service');
+        const notificationService = new NotificationService();
+        
+        const { data: updatedBrandForEmail } = await supabaseAdmin
+          .from('brands')
+          .select('id, email, name, plan, subscription_end_date')
+          .eq('id', brandIdOrVisitor)
+          .single();
+
+        if (updatedBrandForEmail) {
+          notificationService.sendRenewalConfirmation(updatedBrandForEmail as any)
+            .catch(err => console.error('[PayPal] Error enviando email de confirmación de compra:', err));
+        }
       } else {
         // Para visitantes, marcamos el registro como PAGADO de forma segura en la DB
         const { error: updateError } = await supabaseAdmin

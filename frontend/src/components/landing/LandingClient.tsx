@@ -60,9 +60,9 @@ const MINI_LANDING_FEATURES = [
 ];
 
 const PRODUCTS = [
-  { name: 'Camisa lino beige', price: '$89.000', bg: 'linear-gradient(135deg,#2a2a2a,#444)', active: true },
-  { name: 'Zapatillas blancas', price: '$185.000', bg: 'linear-gradient(135deg,#2a2a2a,#555)', active: false },
-  { name: 'Bolso cuero café', price: '$210.000', bg: 'linear-gradient(135deg,#3a2a1a,#5a3a2a)', active: false },
+  { name: 'Camisa lino beige', price: '$89.000', img: '/products/camisa_lino_beige.png', active: true },
+  { name: 'Zapatillas blancas', price: '$185.000', img: '/products/zapatilla_blanca.png', active: false },
+  { name: 'Bolso cuero café', price: '$210.000', img: '/products/bolso_cuero_cafe.png', active: false },
 ];
 
 export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
@@ -210,7 +210,9 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
                       key={p.name}
                       className={`rounded-lg p-2 flex items-center gap-2 border ${p.active ? 'border-[#FF5C3A] bg-[#2d1f1a]' : 'border-[#3a3a3a] bg-[#333]'}`}
                     >
-                      <div className="w-7 h-7 rounded-md flex-shrink-0" style={{ background: p.bg }} aria-hidden="true" />
+                      <div className="w-8 h-8 rounded-md flex-shrink-0 relative overflow-hidden" aria-hidden="true">
+                        <Image src={p.img} alt={p.name} fill className="object-cover" sizes="32px" />
+                      </div>
                       <div>
                         <div className={`text-[11px] leading-tight font-medium ${p.active ? 'text-white' : 'text-[#bbb]'}`}>{p.name}</div>
                         <div className="text-[10px] text-[#888]">{p.price}</div>
@@ -233,7 +235,7 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
         <section className="bg-[#f5f2ee] border-y border-[#e0dcd7] py-12 px-6" aria-label="Estadísticas de Lookitry">
           <div className="flex justify-center gap-8 md:gap-16 flex-wrap">
             {[
-              { n: '+120', label: 'marcas activas' },
+              { n: '+30', label: 'marcas activas' },
               { n: '18K', label: 'generaciones este mes' },
               { n: '4.8/5', label: 'satisfacción promedio' },
             ].map(s => (
@@ -388,10 +390,10 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
                 Tu tienda online,<br /><span className="text-[#FF5C3A]">sin pagar un diseñador</span>
               </h2>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 items-start">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-8 items-stretch">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-full auto-rows-fr">
                 {MINI_LANDING_FEATURES.map(f => (
-                  <div key={f.title} className="bg-white border border-[#e8e4df] rounded-2xl p-5 flex gap-3">
+                  <div key={f.title} className="bg-white border border-[#e8e4df] rounded-2xl p-5 flex gap-3 h-full items-center">
                     <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center bg-[#FF5C3A]/10">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF5C3A" strokeWidth="1.8"><path d={f.icon} /></svg>
                     </div>
@@ -409,13 +411,13 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
           </div>
         </section>
 
-        <FaqSection />
+        <FaqSection pricing={pricing} />
         <LandingFooter />
 
         {/* Botón flotante Volver Arriba */}
         <button
           onClick={scrollToTop}
-          className={`fixed bottom-8 left-8 p-3.5 rounded-full bg-white border border-[#e0dcd7] text-[#0a0a0a] shadow-xl transition-all duration-300 z-50 hover:scale-110 active:scale-95 group ${
+          className={`fixed bottom-8 left-8 p-3.5 rounded-full bg-white border border-[#e0dcd7] text-[#0a0a0a] shadow-xl transition-all duration-300 z-50 hover:scale-110 active:scale-95 group hidden md:block ${
             showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
           }`}
           aria-label="Volver arriba"

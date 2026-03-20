@@ -632,10 +632,11 @@ export default function RevenuePage() {
   const handleSave = useCallback(async (id: string, data: Record<string, unknown>) => {
     setSaving(id);
     try {
-      const token = localStorage.getItem('adminToken');
-      const res = await fetch('/api/pricing', {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+      const res = await fetch(`${apiBase}/api/admin/revenue/payments`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, data }),
       });
       const json = await res.json();
@@ -660,13 +661,10 @@ export default function RevenuePage() {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const token   = localStorage.getItem('adminToken');
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-      const headers = { Authorization: `Bearer ${token}` };
-
       const [statsRes, pricingRes, trmRes] = await Promise.all([
-        fetch(`${apiBase}/api/admin/revenue/stats`, { headers }),
-        fetch('/api/pricing', { headers }),
+        fetch(`${apiBase}/api/admin/revenue/stats`, { credentials: 'include' }),
+        fetch('/api/pricing', { credentials: 'include' }),
         fetch('/api/pricing/trm'),
       ]);
 

@@ -6,8 +6,10 @@ import { publicRateLimiter, generationRateLimiter, slugGenerationRateLimiter } f
 const router = Router();
 const pruebaloController = new PruebaloController();
 
+// GET /api/pruebalo/resolve-domain - Resolver slug mediante host/dominio
+router.get('/resolve-domain', publicRateLimiter, pruebaloController.resolveDomain);
+
 // GET /api/pruebalo/:brandSlug - Obtener configuración pública de marca y productos
-// Esta ruta NO requiere autenticación (con rate limiting público)
 router.get('/:brandSlug', publicRateLimiter, pruebaloController.getBrandConfig);
 
 // POST /api/pruebalo/:brandSlug/generate - Generar imagen de try-on

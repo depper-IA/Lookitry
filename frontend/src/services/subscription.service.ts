@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { Brand, SubscriptionPayment } from '@/types';
+import type { Brand, SubscriptionPayment, PlanType } from '@/types';
 
 export interface SubscriptionDetails {
   status: string;
@@ -20,6 +20,8 @@ export interface SubscriptionResponse {
 
 export interface SubscriptionInfo {
   brand: Brand;
+  plan: PlanType;
+  hasLandingPage: boolean;
   daysRemaining: number;
   status: 'active' | 'expiring_soon' | 'expired' | 'suspended' | null;
   isInTrial: boolean;
@@ -53,12 +55,32 @@ class SubscriptionService {
 
     return {
       brand,
+      plan: (rawBrand.plan ?? 'BASIC') as PlanType,
+      hasLandingPage: rawBrand.has_landing_page ?? false,
       daysRemaining: subscription.daysRemaining ?? 0,
       status: (subscription.status as 'active' | 'expiring_soon' | 'expired' | 'suspended') || null,
       isInTrial: subscription.isInTrial ?? false,
       trialDaysRemaining: subscription.trialDaysRemaining ?? null,
       trialEndDate: subscription.trialEndDate ?? null,
     };
+  }
+
+  async getPayments(): Promise<SubscriptionPayment[]> {
+    const response = await api.get<any[]>('/brands/me/payments');
+    const rawPayments = Array.isArray(response.data) ? response.data : [];
+    
+    return rawPayments.map(p => ({
+      id: p.id,
+      brandId: p.brand_id,
+      amount: p.amount,
+      currency: p.currency,
+      paymentDate: p.payment_date,
+      paymentMethod: p.payment_method,
+      status: p.status,
+      notes: p.notes,
+      createdAt: p.created_at,
+      updatedAt: p.updated_at,
+    }));
   }
 }
 

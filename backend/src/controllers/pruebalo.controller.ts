@@ -231,7 +231,6 @@ export class PruebaloController {
       }
 
       const processingTime = Date.now() - startTime;
-
       // 8. Actualizar registro con resultado (SUCCESS/FAILED) — guardar prompt para trazabilidad RAG
       await generationsService.updateGeneration(generation.id, {
         status: 'SUCCESS',
@@ -367,6 +366,34 @@ export class PruebaloController {
       id: feedback.id,
       message: 'Gracias por tu reporte. Lo usaremos para mejorar las generaciones.',
     });
+  });
+
+  /**
+   * GET /api/pruebalo/resolve-domain?host=...
+   * Resuelve una marca a partir de su dominio personalizado.
+   */
+  resolveDomain = asyncHandler(async (req: Request, res: Response) => {
+    const host = req.query.host as string;
+    if (!host) {
+      return res.status(400).json({ error: 'HOST_REQUIRED', message: 'Host es requerido' });
+    }
+
+    // Limpiar host: remover puertos o prefijos
+    const cleanHost = host.split(':')[0].toLowerCase();
+    
+    // Si es el dominio base o localhost, no hay nada que resolver aquí
+    const baseDomain = process.env.BASE_DOMAIN || 'pruebalo.wilkiedevs.com';
+    if (cleanHost === baseDomain || cleanHost === 'localhost') {
+      return res.status(200).json({ slug: null });
+    }
+
+    const brand = await brandsService.getBrandByCustomDomain(cleanHost);
+    
+    if (!brand) {
+      return res.status(200).json({ slug: null });
+    }
+
+    return res.status(200).json({ slug: brand.slug });
   });
 }
 

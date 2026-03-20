@@ -333,17 +333,15 @@ export default function PromotionsPage() {
 
   const [error, setError] = useState('');
 
-  const getToken = () => typeof window !== 'undefined' ? localStorage.getItem('adminToken') ?? '' : '';
+
 
   const loadPromos = useCallback(async () => {
-    const token = getToken();
-    const res = await fetch(`${API_URL}/api/admin/promotions`, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch(`${API_URL}/api/admin/promotions`, { credentials: 'include' });
     if (res.ok) { const d = await res.json(); setPromos(d.data ?? []); }
   }, []);
 
   const loadCoupons = useCallback(async () => {
-    const token = getToken();
-    const res = await fetch(`${API_URL}/api/admin/coupons`, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch(`${API_URL}/api/admin/coupons`, { credentials: 'include' });
     if (res.ok) { const d = await res.json(); setCoupons(d.data ?? []); }
   }, []);
 
@@ -357,25 +355,22 @@ export default function PromotionsPage() {
   const handleSavePromo = async (data: Omit<Promotion, 'id' | 'created_at'>) => {
     setSavingPromo(true); setError('');
     try {
-      const token = getToken();
       const isEdit = !!editingPromo;
       const url = isEdit ? `${API_URL}/api/admin/promotions/${editingPromo!.id}` : `${API_URL}/api/admin/promotions`;
-      const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
+      const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       if (!res.ok) throw new Error((await res.json()).error || 'Error al guardar');
       setShowPromoForm(false); setEditingPromo(null); await loadPromos();
     } catch (e: any) { setError(e.message); } finally { setSavingPromo(false); }
   };
 
   const handleTogglePromo = async (promo: Promotion) => {
-    const token = getToken();
-    await fetch(`${API_URL}/api/admin/promotions/${promo.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ active: !promo.active }) });
+    await fetch(`${API_URL}/api/admin/promotions/${promo.id}`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: !promo.active }) });
     await loadPromos();
   };
 
   const handleDeletePromo = async (id: string) => {
     if (!confirm('¿Eliminar esta promoción?')) return;
-    const token = getToken();
-    await fetch(`${API_URL}/api/admin/promotions/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    await fetch(`${API_URL}/api/admin/promotions/${id}`, { method: 'DELETE', credentials: 'include' });
     await loadPromos();
   };
 
@@ -384,10 +379,9 @@ export default function PromotionsPage() {
   const handleSaveCoupon = async (data: Omit<Coupon, 'id' | 'created_at' | 'uses_count'>) => {
     setSavingCoupon(true); setError('');
     try {
-      const token = getToken();
       const isEdit = !!editingCoupon;
       const url = isEdit ? `${API_URL}/api/admin/coupons/${editingCoupon!.id}` : `${API_URL}/api/admin/coupons`;
-      const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
+      const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       if (!res.ok) throw new Error((await res.json()).error || 'Error al guardar');
       setShowCouponForm(false); setEditingCoupon(null); await loadCoupons();
     } catch (e: any) { setError(e.message); } finally { setSavingCoupon(false); }
@@ -395,8 +389,7 @@ export default function PromotionsPage() {
 
   const handleDeleteCoupon = async (id: string) => {
     if (!confirm('¿Eliminar este cupón?')) return;
-    const token = getToken();
-    await fetch(`${API_URL}/api/admin/coupons/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    await fetch(`${API_URL}/api/admin/coupons/${id}`, { method: 'DELETE', credentials: 'include' });
     await loadCoupons();
   };
 
@@ -406,9 +399,9 @@ export default function PromotionsPage() {
     <div className="max-w-5xl mx-auto space-y-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(255,92,58,0.15)', color: '#FF5C3A' }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255,92,58,0.15)', color: '#FF5C3A' }}>
             <IconMegaphone />
           </div>
           <div>
@@ -418,7 +411,7 @@ export default function PromotionsPage() {
         </div>
         <button
           onClick={() => { setShowPromoForm(true); setEditingPromo(null); setTab('promos'); }}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold text-white transition-all hover:opacity-90"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-semibold text-white transition-all hover:opacity-90 w-full sm:w-auto"
           style={{ backgroundColor: '#FF5C3A' }}
         >
           <IconPlus />Nueva promoción
@@ -473,49 +466,46 @@ export default function PromotionsPage() {
               <p className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>No hay promociones. Crea la primera.</p>
             </div>
           ) : (
-            <div className="rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-              <table className="w-full text-[13px]">
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    {['Nombre', 'Tipo', 'Vigencia', 'Activa', ''].map((h, i) => (
-                      <th key={i} className={`px-5 py-3 font-semibold text-[11px] uppercase tracking-wide ${i === 3 ? 'text-center' : 'text-left'}`} style={{ color: 'var(--text-secondary)' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {promos.map(p => (
-                    <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
-                    >
-                      <td className="px-5 py-3.5 font-medium" style={{ color: 'var(--text-primary)' }}>{p.name}</td>
-                      <td className="px-5 py-3.5">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium text-white" style={{ backgroundColor: TYPE_COLORS[p.type] }}>
-                          {TYPE_LABELS[p.type]}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
-                        {p.ends_at ? `Hasta ${formatDate(p.ends_at)}` : 'Sin fecha límite'}
-                      </td>
-                      <td className="px-5 py-3.5 text-center">
-                        <Toggle checked={p.active} onChange={() => handleTogglePromo(p)} />
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-2 justify-end">
-                          <button onClick={() => { setEditingPromo(p); setShowPromoForm(true); }} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--text-secondary)' }}
-                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'}
-                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'}
-                            title="Editar"><IconEdit /></button>
-                          <button onClick={() => handleDeletePromo(p.id)} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--text-secondary)' }}
-                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#ef4444'}
-                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'}
-                            title="Eliminar"><IconTrash /></button>
-                        </div>
-                      </td>
+            <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+              <div className="overflow-x-auto overflow-y-hidden">
+                <table className="w-full text-[13px] min-w-[600px]">
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      {['Nombre', 'Tipo', 'Vigencia', 'Activa', ''].map((h, i) => (
+                        <th key={i} className={`px-5 py-3 font-semibold text-[11px] uppercase tracking-wide ${i === 3 ? 'text-center' : 'text-left'}`} style={{ color: 'var(--text-secondary)' }}>{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {promos.map(p => (
+                      <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}
+                        className="transition-colors hover:bg-[var(--bg-hover)]"
+                      >
+                        <td className="px-5 py-3.5 font-medium" style={{ color: 'var(--text-primary)' }}>{p.name}</td>
+                        <td className="px-5 py-3.5">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium text-white" style={{ backgroundColor: TYPE_COLORS[p.type] }}>
+                            {TYPE_LABELS[p.type]}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                          {p.ends_at ? `Hasta ${formatDate(p.ends_at)}` : 'Sin fecha límite'}
+                        </td>
+                        <td className="px-5 py-3.5 text-center">
+                          <Toggle checked={p.active} onChange={() => handleTogglePromo(p)} />
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-2 justify-end">
+                            <button onClick={() => { setEditingPromo(p); setShowPromoForm(true); }} className="p-1.5 rounded-lg transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                              title="Editar"><IconEdit /></button>
+                            <button onClick={() => handleDeletePromo(p.id)} className="p-1.5 rounded-lg transition-colors text-[var(--text-secondary)] hover:text-red-500"
+                              title="Eliminar"><IconTrash /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
@@ -556,55 +546,51 @@ export default function PromotionsPage() {
               <p className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>No hay cupones. Crea el primero.</p>
             </div>
           ) : (
-            <div className="rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-              <table className="w-full text-[13px]">
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    {['Código', 'Descuento', 'Usos', 'Expira', 'Planes', 'Activo', ''].map(h => (
-                      <th key={h} className="text-left px-4 py-3 font-semibold text-[11px] uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {coupons.map(c => (
-                    <tr key={c.id} style={{ borderBottom: '1px solid var(--border-color)' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
-                    >
-                      <td className="px-4 py-3 font-mono font-bold" style={{ color: '#10b981' }}>{c.code}</td>
-                      <td className="px-4 py-3" style={{ color: 'var(--text-primary)' }}>
-                        {c.discount_type === 'pct' ? `${c.discount_value}%` : `$${c.discount_value.toLocaleString('es-CO')}`}
-                      </td>
-                      <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>
-                        {c.uses_count}{c.max_uses ? `/${c.max_uses}` : ''}
-                      </td>
-                      <td className="px-4 py-3 text-[12px]" style={{ color: 'var(--text-secondary)' }}>{formatDate(c.expires_at)}</td>
-                      <td className="px-4 py-3 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
-                        {c.plan_ids.length ? c.plan_ids.join(', ') : 'Todos'}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Toggle checked={c.active} onChange={async () => {
-                          const token = getToken();
-                          await fetch(`${API_URL}/api/admin/coupons/${c.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ active: !c.active }) });
-                          await loadCoupons();
-                        }} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => { setEditingCoupon(c); setShowCouponForm(true); }} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--text-secondary)' }}
-                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'}
-                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'}
-                          ><IconEdit /></button>
-                          <button onClick={() => handleDeleteCoupon(c.id)} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--text-secondary)' }}
-                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = '#ef4444'}
-                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'}
-                          ><IconTrash /></button>
-                        </div>
-                      </td>
+            <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+              <div className="overflow-x-auto overflow-y-hidden">
+                <table className="w-full text-[13px] min-w-[700px]">
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      {['Código', 'Descuento', 'Usos', 'Expira', 'Planes', 'Activo', ''].map(h => (
+                        <th key={h} className="text-left px-4 py-3 font-semibold text-[11px] uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {coupons.map(c => (
+                      <tr key={c.id} style={{ borderBottom: '1px solid var(--border-color)' }}
+                        className="transition-colors hover:bg-[var(--bg-hover)]"
+                      >
+                        <td className="px-4 py-3 font-mono font-bold" style={{ color: '#10b981' }}>{c.code}</td>
+                        <td className="px-4 py-3" style={{ color: 'var(--text-primary)' }}>
+                          {c.discount_type === 'pct' ? `${c.discount_value}%` : `$${c.discount_value.toLocaleString('es-CO')}`}
+                        </td>
+                        <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>
+                          {c.uses_count}{c.max_uses ? `/${c.max_uses}` : ''}
+                        </td>
+                        <td className="px-4 py-3 text-[12px]" style={{ color: 'var(--text-secondary)' }}>{formatDate(c.expires_at)}</td>
+                        <td className="px-4 py-3 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                          {c.plan_ids.length ? c.plan_ids.join(', ') : 'Todos'}
+                        </td>
+                        <td className="px-4 py-3">
+                           <Toggle checked={c.active} onChange={async () => {
+                            await fetch(`${API_URL}/api/admin/coupons/${c.id}`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: !c.active }) });
+                            await loadCoupons();
+                          }} />
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => { setEditingCoupon(c); setShowCouponForm(true); }} className="p-1.5 rounded-lg transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                            ><IconEdit /></button>
+                            <button onClick={() => handleDeleteCoupon(c.id)} className="p-1.5 rounded-lg transition-colors text-[var(--text-secondary)] hover:text-red-500"
+                            ><IconTrash /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
