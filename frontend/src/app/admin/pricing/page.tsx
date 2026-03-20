@@ -8,7 +8,12 @@ import {
   Settings, 
   TrendingUp, 
   RefreshCw,
-  X
+  X,
+  Globe,
+  Instagram,
+  Youtube,
+  Twitter,
+  Layout
 } from 'lucide-react';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
