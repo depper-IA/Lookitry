@@ -24,7 +24,7 @@ jest.mock('../services/wompi.service', () => {
     wompiService: {
       verifyWebhookSignature: jest.fn(),
       extractBrandIdFromReference: jest.fn(),
-      extractMetaFromReference: jest.fn(), // Añadido
+      extractMetaFromReference: jest.fn(),
       getWidgetConfig: jest.fn(),
       generateIntegritySignature: jest.fn(),
       enabled: true,
@@ -32,15 +32,24 @@ jest.mock('../services/wompi.service', () => {
   };
 });
 
+// Mock de supabaseAdmin con chain fluido que resuelve correctamente
+// El controller hace: supabaseAdmin.from('brands').select('plan').eq('id', brandId).single()
+// También hace: supabaseAdmin.from('brands').select(...).eq(...).single() para el email post-pago
+const mockSingle = jest.fn().mockResolvedValue({ data: { plan: 'BASIC' }, error: null });
+const mockEq = jest.fn().mockReturnThis();
+const mockSelect = jest.fn().mockReturnThis();
+const mockUpdate = jest.fn().mockReturnThis();
+const mockFrom = jest.fn().mockReturnThis();
+
 jest.mock('../config/supabase', () => ({
   supabase: {},
   supabaseAdmin: {
-    from: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    update: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-    single: jest.fn().mockResolvedValue({ data: {}, error: null }),
-    maybeSingle: jest.fn().mockResolvedValue({ data: null, error: null }),
+    get from() { return mockFrom; },
+    get select() { return mockSelect; },
+    get update() { return mockUpdate; },
+    get eq() { return mockEq; },
+    get single() { return mockSingle; },
+    get maybeSingle() { return jest.fn().mockResolvedValue({ data: null, error: null }); },
   },
 }));
 
@@ -62,6 +71,22 @@ jest.mock('../services/paymentSettings.service', () => ({
   })),
 }));
 
+jest.mock('../services/notification.service', () => ({
+  NotificationService: jest.fn().mockImplementation(() => ({
+    sendRenewalConfirmation: jest.fn().mockResolvedValue(undefined),
+  })),
+}));
+
+jest.mock('../services/email.service', () => ({
+  EmailService: jest.fn().mockImplementation(() => ({
+    sendEmail: jest.fn().mockResolvedValue(undefined),
+  })),
+}));
+
+jest.mock('../templates/email-templates', () => ({
+  verifyEmailTemplate: jest.fn().mockReturnValue('<html>email</html>'),
+}));
+
 // Importar DESPUÉS de los mocks
 import { WompiController } from '../controllers/wompi.controller';
 import { wompiService } from '../services/wompi.service';
@@ -77,6 +102,14 @@ function buildChecksum(payload: string, secret: string): string {
   return crypto.createHash('sha256').update(payload + secret).digest('hex');
 }
 
+/**
+ * Construye una referencia en el nuevo formato:
+ * TRYON-{brandId}-M{months}-P{plan}-{timestamp}
+ */
+function buildReference(brandId: string, months = 1, plan = 'BASIC'): string {
+  return `TRYON-${brandId}-M${months}-P${plan}-${Date.now()}`;
+}
+
 function buildTransactionEvent(
   status: string,
   reference: string,
@@ -85,7 +118,7 @@ function buildTransactionEvent(
   return {
     event: 'transaction.updated',
     data: {
-      transaction: { id: 'txn-test', status, reference, amount_in_cents: amountInCents },
+      transaction: { id: 'txn-test', status, reference, amount_in_cents: amountInCents, currency: 'COP' },
     },
   };
 }
@@ -139,7 +172,12 @@ describe('WompiService', () => {
   });
 
   describe('extractBrandIdFromReference', () => {
-    it('extrae brandId de referencia válida', () => {
+    it('extrae brandId de referencia en formato nuevo', () => {
+      const reference = buildReference(BRAND_ID, 1, 'BASIC');
+      expect(service.extractBrandIdFromReference(reference)).toBe(BRAND_ID);
+    });
+
+    it('extrae brandId de referencia en formato legacy', () => {
       const reference = `TRYON-${BRAND_ID}-${Date.now()}`;
       expect(service.extractBrandIdFromReference(reference)).toBe(BRAND_ID);
     });
@@ -154,6 +192,22 @@ describe('WompiService', () => {
 
     it('retorna null para referencia con solo dos partes', () => {
       expect(service.extractBrandIdFromReference('TRYON-sinTimestamp')).toBeNull();
+    });
+  });
+
+  describe('extractMetaFromReference', () => {
+    it('extrae months y plan del formato nuevo', () => {
+      const reference = buildReference(BRAND_ID, 3, 'PRO');
+      const meta = service.extractMetaFromReference(reference);
+      expect(meta.months).toBe(3);
+      expect(meta.plan).toBe('PRO');
+    });
+
+    it('retorna defaults para formato legacy', () => {
+      const reference = `TRYON-${BRAND_ID}-${Date.now()}`;
+      const meta = service.extractMetaFromReference(reference);
+      expect(meta.months).toBe(1);
+      expect(meta.plan).toBe('BASIC');
     });
   });
 
@@ -179,32 +233,23 @@ describe('WompiService', () => {
   });
 
   describe('generateReference', () => {
-    it('genera referencia con formato TRYON-{brandId}-{timestamp}', () => {
-      const ref = service.generateReference(BRAND_ID);
-      expect(ref).toMatch(/^TRYON-.+-\d+$/);
+    it('genera referencia con formato TRYON-{brandId}-M{n}-P{plan}-{timestamp}', () => {
+      const ref = service.generateReference(BRAND_ID, 1, 'BASIC');
+      expect(ref).toMatch(/^TRYON-.+-M\d+-P[A-Z]+-\d+$/);
       expect(ref).toContain(BRAND_ID);
     });
   });
 });
 
 // ─── WompiController.handleWebhook ───────────────────────────────────────────
-//
-// El controlador ejecuta `const subscriptionService = new SubscriptionService()`
-// a nivel de módulo (una sola vez al importar). El mock de SubscriptionService
-// ya estaba activo en ese momento, así que mock.results[0].value es la instancia
-// que usa el controlador. Obtenemos renewSubscription de ahí directamente.
 
 describe('WompiController.handleWebhook', () => {
   const mockedWompi = wompiService as jest.Mocked<typeof wompiService>;
   const MockedSS = SubscriptionService as jest.MockedClass<typeof SubscriptionService>;
 
-  // La instancia creada al importar el módulo del controlador
-  // (índice 0 porque es la primera llamada al constructor mockeado)
   let renewMock: jest.Mock;
 
   beforeAll(() => {
-    // Obtener la referencia a renewSubscription de la instancia del módulo.
-    // Esto se hace en beforeAll porque la instancia ya existe desde el import.
     const instance = MockedSS.mock.results[0]?.value;
     renewMock = instance?.renewSubscription as jest.Mock;
   });
@@ -212,20 +257,28 @@ describe('WompiController.handleWebhook', () => {
   beforeEach(() => {
     mockedWompi.verifyWebhookSignature.mockReset();
     mockedWompi.extractBrandIdFromReference.mockReset();
-    mockedWompi.extractMetaFromReference.mockReset(); // Añadido
+    mockedWompi.extractMetaFromReference.mockReset();
     renewMock?.mockReset();
 
-    // Defaults: firma válida, brandId correcto, renovación exitosa
+    // Defaults: firma válida, brandId correcto, meta correcta, renovación exitosa
     mockedWompi.verifyWebhookSignature.mockResolvedValue(true);
     mockedWompi.extractBrandIdFromReference.mockReturnValue(BRAND_ID);
-    mockedWompi.extractMetaFromReference.mockReturnValue({ months: 1, plan: 'BASIC', includesLanding: false }); // Añadido
+    mockedWompi.extractMetaFromReference.mockReturnValue({ months: 1, plan: 'BASIC', includesLanding: false });
     renewMock?.mockResolvedValue({ id: BRAND_ID });
+
+    // Resetear el mock de supabaseAdmin para la query de brands.plan
+    mockFrom.mockReturnThis();
+    mockSelect.mockReturnThis();
+    mockUpdate.mockReturnThis();
+    mockEq.mockReturnThis();
+    // El controller query brands para detectar upgrade: devolver plan BASIC (no upgrade)
+    mockSingle.mockResolvedValue({ data: { plan: 'BASIC', email: 'test@example.com', name: 'Test Brand', subscription_end_date: null }, error: null });
   });
 
   describe('Pago exitoso (APPROVED)', () => {
     it('renueva la suscripción y responde 200', async () => {
       const controller = new WompiController();
-      const reference = `TRYON-${BRAND_ID}-${Date.now()}`;
+      const reference = buildReference(BRAND_ID);
       const event = buildTransactionEvent('APPROVED', reference);
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
 
@@ -238,7 +291,10 @@ describe('WompiController.handleWebhook', () => {
           currency: 'COP',
           payment_method: 'wompi',
           status: 'completed',
-        })
+        }),
+        expect.any(Number),
+        expect.any(String),
+        expect.any(Boolean)
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ received: true });
@@ -246,33 +302,39 @@ describe('WompiController.handleWebhook', () => {
 
     it('convierte amount_in_cents a COP (150000 COP = 15000000 centavos)', async () => {
       const controller = new WompiController();
-      const event = buildTransactionEvent('APPROVED', `TRYON-${BRAND_ID}-1`, 15000000);
+      const event = buildTransactionEvent('APPROVED', buildReference(BRAND_ID), 15000000);
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
 
       await controller.handleWebhook(req, res);
 
       expect(renewMock).toHaveBeenCalledWith(
         BRAND_ID,
-        expect.objectContaining({ amount: 150000 })
+        expect.objectContaining({ amount: 150000 }),
+        expect.any(Number),
+        expect.any(String),
+        expect.any(Boolean)
       );
     });
 
     it('convierte amount_in_cents a COP (250000 COP = 25000000 centavos)', async () => {
       const controller = new WompiController();
-      const event = buildTransactionEvent('APPROVED', `TRYON-${BRAND_ID}-2`, 25000000);
+      const event = buildTransactionEvent('APPROVED', buildReference(BRAND_ID), 25000000);
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
 
       await controller.handleWebhook(req, res);
 
       expect(renewMock).toHaveBeenCalledWith(
         BRAND_ID,
-        expect.objectContaining({ amount: 250000 })
+        expect.objectContaining({ amount: 250000 }),
+        expect.any(Number),
+        expect.any(String),
+        expect.any(Boolean)
       );
     });
 
     it('procesa body como Buffer (raw) correctamente', async () => {
       const controller = new WompiController();
-      const event = buildTransactionEvent('APPROVED', `TRYON-${BRAND_ID}-3`);
+      const event = buildTransactionEvent('APPROVED', buildReference(BRAND_ID));
       const { req, res } = buildReqRes(
         Buffer.from(JSON.stringify(event)),
         { 'x-event-checksum': 'valid' }
@@ -286,7 +348,7 @@ describe('WompiController.handleWebhook', () => {
 
     it('incluye la referencia en las notas del pago', async () => {
       const controller = new WompiController();
-      const reference = `TRYON-${BRAND_ID}-123456`;
+      const reference = buildReference(BRAND_ID);
       const event = buildTransactionEvent('APPROVED', reference);
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
 
@@ -294,7 +356,10 @@ describe('WompiController.handleWebhook', () => {
 
       expect(renewMock).toHaveBeenCalledWith(
         BRAND_ID,
-        expect.objectContaining({ notes: expect.stringContaining(reference) })
+        expect.objectContaining({ notes: expect.stringContaining(reference) }),
+        expect.any(Number),
+        expect.any(String),
+        expect.any(Boolean)
       );
     });
   });
@@ -302,7 +367,7 @@ describe('WompiController.handleWebhook', () => {
   describe('Pago fallido / rechazado', () => {
     it('no renueva suscripción cuando status es DECLINED', async () => {
       const controller = new WompiController();
-      const event = buildTransactionEvent('DECLINED', `TRYON-${BRAND_ID}-4`);
+      const event = buildTransactionEvent('DECLINED', buildReference(BRAND_ID));
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
 
       await controller.handleWebhook(req, res);
@@ -314,7 +379,7 @@ describe('WompiController.handleWebhook', () => {
 
     it('no renueva suscripción cuando status es VOIDED', async () => {
       const controller = new WompiController();
-      const event = buildTransactionEvent('VOIDED', `TRYON-${BRAND_ID}-5`);
+      const event = buildTransactionEvent('VOIDED', buildReference(BRAND_ID));
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
 
       await controller.handleWebhook(req, res);
@@ -325,7 +390,7 @@ describe('WompiController.handleWebhook', () => {
 
     it('no renueva suscripción cuando status es ERROR', async () => {
       const controller = new WompiController();
-      const event = buildTransactionEvent('ERROR', `TRYON-${BRAND_ID}-6`);
+      const event = buildTransactionEvent('ERROR', buildReference(BRAND_ID));
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
 
       await controller.handleWebhook(req, res);
@@ -336,7 +401,7 @@ describe('WompiController.handleWebhook', () => {
     it('responde 200 aunque renewSubscription lance error (evita reintentos de Wompi)', async () => {
       renewMock.mockRejectedValue(new Error('DB error'));
       const controller = new WompiController();
-      const event = buildTransactionEvent('APPROVED', `TRYON-${BRAND_ID}-7`);
+      const event = buildTransactionEvent('APPROVED', buildReference(BRAND_ID));
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'valid' });
 
       await controller.handleWebhook(req, res);
@@ -350,7 +415,7 @@ describe('WompiController.handleWebhook', () => {
     it('rechaza webhook sin header x-event-checksum (401)', async () => {
       mockedWompi.verifyWebhookSignature.mockResolvedValue(false);
       const controller = new WompiController();
-      const event = buildTransactionEvent('APPROVED', `TRYON-${BRAND_ID}-8`);
+      const event = buildTransactionEvent('APPROVED', buildReference(BRAND_ID));
       const { req, res } = buildReqRes(event, {});
 
       await controller.handleWebhook(req, res);
@@ -362,7 +427,7 @@ describe('WompiController.handleWebhook', () => {
     it('rechaza webhook con firma incorrecta (401)', async () => {
       mockedWompi.verifyWebhookSignature.mockResolvedValue(false);
       const controller = new WompiController();
-      const event = buildTransactionEvent('APPROVED', `TRYON-${BRAND_ID}-9`);
+      const event = buildTransactionEvent('APPROVED', buildReference(BRAND_ID));
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'firma-falsa' });
 
       await controller.handleWebhook(req, res);
@@ -374,7 +439,7 @@ describe('WompiController.handleWebhook', () => {
     it('no procesa el pago si la firma falla aunque el evento sea APPROVED', async () => {
       mockedWompi.verifyWebhookSignature.mockResolvedValue(false);
       const controller = new WompiController();
-      const event = buildTransactionEvent('APPROVED', `TRYON-${BRAND_ID}-10`, 15000000);
+      const event = buildTransactionEvent('APPROVED', buildReference(BRAND_ID), 15000000);
       const { req, res } = buildReqRes(event, { 'x-event-checksum': 'invalido' });
 
       await controller.handleWebhook(req, res);
