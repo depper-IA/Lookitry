@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/services/api';
 import { downloadImage } from '@/utils/download';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Generation {
   id: string;
@@ -20,7 +21,7 @@ export type ViewMode = 'grid' | 'thumbnails' | 'list';
 function IconGrid() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 0113.5 18v-2.25z" />
     </svg>
   );
 }
@@ -28,7 +29,7 @@ function IconGrid() {
 function IconThumbnails() {
   return (
     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 0113.5 18v-2.25z" />
     </svg>
   );
 }
@@ -48,17 +49,49 @@ const VIEW_MODES: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
 ];
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
-function Lightbox({ imageUrl, productName, onClose }: { imageUrl: string; productName: string; onClose: () => void }) {
+function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: string; productName: string; onClose: () => void; brandPlan?: string }) {
   const [downloading, setDownloading] = useState(false);
+
+  // ── Aplicar marca de agua física ───────────────────────────────────────────
+  const applyWatermark = async (srcUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject('No context');
+        ctx.drawImage(img, 0, 0);
+        if (brandPlan === 'PRO') return resolve(canvas.toDataURL('image/jpeg', 1.0));
+        const wmImg = new Image();
+        wmImg.crossOrigin = 'anonymous';
+        wmImg.onload = () => {
+          ctx.drawImage(wmImg, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 1.0));
+        };
+        wmImg.onerror = () => resolve(canvas.toDataURL('image/jpeg', 1.0));
+        wmImg.src = brandPlan === 'BASIC' ? '/watermark-basic.webp' : '/watermark-trial.webp';
+      };
+      img.onerror = reject;
+      img.src = srcUrl;
+    });
+  };
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      await downloadImage(
-        imageUrl,
-        `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`
-      );
-    } catch { /* silencioso */ } finally {
+      const watermarkedUrl = await applyWatermark(imageUrl);
+      const link = document.createElement('a');
+      link.href = watermarkedUrl;
+      link.download = `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch {
+      await downloadImage(imageUrl, `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`);
+    } finally {
       setDownloading(false);
     }
   };
@@ -73,12 +106,23 @@ function Lightbox({ imageUrl, productName, onClose }: { imageUrl: string; produc
           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
-      <img
-        src={imageUrl}
-        alt={`Prueba virtual — ${productName}`}
-        className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl"
-        onClick={e => e.stopPropagation()}
-      />
+      <div className="relative max-w-full max-h-[85vh]">
+        <img
+          src={imageUrl}
+          alt={`Prueba virtual — ${productName}`}
+          className="w-full h-full object-contain rounded-xl shadow-2xl"
+          onClick={e => e.stopPropagation()}
+        />
+        {(brandPlan === 'BASIC' || brandPlan === 'TRIAL') && (
+          <div className="absolute inset-0 pointer-events-none">
+            <img 
+              src={brandPlan === 'BASIC' ? '/watermark-basic.webp' : '/watermark-trial.webp'} 
+              className="w-full h-full object-contain opacity-80" 
+              alt=""
+            />
+          </div>
+        )}
+      </div>
       <button
         onClick={e => { e.stopPropagation(); handleDownload(); }}
         disabled={downloading}
@@ -103,7 +147,7 @@ function Lightbox({ imageUrl, productName, onClose }: { imageUrl: string; produc
 
 // ── Tarjeta ───────────────────────────────────────────────────────────────────
 function GenerationCard({
-  gen, selected, selecting, viewMode, onOpen, onToggle, onDelete,
+  gen, selected, selecting, viewMode, onOpen, onToggle, onDelete, brandPlan,
 }: {
   gen: Generation;
   selected: boolean;
@@ -112,18 +156,51 @@ function GenerationCard({
   onOpen: () => void;
   onToggle: () => void;
   onDelete: () => void;
+  brandPlan?: string;
 }) {
   const [downloading, setDownloading] = useState(false);
+
+  // ── Aplicar marca de agua física ───────────────────────────────────────────
+  const applyWatermark = async (srcUrl: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject('No context');
+        ctx.drawImage(img, 0, 0);
+        if (brandPlan === 'PRO') return resolve(canvas.toDataURL('image/jpeg', 1.0));
+        const wmImg = new Image();
+        wmImg.crossOrigin = 'anonymous';
+        wmImg.onload = () => {
+          ctx.drawImage(wmImg, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 1.0));
+        };
+        wmImg.onerror = () => resolve(canvas.toDataURL('image/jpeg', 1.0));
+        wmImg.src = brandPlan === 'BASIC' ? '/watermark-basic.webp' : '/watermark-trial.webp';
+      };
+      img.onerror = reject;
+      img.src = srcUrl;
+    });
+  };
 
   const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setDownloading(true);
     try {
-      await downloadImage(
-        gen.resultImageUrl,
-        `prueba-virtual-${gen.productName.toLowerCase().replace(/\s+/g, '-')}.jpg`
-      );
-    } catch { /* silencioso */ } finally {
+      const watermarkedUrl = await applyWatermark(gen.resultImageUrl);
+      const link = document.createElement('a');
+      link.href = watermarkedUrl;
+      link.download = `prueba-virtual-${gen.productName.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch {
+      await downloadImage(gen.resultImageUrl, `prueba-virtual-${gen.productName.toLowerCase().replace(/\s+/g, '-')}.jpg`);
+    } finally {
       setDownloading(false);
     }
   };
@@ -150,7 +227,7 @@ function GenerationCard({
           {!selecting && (
             <>
               <button onClick={handleDownload} className="p-2 text-gray-400 hover:text-[#FF5C3A] transition-colors">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                {downloading ? '...' : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}
               </button>
               <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -249,6 +326,7 @@ function GenerationCard({
 
 // ── Página principal ──────────────────────────────────────────────────────────
 export default function GenerationsPage() {
+  const { brand } = useAuth();
   const [generations, setGenerations] = useState<Generation[]>([]);
   const [filteredGenerations, setFilteredGenerations] = useState<Generation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -417,13 +495,14 @@ export default function GenerationsPage() {
               onOpen={() => setLightbox(gen)}
               onToggle={() => toggleSelect(gen.id)}
               onDelete={() => handleDeleteOne(gen.id)}
+              brandPlan={brand?.plan}
             />
           ))}
         </div>
       )}
 
       {lightbox && (
-        <Lightbox imageUrl={lightbox.resultImageUrl} productName={lightbox.productName} onClose={() => setLightbox(null)} />
+        <Lightbox imageUrl={lightbox.resultImageUrl} productName={lightbox.productName} onClose={() => setLightbox(null)} brandPlan={brand?.plan} />
       )}
     </div>
   );
