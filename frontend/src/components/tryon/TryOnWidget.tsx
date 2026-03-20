@@ -113,11 +113,11 @@ function FriendlyProductSelector({
               }`}
               style={sel ? { borderColor: primaryColor, boxShadow: `0 4px 16px ${primaryColor}30` } : {}}
             >
-              <div className="relative">
+              <div className="relative bg-gray-50">
                 <img
                   src={p.imageUrl}
                   alt={p.name}
-                  className="w-full aspect-square object-cover"
+                  className="w-full aspect-square object-contain"
                 />
                 {/* Badge "Ya probado" */}
                 {alreadyGenerated && !sel && (
@@ -593,11 +593,9 @@ function BrandHeader({ config, primaryColor, onReset, showReset }: {
       <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between min-h-[56px]">
         <div className="flex items-center gap-3">
           {/* Único elemento: Logo de la marca */}
-          {config.brand.logo ? (
+          {config.brand.logo && (
             <img src={config.brand.logo} alt={config.brand.name} className="h-8 md:h-9 w-auto object-contain"
               onError={e => { e.currentTarget.style.display = 'none'; }} />
-          ) : (
-            <span className="font-bold text-gray-900">{config.brand.name}</span>
           )}
         </div>
         {showReset && (

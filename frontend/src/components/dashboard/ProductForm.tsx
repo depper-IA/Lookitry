@@ -328,6 +328,9 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                 </Button>
                 <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>o ingresa una URL</span>
               </div>
+              <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                💡 <strong>Recomendación:</strong> Usa imágenes en formato vertical (proporción 3:4 o 768x1024px). Asegúrate de que el producto esté centrado y se vea completo para un mejor resultado.
+              </p>
               <Input name="imageUrl" value={formData.imageUrl} onChange={handleChange} error={errors.imageUrl} placeholder="https://ejemplo.com/imagen.jpg" required />
               <input ref={fileInputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={e => e.target.files?.[0] && handleImageFile(e.target.files[0])} />
               {compressionInfo && <p className="text-xs" style={{ color: '#10b981' }}>{compressionInfo}</p>}
