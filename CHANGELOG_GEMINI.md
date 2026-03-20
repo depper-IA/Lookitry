@@ -4,6 +4,31 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 
 ---
 
+## 20 de Marzo, 2026 — Deploy Exitoso y Correcciones Críticas
+
+### ✅ Cambios Aplicados
+1. **Deploy General:**
+   - **Backend:** Actualizado con soporte para el flujo de PayPal y mejoras en `auth.service.ts`.
+   - **Frontend:** Reconstruido completamente tras corregir errores de compilación críticos.
+2. **Correcciones en Frontend (para permitir build):**
+   - **Pricing Admin:** Añadidas importaciones faltantes de iconos (`Globe`, `Instagram`, `Youtube`, `Twitter`, `Layout`) de `lucide-react`.
+   - **Dashboard Checkout:** 
+     - Declarados estados faltantes: `prorationPreview`, `loadingProration`, `applyingFreeUpgrade`.
+     - Definidas variables de cálculo: `totalPrice`, `planTotal`, `monthDiscount`, `plan`.
+     - Corregido `Promise.all` incompleto que desestructuraba `pricing_config` de Supabase.
+     - Sincronizadas las props del componente `PaymentSection` con su llamada en el render.
+3. **Validación:**
+   - Health check exitoso (HTTP 200).
+   - Backend Up 4s, Frontend Up 15s en el VPS (31.220.18.39).
+
+### ⏳ Tareas en Proceso / Pendientes
+- **Pruebas de PayPal:** Verificar el flujo completo de checkout con PayPal en producción.
+- **Breadcrumbs en Legales:** Aplicar y verificar físicamente la persistencia de breadcrumbs en `terminos` y `politicas-privacidad`.
+- **Dashboard ROI:** Ampliar métricas de Churn y Nuevos Clientes en el controlador de backend.
+- **TRM Automática:** Implementar el fetch automático desde un servicio externo.
+
+---
+
 ## 19 de Marzo, 2026
 
 ### ✅ Cambios Aplicados
@@ -20,11 +45,6 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 4. **Navegación (Breadcrumbs):**
    - Creado componente reutilizable `src/components/ui/Breadcrumbs.tsx`.
    - Añadidos breadcrumbs a la página de **Sobre Nosotros**.
-
-### ⏳ Tareas en Proceso / Pendientes
-- **Breadcrumbs en Legales:** Aplicar y verificar físicamente la persistencia de breadcrumbs en `terminos` y `politicas-privacidad` (se detectaron problemas de escritura en disco).
-- **Dashboard ROI:** Ampliar métricas de Churn y Nuevos Clientes en el controlador de backend.
-- **TRM Automática:** Implementar el fetch automático desde un servicio externo.
 
 ---
 *Nota para la IA: Antes de empezar, lee este archivo y actualízalo al finalizar cada tarea.*

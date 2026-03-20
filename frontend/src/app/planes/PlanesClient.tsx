@@ -6,7 +6,7 @@ import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import type { PricingConfig, PlanPriceOverride } from '@/lib/pricing';
 import { precioConDescuento } from '@/lib/pricing';
-import { formatCurrency } from '@/utils/currency';
+import { formatCurrency, formatPrice as formatPriceUtil } from '@/utils/currency';
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 
@@ -85,11 +85,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
   }, []);
 
   const formatPrice = (cop: number) => {
-    if (currency === 'USD') {
-      const usd = cop / trm;
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(usd);
-    }
-    return formatCurrency(cop);
+    return formatPriceUtil(cop, currency, trm);
   };
 
   // Override de precio por plan

@@ -7,13 +7,17 @@ import { downloadImage } from '@/utils/download';
 function Watermark({ plan }: { plan?: string }) {
   if (plan !== 'BASIC' && plan !== 'TRIAL') return null;
 
+  if (plan === 'BASIC') {
+    return (
+      <div className="absolute bottom-4 left-4 w-20 pointer-events-none select-none z-10 opacity-40">
+        <img src="/watermark-basic.webp" alt="Lookitry" className="w-full h-auto" />
+      </div>
+    );
+  }
+
   return (
-    <div className="absolute inset-0 pointer-events-none select-none z-10">
-      <img 
-        src={plan === 'BASIC' ? '/watermark-basic.webp' : '/watermark-trial.webp'} 
-        alt="Lookitry" 
-        className="w-full h-full object-contain opacity-80" 
-      />
+    <div className="absolute bottom-0 left-0 w-full pointer-events-none select-none z-10 opacity-60">
+      <img src="/watermark-trial.webp" alt="Lookitry" className="w-full h-auto" />
     </div>
   );
 }
@@ -133,16 +137,27 @@ export function ResultDisplay({
 
         ctx.drawImage(img, 0, 0);
 
-        if (brandPlan === 'PRO') {
-          return resolve(canvas.toDataURL('image/jpeg', 1.0)); // Máxima calidad
+        if (brandPlan !== 'BASIC' && brandPlan !== 'TRIAL') {
+          return resolve(canvas.toDataURL('image/jpeg', 1.0));
         }
 
         const wmImg = new Image();
         wmImg.crossOrigin = 'anonymous';
         wmImg.onload = () => {
-          // Dibujar el watermark .webp cargado ocupando todo el canvas (object-contain logic)
-          ctx.globalAlpha = 1.0;
-          ctx.drawImage(wmImg, 0, 0, canvas.width, canvas.height);
+          if (brandPlan === 'BASIC') {
+            // BASIC: Esquina inferior izquierda, sutil
+            const wmWidth = canvas.width * 0.15;
+            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
+            const padding = 20;
+            ctx.globalAlpha = 0.4;
+            ctx.drawImage(wmImg, padding, canvas.height - wmHeight - padding, wmWidth, wmHeight);
+          } else if (brandPlan === 'TRIAL') {
+            // TRIAL: Parte baja, opacidad 60%
+            const wmWidth = canvas.width;
+            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
+            ctx.globalAlpha = 0.6;
+            ctx.drawImage(wmImg, 0, canvas.height - wmHeight, wmWidth, wmHeight);
+          }
           resolve(canvas.toDataURL('image/jpeg', 1.0));
         };
         wmImg.onerror = () => resolve(canvas.toDataURL('image/jpeg', 1.0));

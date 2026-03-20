@@ -52,7 +52,7 @@ const TEAM = [
     desc: 'Desarrolladora colombiana especialista en interfaces modernas. Encargada de la evolución estética y experiencia de usuario en Lookitry.',
     img: '/team/juli.webp',
     social: {
-      linkedin: 'https://www.linkedin.com/in/melisamontoyaa/',
+      linkedin: 'https://www.linkedin.com/in/melissa-urbano-69b13939b?utm_source=share_via&utm_content=profile&utm_medium=member_android',
       behance: 'https://www.behance.net/ummel',
       github: 'https://github.com/ummell'
     }
