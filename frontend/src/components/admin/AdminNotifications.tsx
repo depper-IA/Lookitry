@@ -442,7 +442,7 @@ export function AdminNotifications() {
                 <div>
                   <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Mensaje del cliente:</p>
                   <div className="border rounded-lg px-4 py-3" style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}>
-                    <p className="text-sm leading-relaxed italic" style={{ color: 'var(--text-secondary)' }}>"{selected.metadata.clientMessage}"</p>
+                    <p className="text-sm leading-relaxed italic" style={{ color: 'var(--text-secondary)' }}>&quot;{selected.metadata.clientMessage}&quot;</p>
                   </div>
                 </div>
               )}

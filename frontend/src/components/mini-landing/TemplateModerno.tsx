@@ -31,25 +31,29 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
   };
   const primary = brand.primary_color || '#FF5C3A';
   return (
-    <nav className="sticky top-0 z-50 h-16 md:h-20 flex items-center justify-between px-4 md:px-8 backdrop-blur-3xl" 
+    <nav className="sticky top-0 z-50 h-16 md:h-20 flex items-center justify-between px-4 md:px-8 backdrop-blur-3xl gap-4" 
       style={{ 
         backgroundColor: brand.header_color ? `${brand.header_color}66` : 'rgba(15,15,15,0.4)', 
         borderBottom: '1px solid rgba(255,255,255,0.05)'
       }}>
-      <div className="flex items-center gap-2">
-        {brand.logo && (
-          <BrandLogo
-            src={brand.logo_light || brand.logo}
-            alt={brand.name}
-            className="h-6 md:h-8 w-auto object-contain"
-          />
-        )}
+      <div className="flex items-center gap-2 min-w-0 flex-1">
+        <div className="shrink-0">
+          {brand.logo && (
+            <BrandLogo
+              src={brand.logo_light || brand.logo}
+              alt={brand.name}
+              className="h-6 md:h-8 w-auto object-contain"
+            />
+          )}
+        </div>
         {brand.show_brand_name !== false && (
-          <span className="font-bold text-sm md:text-base text-white tracking-tight uppercase italic truncate max-w-[120px] md:max-w-none">{brand.name}</span>
+          <span className="font-bold text-sm md:text-base text-white tracking-tight uppercase italic truncate">
+            {brand.name}
+          </span>
         )}
       </div>
       {entries.length > 0 && (
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar max-w-[100px] md:max-w-none">
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 shrink-0 max-w-[140px] sm:max-w-none justify-end">
           {entries.map(([platform, url]) => (
             <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
               className="w-7 h-7 rounded-lg border flex items-center justify-center transition-all hover:scale-110 shrink-0"
@@ -217,7 +221,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
       <ProbadorTrustBar brand={brand} />
       <ProbadorProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} selectedId={selectedId} />
       
-      <section id="probador-tryon" className="py-16 px-4 md:px-6 bg-[#0a0a0a]">
+      <section id="probador-tryon" className="py-16 px-4 md:px-6" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-10 space-y-3">
             <span className="text-[9px] font-black uppercase tracking-[0.4em] text-[#FF5C3A]">Motor IA</span>

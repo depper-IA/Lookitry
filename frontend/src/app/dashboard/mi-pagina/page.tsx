@@ -41,6 +41,7 @@ export default function MiPaginaPage() {
   const [slogan, setSlogan] = useState('');
   const [description, setDescription] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#FF5C3A');
+  const [widgetBgColor, setWidgetBgColor] = useState('#0a0a0a');
   const [headerColor, setHeaderColor] = useState('');
   const [coverBgColor, setCoverBgColor] = useState('');
   const [coverOverlayOpacity, setCoverOverlayOpacity] = useState(0.55);
@@ -69,40 +70,42 @@ export default function MiPaginaPage() {
       try {
         const [brandData, productsData] = await Promise.all([
           brandsService.getCurrentBrand(),
-          api.get('/products').then(r => r.data).catch(() => [])
+          api.get('/products').then(r => (r.data || []) as any[]).catch(() => [] as any[])
         ]);
         
         setBrand(brandData);
         setProducts(productsData);
         
+        const b = brandData as any;
         // Cargar estados locales
-        setLandingTemplate(brandData.landing_template || 'classic');
-        setLandingFont(brandData.landing_font || 'font-jakarta');
-        setSlogan(brandData.slogan || '');
-        setDescription(brandData.brand_description || '');
-        setPrimaryColor(brandData.primary_color || '#FF5C3A');
-        setHeaderColor(brandData.header_color || '');
-        setCoverBgColor(brandData.cover_bg_color || '');
-        setCoverOverlayOpacity(brandData.cover_overlay_opacity ?? 0.55);
-        setLogoUrl(brandData.logo || '');
-        setLogoLightUrl(brandData.logo_light || '');
-        setLogoDarkUrl(brandData.logo_dark || '');
-        setCoverImageUrl(brandData.cover_image_url || '');
-        setWhatsapp(brandData.whatsapp_contact || '');
-        setWhatsappMessage(brandData.whatsapp_message || '');
-        setCtaButtonText(brandData.cta_button_text || 'Probarme esto');
-        setInstagram(brandData.social_links?.instagram || '');
-        setFacebook(brandData.social_links?.facebook || '');
-        setTiktok(brandData.social_links?.tiktok || '');
-        setYoutube(brandData.social_links?.youtube || '');
-        setX(brandData.social_links?.x || '');
-        setCityDisplay(brandData.city_display || '');
-        setNationalShipping(brandData.national_shipping || false);
-        setShowBrandName(brandData.show_brand_name ?? true);
-        setRating(brandData.rating?.toString() || '');
-        setTotalReviews(brandData.total_reviews?.toString() || '');
-        setSchedule(brandData.schedule || {});
-        setCustomDomain(brandData.custom_domain || '');
+        setLandingTemplate(b.landing_template || 'classic');
+        setLandingFont(b.landing_font || 'font-jakarta');
+        setSlogan(b.slogan || '');
+        setDescription(b.brand_description || '');
+        setPrimaryColor(b.primary_color || '#FF5C3A');
+        setWidgetBgColor(b.widget_bg_color || '#0a0a0a');
+        setHeaderColor(b.header_color || '');
+        setCoverBgColor(b.cover_bg_color || '');
+        setCoverOverlayOpacity(b.cover_overlay_opacity ?? 0.55);
+        setLogoUrl(b.logo || '');
+        setLogoLightUrl(b.logo_light || '');
+        setLogoDarkUrl(b.logo_dark || '');
+        setCoverImageUrl(b.cover_image_url || '');
+        setWhatsapp(b.whatsapp_contact || '');
+        setWhatsappMessage(b.whatsapp_message || '');
+        setCtaButtonText(b.cta_button_text || 'Probarme esto');
+        setInstagram(b.social_links?.instagram || '');
+        setFacebook(b.social_links?.facebook || '');
+        setTiktok(b.social_links?.tiktok || '');
+        setYoutube(b.social_links?.youtube || '');
+        setX(b.social_links?.x || '');
+        setCityDisplay(b.city_display || '');
+        setNationalShipping(b.national_shipping || false);
+        setShowBrandName(b.show_brand_name ?? true);
+        setRating(b.rating?.toString() || '');
+        setTotalReviews(b.total_reviews?.toString() || '');
+        setSchedule(b.schedule || {});
+        setCustomDomain(b.custom_domain || '');
       } catch (err) {
         console.error('Error al cargar datos:', err);
         setError('No se pudo cargar la información');
@@ -144,6 +147,7 @@ export default function MiPaginaPage() {
         show_brand_name: showBrandName,
         landing_template: landingTemplate,
         landing_font: landingFont,
+        widget_bg_color: widgetBgColor,
         primary_color: primaryColor,
         rating: rating ? parseFloat(rating) : null,
         total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
@@ -172,6 +176,7 @@ export default function MiPaginaPage() {
     ...brand,
     landing_template: landingTemplate,
     landing_font: landingFont,
+    widget_bg_color: widgetBgColor,
     slogan,
     brand_description: description,
     primary_color: primaryColor,
@@ -421,7 +426,7 @@ export default function MiPaginaPage() {
             </div>
           </div>
           <p className="text-[10px] text-center mt-6 font-bold uppercase tracking-widest text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed opacity-60">
-            Los cambios se reflejan automáticamente.<br />Usa el botón "Guardar" para hacerlos públicos.
+            Los cambios se reflejan automáticamente.<br />Usa el botón &quot;Guardar&quot; para hacerlos públicos.
           </p>
         </div>
 
