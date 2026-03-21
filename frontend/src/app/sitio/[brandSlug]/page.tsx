@@ -1,6 +1,10 @@
 import { Metadata } from 'next';
 import { MiniLanding } from '@/components/mini-landing/MiniLanding';
 
+// Forzar renderizado dinámico — nunca cachear esta página
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface PageProps {
   params: { brandSlug: string };
 }
