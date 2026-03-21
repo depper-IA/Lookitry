@@ -2,6 +2,20 @@
 
 import React from 'react';
 import { LogoUpload, CoverImageUpload } from './Uploaders';
+import { 
+  Palette, 
+  ImageIcon, 
+  MessageSquare, 
+  Star, 
+  MapPin, 
+  Clock, 
+  Share2, 
+  Type, 
+  MousePointer2,
+  Trash2,
+  Eye,
+  EyeOff
+} from 'lucide-react';
 
 interface DesignTabProps {
   description: string; setDescription: (v: string) => void;
@@ -41,172 +55,281 @@ export function DesignTab(props: DesignTabProps) {
     schedule, setSchedule,
   } = props;
 
-  return (
-    <div className="space-y-6">
+  const sectionStyle = "bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] p-8 space-y-6 shadow-sm hover:border-[var(--text-muted)] transition-all";
+  const labelStyle = "text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-2 block";
+  const inputStyle = "w-full px-5 py-3 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] text-sm text-[var(--text-primary)] focus:border-[#FF5C3A] outline-none transition-all placeholder:text-[var(--text-muted)]";
 
-      {/* Identidad */}
-      <div className="rounded-2xl border p-5 space-y-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <p className="text-sm font-semibold border-b pb-3" style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>Identidad de marca</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Logo principal</label>
-            <div className="flex items-start gap-3">
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+      {/* 1. Identidad Visual */}
+      <section className={sectionStyle}>
+        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
+          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+            <Palette className="w-5 h-5 text-[#FF5C3A]" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Identidad Visual</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Logos, colores y marca</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <label className={labelStyle}>Logo Principal</label>
+            <div className="flex items-end gap-4">
               <LogoUpload currentUrl={logoUrl} onUpload={setLogoUrl} />
-              {logoUrl && <button onClick={() => setLogoUrl('')} className="text-xs text-red-500 mt-2 cursor-pointer">Eliminar</button>}
+              {logoUrl && (
+                <button onClick={() => setLogoUrl('')} className="p-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Variantes de logo</label>
-            <div className="flex gap-4">
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold" style={{ color: 'var(--text-muted)' }}>Modo oscuro</p>
+
+          <div className="space-y-4">
+            <label className={labelStyle}>Variantes de Logo</label>
+            <div className="flex gap-6">
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase">Light</span>
                 <LogoUpload currentUrl={logoLightUrl} onUpload={setLogoLightUrl} />
               </div>
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold" style={{ color: 'var(--text-muted)' }}>Modo claro</p>
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase">Dark</span>
                 <LogoUpload currentUrl={logoDarkUrl} onUpload={setLogoDarkUrl} />
               </div>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <input type="checkbox" id="show_brand_name" checked={showBrandName} onChange={e => setShowBrandName(e.target.checked)} className="w-4 h-4 rounded cursor-pointer" />
-          <label htmlFor="show_brand_name" className="text-sm cursor-pointer" style={{ color: 'var(--text-primary)' }}>Mostrar nombre de marca en el encabezado</label>
-        </div>
-      </div>
 
-      {/* Portada y estilo */}
-      <div className="rounded-2xl border p-5 space-y-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <p className="text-sm font-semibold border-b pb-3" style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>Portada y estilo</p>
-        <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Imagen de portada</label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+          <div className="space-y-2">
+            <label className={labelStyle}>Color Principal</label>
+            <div className="flex items-center gap-3 bg-[var(--bg-input)] p-2 rounded-2xl border border-[var(--border-color)]">
+              <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="w-12 h-12 rounded-xl overflow-hidden cursor-pointer border-0 bg-transparent" />
+              <input type="text" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="flex-1 bg-transparent border-0 text-sm font-mono text-[var(--text-primary)] outline-none" />
+            </div>
+          </div>
+          <div className="flex items-center gap-4 px-2">
+            <button 
+              onClick={() => setShowBrandName(!showBrandName)}
+              className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all w-full ${showBrandName ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 text-[var(--text-primary)]' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)]'}`}
+            >
+              {showBrandName ? <Eye className="w-4 h-4 text-[#FF5C3A]" /> : <EyeOff className="w-4 h-4" />}
+              <span className="text-xs font-bold uppercase tracking-widest">Nombre en Header</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. Hero y Portada */}
+      <section className={sectionStyle}>
+        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
+          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+            <ImageIcon className="w-5 h-5 text-[#FF5C3A]" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Portada y Estilo</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Visuales de alto impacto</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <label className={labelStyle}>Imagen de Portada</label>
           <CoverImageUpload currentUrl={coverImageUrl} onUpload={setCoverImageUrl} />
-          {coverImageUrl && <button onClick={() => setCoverImageUrl('')} className="text-xs text-red-500 cursor-pointer">Eliminar portada</button>}
+          {coverImageUrl && (
+            <button onClick={() => setCoverImageUrl('')} className="flex items-center gap-2 text-[10px] font-bold text-red-500 uppercase tracking-widest hover:opacity-70 transition-opacity">
+              <Trash2 className="w-3 h-3" /> Eliminar imagen de portada
+            </button>
+          )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Color de marca</label>
-            <div className="flex items-center gap-3">
-              <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="w-10 h-10 rounded-xl overflow-hidden cursor-pointer border-0" />
-              <input type="text" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="flex-1 px-3 py-2 rounded-xl border text-sm font-mono" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Opacidad overlay ({Math.round(coverOverlayOpacity * 100)}%)</label>
-            <input type="range" min={0} max={1} step={0.05} value={coverOverlayOpacity} onChange={e => setCoverOverlayOpacity(parseFloat(e.target.value))} className="w-full h-2 rounded-full cursor-pointer accent-[#FF5C3A]" />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Color de header</label>
-            <div className="flex items-center gap-3">
-              <input type="color" value={headerColor || '#ffffff'} onChange={e => setHeaderColor(e.target.value)} className="w-10 h-10 rounded-xl overflow-hidden cursor-pointer border-0" />
-              <input type="text" value={headerColor} onChange={e => setHeaderColor(e.target.value)} placeholder="#ffffff" className="flex-1 px-3 py-2 rounded-xl border text-sm font-mono" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Color de fondo portada</label>
-            <div className="flex items-center gap-3">
-              <input type="color" value={coverBgColor || '#FAFAF9'} onChange={e => setCoverBgColor(e.target.value)} className="w-10 h-10 rounded-xl overflow-hidden cursor-pointer border-0" />
-              <input type="text" value={coverBgColor || '#FAFAF9'} onChange={e => setCoverBgColor(e.target.value)} className="flex-1 px-3 py-2 rounded-xl border text-sm font-mono" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Información y reputación */}
-      <div className="rounded-2xl border p-5 space-y-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <p className="text-sm font-semibold border-b pb-3" style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>Información y reputación</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Slogan</label>
-            <input type="text" value={slogan} onChange={e => setSlogan(e.target.value)} placeholder="Ej: Moda que inspira" className="w-full px-4 py-2.5 rounded-xl border text-sm" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          <div className="space-y-3">
+            <div className="flex justify-between items-end">
+              <label className={labelStyle}>Oscurecer Imagen</label>
+              <span className="text-[10px] font-bold text-[#FF5C3A]">{Math.round(coverOverlayOpacity * 100)}%</span>
+            </div>
+            <input 
+              type="range" min={0} max={1} step={0.05} 
+              value={coverOverlayOpacity} 
+              onChange={e => setCoverOverlayOpacity(parseFloat(e.target.value))} 
+              className="w-full h-1.5 rounded-full cursor-pointer accent-[#FF5C3A] appearance-none bg-[var(--bg-input)] border border-[var(--border-color)]" 
+            />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Botón CTA</label>
-            <input type="text" value={ctaButtonText} onChange={e => setCtaButtonText(e.target.value)} placeholder="Ej: Probarme esto" className="w-full px-4 py-2.5 rounded-xl border text-sm" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-          </div>
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Descripción</label>
-          <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full px-4 py-2.5 rounded-xl border text-sm resize-none" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Rating (0–5)</label>
-            <input type="number" step="0.1" min="0" max="5" value={rating} onChange={e => setRating(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border text-sm" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Total reseñas</label>
-            <input type="number" value={totalReviews} onChange={e => setTotalReviews(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border text-sm" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
+          <div className="space-y-2">
+            <label className={labelStyle}>Fondo de Respaldo</label>
+            <div className="flex items-center gap-3 bg-[var(--bg-input)] p-2 rounded-2xl border border-[var(--border-color)]">
+              <input type="color" value={coverBgColor || '#0a0a0a'} onChange={e => setCoverBgColor(e.target.value)} className="w-12 h-12 rounded-xl overflow-hidden cursor-pointer border-0 bg-transparent" />
+              <input type="text" value={coverBgColor} onChange={e => setCoverBgColor(e.target.value)} placeholder="#0a0a0a" className="flex-1 bg-transparent border-0 text-sm font-mono text-[var(--text-primary)] outline-none" />
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Ubicación y horarios */}
-      <div className="rounded-2xl border p-5 space-y-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <p className="text-sm font-semibold border-b pb-3" style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>Ubicación y horarios</p>
+      {/* 3. Contenido y Textos */}
+      <section className={sectionStyle}>
+        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
+          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+            <Type className="w-5 h-5 text-[#FF5C3A]" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Contenido Editorial</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Slogan, descripción y llamadas a la acción</p>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Ciudad / Ubicación</label>
-              <input type="text" value={cityDisplay} onChange={e => setCityDisplay(e.target.value)} placeholder="Ej: Medellín, Colombia" className="w-full px-4 py-2.5 rounded-xl border text-sm" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-            </div>
-            <div className="flex items-center gap-2">
-              <input type="checkbox" id="nat_shipping" checked={nationalShipping} onChange={e => setNationalShipping(e.target.checked)} className="w-4 h-4 rounded cursor-pointer" />
-              <label htmlFor="nat_shipping" className="text-sm cursor-pointer" style={{ color: 'var(--text-primary)' }}>Hacemos envíos nacionales</label>
-            </div>
+          <div className="space-y-2">
+            <label className={labelStyle}>Slogan Principal</label>
+            <input type="text" value={slogan} onChange={e => setSlogan(e.target.value)} placeholder="Ej: Nueva Colección 2026" className={inputStyle} />
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Horario de atención</label>
-            <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1 custom-scrollbar">
-              {Object.keys(schedule).map(day => (
-                <div key={day} className="flex items-center gap-2">
-                  <span className="text-[10px] w-14 font-bold uppercase" style={{ color: 'var(--text-muted)' }}>{day}</span>
+            <label className={labelStyle}>Texto del Botón (CTA)</label>
+            <div className="relative">
+              <MousePointer2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+              <input type="text" value={ctaButtonText} onChange={e => setCtaButtonText(e.target.value)} className={`${inputStyle} pl-12`} />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className={labelStyle}>Historia de la Marca</label>
+          <textarea 
+            value={description} onChange={e => setDescription(e.target.value)} 
+            rows={4} 
+            placeholder="Cuenta brevemente qué hace única a tu marca..." 
+            className={`${inputStyle} resize-none`} 
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-6 p-6 bg-[var(--bg-base)] rounded-[2rem] border border-[var(--border-color)]">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+              <label className={labelStyle}>Rating</label>
+            </div>
+            <input type="number" step="0.1" min="0" max="5" value={rating} onChange={e => setRating(e.target.value)} className={inputStyle} />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-3 h-3 text-[#FF5C3A]" />
+              <label className={labelStyle}>Reseñas</label>
+            </div>
+            <input type="number" value={totalReviews} onChange={e => setTotalReviews(e.target.value)} className={inputStyle} />
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Ubicación y Horarios */}
+      <section className={sectionStyle}>
+        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
+          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+            <MapPin className="w-5 h-5 text-[#FF5C3A]" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Presencia Física</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Dónde encontrarte y cuándo</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className={labelStyle}>Ciudad / Ubicación</label>
+              <input type="text" value={cityDisplay} onChange={e => setCityDisplay(e.target.value)} placeholder="Ej: Medellín, Colombia" className={inputStyle} />
+            </div>
+            <button 
+              onClick={() => setNationalShipping(!nationalShipping)}
+              className={`flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all w-full ${nationalShipping ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 text-[var(--text-primary)]' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)]'}`}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${nationalShipping ? 'border-[#FF5C3A]' : 'border-[var(--border-color)]'}`}>
+                {nationalShipping && <div className="w-2.5 h-2.5 rounded-full bg-[#FF5C3A]" />}
+              </div>
+              <span className="text-xs font-bold uppercase tracking-widest">Envíos Nacionales Activos</span>
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[var(--text-secondary)]" />
+              <label className={labelStyle}>Horarios Semanales</label>
+            </div>
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-2 custom-scrollbar bg-[var(--bg-input)] p-4 rounded-[2rem] border border-[var(--border-color)]">
+              {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(day => (
+                <div key={day} className="flex items-center gap-3">
+                  <span className="text-[9px] w-16 font-black uppercase text-[var(--text-muted)]">{day}</span>
                   <input
                     type="text"
-                    value={schedule[day]}
-                    onChange={e => setSchedule(prev => ({ ...prev, [day]: e.target.value }))}
-                    placeholder="8:00 AM - 6:00 PM"
-                    className="flex-1 px-3 py-1.5 rounded-lg border text-xs"
-                    style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                    value={schedule[day] || ''}
+                    onChange={e => setSchedule(prev => {
+                      const newSchedule = { ...prev };
+                      newSchedule[day] = e.target.value;
+                      return newSchedule;
+                    })}
+                    placeholder="Cerrado o 00:00 - 00:00"
+                    className="flex-1 bg-transparent border-b border-[var(--border-color)] py-1 text-xs text-[var(--text-primary)] outline-none focus:border-[#FF5C3A] transition-colors"
                   />
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Contacto y redes */}
-      <div className="rounded-2xl border p-5 space-y-5" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <p className="text-sm font-semibold border-b pb-3" style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>Contacto y redes sociales</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>WhatsApp</label>
-              <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="573001234567" className="w-full px-4 py-2.5 rounded-xl border text-sm" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Mensaje predeterminado</label>
-              <input type="text" value={whatsappMessage} onChange={e => setWhatsappMessage(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border text-sm" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-            </div>
+      {/* 5. Contacto y Redes */}
+      <section className={sectionStyle}>
+        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
+          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+            <Share2 className="w-5 h-5 text-[#FF5C3A]" />
           </div>
-          <div className="space-y-3">
-            {(['Instagram', 'Facebook', 'TikTok'] as const).map(plat => (
-              <div key={plat} className="flex items-center gap-2">
-                <span className="text-[10px] w-16 font-bold uppercase" style={{ color: 'var(--text-muted)' }}>{plat}</span>
-                <input
-                  type="url"
-                  value={plat === 'Instagram' ? instagram : plat === 'Facebook' ? facebook : tiktok}
-                  onChange={e => plat === 'Instagram' ? setInstagram(e.target.value) : plat === 'Facebook' ? setFacebook(e.target.value) : setTiktok(e.target.value)}
-                  placeholder={`URL de ${plat}`}
-                  className="flex-1 px-4 py-2 rounded-xl border text-sm font-mono"
-                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                />
-              </div>
-            ))}
+          <div>
+            <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Conexión Directa</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Redes sociales y WhatsApp</p>
           </div>
         </div>
-      </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-4 bg-[var(--bg-base)] p-6 rounded-[2rem] border border-[var(--border-color)]">
+            <div className="flex items-center gap-2 mb-2">
+              <MessageSquare className="w-4 h-4 text-[#25D366]" />
+              <span className="text-xs font-bold text-[#25D366] uppercase tracking-widest">Canal WhatsApp</span>
+            </div>
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className={labelStyle}>Número (Internacional)</label>
+                <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="573001234567" className={inputStyle} />
+              </div>
+              <div className="space-y-1">
+                <label className={labelStyle}>Mensaje de Bienvenida</label>
+                <input type="text" value={whatsappMessage} onChange={e => setWhatsappMessage(e.target.value)} className={inputStyle} />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <label className={labelStyle}>Redes Sociales</label>
+            <div className="space-y-3">
+              {[
+                { id: 'Instagram', val: instagram, set: setInstagram, color: '#E4405F' },
+                { id: 'Facebook', val: facebook, set: setFacebook, color: '#1877F2' },
+                { id: 'TikTok', val: tiktok, set: setTiktok, color: '#000000' }
+              ].map(plat => (
+                <div key={plat.id} className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 pl-4 rounded-2xl border border-[var(--border-color)] focus-within:border-[#FF5C3A]/30 transition-all">
+                  <span className="text-[9px] font-black uppercase text-[var(--text-muted)] w-16">{plat.id}</span>
+                  <input
+                    type="url"
+                    value={plat.val}
+                    onChange={e => plat.set(e.target.value)}
+                    placeholder={`https://${plat.id.toLowerCase()}.com/usuario`}
+                    className="flex-1 bg-transparent border-0 text-[11px] text-[var(--text-primary)] font-mono outline-none py-2"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
     </div>
   );

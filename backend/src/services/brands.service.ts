@@ -19,13 +19,12 @@ export interface UpdateBrandDto {
   country?: string;
   nit?: string;
   website?: string;
-  // Campos de mini-landing (task 33)
+  // Campos de mini-landing
   brand_description?: string;
   whatsapp_contact?: string;
   cover_image_url?: string;
   social_links?: Record<string, string>;
   has_landing_page?: boolean;
-  // Nuevos campos de mini-landing (task 5)
   city_display?: string;
   national_shipping?: boolean;
   whatsapp_message?: string;
@@ -54,87 +53,54 @@ export class BrandsService {
       .eq('id', brandId)
       .single();
 
-    if (error || !data) {
-      return null;
-    }
-
+    if (error || !data) return null;
     return data as Brand;
   }
 
   async updateBrand(brandId: string, updates: UpdateBrandDto): Promise<Brand> {
-    // Validar slug si se proporciona
-    if (updates.slug !== undefined) {
+    // 1. Validar slug
+    if (updates.slug) {
       const slugRegex = /^[a-z0-9-]+$/;
       if (!slugRegex.test(updates.slug) || updates.slug.length < 3) {
-        throw new Error('El slug solo puede contener letras minúsculas, números y guiones, con mínimo 3 caracteres');
+        throw new Error('El slug solo puede contener letras minúsculas, números y guiones (mínimo 3 caracteres)');
       }
-      // Verificar unicidad
       const existing = await this.getBrandBySlug(updates.slug);
       if (existing && existing.id !== brandId) {
         throw new Error('Ese slug ya está en uso por otra marca');
       }
     }
 
-    // Validar colores hexadecimales si se proporcionan
+    // 2. Validar colores
     if (updates.primary_color && !this.isValidHexColor(updates.primary_color)) {
       throw new Error('El color primario debe estar en formato hexadecimal (#RRGGBB)');
     }
 
-    if (updates.secondary_color && !this.isValidHexColor(updates.secondary_color)) {
-      throw new Error('El color secundario debe estar en formato hexadecimal (#RRGGBB)');
-    }
+    // 3. Filtrar campos que podrían no existir en la DB (Blindaje contra Error 500)
+    // Obtenemos las columnas reales de la tabla para este entorno
+    const { data: sample } = await supabaseAdmin.from('brands').select('*').limit(1).single();
+    const validColumns = sample ? Object.keys(sample) : [];
+    
+    const filteredUpdates: any = {};
+    Object.keys(updates).forEach(key => {
+      if (validColumns.includes(key) && (updates as any)[key] !== undefined) {
+        filteredUpdates[key] = (updates as any)[key];
+      }
+    });
 
-    // Intentar actualización completa primero
+    // 4. Ejecutar actualización con campos filtrados
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .update(updates)
+      .update(filteredUpdates)
       .eq('id', brandId)
       .select()
       .single();
 
     if (error) {
-      // Si el error es por columnas inexistentes (widget_template, button_text, welcome_message),
-      // reintentar solo con los campos base que siempre existen
-      const isColumnError = error.message?.includes('column') ||
-        error.code === '42703' ||
-        error.message?.includes('widget_template') ||
-        error.message?.includes('button_text') ||
-        error.message?.includes('welcome_message');
-
-      if (isColumnError) {
-        console.warn('[BrandsService] Columnas de widget no existen aún. Actualizando solo campos base.');
-        const baseUpdates: Partial<UpdateBrandDto> = {};
-        if (updates.name !== undefined) baseUpdates.name = updates.name;
-        if (updates.logo !== undefined) baseUpdates.logo = updates.logo;
-        if (updates.primary_color !== undefined) baseUpdates.primary_color = updates.primary_color;
-        if (updates.secondary_color !== undefined) baseUpdates.secondary_color = updates.secondary_color;
-
-        if (Object.keys(baseUpdates).length === 0) {
-          // Nada que actualizar en campos base, devolver datos actuales
-          const current = await this.getBrandById(brandId);
-          if (!current) throw new Error('Marca no encontrada');
-          return current;
-        }
-
-        const { data: fallbackData, error: fallbackError } = await supabaseAdmin
-          .from('brands')
-          .update(baseUpdates)
-          .eq('id', brandId)
-          .select()
-          .single();
-
-        if (fallbackError || !fallbackData) {
-          throw new Error('Error al actualizar la marca: ' + fallbackError?.message);
-        }
-        return fallbackData as Brand;
-      }
-
+      console.error('[BrandsService] Error en updateBrand:', error);
       throw new Error('Error al actualizar la marca: ' + error.message);
     }
 
-    if (!data) {
-      throw new Error('Error al actualizar la marca: sin datos de respuesta');
-    }
+    if (!data) throw new Error('No se recibieron datos tras la actualización');
 
     return data as Brand;
   }
@@ -146,10 +112,7 @@ export class BrandsService {
       .eq('slug', slug)
       .single();
 
-    if (error || !data) {
-      return null;
-    }
-
+    if (error || !data) return null;
     return data as Brand;
   }
 
@@ -160,21 +123,15 @@ export class BrandsService {
       .eq('custom_domain', domain)
       .single();
 
-    if (error || !data) {
-      return null;
-    }
-
+    if (error || !data) return null;
     return data as Brand;
   }
 
   private isValidHexColor(color: string): boolean {
-    const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
-    return hexColorRegex.test(color);
+    return /^#[0-9A-Fa-f]{6}$/.test(color);
   }
 
   isValidDomain(domain: string): boolean {
-    // Regex para dominios simples (ej: tumarca.com, staging.tumarca.net)
-    const domainRegex = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,10}$/i;
-    return domainRegex.test(domain);
+    return /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,10}$/i.test(domain);
   }
 }

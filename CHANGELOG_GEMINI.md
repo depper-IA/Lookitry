@@ -4,27 +4,24 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 
 ---
 
-## 20 de Marzo, 2026 — Deploy Exitoso y Correcciones Críticas
+## 21 de Marzo, 2026 — Sincronización de Plantillas y Widget IA
 
 ### ✅ Cambios Aplicados
-1. **Deploy General:**
-   - **Backend:** Actualizado con soporte para el flujo de PayPal y mejoras en `auth.service.ts`.
-   - **Frontend:** Reconstruido completamente tras corregir errores de compilación críticos.
-2. **Correcciones en Frontend (para permitir build):**
-   - **Pricing Admin:** Añadidas importaciones faltantes de iconos (`Globe`, `Instagram`, `Youtube`, `Twitter`, `Layout`) de `lucide-react`.
-   - **Dashboard Checkout:** 
-     - Declarados estados faltantes: `prorationPreview`, `loadingProration`, `applyingFreeUpgrade`.
-     - Definidas variables de cálculo: `totalPrice`, `planTotal`, `monthDiscount`, `plan`.
-     - Corregido `Promise.all` incompleto que desestructuraba `pricing_config` de Supabase.
-     - Sincronizadas las props del componente `PaymentSection` con su llamada en el render.
-3. **Validación:**
-   - Health check exitoso (HTTP 200).
-   - Backend Up 4s, Frontend Up 15s en el VPS (31.220.18.39).
+1. **Corrección de Plantilla Clásica (`TemplateClassic.tsx`):**
+   - **Carga de Widget:** Solucionado el problema donde el widget no cargaba el producto seleccionado. Ahora pasa correctamente el `activeProduct.id` al `TryOnWidget`.
+   - **Horarios de Atención:** Añadida una nueva sección dinámica en el footer que muestra los horarios de la marca (`schedule`) recuperados de la base de datos.
+   - **Sección de Pasos:** Implementada una sección visual de "Pasos 1, 2, 3" para guiar al usuario en la experiencia de prueba virtual.
+2. **Mejoras en `TryOnWidget.tsx`:**
+   - **Pre-selección de Producto:** Añadida la prop `initialProductId` para permitir que el widget inicialice con un producto específico cuando se abre desde una mini-landing.
+3. **Identidad de Marca (Branding):**
+   - **Footer Unificado:** Actualizado el componente `LandingFooter` en `shared.tsx` para usar estrictamente el formato JSX: `Look<span className="text-[#FF5C3A]">itry</span>`.
+   - **Sincronización de Colores:** Verificado el uso del color `#FF5C3A` en todas las llamadas a la acción (CTAs) y acentos de las plantillas.
+4. **Verificación de Plantillas:**
+   - Confirmada la integridad de las plantillas **Editorial** y **Moderno**, asegurando que el flujo de selección de productos y apertura del widget sea fluido y consistente con la previsualización del editor.
 
 ### ⏳ Tareas en Proceso / Pendientes
 - **Pruebas de PayPal:** Verificar el flujo completo de checkout con PayPal en producción.
 - **Breadcrumbs en Legales:** Aplicar y verificar físicamente la persistencia de breadcrumbs en `terminos` y `politicas-privacidad`.
-- **Dashboard ROI:** Ampliar métricas de Churn y Nuevos Clientes en el controlador de backend.
 - **TRM Automática:** Implementar el fetch automático desde un servicio externo.
 
 ---

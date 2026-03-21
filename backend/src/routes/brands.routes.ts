@@ -15,6 +15,10 @@ router.use(authMiddleware);
 // No requiere verificación de suscripción para que marcas suspendidas puedan ver su estado
 router.get('/me', (req, res) => brandsController.getMe(req, res));
 
+// PATCH /api/brands/me - Actualizar configuración de la marca
+// Permitimos actualización para TRIAL para que puedan configurar su landing
+router.patch('/me', (req, res) => brandsController.updateMe(req, res));
+
 // GET /api/brands/me/payments - Historial de pagos de la marca autenticada
 router.get('/me/payments', async (req: any, res) => {
   try {
