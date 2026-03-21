@@ -193,6 +193,25 @@ export class WompiService {
   }
 
   /**
+   * Consulta una transacción por ID en la API de Wompi.
+   */
+  async getTransactionById(id: string): Promise<{ reference: string, status: string } | null> {
+    try {
+      const { privateKey, testMode } = await this.getActiveKeys();
+      const baseUrl = testMode ? 'https://sandbox.wompi.co' : 'https://production.wompi.co';
+      const url = `${baseUrl}/v1/transactions/${encodeURIComponent(id)}`;
+      
+      const response = await fetch(url, { headers: { Authorization: `Bearer ${privateKey}` } });
+      const json = await response.json() as { data: { reference: string, status: string } };
+      if (!json.data) return null;
+      return json.data;
+    } catch (error) {
+      console.error('[Wompi] Error al consultar TX por ID:', error);
+      return null;
+    }
+  }
+
+  /**
    * Genera la URL del checkout hosted de Wompi.
    * Si se pasa `referenceOverride`, se usa esa referencia en lugar de generar una nueva.
    */

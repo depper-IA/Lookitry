@@ -61,4 +61,11 @@ router.get('/config', optionalAuth, (req, res) => wompiController.getWidgetConfi
  */
 router.get('/checkout-url', optionalAuth, (req, res) => wompiController.getCheckoutUrl(req, res));
 
+/**
+ * GET /api/payments/wompi/transaction/:id
+ * Consulta el estado y otros metadatos (como reference) de una transacción de Wompi
+ * Endpoint público, el ID de transacción ya es el identificador seguro.
+ */
+router.get('/transaction/:id', (req, res) => wompiController.getTransaction(req, res));
+
 export default router;

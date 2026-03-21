@@ -20,7 +20,9 @@ export default function AuthVerifyPage() {
       return;
     }
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-email?token=${token}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/verify-email?token=${token}`, {
+      credentials: 'include'
+    })
       .then(r => r.json())
       .then(data => {
         if (data.error) {
