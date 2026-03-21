@@ -6,9 +6,9 @@ import { TryOnWidget } from '@/components/tryon/TryOnWidget';
 import { BrandData, ProductData, WhatsAppIcon } from './shared';
 
 // Iconos internos
-function SparklesIcon({ className }: { className?: string }) {
+function SparklesIcon({ className, color, style }: { className?: string; color?: string; style?: React.CSSProperties }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <svg className={className} style={style} fill="none" viewBox="0 0 24 24" stroke={color || "currentColor"} strokeWidth={1.8}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
     </svg>
   );
@@ -89,12 +89,39 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
           <h2 className="text-6xl md:text-9xl font-black leading-[0.85] tracking-tighter italic uppercase mb-12">
             {brand.slogan || 'The New Era of Fashion.'}
           </h2>
+          
+          {/* Stats / Reviews - Nuevo */}
+          {(brand.total_reviews || brand.city_display) && (
+            <div className="flex flex-wrap justify-center gap-8 mb-12 opacity-60 text-[10px] font-bold tracking-[0.2em] uppercase">
+              {brand.city_display && (
+                <div className="flex items-center gap-2">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  {brand.city_display}
+                </div>
+              )}
+              {brand.total_reviews && (
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map(i => <svg key={i} className="w-2 h-2 fill-white" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>)}
+                  </div>
+                  {brand.total_reviews} reviews
+                </div>
+              )}
+              {brand.national_shipping && (
+                <div className="flex items-center gap-2">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                  Envíos Nacionales
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex flex-col md:flex-row items-center justify-center gap-8">
             <a 
               href="#catalogo" 
               className="px-12 py-5 bg-white text-black font-black text-xs uppercase tracking-[0.2em] hover:bg-[#FF5C3A] hover:text-white transition-all shadow-2xl"
             >
-              Explore Collection
+              {brand.cta_button_text || 'Explore Collection'}
             </a>
           </div>
         </div>

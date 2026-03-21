@@ -110,45 +110,76 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
   }
 
   // 3. Validar disponibilidad de Email y Slug
-  const { data: existingEmail } = await supabaseAdmin.from('brands').select('id').eq('email', pending.email).single();
-  if (existingEmail) throw new Error('El email ya está registrado');
+  const { data: existingBrand } = await supabaseAdmin.from('brands').select('*').eq('email', pending.email).single();
+  
+  let targetBrandId: string;
 
-  const { data: existingSlug } = await supabaseAdmin.from('brands').select('id').eq('slug', slug).single();
-  if (existingSlug) throw new Error('El slug ya está en uso');
+  if (existingBrand) {
+    // Si la marca ya existe, verificar la contraseña para vincular el pago
+    const isPasswordValid = await bcrypt.compare(password, existingBrand.password);
+    if (!isPasswordValid) {
+      throw new Error('EL_EMAIL_YA_EXISTE_CONTRASENA_INCORRECTA');
+    }
+    
+    // Si la contraseña es válida, procedemos a actualizar la marca existente
+    targetBrandId = existingBrand.id;
+    
+    // Actualizar plan y fechas en la marca existente
+    const months = pending.months || 1;
+    const plan = (pending.plan || 'BASIC').toUpperCase();
+    const now = new Date();
+    const endDate = new Date(now);
+    endDate.setMonth(endDate.getMonth() + months);
 
-  // 4. Crear la marca con el plan y duración pagados
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const months = pending.months || 1;
-  const plan = (pending.plan || 'BASIC').toUpperCase();
+    await supabaseAdmin
+      .from('brands')
+      .update({
+        plan,
+        subscription_status: 'active',
+        subscription_start_date: now.toISOString(),
+        subscription_end_date: endDate.toISOString(),
+        has_landing_page: pending.includes_landing || existingBrand.has_landing_page || false,
+        last_payment_date: now.toISOString(),
+      })
+      .eq('id', targetBrandId);
 
-  // Calcular fecha de fin
-  const endDate = new Date();
-  endDate.setMonth(endDate.getMonth() + months);
+    console.log(`[AuthService] Pago vinculado exitosamente a cuenta existente: ${pending.email}`);
+  } else {
+    // Si la marca no existe, crearla normalmente
+    const { data: existingSlug } = await supabaseAdmin.from('brands').select('id').eq('slug', slug).single();
+    if (existingSlug) throw new Error('El slug ya está en uso');
 
-  const { data: newBrand, error: createError } = await supabaseAdmin
-    .from('brands')
-    .insert({
-      email: pending.email,
-      password: hashedPassword,
-      name,
-      slug,
-      contact_name: contact_name.trim(),
-      plan,
-      subscription_status: 'active',
-      subscription_start_date: new Date().toISOString(),
-      subscription_end_date: endDate.toISOString(),
-      has_landing_page: pending.includes_landing || false,
-      email_verified: true, // Ya pagó, confiamos en el email
-      email_verification_token: null,
-    })
-    .select()
-    .single();
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const months = pending.months || 1;
+    const plan = (pending.plan || 'BASIC').toUpperCase();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + months);
 
-  if (createError || !newBrand) {
-    throw new Error('Error al crear la cuenta: ' + createError?.message);
+    const { data: newBrand, error: createError } = await supabaseAdmin
+      .from('brands')
+      .insert({
+        email: pending.email,
+        password: hashedPassword,
+        name,
+        slug,
+        contact_name: contact_name.trim(),
+        plan,
+        subscription_status: 'active',
+        subscription_start_date: new Date().toISOString(),
+        subscription_end_date: endDate.toISOString(),
+        has_landing_page: pending.includes_landing || false,
+        email_verified: true,
+      })
+      .select()
+      .single();
+
+    if (createError || !newBrand) {
+      throw new Error('Error al crear la cuenta: ' + createError?.message);
+    }
+    targetBrandId = newBrand.id;
   }
 
-  // 5. MARCAR REFERENCIA COMO UTILIZADA (Idempotencia)
+  // 5. MARCAR REFERENCIA COMO UTILIZADA
   await supabaseAdmin
     .from('pending_registrations')
     .update({ status: 'used', updated_at: new Date().toISOString() } as any)
@@ -156,26 +187,29 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
 
   // 6. Registrar el pago oficial en subscription_payments
   await supabaseAdmin.from('subscription_payments').insert({
-    brand_id: newBrand.id,
-    amount: 0, // El monto ya se cobró, esto es para historial
+    brand_id: targetBrandId,
+    amount: pending.amount || 0,
     currency: 'COP',
     payment_date: new Date().toISOString(),
     payment_method: ref.includes('PAYPAL') ? 'paypal' : 'wompi',
     status: 'completed',
-    months_paid: months,
-    notes: `Registro inicial via ${ref.includes('PAYPAL') ? 'PayPal' : 'Wompi'}. Ref: ${ref}. ID Pago: ${(pending as any).payment_id || 'N/A'}`
+    months_paid: pending.months || 1,
+    notes: `Activación via registro post-pago. Ref: ${ref}. ID Pago: ${(pending as any).payment_id || 'N/A'}`
   });
 
-  const token = generateToken({ brandId: newBrand.id, email: newBrand.email });
+  const finalBrand = await this.getBrandById(targetBrandId);
+  if (!finalBrand) throw new Error('Error al recuperar datos de la marca');
+
+  const token = generateToken({ brandId: finalBrand.id, email: finalBrand.email });
 
   return {
     token,
     brand: {
-      id: newBrand.id,
-      email: newBrand.email,
-      name: newBrand.name,
-      slug: newBrand.slug,
-      plan: newBrand.plan,
+      id: finalBrand.id,
+      email: finalBrand.email,
+      name: finalBrand.name,
+      slug: finalBrand.slug,
+      plan: finalBrand.plan,
     },
     isTrial: false,
   };
