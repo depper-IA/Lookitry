@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
 import { BrandData, ProductData, WhatsAppIcon, WhatsAppFAB, LandingFooter, BrandLogo, ProductImage, ProductBadge, CoverImage, YouTubeIcon, XIcon } from './shared';
 
-// ── Iconos internos del template ─────────────────────────────────────────────
+// ── Iconos internos del template (UI/UX Pro Max Style) ───────────────────────
 function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -78,58 +78,77 @@ function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
   const overlayOpacity = brand.cover_overlay_opacity ?? 0.55;
   return (
     <section
-      className="relative w-full min-h-[420px] md:min-h-[520px] flex flex-col px-0 overflow-hidden"
+      className="relative w-full min-h-[500px] md:min-h-[600px] flex flex-col px-0 overflow-hidden"
       style={{ background: brand.cover_bg_color || `#FAFAF9` }}
     >
-      {/* Header Clásico con Glassmorphism Premium */}
+      {/* Header Premium Glassmorphism */}
       <header 
-        className="sticky top-0 z-50 w-full px-6 py-4 flex items-center justify-between backdrop-blur-xl transition-all duration-300"
+        className="sticky top-0 z-50 w-full px-6 md:px-12 py-5 flex items-center justify-between backdrop-blur-2xl transition-all duration-300"
         style={{ 
-          backgroundColor: brand.header_color ? `${brand.header_color}99` : 'rgba(255,255,255,0.4)',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.05)',
+          backgroundColor: brand.header_color ? `${brand.header_color}99` : 'rgba(255,255,255,0.6)',
+          borderBottom: '1px solid rgba(0,0,0,0.05)',
         }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {brand.logo ? (
-            <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-8 object-contain" />
+            <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-10 w-auto object-contain transition-transform hover:scale-105" />
           ) : (
-             <span className="font-bold text-lg" style={{ color: brand.primary_color }}>{brand.name}</span>
+             <span className="font-black text-xl tracking-tighter uppercase italic" style={{ color: primary }}>{brand.name}</span>
           )}
         </div>
-        <button onClick={onScrollDown} className="text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-full border transition-all hover:bg-black/5" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>
-          Explorar
-        </button>
+        <div className="flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-8">
+            <button onClick={onScrollDown} className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-900/60 hover:text-gray-900 transition-colors">Catálogo</button>
+            <a href="#contacto" className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-900/60 hover:text-gray-900 transition-colors">Ubicación</a>
+          </nav>
+          <button 
+            onClick={onScrollDown}
+            className="px-6 py-2.5 rounded-full text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-black/10 hover:scale-105 active:scale-95 transition-all"
+            style={{ backgroundColor: primary }}
+          >
+            Pruébatelo
+          </button>
+        </div>
       </header>
 
-      <div className="flex-1 relative flex flex-col items-center justify-center text-center px-6 py-12">
+      <div className="flex-1 relative flex flex-col items-center justify-center text-center px-6 py-20">
         {hasCover && (
           <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
         )}
-      {(hasCover && overlayOpacity > 0) && (
-        <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity})` }} />
-      )}
-      <div className="relative z-10 flex flex-col items-center gap-5 max-w-2xl">
-        {brand.logo && <BrandLogo src={brand.logo_light || brand.logo} alt={brand.name} className="h-16 md:h-20 object-contain drop-shadow-lg" />}
-        {brand.show_brand_name !== false && (
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-md leading-tight">{brand.name}</h1>
+        {(hasCover && overlayOpacity > 0) && (
+          <div className="absolute inset-0 bg-black/40 backdrop-grayscale-[0.2]" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity})` }} />
         )}
-        {brand.slogan && <p className="text-white/80 text-sm font-medium tracking-wide uppercase">{brand.slogan}</p>}
-        {brand.brand_description && (
-          <p className="text-white/90 text-base md:text-lg max-w-xl leading-relaxed">{brand.brand_description}</p>
-        )}
-        <button
-          onClick={onScrollDown}
-          className="mt-2 inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-white font-bold text-base shadow-xl hover:opacity-90 active:scale-95 transition-all border-2 border-white/30"
-          style={{ backgroundColor: primary }}
-        >
-          <SparklesIcon className="w-5 h-5" />
-          {brand.cta_button_text || 'Probarme un producto'}
-        </button>
+        <div className="relative z-10 flex flex-col items-center gap-6 max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[9px] font-black uppercase tracking-[0.3em] mb-4">
+            <SparklesIcon className="w-3.5 h-3.5 text-yellow-400" />
+            Experiencia AI Premium
+          </div>
+          <h1 className="text-5xl md:text-8xl font-black text-white drop-shadow-2xl leading-[0.9] tracking-tighter uppercase italic">
+            {brand.name}
+          </h1>
+          {brand.slogan && (
+            <p className="text-white/90 text-sm md:text-base font-bold tracking-[0.15em] uppercase border-y border-white/20 py-2">
+              {brand.slogan}
+            </p>
+          )}
+          {brand.brand_description && (
+            <p className="text-white/80 text-base md:text-lg max-w-xl leading-relaxed font-medium drop-shadow-md">
+              {brand.brand_description}
+            </p>
+          )}
+          <button
+            onClick={onScrollDown}
+            className="mt-8 group relative inline-flex items-center gap-3 px-10 py-5 rounded-2xl text-white font-black text-sm uppercase tracking-[0.2em] shadow-2xl transition-all hover:scale-105 active:scale-95"
+            style={{ backgroundColor: primary }}
+          >
+            <SparklesIcon className="w-5 h-5 animate-pulse" />
+            {brand.cta_button_text || 'Iniciar Probador IA'}
+            <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </div>
       </div>
-    </div>
-    <button onClick={onScrollDown} className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60 hover:text-white/90 transition-colors animate-bounce" aria-label="Ver mas">
-        <ChevronDownIcon className="w-7 h-7" />
+      <button onClick={onScrollDown} className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/40 hover:text-white transition-colors animate-bounce" aria-label="Ver mas">
+        <ChevronDownIcon className="w-8 h-8" />
       </button>
     </section>
   );
@@ -137,21 +156,26 @@ function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: 
 
 function ClassicHowItWorks({ primaryColor }: { primaryColor: string }) {
   const steps = [
-    { num: '1', title: 'Elige un producto', desc: 'Navega por el catálogo y selecciona la prenda que quieras probar.' },
-    { num: '2', title: 'Sube tu foto', desc: 'Toma o sube una foto tuya. Funciona mejor con buena iluminación.' },
-    { num: '3', title: 'Ve el resultado', desc: 'Nuestra IA genera en segundos como te verías con ese producto.' },
+    { num: '01', title: 'Elige tu Prenda', desc: 'Explora nuestra colección curada y selecciona lo que más te guste.' },
+    { num: '02', title: 'Tu Fotografía', desc: 'Sube una foto frontal con buena luz para un resultado perfecto.' },
+    { num: '03', title: 'Mira la Magia', desc: 'Nuestra IA integra la prenda a tu cuerpo en menos de 15 segundos.' },
   ];
   return (
-    <section className="w-full bg-gray-50 py-16 px-4">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 text-center mb-2">¿Cómo funciona?</h2>
-        <p className="text-gray-500 text-center text-sm mb-10">Tres pasos y listo</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <section className="w-full bg-white py-24 px-6 border-b border-gray-100">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div className="space-y-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Proceso Inteligente</span>
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">¿Cómo funciona?</h2>
+          </div>
+          <p className="text-gray-500 max-w-xs text-sm font-medium leading-relaxed">Tecnología de vanguardia para que compres con total seguridad desde tu casa.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map(s => (
-            <div key={s.num} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-4" style={{ backgroundColor: primaryColor }}>{s.num}</div>
-              <h3 className="font-semibold text-gray-900 mb-2">{s.title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{s.desc}</p>
+            <div key={s.num} className="group relative bg-gray-50 rounded-[2.5rem] p-10 transition-all hover:bg-white hover:shadow-2xl hover:shadow-black/5 border border-transparent hover:border-gray-100">
+              <span className="block text-6xl font-black text-gray-200 group-hover:text-[#FF5C3A]/10 transition-colors mb-6">{s.num}</span>
+              <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight mb-4">{s.title}</h3>
+              <p className="text-gray-500 text-sm leading-relaxed font-medium">{s.desc}</p>
             </div>
           ))}
         </div>
@@ -163,26 +187,37 @@ function ClassicHowItWorks({ primaryColor }: { primaryColor: string }) {
 function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { products: ProductData[]; primaryColor: string; ctaText?: string | null; onProductClick: (id: string) => void }) {
   if (!products.length) return null;
   return (
-    <section id="productos" className="w-full max-w-5xl mx-auto px-4 py-14">
-      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">Catálogo</h2>
-      <p className="text-gray-500 text-center mb-10 text-sm">Selecciona un producto para probártelo virtualmente</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+    <section id="productos" className="w-full max-w-6xl mx-auto px-6 py-24">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-16 gap-8">
+        <div className="space-y-4">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Colección Oficial</span>
+          <h2 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">Catálogo</h2>
+        </div>
+        <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-3xl border border-gray-100">
+          <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+            <SparklesIcon className="w-5 h-5 text-yellow-500" />
+          </div>
+          <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest leading-snug">Selecciona para<br />probar con IA</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
         {products.map(p => (
-          <button key={p.id} onClick={() => onProductClick(p.id)} className="group rounded-2xl overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-200 text-left">
-            <div className="relative aspect-square overflow-hidden bg-gray-50">
-              <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ backgroundColor: primaryColor + 'cc' }}>
-                <span className="text-white text-xs font-semibold px-3 py-1.5 rounded-full border-2 border-white">{ctaText || 'Probarme esto'}</span>
+          <button key={p.id} onClick={() => onProductClick(p.id)} className="group relative rounded-[2rem] overflow-hidden bg-white transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)]">
+            <div className="relative aspect-[3/4] overflow-hidden bg-gray-50">
+              <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-[2px]">
+                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 bg-white text-black px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl">
+                  {ctaText || 'Probar Prenda'}
+                </div>
               </div>
-              {p.badge && <span className="absolute top-2 left-2"><ProductBadge badge={p.badge} /></span>}
+              {p.badge && <span className="absolute top-4 left-4"><ProductBadge badge={p.badge} /></span>}
             </div>
-            <div className="p-3">
-              <p className="font-semibold text-sm text-gray-900 leading-tight truncate">{p.name}</p>
-              <div className="flex items-center justify-between mt-1 gap-1 flex-wrap">
-                {p.category && <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full capitalize">{p.category}</span>}
-                {p.price != null && <span className="text-xs font-semibold" style={{ color: primaryColor }}>${p.price.toLocaleString('es-CO')}</span>}
+            <div className="p-6 text-left">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">{p.category}</span>
+                {p.price != null && <span className="text-sm font-black text-gray-900">${p.price.toLocaleString('es-CO')}</span>}
               </div>
-              {p.description && <p className="mt-1.5 text-xs text-gray-400 leading-snug line-clamp-2">{p.description}</p>}
+              <h3 className="font-bold text-base text-gray-900 leading-tight group-hover:text-[#FF5C3A] transition-colors line-clamp-1 uppercase tracking-tight">{p.name}</h3>
             </div>
           </button>
         ))}
@@ -193,11 +228,14 @@ function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { 
 
 function ClassicTryOn({ brandSlug, primaryColor, selectedProductId }: { brandSlug: string; primaryColor: string; selectedProductId: string | null }) {
   return (
-    <section id="tryon-section" className="w-full py-14 px-4" style={{ backgroundColor: primaryColor + '0d' }}>
-      <div className="max-w-2xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 text-center">Probador virtual</h2>
-        <p className="text-gray-500 text-center mb-8 text-sm">Sube una foto tuya y ve como te queda el producto con IA</p>
-        <div className="rounded-3xl overflow-hidden shadow-2xl border border-gray-100 bg-white">
+    <section id="tryon-section" className="w-full py-24 px-6 bg-[#0a0a0a]">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-16 space-y-4">
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF5C3A]">Motor de Inteligencia Artificial</span>
+          <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase italic leading-none">Probador Virtual</h2>
+          <p className="text-gray-500 text-sm md:text-base font-medium max-w-lg mx-auto">Sube tu foto y nuestra red neuronal procesará la prenda sobre tu cuerpo en tiempo real.</p>
+        </div>
+        <div className="rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/5 bg-[#141414]">
           <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedProductId} />
         </div>
       </div>
@@ -205,107 +243,96 @@ function ClassicTryOn({ brandSlug, primaryColor, selectedProductId }: { brandSlu
   );
 }
 
-function ClassicSocial({ brand }: { brand: BrandData }) {
-  const entries = Object.entries(brand.social_links || {}).filter(([, url]) => !!url);
-  if (!entries.length) return null;
-  const icons: Record<string, React.ReactNode> = {
-    instagram: <InstagramIcon className="w-5 h-5" />,
-    facebook:  <FacebookIcon  className="w-5 h-5" />,
-    tiktok:    <TikTokIcon    className="w-5 h-5" />,
-    youtube:   <YouTubeIcon   className="w-5 h-5" />,
-    x:         <XIcon         className="w-5 h-5" />,
-  };
-  return (
-    <section id="contacto" className="w-full max-w-2xl mx-auto px-4 py-10 text-center">
-      <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-widest italic">Síguenos</h2>
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        {entries.map(([platform, url]) => (
-          <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-all hover:scale-105 active:scale-95 capitalize">
-            {icons[platform.toLowerCase()] ?? null}
-            {platform === 'x' ? 'X (Twitter)' : platform}
-          </a>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function ClassicInfo({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
+  // Fix: Los horarios en brands vienen como JSONB, aseguramos procesamiento robusto
   const DAYS_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-  const scheduleEntries = brand.schedule
-    ? DAYS_ORDER.filter(d => d in brand.schedule!).map(d => [d, brand.schedule![d]] as [string, string])
-    : [];
+  
+  // Procesar schedule independientemente de si viene como objeto o string (resiliencia total)
+  let scheduleEntries: [string, string][] = [];
+  try {
+    const rawSchedule = brand.schedule;
+    if (rawSchedule && typeof rawSchedule === 'object') {
+      scheduleEntries = DAYS_ORDER
+        .filter(day => rawSchedule[day] || rawSchedule[day.toLowerCase()])
+        .map(day => [day, (rawSchedule[day] || rawSchedule[day.toLowerCase()]) as string]);
+    }
+  } catch (e) {
+    console.error('[ClassicInfo] Error parsing schedule:', e);
+  }
+
   const hasRating = brand.rating != null;
   const hasLocation = !!(brand.city_display || brand.national_shipping);
   const hasSchedule = scheduleEntries.length > 0;
+  
   if (!hasRating && !hasLocation && !hasSchedule) return null;
 
   return (
-    <section className="w-full max-w-2xl mx-auto px-4 py-10">
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-5">
-        {/* Rating */}
-        {hasRating && (
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-yellow-400">
-              {[1,2,3,4,5].map(i => (
-                <StarIcon key={i} className="w-4 h-4" filled={i <= Math.round(brand.rating!)} />
-              ))}
-            </div>
-            <span className="font-bold text-gray-900">{brand.rating!.toFixed(1)}</span>
-            {brand.total_reviews != null && brand.total_reviews > 0 && (
-              <span className="text-sm text-gray-500">({brand.total_reviews.toLocaleString('es-CO')} reseñas)</span>
-            )}
+    <section id="contacto" className="w-full max-w-6xl mx-auto px-6 py-24 border-t border-gray-100">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div className="space-y-12">
+          <div className="space-y-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Información Oficial</span>
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">Ubicación y Status</h2>
           </div>
-        )}
-        {/* Dirección / envíos */}
-        {hasLocation && (
-          <div className="flex flex-wrap items-center gap-4">
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            {hasRating && (
+              <div className="p-8 bg-gray-50 rounded-[2rem] border border-gray-100 space-y-4">
+                <div className="flex items-center gap-1 text-yellow-400">
+                  {[1,2,3,4,5].map(i => <StarIcon key={i} className="w-4 h-4" filled={i <= Math.round(brand.rating!)} />)}
+                </div>
+                <div>
+                  <p className="text-3xl font-black text-gray-900 tracking-tighter">{brand.rating!.toFixed(1)}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">{brand.total_reviews?.toLocaleString('es-CO') || 0} Valoraciones Reales</p>
+                </div>
+              </div>
+            )}
             {brand.city_display && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <MapPinIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                <span>{brand.city_display}</span>
-              </div>
-            )}
-            {brand.national_shipping && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <TruckIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                <span>Envíos nacionales</span>
+              <div className="p-8 bg-gray-50 rounded-[2rem] border border-gray-100 space-y-4">
+                <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+                  <MapPinIcon className="w-5 h-5 text-gray-900" />
+                </div>
+                <div>
+                  <p className="text-lg font-black text-gray-900 tracking-tight uppercase italic">{brand.city_display}</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">Sede Principal</p>
+                </div>
               </div>
             )}
           </div>
-        )}
-        {/* Horario */}
+
+          <div className="flex flex-wrap items-center gap-4">
+            {brand.social_links && Object.entries(brand.social_links).filter(([,url])=>!!url).map(([platform, url]) => {
+              const icons: any = { instagram: <InstagramIcon />, facebook: <FacebookIcon />, tiktok: <TikTokIcon />, youtube: <YouTubeIcon />, x: <XIcon /> };
+              return (
+                <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-gray-900 text-white flex items-center justify-center transition-all hover:scale-110 hover:-rotate-3 active:scale-95 shadow-xl shadow-black/10">
+                  <div className="w-6 h-6">{icons[platform.toLowerCase()] || platform.slice(0,1)}</div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+
         {hasSchedule && (
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Horario de atención</p>
-            <div className="space-y-2">
+          <div className="bg-white rounded-[2.5rem] border-2 border-gray-100 p-10 md:p-12 shadow-2xl shadow-black/[0.02]">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-12 h-12 rounded-2xl bg-gray-900 flex items-center justify-center text-white">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-12 0 9 9 0 0112 0z" /></svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-gray-900 uppercase italic tracking-tight">Horarios de Atención</h3>
+                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-0.5">Tienda verificada</p>
+              </div>
+            </div>
+            <div className="space-y-4">
               {scheduleEntries.map(([day, hours]) => (
-                <div key={day} className="flex justify-between text-sm border-b border-gray-50 pb-1 last:border-0">
-                  <span className="text-gray-500">{day}</span>
-                  <span className={hours === 'Cerrado' ? 'text-gray-300 italic' : 'text-gray-800 font-medium'}>{hours}</span>
+                <div key={day} className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
+                  <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{day}</span>
+                  <span className={`text-sm font-bold tracking-tight ${hours.toLowerCase() === 'cerrado' ? 'text-red-400 italic' : 'text-gray-900'}`}>{hours}</span>
                 </div>
               ))}
             </div>
           </div>
         )}
-      </div>
-    </section>
-  );
-}
-
-function ClassicContact({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
-  if (!brand.whatsapp_contact) return null;
-  const clean = brand.whatsapp_contact.replace(/\D/g, '');
-  const msg = brand.whatsapp_message ? `?text=${encodeURIComponent(brand.whatsapp_message)}` : '';
-  return (
-    <section className="w-full py-14 px-4 bg-gray-50">
-      <div className="max-w-xl mx-auto text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">¿Tienes preguntas?</h2>
-        <p className="text-gray-500 text-sm mb-8">Escríbenos directamente y te respondemos al instante</p>
-        <a href={`https://wa.me/${clean}${msg}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-white font-bold text-base shadow-lg hover:opacity-90 active:scale-95 transition-all" style={{ backgroundColor: '#25D366' }}>
-          <WhatsAppIcon className="w-6 h-6" />
-          Escribir por WhatsApp
-        </a>
       </div>
     </section>
   );
@@ -321,19 +348,20 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl }: { bra
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans">
+    <div className={`min-h-screen bg-white flex flex-col ${brand.landing_font || 'font-jakarta'} transition-colors duration-500`}>
       <ClassicHero brand={brand} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
       <ClassicHowItWorks primaryColor={primary} />
       <ClassicProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={scrollToTryOn} />
       <ClassicTryOn brandSlug={brandSlug} primaryColor={primary} selectedProductId={selectedProductId} />
       <ClassicInfo brand={brand} primaryColor={primary} />
-      <ClassicSocial brand={brand} />
-      <ClassicContact brand={brand} primaryColor={primary} />
       
-      <footer className="py-12 px-6 text-center border-t border-gray-100 bg-white">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-          Probador virtual impulsado por <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
-        </p>
+      <footer className="py-20 px-6 text-center border-t border-gray-100 bg-white">
+        <div className="max-w-6xl mx-auto flex flex-col items-center gap-8">
+          {brand.logo && <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-8 opacity-30 grayscale" />}
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-300">
+            Tecnología Probador Virtual impulsada por <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#FF5C3A] transition-colors">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
+          </p>
+        </div>
       </footer>
 
       {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}

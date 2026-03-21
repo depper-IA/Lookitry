@@ -4,25 +4,26 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 
 ---
 
-## 21 de Marzo, 2026 — Sincronización de Plantillas y Widget IA
+## 21 de Marzo, 2026 — Tipografías Dinámicas y Redes Sociales Pro
 
 ### ✅ Cambios Aplicados
-1. **Corrección de Plantilla Clásica (`TemplateClassic.tsx`):**
-   - **Carga de Widget:** Solucionado el problema donde el widget no cargaba el producto seleccionado. Ahora pasa correctamente el `activeProduct.id` al `TryOnWidget`.
-   - **Horarios de Atención:** Añadida una nueva sección dinámica en el footer que muestra los horarios de la marca (`schedule`) recuperados de la base de datos.
-   - **Sección de Pasos:** Implementada una sección visual de "Pasos 1, 2, 3" para guiar al usuario en la experiencia de prueba virtual.
-2. **Mejoras en `TryOnWidget.tsx`:**
-   - **Pre-selección de Producto:** Añadida la prop `initialProductId` para permitir que el widget inicialice con un producto específico cuando se abre desde una mini-landing.
-3. **Identidad de Marca (Branding):**
-   - **Footer Unificado:** Actualizado el componente `LandingFooter` en `shared.tsx` para usar estrictamente el formato JSX: `Look<span className="text-[#FF5C3A]">itry</span>`.
-   - **Sincronización de Colores:** Verificado el uso del color `#FF5C3A` en todas las llamadas a la acción (CTAs) y acentos de las plantillas.
-4. **Verificación de Plantillas:**
-   - Confirmada la integridad de las plantillas **Editorial** y **Moderno**, asegurando que el flujo de selección de productos y apertura del widget sea fluido y consistente con la previsualización del editor.
+1. **Sistema de Tipografías Dinámicas:**
+   - **Nuevas Fuentes:** Integradas 4 familias de fuentes profesionales: Jakarta, Inter, Montserrat y Playfair Display.
+   - **Selector en Editor:** Añadido un selector visual en la pestaña de Identidad Visual para cambiar la tipografía de toda la mini-landing.
+   - **Aplicación en Templates:** Los tres templates (Clásico, Editorial, Moderno) ahora responden dinámicamente a la fuente seleccionada.
+2. **Ampliación de Redes Sociales:**
+   - **YouTube y X (Twitter):** Añadido soporte completo para estas plataformas en el editor y en todos los templates.
+   - **Iconografía Premium:** Creados nuevos componentes de iconos SVG en `shared.tsx` para YouTube y X.
+3. **Correcciones de Estabilidad:**
+   - **Shared Components:** Limpieza profunda de `shared.tsx`, eliminando duplicados y corrigiendo el error de renderizado de `WhatsAppIcon`.
+   - **Sincronización Total:** Verificado que todos los campos de personalización (horarios, reseñas, ubicación) se muestren correctamente en todas las plantillas.
+4. **Base de Datos:**
+   - Preparado el campo `landing_font` en el backend y creado script de migración para Supabase.
 
 ### ⏳ Tareas en Proceso / Pendientes
+- **Ejecución SQL:** Pendiente ejecutar `ALTER TABLE brands ADD COLUMN landing_font TEXT DEFAULT 'font-jakarta';` en el panel de Supabase.
 - **Pruebas de PayPal:** Verificar el flujo completo de checkout con PayPal en producción.
 - **Breadcrumbs en Legales:** Aplicar y verificar físicamente la persistencia de breadcrumbs en `terminos` y `politicas-privacidad`.
-- **TRM Automática:** Implementar el fetch automático desde un servicio externo.
 
 ---
 
