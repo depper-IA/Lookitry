@@ -13,34 +13,48 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
   
-  // Lógica de Timer de Bloqueo para previsualización no pagada
+  // Lógica de Timer de Bloqueo Dinámico
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
+    const processData = (result: any) => {
+      setData(result);
+      
+      // 1. Bloqueo definitivo si el servidor dice que expiró
+      if (result.brand.is_preview_expired) {
+        setIsBlocked(true);
+        setTimeLeft(0);
+        return;
+      }
+
+      // 2. Si no ha expirado y no ha pagado, manejar timer local sincronizado con creación
+      if (!result.brand.has_landing_page) {
+        const timerDuration = result.brand.preview_timer_seconds || 60;
+        
+        // Usar localStorage solo para mantener la referencia del "inicio de sesión" si se desea, 
+        // pero el servidor es la fuente de verdad final.
+        const savedEnd = localStorage.getItem(`landing_preview_end_${brandSlug}`);
+        const now = Date.now();
+        
+        if (savedEnd) {
+          const remaining = Math.max(0, Math.ceil((parseInt(savedEnd) - now) / 1000));
+          setTimeLeft(remaining);
+          if (remaining === 0) setIsBlocked(true);
+        } else {
+          localStorage.setItem(`landing_preview_end_${brandSlug}`, (now + timerDuration * 1000).toString());
+          setTimeLeft(timerDuration);
+        }
+      }
+    };
+
     if (!initialData) {
       const fetchData = async () => {
         try {
           const res = await fetch(`${API_URL}/api/pruebalo/${brandSlug}`);
           if (!res.ok) throw new Error('No se pudo cargar la información de la marca');
           const result = await res.json();
-          setData(result);
-          
-          // Si la landing no está activa, iniciar timer de 60 segundos
-          if (!result.brand.has_landing_page) {
-            const savedEnd = localStorage.getItem(`landing_preview_end_${brandSlug}`);
-            const now = Date.now();
-            
-            if (savedEnd) {
-              const remaining = Math.max(0, Math.ceil((parseInt(savedEnd) - now) / 1000));
-              setTimeLeft(remaining);
-              if (remaining === 0) setIsBlocked(true);
-            } else {
-              const end = now + (60 * 1000); // 60 segundos
-              localStorage.setItem(`landing_preview_end_${brandSlug}`, end.toString());
-              setTimeLeft(60);
-            }
-          }
+          processData(result);
         } catch (err: any) {
           console.error('[MiniLanding] Error fetching data:', err);
           setError(err.message);
@@ -50,23 +64,12 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
       };
       fetchData();
     } else {
-      // Si ya tenemos data inicial, aplicar misma lógica de timer
-      if (!initialData.brand.has_landing_page) {
-        const savedEnd = localStorage.getItem(`landing_preview_end_${brandSlug}`);
-        const now = Date.now();
-        if (savedEnd) {
-          const remaining = Math.max(0, Math.ceil((parseInt(savedEnd) - now) / 1000));
-          setTimeLeft(remaining);
-          if (remaining === 0) setIsBlocked(true);
-        } else {
-          localStorage.setItem(`landing_preview_end_${brandSlug}`, (now + 60000).toString());
-          setTimeLeft(60);
-        }
-      }
+      processData(initialData);
+      setLoading(false);
     }
   }, [brandSlug, initialData]);
 
-  // Manejador del intervalo del timer
+  // Intervalo del timer
   useEffect(() => {
     if (timeLeft === null || timeLeft <= 0 || isBlocked) return;
 
@@ -111,7 +114,7 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
 
   return (
     <div className="relative">
-      {/* Timer flotante discreto */}
+      {/* Timer flotante discreto (Datos dinámicos) */}
       {!brand.has_landing_page && timeLeft !== null && timeLeft > 0 && !isBlocked && (
         <div className="fixed bottom-6 right-6 z-[100] bg-black/80 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-10 duration-500">
           <div className="flex flex-col">
@@ -123,7 +126,7 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
         </div>
       )}
 
-      {/* Modal de Bloqueo Infranqueable */}
+      {/* Modal de Bloqueo Infranqueable (Datos Dinámicos del Admin) */}
       {isBlocked && (
         <div className="fixed inset-0 z-[200] bg-[#0a0a0a]/95 backdrop-blur-2xl flex items-center justify-center p-6 text-center animate-in fade-in duration-700">
           <div className="max-w-md w-full space-y-8">
@@ -133,22 +136,20 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
             </div>
             
             <div>
-              <h2 className="text-3xl font-black text-white italic uppercase tracking-tight mb-4">Tiempo de prueba agotado</h2>
-              <p className="text-gray-400 leading-relaxed">
-                Tu mini-landing ha superado el tiempo de previsualización gratuita. Para habilitar el acceso público y seguir personalizando tu marca, activa tu página ahora.
-              </p>
+              <h2 className="text-3xl font-black text-white italic uppercase tracking-tight mb-4">{brand.modal_title}</h2>
+              <p className="text-gray-400 leading-relaxed">{brand.modal_description}</p>
             </div>
 
-            <div className="p-6 bg-white/5 rounded-[2rem] border border-white/10 space-y-4">
-              <div className="flex items-center gap-3 text-left">
-                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0"><svg className="w-3 h-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7" /></svg></div>
-                <span className="text-sm text-gray-300">URL propia: pruebalo.wilkiedevs.com/{brandSlug}</span>
+            {brand.modal_features && brand.modal_features.length > 0 && (
+              <div className="p-6 bg-white/5 rounded-[2rem] border border-white/10 space-y-4">
+                {brand.modal_features.map((f: string, i: number) => (
+                  <div key={i} className="flex items-center gap-3 text-left">
+                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0"><svg className="w-3 h-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7" /></svg></div>
+                    <span className="text-sm text-gray-300">{f}</span>
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center gap-3 text-left">
-                <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0"><svg className="w-3 h-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M5 13l4 4L19 7" /></svg></div>
-                <span className="text-sm text-gray-300">Probador virtual IA ilimitado</span>
-              </div>
-            </div>
+            )}
 
             <div className="flex flex-col gap-4">
               <a 
