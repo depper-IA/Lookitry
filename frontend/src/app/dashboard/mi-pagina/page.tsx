@@ -260,7 +260,7 @@ export default function MiPaginaPage() {
                 </div>
               </div>
               <Link
-                href="/dashboard/checkout?addon=landing"
+                href="/dashboard/checkout-landing"
                 className="flex-shrink-0 px-5 py-2 rounded-xl text-white text-sm font-semibold transition-all hover:brightness-110 active:scale-95 cursor-pointer"
                 style={{ backgroundColor: '#FF5C3A' }}
               >
@@ -383,10 +383,10 @@ export default function MiPaginaPage() {
         </div>
 
         {/* ── Columna derecha: preview sticky con scroll propio ── */}
-        {/* El main tiene p-6 (24px). El sticky se ancla al top del scroll container del main */}
+        {/* El header del dashboard mide h-14 (56px). Usamos top-[72px] para dejar un margen de 16px. */}
         <div
-          className="hidden xl:block"
-          style={{ position: 'sticky', top: 0, maxHeight: 'calc(100vh - 104px)', overflowY: 'auto' }}
+          className="hidden xl:block sticky top-[72px] z-0"
+          style={{ maxHeight: 'calc(100vh - 100px)' }}
         >
           <div className="custom-scrollbar h-full overflow-y-auto py-1 pr-1">
             <LandingPreview {...previewProps} />
