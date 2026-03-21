@@ -33,6 +33,8 @@ interface DesignTabProps {
   instagram: string; setInstagram: (v: string) => void;
   facebook: string; setFacebook: (v: string) => void;
   tiktok: string; setTiktok: (v: string) => void;
+  youtube: string; setYoutube: (v: string) => void;
+  x: string; setX: (v: string) => void;
   cityDisplay: string; setCityDisplay: (v: string) => void;
   nationalShipping: boolean; setNationalShipping: (v: boolean) => void;
   showBrandName: boolean; setShowBrandName: (v: boolean) => void;
@@ -49,6 +51,7 @@ export function DesignTab(props: DesignTabProps) {
     coverImageUrl, setCoverImageUrl, logoUrl, setLogoUrl, logoLightUrl, setLogoLightUrl,
     logoDarkUrl, setLogoDarkUrl, coverBgColor, setCoverBgColor, coverOverlayOpacity, setCoverOverlayOpacity,
     instagram, setInstagram, facebook, setFacebook, tiktok, setTiktok,
+    youtube, setYoutube, x, setX,
     cityDisplay, setCityDisplay, nationalShipping, setNationalShipping,
     showBrandName, setShowBrandName,
     primaryColor, setPrimaryColor, headerColor, setHeaderColor, rating, setRating, totalReviews, setTotalReviews,
@@ -309,19 +312,21 @@ export function DesignTab(props: DesignTabProps) {
 
           <div className="space-y-4">
             <label className={labelStyle}>Redes Sociales</label>
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
                 { id: 'Instagram', val: instagram, set: setInstagram, color: '#E4405F' },
                 { id: 'Facebook', val: facebook, set: setFacebook, color: '#1877F2' },
-                { id: 'TikTok', val: tiktok, set: setTiktok, color: '#000000' }
+                { id: 'TikTok', val: tiktok, set: setTiktok, color: '#000000' },
+                { id: 'YouTube', val: (props as any).youtube || '', set: (props as any).setYoutube, color: '#FF0000' },
+                { id: 'X', val: (props as any).x || '', set: (props as any).setX, color: '#000000' }
               ].map(plat => (
                 <div key={plat.id} className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 pl-4 rounded-2xl border border-[var(--border-color)] focus-within:border-[#FF5C3A]/30 transition-all">
-                  <span className="text-[9px] font-black uppercase text-[var(--text-muted)] w-16">{plat.id}</span>
+                  <span className="text-[9px] font-black uppercase text-[var(--text-muted)] w-16">{plat.id === 'X' ? 'X (Twitter)' : plat.id}</span>
                   <input
                     type="url"
                     value={plat.val}
                     onChange={e => plat.set(e.target.value)}
-                    placeholder={`https://${plat.id.toLowerCase()}.com/usuario`}
+                    placeholder={`URL de ${plat.id}`}
                     className="flex-1 bg-transparent border-0 text-[11px] text-[var(--text-primary)] font-mono outline-none py-2"
                   />
                 </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
-import { BrandData, ProductData, WhatsAppIcon, WhatsAppFAB, LandingFooter, BrandLogo, ProductImage, ProductBadge, CoverImage } from './shared';
+import { BrandData, ProductData, WhatsAppIcon, WhatsAppFAB, LandingFooter, BrandLogo, ProductImage, ProductBadge, CoverImage, YouTubeIcon, XIcon } from './shared';
 
 // ── Iconos internos del template ─────────────────────────────────────────────
 function InstagramIcon({ className }: { className?: string }) {
@@ -212,15 +212,17 @@ function ClassicSocial({ brand }: { brand: BrandData }) {
     instagram: <InstagramIcon className="w-5 h-5" />,
     facebook:  <FacebookIcon  className="w-5 h-5" />,
     tiktok:    <TikTokIcon    className="w-5 h-5" />,
+    youtube:   <YouTubeIcon   className="w-5 h-5" />,
+    x:         <XIcon         className="w-5 h-5" />,
   };
   return (
     <section id="contacto" className="w-full max-w-2xl mx-auto px-4 py-10 text-center">
-      <h2 className="text-xl font-bold text-gray-900 mb-6">Síguenos</h2>
+      <h2 className="text-xl font-bold text-gray-900 mb-6 uppercase tracking-widest italic">Síguenos</h2>
       <div className="flex flex-wrap items-center justify-center gap-3">
         {entries.map(([platform, url]) => (
-          <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors capitalize">
+          <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-all hover:scale-105 active:scale-95 capitalize">
             {icons[platform.toLowerCase()] ?? null}
-            {platform}
+            {platform === 'x' ? 'X (Twitter)' : platform}
           </a>
         ))}
       </div>

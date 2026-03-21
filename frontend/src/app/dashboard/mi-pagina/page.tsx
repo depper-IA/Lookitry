@@ -53,6 +53,8 @@ export default function MiPaginaPage() {
   const [instagram, setInstagram] = useState('');
   const [facebook, setFacebook] = useState('');
   const [tiktok, setTiktok] = useState('');
+  const [youtube, setYoutube] = useState('');
+  const [x, setX] = useState('');
   const [cityDisplay, setCityDisplay] = useState('');
   const [nationalShipping, setNationalShipping] = useState(false);
   const [showBrandName, setShowBrandName] = useState(true);
@@ -90,6 +92,8 @@ export default function MiPaginaPage() {
         setInstagram(brandData.social_links?.instagram || '');
         setFacebook(brandData.social_links?.facebook || '');
         setTiktok(brandData.social_links?.tiktok || '');
+        setYoutube(brandData.social_links?.youtube || '');
+        setX(brandData.social_links?.x || '');
         setCityDisplay(brandData.city_display || '');
         setNationalShipping(brandData.national_shipping || false);
         setShowBrandName(brandData.show_brand_name ?? true);
@@ -115,6 +119,8 @@ export default function MiPaginaPage() {
         instagram: instagram.trim(),
         facebook: facebook.trim(),
         tiktok: tiktok.trim(),
+        youtube: youtube.trim(),
+        x: x.trim(),
       };
 
       const payload = {
@@ -128,6 +134,7 @@ export default function MiPaginaPage() {
         logo_light: logoLightUrl || null,
         logo_dark: logoDarkUrl || null,
         cover_bg_color: coverBgColor || null,
+        cover_image_url: coverImageUrl || null,
         cover_overlay_opacity: coverOverlayOpacity,
         social_links,
         city_display: cityDisplay || null,
@@ -139,6 +146,7 @@ export default function MiPaginaPage() {
         total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
         header_color: headerColor || null,
         schedule: Object.fromEntries(Object.entries(schedule).filter(([, v]) => (v as string).trim())),
+        custom_domain: customDomain || null,
       };
 
       await api.patch('/brands/me', payload);
@@ -173,7 +181,7 @@ export default function MiPaginaPage() {
     whatsapp_contact: whatsapp,
     whatsapp_message: whatsappMessage,
     cta_button_text: ctaButtonText,
-    social_links: { instagram, facebook, tiktok },
+    social_links: { instagram, facebook, tiktok, youtube, x },
     city_display: cityDisplay,
     national_shipping: nationalShipping,
     show_brand_name: showBrandName,

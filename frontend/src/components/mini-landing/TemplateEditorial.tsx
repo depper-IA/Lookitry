@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
-import { BrandData, ProductData, WhatsAppIcon, WhatsAppFAB, LandingFooter, BrandLogo, ProductImage, ProductBadge, CoverImage } from './shared';
+import { BrandData, ProductData, WhatsAppIcon, WhatsAppFAB, LandingFooter, BrandLogo, ProductImage, ProductBadge, CoverImage, YouTubeIcon, XIcon } from './shared';
 
 // ── Iconos internos del template ─────────────────────────────────────────────
 function InstagramIcon({ className }: { className?: string }) {
@@ -60,7 +60,7 @@ function MapPinIcon({ className }: { className?: string }) {
 
 function TruckIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 1h8zM13 8h4l3 5v3h-7V8z" /></svg>
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2 1h8zM13 8h4l3 5v3h-7V8z" /></svg>
   );
 }
 
@@ -74,6 +74,8 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
     instagram: <InstagramIcon className="w-3.5 h-3.5" />,
     facebook:  <FacebookIcon  className="w-3.5 h-3.5" />,
     tiktok:    <TikTokIcon    className="w-3.5 h-3.5" />,
+    youtube:   <YouTubeIcon   className="w-3.5 h-3.5" />,
+    x:         <XIcon         className="w-3.5 h-3.5" />,
   };
   return (
     <header className="px-5 h-20 flex items-center justify-between sticky top-0 z-50 backdrop-blur-2xl bg-white/30 border-b border-gray-100 shadow-sm">
@@ -86,9 +88,9 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
         {brand.show_brand_name !== false && <span className="font-bold text-base text-gray-900 italic uppercase tracking-tight">{brand.name}</span>}
       </div>
       {entries.length > 0 && (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1">
           {entries.map(([platform, url]) => (
-            <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110" style={{ backgroundColor: primary + '15', color: primary }}>
+            <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110 shrink-0" style={{ backgroundColor: primary + '15', color: primary }}>
               {icons[platform.toLowerCase()] ?? null}
             </a>
           ))}
@@ -126,6 +128,50 @@ function EditorialProductCard({ product, selected, primaryColor, onClick }: { pr
         {product.price != null && <p className="text-[11px] font-black mt-1" style={{ color: primaryColor }}>${product.price.toLocaleString('es-CO')}</p>}
       </div>
     </button>
+  );
+}
+
+function EditorialInfo({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
+  const DAYS_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  const scheduleEntries = brand.schedule
+    ? DAYS_ORDER.filter(d => d in brand.schedule!).map(d => [d, brand.schedule![d]] as [string, string])
+    : [];
+  const hasRating = brand.rating != null;
+  const hasLocation = !!(brand.city_display || brand.national_shipping);
+  const hasSchedule = scheduleEntries.length > 0;
+  if (!hasRating && !hasLocation && !hasSchedule) return null;
+
+  return (
+    <div className="mt-8 bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+      {hasRating && (
+        <div className="flex items-center gap-2 pb-3 border-b border-gray-50">
+          <div className="flex items-center gap-0.5 text-yellow-400">
+            {[1,2,3,4,5].map(i => <StarIcon key={i} className="w-3 h-3" filled={i <= Math.round(brand.rating!)} />)}
+          </div>
+          <span className="text-xs font-black text-gray-900">{brand.rating!.toFixed(1)}</span>
+          {brand.total_reviews != null && <span className="text-[10px] text-gray-400 font-bold uppercase">({brand.total_reviews} reviews)</span>}
+        </div>
+      )}
+      {hasLocation && (
+        <div className="space-y-2">
+          {brand.city_display && <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase tracking-tight"><MapPinIcon className="w-3.5 h-3.5 text-gray-300" /> {brand.city_display}</div>}
+          {brand.national_shipping && <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase tracking-tight"><TruckIcon className="w-3.5 h-3.5 text-gray-300" /> Envíos Nacionales</div>}
+        </div>
+      )}
+      {hasSchedule && (
+        <div className="pt-2 border-t border-gray-50">
+          <p className="text-[9px] font-black uppercase text-gray-300 tracking-[0.2em] mb-3">Horario</p>
+          <div className="space-y-1.5">
+            {scheduleEntries.map(([day, hours]) => (
+              <div key={day} className="flex justify-between items-center text-[10px]">
+                <span className="text-gray-400 font-medium uppercase">{day}</span>
+                <span className="text-gray-900 font-black">{hours}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -173,7 +219,10 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
             </div>
             <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} />
           </div>
-          <div className="mt-4 flex flex-col items-center gap-2">
+          
+          <EditorialInfo brand={brand} primaryColor={primary} />
+
+          <div className="mt-6 flex flex-col items-center gap-2">
             <p className="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Impulsado por Look<span className="text-[#FF5C3A]">itry</span> AI</p>
           </div>
         </div>

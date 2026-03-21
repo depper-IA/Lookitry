@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
-import { BrandData, ProductData, WhatsAppIcon, WhatsAppFAB, LandingFooter, BrandLogo, ProductImage, ProductBadge, CoverImage } from './shared';
+import { BrandData, ProductData, WhatsAppIcon, WhatsAppFAB, LandingFooter, BrandLogo, ProductImage, ProductBadge, CoverImage, YouTubeIcon, XIcon } from './shared';
 
 // ── Iconos internos del template ─────────────────────────────────────────────
 function InstagramIcon({ className }: { className?: string }) {
@@ -30,6 +30,14 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
+function StarIcon({ className, filled }: { className?: string; filled?: boolean }) {
+  return (
+    <svg className={className} fill={filled ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+    </svg>
+  );
+}
+
 // ── Sub-componentes ──────────────────────────────────────────────────────────
 
 function ProbadorNav({ brand }: { brand: BrandData }) {
@@ -38,6 +46,8 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
     instagram: <InstagramIcon className="w-3 h-3" />,
     facebook:  <FacebookIcon  className="w-3 h-3" />,
     tiktok:    <TikTokIcon    className="w-3 h-3" />,
+    youtube:   <YouTubeIcon   className="w-3 h-3" />,
+    x:         <XIcon         className="w-3 h-3" />,
   };
   const primary = brand.primary_color || '#FF5C3A';
   return (
@@ -60,10 +70,10 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
         )}
       </div>
       {entries.length > 0 && (
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 overflow-x-auto custom-scrollbar pb-1">
           {entries.map(([platform, url]) => (
             <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
-              className="w-7 h-7 rounded-full border flex items-center justify-center transition-colors hover:border-current"
+              className="w-7 h-7 rounded-full border flex items-center justify-center transition-colors hover:border-current shrink-0"
               style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)' }}>
               {icons[platform.toLowerCase()] ?? null}
             </a>
@@ -168,6 +178,41 @@ function ProbadorProducts({ products, primaryColor, ctaText, onProductClick, sel
   );
 }
 
+function ProbadorInfo({ brand }: { brand: BrandData }) {
+  const DAYS_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  const scheduleEntries = brand.schedule
+    ? DAYS_ORDER.filter(d => d in brand.schedule!).map(d => [d, brand.schedule![d]] as [string, string])
+    : [];
+  if (scheduleEntries.length === 0 && !brand.city_display) return null;
+
+  return (
+    <section className="py-12 px-6 bg-gray-50 border-t border-gray-100">
+      <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
+        {brand.city_display && (
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Ubicación</p>
+            <p className="text-sm text-gray-700 font-bold italic uppercase">{brand.city_display}</p>
+            {brand.national_shipping && <p className="text-[10px] text-emerald-500 font-black mt-2 uppercase">✓ Envíos nacionales activos</p>}
+          </div>
+        )}
+        {scheduleEntries.length > 0 && (
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Horarios</p>
+            <div className="space-y-1.5">
+              {scheduleEntries.map(([day, hours]) => (
+                <div key={day} className="flex justify-between items-center text-[10px] border-b border-gray-200 pb-1 last:border-0">
+                  <span className="text-gray-500 font-medium uppercase">{day}</span>
+                  <span className="text-gray-900 font-black">{hours}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
   const primary = brand.primary_color || '#FF5C3A';
   const [selectedId, setSelectedId] = useState<string | null>(products?.[0]?.id ?? null);
@@ -201,6 +246,8 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
           </div>
         </div>
       </section>
+
+      <ProbadorInfo brand={brand} />
 
       <footer className="py-12 px-6 text-center border-t border-gray-100 bg-white">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
