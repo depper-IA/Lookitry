@@ -4,20 +4,17 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 
 ---
 
-## 21 de Marzo, 2026 — Refinamiento Premium del Template Clásico
+## 21 de Marzo, 2026 — Corrección de Errores y Ajustes de Diseño Finales
 
 ### ✅ Cambios Aplicados
-1. **Optimización de Escala Visual (Template Clásico):**
-   - **Textos Equilibrados:** Reducción de los tamaños de fuente en Hero y títulos de sección (máximo `text-5xl` y `text-4xl`) para un look más institucional y sofisticado.
-   - **Descripciones Legibles:** Ajuste de las descripciones a `text-sm` para mejorar la densidad de información y el balance visual.
-2. **Sincronización de Mockups (Selector):**
-   - **Wireframe Actualizado:** Rediseñado el icono visual del Template Clásico en el editor para reflejar su estructura real de Header, Hero lateral y pasos informativos.
-3. **Mejoras de Integridad:**
-   - **Fix Responsive:** Asegurado el comportamiento fluido de los contenedores en todos los breakpoints, eliminando desbordamientos de texto.
-   - **Sincronización Real-Time:** Verificado que todos los cambios en fuentes y colores se apliquen instantáneamente en el previsualizador sin latencia.
+1. **Corrección Crítica en `layout.tsx`:**
+   - Solucionado el error de referencia donde se intentaban usar variables de fuente eliminadas (`inter`, `montserrat`). Ahora utiliza correctamente `spaceMono` y `syne`.
+2. **Integridad de Fuentes:**
+   - Verificado que las nuevas fuentes (Jakarta, Playfair, Space Mono y Syne) estén correctamente inyectadas en el HTML global.
+3. **Sincronización de Base de Datos:**
+   - Recordatorio: Ejecutar los comandos SQL para `landing_font` y `widget_bg_color` en Supabase para habilitar el guardado persistente.
 
 ### ⏳ Tareas en Proceso / Pendientes
-- **Ejecución SQL:** Pendiente ejecutar `ALTER TABLE brands ADD COLUMN landing_font TEXT DEFAULT 'font-jakarta';` en Supabase.
 - **Pruebas de PayPal:** Verificar el flujo completo de checkout con PayPal en producción.
 - **Breadcrumbs en Legales:** Aplicar y verificar físicamente la persistencia de breadcrumbs en `terminos` y `politicas-privacidad`.
 
