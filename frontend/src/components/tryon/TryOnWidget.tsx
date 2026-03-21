@@ -10,6 +10,7 @@ import type { TryOnConfigResponse } from '@/types';
 interface TryOnWidgetProps {
   brandSlug: string;
   isEmbed?: boolean;
+  initialProductId?: string | null;
 }
 
 type Step = 'upload' | 'select' | 'generating' | 'result';
@@ -162,7 +163,7 @@ function FriendlyProductSelector({
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
-export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
+export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = null }: TryOnWidgetProps) {
   const [step, setStep] = useState<Step>('upload');
   const [config, setConfig] = useState<TryOnConfigResponse | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
@@ -213,12 +214,18 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
       const data = await tryonService.getConfig(brandSlug);
       setConfig(data);
       setError(null);
+
+      // Pre-seleccionar producto si viene por props
+      if (initialProductId && data.products) {
+        const found = data.products.find((p: any) => p.id === initialProductId);
+        if (found) setSelectedProduct(found);
+      }
     } catch (err: any) {
       setError(err.message || 'Error al cargar');
     } finally {
       setLoading(false);
     }
-  }, [brandSlug]);
+  }, [brandSlug, initialProductId]);
 
   useEffect(() => { loadConfig(); }, [loadConfig]);
 

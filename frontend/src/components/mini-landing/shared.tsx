@@ -101,7 +101,7 @@ export function LandingFooter({ primaryColor, footerUrl }: { primaryColor: strin
   return (
     <footer className="py-12 px-6 text-center border-t border-gray-100 bg-white">
       <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-        Probador virtual impulsado por <a href={footerUrl || '#'} className="hover:opacity-70 transition-opacity" style={{ color: primaryColor }}>Lookitry IA</a>
+        Probador virtual impulsado por <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
       </p>
     </footer>
   );
