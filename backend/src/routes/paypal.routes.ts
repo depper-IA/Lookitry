@@ -12,6 +12,6 @@ router.get('/checkout-url', optionalAuth, controller.getCheckoutUrl);
 
 // POST /api/payments/paypal/capture
 // Captura el pago después de la aprobación del usuario
-router.post('/capture', controller.captureOrder);
+router.post('/capture', controller.capturePayment);
 
 export default router;

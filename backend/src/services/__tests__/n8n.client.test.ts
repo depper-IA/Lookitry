@@ -32,10 +32,10 @@ describe('N8nClient', () => {
 
   describe('callTryOnWebhook', () => {
     const mockPayload: N8nWebhookPayload = {
-      brandId: 'brand-123',
-      productId: 'product-456',
-      selfieBase64: 'base64-encoded-image-data',
-      productImageUrl: 'https://example.com/product.jpg',
+      brand_id: 'brand-123',
+      product_id: 'product-456',
+      selfie_url: 'https://example.com/selfie.jpg',
+      product_image_url: 'https://example.com/product.jpg',
       prompt: 'Create a photorealistic image',
     };
 
@@ -63,10 +63,10 @@ describe('N8nClient', () => {
       expect(mockedAxios.post).toHaveBeenCalledWith(
         'https://n8n.test.com/webhook/test',
         {
-          brand_id: mockPayload.brandId,
-          product_id: mockPayload.productId,
-          selfie_base64: mockPayload.selfieBase64,
-          product_image_url: mockPayload.productImageUrl,
+          brand_id: mockPayload.brand_id,
+          product_id: mockPayload.product_id,
+          selfie_url: mockPayload.selfie_url,
+          product_image_url: mockPayload.product_image_url,
           prompt: mockPayload.prompt,
         },
         {

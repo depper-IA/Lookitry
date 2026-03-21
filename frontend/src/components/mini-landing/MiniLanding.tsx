@@ -1,32 +1,14 @@
 'use client';
 
-<<<<<<< HEAD
-import { TemplateClassic } from './TemplateClassic';
-import { TemplateEditorial } from './TemplateEditorial';
-import { TemplateModerno } from './TemplateModerno';
-import type { BrandData, ProductData } from './shared';
-
-interface MiniLandingProps {
-  brandSlug: string;
-  initialData: { brand: BrandData; products: ProductData[] } | null;
-  footerUrl?: string;
-}
-
-export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingProps) {
-  if (!initialData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-600">Cargando...</p>
-=======
 import { useState, useEffect } from 'react';
 import { TemplateClassic } from './TemplateClassic';
 import { TemplateEditorial } from './TemplateEditorial';
 import { TemplateModerno } from './TemplateModerno';
-import { BrandData, ProductData, MiniLandingProps } from './shared';
+import type { BrandData, ProductData, MiniLandingProps } from './shared';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
-export default function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingProps) {
+export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingProps) {
   const [data, setData] = useState<{ brand: BrandData; products: ProductData[] } | null>(initialData);
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
@@ -55,28 +37,10 @@ export default function MiniLanding({ brandSlug, initialData, footerUrl }: MiniL
       <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center gap-4">
         <div className="w-12 h-12 border-4 border-[#FF5C3A] border-t-transparent rounded-full animate-spin" />
         <p className="text-[#FF5C3A] font-bold tracking-widest uppercase text-xs animate-pulse">Cargando experiencia...</p>
->>>>>>> e173c4b (refactor: restaurar division de mini-landing en templates independientes (Classic, Editorial, Moderno))
       </div>
     );
   }
 
-<<<<<<< HEAD
-  const { brand, products } = initialData;
-  const template = brand.landing_template || 'classic';
-
-  // Renderizar el template correspondiente
-  switch (template) {
-    case 'editorial':
-      return <TemplateEditorial brand={brand} products={products} brandSlug={brandSlug} footerUrl={footerUrl} />;
-    
-    case 'moderno':
-      return <TemplateModerno brand={brand} products={products} brandSlug={brandSlug} footerUrl={footerUrl} />;
-    
-    case 'classic':
-    default:
-      return <TemplateClassic brand={brand} products={products} brandSlug={brandSlug} footerUrl={footerUrl} />;
-  }
-=======
   if (error || !data) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center">
@@ -93,15 +57,18 @@ export default function MiniLanding({ brandSlug, initialData, footerUrl }: MiniL
   const { brand, products } = data;
   const template = brand.landing_template || 'classic';
 
-  // Router de templates
-  if (template === 'editorial') {
-    return <TemplateEditorial brandSlug={brandSlug} brand={brand} products={products} footerUrl={footerUrl} />;
+  // Renderizar el template correspondiente
+  switch (template) {
+    case 'editorial':
+      return <TemplateEditorial brand={brand} products={products} brandSlug={brandSlug} footerUrl={footerUrl} />;
+    
+    case 'moderno':
+    case 'probador':
+      return <TemplateModerno brand={brand} products={products} brandSlug={brandSlug} footerUrl={footerUrl} />;
+    
+    case 'classic':
+    default:
+      return <TemplateClassic brand={brand} products={products} brandSlug={brandSlug} footerUrl={footerUrl} />;
   }
-
-  if (template === 'moderno' || (template as string) === 'probador') {
-    return <TemplateModerno brandSlug={brandSlug} brand={brand} products={products} footerUrl={footerUrl} />;
-  }
-
-  return <TemplateClassic brandSlug={brandSlug} brand={brand} products={products} footerUrl={footerUrl} />;
->>>>>>> e173c4b (refactor: restaurar division de mini-landing en templates independientes (Classic, Editorial, Moderno))
 }
+

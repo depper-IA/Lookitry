@@ -38,6 +38,8 @@ describe('NotificationService', () => {
       logo: null,
       primary_color: '#000000',
       secondary_color: '#ffffff',
+      header_color: null,
+      custom_domain: null,
       widget_template: null,
       button_text: null,
       welcome_message: null,

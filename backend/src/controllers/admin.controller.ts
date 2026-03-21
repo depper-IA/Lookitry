@@ -681,7 +681,7 @@ export const createAdmin = async (req: any, res: Response) => {
     const admin = await adminService.createAdmin({ email, password, name, permissions });
 
     // Enviar email de bienvenida al nuevo admin (sin bloquear la respuesta)
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pruebalo.wilkiedevs.com';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://pruebalo.wilkiedevs.com');
     const isSuperadmin = !permissions || permissions.length === 0;
     const permissionsList = isSuperadmin
       ? 'Acceso total (superadmin)'
@@ -949,7 +949,7 @@ export const sendBrandResetEmail = async (req: any, res: Response) => {
       .update({ reset_token: token, reset_token_expires_at: expiresAt.toISOString() })
       .eq('id', brand.id);
 
-    const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+    const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://pruebalo.wilkiedevs.com');
     const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
 
     await emailService.sendEmail({
