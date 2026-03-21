@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 // ── Tipos compartidos ─────────────────────────────────────────────────────────
 export interface BrandData {
@@ -33,6 +34,9 @@ export interface BrandData {
   cover_overlay_opacity?: number | null;
   show_brand_name?: boolean | null;
   header_color?: string | null;
+  // Metadata extendida del servidor
+  is_preview_expired?: boolean;
+  preview_timer_seconds?: number;
 }
 
 export interface ProductData {
@@ -51,6 +55,58 @@ export interface MiniLandingProps {
   footerUrl?: string;
 }
 
+// ── Componentes Auxiliares Compartidos ────────────────────────────────────────
+
+export function BrandLogo({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
+  if (!src) return null;
+  return <img src={src} alt={alt} className={className} />;
+}
+
+export function CoverImage({ src, alt, className, style }: { src?: string | null; alt: string; className?: string; style?: React.CSSProperties }) {
+  if (!src) return null;
+  return <div className={className} style={{ ...style, backgroundImage: `url(${src})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />;
+}
+
+export function ProductImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  return (
+    <div className={`relative ${className}`}>
+      <Image src={src} alt={alt} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+    </div>
+  );
+}
+
+export function ProductBadge({ badge }: { badge: string }) {
+  return (
+    <span className="px-2 py-0.5 rounded-full bg-white/90 backdrop-blur-sm text-[9px] font-black uppercase tracking-widest text-black shadow-sm border border-black/5">
+      {badge}
+    </span>
+  );
+}
+
+export function WhatsAppFAB({ phone, message }: { phone: string; message?: string | null }) {
+  const clean = phone.replace(/\D/g, '');
+  const msg = message ? `?text=${encodeURIComponent(message)}` : '';
+  return (
+    <a 
+      href={`https://wa.me/${clean}${msg}`}
+      target="_blank" rel="noopener noreferrer"
+      className="fixed bottom-6 left-6 z-50 w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-2xl hover:scale-110 transition-transform active:scale-95"
+    >
+      <WhatsAppIcon className="w-7 h-7" />
+    </a>
+  );
+}
+
+export function LandingFooter({ primaryColor, footerUrl }: { primaryColor: string; footerUrl?: string }) {
+  return (
+    <footer className="py-12 px-6 text-center border-t border-gray-100 bg-white">
+      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
+        Probador virtual impulsado por <a href={footerUrl || '#'} className="hover:opacity-70 transition-opacity" style={{ color: primaryColor }}>Lookitry IA</a>
+      </p>
+    </footer>
+  );
+}
+
 // ── Iconos compartidos ────────────────────────────────────────────────────────
 export function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -59,4 +115,3 @@ export function WhatsAppIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
