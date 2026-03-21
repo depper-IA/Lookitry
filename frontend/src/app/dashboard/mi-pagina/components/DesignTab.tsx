@@ -11,10 +11,11 @@ import {
   Clock, 
   Share2, 
   Type, 
-  MousePointer2,
+  MousePointer2, 
   Trash2,
   Eye,
-  EyeOff
+  EyeOff,
+  Plus
 } from 'lucide-react';
 
 interface DesignTabProps {
@@ -39,6 +40,8 @@ interface DesignTabProps {
   nationalShipping: boolean; setNationalShipping: (v: boolean) => void;
   showBrandName: boolean; setShowBrandName: (v: boolean) => void;
   primaryColor: string; setPrimaryColor: (v: string) => void;
+  widgetBgColor: string; setWidgetBgColor: (v: string) => void;
+  landingFont: string; setLandingFont: (v: string) => void;
   rating: string; setRating: (v: string) => void;
   totalReviews: string; setTotalReviews: (v: string) => void;
   schedule: Record<string, string>; setSchedule: (v: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
@@ -54,7 +57,7 @@ export function DesignTab(props: DesignTabProps) {
     youtube, setYoutube, x, setX,
     cityDisplay, setCityDisplay, nationalShipping, setNationalShipping,
     showBrandName, setShowBrandName,
-    primaryColor, setPrimaryColor, headerColor, setHeaderColor, rating, setRating, totalReviews, setTotalReviews,
+    primaryColor, setPrimaryColor, widgetBgColor, setWidgetBgColor, landingFont, setLandingFont, headerColor, setHeaderColor, rating, setRating, totalReviews, setTotalReviews,
     schedule, setSchedule,
   } = props;
 
@@ -113,7 +116,37 @@ export function DesignTab(props: DesignTabProps) {
               <input type="text" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="flex-1 bg-transparent border-0 text-sm font-mono text-[var(--text-primary)] outline-none" />
             </div>
           </div>
-          <div className="flex items-center gap-4 px-2">
+          <div className="space-y-2">
+            <label className={labelStyle}>Tipografía del Sitio</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id: 'font-jakarta', name: 'Jakarta', desc: 'SaaS / Moderna', class: 'font-jakarta' },
+                { id: 'font-playfair', name: 'Playfair', desc: 'Lujo / Elegante', class: 'font-playfair' },
+                { id: 'font-tech', name: 'Tech', desc: 'Código / Geek', class: 'font-tech' },
+                { id: 'font-syne', name: 'Syne', desc: 'Artística / Bold', class: 'font-syne' },
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setLandingFont(f.id)}
+                  className={`px-4 py-2 rounded-xl border transition-all text-left group ${landingFont === f.id ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 text-[#FF5C3A]' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'}`}
+                >
+                  <span className={`block text-xs font-bold ${f.class}`}>{f.name}</span>
+                  <span className="text-[8px] opacity-60 uppercase font-black tracking-tighter">{f.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          <div className="space-y-2">
+            <label className={labelStyle}>Fondo Sección Probador</label>
+            <div className="flex items-center gap-3 bg-[var(--bg-input)] p-2 rounded-2xl border border-[var(--border-color)]">
+              <input type="color" value={widgetBgColor || '#0a0a0a'} onChange={e => setWidgetBgColor(e.target.value)} className="w-12 h-12 rounded-xl overflow-hidden cursor-pointer border-0 bg-transparent" />
+              <input type="text" value={widgetBgColor} onChange={e => setWidgetBgColor(e.target.value)} placeholder="#0a0a0a" className="flex-1 bg-transparent border-0 text-sm font-mono text-[var(--text-primary)] outline-none" />
+            </div>
+          </div>
+          <div className="flex items-center gap-4 px-2 pt-6">
             <button 
               onClick={() => setShowBrandName(!showBrandName)}
               className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all w-full ${showBrandName ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 text-[var(--text-primary)]' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)]'}`}
@@ -317,8 +350,8 @@ export function DesignTab(props: DesignTabProps) {
                 { id: 'Instagram', val: instagram, set: setInstagram, color: '#E4405F' },
                 { id: 'Facebook', val: facebook, set: setFacebook, color: '#1877F2' },
                 { id: 'TikTok', val: tiktok, set: setTiktok, color: '#000000' },
-                { id: 'YouTube', val: (props as any).youtube || '', set: (props as any).setYoutube, color: '#FF0000' },
-                { id: 'X', val: (props as any).x || '', set: (props as any).setX, color: '#000000' }
+                { id: 'YouTube', val: youtube, set: setYoutube, color: '#FF0000' },
+                { id: 'X', val: x, set: setX, color: '#000000' }
               ].map(plat => (
                 <div key={plat.id} className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 pl-4 rounded-2xl border border-[var(--border-color)] focus-within:border-[#FF5C3A]/30 transition-all">
                   <span className="text-[9px] font-black uppercase text-[var(--text-muted)] w-16">{plat.id === 'X' ? 'X (Twitter)' : plat.id}</span>

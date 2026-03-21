@@ -44,6 +44,11 @@
   --bg-input: #0f0f0f;
 }
 
+.font-jakarta { font-family: var(--font-jakarta), sans-serif; }
+.font-playfair { font-family: var(--font-playfair), serif; }
+.font-tech { font-family: var(--font-tech), monospace; }
+.font-syne { font-family: var(--font-syne), sans-serif; }
+
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 body {
   font-family: var(--font-dm-sans, 'DM Sans', sans-serif);

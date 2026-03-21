@@ -326,7 +326,7 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl }: { bra
       <ClassicSteps primaryColor={primary} />
       <ClassicProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} />
       
-      <section id="probador" className="py-20 px-4 md:px-6 bg-[#0a0a0a]">
+      <section id="probador" className="py-20 px-4 md:px-6" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
         <div className="max-w-4xl mx-auto space-y-12 text-center">
           <div className="space-y-4">
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF5C3A]">Probador Virtual Premium</span>
