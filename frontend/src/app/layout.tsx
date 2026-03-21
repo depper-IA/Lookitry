@@ -126,7 +126,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${plusJakarta.variable} ${dmSans.variable} ${inter.variable} ${montserrat.variable} ${playfair.variable}`}>
+    <html lang="es" className={`${plusJakarta.variable} ${dmSans.variable} ${spaceMono.variable} ${syne.variable} ${playfair.variable}`}>
       <head>
         {/* fb:app_id requerido por Facebook/WhatsApp scraper */}
         <meta property="fb:app_id" content="966242223397117" />
