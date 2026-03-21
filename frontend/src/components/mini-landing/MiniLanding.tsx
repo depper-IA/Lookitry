@@ -19,21 +19,19 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
 
   useEffect(() => {
     const processData = (result: any) => {
+      if (!result) return;
       setData(result);
       
-      // 1. Bloqueo definitivo si el servidor dice que expiró
+      // Bloqueo por expiración (servidor)
       if (result.brand.is_preview_expired) {
         setIsBlocked(true);
         setTimeLeft(0);
         return;
       }
 
-      // 2. Si no ha expirado y no ha pagado, manejar timer local sincronizado con creación
+      // Lógica de timer para previsualización
       if (!result.brand.has_landing_page) {
         const timerDuration = result.brand.preview_timer_seconds || 60;
-        
-        // Usar localStorage solo para mantener la referencia del "inicio de sesión" si se desea, 
-        // pero el servidor es la fuente de verdad final.
         const savedEnd = localStorage.getItem(`landing_preview_end_${brandSlug}`);
         const now = Date.now();
         
@@ -45,13 +43,20 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
           localStorage.setItem(`landing_preview_end_${brandSlug}`, (now + timerDuration * 1000).toString());
           setTimeLeft(timerDuration);
         }
+      } else {
+        // Si ya pagó, resetear estados de bloqueo
+        setIsBlocked(false);
+        setTimeLeft(null);
       }
     };
 
-    if (!initialData) {
+    if (initialData) {
+      processData(initialData);
+      setLoading(false);
+    } else {
       const fetchData = async () => {
         try {
-          const res = await fetch(`${API_URL}/api/pruebalo/${brandSlug}`);
+          const res = await fetch(`${API_URL}/api/pruebalo/${brandSlug}?t=${Date.now()}`);
           if (!res.ok) throw new Error('No se pudo cargar la información de la marca');
           const result = await res.json();
           processData(result);
@@ -63,9 +68,6 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
         }
       };
       fetchData();
-    } else {
-      processData(initialData);
-      setLoading(false);
     }
   }, [brandSlug, initialData]);
 
@@ -110,7 +112,11 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
   }
 
   const { brand, products } = data;
-  const template = brand.landing_template || 'classic';
+  const rawTemplate = brand.landing_template || 'classic';
+  const template = rawTemplate === 'probador' ? 'moderno' : rawTemplate;
+
+  // Debug para verificar qué template llega en localhost
+  console.log(`[MiniLanding] Renderizando template: ${template} para la marca: ${brand.name}`);
 
   return (
     <div className="relative">
