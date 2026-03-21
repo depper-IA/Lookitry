@@ -9,6 +9,7 @@ import { N8nClient } from '../services/n8n.client';
 import { PaymentSettingsService } from '../services/paymentSettings.service';
 import { FeedbackService, GenerationErrorType } from '../services/feedback.service';
 import { PromptRagService } from '../services/prompt-rag.service';
+import { UploadService } from '../services/upload.service';
 import { buildCategoryRulesBlock, getPromptRules } from '../config/prompt-rules';
 import {
   NotFoundError,
@@ -26,6 +27,7 @@ const n8nClient = new N8nClient();
 const paymentSettingsService = new PaymentSettingsService();
 const feedbackService = new FeedbackService();
 const promptRagService = new PromptRagService();
+const uploadService = new UploadService();
 
 export class PruebaloController {
   /**
@@ -105,6 +107,7 @@ export class PruebaloController {
         cover_bg_color: (brand as any).cover_bg_color ?? null,
         cover_overlay_opacity: (brand as any).cover_overlay_opacity ?? 0.55,
         show_brand_name: (brand as any).show_brand_name ?? true,
+        header_color: (brand as any).header_color ?? null,
         plan: brand.plan ?? 'BASIC',
       },
       footer_brand_url: footerBrandUrl,
@@ -181,8 +184,12 @@ export class PruebaloController {
       throw new ValidationError('El archivo no debe superar 5MB');
     }
 
-    // 5. Convertir imagen a base64
-    const selfieBase64 = selfieFile.buffer.toString('base64');
+    // 5. Subir imagen a MinIO en carpeta temporal
+    const uploadResult = await uploadService.uploadImageBuffer({
+      buffer: selfieFile.buffer,
+      filename: selfieFile.originalname || 'selfie.jpg',
+      temporary: true,
+    });
 
     // 6. Crear registro en tabla generations (status PENDING)
     const generation = await generationsService.createGeneration({
@@ -221,7 +228,7 @@ export class PruebaloController {
       const n8nResult = await n8nClient.callTryOnWebhook({
         brandId: brand.id,
         productId: product.id,
-        selfieBase64,
+        selfieUrl: uploadResult.url,
         productImageUrl: product.image_url,
         prompt,
       });

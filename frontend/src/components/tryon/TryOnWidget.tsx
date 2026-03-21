@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SelfieUploader } from './SelfieUploader';
 import { GenerationLoader } from './GenerationLoader';
 import { ResultDisplay } from './ResultDisplay';
@@ -22,11 +22,22 @@ interface Product {
   category: string;
 }
 
+/** Texto de tiempo estimado mostrado debajo del botón de generación */
+const GENERATION_TIME_HINT = 'Puede tardar unos 30 segundos';
+/** Texto mostrado cuando el resultado ya fue generado antes */
+const GENERATION_CACHED_HINT = 'Ya generado — sin costo adicional';
+
 function templateToLayout(template?: string): Layout {
-  if (template === 'modern') return 'sidebar';
-  if (template === 'bold') return 'centered';
-  if (template === 'bare') return 'bare';
-  return 'top-bar';
+  switch (template) {
+    case 'modern': return 'sidebar';
+    case 'bold':   return 'centered';
+    case 'bare':   return 'bare';
+    case 'minimal':
+    case undefined: return 'top-bar';
+    default:
+      console.warn(`[TryOnWidget] Template desconocido: "${template}". Usando top-bar.`);
+      return 'top-bar';
+  }
 }
 
 // ── Barra de progreso de pasos ────────────────────────────────────────────────
@@ -166,58 +177,37 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
   const [generatedProducts, setGeneratedProducts] = useState<Map<string, string>>(new Map());
 
   // Cargar productos generados previos de localStorage al montar o cambiar selfie
+  // Fix #6: Solo guardamos/leemos el mapa de IDs→URL, NO la selfie base64 (evita QuotaExceededError)
   useEffect(() => {
     if (!brandSlug) return;
     const key = `tryon_gen_${brandSlug}`;
     const saved = localStorage.getItem(key);
     if (saved) {
       try {
-        const { selfie, products } = JSON.parse(saved);
-        // Solo restaurar si la selfie es la misma (o si no hay selfie aún)
-        if (!selfiePreview || selfie === selfiePreview) {
-          setGeneratedProducts(new Map(Object.entries(products)));
-        } else if (selfiePreview && selfie !== selfiePreview) {
-          // Si la selfie cambió, limpiar storage para esta marca
-          localStorage.removeItem(key);
-          setGeneratedProducts(new Map());
-        }
+        const { products } = JSON.parse(saved);
+        if (products) setGeneratedProducts(new Map(Object.entries(products)));
       } catch (e) {
         console.error('Error parsing generated products', e);
+        localStorage.removeItem(key);
       }
     }
-  }, [brandSlug, selfiePreview]);
+  }, [brandSlug]);
 
   // Guardar productos generados en localStorage cuando cambien
+  // Fix #6: Ya no persiste la selfie base64
   useEffect(() => {
     if (!brandSlug || generatedProducts.size === 0) return;
     const key = `tryon_gen_${brandSlug}`;
-    const data = {
-      selfie: selfiePreview,
-      products: Object.fromEntries(generatedProducts)
-    };
-    localStorage.setItem(key, JSON.stringify(data));
-  }, [generatedProducts, brandSlug, selfiePreview]);
+    try {
+      localStorage.setItem(key, JSON.stringify({ products: Object.fromEntries(generatedProducts) }));
+    } catch (e) {
+      // QuotaExceededError: ignorar silenciosamente, la funcionalidad sigue
+      console.warn('[TryOnWidget] localStorage lleno, no se pudo guardar caché de generaciones.', e);
+    }
+  }, [generatedProducts, brandSlug]);
 
-  useEffect(() => { loadConfig(); }, [brandSlug]);
-
-  useEffect(() => {
-    if (!isEmbed || !config) return;
-    window.parent?.postMessage({ type: 'TRYON_READY', data: { brandSlug, brandName: config.brand.name } }, '*');
-    const handleMessage = (e: MessageEvent) => { if (e.data.type === 'TRYON_RESET') handleReset(); };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [isEmbed, config, brandSlug]);
-
-  useEffect(() => {
-    if (!isEmbed) return;
-    const notifyHeight = () => window.parent?.postMessage({ type: 'TRYON_RESIZE', data: { height: document.documentElement.scrollHeight } }, '*');
-    notifyHeight();
-    const observer = new ResizeObserver(notifyHeight);
-    observer.observe(document.body);
-    return () => observer.disconnect();
-  }, [isEmbed, step]);
-
-  const loadConfig = async () => {
+  // Fix #2: loadConfig con useCallback para evitar referencias obsoletas
+  const loadConfig = useCallback(async () => {
     try {
       setLoading(true);
       const data = await tryonService.getConfig(brandSlug);
@@ -228,10 +218,39 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [brandSlug]);
+
+  useEffect(() => { loadConfig(); }, [loadConfig]);
+
+  // Limpieza de memoria de la URL temporal en desmontaje
+  useEffect(() => {
+    return () => {
+      if (selfiePreview) URL.revokeObjectURL(selfiePreview);
+    };
+  }, [selfiePreview]);
+
+  // Fix #1: handleReset memoizado con useCallback — evita stale closure en el listener TRYON_RESET
+  const handleReset = useCallback(() => {
+    const key = `tryon_gen_${brandSlug}`;
+    localStorage.removeItem(key);
+    
+    setSelfiePreview(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+
+    setSelfieFile(null); setSelectedProduct(null);
+    setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false);
+    setGeneratedProducts(new Map());
+    setStep('upload');
+  }, [brandSlug]);
 
   const handleSelfieUpload = (file: File, preview: string) => {
-    setSelfieFile(file); setSelfiePreview(preview); setStep('select');
+    setSelfiePreview(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return preview;
+    });
+    setSelfieFile(file); setStep('select');
   };
 
   const handleProductSelect = (product: Product) => setSelectedProduct(product);
@@ -255,24 +274,39 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
       // Guardar en el mapa de generados
       setGeneratedProducts(prev => new Map(prev).set(selectedProduct.id, result.imageUrl));
       setStep('result');
-      if (isEmbed) window.parent?.postMessage({ type: 'TRYON_COMPLETE', data: { imageUrl: result.imageUrl, productId: selectedProduct.id, productName: selectedProduct.name, generationId: result.generationId, processingTime: result.processingTime } }, '*');
+      if (isEmbed) window.parent?.postMessage({ type: 'TRYON_COMPLETE', data: { imageUrl: result.imageUrl, productId: selectedProduct.id, productName: selectedProduct.name, generationId: result.generationId, processingTime: result.processingTime } }, EMBED_ORIGIN);
     } catch (err: any) {
       const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
       setErrorIsService(isService);
       setError(isService ? 'SERVICE_CREDITS_EXHAUSTED' : (err.message || 'Algo salió mal. Intenta de nuevo.'));
       setStep('select');
-      if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, '*');
+      if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, EMBED_ORIGIN);
     }
   };
 
-  const handleReset = () => {
-    const key = `tryon_gen_${brandSlug}`;
-    localStorage.removeItem(key);
-    setSelfieFile(null); setSelfiePreview(null); setSelectedProduct(null);
-    setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false);
-    setGeneratedProducts(new Map());
-    setStep('upload');
-  };
+  // Fix #4: postMessage seguro — usar origen del parent en vez de '*'
+  const EMBED_ORIGIN = typeof window !== 'undefined' && document.referrer
+    ? new URL(document.referrer).origin
+    : '*';
+
+  useEffect(() => {
+    if (!isEmbed || !config) return;
+    window.parent?.postMessage({ type: 'TRYON_READY', data: { brandSlug, brandName: config.brand.name } }, EMBED_ORIGIN);
+    const handleMessage = (e: MessageEvent) => { if (e.data.type === 'TRYON_RESET') handleReset(); };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isEmbed, config, brandSlug, handleReset, EMBED_ORIGIN]);
+
+  // Fix #8: ResizeObserver desacoplado del step — se conecta una sola vez
+  useEffect(() => {
+    if (!isEmbed) return;
+    const notifyHeight = () =>
+      window.parent?.postMessage({ type: 'TRYON_RESIZE', data: { height: document.documentElement.scrollHeight } }, EMBED_ORIGIN);
+    notifyHeight();
+    const observer = new ResizeObserver(notifyHeight);
+    observer.observe(document.body);
+    return () => observer.disconnect();
+  }, [isEmbed, EMBED_ORIGIN]);
 
   const primaryColor   = config?.brand.primaryColor   || '#6366f1';
   const secondaryColor = config?.brand.secondaryColor || '#f9fafb';
@@ -555,7 +589,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
                       {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
                     </button>
                     <p className="text-center text-xs text-gray-400 mt-2">
-                      {generatedProducts.has(selectedProduct.id) ? 'Ya generado — sin costo adicional' : 'Puede tardar unos 30 segundos'}
+                      {generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
                     </p>
                   </div>
                 )}
@@ -604,7 +638,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
                   {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
                 </button>
                 <p className="text-center text-xs text-gray-400 mt-2">
-                  {generatedProducts.has(selectedProduct.id) ? 'Ya generado — sin costo adicional' : 'Tarda unos 30 segundos'}
+                  {generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
                 </p>
               </div>
             )}
@@ -620,6 +654,27 @@ export function TryOnWidget({ brandSlug, isEmbed = false }: TryOnWidgetProps) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Fix #9: GenerateButton reutilizable — unifica el CTA de los 4 layouts
+function GenerateButton({
+  onClick, label, cachedHint, primaryColor,
+}: { onClick: () => void; label: string; cachedHint: boolean; primaryColor: string }) {
+  return (
+    <div className="sticky bottom-4">
+      <button
+        onClick={onClick}
+        className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
+        style={{ backgroundColor: primaryColor }}
+      >
+        {label}
+      </button>
+      <p className="text-center text-xs text-gray-400 mt-2">
+        {cachedHint ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
+      </p>
+    </div>
+  );
+}
+
 function BrandHeader({ config, primaryColor, onReset, showReset }: {
   config: TryOnConfigResponse; primaryColor: string; onReset: () => void; showReset: boolean;
 }) {

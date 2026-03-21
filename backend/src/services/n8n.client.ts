@@ -45,7 +45,7 @@ export class N8nClient {
         {
           brand_id: payload.brandId,
           product_id: payload.productId,
-          selfie_base64: payload.selfieBase64,
+          selfie_url: payload.selfieUrl,
           product_image_url: payload.productImageUrl,
           prompt: payload.prompt,
         },

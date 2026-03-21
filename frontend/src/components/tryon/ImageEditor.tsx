@@ -172,7 +172,7 @@ export function ImageEditor({ src, onConfirm, onCancel, primaryColor = '#6366f1'
     outCanvas.toBlob(blob => {
       if (!blob) return;
       const file = new File([blob], 'selfie-edited.jpg', { type: 'image/jpeg' });
-      const preview = outCanvas.toDataURL('image/jpeg', 0.9);
+      const preview = URL.createObjectURL(blob);
       onConfirm(file, preview);
     }, 'image/jpeg', 0.9);
   };

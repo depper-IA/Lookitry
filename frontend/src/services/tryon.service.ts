@@ -1,6 +1,9 @@
-﻿import type { TryOnConfigResponse, GenerateTryOnDto, GenerateTryOnResponse } from '@/types';
+import type { TryOnConfigResponse, GenerateTryOnDto, GenerateTryOnResponse } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+
+/** Tiempo máximo (ms) que esperamos una respuesta del endpoint de generación */
+const GENERATION_TIMEOUT_MS = 95_000;
 
 class TryOnService {
   async getConfig(brandSlug: string): Promise<TryOnConfigResponse> {
@@ -42,7 +45,7 @@ class TryOnService {
     formData.append('selfie', data.selfieFile);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 95000);
+    const timeout = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
 
     try {
       const res = await fetch(`${API_URL}/api/pruebalo/${brandSlug}/generate`, {
