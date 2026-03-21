@@ -63,12 +63,24 @@ export class PruebaloController {
       throw new NotFoundError('Marca no encontrada');
     }
 
-    // Obtener productos activos de la marca
-    const products = await productsService.getProductsByBrand(brand.id);
-
-    // Obtener URL del footer desde configuración global
+    // Obtener configuración global de pagos y modal
     const paymentSettings = await paymentSettingsService.getSettings();
     const footerBrandUrl = paymentSettings.footer_brand_url || 'https://pruebalo.wilkiedevs.com';
+    const globalTimerSeconds = (paymentSettings as any).landing_preview_timer_seconds || 60;
+
+    // Calcular si la previsualización ha expirado (Inhackeable)
+    let isPreviewExpired = false;
+    if (!(brand as any).has_landing_page) {
+      const createdAt = new Date(brand.created_at).getTime();
+      const now = Date.now();
+      const expiryTime = createdAt + (globalTimerSeconds * 1000);
+      if (now > expiryTime) {
+        isPreviewExpired = true;
+      }
+    }
+
+    // Obtener productos activos de la marca (Solo si no ha expirado o si ya pagó)
+    const products = isPreviewExpired ? [] : await productsService.getProductsByBrand(brand.id);
 
     // Preparar respuesta con configuración visual y productos
     const response = {
@@ -99,9 +111,12 @@ export class PruebaloController {
         landing_template: (brand as any).landing_template ?? 'classic',
         schedule: (brand as any).schedule ?? null,
         slogan: (brand as any).slogan ?? null,
-        modal_title: (brand as any).modal_title ?? null,
-        modal_description: (brand as any).modal_description ?? null,
-        modal_features: (brand as any).modal_features ?? null,
+        // Configuración del modal (Desde settings globales o marca)
+        modal_title: (brand as any).modal_title || paymentSettings.landing_modal_title || 'Vista previa agotada',
+        modal_description: (brand as any).modal_description || paymentSettings.landing_modal_description || 'Tu tiempo de prueba ha terminado. Activa tu mini-landing para continuar.',
+        modal_features: (brand as any).modal_features || paymentSettings.landing_modal_features || ['URL personalizada', 'Catálogo IA ilimitado', 'Branding propio'],
+        preview_timer_seconds: globalTimerSeconds,
+        is_preview_expired: isPreviewExpired,
         logo_light: (brand as any).logo_light ?? null,
         logo_dark: (brand as any).logo_dark ?? null,
         cover_bg_color: (brand as any).cover_bg_color ?? null,

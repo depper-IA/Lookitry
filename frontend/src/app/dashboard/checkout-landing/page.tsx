@@ -33,17 +33,19 @@ export default function CheckoutLandingPage() {
     landingOriginalPrice: 900000, 
     trm: 3900,
     basicPrice: 150000,
-    proPrice: 250000
+    proPrice: 250000,
+    discounts: { meses_1: 0, meses_3: 5, meses_6: 10, meses_12: 15 } as Record<string, number>
   });
   const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
   
-  // Estado para usuarios que necesitan comprar un plan junto con la landing
+  // Estado de selección
   const hasActivePlan = brand?.plan === 'BASIC' || brand?.plan === 'PRO';
   const [selectedPlan, setSelectedPlan] = useState<'BASIC' | 'PRO'>(brand?.plan === 'PRO' ? 'PRO' : 'BASIC');
+  const [months, setMonths] = useState<number>(1);
   const [includePlan, setIncludePlan] = useState(!hasActivePlan);
 
   useEffect(() => {
-    // Cargar precios dinámicos
+    // Cargar precios y descuentos dinámicos
     Promise.all([
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payment-settings/public`).then(r => r.json()),
       fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?select=id,data`, {
@@ -55,6 +57,7 @@ export default function CheckoutLandingPage() {
     ]).then(([paySettings, pricingRows]) => {
       const basic = pricingRows.find((r: any) => r.id === 'basic')?.data?.precio_mensual_cop;
       const pro = pricingRows.find((r: any) => r.id === 'pro')?.data?.precio_mensual_cop;
+      const discounts = pricingRows.find((r: any) => r.id === 'descuentos_duracion')?.data;
       
       setPricing(prev => ({
         ...prev,
@@ -62,13 +65,20 @@ export default function CheckoutLandingPage() {
         landingOriginalPrice: paySettings.landingOriginalPrice || prev.landingOriginalPrice,
         trm: paySettings.trm || prev.trm,
         basicPrice: basic || prev.basicPrice,
-        proPrice: pro || prev.proPrice
+        proPrice: pro || prev.proPrice,
+        discounts: discounts || prev.discounts
       }));
     }).catch(() => {});
   }, []);
 
-  const planPrice = selectedPlan === 'PRO' ? pricing.proPrice : pricing.basicPrice;
-  const totalPrice = pricing.landingPrice + (includePlan ? planPrice : 0);
+  // Cálculos
+  const basePlanPrice = selectedPlan === 'PRO' ? pricing.proPrice : pricing.basicPrice;
+  const discountPct = pricing.discounts[`meses_${months}`] || 0;
+  const planSubtotal = (basePlanPrice * months);
+  const planDiscount = Math.round(planSubtotal * (discountPct / 100));
+  const planTotal = planSubtotal - planDiscount;
+  
+  const totalPrice = pricing.landingPrice + (includePlan ? planTotal : 0);
 
   const handlePagar = async () => {
     setLoading(true);
@@ -77,10 +87,9 @@ export default function CheckoutLandingPage() {
       const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
       const planToActivate = includePlan ? selectedPlan : 'LANDING_ONLY';
       
-      // La referencia ahora incluirá si es un combo
       const endpoint = paymentMethod === 'paypal' ? 'paypal' : 'wompi';
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/payments/${endpoint}/checkout-url?amount=${totalPrice}&plan=${planToActivate}&months=1&includes_landing=true&trm=${pricing.trm}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/payments/${endpoint}/checkout-url?amount=${totalPrice}&plan=${planToActivate}&months=${months}&includes_landing=true&trm=${pricing.trm}`,
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
       
@@ -95,27 +104,25 @@ export default function CheckoutLandingPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
-      {/* Encabezado */}
       <div>
         <h1 className="font-syne font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
           Activar Mini-landing
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-          {includePlan ? 'Selecciona tu plan y activa tu página profesional' : 'Personaliza tu probador virtual con branding propio'}
+          {includePlan ? 'Selecciona tu suscripción y activa tu página profesional' : 'Añade tu propia mini-landing a tu plan activo'}
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           
-          {/* SECCIÓN OBLIGATORIA: Selección de Plan (Solo para Trial/Inactivos) */}
+          {/* SECCIÓN 1: Selección de Plan */}
           {!hasActivePlan && (
-            <div className="p-6 rounded-3xl border space-y-4" style={{ backgroundColor: 'rgba(255,92,58,0.03)', borderColor: 'rgba(255,92,58,0.2)' }}>
-              <div className="flex items-center gap-2 mb-2">
+            <div className="p-6 rounded-3xl border space-y-6" style={{ backgroundColor: 'rgba(255,92,58,0.03)', borderColor: 'rgba(255,92,58,0.2)' }}>
+              <div className="flex items-center gap-2">
                 <IconAlert />
-                <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Paso 1: Elige un Plan de Suscripción</h3>
+                <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Paso 1: Elige tu Plan</h3>
               </div>
-              <p className="text-xs text-gray-400 mb-4">La mini-landing requiere un plan activo para funcionar.</p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
@@ -138,19 +145,39 @@ export default function CheckoutLandingPage() {
                   </button>
                 ))}
               </div>
+
+              {/* Selector de Meses */}
+              <div className="space-y-3">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-gray-500">Duración de la suscripción</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[1, 3, 6, 12].map(m => {
+                    const discount = pricing.discounts[`meses_${m}`] || 0;
+                    return (
+                      <button
+                        key={m}
+                        onClick={() => setMonths(m)}
+                        className={`py-3 px-2 rounded-xl border-2 text-center transition-all ${months === m ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 text-white' : 'border-gray-800 bg-black/20 text-gray-500'}`}
+                      >
+                        <p className="text-sm font-bold">{m} {m === 1 ? 'Mes' : 'Meses'}</p>
+                        {discount > 0 && <p className="text-[9px] font-black text-emerald-500">-{discount}% OFF</p>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
 
-          {/* SECCIÓN: Detalles de la Landing */}
+          {/* SECCIÓN 2: Detalles Landing */}
           <div className="p-6 rounded-3xl border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-            <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{hasActivePlan ? '¿Qué incluye la Mini-landing?' : 'Paso 2: Beneficios de tu nueva página'}</h3>
+            <h3 className="font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Beneficios de tu Mini-landing</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 'URL propia personalizada',
                 'Branding con tu logo y colores',
                 'Compatible con Ads e Instagram',
-                'Catálogo IA ilimitado (según plan)',
-                'Sin publicidad de Lookitry',
+                'Catálogo IA ilimitado',
+                'Sin publicidad externa',
                 'Optimización móvil premium'
               ].map(item => (
                 <div key={item} className="flex items-center gap-3">
@@ -161,9 +188,9 @@ export default function CheckoutLandingPage() {
             </div>
           </div>
 
-          {/* SECCIÓN: Método de Pago */}
+          {/* SECCIÓN 3: Pago */}
           <div className="p-6 rounded-3xl border space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-            <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Paso {hasActivePlan ? '2' : '3'}: Método de pago</h3>
+            <h3 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Elige tu método de pago</h3>
             <div className="flex gap-3">
               <button
                 onClick={() => setPaymentMethod('wompi')}
@@ -182,11 +209,7 @@ export default function CheckoutLandingPage() {
             </div>
           </div>
 
-          {error && (
-            <div className="p-4 bg-[#ef4444]10 border border-[#ef4444]20 text-[#ef4444] text-xs rounded-2xl">
-              {error}
-            </div>
-          )}
+          {error && <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-xs rounded-2xl">{error}</div>}
 
           <button
             onClick={handlePagar}
@@ -202,7 +225,7 @@ export default function CheckoutLandingPage() {
           </button>
         </div>
 
-        {/* COLUMNA DERECHA: Resumen de Compra */}
+        {/* RESUMEN */}
         <div className="space-y-6">
           <div className="p-6 rounded-3xl border space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
             <h3 className="font-bold text-sm border-b pb-3" style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}>Resumen</h3>
@@ -214,9 +237,17 @@ export default function CheckoutLandingPage() {
               </div>
               
               {includePlan && (
-                <div className="flex justify-between text-xs">
-                  <span style={{ color: 'var(--text-secondary)' }}>{selectedPlan === 'PRO' ? 'Plan Pro' : 'Plan Básico'} (1 mes)</span>
-                  <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(planPrice)}</span>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span style={{ color: 'var(--text-secondary)' }}>{selectedPlan === 'PRO' ? 'Plan Pro' : 'Plan Básico'} ({months} {months === 1 ? 'Mes' : 'Meses'})</span>
+                    <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(planSubtotal)}</span>
+                  </div>
+                  {planDiscount > 0 && (
+                    <div className="flex justify-between text-[10px] text-emerald-500 font-bold">
+                      <span>Descuento {discountPct}%</span>
+                      <span>-{formatCurrency(planDiscount)}</span>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -225,21 +256,12 @@ export default function CheckoutLandingPage() {
                 <span style={{ color: '#FF5C3A' }}>{formatCurrency(totalPrice)}</span>
               </div>
             </div>
-
-            <div className="pt-4">
-              <div className="p-3 rounded-xl bg-gray-900/50 border border-gray-800 flex items-start gap-2">
-                <IconCheck />
-                <p className="text-[10px] text-gray-400">Activación inmediata tras confirmar el pago.</p>
-              </div>
-            </div>
           </div>
 
           <div className="p-4 rounded-2xl border flex items-start gap-3" style={{ borderColor: 'var(--border-color)' }}>
-            <svg className="w-5 h-5 text-[#FF5C3A] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <svg className="w-5 h-5 text-[#FF5C3A] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             <p className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-              Al adquirir la mini-landing, aceptas que su funcionamiento depende de mantener una suscripción activa a Lookitry.
+              Acceso inmediato tras confirmar el pago. Los precios incluyen impuestos.
             </p>
           </div>
         </div>
