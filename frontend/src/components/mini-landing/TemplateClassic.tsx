@@ -3,7 +3,20 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
-import { BrandData, ProductData, WhatsAppIcon, WhatsAppFAB, BrandLogo, ProductImage, ProductBadge, CoverImage, YouTubeIcon, XIcon } from './shared';
+import { 
+  BrandData, 
+  ProductData, 
+  WhatsAppFAB, 
+  BrandLogo, 
+  ProductImage, 
+  ProductBadge, 
+  CoverImage, 
+  YouTubeIcon, 
+  XIcon, 
+  InstagramIcon, 
+  FacebookIcon, 
+  TikTokIcon 
+} from './shared';
 
 // ── Iconos internos del template ─────────────────────────────────────────────
 function ChevronDownIcon({ className }: { className?: string }) {
@@ -30,30 +43,90 @@ function StarIcon({ className, filled }: { className?: string; filled?: boolean 
   );
 }
 
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" />
+    </svg>
+  );
+}
+
+function XMarkIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
 // ── Sub-componentes ──────────────────────────────────────────────────────────
 
 function ClassicHeader({ brand, primaryColor, onScrollDown }: { brand: BrandData; primaryColor: string; onScrollDown: () => void }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleMenu = () => setMobileMenuOpen(!mobileMenuOpen);
+
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-8 h-16 md:h-20 flex items-center justify-between transition-all">
-      <div className="flex items-center gap-3">
-        {brand.logo ? (
-          <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-7 md:h-9 w-auto object-contain" />
-        ) : (
-          <span className="font-black text-base md:text-lg uppercase tracking-tighter" style={{ color: primaryColor }}>{brand.name}</span>
-        )}
+    <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md border-b border-gray-100 h-16 md:h-20 transition-all">
+      <div className="max-w-6xl mx-auto h-full px-4 md:px-8 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {brand.logo ? (
+            <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-7 md:h-9 w-auto object-contain" />
+          ) : (
+            <span className="font-black text-base md:text-lg uppercase tracking-tighter" style={{ color: primaryColor }}>{brand.name}</span>
+          )}
+        </div>
+
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-8">
+          <button onClick={onScrollDown} className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Catálogo</button>
+          <a href="#probador" className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Probador IA</a>
+          <a href="#contacto" className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Horarios</a>
+        </nav>
+
+        <div className="flex items-center gap-3 md:gap-0">
+          <button 
+            onClick={() => document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' })}
+            className="px-5 md:px-8 py-2 md:py-3 rounded-full text-white text-[10px] font-black uppercase tracking-widest shadow-xl transition-all hover:brightness-110 active:scale-95"
+            style={{ backgroundColor: primaryColor }}
+          >
+            Probar Ahora
+          </button>
+
+          {/* Mobile Menu Toggle */}
+          <button onClick={toggleMenu} className="md:hidden p-2 text-gray-600">
+            {mobileMenuOpen ? <XMarkIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
-      <nav className="hidden md:flex items-center gap-8">
-        <button onClick={onScrollDown} className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Catálogo</button>
-        <a href="#probador" className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Probador IA</a>
-        <a href="#contacto" className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Horarios</a>
-      </nav>
-      <button 
-        onClick={() => document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' })}
-        className="px-5 md:px-8 py-2 md:py-3 rounded-full text-white text-[10px] font-black uppercase tracking-widest shadow-xl transition-all hover:brightness-110 active:scale-95"
-        style={{ backgroundColor: primaryColor }}
-      >
-        Probar Ahora
-      </button>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-gray-100 shadow-2xl animate-in slide-in-from-top duration-300">
+          <nav className="flex flex-col p-6 gap-4">
+            <button 
+              onClick={() => { onScrollDown(); setMobileMenuOpen(false); }} 
+              className="text-xs font-black uppercase tracking-widest text-gray-600 text-left py-2 border-b border-gray-50"
+            >
+              Catálogo
+            </button>
+            <a 
+              href="#probador" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-xs font-black uppercase tracking-widest text-gray-600 text-left py-2 border-b border-gray-50"
+            >
+              Probador IA
+            </a>
+            <a 
+              href="#contacto" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-xs font-black uppercase tracking-widest text-gray-600 text-left py-2"
+            >
+              Horarios y Contacto
+            </a>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
@@ -69,7 +142,6 @@ function ClassicHero({ brand, primaryColor, onScrollDown }: { brand: BrandData; 
             Nueva tecnología de probador
           </div>
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tighter uppercase italic">
-
             {brand.name}<br />
             <span style={{ color: primaryColor }}>{brand.slogan || 'Colección 2026'}</span>
           </h1>
@@ -133,7 +205,6 @@ function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { 
         <div className="text-center mb-12 space-y-3">
           <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400">Colección de Temporada</span>
           <h2 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">Nuestros Productos</h2>
-
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {products.map(p => (
@@ -148,12 +219,12 @@ function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { 
                   {ctaText || 'Probar con IA'}
                 </button>
               </div>
-              <div className="p-6">
+              <div className="p-6 text-left">
                 <div className="flex justify-between items-start mb-1">
                   <p className="text-[9px] font-black uppercase tracking-widest text-[#FF5C3A]">{p.category}</p>
                   {p.price && <p className="text-xs font-black text-gray-900">${p.price.toLocaleString('es-CO')}</p>}
                 </div>
-                <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">{p.name}</h3>
+                <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight line-clamp-1">{p.name}</h3>
                 {p.description && <p className="text-[10px] text-gray-400 mt-1.5 line-clamp-2 leading-relaxed">{p.description}</p>}
               </div>
             </div>
@@ -174,6 +245,14 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
     }
   } catch(e) {}
 
+  const socialIcons: Record<string, any> = {
+    instagram: <InstagramIcon className="w-5 h-5" />,
+    facebook: <FacebookIcon className="w-5 h-5" />,
+    tiktok: <TikTokIcon className="w-5 h-5" />,
+    youtube: <YouTubeIcon className="w-5 h-5" />,
+    x: <XIcon className="w-5 h-5" />
+  };
+
   return (
     <footer id="contacto" className="bg-white pt-24 pb-12 px-6 border-t border-gray-100">
       <div className="max-w-6xl mx-auto">
@@ -182,17 +261,17 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
             <div className="flex items-center gap-3">
               {brand.logo ? <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-8 object-contain" /> : <span className="font-black text-2xl uppercase italic" style={{ color: primaryColor }}>{brand.name}</span>}
             </div>
-            <p className="text-sm text-gray-500 leading-relaxed font-medium italic max-w-sm">"{brand.brand_description || 'Moda y tecnología unidas para ofrecerte la mejor experiencia de compra virtual.'}"</p>
-            <div className="flex gap-3">
+            <p className="text-sm text-gray-500 leading-relaxed font-medium italic max-w-sm text-left">"{brand.brand_description || 'Moda y tecnología unidas para ofrecerte la mejor experiencia de compra virtual.'}"</p>
+            <div className="flex gap-3 justify-start">
               {brand.social_links && Object.entries(brand.social_links).filter(([,url])=>!!url).map(([p, url]) => (
-                <a key={p} href={url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all capitalize">
-                  {p.slice(0,1)}
+                <a key={p} href={url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all">
+                  {socialIcons[p.toLowerCase()] || p.slice(0,1)}
                 </a>
               ))}
             </div>
           </div>
 
-          <div className="lg:col-span-4 space-y-8">
+          <div className="lg:col-span-4 space-y-8 text-left">
             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Horarios de Atención</h4>
             {scheduleEntries.length > 0 ? (
               <div className="space-y-3">
@@ -208,7 +287,7 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
             )}
           </div>
 
-          <div className="lg:col-span-3 space-y-8">
+          <div className="lg:col-span-3 space-y-8 text-left">
             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Valoraciones</h4>
             <div className="space-y-2">
               <div className="flex gap-1 text-yellow-400">
@@ -221,8 +300,8 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
         </div>
 
         <div className="pt-8 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-6">
-          <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">© 2026 {brand.name} · Boutique Verificada</p>
-          <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">
+          <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest text-center md:text-left">© 2026 {brand.name} · Boutique Verificada</p>
+          <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest text-center md:text-right">
             Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#FF5C3A] transition-colors">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
           </p>
         </div>
@@ -233,14 +312,12 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
 
 export function TemplateClassic({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
   const primary = brand.primary_color || '#FF5C3A';
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(products[0]?.id || null);
+  const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id || null);
   
   const handleProductClick = (id: string) => {
     setSelectedId(id);
     document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' });
   };
-
-  const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id || null);
 
   return (
     <div className={`min-h-screen bg-white flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500`}>
@@ -250,8 +327,8 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl }: { bra
       <ClassicProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} />
       
       <section id="probador" className="py-20 px-4 md:px-6 bg-[#0a0a0a]">
-        <div className="max-w-4xl mx-auto space-y-12">
-          <div className="text-center space-y-4">
+        <div className="max-w-4xl mx-auto space-y-12 text-center">
+          <div className="space-y-4">
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF5C3A]">Probador Virtual Premium</span>
             <h2 className="text-2xl md:text-4xl font-black text-white tracking-tighter uppercase italic">Experiencia Inteligente</h2>
           </div>
