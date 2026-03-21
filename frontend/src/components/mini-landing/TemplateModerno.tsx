@@ -228,7 +228,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className={`min-h-screen flex flex-col bg-white ${brand.landing_font || 'font-jakarta'}`}>
       <ProbadorNav brand={brand} />
       <ProbadorHero brand={brand} onScrollDown={() => document.getElementById('probador-products')?.scrollIntoView({ behavior: 'smooth' })} />
       <ProbadorTrustBar brand={brand} />
