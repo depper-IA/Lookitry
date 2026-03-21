@@ -105,7 +105,7 @@ export interface AuthRequest extends Request {
 export interface N8nWebhookPayload {
   brandId: string;
   productId: string;
-  selfieBase64: string;
+  selfieUrl: string;
   productImageUrl: string;
   prompt: string;
 }

@@ -1,6 +1,9 @@
 // Plan types
 export type PlanType = 'BASIC' | 'PRO';
 
+/** Todos los valores de plan que puede tener una marca (incluye TRIAL) */
+export type BrandPlan = 'BASIC' | 'PRO' | 'TRIAL';
+
 export interface Plan {
   type: PlanType;
   maxProducts: number;
@@ -119,7 +122,7 @@ export interface TryOnConfigResponse {
     widgetTemplate?: string;
     buttonText?: string;
     welcomeMessage?: string;
-    plan?: string;
+    plan?: BrandPlan;
     // Mini-landing (task 33)
     brandDescription?: string | null;
     whatsappContact?: string | null;
