@@ -1,35 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
-import { BrandData, ProductData, WhatsAppIcon, WhatsAppFAB, LandingFooter, BrandLogo, ProductImage, ProductBadge, CoverImage, YouTubeIcon, XIcon } from './shared';
+import { BrandData, ProductData, WhatsAppIcon, WhatsAppFAB, BrandLogo, ProductImage, ProductBadge, CoverImage, YouTubeIcon, XIcon } from './shared';
 
-// ── Iconos internos del template (UI/UX Pro Max Style) ───────────────────────
-function InstagramIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-    </svg>
-  );
-}
-
-function FacebookIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-    </svg>
-  );
-}
-
-function TikTokIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
-    </svg>
-  );
-}
-
+// ── Iconos internos del template ─────────────────────────────────────────────
 function ChevronDownIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -54,131 +30,96 @@ function StarIcon({ className, filled }: { className?: string; filled?: boolean 
   );
 }
 
-function MapPinIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  );
-}
-
-function TruckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
-    </svg>
-  );
-}
-
 // ── Sub-componentes ──────────────────────────────────────────────────────────
 
-function ClassicHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: () => void }) {
-  const primary = brand.primary_color || '#FF5C3A';
-  const hasCover = !!brand.cover_image_url;
-  const overlayOpacity = brand.cover_overlay_opacity ?? 0.55;
+function ClassicHeader({ brand, primaryColor, onScrollDown }: { brand: BrandData; primaryColor: string; onScrollDown: () => void }) {
   return (
-    <section
-      className="relative w-full min-h-[500px] md:min-h-[600px] flex flex-col px-0 overflow-hidden"
-      style={{ background: brand.cover_bg_color || `#FAFAF9` }}
-    >
-      {/* Header Premium Glassmorphism */}
-      <header 
-        className="sticky top-0 z-50 w-full px-6 md:px-12 py-5 flex items-center justify-between backdrop-blur-2xl transition-all duration-300"
-        style={{ 
-          backgroundColor: brand.header_color ? `${brand.header_color}99` : 'rgba(255,255,255,0.6)',
-          borderBottom: '1px solid rgba(0,0,0,0.05)',
-        }}
+    <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 md:px-8 h-16 md:h-20 flex items-center justify-between transition-all">
+      <div className="flex items-center gap-3">
+        {brand.logo ? (
+          <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-7 md:h-9 w-auto object-contain" />
+        ) : (
+          <span className="font-black text-base md:text-lg uppercase tracking-tighter" style={{ color: primaryColor }}>{brand.name}</span>
+        )}
+      </div>
+      <nav className="hidden md:flex items-center gap-8">
+        <button onClick={onScrollDown} className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Catálogo</button>
+        <a href="#probador" className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Probador IA</a>
+        <a href="#contacto" className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Horarios</a>
+      </nav>
+      <button 
+        onClick={() => document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' })}
+        className="px-5 md:px-8 py-2 md:py-3 rounded-full text-white text-[10px] font-black uppercase tracking-widest shadow-xl transition-all hover:brightness-110 active:scale-95"
+        style={{ backgroundColor: primaryColor }}
       >
-        <div className="flex items-center gap-4">
-          {brand.logo ? (
-            <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-10 w-auto object-contain transition-transform hover:scale-105" />
-          ) : (
-             <span className="font-black text-xl tracking-tighter uppercase italic" style={{ color: primary }}>{brand.name}</span>
-          )}
-        </div>
-        <div className="flex items-center gap-6">
-          <nav className="hidden md:flex items-center gap-8">
-            <button onClick={onScrollDown} className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-900/60 hover:text-gray-900 transition-colors">Catálogo</button>
-            <a href="#contacto" className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-900/60 hover:text-gray-900 transition-colors">Ubicación</a>
-          </nav>
-          <button 
-            onClick={onScrollDown}
-            className="px-6 py-2.5 rounded-full text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-black/10 hover:scale-105 active:scale-95 transition-all"
-            style={{ backgroundColor: primary }}
-          >
-            Pruébatelo
-          </button>
-        </div>
-      </header>
+        Probar Ahora
+      </button>
+    </header>
+  );
+}
 
-      <div className="flex-1 relative flex flex-col items-center justify-center text-center px-6 py-20">
-        {hasCover && (
-          <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
-        )}
-        {(hasCover && overlayOpacity > 0) && (
-          <div className="absolute inset-0 bg-black/40 backdrop-grayscale-[0.2]" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity})` }} />
-        )}
-        <div className="relative z-10 flex flex-col items-center gap-6 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[9px] font-black uppercase tracking-[0.3em] mb-4">
-            <SparklesIcon className="w-3.5 h-3.5 text-yellow-400" />
-            Experiencia AI Premium
+function ClassicHero({ brand, primaryColor, onScrollDown }: { brand: BrandData; primaryColor: string; onScrollDown: () => void }) {
+  const hasCover = !!brand.cover_image_url;
+  return (
+    <section className="relative w-full bg-[#f9f8f6] py-10 md:py-20 px-6 overflow-hidden">
+      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-10 md:gap-16">
+        <div className="flex-1 text-center lg:text-left space-y-5 md:space-y-6 z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/5 border border-black/5 text-gray-600 text-[9px] font-bold uppercase tracking-[0.2em]">
+            <SparklesIcon className="w-3.5 h-3.5 text-amber-500" />
+            Nueva tecnología de probador
           </div>
-          <h1 className="text-5xl md:text-8xl font-black text-white drop-shadow-2xl leading-[0.9] tracking-tighter uppercase italic">
-            {brand.name}
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tighter uppercase italic">
+
+            {brand.name}<br />
+            <span style={{ color: primaryColor }}>{brand.slogan || 'Colección 2026'}</span>
           </h1>
-          {brand.slogan && (
-            <p className="text-white/90 text-sm md:text-base font-bold tracking-[0.15em] uppercase border-y border-white/20 py-2">
-              {brand.slogan}
-            </p>
-          )}
           {brand.brand_description && (
-            <p className="text-white/80 text-base md:text-lg max-w-xl leading-relaxed font-medium drop-shadow-md">
+            <p className="text-[11px] md:text-sm text-gray-500 max-w-lg mx-auto lg:mx-0 leading-relaxed font-medium">
               {brand.brand_description}
             </p>
           )}
-          <button
-            onClick={onScrollDown}
-            className="mt-8 group relative inline-flex items-center gap-3 px-10 py-5 rounded-2xl text-white font-black text-sm uppercase tracking-[0.2em] shadow-2xl transition-all hover:scale-105 active:scale-95"
-            style={{ backgroundColor: primary }}
-          >
-            <SparklesIcon className="w-5 h-5 animate-pulse" />
-            {brand.cta_button_text || 'Iniciar Probador IA'}
-            <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+            <button onClick={onScrollDown} className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gray-900 text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all">Ver Productos</button>
+            <div className="flex -space-x-2.5">
+              {[1,2,3].map(i => <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 overflow-hidden shadow-sm" />)}
+              <div className="w-8 h-8 rounded-full border-2 border-white bg-[#f0edea] flex items-center justify-center text-[9px] font-bold text-gray-400">+500</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex-1 w-full relative aspect-square lg:aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-xl transition-transform duration-700 hover:scale-[1.01]">
+          {hasCover ? (
+            <>
+              <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${brand.cover_overlay_opacity || 0.2})` }} />
+            </>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: primaryColor + '10' }}>
+              <SparklesIcon className="w-16 h-16 opacity-10" color={primaryColor} />
+            </div>
+          )}
         </div>
       </div>
-      <button onClick={onScrollDown} className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/40 hover:text-white transition-colors animate-bounce" aria-label="Ver mas">
-        <ChevronDownIcon className="w-8 h-8" />
-      </button>
     </section>
   );
 }
 
-function ClassicHowItWorks({ primaryColor }: { primaryColor: string }) {
+function ClassicSteps({ primaryColor }: { primaryColor: string }) {
   const steps = [
-    { num: '01', title: 'Elige tu Prenda', desc: 'Explora nuestra colección curada y selecciona lo que más te guste.' },
-    { num: '02', title: 'Tu Fotografía', desc: 'Sube una foto frontal con buena luz para un resultado perfecto.' },
-    { num: '03', title: 'Mira la Magia', desc: 'Nuestra IA integra la prenda a tu cuerpo en menos de 15 segundos.' },
+    { n: '01', t: 'Selecciona', d: 'Elige cualquier prenda de nuestro catálogo curado para comenzar.' },
+    { n: '02', t: 'Fotografía', d: 'Captura una selfie frontal. La iluminación es clave para el realismo.' },
+    { n: '03', t: 'Estrena', d: 'Nuestra IA renderiza la prenda sobre ti. ¡Descarga y comparte!' },
   ];
   return (
-    <section className="w-full bg-white py-24 px-6 border-b border-gray-100">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-          <div className="space-y-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Proceso Inteligente</span>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">¿Cómo funciona?</h2>
+    <section className="py-16 px-6 bg-white border-b border-gray-100">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
+        {steps.map(s => (
+          <div key={s.n} className="flex flex-col items-center md:items-start text-center md:text-left space-y-3">
+            <span className="text-4xl font-black italic opacity-10" style={{ color: primaryColor }}>{s.n}</span>
+            <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight italic">{s.t}</h3>
+            <p className="text-xs text-gray-500 leading-relaxed font-medium">{s.d}</p>
           </div>
-          <p className="text-gray-500 max-w-xs text-sm font-medium leading-relaxed">Tecnología de vanguardia para que compres con total seguridad desde tu casa.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {steps.map(s => (
-            <div key={s.num} className="group relative bg-gray-50 rounded-[2.5rem] p-10 transition-all hover:bg-white hover:shadow-2xl hover:shadow-black/5 border border-transparent hover:border-gray-100">
-              <span className="block text-6xl font-black text-gray-200 group-hover:text-[#FF5C3A]/10 transition-colors mb-6">{s.num}</span>
-              <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight mb-4">{s.title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed font-medium">{s.desc}</p>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
     </section>
   );
@@ -187,154 +128,106 @@ function ClassicHowItWorks({ primaryColor }: { primaryColor: string }) {
 function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { products: ProductData[]; primaryColor: string; ctaText?: string | null; onProductClick: (id: string) => void }) {
   if (!products.length) return null;
   return (
-    <section id="productos" className="w-full max-w-6xl mx-auto px-6 py-24">
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-16 gap-8">
-        <div className="space-y-4">
-          <span className="text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: primaryColor }}>Colección Oficial</span>
-          <h2 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">Catálogo</h2>
+    <section id="productos" className="py-20 px-6 bg-[#f9f8f6]">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-12 space-y-3">
+          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400">Colección de Temporada</span>
+          <h2 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">Nuestros Productos</h2>
+
         </div>
-        <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-3xl border border-gray-100">
-          <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shadow-sm">
-            <SparklesIcon className="w-5 h-5 text-yellow-500" />
-          </div>
-          <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest leading-snug">Selecciona para<br />probar con IA</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-        {products.map(p => (
-          <button key={p.id} onClick={() => onProductClick(p.id)} className="group relative rounded-[2rem] overflow-hidden bg-white transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)]">
-            <div className="relative aspect-[3/4] overflow-hidden bg-gray-50">
-              <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-[2px]">
-                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 bg-white text-black px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl">
-                  {ctaText || 'Probar Prenda'}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {products.map(p => (
+            <div key={p.id} className="group bg-white rounded-[2rem] border border-gray-100 overflow-hidden transition-all duration-500 hover:shadow-xl">
+              <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
+                <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                {p.badge && <div className="absolute top-4 left-4"><ProductBadge badge={p.badge} /></div>}
+                <button 
+                  onClick={() => onProductClick(p.id)}
+                  className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[85%] py-3 bg-white text-black rounded-lg font-black text-[9px] uppercase tracking-widest shadow-xl opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 hover:bg-gray-900 hover:text-white"
+                >
+                  {ctaText || 'Probar con IA'}
+                </button>
+              </div>
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-1">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-[#FF5C3A]">{p.category}</p>
+                  {p.price && <p className="text-xs font-black text-gray-900">${p.price.toLocaleString('es-CO')}</p>}
                 </div>
+                <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">{p.name}</h3>
+                {p.description && <p className="text-[10px] text-gray-400 mt-1.5 line-clamp-2 leading-relaxed">{p.description}</p>}
               </div>
-              {p.badge && <span className="absolute top-4 left-4"><ProductBadge badge={p.badge} /></span>}
             </div>
-            <div className="p-6 text-left">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">{p.category}</span>
-                {p.price != null && <span className="text-sm font-black text-gray-900">${p.price.toLocaleString('es-CO')}</span>}
-              </div>
-              <h3 className="font-bold text-base text-gray-900 leading-tight group-hover:text-[#FF5C3A] transition-colors line-clamp-1 uppercase tracking-tight">{p.name}</h3>
-            </div>
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ClassicTryOn({ brandSlug, primaryColor, selectedProductId }: { brandSlug: string; primaryColor: string; selectedProductId: string | null }) {
-  return (
-    <section id="tryon-section" className="w-full py-24 px-6 bg-[#0a0a0a]">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-16 space-y-4">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF5C3A]">Motor de Inteligencia Artificial</span>
-          <h2 className="text-4xl md:text-6xl font-black text-white tracking-tighter uppercase italic leading-none">Probador Virtual</h2>
-          <p className="text-gray-500 text-sm md:text-base font-medium max-w-lg mx-auto">Sube tu foto y nuestra red neuronal procesará la prenda sobre tu cuerpo en tiempo real.</p>
-        </div>
-        <div className="rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/5 bg-[#141414]">
-          <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedProductId} />
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-function ClassicInfo({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
-  // Fix: Los horarios en brands vienen como JSONB, aseguramos procesamiento robusto
+function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; primaryColor: string; footerUrl?: string }) {
   const DAYS_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-  
-  // Procesar schedule independientemente de si viene como objeto o string (resiliencia total)
   let scheduleEntries: [string, string][] = [];
   try {
-    const rawSchedule = brand.schedule;
-    if (rawSchedule && typeof rawSchedule === 'object') {
-      scheduleEntries = DAYS_ORDER
-        .filter(day => rawSchedule[day] || rawSchedule[day.toLowerCase()])
-        .map(day => [day, (rawSchedule[day] || rawSchedule[day.toLowerCase()]) as string]);
+    const raw = brand.schedule;
+    if (raw && typeof raw === 'object') {
+      scheduleEntries = DAYS_ORDER.filter(d => raw[d] || raw[d.toLowerCase()]).map(d => [d, (raw[d] || raw[d.toLowerCase()]) as string]);
     }
-  } catch (e) {
-    console.error('[ClassicInfo] Error parsing schedule:', e);
-  }
-
-  const hasRating = brand.rating != null;
-  const hasLocation = !!(brand.city_display || brand.national_shipping);
-  const hasSchedule = scheduleEntries.length > 0;
-  
-  if (!hasRating && !hasLocation && !hasSchedule) return null;
+  } catch(e) {}
 
   return (
-    <section id="contacto" className="w-full max-w-6xl mx-auto px-6 py-24 border-t border-gray-100">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-        <div className="space-y-12">
-          <div className="space-y-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Información Oficial</span>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">Ubicación y Status</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            {hasRating && (
-              <div className="p-8 bg-gray-50 rounded-[2rem] border border-gray-100 space-y-4">
-                <div className="flex items-center gap-1 text-yellow-400">
-                  {[1,2,3,4,5].map(i => <StarIcon key={i} className="w-4 h-4" filled={i <= Math.round(brand.rating!)} />)}
-                </div>
-                <div>
-                  <p className="text-3xl font-black text-gray-900 tracking-tighter">{brand.rating!.toFixed(1)}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">{brand.total_reviews?.toLocaleString('es-CO') || 0} Valoraciones Reales</p>
-                </div>
-              </div>
-            )}
-            {brand.city_display && (
-              <div className="p-8 bg-gray-50 rounded-[2rem] border border-gray-100 space-y-4">
-                <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center shadow-sm">
-                  <MapPinIcon className="w-5 h-5 text-gray-900" />
-                </div>
-                <div>
-                  <p className="text-lg font-black text-gray-900 tracking-tight uppercase italic">{brand.city_display}</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">Sede Principal</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4">
-            {brand.social_links && Object.entries(brand.social_links).filter(([,url])=>!!url).map(([platform, url]) => {
-              const icons: any = { instagram: <InstagramIcon />, facebook: <FacebookIcon />, tiktok: <TikTokIcon />, youtube: <YouTubeIcon />, x: <XIcon /> };
-              return (
-                <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-2xl bg-gray-900 text-white flex items-center justify-center transition-all hover:scale-110 hover:-rotate-3 active:scale-95 shadow-xl shadow-black/10">
-                  <div className="w-6 h-6">{icons[platform.toLowerCase()] || platform.slice(0,1)}</div>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-
-        {hasSchedule && (
-          <div className="bg-white rounded-[2.5rem] border-2 border-gray-100 p-10 md:p-12 shadow-2xl shadow-black/[0.02]">
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-12 h-12 rounded-2xl bg-gray-900 flex items-center justify-center text-white">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-12 0 9 9 0 0112 0z" /></svg>
-              </div>
-              <div>
-                <h3 className="text-xl font-black text-gray-900 uppercase italic tracking-tight">Horarios de Atención</h3>
-                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-0.5">Tienda verificada</p>
-              </div>
+    <footer id="contacto" className="bg-white pt-24 pb-12 px-6 border-t border-gray-100">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-20 mb-20">
+          <div className="lg:col-span-5 space-y-8">
+            <div className="flex items-center gap-3">
+              {brand.logo ? <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-8 object-contain" /> : <span className="font-black text-2xl uppercase italic" style={{ color: primaryColor }}>{brand.name}</span>}
             </div>
-            <div className="space-y-4">
-              {scheduleEntries.map(([day, hours]) => (
-                <div key={day} className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
-                  <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{day}</span>
-                  <span className={`text-sm font-bold tracking-tight ${hours.toLowerCase() === 'cerrado' ? 'text-red-400 italic' : 'text-gray-900'}`}>{hours}</span>
-                </div>
+            <p className="text-sm text-gray-500 leading-relaxed font-medium italic max-w-sm">"{brand.brand_description || 'Moda y tecnología unidas para ofrecerte la mejor experiencia de compra virtual.'}"</p>
+            <div className="flex gap-3">
+              {brand.social_links && Object.entries(brand.social_links).filter(([,url])=>!!url).map(([p, url]) => (
+                <a key={p} href={url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all capitalize">
+                  {p.slice(0,1)}
+                </a>
               ))}
             </div>
           </div>
-        )}
+
+          <div className="lg:col-span-4 space-y-8">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Horarios de Atención</h4>
+            {scheduleEntries.length > 0 ? (
+              <div className="space-y-3">
+                {scheduleEntries.map(([d, h]) => (
+                  <div key={d} className="flex justify-between items-center text-xs font-bold border-b border-gray-50 pb-2">
+                    <span className="text-gray-400 uppercase">{d}</span>
+                    <span className="text-gray-900">{h}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 italic font-medium">No hay horarios registrados.</p>
+            )}
+          </div>
+
+          <div className="lg:col-span-3 space-y-8">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Valoraciones</h4>
+            <div className="space-y-2">
+              <div className="flex gap-1 text-yellow-400">
+                {[1,2,3,4,5].map(i => <StarIcon key={i} className="w-4 h-4" filled={i <= Math.round(brand.rating || 5)} />)}
+              </div>
+              <p className="text-2xl font-black text-gray-900 tracking-tight">{brand.rating?.toFixed(1) || '5.0'}</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase">{brand.total_reviews?.toLocaleString() || '0'} Reseñas de clientes</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-6">
+          <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">© 2026 {brand.name} · Boutique Verificada</p>
+          <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">
+            Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#FF5C3A] transition-colors">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
+          </p>
+        </div>
       </div>
-    </section>
+    </footer>
   );
 }
 
@@ -342,28 +235,33 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl }: { bra
   const primary = brand.primary_color || '#FF5C3A';
   const [selectedProductId, setSelectedProductId] = useState<string | null>(products[0]?.id || null);
   
-  const scrollToTryOn = (productId?: string) => {
-    if (productId) setSelectedProductId(productId);
-    document.getElementById('tryon-section')?.scrollIntoView({ behavior: 'smooth' });
+  const handleProductClick = (id: string) => {
+    setSelectedId(id);
+    document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  return (
-    <div className={`min-h-screen bg-white flex flex-col ${brand.landing_font || 'font-jakarta'} transition-colors duration-500`}>
-      <ClassicHero brand={brand} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
-      <ClassicHowItWorks primaryColor={primary} />
-      <ClassicProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={scrollToTryOn} />
-      <ClassicTryOn brandSlug={brandSlug} primaryColor={primary} selectedProductId={selectedProductId} />
-      <ClassicInfo brand={brand} primaryColor={primary} />
-      
-      <footer className="py-20 px-6 text-center border-t border-gray-100 bg-white">
-        <div className="max-w-6xl mx-auto flex flex-col items-center gap-8">
-          {brand.logo && <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-8 opacity-30 grayscale" />}
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-300">
-            Tecnología Probador Virtual impulsada por <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#FF5C3A] transition-colors">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
-          </p>
-        </div>
-      </footer>
+  const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id || null);
 
+  return (
+    <div className={`min-h-screen bg-white flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500`}>
+      <ClassicHeader brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
+      <ClassicHero brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
+      <ClassicSteps primaryColor={primary} />
+      <ClassicProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} />
+      
+      <section id="probador" className="py-20 px-4 md:px-6 bg-[#0a0a0a]">
+        <div className="max-w-4xl mx-auto space-y-12">
+          <div className="text-center space-y-4">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF5C3A]">Probador Virtual Premium</span>
+            <h2 className="text-2xl md:text-4xl font-black text-white tracking-tighter uppercase italic">Experiencia Inteligente</h2>
+          </div>
+          <div className="rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/5">
+            <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} />
+          </div>
+        </div>
+      </section>
+
+      <ClassicFooter brand={brand} primaryColor={primary} footerUrl={footerUrl} />
       {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
     </div>
   );
