@@ -185,7 +185,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f7f5f2]">
+    <div className={`min-h-screen flex flex-col bg-[#f7f5f2] ${brand.landing_font || 'font-jakarta'}`}>
       <EditorialHeader brand={brand} />
       <EditorialCover brand={brand} />
       
