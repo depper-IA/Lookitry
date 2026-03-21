@@ -49,6 +49,9 @@
 .font-tech { font-family: var(--font-tech), monospace; }
 .font-syne { font-family: var(--font-syne), sans-serif; }
 
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 body {
   font-family: var(--font-dm-sans, 'DM Sans', sans-serif);

@@ -23,31 +23,28 @@ import {
 
 // ── Sub-componentes ──────────────────────────────────────────────────────────
 
-function EditorialHeader({ brand }: { brand: BrandData }) {
+function EditorialHeader({ brand, entries, socialIcons }: { brand: BrandData; entries: [string, string][]; socialIcons: Record<string, React.ReactNode> }) {
   const primary = brand.primary_color || '#FF5C3A';
-  const socialLinks = brand.social_links || {};
-  const entries = Object.entries(socialLinks).filter(([, url]) => !!url);
-  const socialIcons: Record<string, React.ReactNode> = {
-    instagram: <InstagramIcon className="w-3.5 h-3.5" />,
-    facebook:  <FacebookIcon  className="w-3.5 h-3.5" />,
-    tiktok:    <TikTokIcon    className="w-3.5 h-3.5" />,
-    youtube:   <YouTubeIcon   className="w-3.5 h-3.5" />,
-    x:         <XIcon         className="w-3.5 h-3.5" />,
-  };
   return (
-    <header className="px-5 h-16 md:h-20 flex items-center justify-between sticky top-0 z-50 backdrop-blur-2xl bg-white/30 border-b border-gray-100 shadow-sm">
-      <div className="flex items-center gap-2.5">
-        {brand.logo ? (
-          <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-8 md:h-9 w-auto max-w-[120px] rounded-lg object-contain" />
-        ) : (
-          <div className="h-8 w-8 md:h-9 md:w-9 rounded-lg flex items-center justify-center text-white font-bold text-xs md:text-sm" style={{ backgroundColor: primary }}>{brand.name.slice(0, 2).toUpperCase()}</div>
+    <header className="px-4 md:px-8 h-16 md:h-24 flex items-center justify-between sticky top-0 z-50 backdrop-blur-2xl bg-white/90 border-b border-gray-100 gap-4">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="shrink-0">
+          {brand.logo ? (
+            <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-7 md:h-10 w-auto max-w-[100px] md:max-w-[160px] object-contain" />
+          ) : (
+            <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-[#FF5C3A]/20" style={{ backgroundColor: primary }}>{brand.name.slice(0, 2).toUpperCase()}</div>
+          )}
+        </div>
+        {brand.show_brand_name !== false && (
+          <span className="font-black text-xs md:text-lg text-gray-900 italic uppercase tracking-tighter truncate max-w-[120px] sm:max-w-none">
+            {brand.name}
+          </span>
         )}
-        {brand.show_brand_name !== false && <span className="font-bold text-sm md:text-base text-gray-900 italic uppercase tracking-tight truncate max-w-[120px] md:max-w-none">{brand.name}</span>}
       </div>
       {entries.length > 0 && (
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar max-w-[100px] md:max-w-none">
-          {entries.map(([platform, url]) => (
-            <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110 shrink-0" style={{ backgroundColor: primary + '15', color: primary }}>
+        <div className="flex items-center gap-1 md:gap-2 shrink-0">
+          {entries.slice(0, 4).map(([platform, url]) => (
+            <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm" style={{ backgroundColor: primary + '10', color: primary }}>
               {socialIcons[platform.toLowerCase()] ?? null}
             </a>
           ))}
@@ -57,84 +54,162 @@ function EditorialHeader({ brand }: { brand: BrandData }) {
   );
 }
 
-function EditorialCover({ brand }: { brand: BrandData }) {
-  const fallbackBg = brand.cover_bg_color || '#1a1a1a';
+function EditorialHero({ brand }: { brand: BrandData }) {
   const overlayOpacity = brand.cover_overlay_opacity ?? 0.6;
   return (
-    <div className="relative h-40 md:h-56 overflow-hidden flex items-end" style={{ background: fallbackBg }}>
-      {brand.cover_image_url && <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" style={{ opacity: overlayOpacity > 0 ? 1 : 0 }} />
-      <div className="relative z-10 px-6 pb-5 w-full text-white">
-        {brand.slogan && <p className="text-white/70 text-[9px] md:text-[10px] mb-1 tracking-widest uppercase font-bold">{brand.slogan}</p>}
-        <h1 className="text-2xl md:text-4xl font-black italic uppercase tracking-tighter leading-none">{brand.name}</h1>
+    <section className="relative w-full h-[35vh] md:h-[50vh] flex items-center justify-center overflow-hidden bg-gray-900">
+      {brand.cover_image_url ? (
+        <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover scale-105" />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-black" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+      <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity * 0.4})` }} />
+      <div className="relative z-10 text-center px-6 max-w-4xl">
+        <h1 className="text-4xl md:text-7xl font-black text-white italic uppercase tracking-tighter drop-shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          {brand.name}
+        </h1>
+        {brand.slogan && (
+          <p className="text-[#FF5C3A] text-[10px] md:text-sm font-black uppercase tracking-[0.4em] mt-4 animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-300">
+            {brand.slogan}
+          </p>
+        )}
       </div>
-    </div>
+    </section>
   );
 }
 
 function EditorialProductCard({ product, selected, primaryColor, onClick }: { product: ProductData; selected: boolean; primaryColor: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="text-left w-full rounded-xl overflow-hidden border bg-white transition-all duration-200" style={{ borderColor: selected ? primaryColor : '#e5e5e5', borderWidth: selected ? 2 : 1 }}>
-      <div className="relative aspect-square bg-gray-50">
-        <ProductImage src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-        {product.badge && <span className="absolute top-2 left-2 scale-90 origin-top-left"><ProductBadge badge={product.badge} /></span>}
+    <button onClick={onClick} className="group text-left w-full space-y-3 transition-all">
+      <div className={`relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-gray-50 border-2 transition-all duration-500 ${selected ? 'shadow-2xl shadow-[#FF5C3A]/20 scale-[1.02]' : 'hover:shadow-xl'}`} style={{ borderColor: selected ? primaryColor : 'transparent' }}>
+        <ProductImage src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        {product.badge && <div className="absolute top-2 left-2 md:top-3 md:left-3 scale-90 origin-top-left"><ProductBadge badge={product.badge} /></div>}
+        {selected && (
+          <div className="absolute inset-0 bg-[#FF5C3A]/10 flex items-center justify-center backdrop-blur-[1px]">
+            <div className="bg-white p-2 md:p-3 rounded-xl md:rounded-2xl shadow-2xl">
+              <SparklesIcon className="w-4 h-4 md:w-5 md:h-5 text-[#FF5C3A]" />
+            </div>
+          </div>
+        )}
       </div>
-      <div className="p-2.5">
-        <p className="text-[10px] md:text-[11px] font-bold text-gray-900 leading-tight truncate uppercase italic">{product.name}</p>
-        <p className="text-[8px] md:text-[9px] text-gray-400 uppercase tracking-wider mt-0.5">{product.category}</p>
-        {product.price != null && <p className="text-[10px] md:text-[11px] font-black mt-1" style={{ color: primaryColor }}>${product.price.toLocaleString('es-CO')}</p>}
+      <div className="px-1 md:px-2 space-y-0.5 md:space-y-1">
+        <div className="flex justify-between items-start gap-2">
+          <h3 className="text-[10px] md:text-sm font-black text-gray-900 uppercase tracking-tight truncate flex-1">{product.name}</h3>
+          {product.price != null && <p className="text-[10px] md:text-sm font-black text-[#FF5C3A]">${product.price.toLocaleString('es-CO')}</p>}
+        </div>
+        <p className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest">{product.category}</p>
       </div>
     </button>
   );
 }
 
-function EditorialInfo({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
+function EditorialInfo({ brand }: { brand: BrandData }) {
   const DAYS_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-  const scheduleEntries = brand.schedule
-    ? DAYS_ORDER.filter(d => d in brand.schedule!).map(d => [d, brand.schedule![d]] as [string, string])
-    : [];
-  const hasRating = brand.rating != null;
-  const hasLocation = !!(brand.city_display || brand.national_shipping);
-  const hasSchedule = scheduleEntries.length > 0;
-  if (!hasRating && !hasLocation && !hasSchedule) return null;
+  let scheduleEntries: [string, string][] = [];
+  try {
+    const raw = brand.schedule;
+    if (raw && typeof raw === 'object') {
+      scheduleEntries = DAYS_ORDER.filter(d => raw[d] || raw[d.toLowerCase()]).map(d => [d, (raw[d] || raw[d.toLowerCase()]) as string]);
+    }
+  } catch(e) {}
 
   return (
-    <div className="mt-6 md:mt-8 bg-white rounded-2xl border border-gray-100 p-4 md:p-5 space-y-4 shadow-sm">
-      {hasRating && (
-        <div className="flex items-center gap-2 pb-3 border-b border-gray-50">
-          <div className="flex items-center gap-0.5 text-yellow-400">
-            {[1,2,3,4,5].map(i => <StarIcon key={i} className="w-3 h-3" filled={i <= Math.round(brand.rating!)} />)}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full">
+      {/* IZQUIERDA: Información */}
+      <div className="p-6 md:p-10 bg-white rounded-[2rem] md:rounded-[3.5rem] border border-gray-100 shadow-sm space-y-6 md:space-y-8">
+        <div className="flex items-center gap-4 border-b border-gray-50 pb-6">
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gray-900 flex items-center justify-center text-white shadow-xl">
+            <MapPinIcon className="w-5 h-5 md:w-6 md:h-6" />
           </div>
-          <span className="text-xs font-black text-gray-900">{brand.rating!.toFixed(1)}</span>
-          {brand.total_reviews != null && <span className="text-[10px] text-gray-400 font-bold uppercase">({brand.total_reviews} reviews)</span>}
+          <div>
+            <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-gray-400">Ubicación</h4>
+            <p className="text-xs md:text-sm font-black text-gray-900 uppercase italic">Presencia Física</p>
+          </div>
         </div>
-      )}
-      {hasLocation && (
-        <div className="space-y-2">
-          {brand.city_display && <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase tracking-tight"><MapPinIcon className="w-3.5 h-3.5 text-gray-300" /> {brand.city_display}</div>}
-          {brand.national_shipping && <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold uppercase tracking-tight"><TruckIcon className="w-3.5 h-3.5 text-gray-300" /> Envíos Nacionales</div>}
-        </div>
-      )}
-      {hasSchedule && (
-        <div className="pt-2 border-t border-gray-50">
-          <p className="text-[9px] font-black uppercase text-gray-300 tracking-[0.2em] mb-3">Horario</p>
-          <div className="space-y-1.5">
-            {scheduleEntries.map(([day, hours]) => (
-              <div key={day} className="flex justify-between items-center text-[10px]">
-                <span className="text-gray-400 font-medium uppercase">{day}</span>
-                <span className={`text-gray-900 font-black ${hours.toLowerCase().includes('cerrado') ? 'text-red-400 italic' : ''}`}>{hours}</span>
+        <div className="space-y-6">
+          {brand.city_display && (
+            <p className="text-lg md:text-2xl font-black text-gray-900 uppercase italic tracking-tighter leading-none">{brand.city_display}</p>
+          )}
+          {brand.rating && (
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-0.5 text-yellow-400">
+                {[1,2,3,4,5].map(i => <StarIcon key={i} className="w-3.5 h-3.5 md:w-4 md:h-4" filled={i <= Math.round(brand.rating!)} />)}
               </div>
-            ))}
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl md:text-3xl font-black text-gray-900 tracking-tighter">{brand.rating.toFixed(1)}</span>
+                <span className="text-[9px] md:text-[10px] text-gray-400 font-black uppercase tracking-widest">/ {brand.total_reviews} reviews</span>
+              </div>
+            </div>
+          )}
+          {brand.national_shipping && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-900 text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-gray-100">
+              <TruckIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#FF5C3A]" /> Envíos Nacionales
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* DERECHA: Horarios */}
+      <div className="p-6 md:p-10 bg-white rounded-[2rem] md:rounded-[3.5rem] border border-gray-100 shadow-sm space-y-6 md:space-y-8">
+        <div className="flex items-center gap-4 border-b border-gray-50 pb-6">
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gray-900 flex items-center justify-center text-white shadow-xl">
+            <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-12 0 9 9 0 0112 0z" /></svg>
+          </div>
+          <div>
+            <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-gray-400">Disponibilidad</h4>
+            <p className="text-xs md:text-sm font-black text-gray-900 uppercase italic">Nuestros Horarios</p>
           </div>
         </div>
-      )}
+        <div className="space-y-2 md:space-y-3">
+          {scheduleEntries.length > 0 ? (
+            scheduleEntries.map(([d, h]) => (
+              <div key={d} className="flex justify-between items-center text-[10px] md:text-xs border-b border-gray-50 pb-2 last:border-0 last:pb-0">
+                <span className="text-gray-400 font-black uppercase tracking-widest">{d}</span>
+                <span className={`font-black uppercase ${h.toLowerCase().includes('cerrado') ? 'text-red-500 italic' : 'text-gray-900'}`}>{h}</span>
+              </div>
+            ))
+          ) : (
+            <p className="text-[10px] md:text-xs text-gray-400 italic font-medium uppercase tracking-widest">No hay horarios registrados.</p>
+          )}
+        </div>
+      </div>
     </div>
+  );
+}
+
+function EditorialAbout({ brand, primaryColor }: { brand: BrandData; primaryColor: string }) {
+  if (!brand.brand_description) return null;
+  return (
+    <section className="py-6 md:py-16">
+      <div className="p-8 md:p-16 bg-gray-900 rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 p-12 opacity-10">
+          <SparklesIcon className="w-32 h-32 md:w-48 md:h-48" color="#FF5C3A" />
+        </div>
+        <div className="relative z-10 space-y-4 md:space-y-6 text-center md:text-left">
+          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.5em] text-[#FF5C3A]">Nuestra Historia</span>
+          <p className="text-base md:text-3xl text-white leading-tight font-black italic uppercase tracking-tighter max-w-4xl">
+            &quot;{brand.brand_description}&quot;
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }
 
 export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
   const primary = brand.primary_color || '#FF5C3A';
-  const [selectedId, setSelectedId] = useState<string | null>(products?.[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(products && products.length > 0 ? products[0].id : null);
+
+  const socialLinks = brand.social_links || {};
+  const entries = Object.entries(socialLinks).filter(([, url]) => !!url);
+  const socialIcons: Record<string, React.ReactNode> = {
+    instagram: <InstagramIcon className="w-3.5 h-3.5" />,
+    facebook:  <FacebookIcon  className="w-3.5 h-3.5" />,
+    tiktok:    <TikTokIcon    className="w-3.5 h-3.5" />,
+    youtube:   <YouTubeIcon   className="w-3.5 h-3.5" />,
+    x:         <XIcon         className="w-3.5 h-3.5" />,
+  };
 
   const handleProductClick = (id: string) => {
     setSelectedId(id);
@@ -143,53 +218,97 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-[#f7f5f2] ${brand.landing_font || 'font-jakarta'} overflow-x-hidden`}>
-      <EditorialHeader brand={brand} />
-      <EditorialCover brand={brand} />
+    <div className={`min-h-screen flex flex-col bg-[#fcfcfc] ${brand.landing_font || 'font-jakarta'} overflow-x-hidden`}>
+      <EditorialHeader brand={brand} entries={entries} socialIcons={socialIcons} />
+      <EditorialHero brand={brand} />
       
-      <main className="max-w-5xl mx-auto w-full px-4 py-6 md:py-8 grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 md:gap-8 items-start">
-        <div className="order-2 lg:order-1">
-          <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 italic">Colección Editorial</p>
-            <span className="text-[10px] font-bold text-gray-900 uppercase">{products?.length || 0} Items</span>
-          </div>
-          {products && products.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
-              {products.map(p => (
+      <main className="max-w-6xl mx-auto w-full px-4 md:px-6 py-12 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        {/* Catálogo Prioritario */}
+        <div className="lg:col-span-8 space-y-16 order-2 lg:order-1">
+          <div>
+            <div className="flex items-center justify-between border-b-2 border-black pb-4 mb-10">
+              <h2 className="text-3xl font-black uppercase italic tracking-tighter">Colección</h2>
+              <span className="text-[10px] font-black bg-black text-white px-3 py-1 uppercase">{products?.length || 0} Items</span>
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 md:gap-10">
+              {products && Array.isArray(products) && products.map(p => (
                 <EditorialProductCard key={p.id} product={p} selected={selectedId === p.id} primaryColor={primary} onClick={() => handleProductClick(p.id)} />
               ))}
             </div>
-          ) : (
-            <div className="py-12 text-center bg-white rounded-2xl border border-dashed border-gray-300">
-              <p className="text-xs text-gray-400 uppercase font-bold tracking-widest">No hay productos disponibles</p>
-            </div>
-          )}
+          </div>
+
+          {/* Información y Horarios */}
+          <EditorialInfo brand={brand} />
+
+          {/* Descripción de marca */}
+          <EditorialAbout brand={brand} primaryColor={primary} />
         </div>
 
-        <div id="editorial-tryon" className="order-1 lg:order-2 lg:sticky lg:top-24">
-          <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-xl bg-white">
-            <div className="px-4 py-3 flex items-center justify-between bg-black text-white">
-              <span className="font-black text-[10px] md:text-xs flex items-center gap-2 italic uppercase">
-                <SparklesIcon className="w-4 h-4 text-[#FF5C3A]" />
-                Probador Virtual
-              </span>
-              <span className="text-[9px] text-gray-500 bg-gray-800 px-2 py-0.5 rounded-full font-bold">IA</span>
+        {/* Probador Prioritario (Sidebar Sticky) */}
+        <aside className="lg:col-span-4 order-1 lg:order-2">
+          <div id="editorial-tryon" className="lg:sticky lg:top-28">
+            <div className="rounded-[3rem] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] bg-white border border-gray-100">
+              <div className="px-6 py-4 bg-gray-900 text-white flex justify-between items-center">
+                <span className="font-black text-[10px] uppercase tracking-widest text-[#FF5C3A] flex items-center gap-2">
+                  <SparklesIcon className="w-4 h-4" /> Probador IA
+                </span>
+                <span className="text-[8px] opacity-40 font-black">AI POWERED</span>
+              </div>
+              <div style={{ backgroundColor: brand.widget_bg_color || '#ffffff' }}>
+                <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} />
+              </div>
             </div>
-            <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} />
+            <p className="text-center mt-6 text-[9px] font-black uppercase tracking-[0.3em] text-gray-300">Desarrollado por Lookitry AI</p>
           </div>
-          
-          <EditorialInfo brand={brand} primaryColor={primary} />
-
-          <div className="mt-6 flex flex-col items-center gap-2">
-            <p className="text-[9px] text-gray-400 uppercase font-bold tracking-widest text-center">Impulsado por Look<span className="text-[#FF5C3A]">itry</span> AI</p>
-          </div>
-        </div>
+        </aside>
       </main>
 
-      <footer className="py-12 px-6 text-center border-t border-gray-100 bg-white mt-auto">
-        <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-          Probador virtual impulsado por <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
-        </p>
+      <footer 
+        className="mt-20 py-20 px-6 text-center transition-colors duration-500" 
+        style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a', color: '#ffffff' }}
+      >
+        <div className="max-w-6xl mx-auto space-y-12">
+          {/* Logo / Nombre en Footer */}
+          <div className="flex flex-col items-center gap-4">
+            {brand.logo ? (
+              <img src={brand.logo_light || brand.logo} alt="" className="h-12 w-auto object-contain opacity-90 mb-2 grayscale brightness-200" />
+            ) : (
+              <div className="h-12 w-12 rounded-2xl flex items-center justify-center text-white font-black text-xl mb-2" style={{ backgroundColor: primary }}>
+                {brand.name?.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <h2 className="text-3xl font-black italic uppercase tracking-tighter drop-shadow-sm">
+              {brand.name}
+            </h2>
+            <div className="w-12 h-1 bg-[#FF5C3A] rounded-full opacity-50" />
+          </div>
+
+          {/* Social Links en Footer */}
+          {entries && entries.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              {entries.map(([platform, url]) => (
+                <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all hover:bg-white hover:text-black hover:scale-110 active:scale-95 shadow-xl">
+                  {socialIcons[platform.toLowerCase()] ?? null}
+                </a>
+              ))}
+            </div>
+          )}
+
+          {/* Copyright y Branding Lookitry */}
+          <div className="pt-12 border-t border-white/5 space-y-6">
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">
+              Transformando la experiencia de compra online
+            </p>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-[9px] font-black text-white/20 uppercase tracking-widest">
+              <span>© 2026 {brand.name} · Boutique Verificada</span>
+              <span className="hidden md:block">|</span>
+              <p>
+                Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="text-[#FF5C3A] hover:underline">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
+              </p>
+            </div>
+          </div>
+        </div>
       </footer>
 
       {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}

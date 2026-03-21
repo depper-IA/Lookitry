@@ -58,7 +58,27 @@ export default function CheckoutLandingPage() {
   
   const totalPrice = pricing.landingPrice + (includePlan ? planTotal : 0);
 
-  // ... (handlePagar se mantiene igual)
+  const handlePagar = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      if (paymentMethod === 'wompi') {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/checkout-url?plan=${selectedPlan}&months=${months}&includeLanding=true`);
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
+        else throw new Error(data.error || 'Error al generar link de pago');
+      } else {
+        // PayPal Flow (Simulado por ahora o redirigir a whatsapp para manual)
+        const usdAmount = Math.ceil(totalPrice / pricing.trm);
+        const msg = `Hola, quiero activar mi Mini-landing (${selectedPlan} x ${months} meses) mediante PayPal por un total de USD $${usdAmount}. Mi marca es ${brand?.name} (${brand?.slug})`;
+        window.open(`https://wa.me/573001234567?text=${encodeURIComponent(msg)}`, '_blank');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Error al procesar el pago');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">

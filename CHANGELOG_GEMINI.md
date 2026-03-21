@@ -4,19 +4,23 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 
 ---
 
-## 21 de Marzo, 2026 — Corrección de Errores y Ajustes de Diseño Finales
+## 21 de Marzo, 2026 — Rediseño Premium Editorial y Correcciones de Estabilidad
 
 ### ✅ Cambios Aplicados
-1. **Corrección Crítica en `layout.tsx`:**
-   - Solucionado el error de referencia donde se intentaban usar variables de fuente eliminadas (`inter`, `montserrat`). Ahora utiliza correctamente `spaceMono` y `syne`.
-2. **Integridad de Fuentes:**
-   - Verificado que las nuevas fuentes (Jakarta, Playfair, Space Mono y Syne) estén correctamente inyectadas en el HTML global.
-3. **Sincronización de Base de Datos:**
-   - Recordatorio: Ejecutar los comandos SQL para `landing_font` y `widget_bg_color` en Supabase para habilitar el guardado persistente.
+1. **Rediseño del Template Editorial:**
+   - **Prioridad de Conversión:** Catálogo y Probador Virtual ahora son los protagonistas absolutos.
+   - **Optimización de Espacio:** Sección de Información y Horarios reubicada debajo del catálogo en un formato **side-by-side** (izquierda/derecha) para eliminar espacio negativo.
+   - **Footer Estético:** Nuevo pie de página premium con fondo dinámico (`widget_bg_color`), branding destacado y logos sociales reales.
+   - **Grid Refinado:** Ajuste del tamaño de productos a 3 columnas en desktop para una apariencia más elegante.
+2. **Correcciones Técnicas Críticas:**
+   - **Fix `shared.tsx`:** Restauración completa del archivo para eliminar corrupción de caracteres y asegurar la exportación de todos los iconos premium.
+   - **Eliminación de Error de Renderizado:** Resuelto el error "Element type is invalid" en el componente Editorial al asegurar que todos los sub-componentes e iconos estén definidos.
+3. **Responsive Pro Max:**
+   - Verificado el comportamiento de los encabezados y pies de página en móviles, asegurando que los iconos sociales y el nombre de la marca se ajusten dinámicamente.
 
 ### ⏳ Tareas en Proceso / Pendientes
+- **Ejecución SQL:** Pendiente ejecutar `ALTER TABLE brands ADD COLUMN landing_font TEXT DEFAULT 'font-jakarta';` y `ALTER TABLE brands ADD COLUMN widget_bg_color TEXT DEFAULT '#0a0a0a';` en Supabase.
 - **Pruebas de PayPal:** Verificar el flujo completo de checkout con PayPal en producción.
-- **Breadcrumbs en Legales:** Aplicar y verificar físicamente la persistencia de breadcrumbs en `terminos` y `politicas-privacidad`.
 
 ---
 

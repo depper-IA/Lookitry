@@ -780,7 +780,7 @@ export default function SystemConfigPage() {
           <div className="space-y-6">
             <p style={{ color: 'var(--text-muted)' }} className="text-sm">
               Define las instrucciones globales que regirán el comportamiento de la IA en todas las generaciones. 
-              Estos prompts actúan como la "personalidad" y los "límites" del sistema.
+              Estos prompts actúan como la &quot;personalidad&quot; y los &quot;límites&quot; del sistema.
             </p>
 
             <div>

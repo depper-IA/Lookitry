@@ -167,7 +167,7 @@ function ClassicHero({ brand, primaryColor, onScrollDown }: { brand: BrandData; 
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: primaryColor + '10' }}>
-              <SparklesIcon className="w-16 h-16 opacity-10" color={primaryColor} />
+              <SparklesIcon className="w-16 h-16 opacity-10" />
             </div>
           )}
         </div>
@@ -261,7 +261,7 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
             <div className="flex items-center gap-3">
               {brand.logo ? <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-8 object-contain" /> : <span className="font-black text-2xl uppercase italic" style={{ color: primaryColor }}>{brand.name}</span>}
             </div>
-            <p className="text-sm text-gray-500 leading-relaxed font-medium italic max-w-sm text-left">"{brand.brand_description || 'Moda y tecnología unidas para ofrecerte la mejor experiencia de compra virtual.'}"</p>
+            <p className="text-sm text-gray-500 leading-relaxed font-medium italic max-w-sm text-left">&quot;{brand.brand_description || 'Moda y tecnología unidas para ofrecerte la mejor experiencia de compra virtual.'}&quot;</p>
             <div className="flex gap-3 justify-start">
               {brand.social_links && Object.entries(brand.social_links).filter(([,url])=>!!url).map(([p, url]) => (
                 <a key={p} href={url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all">
