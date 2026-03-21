@@ -62,7 +62,18 @@ export interface MiniLandingProps {
  * Mapea las clases font-jakarta, font-playfair, etc. a las variables CSS de Next.js.
  */
 export function DynamicFontStyles() {
-  return null; // Manejado ahora en globals.css para mayor estabilidad
+  return null; // Ahora manejado centralmente en globals.css
+}
+
+/**
+ * Componente oficial del nombre de marca Lookitry con tipografía Jakarta forzada.
+ */
+export function LookitryLogoText({ className = "" }: { className?: string }) {
+  return (
+    <span className={`font-jakarta font-extrabold tracking-tighter ${className}`}>
+      Look<span className="text-[#FF5C3A]">itry</span>
+    </span>
+  );
 }
 
 // ── Componentes Auxiliares Compartidos ────────────────────────────────────────
@@ -152,7 +163,7 @@ export function YouTubeIcon({ className }: { className?: string }) {
 export function XIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.292 19.494h2.039L6.486 3.24H4.298l13.311 17.407z" />       
+      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.292 19.494h2.039L6.486 3.24H4.298l13.311 17.403z" />       
     </svg>
   );
 }

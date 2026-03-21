@@ -10,6 +10,7 @@ import {
   Youtube, 
   Twitter
 } from 'lucide-react';
+import { LookitryLogoText } from '@/components/mini-landing/shared';
 
 const NAV_PRODUCTO = [
   { label: 'Inicio', href: '/' },
@@ -81,9 +82,7 @@ export function LandingFooter() {
               height={22}
               className="object-contain opacity-90 group-hover:opacity-100 transition-opacity"
             />
-            <span className="font-syne font-extrabold text-[15px] text-white tracking-tight">
-              Look<span className="text-[#FF5C3A]">itry</span>
-            </span>
+            <LookitryLogoText className="text-[15px] text-white" />
           </Link>
 
           <p className="text-[13px] text-[#777] leading-relaxed mb-6 max-w-[280px] mx-auto sm:mx-0">
