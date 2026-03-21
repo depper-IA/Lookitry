@@ -10,7 +10,6 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        syne: ['var(--font-syne)', 'sans-serif'],
         jakarta: ['var(--font-jakarta)', 'sans-serif'],
         playfair: ['var(--font-playfair)', 'serif'],
         tech: ['var(--font-tech)', 'monospace'],

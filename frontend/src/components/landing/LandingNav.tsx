@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
+import { LookitryLogoText } from '@/components/mini-landing/shared';
 
 interface LandingNavProps {
   ctaHref?: string;
@@ -83,9 +84,7 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
             className="object-contain h-7 w-auto"
             priority
           />
-          <span className="font-syne font-extrabold text-base text-white tracking-tight leading-none">
-            Look<span className="text-[#FF5C3A]">itry</span>
-          </span>
+          <LookitryLogoText className="text-base text-white leading-none" />
         </Link>
 
         {/* Selector de moneda */}
