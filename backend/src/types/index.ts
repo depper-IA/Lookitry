@@ -103,10 +103,10 @@ export interface AuthRequest extends Request {
 
 // N8n Integration
 export interface N8nWebhookPayload {
-  brandId: string;
-  productId: string;
-  selfieUrl: string;
-  productImageUrl: string;
+  brand_id: string;
+  product_id: string;
+  selfie_url: string;
+  product_image_url: string;
   prompt: string;
 }
 

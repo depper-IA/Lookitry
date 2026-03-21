@@ -115,7 +115,7 @@ export class WompiController {
 
         // Enviar email de verificación ahora que el pago fue confirmado
         if (updatedBrand && !updatedBrand.email_verified && updatedBrand.email_verification_token) {
-          const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+          const frontendUrl = (process.env.NODE_ENV === 'development' || !process.env.FRONTEND_URL) ? 'http://localhost:3000' : process.env.FRONTEND_URL;
           const verifyUrl = `${frontendUrl}/auth/verify?token=${updatedBrand.email_verification_token}`;
           emailService.sendEmail({
             to: updatedBrand.email,
@@ -338,7 +338,7 @@ export class WompiController {
       // Generar la referencia antes de llamar al servicio para poder guardarla en pending_registrations
       const reference = wompiService.generateReference(brandId, monthsNum, planStr, isLandingPurchase);
 
-      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+      const frontendUrl = (process.env.NODE_ENV === 'development' || !process.env.FRONTEND_URL) ? 'http://localhost:3000' : process.env.FRONTEND_URL;
       let successPath: string;
 
       if (!brand?.id && email) {

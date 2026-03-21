@@ -95,7 +95,7 @@ export async function registerPostPayment(req: Request, res: Response) {
         result.brand.id,
         {
           brand_id: result.brand.id,
-          amount: 0, 
+          amount: 0,
           currency: finalMethod === 'paypal' ? 'USD' : 'COP',
           payment_method: finalMethod,
           status: 'completed',
@@ -119,7 +119,7 @@ export async function registerPostPayment(req: Request, res: Response) {
 
     // 7. Email de verificación
     if (result.verificationToken) {
-      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+      const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://pruebalo.wilkiedevs.com');
       const verifyUrl = `${frontendUrl}/auth/verify?token=${result.verificationToken}`;
       emailService.sendEmail({
         to: pending.email,

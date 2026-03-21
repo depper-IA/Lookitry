@@ -218,7 +218,7 @@ describe('WompiController.handleWebhook', () => {
     // Defaults: firma válida, brandId correcto, renovación exitosa
     mockedWompi.verifyWebhookSignature.mockResolvedValue(true);
     mockedWompi.extractBrandIdFromReference.mockReturnValue(BRAND_ID);
-    mockedWompi.extractMetaFromReference.mockReturnValue({ months: 1, plan: 'BASIC' }); // Añadido
+    mockedWompi.extractMetaFromReference.mockReturnValue({ months: 1, plan: 'BASIC', includesLanding: false }); // Añadido
     renewMock?.mockResolvedValue({ id: BRAND_ID });
   });
 

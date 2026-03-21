@@ -16,6 +16,8 @@ export interface Brand {
   email: string;
   name: string;
   slug: string;
+  logo?: string | null;
+  coverImageUrl?: string | null;
   plan: PlanType;
   primaryColor: string;
   secondaryColor: string;

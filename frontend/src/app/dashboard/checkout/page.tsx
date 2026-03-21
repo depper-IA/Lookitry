@@ -46,21 +46,7 @@ const MONTH_DISCOUNTS_FALLBACK = [
   { months: 12, pct: 15, label: '12 meses' },
 ];
 
-<<<<<<< HEAD
-=======
-// Precio a cobrar según plan actual → plan destino
-function getEffectivePrice(
-  targetPlan: PlanType,
-  currentPlan: PlanType | null,
-  planInfo: Record<PlanType, { name: string; price: number; features: string[] }>
-): number {
-  const target = planInfo[targetPlan].price;
-  if (!currentPlan || currentPlan === targetPlan) return target;
-  const current = planInfo[currentPlan]?.price ?? 0;
-  return target > current ? target - current : target;
-}
 
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
 type CheckoutState = 'idle' | 'success' | 'error';
 
 // ── Componente principal ──────────────────────────────────────────────────────
@@ -98,7 +84,6 @@ function CheckoutContent() {
   const [planInfo, setPlanInfo] = useState(PLAN_INFO_FALLBACK);
   const [monthDiscounts, setMonthDiscounts] = useState(MONTH_DISCOUNTS_FALLBACK);
 
-<<<<<<< HEAD
   // Prorrateo y Upgrades
   const [prorationPreview, setProrationPreview] = useState<{
     creditAmount: number;
@@ -113,7 +98,14 @@ function CheckoutContent() {
   // Lógica de suscripción
   const isUpgrade   = hasActiveSub && currentPlan === 'BASIC' && selectedPlan === 'PRO';
   const isDowngrade = hasActiveSub && currentPlan === 'PRO' && selectedPlan === 'BASIC';
+  const isChange    = isUpgrade || isDowngrade;
   const isRenewal   = hasActiveSub && currentPlan === selectedPlan;
+  
+  const monthDiscount = monthDiscounts.find(d => d.months === selectedMonths)!;
+  const planTotal = Math.round(planInfo[selectedPlan].price * selectedMonths * (1 - monthDiscount.pct / 100));
+  const totalPrice = isChange && prorationPreview 
+    ? Math.max(0, prorationPreview.amountToPay + (includeLanding ? miniLandingPrice : 0))
+    : (planTotal + (includeLanding ? miniLandingPrice : 0));
 
   const handlePagarPaypal = async () => {
     setRedirecting(true);
@@ -137,17 +129,6 @@ function CheckoutContent() {
       setRedirecting(false);
     }
   };
-=======
-  // Precios dinámicos desde pricing_config de Supabase
-  const [planInfo, setPlanInfo] = useState(PLAN_INFO_FALLBACK);
-
-  const plan = selectedPlan;
-  const monthDiscount = MONTH_DISCOUNTS.find(d => d.months === selectedMonths)!;
-  const effectivePlanPrice = isInTrial ? planInfo[plan].price : getEffectivePrice(plan, currentPlan, planInfo);
-  const planTotal = Math.round(effectivePlanPrice * selectedMonths * (1 - monthDiscount.pct / 100));
-  const isUpgrade = !isInTrial && currentPlan !== null && currentPlan !== plan && effectivePlanPrice < planInfo[plan].price;
-  const totalPrice = planTotal + (includeLanding ? miniLandingPrice : 0);
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
 
   useEffect(() => {
     subscriptionService.getSubscriptionInfo().then((info) => {
@@ -165,10 +146,6 @@ function CheckoutContent() {
       .then(() => setWompiEnabled(true))
       .catch(() => setWompiEnabled(false));
 
-<<<<<<< HEAD
-=======
-    // Cargar precios dinámicos en paralelo
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
     Promise.all([
       fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
         .then(r => r.ok ? r.json() : null),
@@ -179,18 +156,15 @@ function CheckoutContent() {
         },
       }).then(r => r.ok ? r.json() : null),
     ]).then(([paySettings, pricingRows]) => {
-<<<<<<< HEAD
       if (paySettings) {
         if (paySettings.landingPrice) setMiniLandingPrice(paySettings.landingPrice);
         if (paySettings.trm) setTrm(paySettings.trm);
-        setPaypalEnabled(paySettings.paypalEnabled ?? true);
+        if (typeof paySettings.paypalEnabled === 'boolean') setPaypalEnabled(paySettings.paypalEnabled);
       }
-      
       if (Array.isArray(pricingRows)) {
         const basicData = pricingRows.find((r: any) => r.id === 'basic')?.data;
         const proData   = pricingRows.find((r: any) => r.id === 'pro')?.data;
         const descData  = pricingRows.find((r: any) => r.id === 'descuentos_duracion')?.data;
-        
         if (basicData || proData) {
           setPlanInfo({
             BASIC: {
@@ -205,7 +179,6 @@ function CheckoutContent() {
             }
           });
         }
-        
         if (descData) {
           setMonthDiscounts([
             { months: 1,  pct: descData.meses_1  ?? 0,  label: '1 mes' },
@@ -214,33 +187,32 @@ function CheckoutContent() {
             { months: 12, pct: descData.meses_12 ?? 15, label: '12 meses' },
           ]);
         }
-        setMonthDiscounts(prev => prev); // Fallback ya definido
       }
     }).catch(err => {
       console.error('[Checkout] Error loading external settings:', err);
     });
-  }, []);
+  }, [selectedPlan]);
 
-  // Calcular prorrateo cuando es upgrade
+  // Calcular prorrateo cuando hay cambio de plan (Upgrade o Downgrade)
   useEffect(() => {
-    if (!isUpgrade || loadingInfo) {
+    if (!isChange || loadingInfo) {
       setProrationPreview(null);
       return;
     }
     setLoadingProration(true);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-    const newPlanPricePerMonth = planInfo['PRO'].price;
-    const currentPlanPriceTotal = Math.ceil(planInfo['BASIC'].price * selectedMonths);
+    const newPlanPricePerMonth = planInfo[selectedPlan].price;
+    const currentPlanPriceTotal = Math.ceil(planInfo[currentPlan as PlanType].price * selectedMonths);
 
     fetch(
-      `${apiUrl}/api/payments/wompi/upgrade-preview?newPlan=PRO&newMonths=${selectedMonths}&newPlanPricePerMonth=${newPlanPricePerMonth}&currentPlanPriceTotal=${currentPlanPriceTotal}`,
+      `${apiUrl}/api/payments/wompi/upgrade-preview?newPlan=${selectedPlan}&newMonths=${selectedMonths}&newPlanPricePerMonth=${newPlanPricePerMonth}&currentPlanPriceTotal=${currentPlanPriceTotal}`,
       { credentials: 'include' }
     )
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setProrationPreview(data); })
       .catch(() => {})
       .finally(() => setLoadingProration(false));
-  }, [isUpgrade, selectedMonths, loadingInfo, planInfo]);
+  }, [isChange, selectedMonths, loadingInfo, planInfo, selectedPlan]);
 
   const handleFreeUpgrade = async () => {
     if (!prorationPreview || !prorationPreview.isFree) return;
@@ -252,7 +224,7 @@ function CheckoutContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          newPlan: 'PRO',
+          newPlan: selectedPlan,
           newMonths: selectedMonths,
           creditAmount: prorationPreview.creditAmount,
           newPlanTotal: prorationPreview.newPlanTotal,
@@ -272,21 +244,6 @@ function CheckoutContent() {
       setApplyingFreeUpgrade(false);
     }
   };
-=======
-      if (paySettings?.landingPrice) setMiniLandingPrice(paySettings.landingPrice);
-      if (Array.isArray(pricingRows)) {
-        const basic = pricingRows.find((r: any) => r.id === 'basic')?.data;
-        const pro   = pricingRows.find((r: any) => r.id === 'pro')?.data;
-        if (basic?.precio_mensual_cop || pro?.precio_mensual_cop) {
-          setPlanInfo(prev => ({
-            BASIC: { ...prev.BASIC, price: basic?.precio_mensual_cop ?? prev.BASIC.price },
-            PRO:   { ...prev.PRO,   price: pro?.precio_mensual_cop   ?? prev.PRO.price },
-          }));
-        }
-      }
-    }).catch(() => {});
-  }, [plan]);
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
 
   const handleSuccess = (result: WompiWidgetResult) => {
     console.log('[Wompi] Pago aprobado:', result.transaction.id);
@@ -368,13 +325,6 @@ function CheckoutContent() {
 
   // ── Helpers de UI ─────────────────────────────────────────────────────────
 
-  const plan = selectedPlan;
-  const monthDiscount = monthDiscounts.find(d => d.months === selectedMonths) || { months: 1, pct: 0 };
-  const planTotal = Math.ceil(planInfo[plan].price * selectedMonths * (1 - monthDiscount.pct / 100));
-  const totalPrice = isUpgrade && prorationPreview 
-    ? (prorationPreview.amountToPay + (includeLanding ? miniLandingPrice : 0))
-    : (planTotal + (includeLanding ? miniLandingPrice : 0));
-
   // Etiqueta de acción según el modo
   const actionLabel = (() => {
     if (!hasActiveSub) return 'Activar suscripción';
@@ -406,19 +356,8 @@ function CheckoutContent() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-<<<<<<< HEAD
           <h1 className="text-xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>{actionLabel}</h1>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{actionSubtitle}</p>
-=======
-          <h1 className="text-xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>Checkout</h1>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            {isInTrial
-              ? `Activar ${planInfo[plan].name} — desde tu período de prueba`
-              : isUpgrade
-                ? `Upgrade de ${planInfo[currentPlan!].name} a ${planInfo[plan].name}`
-                : `Activa tu suscripción — ${planInfo[plan].name}`}
-          </p>
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
         </div>
       </div>
 
@@ -587,7 +526,7 @@ function CheckoutContent() {
             <div className="mt-3 flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2">
               <span className="text-xs text-emerald-600">Ahorro con {monthDiscount.pct}% de descuento</span>
               <span className="text-sm font-bold text-emerald-600">
-                − {formatPrice(Math.ceil(planInfo[plan].price * selectedMonths * (monthDiscount.pct / 100)), paymentMethod, trm)}
+                − {formatPrice(Math.ceil(planInfo[selectedPlan].price * selectedMonths * (monthDiscount.pct / 100)), paymentMethod, trm)}
               </span>
             </div>
           )}
@@ -602,29 +541,18 @@ function CheckoutContent() {
         <div className="px-6 py-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{planInfo[plan].name}</p>
+              <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{planInfo[selectedPlan].name}</p>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                 {selectedMonths === 1
                   ? '1 mes (30 días)'
                   : `${selectedMonths} meses${monthDiscount.pct > 0 ? ` · ${monthDiscount.pct}% descuento` : ''}`}
               </p>
             </div>
-<<<<<<< HEAD
             <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{formatPrice(planTotal, paymentMethod, trm)}</p>
-=======
-            <div className="text-right">
-              <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{formatCurrency(planTotal)}</p>
-              {selectedMonths > 1 && (
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                  {formatCurrency(planInfo[plan].price)}/mes × {selectedMonths}
-                </p>
-              )}
-            </div>
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
           </div>
 
           <ul className="space-y-2 pt-2 border-t" style={{ borderColor: 'var(--border-color)' }}>
-            {planInfo[plan].features.map((f) => (
+            {planInfo[selectedPlan].features.map((f: string) => (
               <li key={f} className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                 <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                 {f}
@@ -665,43 +593,42 @@ function CheckoutContent() {
           )}
 
           <div className="pt-3 border-t space-y-2" style={{ borderColor: 'var(--border-color)' }}>
+            {isUpgrade && prorationPreview ? (
+              <>
+                <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <span>Precio {planInfo[selectedPlan].name} × {selectedMonths} mes{selectedMonths > 1 ? 'es' : ''}</span>
+                  <span>{formatPrice(planTotal, paymentMethod, trm)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm" style={{ color: '#10b981' }}>
+                  <span>Crédito plan actual ({prorationPreview.daysRemaining} días)</span>
+                  <span>− {formatPrice(prorationPreview.creditAmount, paymentMethod, trm)}</span>
+                </div>
+              </>
+            ) : (
+              isRenewal || isDowngrade ? (
+                <>
+                  <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
+                    <span>Precio {planInfo[selectedPlan].name} × {selectedMonths} mes{selectedMonths > 1 ? 'es' : ''}</span>
+                    <span>{formatPrice(planTotal, paymentMethod, trm)}</span>
+                  </div>
+                  {currentPlan && (
+                    <div className="flex items-center justify-between text-sm text-emerald-600">
+                      <span>Ya pagaste ({planInfo[currentPlan].name})</span>
+                      <span>− {formatPrice(planInfo[currentPlan].price, paymentMethod, trm)}</span>
+                    </div>
+                  )}
+                </>
+              ) : null
+            )}
             {includeLanding && (
               <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
-<<<<<<< HEAD
                 <span>Mini-landing (pago único)</span>
                 <span>{formatPrice(miniLandingPrice, paymentMethod, trm)}</span>
               </div>
             )}
-            {isUpgrade && prorationPreview && (
-              <div className="flex items-center justify-between text-sm" style={{ color: '#10b981' }}>
-                <span>Crédito plan actual ({prorationPreview.daysRemaining} días)</span>
-                <span>− {formatPrice(prorationPreview.creditAmount, paymentMethod, trm)}</span>
-=======
-                <span>Precio {planInfo[plan].name} × {selectedMonths} mes{selectedMonths > 1 ? 'es' : ''}</span>
-                <span>{formatCurrency(Math.round(planInfo[plan].price * selectedMonths * (1 - monthDiscount.pct / 100)))}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm text-emerald-600">
-                <span>Ya pagaste ({planInfo[currentPlan!].name})</span>
-                <span>− {formatCurrency(planInfo[currentPlan!].price)}</span>
-              </div>
-              {includeLanding && (
-                <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
-                  <span>Mini-landing (pago único)</span>
-                  <span>{formatCurrency(miniLandingPrice)}</span>
-                </div>
-              )}
-              <div
-                className="flex items-center justify-between pt-2 border-t font-semibold"
-                style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-              >
-                <span>Total a pagar hoy</span>
-                <span className="text-xl font-bold" style={{ color: '#FF5C3A' }}>{formatCurrency(totalPrice)}</span>
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
-              </div>
-            )}
-            <div className="flex items-center justify-between">
-              <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Total a pagar</p>
-              <p className="text-xl font-bold" style={{ color: '#FF5C3A' }}>{formatPrice(totalPrice, paymentMethod, trm)}</p>
+            <div className="flex items-center justify-between font-semibold pt-2 border-t" style={{ borderColor: 'var(--border-color)' }}>
+              <span style={{ color: 'var(--text-primary)' }}>Total a pagar</span>
+              <span className="text-xl font-bold" style={{ color: '#FF5C3A' }}>{formatPrice(totalPrice, paymentMethod, trm)}</span>
             </div>
           </div>
         </div>
@@ -743,7 +670,7 @@ function CheckoutContent() {
         <PaymentSection
           wompiEnabled={wompiEnabled}
           paypalEnabled={paypalEnabled}
-          plan={plan}
+          plan={selectedPlan}
           months={selectedMonths}
           amount={totalPrice}
           trm={trm}

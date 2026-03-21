@@ -226,10 +226,10 @@ export class PruebaloController {
       const prompt = await promptRagService.enrichPrompt(finalPrompt, product.category ?? null);
 
       const n8nResult = await n8nClient.callTryOnWebhook({
-        brandId: brand.id,
-        productId: product.id,
-        selfieUrl: uploadResult.url,
-        productImageUrl: product.image_url,
+        brand_id: brand.id,
+        product_id: product.id,
+        selfie_url: uploadResult.url,
+        product_image_url: product.image_url,
         prompt,
       });
 
