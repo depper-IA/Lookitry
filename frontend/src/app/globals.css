@@ -4,8 +4,6 @@
 
 /* ── Variables de tema ─────────────────────────────────────────────────────── */
 :root {
-  --font-jakarta: 'Plus Jakarta Sans', sans-serif;
-  --font-dm-sans: 'DM Sans', sans-serif;
   --color-accent: #FF5C3A;
   --color-dark: #0a0a0a;
   --color-warm: #f5f2ee;
@@ -44,21 +42,36 @@
   --bg-input: #0f0f0f;
 }
 
-.font-jakarta { font-family: var(--font-jakarta), sans-serif; }
-.font-playfair { font-family: var(--font-playfair), serif; }
-.font-tech { font-family: var(--font-tech), monospace; }
-.font-syne { font-family: var(--font-syne), sans-serif; }
-
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 body {
-  font-family: var(--font-dm-sans, 'DM Sans', sans-serif);
+  font-family: var(--font-dm-sans), sans-serif;
   background-color: var(--bg-base);
   color: var(--text-primary);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-jakarta), sans-serif;
+  font-weight: 800;
+}
+
+.font-jakarta { font-family: var(--font-jakarta), sans-serif; }
+.font-dm-sans { font-family: var(--font-dm-sans), sans-serif; }
+.font-syne { font-family: var(--font-syne), sans-serif; }
+.font-playfair { font-family: var(--font-playfair), serif; }
+.font-tech { font-family: var(--font-tech), monospace; }
+
+
+/* ── Herencia Dinámica de Fuentes (Mini-landing) ─────────────────────────── */
+.font-jakarta h1, .font-jakarta h2, .font-jakarta h3, .font-jakarta h4, .font-jakarta h5, .font-jakarta h6 { font-family: var(--font-jakarta), sans-serif !important; }
+.font-syne h1, .font-syne h2, .font-syne h3, .font-syne h4, .font-syne h5, .font-syne h6 { font-family: var(--font-syne), sans-serif !important; }
+.font-playfair h1, .font-playfair h2, .font-playfair h3, .font-playfair h4, .font-playfair h5, .font-playfair h6 { font-family: var(--font-playfair), serif !important; }
+.font-tech h1, .font-tech h2, .font-tech h3, .font-tech h4, .font-tech h5, .font-tech h6 { font-family: var(--font-tech), monospace !important; }
+.font-dm-sans h1, .font-dm-sans h2, .font-dm-sans h3, .font-dm-sans h4, .font-dm-sans h5, .font-dm-sans h6 { font-family: var(--font-dm-sans), sans-serif !important; }
+
 
 /* ── Utilidades de tema ────────────────────────────────────────────────────── */
 .theme-bg-base    { background-color: var(--bg-base); }

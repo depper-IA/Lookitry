@@ -36,36 +36,36 @@ export function GenerationLoader({ productName, primaryColor = '#6366f1' }: Gene
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4">
+    <div className="flex flex-col items-center justify-center py-8 md:py-16 px-4">
       {/* Animación central */}
-      <div className="relative w-28 h-28 mb-8">
+      <div className="relative w-24 h-24 md:w-28 md:h-28 mb-6 md:mb-8">
         <div className="absolute inset-0 rounded-full border-4 border-gray-100" />
         <div className="absolute inset-0 rounded-full border-4 border-transparent animate-spin"
           style={{ borderTopColor: primaryColor, animationDuration: '1s' }} />
-        <div className="absolute inset-3 rounded-full border-4 border-transparent animate-spin"
+        <div className="absolute inset-2.5 md:inset-3 rounded-full border-4 border-transparent animate-spin"
           style={{ borderTopColor: `${primaryColor}60`, animationDuration: '1.5s', animationDirection: 'reverse' }} />
         <div className="absolute inset-0 flex items-center justify-center">
-          <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: primaryColor }}>
+          <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: primaryColor }}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
           </svg>
         </div>
       </div>
 
-      <h2 className="text-xl font-bold text-gray-900 mb-1">Generando tu look</h2>
-      <p className="text-sm text-gray-500 mb-6">
-        Probando <span className="font-medium text-gray-700">{productName}</span>
+      <h2 className="text-lg md:text-xl font-black text-gray-900 uppercase italic tracking-tight mb-1">Generando look</h2>
+      <p className="text-[10px] md:text-sm text-gray-400 font-bold uppercase tracking-widest mb-5">
+        Probando <span className="text-gray-600">{productName}</span>
       </p>
 
       {/* Barra de progreso */}
-      <div className="w-full max-w-xs bg-gray-100 rounded-full h-1.5 mb-3 overflow-hidden">
+      <div className="w-full max-w-[200px] md:max-w-xs bg-gray-100 rounded-full h-1.5 mb-3 overflow-hidden shadow-inner">
         <div className="h-full rounded-full transition-all duration-1000 ease-out"
           style={{ width: `${progress}%`, backgroundColor: primaryColor }} />
       </div>
 
       {/* Mensaje animado */}
-      <p className="text-sm text-gray-400 h-5 transition-all duration-500">{MESSAGES[msgIndex]}</p>
+      <p className="text-[11px] md:text-sm text-gray-400 font-medium h-5 transition-all duration-500 uppercase tracking-tighter">{MESSAGES[msgIndex]}</p>
 
-      <p className="text-xs text-gray-300 mt-6">Esto puede tardar hasta 30 segundos</p>
+      <p className="text-[9px] md:text-xs text-gray-300 mt-6 font-black uppercase tracking-[0.2em]">IA LOOKITRY ACTIVE</p>
     </div>
   );
 }

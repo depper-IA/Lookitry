@@ -57,6 +57,14 @@ export interface MiniLandingProps {
   footerUrl?: string;
 }
 
+/**
+ * Inyecta los estilos de fuente dinámicos para que Tailwind reconozca las variables de Google Fonts.
+ * Mapea las clases font-jakarta, font-playfair, etc. a las variables CSS de Next.js.
+ */
+export function DynamicFontStyles() {
+  return null; // Manejado ahora en globals.css para mayor estabilidad
+}
+
 // ── Componentes Auxiliares Compartidos ────────────────────────────────────────
 
 export function BrandLogo({ src, alt, className }: { src?: string | null; alt: string; className?: string }) {
@@ -99,16 +107,6 @@ export function WhatsAppFAB({ phone, message }: { phone: string; message?: strin
   );
 }
 
-export function LandingFooter({ primaryColor, footerUrl }: { primaryColor: string; footerUrl?: string }) {
-  return (
-    <footer className="py-12 px-6 text-center border-t border-gray-100 bg-white">
-      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-        Probador virtual impulsado por <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
-      </p>
-    </footer>
-  );
-}
-
 // ── Iconos sociales reales ───────────────────────────────────────────────────
 
 export function WhatsAppIcon({ className }: { className?: string }) {
@@ -146,7 +144,7 @@ export function TikTokIcon({ className }: { className?: string }) {
 export function YouTubeIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.016 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.016 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.86-.42-5.58zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
     </svg>
   );
 }
@@ -154,7 +152,7 @@ export function YouTubeIcon({ className }: { className?: string }) {
 export function XIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.292 19.494h2.039L6.486 3.24H4.298l13.311 17.407z" />
+      <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.292 19.494h2.039L6.486 3.24H4.298l13.311 17.407z" />       
     </svg>
   );
 }
@@ -169,8 +167,8 @@ export function SparklesIcon({ className }: { className?: string }) {
 
 export function StarIcon({ className, filled }: { className?: string; filled?: boolean }) {
   return (
-    <svg className={className} fill={filled ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+    <svg className={className} fill={filled ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
     </svg>
   );
 }

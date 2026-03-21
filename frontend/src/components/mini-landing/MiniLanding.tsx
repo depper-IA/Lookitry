@@ -5,6 +5,7 @@ import { TemplateClassic } from './TemplateClassic';
 import { TemplateEditorial } from './TemplateEditorial';
 import { TemplateModerno } from './TemplateModerno';
 import type { BrandData, ProductData, MiniLandingProps } from './shared';
+import { DynamicFontStyles } from './shared';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
@@ -120,6 +121,7 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
 
   return (
     <div className="relative">
+      <DynamicFontStyles />
       {/* Timer flotante discreto (Datos dinámicos) */}
       {!brand.has_landing_page && timeLeft !== null && timeLeft > 0 && !isBlocked && (
         <div className="fixed bottom-6 right-6 z-[100] bg-black/80 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-10 duration-500">

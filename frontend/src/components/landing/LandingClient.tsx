@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import FaqSection from '@/components/landing/FaqSection';
+import { LandingNav } from '@/components/landing/LandingNav';
 import { PaymentTrustBadges } from '@/components/landing/PaymentTrustBadges';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { LandingPricingCard } from '@/components/landing/LandingPricingCard';
@@ -133,10 +134,10 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
   ];
 
   return (
-    <div className="bg-[#f5f2ee]">
-      <main>
-        {/* HERO */}
-        <section className="bg-[#0a0a0a] px-6 md:px-8 pt-16 md:pt-20 pb-16 md:pb-20 text-center relative overflow-hidden">
+    <main className="min-h-screen overflow-x-hidden bg-[#f5f2ee]">
+      <LandingNav />
+      {/* HERO */}
+      <section className="bg-[#0a0a0a] px-6 md:px-8 pt-16 md:pt-20 pb-16 md:pb-20 text-center relative overflow-hidden">
           <p className="sr-only">
             Lookitry es un probador virtual con inteligencia artificial para tiendas de ropa, accesorios y calzado en Latinoamérica.
           </p>
@@ -152,7 +153,7 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
             </div>
             <h1
               style={{ fontSize: 'clamp(32px, 6vw, 58px)' }}
-              className="font-syne font-extrabold text-white leading-[1.1] tracking-tight mb-5"
+              className="text-white leading-[1.1] tracking-tight mb-5"
             >
               Tus clientes se prueban<br />
               tu producto <span className="text-[#FF5C3A]">antes de comprar</span>
@@ -240,7 +241,7 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
               { n: '4.8/5', label: 'satisfacción promedio' },
             ].map(s => (
               <div key={s.label} className="text-center min-w-[80px]">
-                <div className="font-syne font-extrabold text-3xl md:text-4xl text-[#0a0a0a] tracking-tight">{s.n}</div>
+                <div className="font-extrabold text-3xl md:text-4xl text-[#0a0a0a] tracking-tight">{s.n}</div>
                 <div className="text-[13px] text-[#666] mt-1">{s.label}</div>
               </div>
             ))}
@@ -251,15 +252,15 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
         <section className="bg-[#0a0a0a] py-16 md:py-20 px-6 md:px-8" aria-labelledby="pricing-heading">
           <div className="max-w-[700px] mx-auto">
             <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Planes</p>
-            <h2 id="pricing-heading" className="font-syne font-bold text-3xl text-white tracking-tight mb-10">
+            <h2 id="pricing-heading" className="font-bold text-3xl text-white tracking-tight mb-10">
               Precios simples
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-4">
               {/* Básico */}
               <div className="bg-[#141414] border border-[#2a2a2a] hover:border-[#FF5C3A]/60 transition-colors duration-200 rounded-xl p-6 md:p-7 flex flex-col h-full relative">
-                <div className="font-syne font-bold text-lg text-white mb-1">Básico</div>
+                <div className="font-bold text-lg text-white mb-1">Básico</div>
                 <div className="mb-0.5 flex flex-wrap items-baseline gap-x-2">
-                  <span className="font-syne font-extrabold text-[30px] text-white tracking-tight">
+                  <span className="font-extrabold text-[30px] text-white tracking-tight">
                     {formatPrice(basicPrice)}
                   </span>
                   {basicOrig > basicPrice && (
@@ -300,9 +301,9 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
                 >
                   Más popular
                 </div>
-                <div className="font-syne font-bold text-lg text-white mb-1">Pro</div>
+                <div className="font-bold text-lg text-white mb-1">Pro</div>
                 <div className="mb-0.5 flex flex-wrap items-baseline gap-x-2">
-                  <span className="font-syne font-extrabold text-[30px] text-white tracking-tight">
+                  <span className="font-extrabold text-[30px] text-white tracking-tight">
                     {formatPrice(proPrice)}
                   </span>
                   {proOrig > proPrice && (
@@ -348,7 +349,7 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
         <section className="bg-[#f5f2ee] py-16 md:py-20 px-6 md:px-8">
           <div className="max-w-[860px] mx-auto">
             <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3 text-center">Cómo funciona</p>
-            <h2 className="font-syne font-bold text-[32px] text-[#0a0a0a] tracking-tight mb-10 text-center">
+            <h2 className="font-bold text-[32px] text-[#0a0a0a] tracking-tight mb-10 text-center">
               Tres pasos. Sin complicaciones.
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -364,13 +365,13 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
                       priority={i === 0}
                     />
                     <div className="absolute top-3 left-3">
-                      <span className="font-syne inline-block text-white font-extrabold text-sm px-2.5 py-1 rounded-lg leading-none bg-[#FF5C3A]">
+                      <span className="inline-block text-white font-extrabold text-sm px-2.5 py-1 rounded-lg leading-none bg-[#FF5C3A]">
                         {s.n}
                       </span>
                     </div>
                   </div>
                   <div className="p-5">
-                    <h3 className="font-syne font-bold text-base text-[#0a0a0a] mb-1.5">{s.title}</h3>
+                    <h3 className="font-bold text-base text-[#0a0a0a] mb-1.5">{s.title}</h3>
                     <p className="text-[13px] text-[#666] leading-relaxed">{s.desc}</p>
                   </div>
                 </div>
@@ -386,7 +387,7 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
               <div className="inline-flex items-center gap-2 bg-white border border-[#e0dcd7] text-[#FF5C3A] text-[11px] font-semibold tracking-widest uppercase px-3 py-1.5 rounded-full mb-5">
                 Servicio adicional · Pago único
               </div>
-              <h2 className="font-syne font-extrabold text-[#0a0a0a] tracking-tight leading-tight mb-4 text-3xl md:text-4xl">
+              <h2 className="font-extrabold text-[#0a0a0a] tracking-tight leading-tight mb-4 text-3xl md:text-4xl">
                 Tu tienda online,<br /><span className="text-[#FF5C3A]">sin pagar un diseñador</span>
               </h2>
             </div>
@@ -432,6 +433,5 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
           </svg>
         </button>
       </main>
-    </div>
   );
 }
