@@ -51,29 +51,29 @@ function StepBar({ step, primaryColor }: { step: Step; primaryColor: string }) {
   const current = step === 'generating' ? 2 : steps.findIndex(s => s.key === step);
 
   return (
-    <div className="flex items-center justify-center gap-0 py-3 px-4 bg-white border-b border-gray-100">
+    <div className="flex items-center justify-center gap-0 py-2 md:py-3 px-4 bg-white border-b border-gray-100">
       {steps.map((s, i) => {
         const done = i < current;
         const active = i === current;
         return (
           <div key={s.key} className="flex items-center">
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-0.5 md:gap-1">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-[10px] md:text-sm font-bold transition-all ${
                   done ? 'text-white' : active ? 'text-white shadow-md' : 'bg-gray-100 text-gray-400'
                 }`}
                 style={done || active ? { backgroundColor: primaryColor } : {}}
               >
                 {done ? (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                  <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                 ) : s.num}
               </div>
-              <span className={`text-xs font-medium ${active ? 'text-gray-800' : done ? 'text-gray-500' : 'text-gray-400'}`}>
+              <span className={`text-[9px] md:text-xs font-black uppercase tracking-tighter ${active ? 'text-gray-800' : done ? 'text-gray-500' : 'text-gray-400'}`}>
                 {s.label}
               </span>
             </div>
             {i < steps.length - 1 && (
-              <div className="w-12 h-0.5 mx-1 mb-4 rounded transition-all" style={{ backgroundColor: i < current ? primaryColor : '#e5e7eb' }} />
+              <div className="w-8 md:w-12 h-0.5 mx-1 mb-3.5 md:mb-4 rounded transition-all" style={{ backgroundColor: i < current ? primaryColor : '#e5e7eb' }} />
             )}
           </div>
         );
@@ -94,25 +94,24 @@ function FriendlyProductSelector({
 }) {
   if (products.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
-          <svg className="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <div className="text-center py-8 md:py-12">
+        <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+          <svg className="w-6 h-6 md:w-7 md:h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
           </svg>
         </div>
-        <p className="text-gray-500 font-medium">No hay productos disponibles aún</p>
-        <p className="text-sm text-gray-400 mt-1">La tienda está preparando sus productos</p>
+        <p className="text-gray-500 font-medium text-sm md:text-base">No hay productos disponibles aún</p>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-4 text-center">
-        <p className="text-base font-semibold text-gray-800">¿Qué quieres probarte hoy?</p>
-        <p className="text-sm text-gray-500 mt-0.5">Toca el producto que más te guste</p>
+      <div className="mb-3 md:mb-4 text-center">
+        <p className="text-sm md:text-base font-black text-gray-900 uppercase italic tracking-tight">¿Qué quieres probarte?</p>
+        <p className="text-[10px] md:text-sm text-gray-400 font-medium uppercase tracking-widest mt-0.5">Toca el producto que más te guste</p>
       </div>
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 md:gap-3">
         {products.map(p => {
           const sel = selected?.id === p.id;
           const alreadyGenerated = generatedProducts.has(p.id);
@@ -121,38 +120,35 @@ function FriendlyProductSelector({
               key={p.id}
               onClick={() => onSelect(p)}
               className={`rounded-xl overflow-hidden border-2 text-left transition-all duration-200 bg-white ${
-                sel ? 'scale-[1.04] shadow-lg' : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                sel ? 'scale-[1.04] shadow-lg' : 'border-gray-100 hover:border-gray-200'
               }`}
               style={sel ? { borderColor: primaryColor, boxShadow: `0 4px 16px ${primaryColor}30` } : {}}
             >
-              <div className="relative bg-gray-50">
+              <div className="relative bg-gray-50 aspect-square">
                 <img
                   src={p.imageUrl}
                   alt={p.name}
-                  className="w-full aspect-square object-contain"
+                  className="w-full h-full object-contain"
                 />
                 {/* Badge "Ya probado" */}
                 {alreadyGenerated && !sel && (
-                  <div className="absolute top-1 left-1 w-5 h-5 rounded-full flex items-center justify-center shadow-md" style={{ backgroundColor: '#10b981' }}>
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <div className="absolute top-1 left-1 w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center shadow-md" style={{ backgroundColor: '#10b981' }}>
+                    <svg className="w-2.5 h-2.5 md:w-3 md:h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
                 )}
                 {sel && (
                   <div
-                    className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-white shadow-md"
+                    className="absolute top-1 right-1 w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center text-white shadow-md"
                     style={{ backgroundColor: primaryColor }}
                   >
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    <svg className="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                   </div>
                 )}
               </div>
-              <div className="px-1.5 py-1.5">
-                <p className="font-medium text-[11px] text-gray-900 leading-tight truncate">{p.name}</p>
-                {alreadyGenerated && (
-                  <p className="text-[10px] mt-0.5 truncate" style={{ color: '#10b981' }}>Ver resultado</p>
-                )}
+              <div className="p-1.5 md:p-2">
+                <p className="font-black text-[9px] md:text-[11px] text-gray-900 uppercase tracking-tighter truncate leading-none">{p.name}</p>
               </div>
             </button>
           );
@@ -572,30 +568,30 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     return (
       <div className="min-h-screen flex flex-col" style={{ backgroundColor: secondaryColor }}>
         {step === 'generating' && (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center py-8">
             <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
           </div>
         )}
         {step !== 'generating' && (
-          <div className="flex-1 max-w-lg mx-auto w-full px-4 py-6">
+          <div className="flex-1 max-w-lg mx-auto w-full px-4 py-4 md:py-6">
             <ErrorBanner error={error} isService={errorIsService} />
             {step === 'upload' && (
               <SelfieUploader onUpload={handleSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} />
             )}
             {step === 'select' && (
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 <SelfieThumb preview={selfiePreview} onReset={handleReset} />
                 <FriendlyProductSelector products={config.products} selected={selectedProduct} onSelect={handleProductSelect} primaryColor={primaryColor} generatedProducts={generatedProducts} />
                 {selectedProduct && (
-                  <div className="sticky bottom-4">
+                  <div className="sticky bottom-4 pt-2">
                     <button
                       onClick={handleGenerate}
-                      className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
+                      className="w-full py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
                       style={{ backgroundColor: primaryColor }}
                     >
                       {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
                     </button>
-                    <p className="text-center text-xs text-gray-400 mt-2">
+                    <p className="text-center text-[10px] md:text-xs text-gray-400 mt-2">
                       {generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
                     </p>
                   </div>
@@ -618,15 +614,15 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
       <StepBar step={step} primaryColor={primaryColor} />
 
       {/* Guía contextual */}
-      <div className="max-w-lg mx-auto px-4 pt-4">
-        <div className="rounded-2xl px-4 py-3 text-center text-sm font-medium" style={{ backgroundColor: primaryColor + '15', color: primaryColor }}>
-          {step === 'upload' && 'Sube o toma una foto para empezar'}
-          {step === 'select' && 'Elige el producto que quieres probarte'}
-          {step === 'result' && 'Aquí está tu prueba virtual'}
+      <div className="max-w-lg mx-auto px-4 pt-3 md:pt-4">
+        <div className="rounded-xl md:rounded-2xl px-4 py-2 md:py-3 text-center text-xs md:text-sm font-black uppercase italic tracking-tighter" style={{ backgroundColor: primaryColor + '10', color: primaryColor }}>
+          {step === 'upload' && 'Sube o toma una foto'}
+          {step === 'select' && 'Elige un producto'}
+          {step === 'result' && 'Tu prueba virtual'}
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-5">
+      <div className="max-w-lg mx-auto px-4 py-4 md:py-5">
         <ErrorBanner error={error} isService={errorIsService} />
 
         {step === 'upload' && (
@@ -634,17 +630,17 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
         )}
 
         {step === 'select' && (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             <SelfieThumb preview={selfiePreview} onReset={handleReset} />
             <FriendlyProductSelector products={config.products} selected={selectedProduct} onSelect={handleProductSelect} primaryColor={primaryColor} generatedProducts={generatedProducts} />
             {selectedProduct && (
-              <div className="sticky bottom-4">
+              <div className="sticky bottom-4 pt-2">
                 <button onClick={handleGenerate}
-                  className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
                   style={{ backgroundColor: primaryColor }}>
                   {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
                 </button>
-                <p className="text-center text-xs text-gray-400 mt-2">
+                <p className="text-center text-[10px] md:text-xs text-gray-400 mt-2">
                   {generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
                 </p>
               </div>
@@ -667,15 +663,15 @@ function GenerateButton({
   onClick, label, cachedHint, primaryColor,
 }: { onClick: () => void; label: string; cachedHint: boolean; primaryColor: string }) {
   return (
-    <div className="sticky bottom-4">
+    <div className="sticky bottom-4 pt-2">
       <button
         onClick={onClick}
-        className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
+        className="w-full py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
         style={{ backgroundColor: primaryColor }}
       >
         {label}
       </button>
-      <p className="text-center text-xs text-gray-400 mt-2">
+      <p className="text-center text-[10px] md:text-xs text-gray-400 mt-2">
         {cachedHint ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
       </p>
     </div>
@@ -687,17 +683,17 @@ function BrandHeader({ config, primaryColor, onReset, showReset }: {
 }) {
   return (
     <div className="bg-white border-b border-gray-100 shadow-sm">
-      <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between min-h-[56px]">
+      <div className="max-w-lg mx-auto px-4 py-2 md:py-3 flex items-center justify-between min-h-[48px] md:min-h-[56px]">
         <div className="flex items-center gap-3">
           {/* Único elemento: Logo de la marca */}
           {config.brand.logo && (
-            <img src={config.brand.logo} alt={config.brand.name} className="h-8 md:h-9 w-auto object-contain"
+            <img src={config.brand.logo} alt={config.brand.name} className="h-6 md:h-8 w-auto object-contain"
               onError={e => { e.currentTarget.style.display = 'none'; }} />
           )}
         </div>
         {showReset && (
-          <button onClick={onReset} className="text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-100">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <button onClick={onReset} className="text-[10px] md:text-xs text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 rounded-lg hover:bg-gray-100">
+            <svg className="w-3 md:w-3.5 h-3 md:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             Reiniciar
@@ -711,13 +707,13 @@ function BrandHeader({ config, primaryColor, onReset, showReset }: {
 function SelfieThumb({ preview, onReset }: { preview: string | null; onReset: () => void }) {
   if (!preview) return null;
   return (
-    <div className="flex items-center gap-3 bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
-      <img src={preview} alt="Tu selfie" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+    <div className="flex items-center gap-2 md:gap-3 bg-white rounded-xl md:rounded-2xl p-2 md:p-3 shadow-sm border border-gray-100">
+      <img src={preview} alt="Tu selfie" className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl object-cover flex-shrink-0" />
       <div className="flex-1">
-        <p className="text-sm font-semibold text-gray-800">Tu foto está lista</p>
-        <p className="text-xs text-gray-400 mt-0.5">Ahora elige qué quieres probarte</p>
+        <p className="text-[11px] md:text-sm font-black text-gray-900 uppercase italic leading-none">Foto lista</p>
+        <p className="text-[9px] md:text-xs text-gray-400 mt-0.5 font-medium uppercase tracking-widest leading-none">Elige un producto</p>
       </div>
-      <button onClick={onReset} className="text-xs text-gray-400 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-50">
+      <button onClick={onReset} className="text-[9px] md:text-xs font-black uppercase text-gray-400 hover:text-[#FF5C3A] transition-colors px-2 py-1 rounded-lg hover:bg-[#FF5C3A]/5">
         Cambiar
       </button>
     </div>

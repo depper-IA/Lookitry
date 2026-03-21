@@ -114,19 +114,11 @@ export const metadata: Metadata = {
       'es-VE': BASE_URL,
     },
   },
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon.png', type: 'image/png', sizes: '64x64' },
-    ],
-    shortcut: '/favicon.ico',
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${plusJakarta.variable} ${dmSans.variable} ${spaceMono.variable} ${syne.variable} ${playfair.variable}`}>
+    <html lang="es" className={`${plusJakarta.variable} ${dmSans.variable} ${spaceMono.variable} ${syne.variable} ${playfair.variable}`} suppressHydrationWarning>
       <head>
         {/* fb:app_id requerido por Facebook/WhatsApp scraper */}
         <meta property="fb:app_id" content="966242223397117" />
