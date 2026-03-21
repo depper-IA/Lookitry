@@ -112,9 +112,9 @@ export class PruebaloController {
         schedule: (brand as any).schedule ?? null,
         slogan: (brand as any).slogan ?? null,
         // Configuración del modal (Desde settings globales o marca)
-        modal_title: (brand as any).modal_title || paymentSettings.landing_modal_title || 'Vista previa agotada',
-        modal_description: (brand as any).modal_description || paymentSettings.landing_modal_description || 'Tu tiempo de prueba ha terminado. Activa tu mini-landing para continuar.',
-        modal_features: (brand as any).modal_features || paymentSettings.landing_modal_features || ['URL personalizada', 'Catálogo IA ilimitado', 'Branding propio'],
+        modal_title: (brand as any).modal_title || (paymentSettings as any).landing_modal_title || 'Vista previa agotada',
+        modal_description: (brand as any).modal_description || (paymentSettings as any).landing_modal_description || 'Tu tiempo de prueba ha terminado. Activa tu mini-landing para continuar.',
+        modal_features: (brand as any).modal_features || (paymentSettings as any).landing_modal_features || ['URL personalizada', 'Catálogo IA ilimitado', 'Branding propio'],
         preview_timer_seconds: globalTimerSeconds,
         is_preview_expired: isPreviewExpired,
         logo_light: (brand as any).logo_light ?? null,

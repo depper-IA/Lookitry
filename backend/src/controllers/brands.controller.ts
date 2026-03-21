@@ -104,7 +104,7 @@ export class BrandsController {
         'rating', 'total_reviews', 'schedule', 'slogan', 'landing_template',
         'modal_title', 'modal_description', 'modal_features',
         'logo_light', 'logo_dark', 'cover_bg_color', 'cover_overlay_opacity',
-        'show_brand_name', 'header_color',
+        'show_brand_name', 'header_color', 'landing_font', 'widget_bg_color',
       ];
       for (const field of landingFields) {
         if (req.body[field] !== undefined) {
