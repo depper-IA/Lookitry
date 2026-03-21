@@ -6,10 +6,30 @@ import { verifyEmailTemplate } from '../templates/email-templates';
 import { supabaseAdmin } from '../config/supabase';
 import { wompiService } from '../services/wompi.service';
 import { paypalService } from '../services/paypal.service';
+import { notificationService } from '../services/notification.service';
 
 const authService = new AuthService();
 const emailService = new EmailService();
 const subscriptionService = new SubscriptionService();
+
+const IS_PROD = process.env.NODE_ENV === 'production';
+const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+
+function setCookieToken(res: Response, token: string): void {
+  const cookieOptions: any = {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: IS_PROD ? 'none' : 'lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    path: '/',
+  };
+
+  if (COOKIE_DOMAIN && IS_PROD) {
+    cookieOptions.domain = COOKIE_DOMAIN;
+  }
+
+  res.cookie('token', token, cookieOptions);
+}
 
 /**
  * Registro exclusivo para el flujo post-pago.
@@ -89,6 +109,11 @@ export async function registerPostPayment(req: Request, res: Response) {
       fingerprint: fingerprint || undefined,
     });
 
+    // 5.1 Enviar email de bienvenida tras registro exitoso (Requirement 13.1)
+    notificationService.sendWelcomeEmail(result.brand as any).catch(err => {
+      console.error('[PostPayment] Error enviando email de bienvenida:', err);
+    });
+
     // 6. Activar suscripción
     try {
       await subscriptionService.renewSubscription(
@@ -126,6 +151,10 @@ export async function registerPostPayment(req: Request, res: Response) {
         subject: 'Confirma tu correo — Lookitry',
         html: verifyEmailTemplate({ name: result.brand.name, email: pending.email }, verifyUrl),
       }).catch(err => console.error('[PostPayment] Error enviando email:', err));
+    }
+
+    if (result.token) {
+      setCookieToken(res, result.token);
     }
 
     return res.status(201).json(result);

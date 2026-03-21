@@ -183,20 +183,21 @@ describe('N8nClient', () => {
 
       // Act & Assert
       await expect(clientWithoutUrl.callTryOnWebhook(mockPayload)).rejects.toThrow(
-        'Configuración de n8n incompleta. Verifica N8N_WEBHOOK_URL y N8N_API_KEY'
+        'Configuración de n8n incompleta. Verifica N8N_WEBHOOK_URL y N8N_BEARER_TOKEN / N8N_API_KEY'
       );
 
       expect(mockedAxios.post).not.toHaveBeenCalled();
     });
 
-    it('debe lanzar error cuando N8N_API_KEY no está configurado', async () => {
+    it('debe lanzar error cuando N8N_API_KEY / N8N_BEARER_TOKEN no están configurados', async () => {
       // Arrange
       process.env.N8N_API_KEY = '';
+      process.env.N8N_BEARER_TOKEN = '';
       const clientWithoutKey = new N8nClient();
 
       // Act & Assert
       await expect(clientWithoutKey.callTryOnWebhook(mockPayload)).rejects.toThrow(
-        'Configuración de n8n incompleta. Verifica N8N_WEBHOOK_URL y N8N_API_KEY'
+        'Configuración de n8n incompleta. Verifica N8N_WEBHOOK_URL y N8N_BEARER_TOKEN / N8N_API_KEY'
       );
 
       expect(mockedAxios.post).not.toHaveBeenCalled();

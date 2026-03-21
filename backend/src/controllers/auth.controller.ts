@@ -4,6 +4,7 @@ import { EmailService } from '../services/email.service';
 import { verifyEmailTemplate, passwordResetTemplate } from '../templates/email-templates';
 import { RegisterBrandDto, LoginDto } from '../types';
 import { AuthRequest } from '../middleware/auth';
+import { generateToken } from '../utils/jwt';
 
 const authService = new AuthService();
 const emailService = new EmailService();
@@ -137,9 +138,30 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Token requerido' });
       }
 
-      const result = await authService.verifyEmail(token);
+      const result = await authService.verifyEmail(token) as { ok: boolean; message: string; brandId?: string };
       if (!result.ok) {
         return res.status(400).json({ error: 'INVALID_TOKEN', message: result.message });
+      }
+
+      // Si se verificó correctamente, emitir cookie de sesión (Auto-login)
+      if (result.brandId) {
+        const fullBrand = await authService.getBrandById(result.brandId);
+        if (fullBrand) {
+          const newToken = generateToken({ brandId: fullBrand.id, email: fullBrand.email });
+          setCookieToken(res, newToken);
+          
+          return res.status(200).json({ 
+            message: result.message,
+            brand: {
+              id: fullBrand.id,
+              name: fullBrand.name,
+              email: fullBrand.email,
+              slug: fullBrand.slug,
+              plan: fullBrand.plan,
+              emailVerified: true
+            }
+          });
+        }
       }
 
       return res.status(200).json({ message: result.message });

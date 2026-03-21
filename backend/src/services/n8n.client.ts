@@ -13,7 +13,7 @@ export class N8nClient {
   constructor() {
     // Configurar desde variables de entorno
     this.webhookUrl = process.env.N8N_WEBHOOK_URL || '';
-    this.apiKey = process.env.N8N_API_KEY || '';
+    this.apiKey = process.env.N8N_BEARER_TOKEN || process.env.N8N_API_KEY || '';
     this.timeout = 90000; // 90 segundos (Gemini puede tardar)
 
     // Validar configuración
@@ -22,7 +22,7 @@ export class N8nClient {
     }
 
     if (!this.apiKey) {
-      console.warn('⚠️  N8N_API_KEY no está configurado');
+      console.warn('⚠️  N8N_BEARER_TOKEN / N8N_API_KEY no están configurados');
     }
   }
 
@@ -34,7 +34,7 @@ export class N8nClient {
   async callTryOnWebhook(payload: N8nWebhookPayload): Promise<N8nWebhookResponse> {
     // Validar que la configuración esté completa
     if (!this.webhookUrl || !this.apiKey) {
-      throw new Error('Configuración de n8n incompleta. Verifica N8N_WEBHOOK_URL y N8N_API_KEY');
+      throw new Error('Configuración de n8n incompleta. Verifica N8N_WEBHOOK_URL y N8N_BEARER_TOKEN / N8N_API_KEY');
     }
 
     try {
@@ -53,7 +53,7 @@ export class N8nClient {
           timeout: this.timeout,
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.N8N_BEARER_TOKEN}`,
+            'Authorization': `Bearer ${this.apiKey}`,
           },
         }
       );
