@@ -10,9 +10,10 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        // font-syne apunta ahora a Plus Jakarta Sans (sin tocar todos los componentes)
-        syne: ['var(--font-jakarta)', 'sans-serif'],
+        syne: ['var(--font-syne)', 'sans-serif'],
         jakarta: ['var(--font-jakarta)', 'sans-serif'],
+        playfair: ['var(--font-playfair)', 'serif'],
+        tech: ['var(--font-tech)', 'monospace'],
         sans: ['var(--font-dm-sans)', 'DM Sans', 'sans-serif'],
       },
       colors: {

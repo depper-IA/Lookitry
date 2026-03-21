@@ -26,7 +26,7 @@ import {
 function EditorialHeader({ brand, entries, socialIcons }: { brand: BrandData; entries: [string, string][]; socialIcons: Record<string, React.ReactNode> }) {
   const primary = brand.primary_color || '#FF5C3A';
   return (
-    <header className="px-4 md:px-8 h-16 md:h-24 flex items-center justify-between sticky top-0 z-50 backdrop-blur-2xl bg-white/90 border-b border-gray-100 gap-4">
+    <header className="px-4 md:px-8 h-16 md:h-24 flex items-center justify-between sticky top-0 z-[100] bg-white border-b border-gray-100 gap-4 shadow-sm">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className="shrink-0">
           {brand.logo ? (
@@ -184,7 +184,7 @@ function EditorialAbout({ brand, primaryColor }: { brand: BrandData; primaryColo
     <section className="py-6 md:py-16">
       <div className="p-8 md:p-16 bg-gray-900 rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 p-12 opacity-10">
-          <SparklesIcon className="w-32 h-32 md:w-48 md:h-48" color="#FF5C3A" />
+          <SparklesIcon className="w-32 h-32 md:w-48 md:h-48" />
         </div>
         <div className="relative z-10 space-y-4 md:space-y-6 text-center md:text-left">
           <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.5em] text-[#FF5C3A]">Nuestra Historia</span>
