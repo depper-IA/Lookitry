@@ -4,24 +4,20 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 
 ---
 
-## 21 de Marzo, 2026 — Tipografías Dinámicas y Redes Sociales Pro
+## 21 de Marzo, 2026 — Refinamiento Premium del Template Clásico
 
 ### ✅ Cambios Aplicados
-1. **Sistema de Tipografías Dinámicas:**
-   - **Nuevas Fuentes:** Integradas 4 familias de fuentes profesionales: Jakarta, Inter, Montserrat y Playfair Display.
-   - **Selector en Editor:** Añadido un selector visual en la pestaña de Identidad Visual para cambiar la tipografía de toda la mini-landing.
-   - **Aplicación en Templates:** Los tres templates (Clásico, Editorial, Moderno) ahora responden dinámicamente a la fuente seleccionada.
-2. **Ampliación de Redes Sociales:**
-   - **YouTube y X (Twitter):** Añadido soporte completo para estas plataformas en el editor y en todos los templates.
-   - **Iconografía Premium:** Creados nuevos componentes de iconos SVG en `shared.tsx` para YouTube y X.
-3. **Correcciones de Estabilidad:**
-   - **Shared Components:** Limpieza profunda de `shared.tsx`, eliminando duplicados y corrigiendo el error de renderizado de `WhatsAppIcon`.
-   - **Sincronización Total:** Verificado que todos los campos de personalización (horarios, reseñas, ubicación) se muestren correctamente en todas las plantillas.
-4. **Base de Datos:**
-   - Preparado el campo `landing_font` en el backend y creado script de migración para Supabase.
+1. **Optimización de Escala Visual (Template Clásico):**
+   - **Textos Equilibrados:** Reducción de los tamaños de fuente en Hero y títulos de sección (máximo `text-5xl` y `text-4xl`) para un look más institucional y sofisticado.
+   - **Descripciones Legibles:** Ajuste de las descripciones a `text-sm` para mejorar la densidad de información y el balance visual.
+2. **Sincronización de Mockups (Selector):**
+   - **Wireframe Actualizado:** Rediseñado el icono visual del Template Clásico en el editor para reflejar su estructura real de Header, Hero lateral y pasos informativos.
+3. **Mejoras de Integridad:**
+   - **Fix Responsive:** Asegurado el comportamiento fluido de los contenedores en todos los breakpoints, eliminando desbordamientos de texto.
+   - **Sincronización Real-Time:** Verificado que todos los cambios en fuentes y colores se apliquen instantáneamente en el previsualizador sin latencia.
 
 ### ⏳ Tareas en Proceso / Pendientes
-- **Ejecución SQL:** Pendiente ejecutar `ALTER TABLE brands ADD COLUMN landing_font TEXT DEFAULT 'font-jakarta';` en el panel de Supabase.
+- **Ejecución SQL:** Pendiente ejecutar `ALTER TABLE brands ADD COLUMN landing_font TEXT DEFAULT 'font-jakarta';` en Supabase.
 - **Pruebas de PayPal:** Verificar el flujo completo de checkout con PayPal en producción.
 - **Breadcrumbs en Legales:** Aplicar y verificar físicamente la persistencia de breadcrumbs en `terminos` y `politicas-privacidad`.
 

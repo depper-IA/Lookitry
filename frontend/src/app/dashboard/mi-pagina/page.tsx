@@ -37,6 +37,7 @@ export default function MiPaginaPage() {
 
   // Estados locales para edición
   const [landingTemplate, setLandingTemplate] = useState<'classic' | 'editorial' | 'moderno'>('classic');
+  const [landingFont, setLandingFont] = useState('font-jakarta');
   const [slogan, setSlogan] = useState('');
   const [description, setDescription] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#FF5C3A');
@@ -76,6 +77,7 @@ export default function MiPaginaPage() {
         
         // Cargar estados locales
         setLandingTemplate(brandData.landing_template || 'classic');
+        setLandingFont(brandData.landing_font || 'font-jakarta');
         setSlogan(brandData.slogan || '');
         setDescription(brandData.brand_description || '');
         setPrimaryColor(brandData.primary_color || '#FF5C3A');
@@ -141,6 +143,7 @@ export default function MiPaginaPage() {
         national_shipping: nationalShipping,
         show_brand_name: showBrandName,
         landing_template: landingTemplate,
+        landing_font: landingFont,
         primary_color: primaryColor,
         rating: rating ? parseFloat(rating) : null,
         total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
@@ -168,6 +171,7 @@ export default function MiPaginaPage() {
   const tempBrand = {
     ...brand,
     landing_template: landingTemplate,
+    landing_font: landingFont,
     slogan,
     brand_description: description,
     primary_color: primaryColor,
@@ -197,92 +201,98 @@ export default function MiPaginaPage() {
   };
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* PANEL DE EDICIÓN (Columna Izquierda) */}
-        <div className="lg:col-span-8 xl:col-span-8 space-y-5">
-          <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="lg:col-span-7 xl:col-span-7 space-y-6">
+          <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[var(--text-primary)] italic uppercase leading-none">Mi Página Pública</h1>
-              <p className="text-xs text-[var(--text-secondary)] mt-1.5 flex items-center gap-2">
-                Personaliza la experiencia de tus clientes
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[var(--text-primary)] italic uppercase">Mi Página Pública</h1>
+              <p className="text-sm text-[var(--text-secondary)] mt-1 flex items-center gap-2 font-medium">
+                Configura tu vitrina digital personalizada
                 <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF5C3A] hover:underline flex items-center gap-1 font-bold">
-                  Ver mi sitio <ExternalLink className="w-3 h-3" />
+                  Ver sitio real <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </p>
             </div>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#FF5C3A] text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-lg shadow-[#FF5C3A]/20"
+              className="flex items-center justify-center gap-2 px-8 py-3 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl shadow-[#FF5C3A]/20"
             >
-              {saving ? <Spinner size="sm" /> : <Save className="w-3.5 h-3.5" />}
+              {saving ? <Spinner size="sm" /> : <Save className="w-4 h-4" />}
               {saving ? 'Guardando...' : 'Guardar cambios'}
             </button>
           </header>
 
           {/* Banner de estado (Trial) */}
           {!brand?.has_landing_page && (
-            <div className="p-4 rounded-3xl border border-[#FF5C3A]/20 bg-[#FF5C3A]/5 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#FF5C3A]/10 flex items-center justify-center shrink-0">
-                  <Globe className="w-5 h-5 text-[#FF5C3A]" />
+            <div className="p-5 rounded-[2rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shrink-0">
+                  <Globe className="w-6 h-6 text-[#FF5C3A]" />
                 </div>
                 <div>
-                  <p className="text-xs font-black text-[var(--text-primary)] uppercase tracking-tight italic">Modo Previsualización</p>
-                  <p className="text-[10px] text-[var(--text-secondary)] mt-0.5 font-medium leading-tight">Tu página no es pública aún. Actívala para que tus clientes puedan ver tu catálogo IA.</p>
+                  <p className="text-sm font-black text-[var(--text-primary)] uppercase tracking-tight italic">Modo Previsualización</p>
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-medium leading-relaxed max-w-md">Tu página no es pública aún. Los cambios que realices aquí se verán reflejados una vez actives tu mini-landing.</p>
                 </div>
               </div>
-              <Link href="/dashboard/checkout-landing" className="px-5 py-2 bg-[#FF5C3A] text-white text-[9px] font-black uppercase rounded-lg hover:brightness-110 transition-all shadow-lg whitespace-nowrap">Activar ahora</Link>
+              <Link href="/dashboard/checkout-landing" className="px-6 py-2.5 bg-[#FF5C3A] text-white text-[10px] font-black uppercase rounded-xl hover:brightness-110 transition-all shadow-lg whitespace-nowrap">Activar ahora</Link>
             </div>
           )}
 
           {/* Tabs Navegación */}
-          <div className="flex gap-3 p-1 bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] w-fit">
+          <div className="flex gap-4 p-1.5 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] w-fit">
             <button 
               onClick={() => setActiveTab('design')} 
-              className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg ${activeTab === 'design' ? 'bg-[#FF5C3A] text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all rounded-xl ${activeTab === 'design' ? 'bg-[#FF5C3A] text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
             >
               Diseño Visual
             </button>
             <button 
               onClick={() => setActiveTab('domain')} 
-              className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg ${activeTab === 'domain' ? 'bg-[#FF5C3A] text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all rounded-xl ${activeTab === 'domain' ? 'bg-[#FF5C3A] text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
             >
               Identidad Digital
             </button>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             {activeTab === 'design' ? (
-              <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-500">
+              <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
                 {/* Selector de Plantilla */}
-                <section className="p-6 bg-[var(--bg-card)] rounded-[2rem] border border-[var(--border-color)] space-y-5">
-                  <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-4">
-                    <div className="w-8 h-8 rounded-xl bg-[#FF5C3A]/10 flex items-center justify-center">
-                      <Layout className="w-4 h-4 text-[#FF5C3A]" />
+                <section className="p-8 bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] space-y-6">
+                  <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
+                    <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+                      <Layout className="w-5 h-5 text-[#FF5C3A]" />
                     </div>
-                    <h3 className="text-sm font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Selecciona tu Plantilla</h3>
+                    <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Selecciona tu Plantilla</h3>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     {[
                       { 
                         id: 'classic', 
                         name: 'Clásico', 
                         desc: 'Institucional',
                         visual: (active: boolean) => (
-                          <div className={`w-full aspect-[16/10] rounded-lg border mb-2 overflow-hidden flex flex-col transition-all ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-base)]'}`}>
-                            <div className="h-2 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-1 justify-between">
+                          <div className={`w-full aspect-[16/10] rounded-xl border-2 mb-3 overflow-hidden flex flex-col transition-all ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-base)]'}`}>
+                            {/* Header */}
+                            <div className="h-2 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-2 justify-between">
                               <div className="w-3 h-0.5 rounded-full bg-[var(--text-muted)] opacity-30" />
-                              <div className="flex gap-0.5"><div className="w-1 h-0.5 rounded-full bg-[var(--text-muted)] opacity-20" /></div>
+                              <div className="w-4 h-1 rounded-full bg-[#FF5C3A]/20" />
                             </div>
-                            <div className="flex-1 flex flex-col items-center justify-center p-1 gap-1 bg-[var(--bg-base)]">
-                              <div className="w-8 h-1 bg-[var(--text-muted)] opacity-20 rounded-full" />
-                              <div className="w-10 h-2 bg-[#FF5C3A]/30 rounded-sm" />
+                            {/* Hero Side-by-Side */}
+                            <div className="flex-1 flex p-2 gap-2 bg-[var(--bg-base)]">
+                              <div className="flex-1 flex flex-col justify-center gap-1">
+                                <div className="w-8 h-1 bg-[var(--text-muted)] opacity-20 rounded-full" />
+                                <div className="w-10 h-2 bg-[#FF5C3A]/30 rounded-sm" />
+                              </div>
+                              <div className="w-1/3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)]" />
                             </div>
-                            <div className="h-4 flex gap-0.5 px-1 items-center border-t border-[var(--border-color)] bg-[var(--bg-card)]">
-                              {[1,2,3].map(i => <div key={i} className="flex-1 h-2 rounded bg-[var(--bg-base)] border border-[var(--border-color)]" />)}
+                            {/* Steps representation */}
+                            <div className="h-4 flex gap-1 px-2 items-center bg-[var(--bg-card)] border-t border-[var(--border-color)]">
+                              {[1,2,3].map(i => <div key={i} className="flex-1 h-1.5 rounded-full bg-[var(--text-muted)] opacity-10" />)}
                             </div>
                           </div>
                         )
@@ -292,18 +302,18 @@ export default function MiPaginaPage() {
                         name: 'Editorial', 
                         desc: '2 Columnas',
                         visual: (active: boolean) => (
-                          <div className={`w-full aspect-[16/10] rounded-lg border mb-2 overflow-hidden flex flex-col transition-all ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-base)]'}`}>
-                            <div className="h-5 bg-gradient-to-br from-gray-800 to-black relative flex items-end p-1">
-                              <div className="w-6 h-0.5 bg-white/30 rounded-full" />
+                          <div className={`w-full aspect-[16/10] rounded-xl border-2 mb-3 overflow-hidden flex flex-col transition-all ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-base)]'}`}>
+                            <div className="h-6 bg-gradient-to-br from-gray-800 to-black relative flex items-end p-1.5">
+                              <div className="w-8 h-1 bg-white/30 rounded-full" />
                             </div>
-                            <div className="flex-1 flex p-1 gap-1">
-                              <div className="flex-1 space-y-0.5">
-                                <div className="grid grid-cols-2 gap-0.5">
+                            <div className="flex-1 flex p-1.5 gap-1.5">
+                              <div className="flex-1 space-y-1">
+                                <div className="grid grid-cols-2 gap-1">
                                   {[1,2,3,4].map(i => <div key={i} className="aspect-square bg-[var(--bg-card)] border border-[var(--border-color)] rounded-sm" />)}
                                 </div>
                               </div>
-                              <div className="w-1/3 rounded-sm border border-[#FF5C3A]/20 bg-[var(--bg-card)] p-0.5 flex flex-col gap-0.5">
-                                <div className="w-full h-1 bg-black rounded-sm" />
+                              <div className="w-1/3 rounded-lg border border-[#FF5C3A]/20 bg-[var(--bg-card)] p-1 flex flex-col gap-1">
+                                <div className="w-full h-2 bg-black rounded-sm" />
                                 <div className="flex-1 bg-[var(--bg-base)] rounded-sm border border-[var(--border-color)]" />
                               </div>
                             </div>
@@ -315,12 +325,12 @@ export default function MiPaginaPage() {
                         name: 'Moderno', 
                         desc: 'Probador Single',
                         visual: (active: boolean) => (
-                          <div className={`w-full aspect-[16/10] rounded-lg border mb-2 overflow-hidden flex flex-col transition-all ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-base)]'}`}>
-                            <div className="h-8 bg-black relative flex flex-col items-center justify-center gap-1">
-                              <div className="w-8 h-0.5 bg-white/20 rounded-full" />
-                              <div className="w-6 h-2 bg-[#FF5C3A] rounded-sm" />
+                          <div className={`w-full aspect-[16/10] rounded-xl border-2 mb-3 overflow-hidden flex flex-col transition-all ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-base)]'}`}>
+                            <div className="h-10 bg-black relative flex flex-col items-center justify-center gap-1.5">
+                              <div className="w-10 h-1 bg-white/20 rounded-full" />
+                              <div className="w-8 h-2.5 bg-[#FF5C3A] rounded-sm" />
                             </div>
-                            <div className="flex-1 p-1 grid grid-cols-4 gap-0.5">
+                            <div className="flex-1 p-2 grid grid-cols-4 gap-1">
                                 {[1,2,3,4].map(i => <div key={i} className="aspect-square bg-[var(--bg-card)] border border-[var(--border-color)] rounded-sm" />)}
                             </div>
                           </div>
@@ -330,11 +340,11 @@ export default function MiPaginaPage() {
                       <button
                         key={t.id}
                         onClick={() => setLandingTemplate(t.id as any)}
-                        className={`p-3 rounded-3xl border-2 text-center transition-all group ${landingTemplate === t.id ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-lg scale-[1.02]' : 'border-[var(--border-color)] bg-[var(--bg-card)] hover:border-[var(--text-muted)]'}`}
+                        className={`p-4 rounded-[2rem] border-2 text-center transition-all group ${landingTemplate === t.id ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-xl scale-[1.02]' : 'border-[var(--border-color)] bg-[var(--bg-card)] hover:border-[var(--text-muted)]'}`}
                       >
                         {t.visual(landingTemplate === t.id)}
-                        <p className={`text-[10px] font-black uppercase tracking-widest ${landingTemplate === t.id ? 'text-[#FF5C3A]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>{t.name}</p>
-                        <p className="text-[8px] font-bold text-gray-500 mt-0.5 uppercase tracking-tighter opacity-60">{t.desc}</p>
+                        <p className={`text-xs font-black uppercase tracking-widest ${landingTemplate === t.id ? 'text-[#FF5C3A]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>{t.name}</p>
+                        <p className="text-[9px] font-bold text-gray-500 mt-1 uppercase tracking-tighter opacity-60">{t.desc}</p>
                       </button>
                     ))}
                   </div>
@@ -349,9 +359,11 @@ export default function MiPaginaPage() {
                     logoDarkUrl, setLogoDarkUrl, coverBgColor, setCoverBgColor,
                     coverOverlayOpacity, setCoverOverlayOpacity, headerColor, setHeaderColor,
                     instagram, setInstagram, facebook, setFacebook, tiktok, setTiktok,
+                    youtube, setYoutube, x, setX,
                     cityDisplay, setCityDisplay, nationalShipping, setNationalShipping,
                     showBrandName, setShowBrandName,
-                    primaryColor, setPrimaryColor, rating, setRating, totalReviews, setTotalReviews,
+                    primaryColor, setPrimaryColor, landingFont, setLandingFont,
+                    rating, setRating, totalReviews, setTotalReviews,
                     schedule, setSchedule,
                   }}
                 />
@@ -364,49 +376,53 @@ export default function MiPaginaPage() {
           </div>
 
           {success && (
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-bold uppercase tracking-widest rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-              <Check className="w-4 h-4" /> ¡Configuración guardada correctamente!
+            <div className="p-5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold uppercase tracking-widest rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+              <Check className="w-5 h-5" /> ¡Configuración guardada correctamente!
             </div>
           )}
           {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-bold uppercase tracking-widest rounded-xl flex items-center gap-3 animate-in shake duration-500">
-              <AlertCircle className="w-4 h-4" /> {error}
+            <div className="p-5 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold uppercase tracking-widest rounded-2xl flex items-center gap-3 animate-in shake duration-500">
+              <AlertCircle className="w-5 h-5" /> {error}
             </div>
           )}
         </div>
 
         {/* PREVIEW STICKY (Columna Derecha) */}
-        <div className="hidden lg:block lg:col-span-4 xl:col-span-4 sticky top-[80px] z-0">
-          <div className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] mb-3 px-2 flex items-center gap-2">
-            <Globe className="w-3.5 h-3.5" /> Previsualización en vivo
+        <div className="hidden lg:block lg:col-span-5 xl:col-span-5 sticky top-[80px] z-0">
+          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] mb-4 px-2 flex items-center gap-3">
+            <Globe className="w-4 h-4" /> Previsualización en Vivo
           </div>
           
-          <div className="bg-[var(--bg-card)] rounded-[2rem] border border-[var(--border-color)] overflow-hidden shadow-2xl flex flex-col transition-all duration-500 h-[calc(100vh-160px)] max-h-[800px]">
-            {/* Barra del preview */}
-            <div className="h-9 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-4 gap-3 shrink-0">
-              <div className="flex gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-red-500/20" />
-                <div className="w-2 h-2 rounded-full bg-amber-500/20" />
-                <div className="w-2 h-2 rounded-full bg-emerald-500/20" />
+          <div className="bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] overflow-hidden shadow-2xl flex flex-col transition-all duration-500 h-[calc(100vh-160px)] max-h-[850px] w-full">
+            {/* Barra del preview - Browser Look */}
+            <div className="h-10 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-5 gap-4 shrink-0">
+              <div className="flex gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500/20" />
+                <div className="w-3 h-3 rounded-full bg-amber-500/20" />
+                <div className="w-3 h-3 rounded-full bg-emerald-500/20" />
               </div>
-              <div className="flex-1 bg-[var(--bg-base)] h-5 rounded-md border border-[var(--border-color)] flex items-center px-2.5 gap-2">
+              <div className="flex-1 bg-[var(--bg-base)] h-6 rounded-lg border border-[var(--border-color)] flex items-center px-3 gap-2">
                 <div className="w-2 h-2 rounded-full bg-[#FF5C3A]/20 flex items-center justify-center">
-                  <div className="w-0.5 h-0.5 rounded-full bg-[#FF5C3A]" />
+                  <div className="w-1 h-1 rounded-full bg-[#FF5C3A]" />
                 </div>
-                <span className="text-[9px] text-[var(--text-muted)] font-mono truncate opacity-50">lookitry.com/sitio/{brandSlug}</span>
+                <span className="text-[10px] text-[var(--text-muted)] font-mono truncate opacity-60 italic">lookitry.com/sitio/{brandSlug}</span>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar bg-[var(--bg-base)]">
+            {/* AREA DE CONTENIDO REAL */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar bg-white overflow-x-hidden">
               <div className="w-full h-full">
                 <LandingPreview {...previewProps} />
               </div>
             </div>
 
-            <div className="h-7 border-t border-[var(--border-color)] bg-[var(--bg-card)] flex items-center justify-center px-4 shrink-0">
-              <span className="text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-tighter opacity-30">Vista Móvil Optimizada</span>
+            <div className="h-8 border-t border-[var(--border-color)] bg-[var(--bg-card)] flex items-center justify-center px-4 shrink-0">
+              <span className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest opacity-30">Renderizado de Componentes Reales</span>
             </div>
           </div>
+          <p className="text-[10px] text-center mt-6 font-bold uppercase tracking-widest text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed opacity-60">
+            Los cambios se reflejan automáticamente.<br />Usa el botón "Guardar" para hacerlos públicos.
+          </p>
         </div>
 
       </div>
