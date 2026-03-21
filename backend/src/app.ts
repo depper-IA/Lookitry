@@ -60,9 +60,12 @@ const allowedOrigins = [
     'https://pruebalo.wilkiedevs.com',
     'https://api.pruebalo.wilkiedevs.com',
     'https://pruebalo.wilkiedevs.com',
-    // Desarrollo local
+    // Desarrollo local (cualquier puerto de Next.js)
     'http://localhost:3000',
     'http://localhost:3001',
+    'http://localhost:3002',
+    'http://localhost:3003',
+    'http://localhost:3004',
     ...corsOriginEnv,
   ]),
 ];

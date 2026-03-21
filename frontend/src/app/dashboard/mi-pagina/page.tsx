@@ -17,7 +17,6 @@ import type { Brand } from '@/types';
 const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
-// ── Componente URL copiable ───────────────────────────────────────────────────
 function CopyableUrl({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
   const handleCopy = async () => {
@@ -26,12 +25,27 @@ function CopyableUrl({ url }: { url: string }) {
     setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <div className="flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-mono" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
-      <span className="flex-1 truncate">{url}</span>
-      <button onClick={handleCopy} className="flex-shrink-0 p-1.5 rounded-lg" style={{ color: copied ? '#22c55e' : 'var(--text-secondary)' }}>
+    <div
+      className="flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-mono transition-colors"
+      style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+    >
+      <span className="flex-1 truncate text-xs">{url}</span>
+      <button
+        onClick={handleCopy}
+        className="flex-shrink-0 p-1.5 rounded-lg transition-colors hover:bg-white/5 cursor-pointer"
+        style={{ color: copied ? '#10b981' : 'var(--text-secondary)' }}
+        title="Copiar URL"
+      >
         {copied ? <CheckIcon className="w-4 h-4" /> : <CopyIcon className="w-4 h-4" />}
       </button>
-      <a href={url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 p-1.5 rounded-lg" style={{ color: 'var(--text-secondary)' }}>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex-shrink-0 p-1.5 rounded-lg transition-colors hover:bg-white/5 cursor-pointer"
+        style={{ color: 'var(--text-secondary)' }}
+        title="Abrir en nueva pestaña"
+      >
         <ExternalLinkIcon className="w-4 h-4" />
       </a>
     </div>
@@ -45,10 +59,9 @@ export default function MiPaginaPage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [landingPrice, setLandingPrice] = useState<number | null>(null);
+  const [_landingPrice, setLandingPrice] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'design' | 'domain'>('design');
 
-  // Estados del formulario
   const [description, setDescription] = useState('');
   const [slogan, setSlogan] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
@@ -127,7 +140,7 @@ export default function MiPaginaPage() {
       if (facebook) social_links.facebook = facebook;
       if (tiktok) social_links.tiktok = tiktok;
 
-      await api.patch('/brands/me', {
+      const payload = {
         brand_description: description || null,
         slogan: slogan || null,
         whatsapp_contact: whatsapp || null,
@@ -150,18 +163,28 @@ export default function MiPaginaPage() {
         header_color: headerColor || null,
         schedule: Object.fromEntries(Object.entries(schedule).filter(([, v]) => v.trim())),
         custom_domain: customDomain || null,
-      });
+      };
+
+      console.log('📤 Guardando landing_template:', landingTemplate);
+      console.log('📦 Payload completo:', payload);
+
+      await api.patch('/brands/me', payload);
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    } catch {
+    } catch (err) {
+      console.error('❌ Error al guardar:', err);
       setError('Error al guardar los cambios');
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center py-16"><Spinner size="lg" /></div>;
+  if (loading) return (
+    <div className="flex items-center justify-center py-24">
+      <Spinner size="lg" />
+    </div>
+  );
 
   const slug = brand?.slug || authBrand?.slug || '';
   const pageUrl = `${FRONTEND_URL}/sitio/${slug}`;
@@ -169,94 +192,207 @@ export default function MiPaginaPage() {
   const brandLogo = logoUrl || (brand as any)?.logo || null;
   const brandId = (brand as any)?.id;
 
+  const previewProps = {
+    landingTemplate, setLandingTemplate, primaryColor, headerColor,
+    brandLogo, coverImageUrl, coverOverlayOpacity, pageUrl, coverBgColor,
+  };
+
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full">
       {hasLandingPage && brandId && <LandingTutorial brandId={brandId} />}
-      
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6 flex-1 min-h-0 overflow-hidden">
-        {/* ── Columna izquierda: formulario con scroll propio ── */}
-        <div className="overflow-y-auto pr-2 custom-scrollbar space-y-8 pb-32">
-          <div className="flex flex-col gap-1">
-            <h1 className="font-syne font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>Mi página</h1>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Personaliza tu mini-landing pública</p>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 flex-1 min-h-0" style={{ alignItems: 'start' }}>
+
+        {/* ── Columna izquierda: formulario con scroll ── */}
+        <div className="overflow-y-auto pr-1 custom-scrollbar pb-8 space-y-6">
+
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
+            <div>
+              <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Mi página</h1>
+              <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                Personaliza tu mini-landing pública
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <a
+                href={pageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border text-sm font-medium transition-all hover:bg-white/5 cursor-pointer"
+                style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+              >
+                <ExternalLinkIcon className="w-3.5 h-3.5" />
+                Ver página
+              </a>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-white text-sm font-semibold transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                style={{ backgroundColor: '#FF5C3A' }}
+              >
+                {saving ? <Spinner size="sm" /> : 'Guardar'}
+              </button>
+            </div>
           </div>
 
-          <div className="p-5 rounded-2xl border space-y-3" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>URL de tu página</p>
-              <CopyableUrl url={pageUrl} />
+          {/* URL */}
+          <div className="p-4 rounded-2xl border space-y-2" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>URL de tu página</p>
+            <CopyableUrl url={pageUrl} />
           </div>
 
+          {/* Banner activación */}
           {!hasLandingPage && (
-             <div className="p-6 rounded-2xl border flex flex-col md:flex-row items-center justify-between gap-6" style={{ background: 'linear-gradient(135deg, rgba(255,92,58,0.1) 0%, rgba(255,92,58,0.02) 100%)', borderColor: '#FF5C3A33' }}>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FF5C3A15' }}>
-                    <Globe className="w-6 h-6 text-[#FF5C3A]" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-[#FF5C3A]">¡Tu mini-landing aún no está activa!</h3>
-                    <p className="text-sm text-gray-500 max-w-md">Publica tu marca con una URL personalizada, probador virtual integrado y catálogo de productos.</p>
-                  </div>
+            <div
+              className="p-5 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+              style={{ background: 'linear-gradient(135deg, rgba(255,92,58,0.08) 0%, rgba(255,92,58,0.02) 100%)', borderColor: 'rgba(255,92,58,0.2)' }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255,92,58,0.12)' }}>
+                  <Globe className="w-5 h-5 text-[#FF5C3A]" />
                 </div>
-                <Link 
-                  href="/dashboard/checkout?addon=landing" 
-                  className="w-full md:w-auto px-8 py-3 rounded-xl text-white font-bold transition-all hover:scale-[1.05] active:scale-95 text-center whitespace-nowrap" 
-                  style={{ backgroundColor: '#FF5C3A', boxShadow: '0 10px 20px -5px rgba(255,92,58,0.4)' }}
-                >
-                  ACTIVAR AHORA
-                </Link>
-             </div>
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Tu mini-landing aún no está activa</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                    Publica tu marca con URL personalizada, probador virtual y catálogo.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/dashboard/checkout?addon=landing"
+                className="flex-shrink-0 px-5 py-2 rounded-xl text-white text-sm font-semibold transition-all hover:brightness-110 active:scale-95 cursor-pointer"
+                style={{ backgroundColor: '#FF5C3A' }}
+              >
+                Activar ahora
+              </Link>
+            </div>
           )}
 
-          {/* Navegación por Pestañas */}
-          <div className="flex items-center gap-1 border-b" style={{ borderColor: 'var(--border-color)' }}>
+          {/* Tabs */}
+          <div className="flex items-center gap-0 border-b" style={{ borderColor: 'var(--border-color)' }}>
             {(['design', 'domain'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-3 text-sm font-semibold transition-all border-b-2 ${
-                  activeTab === tab ? 'border-[#FF5C3A] text-[#FF5C3A]' : 'border-transparent text-gray-400'
-                }`}
+                className="px-5 py-2.5 text-sm font-medium transition-all border-b-2 cursor-pointer"
+                style={{
+                  borderColor: activeTab === tab ? '#FF5C3A' : 'transparent',
+                  color: activeTab === tab ? '#FF5C3A' : 'var(--text-secondary)',
+                }}
               >
-                {tab === 'design' ? 'Diseño y Contenido' : 'Identidad y Dominio'}
+                {tab === 'design' ? 'Diseño y contenido' : 'Identidad y dominio'}
               </button>
             ))}
           </div>
 
+          {/* Selector de plantilla — solo mobile */}
+          {activeTab === 'design' && (
+            <div className="xl:hidden rounded-2xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+              <div className="px-5 py-3.5 border-b" style={{ borderColor: 'var(--border-color)' }}>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Plantilla</p>
+              </div>
+              <div className="p-4 overflow-x-auto">
+                <div className="flex gap-3 min-w-max">
+                  {([
+                    { id: 'classic' as const, name: 'Clásico', desc: 'Hero · Pasos · Catálogo' },
+                    { id: 'editorial' as const, name: 'Editorial', desc: 'Header sticky · 2 col' },
+                    { id: 'moderno' as const, name: 'Moderno', desc: 'Dark hero · Trust bar' },
+                  ]).map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => setLandingTemplate(t.id)}
+                      className="flex flex-col items-center gap-1 px-5 py-3 rounded-xl border text-center transition-all cursor-pointer flex-shrink-0"
+                      style={{
+                        borderColor: landingTemplate === t.id ? '#FF5C3A' : 'var(--border-color)',
+                        backgroundColor: landingTemplate === t.id ? 'rgba(255,92,58,0.06)' : 'var(--bg-base)',
+                        minWidth: 110,
+                      }}
+                    >
+                      <span className="text-xs font-semibold" style={{ color: landingTemplate === t.id ? '#FF5C3A' : 'var(--text-primary)' }}>
+                        {t.name}
+                      </span>
+                      <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>{t.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Preview mobile */}
+              <div className="px-4 pb-4">
+                <LandingPreview {...previewProps} mobileOnly />
+              </div>
+            </div>
+          )}
+
+          {/* Contenido del tab */}
           {activeTab === 'design' ? (
-            <DesignTab 
-              {...{ description, setDescription, slogan, setSlogan, whatsapp, setWhatsapp, whatsappMessage, setWhatsappMessage, ctaButtonText, setCtaButtonText, coverImageUrl, setCoverImageUrl, logoUrl, setLogoUrl, logoLightUrl, setLogoLightUrl, logoDarkUrl, setLogoDarkUrl, coverBgColor, setCoverBgColor, coverOverlayOpacity, setCoverOverlayOpacity, headerColor, setHeaderColor, instagram, setInstagram, facebook, setFacebook, tiktok, setTiktok, cityDisplay, setCityDisplay, nationalShipping, setNationalShipping, showBrandName, setShowBrandName, landingTemplate, setLandingTemplate, primaryColor, setPrimaryColor, rating, setRating, totalReviews, setTotalReviews, schedule, setSchedule, handleSave, saving, error, success, pageUrl }} 
+            <DesignTab
+              {...{
+                description, setDescription, slogan, setSlogan,
+                whatsapp, setWhatsapp, whatsappMessage, setWhatsappMessage,
+                ctaButtonText, setCtaButtonText, coverImageUrl, setCoverImageUrl,
+                logoUrl, setLogoUrl, logoLightUrl, setLogoLightUrl,
+                logoDarkUrl, setLogoDarkUrl, coverBgColor, setCoverBgColor,
+                coverOverlayOpacity, setCoverOverlayOpacity, headerColor, setHeaderColor,
+                instagram, setInstagram, facebook, setFacebook, tiktok, setTiktok,
+                cityDisplay, setCityDisplay, nationalShipping, setNationalShipping,
+                showBrandName, setShowBrandName,
+                primaryColor, setPrimaryColor, rating, setRating, totalReviews, setTotalReviews,
+                schedule, setSchedule,
+              }}
             />
           ) : (
             <DomainTab {...{ customDomain, setCustomDomain, brand, saving, handleSave, FRONTEND_URL }} />
           )}
 
-          {/* Botones de Acción al final - Más sutiles */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-8 pb-4 border-t mt-8" style={{ borderColor: 'var(--border-color)' }}>
-              <a 
-                href={pageUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-bold transition-all hover:bg-black/5"
-                style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+          {/* Botón guardar al final */}
+          <div className="pt-2 pb-6 space-y-3">
+            {(success || error) && (
+              <div
+                className="px-4 py-3 rounded-xl border text-sm"
+                style={{
+                  backgroundColor: success ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)',
+                  borderColor: success ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)',
+                  color: success ? '#10b981' : '#ef4444',
+                }}
               >
-                <ExternalLinkIcon className="w-4 h-4" />
-                <span>Previsualizar</span>
+                {success ? 'Cambios guardados correctamente' : error}
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <a
+                href={pageUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all hover:bg-white/5 cursor-pointer"
+                style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+              >
+                <ExternalLinkIcon className="w-3.5 h-3.5" />
+                Ver página
               </a>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full sm:flex-1 flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-white font-bold text-sm transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+                className="flex-1 flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
                 style={{ backgroundColor: '#FF5C3A' }}
               >
-                {saving ? <Spinner size="sm" /> : 'Guardar Cambios'}
+                {saving ? <Spinner size="sm" /> : 'Guardar cambios'}
               </button>
+            </div>
           </div>
         </div>
 
-        {/* ── Columna derecha: preview con scroll propio ── */}
-        <div className="hidden xl:block overflow-y-auto pr-2 custom-scrollbar pb-32">
-           <LandingPreview {...{ landingTemplate, setLandingTemplate, primaryColor, headerColor, brandLogo, coverImageUrl, coverOverlayOpacity, pageUrl, coverBgColor }} />
+        {/* ── Columna derecha: preview sticky con scroll propio ── */}
+        {/* El main tiene p-6 (24px). El sticky se ancla al top del scroll container del main */}
+        <div
+          className="hidden xl:block"
+          style={{ position: 'sticky', top: 0, maxHeight: 'calc(100vh - 104px)', overflowY: 'auto' }}
+        >
+          <div className="custom-scrollbar h-full overflow-y-auto py-1 pr-1">
+            <LandingPreview {...previewProps} />
+          </div>
         </div>
+
       </div>
     </div>
   );
