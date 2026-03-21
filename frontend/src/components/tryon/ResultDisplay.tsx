@@ -115,7 +115,9 @@ export function ResultDisplay({
 }: ResultDisplayProps) {
   const [lightboxOpen, setLightboxOpen]   = useState(false);
   const [downloading, setDownloading]     = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [sharing, setSharing]             = useState(false);
+  const [shareError, setShareError]       = useState<string | null>(null);
 
   // Feedback state
   const [feedbackOpen, setFeedbackOpen]       = useState(false);
@@ -173,8 +175,11 @@ export function ResultDisplay({
     });
   };
 
+  // Fix #3: si hay error CORS al aplicar watermark, NO descargamos sin él
+  // (evita que usuarios en TRIAL/BASIC se salten la protección)
   const handleDownload = async () => {
     setDownloading(true);
+    setDownloadError(null);
     try {
       const watermarkedUrl = await applyWatermark(imageUrl);
       const link = document.createElement('a');
@@ -185,15 +190,18 @@ export function ResultDisplay({
       document.body.removeChild(link);
     } catch (err) {
       console.error('Error descargando imagen:', err);
-      await downloadImage(imageUrl, `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`);
+      // Fix #3: no fallback a descarga sin watermark
+      setDownloadError('No se pudo descargar la imagen. Por favor intenta de nuevo.');
     } finally {
       setDownloading(false);
     }
   };
 
+  // Fix #5: reemplaza alert() nativo con estado shareError renderizado en la UI
   const handleShare = async () => {
+    setShareError(null);
     if (!navigator.share) {
-      alert('Tu navegador no soporta la función de compartir');
+      setShareError('Tu navegador no soporta la función de compartir. Usa los botones de WhatsApp o Facebook.');
       return;
     }
 
@@ -232,16 +240,14 @@ export function ResultDisplay({
       });
       if (res.ok) {
         setFeedbackSent(true);
-        // Cerrar modal automáticamente después de 2.5s
-        setTimeout(() => {
-          handleFeedbackClose();
-        }, 2500);
+        setTimeout(() => { handleFeedbackClose(); }, 2500);
       } else {
         throw new Error('Error al enviar');
       }
     } catch (err) {
       console.error('Error enviando feedback:', err);
-      alert('No se pudo enviar el reporte. Por favor intenta de nuevo.');
+      // Fix #5: sin alert() — si falla el envío cerramos el modal y el usuario puede reintentar
+      handleFeedbackClose();
     } finally {
       setFeedbackSending(false);
     }
@@ -325,6 +331,10 @@ export function ResultDisplay({
               </>
             )}
           </button>
+          {/* Fix #5: error de descarga sin alert() */}
+          {downloadError && (
+            <p className="text-xs text-red-500 text-center -mt-1">{downloadError}</p>
+          )}
 
           <button
             onClick={handleShare}
@@ -340,6 +350,10 @@ export function ResultDisplay({
               </>
             )}
           </button>
+          {/* Fix #5: error de compartir sin alert() */}
+          {shareError && (
+            <p className="text-xs text-orange-500 text-center -mt-1">{shareError}</p>
+          )}
 
           <div className="hidden md:flex gap-2">
             <button onClick={handleShareWhatsApp} className="flex-1 py-3 rounded-2xl border border-gray-100 flex items-center justify-center gap-2 hover:bg-gray-50 transition-all">
