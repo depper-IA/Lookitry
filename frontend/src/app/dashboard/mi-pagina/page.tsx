@@ -14,7 +14,7 @@ import { DesignTab } from './components/DesignTab';
 import { DomainTab } from './components/DomainTab';
 import type { Brand } from '@/types';
 
-const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+const FRONTEND_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://pruebalo.wilkiedevs.com');
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
 function CopyableUrl({ url }: { url: string }) {

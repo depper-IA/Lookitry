@@ -658,13 +658,18 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAACsmy7e_yL9iyAXM
 
 ---
 
-## Reglas de Negocio Clave
+### Reglas de Negocio Clave
 
-### Planes
-- `TRIAL`: período de prueba temporal, badge violeta `#6366f1`, independiente de BASIC/PRO
-- `BASIC`: $150.000 COP/mes, 5 productos activos, 400 generaciones/mes
-- `PRO`: $250.000 COP/mes, 15 productos activos, 1.200 generaciones/mes
-- `LANDING`: pago único $650.000 COP, requiere plan BASIC o PRO activo
+#### Dependencia de Recursos (MANDATORIO)
+- **Mini-landing:** Requiere obligatoriamente un plan **BASIC** o **PRO** activo. 
+- Si la suscripción expira o se cancela, la mini-landing se suspende automáticamente (`landing_suspended_at` se llena).
+- Un usuario en **TRIAL** puede previsualizar la landing en el dashboard, pero para activarla públicamente debe adquirir un plan junto con el pago único de la landing.
+
+#### Planes
+- `TRIAL`: período de prueba temporal, badge violeta `#6366f1`, independiente de BASIC/PRO.
+- `BASIC`: $150.000 COP/mes, 5 productos activos, 400 generaciones/mes.
+- `PRO`: $250.000 COP/mes, 15 productos activos, 1.200 generaciones/mes.
+- `LANDING`: pago único $650.000 COP, requiere plan BASIC o PRO activo.
 
 ### Descuentos por duración
 - 1 mes: 0%
