@@ -32,6 +32,8 @@ export interface UpdateBrandDto {
   rating?: number;
   total_reviews?: number;
   landing_template?: string;
+  landing_font?: string | null;
+  widget_bg_color?: string | null;
   schedule?: Record<string, any> | null;
   slogan?: string;
   logo_light?: string | null;

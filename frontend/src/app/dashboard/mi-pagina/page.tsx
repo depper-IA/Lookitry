@@ -362,7 +362,7 @@ export default function MiPaginaPage() {
                     youtube, setYoutube, x, setX,
                     cityDisplay, setCityDisplay, nationalShipping, setNationalShipping,
                     showBrandName, setShowBrandName,
-                    primaryColor, setPrimaryColor, landingFont, setLandingFont,
+                    primaryColor, setPrimaryColor, widgetBgColor, setWidgetBgColor, landingFont, setLandingFont,
                     rating, setRating, totalReviews, setTotalReviews,
                     schedule, setSchedule,
                   }}
