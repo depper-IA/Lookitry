@@ -217,16 +217,16 @@ export class SubscriptionService {
   }
 
   /**
-   * Calcula el prorrateo para un upgrade de plan.
+   * Calcula el prorrateo para un cambio de plan (Upgrade o Downgrade).
    * El crédito se basa en el precio diario del plan actual × días restantes.
    * El monto a cobrar = precio del nuevo plan - crédito (mínimo 0).
    * La nueva fecha de fin = now() + meses nuevos (siempre desde hoy, no acumula).
    *
    * @param brandId - ID de la marca
-   * @param newPlan - Plan destino ('PRO')
+   * @param newPlan - Plan destino ('BASIC' | 'PRO')
    * @param newMonths - Meses a contratar del nuevo plan
    * @param newPlanPricePerMonth - Precio mensual del nuevo plan en COP
-   * @param currentPlanPriceTotal - Precio total pagado por el plan actual en COP
+   * @param currentPlanPriceTotalFallback - Precio total pagado por el plan actual (fallback si no hay registro)
    */
   async calculateUpgradeProration(
     brandId: string,
@@ -244,7 +244,7 @@ export class SubscriptionService {
   }> {
     const { data: brand, error } = await supabaseAdmin
       .from('brands')
-      .select('subscription_end_date, subscription_start_date')
+      .select('subscription_end_date, subscription_start_date, plan')
       .eq('id', brandId)
       .single();
 

@@ -6,6 +6,7 @@ inclusion: always
 
 > Documento de referencia para retomar el proyecto sin leer archivos individuales.
 > Actualizar este archivo cada vez que se agregue una tabla, ruta, página o servicio nuevo.
+> **LEER SIEMPRE la carpeta `.kiro/steering/` antes de trabajar en el proyecto.**
 
 ---
 
@@ -18,7 +19,7 @@ inclusion: always
 | Base de datos | Supabase (PostgreSQL) |
 | Autenticación | JWT propio (no Supabase Auth) |
 | Almacenamiento | MinIO (`minio.wilkiedevs.com`) |
-| Pagos | Wompi (Colombia) |
+| Pagos | Wompi (Colombia, COP) + PayPal (Internacional, USD) |
 | IA / Try-On | n8n + OpenRouter (flujo `wPLypk7KhBcFLicX`) |
 | Antispam | Cloudflare Turnstile |
 | Email | SMTP Hostinger (`smtp.hostinger.com:465`) |
@@ -75,7 +76,12 @@ Mostrador_wilkiedevs/
 │   └── src/jobs/                # Cron jobs (cleanup, subscription check)
 ├── scripts/                     # Deploy y utilidades
 │   └── _deploy_now.py           # Script de deploy al VPS
-└── .kiro/steering/              # Documentación del proyecto para Kiro
+└── .kiro/steering/              # ← LEER SIEMPRE. Documentación del proyecto
+    ├── architecture.md          # Este archivo — arquitectura completa
+    ├── brand.md                 # Identidad visual y marca
+    ├── tools-and-credentials.md # Credenciales y accesos
+    ├── deploy-workflow.md       # Flujo de deploy paso a paso
+    └── REGLAS_IMPORTANTES.md    # Reglas críticas del proyecto
 ```
 
 ---
@@ -113,6 +119,7 @@ Tabla principal. Cada marca es un cliente del SaaS.
 | `reset_token` | varchar | Token de reset de contraseña |
 
 RLS: cada marca solo puede leer/editar sus propios datos.
+**Backend SIEMPRE usa `supabaseAdmin` (service role) — bypasea RLS completamente.**
 
 ---
 
@@ -174,11 +181,12 @@ Historial de pagos de suscripciones.
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `brand_id` | uuid FK → brands | |
-| `amount` | numeric | Monto en COP |
-| `currency` | varchar | Default `COP` |
-| `payment_method` | varchar | Método de pago |
+| `amount` | numeric | Monto (en COP para Wompi, en USD para PayPal) |
+| `currency` | varchar | `COP` (Wompi) o `USD` (PayPal) |
+| `payment_method` | varchar | `wompi`, `paypal`, `credit_proration`, `manual` |
 | `status` | varchar | `completed`, `pending`, `failed`, `refunded` |
 | `months_paid` | int | Meses pagados (1-24) |
+| `notes` | text | Notas internas (referencia, plan, etc.) |
 
 ---
 
@@ -201,7 +209,12 @@ RLS: lectura pública (anon key), escritura solo service role.
 ### `payment_settings` (1 registro, id=1)
 Configuración de pasarelas de pago. Editable desde `/admin/payment-settings`.
 
-Campos clave: `wompi_enabled`, `wompi_public_key`, `wompi_private_key`, `wompi_events_secret`, `wompi_integrity_secret`, `wompi_test_mode`, `manual_enabled`, `manual_whatsapp`, `manual_email`, `landing_price`, `landing_original_price`.
+Campos clave:
+- `wompi_enabled`, `wompi_public_key`, `wompi_private_key`, `wompi_events_secret`, `wompi_integrity_secret`, `wompi_test_mode`
+- `paypal_enabled`, `paypal_client_id`, `paypal_client_secret`, `paypal_sandbox`
+- `manual_enabled`, `manual_whatsapp`, `manual_email`
+- `landing_price`, `landing_original_price`
+- `trm` — Tasa de cambio COP→USD usada para calcular montos PayPal (ej: 3900)
 
 ---
 
@@ -288,6 +301,24 @@ Registros de trial por IP/fingerprint (anti-abuso).
 
 ---
 
+### `pending_registrations`
+Registros de pago pendiente para usuarios sin cuenta (checkout público sin sesión).
+Se crea al generar la URL de Wompi/PayPal, se marca como `paid` cuando el webhook confirma el pago.
+El usuario luego completa el registro en `/registro-pro?ref=REFERENCIA`.
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `email` | text | Email del visitante |
+| `reference` | text UNIQUE | Referencia de pago |
+| `plan` | text | Plan a activar |
+| `months` | int | Meses a activar |
+| `includes_landing` | bool | Si incluye landing page |
+| `amount` | numeric | Monto pagado |
+| `status` | text | `pending` → `paid` |
+| `payment_id` | text | ID de transacción (Wompi ID o PayPal orderId) |
+
+---
+
 ### `admin_notification_preferences` (16 registros)
 Preferencias de notificaciones por tipo.
 
@@ -330,18 +361,21 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 | GET | `/generations` | JWT | Historial |
 | GET | `/generations/:id` | JWT | Detalle |
 
-### Payments (`/api/payments/*`)
+### Payments — Wompi (`/api/payments/wompi/*`)
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
 | GET | `/payment-settings/public` | Público | Config pública de pagos |
 | GET | `/payments/wompi/config` | JWT | Config Wompi para el plan |
-| GET | `/payments/wompi/checkout-url` | JWT/Público | URL de checkout Wompi |
-<<<<<<< HEAD
-| GET | `/payments/wompi/upgrade-preview` | JWT | Calcula prorrateo de upgrade (crédito, monto a pagar, nueva fecha fin) |
-| POST | `/payments/wompi/apply-free-upgrade` | JWT | Aplica upgrade sin cobro cuando crédito cubre el costo total |
-=======
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
-| POST | `/payments/wompi/webhook` | Wompi signature | Webhook de eventos |
+| GET | `/payments/wompi/checkout-url` | JWT/Público | URL de checkout Wompi (COP) |
+| GET | `/payments/wompi/upgrade-preview` | JWT | Calcula prorrateo de upgrade |
+| POST | `/payments/wompi/apply-free-upgrade` | JWT | Aplica upgrade sin cobro |
+| POST | `/payments/wompi/webhook` | HMAC Wompi | Webhook de eventos |
+
+### Payments — PayPal (`/api/payments/paypal/*`)
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/payments/paypal/checkout-url` | JWT/Público | URL de checkout PayPal (USD, usa TRM) |
+| POST | `/payments/paypal/capture` | Público | Captura el pago aprobado |
 
 ### Subscription (`/api/subscription/*`)
 | Método | Ruta | Auth | Descripción |
@@ -370,6 +404,8 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 | GET | `/analytics` | JWT | Métricas de la marca |
 | GET | `/usage` | JWT | Uso del mes |
 | GET | `/admin/revenue` | Admin JWT | Ingresos globales |
+| GET | `/admin/stats` | Admin JWT | Estadísticas globales |
+| GET | `/admin/stats/conversion` | Admin JWT | Métricas de conversión |
 
 ### Pruebalo (widget público)
 | Método | Ruta | Auth | Descripción |
@@ -395,15 +431,15 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 ### Públicas (NO indexadas)
 | Ruta | Descripción |
 |------|-------------|
-| `/checkout` | Checkout público (precios dinámicos desde pricing_config) |
+| `/checkout` | Checkout público (precios dinámicos desde pricing_config). Wompi + PayPal. |
 | `/pago-exitoso` | Confirmación de pago |
 | `/trial-payment` | Pago de trial |
 | `/trial-activado` | Confirmación de trial |
 | `/verify-email` | Verificación de email |
-| `/registro-pro` | Registro directo a PRO |
+| `/registro-pro` | Completa registro post-pago (usa `?ref=REFERENCIA` de pending_registrations) |
 | `/pruebalo/[slug]` | Widget público de try-on |
-| `/marca/[slug]` | Mini-landing pública de marca |
-| `/sitio/[slug]` | Variante de mini-landing |
+| `/marca/[slug]` | Mini-landing pública de marca (variante) |
+| `/sitio/[slug]` | Mini-landing pública de marca (ruta oficial) |
 | `/embed/[slug]` | Embed del widget (iframe) |
 | `/auth/callback` | Callback de auth |
 
@@ -416,12 +452,8 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 | `/dashboard/analytics` | Métricas de uso |
 | `/dashboard/usage` | Contador del mes |
 | `/dashboard/subscription` | Estado de suscripción |
-<<<<<<< HEAD
-| `/dashboard/checkout` | Checkout interno — renovar plan, upgrade BASIC→PRO con prorrateo |
-| `/dashboard/checkout-landing` | Checkout exclusivo para comprar mini-landing (solo usuarios con plan activo, sin landing) |
-=======
-| `/dashboard/checkout` | Checkout interno (precios dinámicos) |
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
+| `/dashboard/checkout` | Checkout interno — renovar plan, upgrade BASIC→PRO con prorrateo. Wompi + PayPal. |
+| `/dashboard/checkout-landing` | Checkout exclusivo para comprar mini-landing. Wompi + PayPal. |
 | `/dashboard/settings` | Configuración del widget |
 | `/dashboard/embed` | Código de integración |
 | `/dashboard/mi-pagina` | Editor de mini-landing |
@@ -437,7 +469,7 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 | `/admin/payments` | Historial de pagos |
 | `/admin/revenue` | Ingresos y proyecciones |
 | `/admin/pricing` | Editor de precios dinámicos (pricing_config) |
-| `/admin/payment-settings` | Configuración de pasarelas |
+| `/admin/payment-settings` | Configuración de pasarelas (Wompi, PayPal, TRM) |
 | `/admin/marketing/promotions` | Cupones y promociones |
 | `/admin/mini-landings` | Gestión de mini-landings |
 | `/admin/analytics` | Analytics globales |
@@ -470,6 +502,8 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 | `PromoModal` | `components/landing/PromoModal.tsx` | Modal de promoción en landing |
 | `DashboardLayout` | `app/dashboard/layout.tsx` | Layout del dashboard con sidebar |
 | `AdminLayout` | `app/admin/layout.tsx` | Layout del panel admin |
+| `TryOnWidget` | `components/tryon/TryOnWidget.tsx` | Widget de prueba virtual. Props: `brandSlug`, `isEmbed`. Sin prop `initialProduct`. |
+| `TemplateClassic/Editorial/Probador/Moderno` | `components/mini-landing/` | 4 templates de mini-landing |
 
 ---
 
@@ -483,18 +517,41 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 5. Usuario verifica email en `/verify-email`
 6. Redirige a `/dashboard` con JWT
 
-### Flujo de Pago (Wompi)
+### Flujo de Pago — Wompi (SOLO COP)
+> Wompi solo acepta COP. **No importa qué moneda muestre el frontend — el backend siempre envía COP.**
+
 1. Usuario va a `/checkout?plan=BASIC` o `/dashboard/checkout`
 2. Frontend carga precios desde `pricing_config` via Supabase REST
 3. Usuario selecciona plan, meses, aplica cupón opcional
-4. `GET /api/payments/wompi/checkout-url` genera URL de Wompi
-5. Usuario paga en Wompi
-6. Wompi envía webhook a `POST /api/payments/wompi/webhook`
-7. Backend verifica firma, activa suscripción en `brands`
-8. Inserta registro en `subscription_payments`
-9. Usuario ve `/pago-exitoso`
+4. `GET /api/payments/wompi/checkout-url?amount=150000&months=1&plan=BASIC` genera URL de Wompi
+5. Backend crea referencia `WOMPI-{brandId}-M1-PBASIC-{timestamp}`
+6. El monto se pasa en COP → Wompi lo convierte a centavos internamente (`amount_in_cents = amount * 100`)
+7. Usuario paga en Wompi (tarjeta, PSE, nequi, etc.)
+8. Wompi envía webhook a `POST /api/payments/wompi/webhook`
+9. Backend verifica firma HMAC SHA-256, extrae plan/meses de la referencia
+10. Activa suscripción en `brands`, inserta `subscription_payments` (currency: 'COP')
+11. Envía email de confirmación y redirige usuario a `/pago-exitoso`
 
-<<<<<<< HEAD
+> ⚠️ **Si el selector de moneda está en USD y el usuario intenta pagar con Wompi:**
+> Wompi solo procesa COP. El frontend siempre envía el `amount` en COP al backend. El selector de moneda en el frontend es SOLO visual — convierte la pantalla de COP a USD para que el usuario vea el equivalente, pero el pago se procesa en COP. Si el usuario selecciona USD y luego intenta pagar con Wompi, el frontend **debería** forzar el método a PayPal. **Verificar que esto esté implementado en el checkout.**
+
+### Flujo de Pago — PayPal (USD, con TRM)
+> PayPal procesa en USD. El TRM (Tasa Representativa del Mercado) convierte el monto COP a USD.
+
+1. Usuario selecciona PayPal como método de pago
+2. Frontend envía `amount` en COP + `trm` (obtenido de `payment_settings.trm`)
+3. `GET /api/payments/paypal/checkout-url?amount=150000&plan=BASIC&months=1&trm=3900`
+4. Backend: `amountUSD = Math.ceil(150000 / 3900) = 39 USD`
+5. PayPal crea orden por $39 USD
+6. Usuario da clic en "Pagar con PayPal" → redirigido a PayPal
+7. Usuario aprueba el pago en PayPal
+8. Frontend llama a `POST /api/payments/paypal/capture { orderId, reference }`
+9. Backend captura el pago en PayPal, lee el monto real en USD capturado
+10. Activa suscripción, inserta `subscription_payments` (currency: 'USD', amount: 39)
+
+> ⚠️ **Si el usuario paga en USD con PayPal siendo la moneda del checkout en USD:**
+> El flujo funciona correctamente. El `amount` siempre se envía en COP internamente y el backend convierte a USD con el TRM. El TRM se actualiza manualmente desde `/admin/payment-settings`.
+
 ### Flujo de Upgrade con Prorrateo (BASIC → PRO)
 1. Usuario con BASIC activo selecciona PRO en `/dashboard/checkout`
 2. Frontend detecta `isUpgrade = true` y llama a `GET /api/payments/wompi/upgrade-preview`
@@ -515,8 +572,6 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 - Las generaciones ya usadas en el mes en curso no se borran ni se recuperan
 - El crédito nunca genera reembolso monetario — solo descuenta del precio del nuevo plan
 
-=======
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
 ### Flujo de Try-On
 1. Usuario sube selfie en el widget (`/pruebalo/[slug]`)
 2. `POST /api/pruebalo/:slug/generate` valida créditos y plan
@@ -532,6 +587,29 @@ Base URL: `https://api.pruebalo.wilkiedevs.com/api`
 3. Se registra IP/fingerprint en `trial_registrations` (anti-abuso)
 4. Usuario puede generar hasta `trial_generations_limit` pruebas
 5. Al vencer el trial, se muestra `UpgradeModal` para activar plan
+
+---
+
+## Selector de Moneda — Comportamiento con Wompi y PayPal
+
+El checkout (`/checkout` y `/dashboard/checkout`) tiene un selector visual de moneda (COP/USD).
+
+### ¿Qué hace el selector?
+- Es **SOLO visual**: muestra precios en la moneda seleccionada para facilitar la comprensión al usuario
+- El precio en USD se calcula en el frontend: `precioUSD = Math.ceil(precioCOP / trm)`
+- El TRM viene de `payment_settings.trm` (configurable desde `/admin/payment-settings`)
+
+### Flujos por combinación moneda + método de pago:
+
+| Moneda mostrada | Método de pago | Comportamiento real |
+|-----------------|----------------|---------------------|
+| COP | Wompi | ✅ Normal — `amount` en COP → Wompi procesa en COP |
+| USD | Wompi | ⚠️ **Problema potencial** — Wompi **no acepta USD**. El backend siempre recibe `amount` en COP. Si el frontend envía el monto en USD al endpoint de Wompi, el pago será por el equivalente en USD tratado como COP (ej: $39 COP en vez de $150.000 COP). **Verificar que el frontend envíe siempre COP a Wompi independientemente de la moneda mostrada.** |
+| COP | PayPal | ✅ Normal — `amount` en COP + `trm` → backend convierte a USD. Usuario paga en USD. |
+| USD | PayPal | ✅ Normal — el `trm` del frontend ya se usó para mostrar el precio. Backend toma el `amount` original en COP + `trm` para calcular USD de PayPal. |
+
+### Riesgo detectado:
+Si el usuario ve el precio en USD y el frontend envía ese monto USD como `amount` a Wompi (en vez del monto COP original), el pago sería **incorrecto** (factor ~4000x menor). Ver sección de verificación pendiente.
 
 ---
 
@@ -594,14 +672,13 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAACsmy7e_yL9iyAXM
 - 6 meses: 10%
 - 12 meses: 15%
 
-<<<<<<< HEAD
 ### Lógica de upgrade con prorrateo (BASIC → PRO)
 
 Implementada en `SubscriptionService` (`backend/src/services/subscription.service.ts`):
 
 - `calculateUpgradeProration(brandId, newPlan, newMonths, newPlanPricePerMonth, currentPlanPriceTotal)` — calcula crédito proporcional y monto a cobrar
 - `applyFreeUpgrade(brandId, newPlan, newMonths, creditAmount, newPlanTotal, reference)` — aplica upgrade sin cobro, registra en `subscription_payments` con `amount=0` y `payment_method='credit_proration'`
-- `renewSubscription(..., isUpgrade: true)` — cuando es upgrade, `newStartDate = now()` (no acumula sobre fecha anterior)
+- `renewSubscription(brandId, CreatePaymentDto, months, plan?, isUpgrade?)` — cuando es upgrade, `newStartDate = now()` (no acumula sobre fecha anterior)
 
 Fórmula del crédito:
 ```
@@ -613,8 +690,6 @@ newEndDate = now() + mesesNuevos
 
 La landing page (pago único) no entra en el cálculo — se suma por separado al `amountToPay` si el usuario la agrega en el mismo checkout.
 
-=======
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
 ### Mini-landing
 - `has_landing_page = true` → landing activa
 - `landing_suspended_at` no nulo → suspendida por falta de pago
@@ -640,7 +715,11 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 export const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 ```
 
-**Regla**: operaciones admin (cupones, promociones, pricing, payment_settings) SIEMPRE usan `supabaseAdmin`. Operaciones de usuario usan `supabase` con JWT del usuario.
+**Regla CRÍTICA**: El backend usa JWT propio (no Supabase Auth). El cliente `supabase` anon NUNCA tiene sesión activa — RLS bloquea todo. Por eso **SIEMPRE usar `supabaseAdmin`** en servicios y controllers del backend.
+
+Excepciones permitidas que usan `supabase` anon:
+- `health.controller.ts` — ping de salud
+- Frontend lee `pricing_config` y `promotions` directo desde Supabase (tablas con RLS público)
 
 ---
 
@@ -691,74 +770,45 @@ python scripts/_deploy_now.py --restart
 ```
 
 **IMPORTANTE**: nunca hacer deploy sin que el usuario lo pida explícitamente.
-<<<<<<< HEAD
 
 ---
 
 ## Historial de Cambios Importantes
 
+### Resolución de conflictos de merge Git (21/03/2026)
+El archivo `architecture.md` tenía marcadores de conflicto Git (`<<<<<<< HEAD`, `=======`, `>>>>>>>`) sin resolver. Limpiados y fusionados manualmente conservando la versión más completa (HEAD).
+
+### Correcciones de TypeScript (21/03/2026)
+| Archivo | Error | Fix |
+|---------|-------|-----|
+| `paypal.routes.ts` | `captureOrder` no existía | → `capturePayment` |
+| `payments.routes.ts` | `brandAuthMiddleware` no exportado | → `authMiddleware` |
+| `paypal.controller.ts` | `renewSubscription` firma incorrecta | → `(brandId, CreatePaymentDto, months, plan)` |
+| `paypal.service.ts` | Método `getOrder()` faltaba | → Añadido |
+| `admin/analytics/page.tsx` | `api.get()` retorna `{data, status}` | → `const { data } = await api.get<T>(...)` |
+| `admin/conversion/page.tsx` | Mismo problema | → Mismo fix |
+| `TemplateModerno.tsx` | Prop `initialProduct` no existe | → Eliminada |
+| `TemplateEditorial.tsx` | Mismo problema | → Eliminada |
+| `.eslintrc.json` | `"next/typescript"` no válido en Next.js 14 | → Removida |
+
+### Adición de PayPal (marzo 2026)
+- `PaypalService` — OAuth2, `createOrder`, `captureOrder`, `getOrder`
+- `PaypalController` — `getCheckoutUrl`, `capturePayment`
+- `paypal.routes.ts` + `payments.routes.ts`
+- `auth-post-payment.controller.ts` — activa suscripción post-pago PayPal para nuevos registros
+- Frontend: selector Wompi/PayPal en los 3 checkouts
+
 ### Migración completa `supabase` anon → `supabaseAdmin` en el backend
-
-**Problema raíz:** El backend usa JWT propio (no Supabase Auth). Esto significa que el cliente `supabase` (anon key) nunca tiene una sesión activa de Supabase, por lo que RLS bloquea todas las consultas devolviendo `null` o error silencioso. Esto causaba bugs como login con "Credenciales inválidas", stats en $0, pagos no registrados, etc.
-
-**Solución:** Todos los servicios y controllers del backend deben usar `supabaseAdmin` (service role key) que bypasea RLS completamente.
-
-**Regla definitiva para el backend:**
-- SIEMPRE usar `supabaseAdmin` en todos los servicios, controllers y routes del backend
-- La única excepción permitida es `health.controller.ts` (hace un ping de salud con anon key intencionalmente)
-- Los scripts en `backend/src/scripts/` pueden usar cualquiera (no corren en producción)
-- El frontend usa `supabase` anon key directamente para leer `pricing_config` y `promotions` (tablas con RLS de lectura pública)
-
-**Archivos migrados:**
-- `services/auth.service.ts` — login, register, verifyEmail, resetPassword, etc.
-- `services/subscription.service.ts` — checkSubscriptionStatus, isInTrial, getDaysRemaining, getSubscriptionInfo, getPaymentHistory
-- `services/usage.service.ts` — checkGenerationLimit, checkProductLimit, getUsageStats
-- `services/products.service.ts` — todos los métodos CRUD
-- `services/analytics.service.ts` — getGenerationsByBrand, getMostUsedProducts, getGenerationsByMonth
-- `services/brands.service.ts` — getBrandById, updateBrand, getBrandBySlug
-- `services/admin.service.ts` — getAllBrandsWithStats, changeBrandPlan, activateBrandPlan, createBrand, etc.
-- `services/notificationPreferences.service.ts` — getPreferences, updatePreferences
-- `services/cleanup.service.ts` — limpieza de productos eliminados
-- `controllers/brands.controller.ts` — requestUpgrade, requestPlanChange
-- `controllers/wompi.controller.ts` — handleWebhook
-- `controllers/trialCampaign.controller.ts` — getTrialCampaign, createTrialCampaign, updateTrialCampaign
-- `controllers/admin.controller.ts` — toggleLandingPage, updateModalConfig
-- `routes/trial.routes.ts` — /trial/status, /trial/initiate
-
----
+**Problema raíz:** El backend usa JWT propio (no Supabase Auth). RLS bloquea todas las consultas con anon key.
+**Solución:** Todos los servicios y controllers del backend usan `supabaseAdmin`.
 
 ### Corrección del servicio de email (SMTP)
-
-**Problema:** `email.service.ts` cacheaba el transporter en `this.transporter`. Si fallaba una vez (ej. variables de entorno no cargadas al inicio), todos los envíos siguientes fallaban silenciosamente. Además, el puerto 465 requiere `secure: true` siempre, pero el código dependía de `SMTP_SECURE=true` en el env.
-
-**Solución aplicada en `backend/src/services/email.service.ts`:**
-- El transporter se crea fresco en cada llamada a `sendEmail()` (no se cachea)
-- Puerto 465 fuerza `secure: true` automáticamente, independiente de la variable de entorno
-- Se agregaron timeouts explícitos (connectionTimeout, greetingTimeout, socketTimeout)
-- El transporter se cierra con `transporter.close()` en el bloque `finally`
-- Logs mejorados con destinatario y messageId
-
-**Configuración SMTP activa:**
-```
-SMTP_HOST=smtp.hostinger.com
-SMTP_PORT=465
-SMTP_SECURE=true
-SMTP_USER=info@pruebalo.wilkiedevs.com
-SMTP_FROM=Virtual LOOKITRY <info@pruebalo.wilkiedevs.com>
-```
-
----
+- Transporter se crea fresco en cada llamada (no se cachea)
+- Puerto 465 fuerza `secure: true` automáticamente
+- Timeouts explícitos añadidos
 
 ### Email de confirmación de compra en webhook Wompi
-
-**Problema:** El webhook de Wompi (`wompi.controller.ts`) activaba la suscripción correctamente pero nunca enviaba email de confirmación al usuario.
-
-**Solución:** Después de `renewSubscription()`, se consulta la marca actualizada y se llama a `notificationService.sendRenewalConfirmation()` con `.catch()` para no bloquear la respuesta a Wompi.
-
----
+Después de `renewSubscription()`, se consulta la marca actualizada y se llama a `notificationService.sendRenewalConfirmation()`.
 
 ### Logo en templates de email
-
-**Cambio:** El `baseTemplate` en `backend/src/templates/email-templates.ts` ahora muestra el logo de Lookitry (`https://pruebalo.wilkiedevs.com/logo.svg`) en el header de todos los emails, en lugar del texto "Virtual Try-On". El logo se carga como `<img>` con `onerror` para degradar graciosamente si no carga. El footer también fue actualizado de "Virtual Try-On SaaS" a "Lookitry".
-=======
->>>>>>> 5c76247 (fix: cupones usan supabaseAdmin (RLS), precios dinamicos en checkouts y UpgradeModal; add AUDIT_TASKS.md y architecture.md)
+El `baseTemplate` muestra el logo de Lookitry (`https://pruebalo.wilkiedevs.com/logo.svg`) en el header de todos los emails.

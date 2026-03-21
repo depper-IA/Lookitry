@@ -1,137 +1,141 @@
-
 import axios from 'axios';
-import { PaymentSettingsService } from './paymentSettings.service';
+import { supabaseAdmin } from '../config/supabase';
 
-/**
- * PayPalService
- * 
- * Maneja la integración oficial con la API REST de PayPal.
- */
-class PayPalService {
-  private async getAccessToken() {
-    const settings = await new PaymentSettingsService().getSettings();
-    const isSandbox = settings.paypal_sandbox ?? true;
-    
-    const clientId = isSandbox 
-      ? (process.env.PAYPAL_CLIENT_ID || settings.paypal_client_id)
-      : (process.env.PAYPAL_PROD_CLIENT_ID || settings.paypal_prod_client_id || settings.paypal_client_id);
-      
-    const secret = isSandbox
-      ? (process.env.PAYPAL_SECRET || settings.paypal_client_secret)
-      : (process.env.PAYPAL_PROD_SECRET || settings.paypal_prod_client_secret || settings.paypal_client_secret);
+export class PaypalService {
+  private async getActiveKeys() {
+    const { data: settings, error } = await supabaseAdmin
+      .from('payment_settings')
+      .select('paypal_enabled, paypal_client_id, paypal_client_secret, paypal_sandbox')
+      .eq('id', 1)
+      .single();
 
-    const baseUrl = isSandbox
-      ? 'https://api-m.sandbox.paypal.com'
-      : 'https://api-m.paypal.com';
+    if (error || !settings) {
+      throw new Error('No se pudo cargar la configuración de PayPal');
+    }
 
-    const auth = Buffer.from(`${clientId}:${secret}`).toString('base64');
-
-    const response = await axios({
-      url: `${baseUrl}/v1/oauth2/token`,
-      method: 'post',
-      headers: {
-        'Accept': 'application/json',
-        'Accept-Language': 'en_US',
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      data: 'grant_type=client_credentials',
-    });
+    if (!settings.paypal_enabled) {
+      throw new Error('PayPal no está habilitado en este momento');
+    }
 
     return {
-      token: response.data.access_token,
-      baseUrl
+      clientId: settings.paypal_client_id,
+      clientSecret: settings.paypal_client_secret,
+      sandbox: settings.paypal_sandbox
     };
   }
 
-  async createOrder(amountUSD: number, reference: string, description: string) {
-    try {
-      const { token, baseUrl } = await this.getAccessToken();
+  private async getAccessToken(): Promise<string> {
+    const { clientId, clientSecret, sandbox } = await this.getActiveKeys();
+    const baseUrl = sandbox ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
+    const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
 
-      const response = await axios({
-        url: `${baseUrl}/v2/checkout/orders`,
-        method: 'post',
+    const response = await axios.post(
+      `${baseUrl}/v1/oauth2/token`,
+      'grant_type=client_credentials',
+      {
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        data: {
-          intent: 'CAPTURE',
-          purchase_units: [
-            {
-              reference_id: reference,
-              amount: {
-                currency_code: 'USD',
-                value: amountUSD.toFixed(2),
-              },
-              description: description,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${auth}`
+        }
+      }
+    );
+
+    return response.data.access_token;
+  }
+
+  /**
+   * Crea una orden en PayPal
+   * @param amountCOP Monto en COP
+   * @param trm Tasa representativa del mercado (COP -> USD)
+   * @param reference Referencia de pago interna
+   */
+  async createOrder(amountCOP: number, trm: number, reference: string): Promise<string> {
+    const accessToken = await this.getAccessToken();
+    const { sandbox } = await this.getActiveKeys();
+    const baseUrl = sandbox ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
+
+    // Convertir COP a USD (PayPal no acepta COP directamente para suscripciones)
+    const amountUSD = Math.ceil(amountCOP / trm);
+
+    const response = await axios.post(
+      `${baseUrl}/v2/checkout/orders`,
+      {
+        intent: 'CAPTURE',
+        purchase_units: [
+          {
+            reference_id: reference,
+            amount: {
+              currency_code: 'USD',
+              value: amountUSD.toString()
             },
-          ],
-          application_context: {
-            brand_name: 'Lookitry',
-            landing_page: 'BILLING',
-            user_action: 'PAY_NOW',
-            return_url: `${process.env.FRONTEND_URL}/pago-exitoso?ref=${reference}&method=paypal`,
-            cancel_url: `${process.env.FRONTEND_URL}/checkout`,
-          },
-        },
-      });
-
-      const approveLink = response.data.links.find((l: any) => l.rel === 'approve');
-      return {
-        orderId: response.data.id,
-        approveUrl: approveLink.href,
-      };
-    } catch (error: any) {
-      console.error('[PayPal] Error al crear orden:', error.response?.data || error.message);
-      throw new Error('Error al generar el pago con PayPal');
-    }
-  }
-
-  /**
-   * Captura un pago autorizado previamente (intent=CAPTURE)
-   */
-  async captureOrder(orderId: string) {
-    try {
-      const { token, baseUrl } = await this.getAccessToken();
-
-      const response = await axios({
-        url: `${baseUrl}/v2/checkout/orders/${orderId}/capture`,
-        method: 'post',
+            description: `Suscripción Lookitry - Ref: ${reference}`
+          }
+        ],
+        application_context: {
+          brand_name: 'Lookitry',
+          landing_page: 'BILLING',
+          user_action: 'PAY_NOW',
+          return_url: `${process.env.FRONTEND_URL}/pago-exitoso?method=paypal&ref=${reference}`,
+          cancel_url: `${process.env.FRONTEND_URL}/checkout`
+        }
+      },
+      {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+          Authorization: `Bearer ${accessToken}`
+        }
+      }
+    );
 
-      return response.data;
-    } catch (error: any) {
-      console.error('[PayPal] Error al capturar orden:', error.response?.data || error.message);
-      throw new Error('No se pudo confirmar el pago con PayPal');
-    }
+    // Buscar el link de aprobación
+    const approveLink = response.data.links.find((l: any) => l.rel === 'approve');
+    if (!approveLink) throw new Error('No se pudo generar el link de aprobación de PayPal');
+
+    return approveLink.href;
   }
 
   /**
-   * Obtiene los detalles de una orden para verificar su estado
+   * Captura el pago aprobado por el usuario
    */
-  async getOrder(orderId: string) {
-    try {
-      const { token, baseUrl } = await this.getAccessToken();
+  async captureOrder(orderId: string): Promise<any> {
+    const accessToken = await this.getAccessToken();
+    const { sandbox } = await this.getActiveKeys();
+    const baseUrl = sandbox ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
 
-      const response = await axios({
-        url: `${baseUrl}/v2/checkout/orders/${orderId}`,
-        method: 'get',
+    const response = await axios.post(
+      `${baseUrl}/v2/checkout/orders/${orderId}/capture`,
+      {},
+      {
         headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`
+        }
+      }
+    );
 
-      return response.data;
-    } catch (error: any) {
-      console.error('[PayPal] Error al obtener orden:', error.response?.data || error.message);
-      throw new Error('Error al consultar el estado del pago en PayPal');
-    }
+    return response.data;
+  }
+
+  /**
+   * Obtiene el detalle de una orden de PayPal para verificar su estado
+   */
+  async getOrder(orderId: string): Promise<any> {
+    const accessToken = await this.getAccessToken();
+    const { sandbox } = await this.getActiveKeys();
+    const baseUrl = sandbox ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
+
+    const response = await axios.get(
+      `${baseUrl}/v2/checkout/orders/${orderId}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`
+        }
+      }
+    );
+
+    return response.data;
   }
 }
 
-export const paypalService = new PayPalService();
+export const paypalService = new PaypalService();

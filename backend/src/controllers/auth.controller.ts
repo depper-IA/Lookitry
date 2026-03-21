@@ -100,7 +100,7 @@ export class AuthController {
       // una vez que el pago de $100 sea confirmado. Esto cierra la brecha donde un
       // usuario podía verificar el email sin haber completado el pago.
       if (result.verificationToken && !result.requireCardVerification) {
-        const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+        const frontendUrl = (process.env.NODE_ENV === 'development' || !process.env.FRONTEND_URL) ? 'http://localhost:3000' : process.env.FRONTEND_URL;
         const verifyUrl = `${frontendUrl}/auth/verify?token=${result.verificationToken}`;
         emailService.sendEmail({
           to: result.brand.email,
@@ -183,7 +183,7 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email requerido' });
       }
 
-      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+      const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://pruebalo.wilkiedevs.com');
       const { brand, token } = await authService.requestPasswordResetGetToken(email);
 
       // Siempre responder OK para no revelar si el email existe
@@ -231,7 +231,7 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email requerido' });
       }
 
-      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+      const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://pruebalo.wilkiedevs.com');
       const { brand, token } = await authService.resendVerificationEmail(email);
 
       if (brand && token) {

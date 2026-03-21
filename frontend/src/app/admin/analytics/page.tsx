@@ -1,312 +1,260 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { RefreshCw, TrendingUp, Image, Package, Users, BarChart2 } from 'lucide-react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-
-// ── Tipos ─────────────────────────────────────────────────────────────────────
+import { useState, useEffect } from 'react';
+import { 
+  BarChart3, 
+  TrendingUp, 
+  Users, 
+  Sparkles, 
+  CheckCircle2, 
+  AlertCircle,
+  Calendar,
+  ArrowUpRight,
+  ArrowDownRight,
+  Package,
+  Layers
+} from 'lucide-react';
+import { api } from '@/services/api';
 
 interface GlobalStats {
   totalBrands: number;
   totalProducts: number;
   totalGenerations: number;
-  generationsThisMonth: number;
-  successRate: number;
-  brandsByPlan: { BASIC: number; PRO: number };
-  landingStats: { active: number; suspended: number; inactive: number };
-}
-
-interface BrandGenStat {
-  brandId: string;
-  brandName: string;
-  brandSlug: string;
-  plan: string;
-  totalGenerations: number;
   successfulGenerations: number;
   failedGenerations: number;
   generationsThisMonth: number;
+  successRate: number;
+  brandsByPlan: {
+    BASIC: number;
+    PRO: number;
+  };
+  landingStats: {
+    active: number;
+    suspended: number;
+    inactive: number;
+  };
+  generationsByMonth: {
+    month: string;
+    total: number;
+    success: number;
+    failed: number;
+  }[];
 }
-
-interface AdminAnalyticsData {
-  global: GlobalStats;
-  topBrands: BrandGenStat[];
-  generationsByMonth: { month: string; total: number; success: number; failed: number }[];
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function adminFetch(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-  return fetch(`${base}/api${path}`, { credentials: 'include' });
-}
-
-function formatMonth(key: string) {
-  const [year, month] = key.split('-');
-  return new Date(Number(year), Number(month) - 1).toLocaleDateString('es-CO', { month: 'short', year: '2-digit' });
-}
-
-// ── Tarjeta KPI ───────────────────────────────────────────────────────────────
-
-function KpiCard({ label, value, sub, icon, color }: {
-  label: string; value: string | number; sub?: string;
-  icon: React.ReactNode; color: string;
-}) {
-  return (
-    <div className="rounded-2xl border p-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{label}</p>
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white flex-shrink-0" style={{ backgroundColor: color }}>
-          {icon}
-        </div>
-      </div>
-      <p className="text-2xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>{value}</p>
-      {sub && <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
-    </div>
-  );
-}
-
-// ── Página principal ──────────────────────────────────────────────────────────
 
 export default function AdminAnalyticsPage() {
-  const [data, setData] = useState<AdminAnalyticsData | null>(null);
+  const [stats, setStats] = useState<GlobalStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError('');
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
     try {
-      const [statsRes, brandsRes] = await Promise.all([
-        adminFetch('/admin/stats'),
-        adminFetch('/admin/brands?per_page=100'),
-      ]);
-      const statsJson = await statsRes.json();
-      const brandsJson = await brandsRes.json();
-
-      if (!statsRes.ok) throw new Error(statsJson.message || 'Error al cargar estadísticas');
-
-      // Construir topBrands desde la lista de marcas (ordenadas por generaciones)
-      const brands: any[] = brandsJson.brands ?? [];
-      const topBrands: BrandGenStat[] = brands
-        .map((b: any) => ({
-          brandId: b.id,
-          brandName: b.name,
-          brandSlug: b.slug,
-          plan: b.plan,
-          totalGenerations: b.totalGenerations ?? 0,
-          successfulGenerations: b.successfulGenerations ?? 0,
-          failedGenerations: b.failedGenerations ?? 0,
-          generationsThisMonth: b.generationsThisMonth ?? 0,
-        }))
-        .sort((a, b) => b.totalGenerations - a.totalGenerations)
-        .slice(0, 10);
-
-      setData({
-        global: statsJson,
-        topBrands,
-        generationsByMonth: statsJson.generationsByMonth ?? [],
-      });
-    } catch (e: any) {
-      setError(e.message);
+      setLoading(true);
+      const { data } = await api.get<GlobalStats>('/admin/stats');
+      setStats(data);
+    } catch (err: any) {
+      setError(err.message || 'Error al cargar estadísticas');
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF5C3A]"></div>
+      </div>
+    );
+  }
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: 'rgba(255,92,58,0.2)', borderTopColor: '#FF5C3A' }} />
-    </div>
-  );
-
-  if (error) return (
-    <div className="px-4 py-3 rounded-xl border text-sm" style={{ background: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.2)', color: '#ef4444' }}>
-      {error}
-    </div>
-  );
-
-  if (!data) return null;
-
-  const { global: g, topBrands, generationsByMonth } = data;
-  const maxGen = Math.max(...generationsByMonth.map(m => m.total), 1);
+  if (error || !stats) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center gap-3">
+        <AlertCircle className="w-5 h-5" />
+        <p>{error || 'No se pudieron cargar las estadísticas'}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>Analytics</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>Métricas globales de uso y generaciones</p>
-        </div>
-        <button
-          onClick={fetchData}
-          className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl border text-sm transition-opacity hover:opacity-80"
-          style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', background: 'var(--bg-card)' }}
-        >
-          <RefreshCw className="w-4 h-4" />
-          Actualizar
-        </button>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Analíticas Globales</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Resumen del rendimiento y salud del ecosistema Lookitry.</p>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <KpiCard label="Total marcas"         value={g.totalBrands}                    icon={<Users className="w-4 h-4" />}     color="#3b82f6" />
-        <KpiCard label="Generaciones totales" value={g.totalGenerations.toLocaleString()} icon={<Image className="w-4 h-4" />}     color="#8b5cf6" />
-        <KpiCard label="Este mes"             value={g.generationsThisMonth.toLocaleString()} icon={<BarChart2 className="w-4 h-4" />} color="#FF5C3A" />
-        <KpiCard
-          label="Tasa de éxito IA"
-          value={`${Math.round(g.successRate)}%`}
-          sub={g.successRate >= 90 ? 'Excelente' : g.successRate >= 70 ? 'Normal' : 'Revisar'}
-          icon={<TrendingUp className="w-4 h-4" />}
-          color={g.successRate >= 90 ? '#10b981' : g.successRate >= 70 ? '#f59e0b' : '#ef4444'}
+      {/* KPI Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard 
+          title="Total Marcas" 
+          value={stats.totalBrands} 
+          icon={<Users className="w-5 h-5" />} 
+          color="#3b82f6"
+          description="Clientes registrados"
+        />
+        <StatCard 
+          title="Generaciones (Mes)" 
+          value={stats.generationsThisMonth} 
+          icon={<Sparkles className="w-5 h-5" />} 
+          color="#FF5C3A"
+          description="Actividad de este mes"
+        />
+        <StatCard 
+          title="Tasa de Éxito" 
+          value={`${stats.successRate.toFixed(1)}%`} 
+          icon={<CheckCircle2 className="w-5 h-5" />} 
+          color="#10b981"
+          description={`${stats.successfulGenerations.toLocaleString()} exitosas`}
+        />
+        <StatCard 
+          title="Total Productos" 
+          value={stats.totalProducts} 
+          icon={<Package className="w-5 h-5" />} 
+          color="#8b5cf6"
+          description="Ítems activos en catálogo"
         />
       </div>
 
-      {/* Distribución por plan */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="rounded-2xl border p-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <h2 className="text-sm font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Distribución por plan</h2>
-          <div className="space-y-4">
-            {[
-              { label: 'Plan Basic', count: g.brandsByPlan.BASIC, color: '#64748b' },
-              { label: 'Plan Pro',   count: g.brandsByPlan.PRO,   color: '#FF5C3A' },
-            ].map(p => {
-              const pct = g.totalBrands > 0 ? Math.round((p.count / g.totalBrands) * 100) : 0;
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Gráfica de Generaciones */}
+        <div className="lg:col-span-2 rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Uso de IA por Mes</h3>
+              <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Volumen de generaciones en los últimos 6 meses</p>
+            </div>
+            <BarChart3 className="w-5 h-5 text-gray-400" />
+          </div>
+
+          <div className="h-64 flex items-end gap-2 md:gap-4 pt-4">
+            {stats.generationsByMonth.map((m) => {
+              const maxVal = Math.max(...stats.generationsByMonth.map(x => x.total)) || 1;
+              const height = (m.total / maxVal) * 100;
+              const successHeight = (m.success / maxVal) * 100;
+              
               return (
-                <div key={p.label}>
-                  <div className="flex justify-between text-xs mb-1.5">
-                    <span style={{ color: 'var(--text-secondary)' }}>{p.label}</span>
-                    <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-                      {p.count} <span style={{ color: 'var(--text-muted)' }}>({pct}%)</span>
-                    </span>
+                <div key={m.month} className="flex-1 flex flex-col items-center gap-2 group relative">
+                  <div className="w-full bg-gray-100 dark:bg-gray-800/50 rounded-t-lg relative overflow-hidden h-full flex items-end">
+                    <div 
+                      className="w-full bg-[#FF5C3A]/20 transition-all duration-500" 
+                      style={{ height: `${height}%` }}
+                    />
+                    <div 
+                      className="absolute bottom-0 w-full bg-[#FF5C3A] transition-all duration-700 delay-100" 
+                      style={{ height: `${successHeight}%` }}
+                    />
                   </div>
-                  <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--border-color)' }}>
-                    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: p.color }} />
+                  <span className="text-[10px] font-medium uppercase tracking-tighter" style={{ color: 'var(--text-secondary)' }}>
+                    {new Date(m.month + '-01').toLocaleDateString('es-ES', { month: 'short' })}
+                  </span>
+                  
+                  {/* Tooltip */}
+                  <div className="absolute -top-16 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap shadow-xl">
+                    <p className="font-bold border-b border-white/20 pb-1 mb-1">{m.month}</p>
+                    <p>Total: {m.total}</p>
+                    <p className="text-green-400">Éxito: {m.success}</p>
+                    <p className="text-red-400">Fallo: {m.failed}</p>
                   </div>
                 </div>
               );
             })}
           </div>
-          <div className="mt-5 pt-4 border-t grid grid-cols-3 gap-3 text-center" style={{ borderColor: 'var(--border-color)' }}>
-            {[
-              { label: 'Activas',     value: g.landingStats?.active ?? 0,    color: '#10b981' },
-              { label: 'Suspendidas', value: g.landingStats?.suspended ?? 0, color: '#f59e0b' },
-              { label: 'Sin landing', value: g.landingStats?.inactive ?? 0,  color: '#6b7280' },
-            ].map(s => (
-              <div key={s.label}>
-                <p className="text-lg font-bold font-syne" style={{ color: s.color }}>{s.value}</p>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
-              </div>
-            ))}
+          <div className="mt-6 flex items-center justify-center gap-6 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm bg-[#FF5C3A]" />
+              <span>Exitosas</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-sm bg-[#FF5C3A]/20" />
+              <span>Fallidas</span>
+            </div>
           </div>
         </div>
 
-        {/* Gráfico generaciones por mes */}
-        {generationsByMonth.length > 0 && (
-          <div className="rounded-2xl border p-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-            <h2 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Generaciones por mes</h2>
-            <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>Últimos 6 meses</p>
-            <div className="flex items-end gap-2 h-32">
-              {generationsByMonth.slice(-6).map(m => {
-                const h = Math.round((m.total / maxGen) * 100);
-                return (
-                  <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
-                    <span className="text-[10px] font-semibold" style={{ color: 'var(--text-primary)' }}>
-                      {m.total > 0 ? m.total : ''}
-                    </span>
-                    <div className="w-full rounded-t-md relative" style={{ height: '80px', background: 'var(--border-color)' }}>
-                      <div
-                        className="absolute bottom-0 left-0 right-0 rounded-t-md transition-all duration-500"
-                        style={{ height: `${h}%`, backgroundColor: '#FF5C3A' }}
-                      />
-                    </div>
-                    <span className="text-[10px] whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
-                      {formatMonth(m.month)}
-                    </span>
-                  </div>
-                );
-              })}
+        {/* Distribución de Planes */}
+        <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <h3 className="text-lg font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Suscripciones</h3>
+          
+          <div className="space-y-6">
+            <PlanStats 
+              label="Plan Básico" 
+              count={stats.brandsByPlan.BASIC} 
+              total={stats.totalBrands} 
+              color="#3b82f6" 
+            />
+            <PlanStats 
+              label="Plan Pro" 
+              count={stats.brandsByPlan.PRO} 
+              total={stats.totalBrands} 
+              color="#8b5cf6" 
+            />
+            <div className="pt-6 mt-6 border-t" style={{ borderColor: 'var(--border-color)' }}>
+              <h4 className="text-sm font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Mini-Landings</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 rounded-xl bg-green-500/5 border border-green-500/10">
+                  <p className="text-[10px] font-bold text-green-600 uppercase">Activas</p>
+                  <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{stats.landingStats.active}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                  <p className="text-[10px] font-bold text-amber-600 uppercase">Suspendidas</p>
+                  <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{stats.landingStats.suspended}</p>
+                </div>
+              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Top marcas por generaciones */}
-      {topBrands.length > 0 && (
-        <div className="rounded-2xl border overflow-hidden" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Top marcas por generaciones</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ background: 'var(--bg-hover)' }}>
-                  {['Marca', 'Plan', 'Total', 'Este mes', 'Exitosas', 'Fallidas', 'Tasa éxito'].map(h => (
-                    <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {topBrands.map((b, i) => {
-                  const tasa = b.totalGenerations > 0
-                    ? Math.round((b.successfulGenerations / b.totalGenerations) * 100)
-                    : 0;
-                  return (
-                    <tr key={b.brandId} className="border-t transition-opacity hover:opacity-80" style={{ borderColor: 'var(--border-color)' }}>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono w-5 text-right flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
-                          <div>
-                            <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{b.brandName}</p>
-                            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{b.brandSlug}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <span
-                          className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                          style={b.plan === 'PRO'
-                            ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
-                            : { backgroundColor: 'var(--bg-hover)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
-                        >
-                          {b.plan}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 font-semibold" style={{ color: 'var(--text-primary)' }}>{b.totalGenerations.toLocaleString()}</td>
-                      <td className="px-5 py-3.5" style={{ color: 'var(--text-secondary)' }}>{b.generationsThisMonth.toLocaleString()}</td>
-                      <td className="px-5 py-3.5" style={{ color: '#10b981' }}>{b.successfulGenerations.toLocaleString()}</td>
-                      <td className="px-5 py-3.5" style={{ color: b.failedGenerations > 0 ? '#ef4444' : 'var(--text-muted)' }}>
-                        {b.failedGenerations.toLocaleString()}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <span
-                          className="text-xs font-semibold"
-                          style={{ color: tasa >= 90 ? '#10b981' : tasa >= 70 ? '#f59e0b' : '#ef4444' }}
-                        >
-                          {tasa}%
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          {topBrands.length === 0 && (
-            <div className="text-center py-10" style={{ color: 'var(--text-muted)' }}>
-              <Package className="w-8 h-8 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">Sin datos de generaciones aún</p>
-            </div>
-          )}
+      {/* Footer Info */}
+      <div className="flex items-center justify-between text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4" />
+          <span>Última actualización: {new Date().toLocaleString('es-CO')}</span>
         </div>
-      )}
+        <p>Datos sincronizados con Supabase & Wompi</p>
+      </div>
+    </div>
+  );
+}
 
+function StatCard({ title, value, icon, color, description }: { title: string; value: string | number; icon: React.ReactNode; color: string; description?: string }) {
+  return (
+    <div className="rounded-2xl border p-5 transition-all hover:shadow-lg" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+      <div className="flex items-center justify-between mb-3">
+        <div className="p-2 rounded-xl" style={{ backgroundColor: `${color}15`, color }}>
+          {icon}
+        </div>
+        <ArrowUpRight className="w-4 h-4 text-gray-300" />
+      </div>
+      <div>
+        <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{title}</h3>
+        <p className="text-2xl font-black mt-1" style={{ color: 'var(--text-primary)' }}>{value}</p>
+        {description && <p className="text-[10px] mt-1 font-medium" style={{ color: 'var(--text-secondary)' }}>{description}</p>}
+      </div>
+    </div>
+  );
+}
+
+function PlanStats({ label, count, total, color }: { label: string; count: number; total: number; color: string }) {
+  const percentage = total > 0 ? (count / total) * 100 : 0;
+  
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-bold" style={{ color: 'var(--text-secondary)' }}>{label}</span>
+        <span className="font-black" style={{ color: 'var(--text-primary)' }}>{count}</span>
+      </div>
+      <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+        <div 
+          className="h-full transition-all duration-1000" 
+          style={{ width: `${percentage}%`, backgroundColor: color }}
+        />
+      </div>
+      <p className="text-[10px] font-bold" style={{ color: 'var(--text-muted)' }}>{percentage.toFixed(1)}% del total</p>
     </div>
   );
 }
