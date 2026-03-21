@@ -30,51 +30,42 @@ function TikTokIcon({ className }: { className?: string }) {
   );
 }
 
-function StarIcon({ className, filled }: { className?: string; filled?: boolean }) {
-  return (
-    <svg className={className} fill={filled ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.54 1.118l-3.976-2.888a1 1 0 00-1.175 0l-3.976 2.888c-.784.57-1.838-.197-1.539-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-    </svg>
-  );
-}
-
 // ── Sub-componentes ──────────────────────────────────────────────────────────
 
 function ProbadorNav({ brand }: { brand: BrandData }) {
   const entries = Object.entries(brand.social_links || {}).filter(([, url]) => !!url);
   const icons: Record<string, React.ReactNode> = {
-    instagram: <InstagramIcon className="w-3 h-3" />,
-    facebook:  <FacebookIcon  className="w-3 h-3" />,
-    tiktok:    <TikTokIcon    className="w-3 h-3" />,
-    youtube:   <YouTubeIcon   className="w-3 h-3" />,
-    x:         <XIcon         className="w-3 h-3" />,
+    instagram: <InstagramIcon className="w-3.5 h-3.5" />,
+    facebook:  <FacebookIcon  className="w-3.5 h-3.5" />,
+    tiktok:    <TikTokIcon    className="w-3.5 h-3.5" />,
+    youtube:   <YouTubeIcon   className="w-3.5 h-3.5" />,
+    x:         <XIcon         className="w-3.5 h-3.5" />,
   };
   const primary = brand.primary_color || '#FF5C3A';
   return (
-    <nav className="sticky top-0 z-50 h-20 flex items-center justify-between px-6 backdrop-blur-3xl transition-colors duration-500" 
+    <nav className="sticky top-0 z-50 h-16 md:h-20 flex items-center justify-between px-4 md:px-8 backdrop-blur-3xl" 
       style={{ 
-        backgroundColor: brand.header_color ? `${brand.header_color}66` : 'rgba(15,15,15,0.2)', 
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
-        boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)'
+        backgroundColor: brand.header_color ? `${brand.header_color}66` : 'rgba(15,15,15,0.4)', 
+        borderBottom: '1px solid rgba(255,255,255,0.05)'
       }}>
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2">
         {brand.logo && (
           <BrandLogo
             src={brand.logo_light || brand.logo}
             alt={brand.name}
-            className="h-8 w-auto max-w-[140px] object-contain"
+            className="h-6 md:h-8 w-auto object-contain"
           />
         )}
         {brand.show_brand_name !== false && (
-          <span className="font-bold text-base text-white">{brand.name}</span>
+          <span className="font-bold text-sm md:text-base text-white tracking-tight uppercase italic">{brand.name}</span>
         )}
       </div>
       {entries.length > 0 && (
-        <div className="flex gap-1.5 overflow-x-auto custom-scrollbar pb-1">
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
           {entries.map(([platform, url]) => (
             <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
-              className="w-7 h-7 rounded-full border flex items-center justify-center transition-colors hover:border-current shrink-0"
-              style={{ borderColor: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)' }}>
+              className="w-7 h-7 rounded-lg border flex items-center justify-center transition-all hover:scale-110 shrink-0"
+              style={{ borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>
               {icons[platform.toLowerCase()] ?? null}
             </a>
           ))}
@@ -90,30 +81,26 @@ function ProbadorHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown:
   const heroBg = brand.cover_bg_color || '#0f0f0f';
   const overlayOpacity = brand.cover_overlay_opacity ?? 0.6;
   return (
-    <section className="relative py-20 px-6 text-center overflow-hidden" style={{ backgroundColor: heroBg }}>
+    <section className="relative py-16 md:py-24 px-6 text-center overflow-hidden" style={{ backgroundColor: heroBg }}>
       {hasCover && (
         <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
       )}
-      {(hasCover && overlayOpacity > 0) && (
-        <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity})` }} />
-      )}
+      <div className="absolute inset-0 bg-black/50" style={{ opacity: overlayOpacity }} />
       <div className="relative z-10 max-w-2xl mx-auto text-white">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-7" style={{ backgroundColor: primary + '18', borderColor: primary + '40' }}>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/20 bg-white/5 backdrop-blur-md mb-6 md:mb-8">
           <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
-          <span className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: primary }}>Probador virtual activo</span>
+          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em]">IA Probador Activo</span>
         </div>
-        <h1 className="text-5xl md:text-6xl font-black leading-none tracking-tight mb-5 italic">
+        <h1 className="text-4xl md:text-7xl font-black leading-[0.9] tracking-tighter mb-6 italic uppercase">
           {brand.name},<br />
-          <em className="not-italic" style={{ color: primary }}>{brand.slogan || 'antes de comprar'}</em>
+          <em className="not-italic" style={{ color: primary }}>{brand.slogan || 'Moda Inteligente'}</em>
         </h1>
         {brand.brand_description && (
-          <p className="text-base font-light leading-relaxed mb-8 max-w-lg mx-auto opacity-70">{brand.brand_description}</p>
+          <p className="text-sm md:text-base font-medium leading-relaxed mb-8 md:mb-10 max-w-lg mx-auto opacity-80">{brand.brand_description}</p>
         )}
-        <div className="flex items-center justify-center gap-3">
-          <button onClick={onScrollDown} className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-semibold transition-all hover:opacity-85 hover:-translate-y-0.5" style={{ backgroundColor: primary, color: '#fff' }}>
-            Probarme algo ahora
-          </button>
-        </div>
+        <button onClick={onScrollDown} className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-xs md:text-sm font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-2xl" style={{ backgroundColor: primary, color: '#fff' }}>
+          Ver Colección
+        </button>
       </div>
     </section>
   );
@@ -123,17 +110,17 @@ function ProbadorTrustBar({ brand }: { brand: BrandData }) {
   const rating = brand.rating ?? 4.9;
   const reviews = brand.total_reviews ?? 0;
   const items = [
-    { value: rating.toFixed(1), label: 'valoración' },
-    { value: reviews > 0 ? `+${reviews}` : '96%', label: reviews > 0 ? 'pruebas' : 'satisfacción' },
-    { value: '~12s', label: 'por resultado' },
-    { value: 'IA', label: 'tecnología' },
+    { value: rating.toFixed(1), label: 'rating' },
+    { value: reviews > 0 ? `+${reviews}` : '96%', label: 'pruebas' },
+    { value: '~12s', label: 'tiempo' },
+    { value: 'IA', label: 'tech' },
   ];
   return (
-    <div className="flex border-b bg-white border-gray-100">
+    <div className="flex border-b bg-white border-gray-100 overflow-x-auto no-scrollbar">
       {items.map((item, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center justify-center py-5 text-center border-r last:border-r-0 border-gray-100">
-          <span className="text-xl font-bold text-gray-900">{item.value}</span>
-          <span className="text-[11px] mt-0.5 text-gray-400 uppercase tracking-widest">{item.label}</span>
+        <div key={i} className="flex-1 min-w-[80px] flex flex-col items-center justify-center py-4 md:py-6 text-center border-r last:border-r-0 border-gray-50">
+          <span className="text-sm md:text-xl font-black text-gray-900">{item.value}</span>
+          <span className="text-[8px] md:text-[10px] mt-0.5 text-gray-400 font-bold uppercase tracking-widest">{item.label}</span>
         </div>
       ))}
     </div>
@@ -143,32 +130,28 @@ function ProbadorTrustBar({ brand }: { brand: BrandData }) {
 function ProbadorProducts({ products, primaryColor, ctaText, onProductClick, selectedId }: { products: ProductData[]; primaryColor: string; ctaText?: string | null; onProductClick: (id: string) => void; selectedId: string | null }) {
   if (!products || !products.length) return null;
   return (
-    <section id="probador-products" className="py-16 px-6 bg-gray-50">
-      <div className="max-w-4xl mx-auto">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-center mb-2" style={{ color: primaryColor }}>Colección</p>
-        <h2 className="text-3xl md:text-4xl font-black text-center mb-12 tracking-tight text-gray-900 italic uppercase">Nuestros productos</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+    <section id="probador-products" className="py-16 px-4 md:px-6 bg-gray-50">
+      <div className="max-w-5xl mx-auto text-center">
+        <p className="text-[9px] font-black uppercase tracking-[0.3em] mb-3" style={{ color: primaryColor }}>Catálogo Curado</p>
+        <h2 className="text-3xl md:text-5xl font-black mb-12 tracking-tighter text-gray-900 italic uppercase leading-none">Nuestros productos</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {products.map(p => (
             <button key={p.id} onClick={() => onProductClick(p.id)}
-              className="text-left rounded-2xl overflow-hidden border bg-white transition-all duration-200 hover:-translate-y-1"
-              style={{ borderColor: selectedId === p.id ? primaryColor : '#e5e5e5', borderWidth: selectedId === p.id ? 1.5 : 1 }}>
-              <div className="relative aspect-square overflow-hidden bg-gray-50">
-                <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
-                {p.badge && <span className="absolute top-2 left-2"><ProductBadge badge={p.badge} /></span>}
-                {selectedId === p.id && (
-                  <span className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full" style={{ backgroundColor: primaryColor }}>
-                    Seleccionado
-                  </span>
-                )}
-              </div>
-              <div className="p-3">
-                <p className="text-xs font-medium leading-tight truncate text-gray-700">{p.name}</p>
-                <div className="flex items-center justify-between mt-1.5">
-                  {p.price != null && <span className="text-sm font-bold text-gray-900">${p.price.toLocaleString('es-CO')}</span>}
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: primaryColor + '18', color: primaryColor }}>
-                    {ctaText || 'Probar'}
-                  </span>
+              className="text-left group relative bg-white rounded-3xl overflow-hidden border transition-all duration-300 hover:shadow-2xl"
+              style={{ borderColor: selectedId === p.id ? primaryColor : '#efefef', borderWidth: selectedId === p.id ? 2 : 1 }}>
+              <div className="relative aspect-square overflow-hidden bg-gray-100">
+                <ProductImage src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                {p.badge && <div className="absolute top-3 left-3 scale-90 origin-top-left"><ProductBadge badge={p.badge} /></div>}
+                <div className={`absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity ${selectedId === p.id ? 'opacity-100' : ''}`}>
+                   <div className="bg-white text-black px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl">
+                     {selectedId === p.id ? 'Seleccionado' : (ctaText || 'Probar')}
+                   </div>
                 </div>
+              </div>
+              <div className="p-5">
+                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">{p.category}</p>
+                <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight line-clamp-1 group-hover:text-[#FF5C3A] transition-colors">{p.name}</h3>
+                {p.price != null && <p className="text-base font-black mt-2 text-gray-900">${p.price.toLocaleString('es-CO')}</p>}
               </div>
             </button>
           ))}
@@ -180,29 +163,41 @@ function ProbadorProducts({ products, primaryColor, ctaText, onProductClick, sel
 
 function ProbadorInfo({ brand }: { brand: BrandData }) {
   const DAYS_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-  const scheduleEntries = brand.schedule
-    ? DAYS_ORDER.filter(d => d in brand.schedule!).map(d => [d, brand.schedule![d]] as [string, string])
-    : [];
+  let scheduleEntries: [string, string][] = [];
+  try {
+    const rawSchedule = brand.schedule;
+    if (rawSchedule && typeof rawSchedule === 'object') {
+      scheduleEntries = DAYS_ORDER
+        .filter(day => rawSchedule[day] || rawSchedule[day.toLowerCase()])
+        .map(day => [day, (rawSchedule[day] || rawSchedule[day.toLowerCase()]) as string]);
+    }
+  } catch (e) { console.error(e); }
+
   if (scheduleEntries.length === 0 && !brand.city_display) return null;
 
   return (
-    <section className="py-12 px-6 bg-gray-50 border-t border-gray-100">
-      <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
+    <section className="py-16 px-6 bg-white border-t border-gray-50">
+      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
         {brand.city_display && (
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Ubicación</p>
-            <p className="text-sm text-gray-700 font-bold italic uppercase">{brand.city_display}</p>
-            {brand.national_shipping && <p className="text-[10px] text-emerald-500 font-black mt-2 uppercase">✓ Envíos nacionales activos</p>}
+          <div className="space-y-4">
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400">Encuéntranos</span>
+            <h3 className="text-2xl font-black text-gray-900 uppercase italic tracking-tight">{brand.city_display}</h3>
+            {brand.national_shipping && (
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 w-fit">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Envíos Nacionales Activos</span>
+              </div>
+            )}
           </div>
         )}
         {scheduleEntries.length > 0 && (
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Horarios</p>
-            <div className="space-y-1.5">
+          <div className="space-y-6">
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400">Horarios</span>
+            <div className="grid grid-cols-1 gap-2">
               {scheduleEntries.map(([day, hours]) => (
-                <div key={day} className="flex justify-between items-center text-[10px] border-b border-gray-200 pb-1 last:border-0">
-                  <span className="text-gray-500 font-medium uppercase">{day}</span>
-                  <span className="text-gray-900 font-black">{hours}</span>
+                <div key={day} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+                  <span className="text-[10px] text-gray-500 font-bold uppercase">{day}</span>
+                  <span className={`text-[11px] font-black tracking-tight ${hours.toLowerCase().includes('cerrado') ? 'text-red-400 italic' : 'text-gray-900'}`}>{hours}</span>
                 </div>
               ))}
             </div>
@@ -219,7 +214,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
 
   const scrollToTryOn = () => {
     const el = document.getElementById('probador-tryon');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   const handleProductClick = (id: string) => {
@@ -228,20 +223,20 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-white ${brand.landing_font || 'font-jakarta'}`}>
+    <div className={`min-h-screen flex flex-col bg-white ${brand.landing_font || 'font-jakarta'} overflow-x-hidden`}>
       <ProbadorNav brand={brand} />
       <ProbadorHero brand={brand} onScrollDown={() => document.getElementById('probador-products')?.scrollIntoView({ behavior: 'smooth' })} />
       <ProbadorTrustBar brand={brand} />
       <ProbadorProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} selectedId={selectedId} />
       
-      <section id="probador-tryon" className="py-16 px-6 border-t border-gray-100 bg-white">
+      <section id="probador-tryon" className="py-16 px-4 md:px-6 bg-[#0a0a0a]">
         <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: primary }}>Probador IA</p>
-            <h2 className="text-3xl font-black mb-2 tracking-tight text-gray-900 italic uppercase">Pruébatelo ahora</h2>
-            <p className="text-sm font-light text-gray-500">Sube tu foto y la IA genera el resultado en segundos</p>
+          <div className="text-center mb-10 space-y-3">
+            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-[#FF5C3A]">Motor IA</span>
+            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase italic leading-none">Probador Virtual</h2>
+            <p className="text-gray-500 text-xs md:text-sm font-medium">Sube tu foto y procesa el producto seleccionado con IA</p>
           </div>
-          <div className="rounded-3xl overflow-hidden shadow-2xl border border-gray-100">
+          <div className="rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/50 border border-white/5">
             <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} />
           </div>
         </div>
@@ -249,9 +244,9 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
 
       <ProbadorInfo brand={brand} />
 
-      <footer className="py-12 px-6 text-center border-t border-gray-100 bg-white">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-          Probador virtual impulsado por <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
+      <footer className="py-16 px-6 text-center border-t border-gray-50 bg-white mt-auto">
+        <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-gray-300">
+          Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#FF5C3A] transition-all">Look<span className="text-[#FF5C3A]">itry</span> AI</a>
         </p>
       </footer>
 
