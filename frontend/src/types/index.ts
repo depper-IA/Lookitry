@@ -21,7 +21,6 @@ export interface Brand {
   plan: PlanType;
   primaryColor: string;
   secondaryColor: string;
-  logo?: string;
   headerColor?: string | null;
   widgetTemplate?: string;
   buttonText?: string;
