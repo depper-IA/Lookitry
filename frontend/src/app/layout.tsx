@@ -109,6 +109,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { CookieConsent } from '@/components/ui/CookieConsent';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${plusJakarta.variable} ${dmSans.variable} ${spaceMono.variable} ${playfair.variable}`} suppressHydrationWarning>
@@ -120,7 +122,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta property="og:locale" content="es_CO" />
         <meta name="twitter:site" content="@lookitry" />
       </head>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   );
 }
