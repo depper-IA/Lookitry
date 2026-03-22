@@ -31,12 +31,20 @@ export default function AuthVerifyPage() {
         } else {
           setStatus('success');
           setMessage(data.message || 'Correo verificado correctamente.');
-          // Actualizar emailVerified en localStorage para que el banner desaparezca
+          // Guardar datos de sesión del auto-login
           try {
-            const stored = localStorage.getItem('brand');
-            if (stored) {
-              const parsed = JSON.parse(stored);
-              localStorage.setItem('brand', JSON.stringify({ ...parsed, emailVerified: true }));
+            if (data.brand) {
+              localStorage.setItem('brand', JSON.stringify({ ...data.brand, emailVerified: true }));
+            } else {
+              const stored = localStorage.getItem('brand');
+              if (stored) {
+                const parsed = JSON.parse(stored);
+                localStorage.setItem('brand', JSON.stringify({ ...parsed, emailVerified: true }));
+              }
+            }
+            // Guardar token para requests autenticados (Bearer header)
+            if (data.token) {
+              localStorage.setItem('token', data.token);
             }
           } catch {}
           // Redirigir al dashboard después de 2 segundos

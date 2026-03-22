@@ -152,6 +152,7 @@ export class AuthController {
           
           return res.status(200).json({ 
             message: result.message,
+            token: newToken,
             brand: {
               id: fullBrand.id,
               name: fullBrand.name,
