@@ -1,7 +1,11 @@
 # LOOKITRY — MASTER MEMORY CONTEXT
 
-> Este es el ÚNICO archivo maestro de memoria para las interfaces de IA (Kiro, Gemini CLI, Cursor, Antigravity).
-> Reemplaza toda documentación antigua. Léase antes de iniciar modificaciones en el sistema.
+> **REGLA DE ORO:** Este archivo DEBE ser leído en su totalidad por la IA antes de realizar cualquier acción. Es la única fuente de verdad para la continuidad del proyecto.
+
+## 0. REGLAS CRÍTICAS DE PERSISTENCIA
+1. **Lectura Obligatoria:** Al iniciar una nueva sesión o tarea, la IA debe leer este archivo (`LOOKITRY_MASTER_MEMORY.md`) para entender el estado actual, el stack y las reglas de negocio.
+2. **Registro de Cambios (Changelog):** Sin excepción, TODOS los cambios realizados por cualquier editor (IA o humano) deben quedar reflejados en `CHANGELOG_GEMINI.md`. Cada entrada debe ser detallada y referenciar los archivos modificados.
+3. **No Placeholders:** Prohibido dejar comentarios `// TODO` o placeholders. El código debe ser funcional y premium desde la primera versión.
 
 ## 1. SKILLS & PROCEDIMIENTOS OBLIGATORIOS
 - **Diseño UI/UX (Pro Max)**: Aplicar SIEMPRE (`.agent/skills/ui-ux-pro-max/SKILL.md`) a cualquier componente frontend. Lookitry debe sentirse premium.
@@ -127,9 +131,9 @@ inclusion: always
 | VPS IP | `31.220.18.39` |
 | VPS user | `root` |
 | VPS pass | `Travis18456916#` |
-| Docker project | `LOOKITRY` |
+| Docker project | `virtual-tryon` |
 | Supabase project ID | `vkdooutklowctuudjnkl` |
-| GitHub repo | `https://github.com/depper-IA/LOOKITRY.git` |
+| GitHub repo | `https://github.com/depper-IA/virtual-tryon.git` |
 | Hostinger VPS ID | `1004711` |
 
 ---

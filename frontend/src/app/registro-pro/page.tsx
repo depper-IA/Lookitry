@@ -94,6 +94,8 @@ function RegistroProContent() {
   const [showAltEmail, setShowAltEmail] = useState(false);
   const [altEmail, setAltEmail] = useState('');
   const [altEmailError, setAltEmailError] = useState('');
+  const [pendingData, setPendingData] = useState<{ plan: string; months: number; includes_landing: boolean; status: string } | null>(null);
+  const [fetchingPending, setFetchingPending] = useState(true);
 
   useEffect(() => {
     getFingerprint().then(setFingerprint);
@@ -117,13 +119,36 @@ function RegistroProContent() {
     }
   }, [ref, wompiId, months, router]);
 
-  if (recoveringRef) {
+  useEffect(() => {
+    if (ref) {
+      setFetchingPending(true);
+      fetch(`${API_URL}/api/auth/pending-registration/${ref}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && !data.error) {
+            setPendingData(data);
+          }
+          setFetchingPending(false);
+        })
+        .catch(() => {
+          setFetchingPending(false);
+        });
+    } else {
+      setFetchingPending(false);
+    }
+  }, [ref]);
+
+  if (recoveringRef || fetchingPending) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-t-transparent border-[#FF5C3A] rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-white font-syne text-xl">Recuperando tu pago...</h2>
-          <p className="text-[#666] text-sm mt-2">Estamos verificando la transacción con Wompi.</p>
+          <h2 className="text-white font-syne text-xl">
+            {recoveringRef ? 'Recuperando tu pago...' : 'Cargando detalles...'}
+          </h2>
+          <p className="text-[#666] text-sm mt-2">
+            {recoveringRef ? 'Estamos verificando la transacción.' : 'Preparando tu cuenta.'}
+          </p>
         </div>
       </main>
     );
@@ -247,7 +272,8 @@ function RegistroProContent() {
           <div>
             <p className="text-[13px] font-semibold text-[#FF5C3A]">Pago recibido correctamente</p>
             <p className="text-[12px] text-[#666] mt-0.5">
-              Crea tu cuenta para activar tu Plan Pro por {months} {months === 1 ? 'mes' : 'meses'}.
+              Crea tu cuenta para activar tu Plan {pendingData ? pendingData.plan : 'Pro'} por {pendingData ? pendingData.months : months} {(!pendingData && months === 1) || pendingData?.months === 1 ? 'mes' : 'meses'}
+              {pendingData?.includes_landing && ' + Mini-landing'}.
             </p>
           </div>
         </div>
@@ -318,7 +344,7 @@ function RegistroProContent() {
                 />
               </div>
               {errors.slug && <p className="text-[11px] text-[#ff6b6b] mt-1">{errors.slug}</p>}
-              <p className="text-[11px] text-[#333] mt-1">Con Plan Pro puedes cambiarlo después desde tu dashboard.</p>
+              <p className="text-[11px] text-[#333] mt-1">Con planes activos puedes cambiarlo después desde tu dashboard.</p>
             </div>
 
             {/* Contraseña */}
@@ -344,7 +370,7 @@ function RegistroProContent() {
               type="submit" disabled={loading}
               className="w-full py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] disabled:opacity-60 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 text-[13px] mt-2"
             >
-              {loading ? <><IconSpinner /> Creando cuenta...</> : 'Activar Plan Pro'}
+              {loading ? <><IconSpinner /> Creando cuenta...</> : 'Activar Cuenta'}
             </button>
           </form>
 

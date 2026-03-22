@@ -2,7 +2,56 @@
 
 Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes realizadas por la IA para mantener la continuidad del desarrollo.
 
+## 22 de Marzo, 2026 — Fix Email de Bienvenida + Sincronización Landing en Checkout Público
+
+### Email de Bienvenida (nunca llegaba)
+**Root cause:** `sendWelcomeEmail` verificaba preferencias en la tabla `notification_preferences` antes de enviar. Para marcas recién creadas esta tabla está vacía, y el error al consultarla se propagaba silenciosamente abortando el envío.
+
+**Correcciones:**
+- `backend/src/services/notification.service.ts`: Se agregó el parámetro `skipPreferenceCheck = false` al método `sendWelcomeEmail`. Para registros nuevos se pasa `true` y la función omite la verificación de preferencias.
+- `getDaysRemaining` también puede fallar en Trial sin suscripción activa — se agregó un try/catch interno con fallback de 7 días para que no aborte el envío del email.
+- El `catch` final ya **no relanza** el error (`throw error` eliminado) — el email de bienvenida nunca debe bloquear el flujo de registro.
+- `backend/src/controllers/auth.controller.ts`: Llamada en `verifyEmail` actualizada a `sendWelcomeEmail(brand, true)`.
+- `backend/src/controllers/auth-post-payment.controller.ts`: Llamada en flujo post-pago actualizada a `sendWelcomeEmail(brand, true)`.
+
+### Checkout Público (plan + landing + meses)
+**Root cause:** El controlador `auth-post-payment.controller.ts` sí guardaba `has_landing_page = true` en Supabase, pero **no lo incluía en el objeto `brand` retornado**. Al guardar la sesión en `localStorage`, el frontend inicializaba con `has_landing_page = false`.
+
+**Corrección:** El controlador ahora mutáta `(result.brand as any).has_landing_page = true` y `landing_suspended_at = null` antes de enviar la respuesta, sincronizando la sesión del frontend inmediatamente.
+
 ---
+
+## 22 de Marzo, 2026 — Solución a Desconexión de Registro Post-Pago (Landing Page)
+
+- **Sincronización de Sesión Frontend/Backend:**
+  - Se modificó `backend/src/controllers/auth-post-payment.controller.ts` para que, en caso de incluir mini-landing, actualice el flag `has_landing_page = true` directamente sobre el objeto `brand` retornado, en lugar de mutar solo la base de datos de Supabase de fondo. Esto asegura que el `localStorage` del frontend cargue la sesión con la landing activa inmediatamente.
+- **Transparencia en UI de /registro-pro:**
+  - Se agregó el endpoint `GET /api/auth/pending-registration/:ref` en el backend para permitir la consulta desprotegida (pública, por referencia) del contenido de un carrito de compra pagado.
+  - El frontend (`RegistroProContent`) ahora hace polling a ese endpoint para adaptar su UI dinámicamente con base en los ítems adquiridos, mostrando la duración real, el plan respectivo (Básico/Pro) y añadiendo el sufijo `+ Mini-landing` si estuvo incluida en el paquete original de Wompi o PayPal.
+  - Se generalizó el texto del formulario de "Activar Plan Pro" a "Activar Cuenta".
+
+---
+
+## 22 de Marzo, 2026 — Mejora de Persistencia de Memoria y Normas de Registro
+
+- **Reglas de Persistencia (LOOKITRY_MASTER_MEMORY.md):**
+  - Se ha añadido la **Regla de Oro**: lectura obligatoria del archivo de memoria maestra al inicio de cualquier sesión.
+  - Se formalizó el requerimiento de registro de cambios en `CHANGELOG_GEMINI.md` sin excepciones.
+  - Prohibición estricta de placeholders o comentarios `// TODO`.
+- **Registro de Continuidad:**
+  - Este cambio asegura que las IAs futuras (incluyendo este asistente) sigan el flujo de trabajo correcto sin perder contexto del proyecto.
+
+## 22 de Marzo, 2026 — Refactorización del Checkout Interno de Mini-landing
+
+- **Lógica de Cobro Dinámica:**
+  - Los usuarios con planes activos (`BASIC`/`PRO`) ahora solo pagan el cargo único de la mini-landing ($650.000 COP). Se oculta la selección de planes y se envía `plan=NONE` a la pasarela.
+  - Los usuarios en `TRIAL` tienen la selección de plan obligatoria, permitiendo elegir entre `BASIC` y `PRO` y la duración (1-12 meses) para aplicar descuentos.
+- **Detección de Planes:**
+  - Implementada comparación insensible a mayúsculas para los estados de plan (`TRIAL`, `BASIC`, `PRO`).
+  - Sincronización automática de la selección del plan basada en la suscripción actual del usuario.
+- **Experiencia de Usuario:**
+  - Añadido manejo de estados de carga (`isLoading`) para evitar saltos visuales en la UI mientras se verifica la sesión.
+  - El resumen del pedido ahora desglosa correctamente los descuentos por duración de suscripción solo cuando corresponde.
 
 ## 21 de Marzo, 2026 — Corrección Integral de Identidad Visual y Errores Técnicos
 
