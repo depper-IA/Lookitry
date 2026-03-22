@@ -300,6 +300,97 @@ export class WompiController {
   }
 
   /**
+   * POST /api/payments/free-checkout
+   *
+   * Activa servicios directamente cuando el total es $0 (cupón del 100%).
+   * Requiere auth (JWT de marca).
+   */
+  async freeCheckout(req: Request, res: Response): Promise<void> {
+    try {
+      const brand = (req as any).brand;
+      if (!brand?.id) {
+        res.status(401).json({ error: 'Autenticación requerida' });
+        return;
+      }
+
+      const { plan, months, includes_landing, reference } = req.body;
+
+      if (!plan || months === undefined) {
+        res.status(400).json({ error: 'Parámetros plan y months son requeridos' });
+        return;
+      }
+
+      const brandId = brand.id;
+      const effectivePlan = plan === 'LANDING' ? 'BASIC' : plan;
+      const activateLanding = plan === 'LANDING' || includes_landing === true;
+
+      console.log(`[FreeCheckout] Activando servicios gratuitos para brand ${brandId}. Plan: ${effectivePlan}, Meses: ${months}, Landing: ${activateLanding}`);
+
+      if (effectivePlan !== 'NONE') {
+        const { data: currentBrand } = await supabaseAdmin
+          .from('brands')
+          .select('plan')
+          .eq('id', brandId)
+          .single();
+
+        const isUpgrade = currentBrand?.plan !== effectivePlan;
+
+        await subscriptionService.renewSubscription(
+          brandId,
+          {
+            brand_id: brandId,
+            amount: 0,
+            currency: 'COP',
+            payment_date: new Date().toISOString(),
+            payment_method: 'coupon_100',
+            status: 'completed',
+            months_paid: months,
+            notes: `Activación gratuita (Cupón 100%). Plan: ${effectivePlan}. Ref: ${reference || 'FREE-' + Date.now()}`,
+          },
+          months,
+          effectivePlan,
+          isUpgrade
+        );
+      } else {
+        // Solo landing gratuita
+        await supabaseAdmin.from('subscription_payments').insert({
+          brand_id: brandId,
+          amount: 0,
+          currency: 'COP',
+          payment_date: new Date().toISOString(),
+          payment_method: 'coupon_100',
+          status: 'completed',
+          months_paid: 0,
+          notes: `Activación gratuita (Cupón 100%). SOLO Landing Page. Ref: ${reference || 'FREE-' + Date.now()}`
+        });
+      }
+
+      if (activateLanding) {
+        await supabaseAdmin
+          .from('brands')
+          .update({ has_landing_page: true, landing_suspended_at: null })
+          .eq('id', brandId);
+      }
+
+      // Enviar email de confirmación
+      const { data: updatedBrand } = await supabaseAdmin
+        .from('brands')
+        .select('id, email, name, plan, subscription_end_date')
+        .eq('id', brandId)
+        .single();
+
+      if (updatedBrand) {
+        notificationService.sendRenewalConfirmation(updatedBrand as any).catch(() => {});
+      }
+
+      res.json({ success: true, message: 'Servicios activados correctamente' });
+    } catch (error: any) {
+      console.error('[FreeCheckout] Error:', error);
+      res.status(500).json({ error: error.message || 'Error al procesar la activación gratuita' });
+    }
+  }
+
+  /**
    * GET /api/payments/wompi/config
    *
    * Retorna la configuración pública del widget de Wompi para el frontend.

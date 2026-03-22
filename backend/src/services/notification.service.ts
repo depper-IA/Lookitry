@@ -64,26 +64,35 @@ export class NotificationService {
 
   /**
    * Envía email de bienvenida al registrarse una nueva marca
-   * 
+   *
    * @param brand - Información de la marca
-   * 
+   * @param skipPreferenceCheck - Si es true omite la verificación de preferencias (para cuentas recién creadas)
+   *
    * Requirement 13.1: Enviar email de bienvenida con detalles del plan
    */
-  async sendWelcomeEmail(brand: Brand): Promise<void> {
+  async sendWelcomeEmail(brand: Brand, skipPreferenceCheck = false): Promise<void> {
     try {
-      // Verificar si el email está habilitado
-      const emailEnabled = await notificationPreferencesService.isNotificationEnabled(
-        brand.id,
-        'email'
-      );
-
-      if (!emailEnabled) {
-        console.log(`⏭️  Email de bienvenida omitido para ${brand.email} (preferencias)`);
-        return;
+      // Para cuentas recién creadas las preferencias aún no existen en BD,
+      // así que si skipPreferenceCheck es true, saltamos esa verificación.
+      if (!skipPreferenceCheck) {
+        const emailEnabled = await notificationPreferencesService.isNotificationEnabled(
+          brand.id,
+          'email'
+        );
+        if (!emailEnabled) {
+          console.log(`⏭️  Email de bienvenida omitido para ${brand.email} (preferencias)`);
+          return;
+        }
       }
 
       const amount = this.formatCOP(this.getPlanAmount(brand.plan));
-      const daysRemaining = await this.subscriptionService.getDaysRemaining(brand.id) || 30;
+      // getDaysRemaining puede fallar si el plan es TRIAL sin sub activa; usar fallback 7
+      let daysRemaining = 7;
+      try {
+        daysRemaining = await this.subscriptionService.getDaysRemaining(brand.id) || 7;
+      } catch {
+        // silenciar; la marca puede estar en trial sin suscripción
+      }
 
       const html = welcomeEmail(
         { name: brand.name, email: brand.email },
@@ -100,8 +109,8 @@ export class NotificationService {
 
       console.log(`✅ Email de bienvenida enviado a ${brand.email}`);
     } catch (error) {
+      // No relanzar — el email de bienvenida nunca debe bloquear el flujo de registro
       console.error(`❌ Error al enviar email de bienvenida a ${brand.email}:`, error);
-      throw error;
     }
   }
 
