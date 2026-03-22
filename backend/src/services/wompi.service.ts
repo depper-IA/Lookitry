@@ -86,33 +86,48 @@ export class WompiService {
 
   /**
    * Verifica la firma del webhook de Wompi.
-   * Wompi calcula: SHA256(transaction.id + transaction.status + transaction.amount_in_cents + transaction.currency + events_secret)
-   * Ref: https://docs.wompi.co/en/docs/colombia/eventos/
+   * Wompi docs: https://docs.wompi.co/en/docs/colombia/eventos/
+   * Intenta múltiples variantes de la fórmula para máxima compatibilidad.
    */
   async verifyWebhookSignature(payload: string, checksum: string): Promise<boolean> {
-    const { eventsSecret } = await this.getActiveKeys();
-    if (!eventsSecret) return false;
+    const { eventsSecret, testMode } = await this.getActiveKeys();
+    if (!eventsSecret) {
+      console.warn('[Wompi] events_secret no configurado — firma no verificable');
+      return false;
+    }
 
-    // Intentar parsear el body para extraer los campos de la transacción
+    const tryHash = (data: string) => crypto.createHash('sha256').update(data).digest('hex');
+
     try {
       const event = JSON.parse(payload);
       const tx = event?.data?.transaction;
       if (tx) {
-        // Fórmula oficial Wompi: id + status + amount_in_cents + currency + events_secret
-        const data = `${tx.id}${tx.status}${tx.amount_in_cents}${tx.currency}${eventsSecret}`;
-        const expected = crypto.createHash('sha256').update(data).digest('hex');
-        if (expected === checksum) return true;
+        const timestamp = event.timestamp?.toString() || '';
+
+        // Variante 1 (nueva): id + status + amount_in_cents + timestamp + secret
+        const v1 = tryHash(`${tx.id}${tx.status}${tx.amount_in_cents}${timestamp}${eventsSecret}`);
+        if (v1 === checksum) return true;
+
+        // Variante 2 (legacy): id + status + amount_in_cents + currency + secret
+        const v2 = tryHash(`${tx.id}${tx.status}${tx.amount_in_cents}${tx.currency}${eventsSecret}`);
+        if (v2 === checksum) return true;
+
+        // Variante 3: solo body raw + secret
+        const v3 = tryHash(payload + eventsSecret);
+        if (v3 === checksum) return true;
+
+        // Log para debug cuando falla
+        console.warn(`[Wompi] Firma NO coincide con ninguna variante. testMode=${testMode} tx.id=${tx.id} tx.status=${tx.status} tx.amount=${tx.amount_in_cents} timestamp=${timestamp}`);
+        console.warn(`[Wompi] checksum_recibido=${checksum}`);
+        console.warn(`[Wompi] v1=${v1} v2=${v2} v3=${v3}`);
       }
-    } catch {
-      // Si falla el parse, caer al método legacy
+    } catch (e) {
+      console.error('[Wompi] Error parseando payload para verificación:', e);
     }
 
-    // Fallback: método legacy body + secret (por compatibilidad)
-    const expectedLegacy = crypto
-      .createHash('sha256')
-      .update(payload + eventsSecret)
-      .digest('hex');
-    return expectedLegacy === checksum;
+    // Fallback final: body completo + secret
+    const vFinal = tryHash(payload + eventsSecret);
+    return vFinal === checksum;
   }
 
   /**
@@ -153,9 +168,9 @@ export class WompiService {
   /**
    * Retorna los datos necesarios para inicializar el widget de Wompi en el frontend.
    */
-  async getWidgetConfig(brandId: string, amountCOP: number, months: number = 1, plan: string = 'BASIC') {
+  async getWidgetConfig(brandId: string, amountCOP: number, months: number = 1, plan: string = 'BASIC', includesLanding: boolean = false) {
     const { publicKey } = await this.getActiveKeys();
-    const reference = this.generateReference(brandId, months, plan);
+    const reference = this.generateReference(brandId, months, plan, includesLanding);
     const amountInCents = amountCOP * 100;
     return {
       publicKey,

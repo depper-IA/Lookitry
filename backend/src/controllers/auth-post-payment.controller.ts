@@ -52,7 +52,7 @@ export async function registerPostPayment(req: Request, res: Response) {
     // 3. Buscar pending_registration por referencia
     const { data: pending, error: pendingError } = await supabaseAdmin
       .from('pending_registrations')
-      .select('email, plan, months, includes_landing')
+      .select('email, plan, months, includes_landing, status, payment_id') // Añadimos status, payment_id
       .eq('reference', ref)
       .maybeSingle();
 
@@ -61,37 +61,59 @@ export async function registerPostPayment(req: Request, res: Response) {
     }
 
     // 4. Verificar estado de la transacción según el método
-    let paymentConfirmed = false;
+    let paymentConfirmed = pending.status === 'paid';
     let finalMethod = method || 'wompi';
-    let transactionDetails = '';
+    let transactionDetails = pending.payment_id ? `ID guardado: ${pending.payment_id}` : '';
+    let paymentAmount = 0; // Guardará el monto total de la pasarela
 
-    if (finalMethod === 'paypal') {
-      if (!orderId) {
-        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'ID de orden de PayPal requerido' });
-      }
-      try {
-        const order = await paypalService.getOrder(orderId);
-        // Si la orden está aprobada pero no capturada, capturarla
-        if (order.status === 'APPROVED') {
-          const capture = await paypalService.captureOrder(orderId);
-          paymentConfirmed = capture.status === 'COMPLETED';
-        } else {
-          paymentConfirmed = order.status === 'COMPLETED';
+    if (!paymentConfirmed) {
+      if (finalMethod === 'paypal') {
+        if (!orderId) {
+          return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'ID de orden de PayPal requerido' });
         }
-        transactionDetails = `PayPal Order: ${orderId}`;
-      } catch (err: any) {
-        console.error('[PostPayment] PayPal Error:', err.message);
-        return res.status(502).json({ error: 'GATEWAY_ERROR', message: 'Error al verificar con PayPal' });
+        try {
+          const order = await paypalService.getOrder(orderId);
+          if (order.status === 'APPROVED') {
+            const capture = await paypalService.captureOrder(orderId);
+            paymentConfirmed = capture.status === 'COMPLETED';
+          } else {
+            paymentConfirmed = order.status === 'COMPLETED';
+          }
+          // Extraemos monto de PayPal
+          if (order.purchase_units && order.purchase_units[0] && order.purchase_units[0].amount) {
+            paymentAmount = parseFloat(order.purchase_units[0].amount.value);
+          }
+          transactionDetails = `PayPal Order: ${orderId}`;
+        } catch (err: any) {
+          console.error('[PostPayment] PayPal Error:', err.message);
+          return res.status(502).json({ error: 'GATEWAY_ERROR', message: 'Error al verificar con PayPal' });
+        }
+      } else {
+        // Por defecto Wompi
+        try {
+          const transaction = await wompiService.getTransactionByReference(ref);
+          paymentConfirmed = transaction?.status === 'APPROVED';
+          if (transaction && 'amount_in_cents' in transaction) {
+            paymentAmount = ((transaction as any).amount_in_cents || 0) / 100;
+          }
+          transactionDetails = `Wompi Ref: ${ref}`;
+        } catch {
+          return res.status(502).json({ error: 'GATEWAY_ERROR', message: 'Error al verificar con Wompi' });
+        }
       }
     } else {
-      // Por defecto Wompi
-      try {
-        const transaction = await wompiService.getTransactionByReference(ref);
-        paymentConfirmed = transaction?.status === 'APPROVED';
-        transactionDetails = `Wompi Ref: ${ref}`;
-      } catch {
-        return res.status(502).json({ error: 'GATEWAY_ERROR', message: 'Error al verificar con Wompi' });
-      }
+       // El estado era "paid" (puede ser un cupón de freeCheckout 100% o validado por webhook en diferido)
+       // Tratamos de extraer el monto real si existía un payment_id de Wompi válido
+       if (pending.payment_id && pending.payment_id !== 'coupon_100_free_checkout' && finalMethod === 'wompi') {
+         try {
+           const transaction = await wompiService.getTransactionById(pending.payment_id);
+           if (transaction && 'amount_in_cents' in transaction) {
+             paymentAmount = ((transaction as any).amount_in_cents || 0) / 100;
+           }
+         } catch(err) {
+           console.error('[PostPayment] Podría no encontrar Wompi ID:', err);
+         }
+       }
     }
 
     if (!paymentConfirmed) {
@@ -99,18 +121,23 @@ export async function registerPostPayment(req: Request, res: Response) {
     }
 
     // 5. Crear la cuenta
+    // Usar override_email si el frontend lo envió (caso: email del pago ya registrado)
+    const { override_email } = req.body;
+    const emailToUse = (override_email && override_email.trim()) ? override_email.trim() : pending.email;
+
     const result = await authService.register({
       contact_name,
       name,
       slug,
-      email: pending.email,
+      email: emailToUse,
       password,
       ip: 'post-payment',
       fingerprint: fingerprint || undefined,
     });
 
     // 5.1 Enviar email de bienvenida tras registro exitoso (Requirement 13.1)
-    notificationService.sendWelcomeEmail(result.brand as any).catch(err => {
+    // skipPreferenceCheck=true: las preferencias aún no existen para marcas recién creadas
+    notificationService.sendWelcomeEmail(result.brand as any, true).catch(err => {
       console.error('[PostPayment] Error enviando email de bienvenida:', err);
     });
 
@@ -120,7 +147,7 @@ export async function registerPostPayment(req: Request, res: Response) {
         result.brand.id,
         {
           brand_id: result.brand.id,
-          amount: 0,
+          amount: paymentAmount, // Pasamos el monto real que el usuario pagó
           currency: finalMethod === 'paypal' ? 'USD' : 'COP',
           payment_method: finalMethod,
           status: 'completed',
@@ -137,7 +164,12 @@ export async function registerPostPayment(req: Request, res: Response) {
           .from('brands')
           .update({ has_landing_page: true, landing_suspended_at: null })
           .eq('id', result.brand.id);
+        
+        // Sincronizar el objeto brand retornado para el frontend
+        (result.brand as any).has_landing_page = true;
+        (result.brand as any).landing_suspended_at = null;
       }
+
     } catch (subError) {
       console.error('[PostPayment] Error activando suscripción:', subError);
     }
@@ -161,5 +193,32 @@ export async function registerPostPayment(req: Request, res: Response) {
   } catch (error: any) {
     console.error('[PostPayment] Error en registro:', error);
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message || 'Error al crear la cuenta' });
+  }
+}
+
+/**
+ * Consulta los datos de la cuenta pendiente por su referencia.
+ */
+export async function getPendingRegistration(req: Request, res: Response) {
+  try {
+    const { ref } = req.params;
+    if (!ref) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La referencia de pago es requerida' });
+    }
+
+    const { data: pending, error } = await supabaseAdmin
+      .from('pending_registrations')
+      .select('email, plan, months, includes_landing, status')
+      .eq('reference', ref)
+      .maybeSingle();
+
+    if (error || !pending) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: 'Referencia de pago no encontrada' });
+    }
+
+    return res.status(200).json(pending);
+  } catch (err: any) {
+    console.error('[PostPayment] Error obteniendo referencia:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error interno del servidor' });
   }
 }

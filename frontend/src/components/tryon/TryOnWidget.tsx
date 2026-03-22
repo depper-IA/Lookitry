@@ -365,9 +365,9 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
 
   if (effectiveLayout === 'sidebar') {
     return (
-      <div className={`flex font-sans min-h-screen transition-all duration-700`} style={{ backgroundColor: secondaryColor }}>
+      <div className={`flex flex-col md:flex-row font-sans min-h-screen transition-all duration-700`} style={{ backgroundColor: secondaryColor }}>
         {/* Sidebar */}
-        <div className="w-64 flex-shrink-0 flex flex-col relative z-20 border-r border-white/5 shadow-[20px_0_50px_rgba(0,0,0,0.1)] backdrop-blur-3xl transition-all duration-700" style={{ backgroundColor: `${primaryColor}CC` }}>
+        <div className="w-full md:w-64 max-h-[50vh] md:max-h-screen overflow-y-auto overflow-x-hidden flex-shrink-0 flex flex-col relative z-20 border-b md:border-b-0 md:border-r border-white/5 shadow-[20px_0_50px_rgba(0,0,0,0.1)] backdrop-blur-3xl transition-all duration-700" style={{ backgroundColor: `${primaryColor}CC` }}>
           <div className="px-4 py-5 border-b border-white/20">
             {config.brand.logo
               ? <img src={config.brand.logo} alt={config.brand.name} className="h-8 object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
@@ -565,7 +565,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
 
   if (effectiveLayout === 'bare') {
     return (
-      <div className={`flex flex-col font-sans min-h-screen transition-all duration-700`} style={{ backgroundColor: secondaryColor }}>
+      <div className={`flex flex-col font-sans h-full min-h-[400px] transition-all duration-700`} style={{ backgroundColor: secondaryColor }}>
         {step === 'generating' && (
           <div className="flex-1 flex items-center justify-center py-8">
             <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
