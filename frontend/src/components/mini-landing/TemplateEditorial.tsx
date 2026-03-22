@@ -24,7 +24,8 @@ import {
 // ── Sub-componentes ──────────────────────────────────────────────────────────
 
 function EditorialHeader({ brand, entries, socialIcons }: { brand: BrandData; entries: [string, string][]; socialIcons: Record<string, React.ReactNode> }) {
-  const primary = brand.primary_color || '#FF5C3A';
+  const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
+  const secondary = brand.social_links?._landing_secondary || primary;
   return (
     <header className="px-4 md:px-8 h-16 md:h-24 flex items-center justify-between sticky top-0 z-[100] bg-white border-b border-gray-100 gap-4 shadow-sm">
       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -32,7 +33,7 @@ function EditorialHeader({ brand, entries, socialIcons }: { brand: BrandData; en
           {brand.logo ? (
             <BrandLogo src={brand.logo_dark || brand.logo} alt={brand.name} className="h-7 md:h-10 w-auto max-w-[100px] md:max-w-[160px] object-contain" />
           ) : (
-            <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-[#FF5C3A]/20" style={{ backgroundColor: primary }}>{brand.name.slice(0, 2).toUpperCase()}</div>
+            <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-[var(--secondary-20)]" style={{ backgroundColor: primary }}>{brand.name.slice(0, 2).toUpperCase()}</div>
           )}
         </div>
         {brand.show_brand_name !== false && (
@@ -61,7 +62,7 @@ function EditorialHero({ brand }: { brand: BrandData }) {
       {brand.cover_image_url ? (
         <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover scale-105" />
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-black" style={brand.cover_bg_color ? { background: brand.cover_bg_color } : {}} />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
       <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity * 0.4})` }} />
@@ -70,7 +71,7 @@ function EditorialHero({ brand }: { brand: BrandData }) {
           {brand.name}
         </h1>
         {brand.slogan && (
-          <p className="text-[#FF5C3A] text-[10px] md:text-sm font-black uppercase tracking-[0.4em] mt-4 animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-300">
+          <p className="text-gray-300 text-[10px] md:text-sm font-black uppercase tracking-[0.4em] mt-4 animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-300">
             {brand.slogan}
           </p>
         )}
@@ -82,13 +83,13 @@ function EditorialHero({ brand }: { brand: BrandData }) {
 function EditorialProductCard({ product, selected, primaryColor, onClick }: { product: ProductData; selected: boolean; primaryColor: string; onClick: () => void }) {
   return (
     <button onClick={onClick} className="group text-left w-full space-y-3 transition-all">
-      <div className={`relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-gray-50 border-2 transition-all duration-500 ${selected ? 'shadow-2xl shadow-[#FF5C3A]/20 scale-[1.02]' : 'hover:shadow-xl'}`} style={{ borderColor: selected ? primaryColor : 'transparent' }}>
+      <div className={`relative aspect-[3/4] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-gray-50 border-2 transition-all duration-500 ${selected ? 'shadow-2xl shadow-[var(--secondary-20)] scale-[1.02]' : 'hover:shadow-xl'}`} style={{ borderColor: selected ? primaryColor : 'transparent' }}>
         <ProductImage src={product.image_url} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
         {product.badge && <div className="absolute top-2 left-2 md:top-3 md:left-3 scale-90 origin-top-left"><ProductBadge badge={product.badge} /></div>}
         {selected && (
-          <div className="absolute inset-0 bg-[#FF5C3A]/10 flex items-center justify-center backdrop-blur-[1px]">
+          <div className="absolute inset-0 bg-[var(--secondary-10)] flex items-center justify-center backdrop-blur-[1px]">
             <div className="bg-white p-2 md:p-3 rounded-xl md:rounded-2xl shadow-2xl">
-              <SparklesIcon className="w-4 h-4 md:w-5 md:h-5 text-[#FF5C3A]" />
+              <SparklesIcon className="w-4 h-4 md:w-5 md:h-5 text-[var(--secondary)]" />
             </div>
           </div>
         )}
@@ -96,7 +97,7 @@ function EditorialProductCard({ product, selected, primaryColor, onClick }: { pr
       <div className="px-1 md:px-2 space-y-0.5 md:space-y-1">
         <div className="flex justify-between items-start gap-2">
           <h3 className="text-[10px] md:text-sm font-black text-gray-900 uppercase tracking-tight truncate flex-1">{product.name}</h3>
-          {product.price != null && <p className="text-[10px] md:text-sm font-black text-[#FF5C3A]">${product.price.toLocaleString('es-CO')}</p>}
+          {product.price != null && <p className="text-[10px] md:text-sm font-black text-[var(--secondary)]">${product.price.toLocaleString('es-CO')}</p>}
         </div>
         <p className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest">{product.category}</p>
       </div>
@@ -119,11 +120,11 @@ function EditorialInfo({ brand }: { brand: BrandData }) {
       {/* IZQUIERDA: Información */}
       <div className="p-6 md:p-10 bg-white rounded-[2rem] md:rounded-[3.5rem] border border-gray-100 shadow-sm space-y-6 md:space-y-8">
         <div className="flex items-center gap-4 border-b border-gray-50 pb-6">
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gray-900 flex items-center justify-center text-white shadow-xl">
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
             <MapPinIcon className="w-5 h-5 md:w-6 md:h-6" />
           </div>
           <div>
-            <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-gray-400">Ubicación</h4>
+            <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-[var(--secondary)]">Ubicación</h4>
             <p className="text-xs md:text-sm font-black text-gray-900 uppercase italic">Presencia Física</p>
           </div>
         </div>
@@ -144,7 +145,7 @@ function EditorialInfo({ brand }: { brand: BrandData }) {
           )}
           {brand.national_shipping && (
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-900 text-[9px] md:text-[10px] font-black uppercase tracking-widest border border-gray-100">
-              <TruckIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#FF5C3A]" /> Envíos Nacionales
+              <TruckIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-[var(--secondary)]" /> Envíos Nacionales
             </div>
           )}
         </div>
@@ -153,11 +154,11 @@ function EditorialInfo({ brand }: { brand: BrandData }) {
       {/* DERECHA: Horarios */}
       <div className="p-6 md:p-10 bg-white rounded-[2rem] md:rounded-[3.5rem] border border-gray-100 shadow-sm space-y-6 md:space-y-8">
         <div className="flex items-center gap-4 border-b border-gray-50 pb-6">
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gray-900 flex items-center justify-center text-white shadow-xl">
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center text-white shadow-xl" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
             <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-12 0 9 9 0 0112 0z" /></svg>
           </div>
           <div>
-            <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-gray-400">Disponibilidad</h4>
+            <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.3em] text-[var(--secondary)]">Disponibilidad</h4>
             <p className="text-xs md:text-sm font-black text-gray-900 uppercase italic">Nuestros Horarios</p>
           </div>
         </div>
@@ -182,12 +183,12 @@ function EditorialAbout({ brand, primaryColor }: { brand: BrandData; primaryColo
   if (!brand.brand_description) return null;
   return (
     <section className="py-6 md:py-16">
-      <div className="p-8 md:p-16 bg-gray-900 rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden shadow-2xl">
+      <div className="p-8 md:p-16 rounded-[2.5rem] md:rounded-[4rem] relative overflow-hidden shadow-2xl" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
         <div className="absolute top-0 right-0 p-12 opacity-10">
           <SparklesIcon className="w-32 h-32 md:w-48 md:h-48" />
         </div>
         <div className="relative z-10 space-y-4 md:space-y-6 text-center md:text-left">
-          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.5em] text-[#FF5C3A]">Nuestra Historia</span>
+          <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.5em] text-gray-400">Nuestra Historia</span>
           <p className="text-base md:text-3xl text-white leading-tight font-black italic uppercase tracking-tighter max-w-4xl">
             &quot;{brand.brand_description}&quot;
           </p>
@@ -198,7 +199,8 @@ function EditorialAbout({ brand, primaryColor }: { brand: BrandData; primaryColo
 }
 
 export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
-  const primary = brand.primary_color || '#FF5C3A';
+  const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
+  const secondary = brand.social_links?._landing_secondary || primary;
   const [selectedId, setSelectedId] = useState<string | null>(products && products.length > 0 ? products[0].id : null);
 
   const socialLinks = brand.social_links || {};
@@ -218,14 +220,14 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-[#fcfcfc] ${brand.landing_font || 'font-jakarta'} overflow-x-hidden`}>
+    <div className={`min-h-screen flex flex-col bg-[#fcfcfc] ${brand.landing_font || 'font-jakarta'} overflow-x-hidden`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
       <EditorialHeader brand={brand} entries={entries} socialIcons={socialIcons} />
       <EditorialHero brand={brand} />
       
-      <main className="max-w-6xl mx-auto w-full px-4 md:px-6 py-12 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-        {/* Catálogo Prioritario */}
-        <div className="lg:col-span-8 space-y-16 order-2 lg:order-1">
-          <div>
+      <main className="max-w-6xl mx-auto w-full px-4 md:px-6 py-12 md:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-start mb-16">
+          {/* Catálogo Prioritario */}
+          <div className="order-2 lg:order-1">
             <div className="flex items-center justify-between border-b-2 border-black pb-4 mb-10">
               <h2 className="text-3xl font-black uppercase italic tracking-tighter">Colección</h2>
               <span className="text-[10px] font-black bg-black text-white px-3 py-1 uppercase">{products?.length || 0} Items</span>
@@ -238,30 +240,30 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
             </div>
           </div>
 
-          {/* Información y Horarios */}
-          <EditorialInfo brand={brand} />
-
-          {/* Descripción de marca */}
-          <EditorialAbout brand={brand} primaryColor={primary} />
+          {/* Probador Prioritario (Sidebar Sticky) */}
+          <aside className="order-1 lg:order-2">
+            <div id="editorial-tryon" className="lg:sticky lg:top-28">
+              <div className="rounded-[3rem] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] bg-white border border-gray-100">
+                <div className="px-6 py-4 text-white flex justify-between items-center" style={{ backgroundColor: primary }}>
+                  <span className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+                    <SparklesIcon className="w-4 h-4" /> Probador IA
+                  </span>
+                  <span className="text-[8px] font-black opacity-60">AI POWERED</span>
+                </div>
+                <div className="bg-white">
+                  <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" />
+                </div>
+              </div>
+              <p className="text-center mt-6 text-[9px] font-black uppercase tracking-[0.3em] text-gray-300">Desarrollado por Lookitry AI</p>
+            </div>
+          </aside>
         </div>
 
-        {/* Probador Prioritario (Sidebar Sticky) */}
-        <aside className="lg:col-span-4 order-1 lg:order-2">
-          <div id="editorial-tryon" className="lg:sticky lg:top-28">
-            <div className="rounded-[3rem] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] bg-white border border-gray-100">
-              <div className="px-6 py-4 bg-gray-900 text-white flex justify-between items-center">
-                <span className="font-black text-[10px] uppercase tracking-widest text-[#FF5C3A] flex items-center gap-2">
-                  <SparklesIcon className="w-4 h-4" /> Probador IA
-                </span>
-                <span className="text-[8px] opacity-40 font-black">AI POWERED</span>
-              </div>
-              <div style={{ backgroundColor: brand.widget_bg_color || '#ffffff' }}>
-                <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} />
-              </div>
-            </div>
-            <p className="text-center mt-6 text-[9px] font-black uppercase tracking-[0.3em] text-gray-300">Desarrollado por Lookitry AI</p>
-          </div>
-        </aside>
+        {/* Información y Horarios */}
+        <EditorialInfo brand={brand} />
+
+        {/* Descripción de marca */}
+        <EditorialAbout brand={brand} primaryColor={primary} />
       </main>
 
       <footer 
@@ -272,16 +274,13 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
           {/* Logo / Nombre en Footer */}
           <div className="flex flex-col items-center gap-4">
             {brand.logo ? (
-              <img src={brand.logo_light || brand.logo} alt="" className="h-12 w-auto object-contain opacity-90 mb-2 grayscale brightness-200" />
+              <img src={brand.logo_light || brand.logo} alt={brand.name} className="h-12 w-auto object-contain opacity-90 mb-2 grayscale brightness-200" />
             ) : (
               <div className="h-12 w-12 rounded-2xl flex items-center justify-center text-white font-black text-xl mb-2" style={{ backgroundColor: primary }}>
                 {brand.name?.slice(0, 2).toUpperCase()}
               </div>
             )}
-            <h2 className="text-3xl font-black italic uppercase tracking-tighter drop-shadow-sm">
-              {brand.name}
-            </h2>
-            <div className="w-12 h-1 bg-[#FF5C3A] rounded-full opacity-50" />
+            <div className="w-12 h-1 bg-[var(--secondary)] rounded-full opacity-50" />
           </div>
 
           {/* Social Links en Footer */}
@@ -301,10 +300,10 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
               Transformando la experiencia de compra online
             </p>
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-[9px] font-black text-white/20 uppercase tracking-widest">
-              <span>© 2026 {brand.name} · Boutique Verificada</span>
+              <span>© 2026 {brand.name} </span>
               <span className="hidden md:block">|</span>
               <p>
-                Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="text-[#FF5C3A] hover:underline">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
+                Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-opacity text-white">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
               </p>
             </div>
           </div>

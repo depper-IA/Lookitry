@@ -11,7 +11,7 @@ interface MarcaPageProps {
 export default function MarcaPage({ params }: MarcaPageProps) {
   return (
     <div className="w-full min-h-screen overflow-auto">
-      <TryOnWidget brandSlug={params.brandSlug} isEmbed={true} />
+      <TryOnWidget brandSlug={params.brandSlug} />
     </div>
   );
 }

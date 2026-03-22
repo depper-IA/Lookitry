@@ -396,44 +396,49 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
   ] as const;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
-      {/* Formulario — 3 cols */}
-      <div className="lg:col-span-3">
-        <Card>
-          <CardHeader>
-            <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="flex gap-1 border p-1 rounded-lg">
-              {tabs.map(t => (
-                <button key={t.id} type="button"
-                  onClick={() => {
-                    if (t.id === 'pro' && !isPro) {
-                      setShowUpgradeModal(true);
-                      return;
-                    }
-                    setActiveTab(t.id);
-                  }}
-                  style={activeTab === t.id
-                    ? { background: '#FF5C3A', color: '#ffffff' }
-                    : { color: 'var(--text-muted)' }}
-                  className={`flex-1 py-1.5 px-3 rounded-md text-sm font-medium transition-all ${activeTab === t.id ? 'shadow' : 'hover:opacity-80'}`}>
-                  {t.id === 'pro' && !isPro ? (
-                    <span className="flex items-center justify-center gap-1">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      Pro
-                    </span>
+
+      {/* --- Navegacion Delineada Premium --- */}
+      <div className="lg:col-span-3 border-r border-gray-100 pr-0 lg:pr-6 pb-6 lg:pb-0 overflow-x-auto lg:overflow-visible">
+        <nav className="flex lg:flex-col gap-2 min-w-max lg:min-w-0">
+          {tabs.map(t => {
+            const isProLocked = t.id === 'pro' && !isPro;
+            const active = activeTab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => {
+                  if (isProLocked) { setShowUpgradeModal(true); return; }
+                  setActiveTab(t.id);
+                }}
+                className={`w-full text-left px-5 py-4 rounded-3xl flex items-center gap-3 transition-all duration-300 outline-none ${active ? 'bg-[var(--bg-card)] shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#FF5C3A]/20 scale-[1.02]' : 'hover:bg-[var(--bg-hover)]' }`}
+              >
+                <span className={`block text-xs font-black uppercase tracking-widest italic ${active ? 'text-[#FF5C3A]' : 'text-[var(--text-secondary)]'}`}>
+                  {isProLocked ? (
+                    <span className="flex items-center gap-1.5"><svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> Pro</span>
                   ) : t.label}
-                </button>
-              ))}
-            </div>
-          </CardHeader>
-          <CardBody>
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Formulario — 5 cols */}
+      <div className="lg:col-span-5">
+        <section className="p-6 md:p-8 rounded-[2.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
+
             <form onSubmit={handleSubmit} className="space-y-5">
 
               {/* TAB: General */}
               {activeTab === 'general' && (
-                <div className="space-y-4">
+                <div className="space-y-8">
+                  <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
+                    <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><svg className="w-5 h-5 text-[#FF5C3A]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+                    <div><h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">General</h3><p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Datos Básicos</p></div>
+                  </div>
                   <Input label="Nombre de Marca" name="name" value={formData.name || ''} onChange={handleChange} error={errors.name} placeholder="Mi Marca" required />
                   <div>
                     <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Logo</label>
@@ -494,7 +499,11 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
 
               {/* TAB: Apariencia */}
               {activeTab === 'appearance' && (
-                <div className="space-y-5">
+                <div className="space-y-8">
+                  <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
+                    <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><svg className="w-5 h-5 text-[#FF5C3A]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg></div>
+                    <div><h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Paleta Visual</h3><p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Esquema unificado</p></div>
+                  </div>
                   {/* Selector de template */}
                   <div>
                     <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Layout del Widget</label>
@@ -574,7 +583,11 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
 
               {/* TAB: Pro */}
               {activeTab === 'pro' && (
-                <div className="space-y-4">
+                <div className="space-y-8">
+                  <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
+                    <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><svg className="w-5 h-5 text-[#FF5C3A]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+                    <div><h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Opciones Pro</h3><p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Exclusivo Widget</p></div>
+                  </div>
                   {!isPro ? (
                     <div style={{ borderColor: 'var(--border-color)' }} className="rounded-2xl overflow-hidden border">
                       <div className="bg-gradient-to-r from-[#FF5C3A] to-[#e04e30] px-5 py-4">
@@ -670,23 +683,21 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               )}
 
             </form>
-          </CardBody>
-        </Card>
+        </section>
       </div>
 
-      {/* Preview — 2 cols */}
-      <div className="lg:col-span-2 space-y-4">
-        <Card>
-          <CardHeader>
+      {/* Preview — 4 cols */}
+      <div className="lg:col-span-4 space-y-5">
+        <section className="p-6 rounded-[2.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
+          <div className="border-b border-[var(--border-color)] pb-4 mb-4">
             <h3 style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">Vista Previa del Widget</h3>
             <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
               Layout: <span className="font-medium capitalize">{TEMPLATES.find(t => t.id === formData.widgetTemplate)?.name || 'Minimal'}</span>
             </p>
-          </CardHeader>
-          <CardBody>
+          </div>
             <WidgetPreview formData={formData} brandName={formData.name || brand.name} />
-          </CardBody>
-        </Card>
+          
+        </section>
         <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl p-4 border">
           <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-semibold mb-2">URL de tu widget</p>
           <code style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-muted)' }} className="text-xs break-all rounded p-2 block border">
