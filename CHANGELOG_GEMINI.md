@@ -2,6 +2,32 @@
 
 Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes realizadas por la IA para mantener la continuidad del desarrollo.
 
+## 22 de Marzo, 2026 — Activación de Cron Job de Suspensión de Cuentas
+
+**Problema:** La lógica de suspensión de cuentas y caducidad de planes (`updateSubscriptionStatuses`) estaba desarrollada en los servicios, pero descubrí que faltaba anexarla al ciclo del motor maestro de Cron Jobs (`cleanup.job.ts`). Estaban corriendo todos los procesos de limpieza de imágenes y advertencias de landings, pero ninguna cuenta era marcada como inactiva ni suspendida de forma automatizada cuando pasaban sus límites.
+
+**Corrección:**
+- Se integró la función `subscriptionService.updateSubscriptionStatuses()` programada para las **2:00 AM** de todos los días. 
+- La cascada de dependencias automáticas ahora es sólida:
+  1. **2:00 AM**: Las suscripciones vencidas cambian de `active` a `expired` a `suspended`.
+  2. **3:30 AM**: Las cuentas que ya cumplieron el periodo máximo de suspensión (90 días) son "soft-deleted" (sus datos cambian a `[ELIMINADA]`).
+  3. **3:45 AM**: Se cancelan en internet y se suspenden las integraciones Mini Landing de todas las cuentas recientemente suspendidas.
+  4. **4:15 AM**: Se eliminan definitivamente aquellas Landing suspendidas por más de 90 días, alertando y purificando la base de datos de MinIO.
+
+---
+
+## 22 de Marzo, 2026 — Corrección Crítica en Monto de Wompi/PayPal (Aborto de Código)
+
+**Problema:** Al procesar usuarios nuevos tras un pago, el endpoint `register-post-payment` enviaba un registro forzado de `amount: 0` al historial de pagos en DB. La base de datos rechazaba `$0` (o Wompi crasheaba internamente) lanzando una excepción. Como esta excepción ocurría **antes** de marcar la "Landing activa" en la base de datos (y afectaba el historial de meses de pago), el sistema atrapaba el error y abortaba silenciosamente. El usuario quedaba con Plan PRO (actualizado previamente) pero sin los meses en el recibo y sin su landing activa.
+
+**Correcciones:**
+- `backend/src/controllers/auth-post-payment.controller.ts`: Se refactorizó la validación de transacciones Wompi y PayPal para extraer dinámicamente el monto real cobrado al cliente (ej. `transaction.amount_in_cents / 100`).
+- Se introdujo la variable `paymentAmount` a lo largo del proceso.
+- En `subscriptionService.renewSubscription`, se reemplazó el `amount: 0` quemado en el `paymentData` por `paymentAmount`.
+- **Efecto logrado:** El historial de pagos ahora registra correctamente los montos abonados de Wompi/PayPal, lo que previene que la aplicación arroje errores invisibles y asegura que se cumpla de forma ininterrumpida todo el código subsiguiente (Landing = true, actualización de meses comprados visibles).
+
+---
+
 ## 22 de Marzo, 2026 — Soporte Cupones 100% para Visitantes en Checkout Público
 
 **Problema:** El checkout público (`/checkout/page.tsx`) obligaba a los visitantes sin cuenta a procesar el pago de monto $0 con Wompi (lo que causaba error) e ignoraba la funcionalidad de activar planes gratis. Además, la creación de cuenta post-pago fallaba porque verificaba en Wompi el estado de transacciones gratuitas, que sólo existían localmente.
