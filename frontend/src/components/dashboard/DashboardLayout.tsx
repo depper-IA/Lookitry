@@ -24,7 +24,6 @@ const navigation = [
   { name: 'Uso',            href: '/dashboard/usage',        icon: UsageIcon },
   { name: 'Suscripción',    href: '/dashboard/subscription', icon: SubscriptionIcon },
   { name: 'Analytics',      href: '/dashboard/analytics',    icon: AnalyticsIcon },
-  { name: 'Código Embed',   href: '/dashboard/embed',        icon: EmbedIcon },
   { name: 'Perfil',         href: '/dashboard/profile',      icon: ProfileIcon },
 ];
 

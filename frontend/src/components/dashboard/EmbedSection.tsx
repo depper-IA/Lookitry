@@ -60,7 +60,7 @@ const PLATFORM_STEPS: Record<Platform, Array<{ title: string; detail: string }>>
   ],
 };
 
-export default function EmbedPage() {
+export function EmbedSection() {
   const { brand } = useAuth();
   const [platform, setPlatform] = useState<Platform>('wordpress');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
