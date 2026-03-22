@@ -317,8 +317,10 @@ export class WompiController {
         : planAmounts[planStr] ?? 150000;
 
       const brandId = brand?.id ?? `visitor_${Date.now()}`;
+      const isLandingPurchase = (req.query.includes_landing as string) === 'true';
+
       // Pasar months y plan para que la referencia los incluya y el webhook los pueda extraer
-      const config = await wompiService.getWidgetConfig(brandId, amountCOP, monthsNum, planStr);
+      const config = await wompiService.getWidgetConfig(brandId, amountCOP, monthsNum, planStr, isLandingPurchase);
       const signature = await wompiService.generateIntegritySignature(
         config.reference,
         config.amountInCents,
