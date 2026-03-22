@@ -90,6 +90,10 @@ function RegistroProContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [fingerprint, setFingerprint] = useState<string | null>(null);
   const [recoveringRef, setRecoveringRef] = useState(false);
+  // Email alternativo — solo visible cuando el email de pago ya está registrado
+  const [showAltEmail, setShowAltEmail] = useState(false);
+  const [altEmail, setAltEmail] = useState('');
+  const [altEmailError, setAltEmailError] = useState('');
 
   useEffect(() => {
     getFingerprint().then(setFingerprint);
@@ -176,6 +180,11 @@ function RegistroProContent() {
     if (!form.name.trim() || form.name.trim().length < 2) e.name = 'Mínimo 2 caracteres';
     if (!/^[a-z0-9-]{3,}$/.test(form.slug)) e.slug = 'Solo minúsculas, números y guiones (mín. 3 caracteres)';
     if (form.password.length < 6) e.password = 'Mínimo 6 caracteres';
+    // Validar email alternativo solo si está visible
+    if (showAltEmail) {
+      if (!altEmail.trim()) { setAltEmailError('Ingresa el correo electrónico'); return false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(altEmail.trim())) { setAltEmailError('Formato de correo inválido'); return false; }
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -185,14 +194,30 @@ function RegistroProContent() {
     if (!validate()) return;
     setLoading(true);
     setApiError('');
+    setAltEmailError('');
     try {
+      const body: Record<string, unknown> = { ...form, fingerprint, ref: ref || undefined };
+      // Si el usuario ingresó un email alternativo, enviarlo para sobreescribir el del pago
+      if (showAltEmail && altEmail.trim()) {
+        body.override_email = altEmail.trim();
+      }
       const res = await fetch(`${API_URL}/api/auth/register-post-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, fingerprint, ref: ref || undefined }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) { setApiError(data.message || 'Error al crear la cuenta'); return; }
+      if (!res.ok) {
+        // Si el error es email duplicado, mostrar campo alternativo
+        const msg: string = data.message || data.error || '';
+        if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('correo') || msg.toLowerCase().includes('ya está')) {
+          setShowAltEmail(true);
+          setApiError('El correo del pago ya está registrado. Ingresa un correo diferente para crear tu cuenta:');
+        } else {
+          setApiError(msg || 'Error al crear la cuenta');
+        }
+        return;
+      }
       localStorage.setItem('token', data.token);
       localStorage.setItem('brandToken', data.token);
       localStorage.setItem('brand', JSON.stringify(data.brand));
@@ -232,8 +257,28 @@ function RegistroProContent() {
           <p className="text-[13px] text-[#555] mb-6">Un paso más para activar tu probador virtual.</p>
 
           {apiError && (
-            <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[13px] px-4 py-3 rounded-lg mb-5">
+            <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[13px] px-4 py-3 rounded-lg mb-3">
               {apiError}
+            </div>
+          )}
+
+          {/* Campo de email alternativo — solo aparece cuando el email del pago ya existe */}
+          {showAltEmail && (
+            <div className="mb-5 border border-[#FF5C3A]/30 bg-[#FF5C3A]/5 rounded-lg px-4 py-3">
+              <label className="block text-[12px] font-semibold text-[#FF5C3A] mb-1.5">
+                Nuevo correo electrónico
+              </label>
+              <input
+                type="email"
+                value={altEmail}
+                onChange={e => { setAltEmail(e.target.value); setAltEmailError(''); }}
+                placeholder="otro@correo.com"
+                className={`w-full bg-[#0f0f0f] border ${altEmailError ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'} rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
+              />
+              {altEmailError && <p className="text-[11px] text-[#ff6b6b] mt-1">{altEmailError}</p>}
+              <p className="text-[11px] text-[#555] mt-1.5">
+                Este correo se usará para iniciar sesión. El plan quedará activo en tu nueva cuenta.
+              </p>
             </div>
           )}
 
