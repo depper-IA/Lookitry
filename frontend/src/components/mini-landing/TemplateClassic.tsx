@@ -80,8 +80,8 @@ function ClassicHeader({ brand, primaryColor, onScrollDown }: { brand: BrandData
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
           <button onClick={onScrollDown} className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Catálogo</button>
-          <a href="#probador" className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Probador IA</a>
-          <a href="#contacto" className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Horarios</a>
+          <button onClick={() => document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' })} className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Probador IA</button>
+          <button onClick={() => document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' })} className="text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:text-black transition-colors">Horarios</button>
         </nav>
 
         <div className="flex items-center gap-3 md:gap-0">
@@ -110,20 +110,18 @@ function ClassicHeader({ brand, primaryColor, onScrollDown }: { brand: BrandData
             >
               Catálogo
             </button>
-            <a 
-              href="#probador" 
-              onClick={() => setMobileMenuOpen(false)}
+            <button 
+              onClick={() => { document.getElementById('probador')?.scrollIntoView({ behavior: 'smooth' }); setMobileMenuOpen(false); }}
               className="text-xs font-black uppercase tracking-widest text-gray-600 text-left py-2 border-b border-gray-50"
             >
               Probador IA
-            </a>
-            <a 
-              href="#contacto" 
-              onClick={() => setMobileMenuOpen(false)}
+            </button>
+            <button 
+              onClick={() => { document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' }); setMobileMenuOpen(false); }}
               className="text-xs font-black uppercase tracking-widest text-gray-600 text-left py-2"
             >
               Horarios y Contacto
-            </a>
+            </button>
           </nav>
         </div>
       )}
@@ -137,8 +135,8 @@ function ClassicHero({ brand, primaryColor, onScrollDown }: { brand: BrandData; 
     <section className="relative w-full bg-[#f9f8f6] py-10 md:py-20 px-6 overflow-hidden">
       <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-10 md:gap-16">
         <div className="flex-1 text-center lg:text-left space-y-5 md:space-y-6 z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/5 border border-black/5 text-gray-600 text-[9px] font-bold uppercase tracking-[0.2em]">
-            <SparklesIcon className="w-3.5 h-3.5 text-amber-500" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--secondary-05)] border border-[var(--secondary-10)] text-[var(--secondary)] text-[9px] font-bold uppercase tracking-[0.2em]">
+            <SparklesIcon className="w-3.5 h-3.5" />
             Nueva tecnología de probador
           </div>
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tighter uppercase italic">
@@ -151,7 +149,7 @@ function ClassicHero({ brand, primaryColor, onScrollDown }: { brand: BrandData; 
             </p>
           )}
           <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-            <button onClick={onScrollDown} className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gray-900 text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-black transition-all">Ver Productos</button>
+            <button onClick={onScrollDown} className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:brightness-110 active:scale-95 transition-all" style={{ backgroundColor: primaryColor }}>Ver Productos</button>
             <div className="flex -space-x-2.5">
               {[1,2,3].map(i => <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 overflow-hidden shadow-sm" />)}
               <div className="w-8 h-8 rounded-full border-2 border-white bg-[#f0edea] flex items-center justify-center text-[9px] font-bold text-gray-400">+500</div>
@@ -203,7 +201,7 @@ function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { 
     <section id="productos" className="py-20 px-6 bg-[#f9f8f6]">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12 space-y-3">
-          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400">Colección de Temporada</span>
+          <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--secondary)]">Colección de Temporada</span>
           <h2 className="text-2xl md:text-4xl font-black text-gray-900 tracking-tighter uppercase italic leading-none">Nuestros Productos</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -221,7 +219,7 @@ function ClassicProducts({ products, primaryColor, ctaText, onProductClick }: { 
               </div>
               <div className="p-6 text-left">
                 <div className="flex justify-between items-start mb-1">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-[#FF5C3A]">{p.category}</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-[var(--secondary)]">{p.category}</p>
                   {p.price && <p className="text-xs font-black text-gray-900">${p.price.toLocaleString('es-CO')}</p>}
                 </div>
                 <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight line-clamp-1">{p.name}</h3>
@@ -272,7 +270,7 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
           </div>
 
           <div className="lg:col-span-4 space-y-8 text-left">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Horarios de Atención</h4>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--secondary)]">Horarios de Atención</h4>
             {scheduleEntries.length > 0 ? (
               <div className="space-y-3">
                 {scheduleEntries.map(([d, h]) => (
@@ -300,9 +298,9 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
         </div>
 
         <div className="pt-8 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-6">
-          <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest text-center md:text-left">© 2026 {brand.name} · Boutique Verificada</p>
+          <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest text-center md:text-left">© 2026 {brand.name} </p>
           <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest text-center md:text-right">
-            Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#FF5C3A] transition-colors">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
+            Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-colors text-gray-900">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
           </p>
         </div>
       </div>
@@ -311,7 +309,8 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
 }
 
 export function TemplateClassic({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
-  const primary = brand.primary_color || '#FF5C3A';
+  const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
+  const secondary = brand.social_links?._landing_secondary || primary;
   const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id || null);
   
   const handleProductClick = (id: string) => {
@@ -320,7 +319,7 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl }: { bra
   };
 
   return (
-    <div className={`min-h-screen bg-white flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500`}>
+    <div className={`min-h-screen bg-white flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
       <ClassicHeader brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
       <ClassicHero brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
       <ClassicSteps primaryColor={primary} />
@@ -329,11 +328,11 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl }: { bra
       <section id="probador" className="py-20 px-4 md:px-6" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
         <div className="max-w-4xl mx-auto space-y-12 text-center">
           <div className="space-y-4">
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#FF5C3A]">Probador Virtual Premium</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--secondary)]">Probador Virtual Premium</span>
             <h2 className="text-2xl md:text-4xl font-black text-white tracking-tighter uppercase italic">Experiencia Inteligente</h2>
           </div>
           <div className="rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/5">
-            <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} />
+            <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" />
           </div>
         </div>
       </section>
