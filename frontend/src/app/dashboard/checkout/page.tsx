@@ -673,6 +673,7 @@ function CheckoutContent() {
           plan={selectedPlan}
           months={selectedMonths}
           amount={totalPrice}
+          includesLanding={includeLanding}
           trm={trm}
           redirecting={redirecting}
           onSuccess={handleSuccess}
@@ -699,6 +700,7 @@ function PaymentSection({
   plan,
   months,
   amount,
+  includesLanding,
   trm,
   redirecting,
   onSuccess,
@@ -712,6 +714,7 @@ function PaymentSection({
   plan: PlanType;
   months: number;
   amount: number;
+  includesLanding: boolean;
   trm: number;
   redirecting: boolean;
   onSuccess: (r: WompiWidgetResult) => void;
@@ -765,6 +768,7 @@ function PaymentSection({
                 plan={plan}
                 months={months}
                 amount={amount}
+                includesLanding={includesLanding}
                 onSuccess={onSuccess}
                 onError={onError}
                 className="w-full py-3 min-h-[44px] rounded-xl text-white font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2"
