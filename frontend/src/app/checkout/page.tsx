@@ -168,7 +168,7 @@ function CheckoutContent() {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
         },
       }).then(r => r.ok ? r.json() : null),
-      fetch('/api/promotions').then(r => r.ok ? r.json() : null),
+      fetch(`${API_URL}/api/promotions`).then(r => r.ok ? r.json() : null),
     ]).then(([paySettings, pricingRows, promosRes]) => {
       if (paySettings) {
         setPricing(paySettings);
@@ -263,7 +263,7 @@ function CheckoutContent() {
     setCouponLoading(true);
     setCouponError('');
     try {
-      const res = await fetch('/api/coupons/validate', {
+      const res = await fetch(`${API_URL}/api/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: couponCode.trim(), plan: selectedPlan }),
@@ -343,7 +343,7 @@ function CheckoutContent() {
 
       // Incrementar uses_count del cupón antes de redirigir (fire-and-forget)
       if (appliedCoupon?.id) {
-        fetch('/api/coupons/redeem', {
+        fetch(`${API_URL}/api/coupons/redeem`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ coupon_id: appliedCoupon.id }),

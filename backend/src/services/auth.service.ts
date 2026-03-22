@@ -359,7 +359,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
     };
   }
 
-  async verifyEmail(token: string): Promise<{ ok: boolean; message: string }> {
+  async verifyEmail(token: string): Promise<{ ok: boolean; message: string; brandId?: string }> {
     const { data: brand } = await supabaseAdmin
       .from('brands')
       .select('id, email_verified')
@@ -379,7 +379,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       .update({ email_verified: true, email_verification_token: null })
       .eq('id', brand.id);
 
-    return { ok: true, message: 'Correo verificado correctamente' };
+    return { ok: true, message: 'Correo verificado correctamente', brandId: brand.id };
   }
 
   async getBrandById(brandId: string): Promise<Brand | null> {

@@ -314,6 +314,30 @@ export class WompiController {
   }
 
   /**
+   * GET /api/payments/wompi/transaction/:id
+   * 
+   * Retorna la información de una transacción (como la referencia) por su ID.
+   */
+  async getTransaction(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        res.status(400).json({ error: 'ID requerido' });
+        return;
+      }
+      const tx = await wompiService.getTransactionById(id as string);
+      if (!tx) {
+        res.status(404).json({ error: 'Transacción no encontrada' });
+        return;
+      }
+      res.json(tx);
+    } catch (error) {
+      console.error('[Wompi] Error en getTransaction:', error);
+      res.status(500).json({ error: 'Error interno' });
+    }
+  }
+
+  /**
    * GET /api/payments/wompi/checkout-url
    *
    * Genera y retorna la URL del checkout hosted de Wompi.
