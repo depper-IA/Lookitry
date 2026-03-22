@@ -20,7 +20,7 @@ const navigation = [
   { name: 'Productos',      href: '/dashboard/products',     icon: ProductsIcon },
   { name: 'Generaciones',   href: '/dashboard/generations',  icon: GenerationsIcon },
   { name: 'Mi página',      href: '/dashboard/mi-pagina',    icon: LandingIcon },
-  { name: 'Configuración',  href: '/dashboard/settings',     icon: SettingsIcon },
+  { name: 'Widget Probador',  href: '/dashboard/settings',     icon: SettingsIcon },
   { name: 'Uso',            href: '/dashboard/usage',        icon: UsageIcon },
   { name: 'Suscripción',    href: '/dashboard/subscription', icon: SubscriptionIcon },
   { name: 'Analytics',      href: '/dashboard/analytics',    icon: AnalyticsIcon },

@@ -11,6 +11,7 @@ interface TryOnWidgetProps {
   brandSlug: string;
   isEmbed?: boolean;
   initialProductId?: string | null;
+  forceLayout?: 'top-bar' | 'sidebar' | 'centered' | 'bare';
 }
 
 type Step = 'upload' | 'select' | 'generating' | 'result';
@@ -159,7 +160,7 @@ function FriendlyProductSelector({
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
-export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = null }: TryOnWidgetProps) {
+export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = null, forceLayout }: TryOnWidgetProps) {
   const [step, setStep] = useState<Step>('upload');
   const [config, setConfig] = useState<TryOnConfigResponse | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
@@ -315,12 +316,13 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
   const secondaryColor = config?.brand.secondaryColor || '#f9fafb';
   const buttonText     = config?.brand.buttonText     || 'Probarme esto';
   const welcomeMessage = config?.brand.welcomeMessage || '';
-  const layout         = templateToLayout(config?.brand.widgetTemplate);
+  const selectedLayout = templateToLayout(config?.brand?.widgetTemplate);
+  const effectiveLayout = forceLayout || selectedLayout;
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16" style={{ backgroundColor: secondaryColor }}>
+      <div className="flex items-center justify-center py-16" >
         <div className="text-center">
           <div className="w-14 h-14 border-4 border-gray-200 rounded-full animate-spin mx-auto" style={{ borderTopColor: primaryColor }} />
           <p className="mt-4 text-gray-500 text-sm font-medium">Cargando el probador...</p>
@@ -350,7 +352,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
   }
 
   // ── Generating (igual para todos los layouts excepto bare) ───────────────
-  if (step === 'generating' && layout !== 'bare') {
+  if (step === 'generating' && effectiveLayout !== 'bare') {
     return (
       <div className="flex flex-col" style={{ backgroundColor: secondaryColor }}>
         <BrandHeader config={config} primaryColor={primaryColor} onReset={handleReset} showReset={false} />
@@ -361,12 +363,11 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     );
   }
 
-  // ── SIDEBAR layout (modern) ────────────────────────────────────────────────
-  if (layout === 'sidebar') {
+  if (effectiveLayout === 'sidebar') {
     return (
-      <div className="flex min-h-screen" style={{ backgroundColor: secondaryColor }}>
+      <div className={`flex font-sans min-h-screen transition-all duration-700`} style={{ backgroundColor: secondaryColor }}>
         {/* Sidebar */}
-        <div className="w-56 flex-shrink-0 flex flex-col" style={{ backgroundColor: primaryColor }}>
+        <div className="w-64 flex-shrink-0 flex flex-col relative z-20 border-r border-white/5 shadow-[20px_0_50px_rgba(0,0,0,0.1)] backdrop-blur-3xl transition-all duration-700" style={{ backgroundColor: `${primaryColor}CC` }}>
           <div className="px-4 py-5 border-b border-white/20">
             {config.brand.logo
               ? <img src={config.brand.logo} alt={config.brand.name} className="h-8 object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
@@ -397,7 +398,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
               <p className="text-xs text-white/60 font-semibold uppercase tracking-wide px-1 mb-2">Toca para elegir</p>
               {config.products.map(p => (
                 <button key={p.id} onClick={() => handleProductSelect(p)}
-                  className={`w-full flex items-center gap-2.5 p-2 rounded-xl text-left transition-all ${selectedProduct?.id === p.id ? 'bg-white/25 ring-1 ring-white/50' : 'bg-white/10 hover:bg-white/20'}`}>
+                  className={`w-full flex items-center gap-3 p-2.5 rounded-2xl text-left cursor-pointer transition-all duration-300 ${selectedProduct?.id === p.id ? 'bg-white/20 shadow-inner translate-x-1' : 'bg-white/5 hover:bg-white/15'}`}>
                   <img src={p.imageUrl} alt={p.name} className="w-11 h-11 rounded-lg object-cover flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-xs font-semibold truncate">{p.name}</p>
@@ -423,7 +424,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
 
         {/* Área principal */}
         <div className="flex-1 flex flex-col overflow-y-auto">
-          <div className="bg-white border-b border-gray-100 px-6 py-3.5 flex items-center justify-between">
+          <div className="bg-white/80 backdrop-blur-md border-b border-gray-100/50 px-6 py-4 flex items-center justify-between shadow-sm sticky top-0 z-10">
             <div>
               <p className="text-sm font-bold text-gray-800">
                 {step === 'upload' && 'Paso 1 — Sube tu foto'}
@@ -456,14 +457,14 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
                       </div>
                     </div>
                     <button onClick={handleGenerate}
-                      className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
+                      className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2"
                       style={{ backgroundColor: primaryColor }}>
                       {buttonText}
                     </button>
                     <p className="text-center text-xs text-gray-400 mt-2">Tarda unos 30 segundos</p>
                   </div>
                 ) : (
-                  <div className="mt-4 p-5 bg-white rounded-2xl border-2 border-dashed border-gray-200 text-center">
+                  <div className="mt-4 p-8 bg-white/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-gray-200 transition-all duration-300 hover:border-gray-300 text-center">
                     <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-2">
                       <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
@@ -483,12 +484,11 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     );
   }
 
-  // ── CENTERED layout (bold) ─────────────────────────────────────────────────
-  if (layout === 'centered') {
+  if (effectiveLayout === 'centered') {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: secondaryColor }}>
+      <div className={`flex flex-col font-sans min-h-screen transition-all duration-700`} style={{ backgroundColor: secondaryColor }}>
         {/* Hero header */}
-        <div className="py-7 px-4 flex flex-col items-center gap-2 text-center" style={{ backgroundColor: primaryColor }}>
+        <div className="py-16 px-6 flex flex-col items-center gap-4 text-center shadow-[0_20px_60px_rgba(0,0,0,0.15)] relative z-20 rounded-b-[4rem] transition-all duration-700 overflow-hidden" style={{ background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}DD)` }}>
           {config.brand.logo
             ? <img src={config.brand.logo} alt={config.brand.name} className="h-10 object-contain mb-1" onError={e => { e.currentTarget.style.display = 'none'; }} />
             : <h1 className="font-bold text-white text-2xl">{config.brand.name}</h1>}
@@ -522,7 +522,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
                   const sel = selectedProduct?.id === p.id;
                   return (
                     <button key={p.id} onClick={() => handleProductSelect(p)}
-                      className={`rounded-2xl overflow-hidden border-2 transition-all text-left bg-white ${sel ? 'shadow-lg scale-[1.03]' : 'border-gray-200 hover:border-gray-300'}`}
+                      className={`rounded-3xl overflow-hidden border-2 transition-all duration-300 ease-out cursor-pointer bg-white ${sel ? 'shadow-[0_8px_30px_rgba(0,0,0,0.12)] scale-[1.03] ring-4 ring-white/50' : 'border-transparent shadow-sm hover:shadow-lg hover:-translate-y-1'}`}
                       style={sel ? { borderColor: primaryColor } : {}}>
                       <div className="relative">
                         <img src={p.imageUrl} alt={p.name} className="w-full aspect-square object-cover" />
@@ -536,7 +536,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
               {selectedProduct && (
                 <div>
                   <button onClick={handleGenerate}
-                    className="w-full py-4 rounded-2xl font-bold text-base shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-4 rounded-2xl font-bold text-base shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2"
                     style={{ backgroundColor: primaryColor, color: secondaryColor }}>
                     {buttonText}
                   </button>
@@ -544,7 +544,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
                 </div>
               )}
               {!selectedProduct && (
-                <div className="p-5 bg-white rounded-2xl border-2 border-dashed border-gray-200 text-center">
+                <div className="p-8 bg-white/60 backdrop-blur-md rounded-3xl border-2 border-dashed border-gray-200 text-center hover:border-gray-300 transition-all duration-300">
                   <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-2">
                     <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z" />
@@ -563,10 +563,9 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     );
   }
 
-  // ── BARE layout (sin header ni sidebar) ──────────────────────────────────
-  if (layout === 'bare') {
+  if (effectiveLayout === 'bare') {
     return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: secondaryColor }}>
+      <div className={`flex flex-col font-sans min-h-screen transition-all duration-700`} style={{ backgroundColor: secondaryColor }}>
         {step === 'generating' && (
           <div className="flex-1 flex items-center justify-center py-8">
             <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
@@ -609,7 +608,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
 
   // ── TOP-BAR layout (minimal — default) ────────────────────────────────────
   return (
-    <div style={{ backgroundColor: secondaryColor }}>
+    <div className="font-sans min-h-screen transition-colors duration-500" style={{ backgroundColor: secondaryColor }}>
       <BrandHeader config={config} primaryColor={primaryColor} onReset={handleReset} showReset={step !== 'upload'} />
       <StepBar step={step} primaryColor={primaryColor} />
 
@@ -636,7 +635,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
             {selectedProduct && (
               <div className="sticky bottom-4 pt-2">
                 <button onClick={handleGenerate}
-                  className="w-full py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base shadow-[0_8px_20px_rgb(0,0,0,0.15)] hover:shadow-[0_12px_25px_rgb(0,0,0,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2"
                   style={{ backgroundColor: primaryColor }}>
                   {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
                 </button>
@@ -666,7 +665,7 @@ function GenerateButton({
     <div className="sticky bottom-4 pt-2">
       <button
         onClick={onClick}
-        className="w-full py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
+        className="w-full py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.2)] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2"
         style={{ backgroundColor: primaryColor }}
       >
         {label}

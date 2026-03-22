@@ -29,11 +29,12 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
     youtube:   <YouTubeIcon   className="w-3.5 h-3.5" />,
     x:         <XIcon         className="w-3.5 h-3.5" />,
   };
-  const primary = brand.primary_color || '#FF5C3A';
+  const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
+  const secondary = brand.social_links?._landing_secondary || primary;
   return (
-    <nav className="sticky top-0 z-50 h-16 md:h-20 flex items-center justify-between px-4 md:px-8 backdrop-blur-3xl gap-4" 
+    <nav className="sticky top-0 z-50 h-16 md:h-20 flex items-center justify-between px-4 md:px-8 gap-4 shadow-xl" 
       style={{ 
-        backgroundColor: brand.header_color ? `${brand.header_color}66` : 'rgba(15,15,15,0.4)', 
+        backgroundColor: brand.header_color || '#000000', 
         borderBottom: '1px solid rgba(255,255,255,0.05)'
       }}>
       <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -68,7 +69,8 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
 }
 
 function ProbadorHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: () => void }) {
-  const primary = brand.primary_color || '#FF5C3A';
+  const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
+  const secondary = brand.social_links?._landing_secondary || primary;
   const hasCover = !!brand.cover_image_url;
   const heroBg = brand.cover_bg_color || '#0f0f0f';
   const overlayOpacity = brand.cover_overlay_opacity ?? 0.6;
@@ -124,7 +126,7 @@ function ProbadorProducts({ products, primaryColor, ctaText, onProductClick, sel
   return (
     <section id="probador-products" className="py-16 px-4 md:px-6 bg-gray-50">
       <div className="max-w-5xl mx-auto text-center">
-        <p className="text-[9px] font-black uppercase tracking-[0.3em] mb-3" style={{ color: primaryColor }}>Catálogo Curado</p>
+        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--secondary)] mb-3">Catálogo Curado</p>
         <h2 className="text-2xl md:text-5xl font-black mb-12 tracking-tighter text-gray-900 italic uppercase leading-none">Nuestros productos</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {products.map(p => (
@@ -142,7 +144,7 @@ function ProbadorProducts({ products, primaryColor, ctaText, onProductClick, sel
               </div>
               <div className="p-5">
                 <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">{p.category}</p>
-                <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight line-clamp-1 group-hover:text-[#FF5C3A] transition-colors">{p.name}</h3>
+                <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight line-clamp-1 group-hover:text-[var(--secondary)] transition-colors">{p.name}</h3>
                 {p.price != null && <p className="text-base font-black mt-2 text-gray-900">${p.price.toLocaleString('es-CO')}</p>}
               </div>
             </button>
@@ -172,7 +174,7 @@ function ProbadorInfo({ brand }: { brand: BrandData }) {
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
         {brand.city_display && (
           <div className="space-y-4">
-            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400">Encuéntranos</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--secondary)]">Encuéntranos</span>
             <h3 className="text-2xl font-black text-gray-900 uppercase italic tracking-tight">{brand.city_display}</h3>
             {brand.national_shipping && (
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 w-fit">
@@ -184,7 +186,7 @@ function ProbadorInfo({ brand }: { brand: BrandData }) {
         )}
         {scheduleEntries.length > 0 && (
           <div className="space-y-6">
-            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-400">Horarios</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[var(--secondary)]">Horarios</span>
             <div className="grid grid-cols-1 gap-2">
               {scheduleEntries.map(([day, hours]) => (
                 <div key={day} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
@@ -201,7 +203,8 @@ function ProbadorInfo({ brand }: { brand: BrandData }) {
 }
 
 export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
-  const primary = brand.primary_color || '#FF5C3A';
+  const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
+  const secondary = brand.social_links?._landing_secondary || primary;
   const [selectedId, setSelectedId] = useState<string | null>(products?.[0]?.id ?? null);
 
   const scrollToTryOn = () => {
@@ -215,7 +218,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-white ${brand.landing_font || 'font-jakarta'} overflow-x-hidden`}>
+    <div className={`min-h-screen flex flex-col bg-white ${brand.landing_font || 'font-jakarta'} overflow-x-hidden`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
       <ProbadorNav brand={brand} />
       <ProbadorHero brand={brand} onScrollDown={() => document.getElementById('probador-products')?.scrollIntoView({ behavior: 'smooth' })} />
       <ProbadorTrustBar brand={brand} />
@@ -224,12 +227,12 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
       <section id="probador-tryon" className="py-16 px-4 md:px-6" style={{ backgroundColor: brand.widget_bg_color || '#0a0a0a' }}>
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-10 space-y-3">
-            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-[#FF5C3A]">Motor IA</span>
+            <span className="text-[9px] font-black uppercase tracking-[0.4em] text-[var(--secondary)]">Motor IA</span>
             <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase italic leading-none">Probador Virtual</h2>
             <p className="text-gray-500 text-xs md:text-sm font-medium">Sube tu foto y procesa el producto seleccionado con IA</p>
           </div>
           <div className="rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/50 border border-white/5">
-            <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} />
+            <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" />
           </div>
         </div>
       </section>
@@ -238,7 +241,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
 
       <footer className="py-16 px-6 text-center border-t border-gray-50 bg-white mt-auto">
         <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-gray-300">
-          Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#FF5C3A] transition-all">Look<span className="text-[#FF5C3A]">itry</span> AI</a>
+          Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-all text-gray-900">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
         </p>
       </footer>
 

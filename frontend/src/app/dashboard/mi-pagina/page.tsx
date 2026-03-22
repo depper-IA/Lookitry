@@ -41,6 +41,7 @@ export default function MiPaginaPage() {
   const [slogan, setSlogan] = useState('');
   const [description, setDescription] = useState('');
   const [primaryColor, setPrimaryColor] = useState('#FF5C3A');
+  const [secondaryColor, setSecondaryColor] = useState('#FF5C3A');
   const [widgetBgColor, setWidgetBgColor] = useState('#0a0a0a');
   const [headerColor, setHeaderColor] = useState('');
   const [coverBgColor, setCoverBgColor] = useState('');
@@ -83,6 +84,7 @@ export default function MiPaginaPage() {
         setSlogan(b.slogan || '');
         setDescription(b.brand_description || '');
         setPrimaryColor(b.primary_color || '#FF5C3A');
+        setSecondaryColor(b.secondary_color || '#FF5C3A');
         setWidgetBgColor(b.widget_bg_color || '#0a0a0a');
         setHeaderColor(b.header_color || '');
         setCoverBgColor(b.cover_bg_color || '');
@@ -126,6 +128,8 @@ export default function MiPaginaPage() {
         tiktok: tiktok.trim(),
         youtube: youtube.trim(),
         x: x.trim(),
+        _landing_secondary: secondaryColor,
+        _landing_primary: primaryColor,
       };
 
       const payload = {
@@ -148,7 +152,8 @@ export default function MiPaginaPage() {
         landing_template: landingTemplate,
         landing_font: landingFont,
         widget_bg_color: widgetBgColor,
-        primary_color: primaryColor,
+        // primary_color removed from landing payload
+        // secondary_color removed from landing payload
         rating: rating ? parseFloat(rating) : null,
         total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
         header_color: headerColor || null,
@@ -179,7 +184,8 @@ export default function MiPaginaPage() {
     widget_bg_color: widgetBgColor,
     slogan,
     brand_description: description,
-    primary_color: primaryColor,
+    // primary_color removed from landing payload
+    // secondary_color removed from landing payload
     header_color: headerColor,
     cover_bg_color: coverBgColor,
     cover_overlay_opacity: coverOverlayOpacity,
@@ -367,7 +373,7 @@ export default function MiPaginaPage() {
                     youtube, setYoutube, x, setX,
                     cityDisplay, setCityDisplay, nationalShipping, setNationalShipping,
                     showBrandName, setShowBrandName,
-                    primaryColor, setPrimaryColor, widgetBgColor, setWidgetBgColor, landingFont, setLandingFont,
+                    primaryColor, setPrimaryColor, secondaryColor, setSecondaryColor, widgetBgColor, setWidgetBgColor, landingFont, setLandingFont,
                     rating, setRating, totalReviews, setTotalReviews,
                     schedule, setSchedule,
                   }}
