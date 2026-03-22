@@ -139,7 +139,11 @@ export default function CheckoutLandingPage() {
       }
 
       if (paymentMethod === 'wompi') {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/checkout-url?plan=${planToSend}&months=${monthsToSend}&includes_landing=true&amount=${totalPrice}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/checkout-url?plan=${planToSend}&months=${monthsToSend}&includes_landing=true&amount=${totalPrice}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
         const data = await res.json();
         if (data.checkoutUrl) window.location.href = data.checkoutUrl;
         else if (data.url) window.location.href = data.url;

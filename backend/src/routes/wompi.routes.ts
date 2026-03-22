@@ -2,33 +2,13 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { WompiController } from '../controllers/wompi.controller';
 import { verifyToken } from '../utils/jwt';
 import { AuthService } from '../services/auth.service';
+import { optionalAuth } from '../middleware/auth';
 
 const router = Router();
 const wompiController = new WompiController();
 const authService = new AuthService();
 
-/**
- * Middleware de auth opcional — adjunta req.brand si hay token válido,
- * pero NO bloquea si no hay token o si es inválido.
- */
-async function optionalAuth(req: Request, _res: Response, next: NextFunction) {
-  try {
-    const authHeader = req.headers.authorization;
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      const payload = verifyToken(token);
-      if (payload?.brandId) {
-        const brand = await authService.getBrandById(payload.brandId);
-        if (brand) {
-          (req as any).brand = { id: brand.id, email: brand.email, plan: (brand as any).plan };
-        }
-      }
-    }
-  } catch {
-    // Token inválido o expirado — continuar sin brand
-  }
-  next();
-}
+// Se usa optionalAuth importado desde ../middleware/auth
 
 /**
  * POST /api/payments/wompi/webhook

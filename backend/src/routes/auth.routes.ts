@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { AuthController } from '../controllers/auth.controller';
-import { registerPostPayment } from '../controllers/auth-post-payment.controller';
+import { registerPostPayment, getPendingRegistration } from '../controllers/auth-post-payment.controller';
 import { authRateLimiter } from '../middleware/rateLimiter';
 import { asyncHandler } from '../middleware/errorHandler';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, optionalAuth } from '../middleware/auth';
 
 const router = Router();
 const authController = new AuthController();
@@ -12,11 +12,11 @@ const authController = new AuthController();
 router.post('/register', authRateLimiter, asyncHandler((req, res) => authController.register(req, res)));
 
 // POST /api/auth/register-post-payment — sin Turnstile, sin anti-abuso, sin rate limiter estricto
-router.post('/register-post-payment', asyncHandler(registerPostPayment));
+router.post('/register-post-payment', optionalAuth as any, asyncHandler(registerPostPayment));
 
 // GET /api/auth/pending-registration/:ref
-import { getPendingRegistration } from '../controllers/auth-post-payment.controller';
 router.get('/pending-registration/:ref', asyncHandler(getPendingRegistration));
+
 // POST /api/auth/login
 router.post('/login', authRateLimiter, asyncHandler((req, res) => authController.login(req, res)));
 

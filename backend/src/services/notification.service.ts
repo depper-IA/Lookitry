@@ -15,6 +15,7 @@ import {
   adminWelcomeEmail,
   landingDeletionWarningEmail,
   landingDeletedNoticeEmail,
+  landingActivatedEmail,
 } from '../templates/email-templates';
 
 /**
@@ -417,6 +418,32 @@ export class NotificationService {
       throw error;
     }
   }
+  /**
+   * Envía email de confirmación cuando se activa la mini-landing de una marca.
+   *
+   * @param brand - Información de la marca
+   */
+  async sendLandingActivatedEmail(brand: Brand): Promise<void> {
+    try {
+      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+      const landingUrl = `${frontendUrl}/sitio/${(brand as any).slug}`;
+      const html = landingActivatedEmail(
+        { name: brand.name, email: brand.email },
+        landingUrl,
+        brand.plan
+      );
+      await emailService.sendEmail({
+        to: brand.email,
+        subject: '🎉 ¡Tu mini-landing está activa! — Lookitry',
+        html,
+      });
+      console.log(`[Notification] Email de activación de landing enviado a ${brand.email}`);
+    } catch (error) {
+      console.error(`[Notification] Error enviando email de activación de landing a ${brand.email}:`, error);
+      // No relanzar — no debe bloquear el flujo de pago
+    }
+  }
+
   /**
    * Envía aviso previo de eliminación definitiva de mini-landing (a los 75 días de suspensión).
    *
