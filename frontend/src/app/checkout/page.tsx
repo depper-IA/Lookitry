@@ -284,6 +284,7 @@ function CheckoutContent() {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
   }
 
+
   const handlePagar = async () => {
     setLoading(true);
     setError('');
@@ -304,6 +305,53 @@ function CheckoutContent() {
     setEmailError('');
 
     try {
+      // ── FLUJO FREE CHECKOUT (cupón 100%) ─────────────────────────────────
+      // Si el total final es $0 (cupón cubre el 100%), no se pasa por Wompi/PayPal.
+      // Solo aplica para usuarios con sesión activa — un visitante sin cuenta no
+      // puede activar un plan porque no tiene brand_id.
+      if (totalPrice === 0) {
+        if (!hasSession) {
+          setError('Para usar un cupón del 100% debes iniciar sesión primero. Si ya pagaste, ve a /registro-pro para crear tu cuenta.');
+          setLoading(false);
+          return;
+        }
+
+        const planToSend = isLanding ? subPlan : selectedPlan;
+        const includesLanding = isLanding;
+
+        const res = await fetch(`${API_URL}/api/payments/wompi/free-checkout`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            plan: planToSend,
+            months: selectedMonths,
+            includes_landing: includesLanding,
+            coupon_id: appliedCoupon?.id || null,
+          }),
+        });
+
+        if (!res.ok) {
+          let msg = `Error ${res.status}`;
+          try { const d = await res.json(); msg = d.error || d.message || msg; } catch {}
+          throw new Error(msg);
+        }
+
+        // Marcar cupón como consumido
+        if (appliedCoupon?.id) {
+          fetch(`${API_URL}/api/coupons/redeem`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coupon_id: appliedCoupon.id }),
+          }).catch(() => {});
+        }
+
+        // Redirigir a pago exitoso
+        const planParam = isLanding ? subPlan : selectedPlan;
+        window.location.href = `/pago-exitoso?plan=${planParam}&months=${selectedMonths}&free=1`;
+        return;
+      }
+
       // --- FLUJO PAYPAL ---
       if (paymentMethod === 'paypal') {
         const emailParam = !hasSession && email.trim() ? `&email=${encodeURIComponent(email.trim())}` : '';
@@ -356,6 +404,7 @@ function CheckoutContent() {
       setLoading(false);
     }
   };
+
 
   const planNames: Record<PlanKey, string> = {
     BASIC: 'Plan Básico',
