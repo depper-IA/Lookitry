@@ -1,6 +1,7 @@
 import { emailService } from './email.service';
 import { SubscriptionService } from './subscription.service';
 import { notificationPreferencesService } from './notificationPreferences.service';
+import { supabaseAdmin } from '../config/supabase';
 import { Brand } from '../types';
 import {
   welcomeEmail,
@@ -43,23 +44,28 @@ export class NotificationService {
   }
 
   /**
-   * Obtiene el monto del plan de una marca
+   * Obtiene el monto del plan de una marca desde pricing_config
    * 
    * @param plan - Tipo de plan ('BASIC' o 'PRO')
    * @returns Monto del plan en COP
    */
-  private getPlanAmount(plan: string): number {
-    // Según requirements.md:
-    // Plan Básico: 150.000 COP/mes
-    // Plan Pro: 250.000-300.000 COP/mes (usamos 250.000)
-    switch (plan.toUpperCase()) {
-      case 'BASIC':
-        return 150000;
-      case 'PRO':
-        return 250000;
-      default:
-        return 150000;
+  private async getPlanAmount(plan: string): Promise<number> {
+    try {
+      const planId = plan.toLowerCase(); // 'basic' o 'pro'
+      const { data } = await supabaseAdmin
+        .from('pricing_config')
+        .select('data')
+        .eq('id', planId)
+        .single();
+
+      if (data?.data?.precio_mensual_cop) {
+        return data.data.precio_mensual_cop;
+      }
+    } catch (e) {
+      console.error('[NotificationService] Error consultando pricing_config:', e);
     }
+    // Fallback en caso de error o datos faltantes
+    return plan.toUpperCase() === 'PRO' ? 250000 : 150000;
   }
 
   /**
@@ -85,7 +91,7 @@ export class NotificationService {
         }
       }
 
-      const amount = this.formatCOP(this.getPlanAmount(brand.plan));
+      const amount = this.formatCOP(await this.getPlanAmount(brand.plan));
       // getDaysRemaining puede fallar si el plan es TRIAL sin sub activa; usar fallback 7
       let daysRemaining = 7;
       try {
@@ -156,7 +162,7 @@ export class NotificationService {
         }
       }
 
-      const amount = this.formatCOP(this.getPlanAmount(brand.plan));
+      const amount = this.formatCOP(await this.getPlanAmount(brand.plan));
       let html: string;
       let subject: string;
 
@@ -226,7 +232,7 @@ export class NotificationService {
         return;
       }
 
-      const amount = this.formatCOP(this.getPlanAmount(brand.plan));
+      const amount = this.formatCOP(await this.getPlanAmount(brand.plan));
 
       const html = suspensionEmail(
         { name: brand.name, email: brand.email },
@@ -266,7 +272,7 @@ export class NotificationService {
         return;
       }
 
-      const amount = this.formatCOP(this.getPlanAmount(brand.plan));
+      const amount = this.formatCOP(await this.getPlanAmount(brand.plan));
       const daysRemaining = await this.subscriptionService.getDaysRemaining(brand.id) || 30;
       
       // Obtener información de suscripción para la nueva fecha de vencimiento
@@ -327,7 +333,7 @@ export class NotificationService {
         return;
       }
 
-      const amount = this.formatCOP(this.getPlanAmount(brand.plan));
+      const amount = this.formatCOP(await this.getPlanAmount(brand.plan));
       const daysRemaining = await this.subscriptionService.getDaysRemaining(brand.id) || 0;
       let html: string;
       let subject: string;
