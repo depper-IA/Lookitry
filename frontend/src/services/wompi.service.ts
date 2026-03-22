@@ -15,9 +15,10 @@ class WompiService {
    * Se pasan plan, months y amount para que la referencia los incluya
    * y el webhook pueda extraerlos correctamente al activar la suscripción.
    */
-  async getWidgetConfig(plan: 'BASIC' | 'PRO', months: number = 1, amount?: number): Promise<WompiWidgetConfig> {
+  async getWidgetConfig(plan: 'BASIC' | 'PRO', months: number = 1, amount?: number, includesLanding: boolean = false): Promise<WompiWidgetConfig> {
     let url = `/payments/wompi/config?plan=${plan}&months=${months}`;
     if (amount) url += `&amount=${amount}`;
+    if (includesLanding) url += `&includes_landing=true`;
     const response = await api.get<WompiWidgetConfig>(url);
     return response.data;
   }
