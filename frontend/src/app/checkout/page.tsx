@@ -374,9 +374,29 @@ function CheckoutContent() {
             Look<span className="text-[#FF5C3A]">itry</span>
           </span>
         </Link>
-        <div className="flex items-center gap-1.5 text-[12px] text-[#888]">
-          <IconLock />
-          Pago seguro con Wompi
+        <div className="flex items-center gap-3">
+          {hasSession && sessionInfo ? (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-[#666] hidden sm:block truncate max-w-[140px]">{sessionInfo.email}</span>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  localStorage.removeItem('brandToken');
+                  localStorage.removeItem('brand');
+                  setHasSession(false);
+                  setSessionInfo(null);
+                }}
+                className="text-[11px] text-[#888] hover:text-[#ff6b6b] border border-[#2a2a2a] hover:border-[#5a1a1a] px-2.5 py-1 rounded-lg transition-colors"
+              >
+                Cerrar sesión
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-[12px] text-[#888]">
+              <IconLock />
+              Pago seguro con Wompi
+            </div>
+          )}
         </div>
       </nav>
 
