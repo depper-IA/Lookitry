@@ -7,6 +7,7 @@ import { supabaseAdmin } from '../config/supabase';
 import { wompiService } from '../services/wompi.service';
 import { paypalService } from '../services/paypal.service';
 import { notificationService } from '../services/notification.service';
+import { AuthRequest } from '../middleware/auth';
 
 const authService = new AuthService();
 const emailService = new EmailService();
@@ -35,7 +36,7 @@ function setCookieToken(res: Response, token: string): void {
  * Registro exclusivo para el flujo post-pago.
  * Soporta Wompi y PayPal.
  */
-export async function registerPostPayment(req: Request, res: Response) {
+export async function registerPostPayment(req: AuthRequest, res: Response) {
   try {
     const { contact_name, name, slug, password, ref, fingerprint, method, orderId } = req.body;
 
@@ -120,33 +121,78 @@ export async function registerPostPayment(req: Request, res: Response) {
       return res.status(402).json({ error: 'PAYMENT_REQUIRED', message: 'El pago no ha sido confirmado aún' });
     }
 
-    // 5. Crear la cuenta
-    // Usar override_email si el frontend lo envió (caso: email del pago ya registrado)
-    const { override_email } = req.body;
-    const emailToUse = (override_email && override_email.trim()) ? override_email.trim() : pending.email;
+    // 5. Crear la cuenta o Usar la existente si hay sesión
+    let result: any;
+    const existingBrandId = req.brand?.id;
 
-    const result = await authService.register({
-      contact_name,
-      name,
-      slug,
-      email: emailToUse,
-      password,
-      ip: 'post-payment',
-      fingerprint: fingerprint || undefined,
-    });
+    if (existingBrandId) {
+      // 5.1 Si el usuario ya está logueado, actualizamos su plan directamente
+      const months = pending.months || 1;
+      // Si el pending fue creado solo para landing (plan=NONE), conservar el plan actual del usuario
+      const pendingPlanIsNone = !pending.plan || pending.plan.toUpperCase() === 'NONE';
+      const plan = pendingPlanIsNone
+        ? ((req.brand as any).plan || 'BASIC').toUpperCase()
+        : pending.plan.toUpperCase();
+      const now = new Date();
+      const endDate = new Date(now);
+      endDate.setMonth(endDate.getMonth() + months);
 
-    // 5.1 Enviar email de bienvenida tras registro exitoso (Requirement 13.1)
-    // skipPreferenceCheck=true: las preferencias aún no existen para marcas recién creadas
-    notificationService.sendWelcomeEmail(result.brand as any, true).catch(err => {
-      console.error('[PostPayment] Error enviando email de bienvenida:', err);
-    });
+      await supabaseAdmin
+        .from('brands')
+        .update({
+          plan,
+          subscription_status: 'active',
+          subscription_start_date: now.toISOString(),
+          subscription_end_date: endDate.toISOString(),
+          has_landing_page: pending.includes_landing || (req.brand as any).has_landing_page || false,
+          last_payment_date: now.toISOString(),
+        })
+        .eq('id', existingBrandId);
 
+      const { data: updatedBrand } = await supabaseAdmin.from('brands').select('*').eq('id', existingBrandId).single();
+      
+      result = {
+        token: req.headers.authorization?.split(' ')[1] || (req as any).cookies?.token, // Mantener token actual
+        brand: {
+          id: updatedBrand.id,
+          email: updatedBrand.email,
+          name: updatedBrand.name,
+          slug: updatedBrand.slug,
+          plan: updatedBrand.plan,
+          has_landing_page: updatedBrand.has_landing_page
+        }
+      };
+      
+      console.log(`[PostPayment] Pago vinculado a sesión activa: ${updatedBrand.email}`);
+
+    } else {
+      // 5.2 Si no hay sesión, crear la cuenta (vía registerPostPayment del servicio que es más robusto)
+      const { override_email } = req.body;
+      const emailToUse = (override_email && override_email.trim()) ? override_email.trim() : pending.email;
+
+      result = await authService.registerPostPayment({
+        contact_name: contact_name || name,
+        name,
+        slug,
+        email: emailToUse,
+        password,
+        ref,
+        fingerprint: fingerprint || undefined,
+      });
+
+      // Email de bienvenida solo para nuevos
+      notificationService.sendWelcomeEmail(result.brand as any, true).catch(err => {
+        console.error('[PostPayment] Error enviando email de bienvenida:', err);
+      });
+    }
+
+    const targetBrandId = result.brand.id;
     // 6. Activar suscripción
     try {
       await subscriptionService.renewSubscription(
-        result.brand.id,
+        targetBrandId,
         {
-          brand_id: result.brand.id,
+          brand_id: targetBrandId,
           amount: paymentAmount, // Pasamos el monto real que el usuario pagó
           currency: finalMethod === 'paypal' ? 'USD' : 'COP',
           payment_method: finalMethod,
@@ -168,6 +214,11 @@ export async function registerPostPayment(req: Request, res: Response) {
         // Sincronizar el objeto brand retornado para el frontend
         (result.brand as any).has_landing_page = true;
         (result.brand as any).landing_suspended_at = null;
+
+        // Notificar al cliente que su landing está activa
+        notificationService.sendLandingActivatedEmail(result.brand as any).catch(err => {
+          console.error('[PostPayment] Error enviando email de activación de landing:', err);
+        });
       }
 
     } catch (subError) {

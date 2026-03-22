@@ -436,6 +436,53 @@ export const passwordResetTemplate = (brand: BrandInfo, resetUrl: string): strin
 };
 
 /**
+ * Email de confirmación de activación de mini-landing
+ */
+export const landingActivatedEmail = (
+  brand: BrandInfo,
+  landingUrl: string,
+  plan: string
+): string => {
+  const content = `
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">¡Tu mini-landing está activa!</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Tu pago fue procesado correctamente y tu mini-landing ya está publicada y lista para recibir clientes.
+    </p>
+
+    <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #10b981;">
+      <h3 style="color: #065f46; margin-top: 0; font-size: 15px;">Detalles de tu activación:</h3>
+      <p style="color: #065f46; margin: 6px 0;"><strong>Plan activo:</strong> ${plan}</p>
+      <p style="color: #065f46; margin: 6px 0;"><strong>Tu página:</strong>
+        <a href="${landingUrl}" style="color: ${ACCENT_COLOR}; text-decoration: none;">${landingUrl}</a>
+      </p>
+    </div>
+
+    <div style="background-color: #fff8f6; padding: 16px 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${ACCENT_COLOR};">
+      <p style="color: #555; margin: 0; font-size: 14px; line-height: 1.6;">
+        <strong>¿Qué puedes hacer ahora?</strong><br/>
+        Personaliza los colores, logo y plantilla de tu página desde el dashboard.
+        Comparte el enlace en tus redes sociales y empieza a recibir visitas.
+      </p>
+    </div>
+
+    <div style="text-align: center; margin: 32px 0 8px 0;">
+      <a href="${landingUrl}"
+         style="background-color: ${ACCENT_COLOR}; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px; margin-right: 12px;">
+        Ver mi página
+      </a>
+      <a href="${APP_URL}/dashboard/mi-pagina"
+         style="background-color: #0a0a0a; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px;">
+        Personalizar
+      </a>
+    </div>
+  `;
+  return baseTemplate(content);
+};
+
+/**
  * Email de notificación de eliminación definitiva de mini-landing
  */
 export const landingDeletedNoticeEmail = (brand: BrandInfo): string => {

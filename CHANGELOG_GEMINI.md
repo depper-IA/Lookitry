@@ -1,5 +1,20 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 22 de Marzo, 2026 — Fix Crítico: Auto-vinculación de Landing + Email de Activación
+
+**Problema 1 — Plan sobreescrito con `NONE` al vincular landing a cuenta existente:**
+- Al entrar a `/registro-pro?ref=TRYON-visitor_...` con sesión activa (plan BASIC/PRO), el backend tomaba `pending.plan = 'NONE'` y lo guardaba directamente en la cuenta, rompiendo el plan del usuario.
+- **Fix en `backend/src/controllers/auth-post-payment.controller.ts`:** Si `pending.plan` es `NONE` o está vacío, se conserva el plan actual del usuario (`req.brand.plan`) en lugar de sobreescribirlo.
+
+**Problema 2 — Bucle de auto-vinculación para usuarios con plan activo:**
+- El `useEffect` de auto-link en `/registro-pro` se disparaba para cualquier usuario autenticado con un `ref` pagado, sin importar si el pending era de otra persona o de un flujo de visitante con plan distinto.
+- **Fix en `frontend/src/app/registro-pro/page.tsx`:** El auto-link ahora solo se ejecuta si el pending es tipo landing-only (`plan = NONE`) o si el usuario no tiene plan activo. Si tiene plan activo y el pending quiere cambiar el plan, se muestra el formulario normal.
+
+**Nuevo email — Activación de Mini-landing:**
+- **`backend/src/templates/email-templates.ts`:** Nuevo template `landingActivatedEmail` con diseño premium, enlace directo a la mini-landing publicada y botones "Ver mi página" / "Personalizar".
+- **`backend/src/services/notification.service.ts`:** Nuevo método `sendLandingActivatedEmail(brand)` que se dispara automáticamente cuando `has_landing_page` se activa en el flujo post-pago. No bloquea el flujo (catch silencioso).
+- El email se envía tanto para cuentas nuevas como para usuarios existentes que compran la landing por separado.
+
 Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes realizadas por la IA para mantener la continuidad del desarrollo.
 
 ## 22 de Marzo, 2026 — Política de Cookies (GDPR/CCPA) y Precios Dinámicos
@@ -68,6 +83,17 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 **Root cause:** El controlador `auth-post-payment.controller.ts` sí guardaba `has_landing_page = true` en Supabase, pero **no lo incluía en el objeto `brand` retornado**. Al guardar la sesión en `localStorage`, el frontend inicializaba con `has_landing_page = false`.
 
 **Corrección:** El controlador ahora mutáta `(result.brand as any).has_landing_page = true` y `landing_suspended_at = null` antes de enviar la respuesta, sincronizando la sesión del frontend inmediatamente.
+
+---
+
+## [2026-03-22] - Corrección de Flujo de Checkout y Autenticación
+
+### Fixed
+- **Frontend**: Se añadió el header `Authorization` en el checkout de la mini-landing para que el backend detecte correctamente al usuario logueado.
+- **Frontend**: En `/registro-pro`, se implementó la auto-vinculación de pagos para usuarios con sesión activa, evitando formularios innecesarios.
+- **Backend**: Se cambió la prioridad del `authMiddleware` para dar precedencia al header `Authorization` sobre las cookies, eliminando el bucle de "login requerido" tras registros exitosos.
+- **Backend**: Se unificó el middleware `optionalAuth` en todas las rutas de pago y se actualizó el controlador de registro post-pago para soportar vinculación a cuentas existentes sin errores de duplicidad.
+- **Backend**: Corregida la inconsistencia en `wompi.routes.ts` donde un middleware local ignoraba las cookies de sesión.
 
 ---
 

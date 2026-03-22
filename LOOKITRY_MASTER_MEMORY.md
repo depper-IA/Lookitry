@@ -900,6 +900,15 @@ Después de `renewSubscription()`, se consulta la marca actualizada y se llama a
 ### Logo en templates de email
 El `baseTemplate` muestra el logo de Lookitry (`https://pruebalo.wilkiedevs.com/logo.svg`) en el header de todos los emails.
 
+### Fix: Auto-vinculación de landing no sobreescribe plan (22/03/2026)
+- **Problema:** Al entrar a `/registro-pro?ref=TRYON-visitor_...` con sesión activa (plan BASIC/PRO), el backend tomaba `pending.plan = 'NONE'` y lo guardaba en la cuenta, rompiendo el plan del usuario.
+- **Fix en `auth-post-payment.controller.ts`:** Si `pending.plan` es `NONE` o vacío, se conserva el plan actual del usuario (`req.brand.plan`).
+- **Fix en `frontend/src/app/registro-pro/page.tsx`:** El auto-link solo se ejecuta si el pending es tipo landing-only (`plan = NONE`) o si el usuario no tiene plan activo. Si tiene plan activo y el pending quiere cambiar el plan, se muestra el formulario normal.
+
+### Nuevo email: Activación de Mini-landing (22/03/2026)
+- `landingActivatedEmail` en `email-templates.ts` — template con enlace a la landing y botones "Ver mi página" / "Personalizar".
+- `sendLandingActivatedEmail(brand)` en `notification.service.ts` — se dispara automáticamente cuando `has_landing_page` se activa en el flujo post-pago. No bloquea el flujo (catch silencioso). Aplica tanto a cuentas nuevas como a usuarios existentes que compran la landing por separado.
+
 
 ## BRAND ##
 ---
