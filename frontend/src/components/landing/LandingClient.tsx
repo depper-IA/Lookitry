@@ -134,8 +134,9 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
   ];
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#f5f2ee]">
+    <main className="min-h-screen bg-[#f5f2ee]">
       <LandingNav />
+      <div className="overflow-x-hidden">
       {/* HERO */}
       <section className="bg-[#0a0a0a] px-6 md:px-8 pt-16 md:pt-20 pb-16 md:pb-20 text-center relative overflow-hidden">
           <p className="sr-only">
@@ -414,8 +415,9 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
 
         <FaqSection pricing={pricing} />
         <LandingFooter />
+      </div>
 
-        {/* Botón flotante Volver Arriba */}
+      {/* Botón flotante Volver Arriba */}
         <button
           onClick={scrollToTop}
           className={`fixed bottom-8 left-8 p-3.5 rounded-full bg-white border border-[#e0dcd7] text-[#0a0a0a] shadow-xl transition-all duration-300 z-50 hover:scale-110 active:scale-95 group hidden md:block ${
