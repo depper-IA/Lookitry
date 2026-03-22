@@ -64,6 +64,7 @@ export async function registerPostPayment(req: Request, res: Response) {
     let paymentConfirmed = pending.status === 'paid';
     let finalMethod = method || 'wompi';
     let transactionDetails = pending.payment_id ? `ID guardado: ${pending.payment_id}` : '';
+    let paymentAmount = 0; // Guardará el monto total de la pasarela
 
     if (!paymentConfirmed) {
       if (finalMethod === 'paypal') {
@@ -72,12 +73,15 @@ export async function registerPostPayment(req: Request, res: Response) {
         }
         try {
           const order = await paypalService.getOrder(orderId);
-          // Si la orden está aprobada pero no capturada, capturarla
           if (order.status === 'APPROVED') {
             const capture = await paypalService.captureOrder(orderId);
             paymentConfirmed = capture.status === 'COMPLETED';
           } else {
             paymentConfirmed = order.status === 'COMPLETED';
+          }
+          // Extraemos monto de PayPal
+          if (order.purchase_units && order.purchase_units[0] && order.purchase_units[0].amount) {
+            paymentAmount = parseFloat(order.purchase_units[0].amount.value);
           }
           transactionDetails = `PayPal Order: ${orderId}`;
         } catch (err: any) {
@@ -89,11 +93,27 @@ export async function registerPostPayment(req: Request, res: Response) {
         try {
           const transaction = await wompiService.getTransactionByReference(ref);
           paymentConfirmed = transaction?.status === 'APPROVED';
+          if (transaction && 'amount_in_cents' in transaction) {
+            paymentAmount = ((transaction as any).amount_in_cents || 0) / 100;
+          }
           transactionDetails = `Wompi Ref: ${ref}`;
         } catch {
           return res.status(502).json({ error: 'GATEWAY_ERROR', message: 'Error al verificar con Wompi' });
         }
       }
+    } else {
+       // El estado era "paid" (puede ser un cupón de freeCheckout 100% o validado por webhook en diferido)
+       // Tratamos de extraer el monto real si existía un payment_id de Wompi válido
+       if (pending.payment_id && pending.payment_id !== 'coupon_100_free_checkout' && finalMethod === 'wompi') {
+         try {
+           const transaction = await wompiService.getTransactionById(pending.payment_id);
+           if (transaction && 'amount_in_cents' in transaction) {
+             paymentAmount = ((transaction as any).amount_in_cents || 0) / 100;
+           }
+         } catch(err) {
+           console.error('[PostPayment] Podría no encontrar Wompi ID:', err);
+         }
+       }
     }
 
     if (!paymentConfirmed) {
@@ -127,7 +147,7 @@ export async function registerPostPayment(req: Request, res: Response) {
         result.brand.id,
         {
           brand_id: result.brand.id,
-          amount: 0,
+          amount: paymentAmount, // Pasamos el monto real que el usuario pagó
           currency: finalMethod === 'paypal' ? 'USD' : 'COP',
           payment_method: finalMethod,
           status: 'completed',
