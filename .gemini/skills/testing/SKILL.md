@@ -3,7 +3,7 @@ name: testing
 description: Skill para escribir, organizar y ejecutar tests en el proyecto Lookitry (backend Jest + TypeScript). Cubre tests unitarios, de integración y property-based. Incluye convenciones, patrones de mock, scripts helper y ejemplos listos para copiar.
 ---
 
-# Skill: Testing — Lookitry / virtual-tryon
+# Skill: Testing — Lookitry
 
 ## Cuándo usar este skill
 
@@ -168,11 +168,13 @@ beforeEach(() => {
 | Módulo | Prioridad | Tipo sugerido |
 |--------|-----------|---------------|
 | `wompi.service.ts` | 🔴 Alta | Unit + Integration |
+| `paypal.service.ts` | 🔴 Alta | Unit + Integration |
 | `subscription.service.ts` | 🔴 Alta | Unit |
 | `auth.service.ts` | 🔴 Alta | Unit |
 | `usage.service.ts` | 🟡 Media | Unit + Property |
 | `products.service.ts` | 🟡 Media | Unit + Property |
 | `wompi.controller.ts` | 🔴 Alta | Integration |
+| `paypal.controller.ts` | 🔴 Alta | Integration |
 | `brands.controller.ts` | 🟡 Media | Integration |
 | `pruebalo.controller.ts` | 🟡 Media | Integration |
 | `email.service.ts` | 🟢 Baja | Unit (mock nodemailer) |

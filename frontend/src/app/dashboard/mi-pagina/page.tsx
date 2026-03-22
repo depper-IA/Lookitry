@@ -132,7 +132,7 @@ export default function MiPaginaPage() {
         _landing_primary: primaryColor,
       };
 
-      const payload = {
+      const payload: any = {
         name: brand?.name,
         slogan: slogan.trim(),
         brand_description: description.trim(),
@@ -152,14 +152,15 @@ export default function MiPaginaPage() {
         landing_template: landingTemplate,
         landing_font: landingFont,
         widget_bg_color: widgetBgColor,
-        // primary_color removed from landing payload
-        // secondary_color removed from landing payload
         rating: rating ? parseFloat(rating) : null,
         total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
         header_color: headerColor || null,
         schedule: Object.fromEntries(Object.entries(schedule).filter(([, v]) => (v as string).trim())),
-        custom_domain: customDomain || null,
       };
+
+      if (brand?.plan === 'PRO') {
+        payload.custom_domain = customDomain || null;
+      }
 
       await api.patch('/brands/me', payload);
       setSuccess(true);
@@ -227,14 +228,6 @@ export default function MiPaginaPage() {
                 </a>
               </p>
             </div>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center justify-center gap-2 px-8 py-3 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl shadow-[#FF5C3A]/20"
-            >
-              {saving ? <Spinner size="sm" /> : <Save className="w-4 h-4" />}
-              {saving ? 'Guardando...' : 'Guardar cambios'}
-            </button>
           </header>
 
           {/* Banner de estado (Trial) */}
@@ -396,6 +389,17 @@ export default function MiPaginaPage() {
               <AlertCircle className="w-5 h-5" /> {error}
             </div>
           )}
+
+          <div className="pt-6 border-t border-[var(--border-color)]">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 shadow-xl shadow-[#FF5C3A]/20"
+            >
+              {saving ? <Spinner size="sm" /> : <Save className="w-5 h-5" />}
+              {saving ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
+          </div>
         </div>
 
         {/* PREVIEW STICKY (Columna Derecha) */}

@@ -284,6 +284,7 @@ function CheckoutContent() {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
   }
 
+
   const handlePagar = async () => {
     setLoading(true);
     setError('');
@@ -304,6 +305,57 @@ function CheckoutContent() {
     setEmailError('');
 
     try {
+      // ── FLUJO FREE CHECKOUT (cupón 100%) ─────────────────────────────────
+      // Si el total final es $0 (cupón cubre el 100%), no se pasa por Wompi/PayPal.
+      // Solo aplica para usuarios con sesión activa — un visitante sin cuenta no
+      // puede activar un plan porque no tiene brand_id.
+      if (totalPrice === 0) {
+        const planToSend = isLanding ? subPlan : selectedPlan;
+        const includesLanding = isLanding;
+
+        const res = await fetch(`${API_URL}/api/payments/wompi/free-checkout`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            plan: planToSend,
+            months: selectedMonths,
+            includes_landing: includesLanding,
+            coupon_id: appliedCoupon?.id || null,
+            email: email.trim() || undefined, // Agregado para visitantes
+          }),
+        });
+
+        if (!res.ok) {
+          let msg = `Error ${res.status}`;
+          try { const d = await res.json(); msg = d.error || d.message || msg; } catch {}
+          throw new Error(msg);
+        }
+
+        const responseData = await res.json();
+
+        // Marcar cupón como consumido
+        if (appliedCoupon?.id) {
+          fetch(`${API_URL}/api/coupons/redeem`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ coupon_id: appliedCoupon.id }),
+          }).catch(() => {});
+        }
+
+        // Si es un visitante, el backend lo guardó en pending_registrations con status='paid'
+        // y nos devuelve reference, para que termine el registro en /registro-pro
+        if (responseData.isVisitor && responseData.reference) {
+          window.location.href = `/registro-pro?ref=${responseData.reference}&free=1`;
+          return;
+        }
+
+        // Si es usuario con sesión activa, el pago gratuito se aplicó de una vez.
+        const planParam = isLanding ? subPlan : selectedPlan;
+        window.location.href = `/pago-exitoso?plan=${planParam}&months=${selectedMonths}&free=1`;
+        return;
+      }
+
       // --- FLUJO PAYPAL ---
       if (paymentMethod === 'paypal') {
         const emailParam = !hasSession && email.trim() ? `&email=${encodeURIComponent(email.trim())}` : '';
@@ -356,6 +408,7 @@ function CheckoutContent() {
       setLoading(false);
     }
   };
+
 
   const planNames: Record<PlanKey, string> = {
     BASIC: 'Plan Básico',
@@ -774,17 +827,31 @@ function CheckoutContent() {
 
               {/* Sesión activa o campo de email */}
               {hasSession && sessionInfo ? (
-                <div className="mb-4 flex items-center gap-3 bg-[#0f1a0f] border border-emerald-900/40 rounded-lg px-3 py-2.5">
-                  <div className="w-7 h-7 rounded-full bg-[#FF5C3A] flex items-center justify-center flex-shrink-0">
-                    <span className="text-[11px] font-bold text-white">
-                      {sessionInfo.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase() || '?'}
-                    </span>
+                <div className="mb-4 bg-[#0f1a0f] border border-emerald-900/40 rounded-lg px-3 py-2.5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full bg-[#FF5C3A] flex items-center justify-center flex-shrink-0">
+                      <span className="text-[11px] font-bold text-white">
+                        {sessionInfo.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase() || '?'}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-semibold text-white truncate">{sessionInfo.name}</p>
+                      <p className="text-[11px] text-[#666] truncate">{sessionInfo.email}</p>
+                    </div>
+                    <span className="text-[10px] text-emerald-500 font-medium flex-shrink-0">Sesión activa</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-white truncate">{sessionInfo.name}</p>
-                    <p className="text-[11px] text-[#666] truncate">{sessionInfo.email}</p>
-                  </div>
-                  <span className="text-[10px] text-emerald-500 font-medium flex-shrink-0">Sesión activa</span>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('token');
+                      localStorage.removeItem('brandToken');
+                      localStorage.removeItem('brand');
+                      setHasSession(false);
+                      setSessionInfo(null);
+                    }}
+                    className="mt-2 w-full text-[11px] text-[#666] hover:text-[#ff6b6b] border border-[#1a2a1a] hover:border-[#5a1a1a] py-1.5 rounded-lg transition-colors text-center"
+                  >
+                    Cerrar sesión
+                  </button>
                 </div>
               ) : !hasSession ? (
                 <div className="mb-4">

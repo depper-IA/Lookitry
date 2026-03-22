@@ -49,6 +49,12 @@ router.get('/upgrade-preview', optionalAuth, (req, res) => wompiController.getUp
 router.post('/apply-free-upgrade', optionalAuth, (req, res) => wompiController.applyFreeUpgrade(req, res));
 
 /**
+ * POST /api/payments/wompi/free-checkout
+ * Activa servicios directamente cuando el total es $0 (cupón del 100%). Requiere auth de marca.
+ */
+router.post('/free-checkout', optionalAuth, (req, res) => wompiController.freeCheckout(req, res));
+
+/**
  * GET /api/payments/wompi/config
  * Auth opcional: adjunta brand si hay token válido, pero no bloquea visitantes.
  */

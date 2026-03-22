@@ -7,6 +7,7 @@ import { Button } from '../ui/Button';
 import { Card, CardHeader, CardBody } from '../ui/Card';
 import { UpgradeModal } from './UpgradeModal';
 import { uploadService } from '@/services/upload.service';
+import { EmbedSection } from './EmbedSection';
 
 interface SettingsFormProps {
   brand: Brand;
@@ -298,7 +299,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'pro'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'pro' | 'embed'>('general');
 
   useEffect(() => {
     setFormData({
@@ -370,7 +371,15 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     e.preventDefault();
     if (!validate()) return;
     setIsSubmitting(true);
-    try { await onSubmit(formData); } finally { setIsSubmitting(false); }
+    try { 
+      const payload = { ...formData };
+      if (!isPro) {
+        delete payload.slug;
+        delete payload.buttonText;
+        delete payload.welcomeMessage;
+      }
+      await onSubmit(payload); 
+    } finally { setIsSubmitting(false); }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -393,6 +402,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     { id: 'general', label: 'General' },
     { id: 'appearance', label: 'Apariencia' },
     { id: 'pro', label: isPro ? 'Pro' : 'Pro' },
+    { id: 'embed', label: 'Código Embed' },
   ] as const;
 
   return (
@@ -426,13 +436,14 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
         </nav>
       </div>
 
-      {/* Formulario — 5 cols */}
-      <div className="lg:col-span-5">
-        <section className="p-6 md:p-8 rounded-[2.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
+      {/* Contenido — dinámico según tab */}
+      {activeTab !== 'embed' ? (
+        <>
+          <div className="lg:col-span-5">
+            <section className="p-6 md:p-8 rounded-[2.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
+                <form onSubmit={handleSubmit} className="space-y-5">
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-
-              {/* TAB: General */}
+                  {/* TAB: General */}
               {activeTab === 'general' && (
                 <div className="space-y-8">
                   <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
@@ -706,6 +717,12 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
           <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-2">Los cambios se reflejan en tiempo real en el widget embebido</p>
         </div>
       </div>
+        </>
+      ) : (
+        <div className="lg:col-span-9">
+          <EmbedSection />
+        </div>
+      )}
     </div>
   );
 }

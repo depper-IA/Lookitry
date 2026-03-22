@@ -9,6 +9,7 @@ interface WompiButtonProps {
   plan: PlanType;
   months?: number;
   amount?: number;
+  includesLanding?: boolean;
   onSuccess: (result: WompiWidgetResult) => void;
   onError?: (error: string) => void;
   disabled?: boolean;
@@ -38,6 +39,7 @@ export default function WompiButton({
   plan,
   months = 1,
   amount,
+  includesLanding = false,
   onSuccess,
   onError,
   disabled = false,
@@ -59,7 +61,7 @@ export default function WompiButton({
     setLoading(true);
 
     try {
-      const config = await wompiService.getWidgetConfig(plan, months, amount);
+      const config = await wompiService.getWidgetConfig(plan, months, amount, includesLanding);
 
       if (!window.WidgetCheckout) {
         throw new Error('El widget de Wompi no está disponible');

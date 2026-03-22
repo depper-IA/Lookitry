@@ -66,18 +66,12 @@ export class PruebaloController {
     // Obtener configuración global de pagos y modal
     const paymentSettings = await paymentSettingsService.getSettings();
     const footerBrandUrl = paymentSettings.footer_brand_url || 'https://pruebalo.wilkiedevs.com';
-    const globalTimerSeconds = (paymentSettings as any).landing_preview_timer_seconds || 60;
+    // El timer global es de 3 minutos (180 segundos)
+    const globalTimerSeconds = (paymentSettings as any).landing_preview_timer_seconds || 180;
 
-    // Calcular si la previsualización ha expirado (Inhackeable)
+    // La lógica de previsualización se maneja en el frontend usando localStorage
+    // Calcularlo por created_at bloqueaba al usuario si no la veía el mismo día de registro.
     let isPreviewExpired = false;
-    if (!(brand as any).has_landing_page) {
-      const createdAt = new Date(brand.created_at).getTime();
-      const now = Date.now();
-      const expiryTime = createdAt + (globalTimerSeconds * 1000);
-      if (now > expiryTime) {
-        isPreviewExpired = true;
-      }
-    }
 
     // Obtener productos activos de la marca (Solo si no ha expirado o si ya pagó)
     const products = isPreviewExpired ? [] : await productsService.getProductsByBrand(brand.id);

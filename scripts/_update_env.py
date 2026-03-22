@@ -15,19 +15,19 @@ ssh.connect(HOST, username=USER, password=PASS, timeout=30)
 print("Conectado al VPS")
 
 # Leer el .env local
-with open("backend/.env", "r") as f:
+with open("backend/.env.production", "r") as f:
     env_content = f.read()
 
 # Escribirlo en el VPS via SFTP
 sftp = ssh.open_sftp()
-with sftp.open("/root/virtual-tryon/backend/.env", "w") as remote_file:
+with sftp.open("/root/virtual-tryon/backend/.env.production", "w") as remote_file:
     remote_file.write(env_content)
 sftp.close()
 print(".env copiado al VPS")
 
-# Reiniciar solo el backend
+# Reiniciar solo el backend (up -d aplica los cambios del .env)
 _, stdout, stderr = ssh.exec_command(
-    "docker compose -f /root/virtual-tryon/docker-compose.backend.yml restart",
+    "docker compose -f /root/virtual-tryon/docker-compose.backend.yml up -d",
     timeout=60
 )
 out = stdout.read().decode(errors="replace")

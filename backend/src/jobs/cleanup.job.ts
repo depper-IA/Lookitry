@@ -189,6 +189,17 @@ async function eliminarProductosMinIO(brandId: string): Promise<void> {
  * Se ejecuta todos los días a las 3:00 AM.
  */
 export function startCleanupJob() {
+  // Procesar vencimientos de suscripciones (pasar a expiring_soon, expired o suspended) — 2:00 AM
+  cron.schedule('0 2 * * *', async () => {
+    console.log('[Subscription Job] Verificando vencimientos de estado...');
+    try {
+      const result = await subscriptionService.updateSubscriptionStatuses();
+      console.log(`[Subscription Job] Actualizaciones: ${result.expiringSoon} expiring_soon, ${result.expired} expired, ${result.suspended} suspended`);
+    } catch (error) {
+      console.error('[Subscription Job] Error verificando vencimientos:', error);
+    }
+  });
+
   // Limpieza de imágenes — todos los días a las 3:00 AM
   cron.schedule('0 3 * * *', async () => {
     console.log('[Cleanup Job] Iniciando limpieza automática programada...');
@@ -247,5 +258,5 @@ export function startCleanupJob() {
     }
   });
 
-  console.log('[Jobs] Cron jobs programados: limpieza 3:00 AM, purga 3:30 AM, suspensión landing 3:45 AM, eliminación landing 4:15 AM, notificaciones 4:00 AM');
+  console.log('[Jobs] Cron jobs programados: vencimientos 2:00 AM, limpieza 3:00 AM, purga 3:30 AM, suspensión landing 3:45 AM, eliminación landing 4:15 AM, notificaciones 4:00 AM');
 }

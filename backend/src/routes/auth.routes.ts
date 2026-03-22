@@ -14,6 +14,9 @@ router.post('/register', authRateLimiter, asyncHandler((req, res) => authControl
 // POST /api/auth/register-post-payment — sin Turnstile, sin anti-abuso, sin rate limiter estricto
 router.post('/register-post-payment', asyncHandler(registerPostPayment));
 
+// GET /api/auth/pending-registration/:ref
+import { getPendingRegistration } from '../controllers/auth-post-payment.controller';
+router.get('/pending-registration/:ref', asyncHandler(getPendingRegistration));
 // POST /api/auth/login
 router.post('/login', authRateLimiter, asyncHandler((req, res) => authController.login(req, res)));
 
