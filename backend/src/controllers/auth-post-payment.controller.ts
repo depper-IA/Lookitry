@@ -99,11 +99,15 @@ export async function registerPostPayment(req: Request, res: Response) {
     }
 
     // 5. Crear la cuenta
+    // Usar override_email si el frontend lo envió (caso: email del pago ya registrado)
+    const { override_email } = req.body;
+    const emailToUse = (override_email && override_email.trim()) ? override_email.trim() : pending.email;
+
     const result = await authService.register({
       contact_name,
       name,
       slug,
-      email: pending.email,
+      email: emailToUse,
       password,
       ip: 'post-payment',
       fingerprint: fingerprint || undefined,
