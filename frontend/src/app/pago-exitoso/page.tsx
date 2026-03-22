@@ -19,30 +19,52 @@ function PagoExitosoContent() {
   const months = Number(searchParams.get('months') || 1);
   const ref = searchParams.get('ref');
   const method = searchParams.get('method');
+  const wompiId = searchParams.get('id'); // Wompi Transaction ID
   const paypalToken = searchParams.get('token'); // PayPal devuelve el orderId en el param 'token'
   
   const [dashboardHref, setDashboardHref] = useState<string>('/login');
-  const [loading, setLoading] = useState<boolean>(method === 'paypal');
+  const [loading, setLoading] = useState<boolean>(method === 'paypal' || (!ref && !!wompiId));
   const [error, setError] = useState<string | null>(null);
+  const [resolvedRef, setResolvedRef] = useState<string | null>(ref);
 
   useEffect(() => {
     async function validatePayment() {
+      let currentRef = ref;
+
+      if (!currentRef && wompiId) {
+        try {
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+          const res = await fetch(`${API_URL}/api/payments/wompi/transaction/${wompiId}`);
+          const data = await res.json();
+          if (data && data.reference) {
+            currentRef = data.reference;
+            setResolvedRef(data.reference);
+          } else {
+            throw new Error('No se pudo verificar la transacción');
+          }
+        } catch (err: any) {
+          setError('No se pudo recuperar la referencia de tu pago de Wompi. Contacta a soporte.');
+          setLoading(false);
+          return;
+        }
+      }
+
       if (method === 'paypal' && paypalToken) {
         try {
           const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
           const res = await fetch(`${API_URL}/api/payments/paypal/capture`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orderId: paypalToken, reference: ref }),
+            body: JSON.stringify({ orderId: paypalToken, reference: currentRef }),
           });
           const data = await res.json();
           if (!res.ok) throw new Error(data.message || 'Error al capturar el pago');
           
           const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-          const isVisitor = ref?.includes('visitor_') || !token;
+          const isVisitor = currentRef?.includes('visitor_') || !token;
 
-          if (isVisitor && ref) {
-            setDashboardHref(`/registro-pro?ref=${encodeURIComponent(ref)}&months=${months}&method=paypal&orderId=${paypalToken}`);
+          if (isVisitor && currentRef) {
+            setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${months}&method=paypal&orderId=${paypalToken}`);
           } else if (token) {
             setDashboardHref('/dashboard');
           } else {
@@ -55,20 +77,21 @@ function PagoExitosoContent() {
         }
       } else {
         const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-        const isVisitor = ref?.includes('visitor_') || !token;
+        const isVisitor = currentRef?.includes('visitor_') || !token;
 
-        if (isVisitor && ref) {
-          setDashboardHref(`/registro-pro?ref=${encodeURIComponent(ref)}&months=${months}`);
+        if (isVisitor && currentRef) {
+          setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${months}`);
         } else if (token) {
           setDashboardHref('/dashboard');
         } else {
           setDashboardHref('/login');
         }
+        setLoading(false);
       }
     }
 
     validatePayment();
-  }, [ref, months, method, paypalToken]);
+  }, [ref, months, method, paypalToken, wompiId]);
 
   const dashboardLabel = dashboardHref.startsWith('/registro-pro')
     ? 'Crear mi cuenta'

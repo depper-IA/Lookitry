@@ -104,6 +104,21 @@ const SEVERITY_DOT: Record<string, string> = {
   success: 'bg-emerald-500',
 };
 
+// Prioridad: 1 = cliente (pagos, upgrades), 2 = alertas críticas, 3 = advertencias, 4 = sistema
+function getNotifPriority(type: NotificationType): number {
+  if (['payment_received', 'multi_month_purchase', 'upgrade_request', 'plan_change_request', 'trial_converted', 'new_brand'].includes(type)) return 1;
+  if (['credits_exhausted', 'suspended', 'trial_expired', 'subscription_expiring'].includes(type)) return 2;
+  if (['trial_expiring', 'high_usage'].includes(type)) return 3;
+  return 4;
+}
+
+const PRIORITY_LABEL: Record<number, { label: string; color: string }> = {
+  1: { label: 'Cliente', color: '#FF5C3A' },
+  2: { label: 'Crítico', color: '#ef4444' },
+  3: { label: 'Alerta',  color: '#f59e0b' },
+  4: { label: 'Sistema', color: '#6b7280' },
+};
+
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
@@ -168,7 +183,7 @@ function ApplyPlanChangeButton({ brandId, toPlan, onDone }: { brandId: string; t
 
 export function AdminNotifications() {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [readIds, setReadIds] = useState<Set<string>>(() => getReadIds());
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<AdminNotification | null>(null);
@@ -188,7 +203,7 @@ export function AdminNotifications() {
       if (notifRes.ok) {
         const data = await notifRes.json();
         setNotifications(data.notifications || []);
-        setReadIds(getReadIds());
+        // No sobreescribir readIds — ya está inicializado desde localStorage
       }
       if (fbRes.ok) {
         const fbData = await fbRes.json();
@@ -287,31 +302,48 @@ export function AdminNotifications() {
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin notificaciones</p>
                 </div>
               ) : (
-                notifications.map(n => {
-                  const isRead = readIds.has(n.id);
-                  return (
-                    <div
-                      key={n.id}
-                      onClick={() => { markOneRead(n.id); setSelected(n); setOpen(false); }}
-                      className="flex gap-3 px-4 py-3 cursor-pointer transition-colors"
-                      style={{ background: !isRead ? 'rgba(255,92,58,0.04)' : undefined }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = !isRead ? 'rgba(255,92,58,0.04)' : 'transparent')}
-                    >
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5 ${SEVERITY_STYLES[n.severity]}`}>
-                        <NotificationIcon type={n.type} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium leading-tight" style={{ color: isRead ? 'var(--text-muted)' : 'var(--text-primary)' }}>{n.title}</p>
-                          <span className="text-xs whitespace-nowrap flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{timeAgo(n.createdAt)}</span>
+                (() => {
+                  // Agrupar por prioridad para mostrar separadores
+                  let lastPriority = -1;
+                  return notifications.map(n => {
+                    const isRead = readIds.has(n.id);
+                    const priority = getNotifPriority(n.type);
+                    const priorityInfo = PRIORITY_LABEL[priority];
+                    const showSeparator = priority !== lastPriority;
+                    lastPriority = priority;
+                    return (
+                      <div key={n.id}>
+                        {showSeparator && (
+                          <div className="px-4 py-1.5 flex items-center gap-2" style={{ background: 'var(--bg-hover)' }}>
+                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: priorityInfo.color }} />
+                            <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                              {priorityInfo.label}
+                            </span>
+                          </div>
+                        )}
+                        <div
+                          onClick={() => { markOneRead(n.id); setSelected(n); setOpen(false); }}
+                          className="flex gap-3 px-4 py-3 cursor-pointer transition-colors border-t"
+                          style={{ background: !isRead ? 'rgba(255,92,58,0.04)' : undefined, borderColor: 'var(--border-color)' }}
+                          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+                          onMouseLeave={e => (e.currentTarget.style.background = !isRead ? 'rgba(255,92,58,0.04)' : 'transparent')}
+                        >
+                          <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5 ${SEVERITY_STYLES[n.severity]}`}>
+                            <NotificationIcon type={n.type} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-sm font-medium leading-tight truncate" style={{ color: isRead ? 'var(--text-muted)' : 'var(--text-primary)' }}>{n.title}</p>
+                              <span className="text-xs whitespace-nowrap flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{timeAgo(n.createdAt)}</span>
+                            </div>
+                            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{n.message}</p>
+                          </div>
+                          {!isRead && <div className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${SEVERITY_DOT[n.severity]}`} />}
                         </div>
-                        <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{n.message}</p>
                       </div>
-                      {!isRead && <div className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${SEVERITY_DOT[n.severity]}`} />}
-                    </div>
-                  );
-                })
+                    );
+                  });
+                })()
               )}
             </div>
 
