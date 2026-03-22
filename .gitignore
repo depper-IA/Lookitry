@@ -41,3 +41,12 @@ coverage/
 .cache/
 tmp/
 temp/
+
+# Python portable y archivos compilados
+python-portable/
+python-portable.zip
+node-portable/
+node-portable.zip
+__pycache__/
+*.pyc
+*.pyo
