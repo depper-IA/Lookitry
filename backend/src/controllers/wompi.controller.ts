@@ -130,43 +130,62 @@ export class WompiController {
         const effectivePlan = plan === 'LANDING' ? 'BASIC' : plan;
         const activateLanding = plan === 'LANDING' || includesLanding;
 
-        // Renovar suscripción normal con meses y plan extraídos de la referencia
-        // Si el plan cambió respecto al actual → es un upgrade, resetear fecha desde hoy
-        const { data: currentBrand } = await supabaseAdmin
-          .from('brands')
-          .select('plan')
-          .eq('id', brandId)
-          .single();
-
-        const isUpgrade = currentBrand?.plan !== effectivePlan;
-
-        await subscriptionService.renewSubscription(
-          brandId,
-          {
+        // Si es SOLO compra de landing page (plan='NONE'), no tocamos la suscripción actual
+        if (plan === 'NONE') {
+          await supabaseAdmin.from('subscription_payments').insert({
             brand_id: brandId,
             amount: amountInCents / 100,
             currency: 'COP',
             payment_date: new Date().toISOString(),
             payment_method: 'wompi',
             status: 'completed',
-            months_paid: months,
-            notes: `Pago automático Wompi. Plan: ${effectivePlan}. Meses: ${months}. Ref: ${reference}. ID: ${transaction.id}`,
-          },
-          months,
-          effectivePlan,
-          isUpgrade
-        );
-
-        // Si el pago incluía landing, activarla
-        if (activateLanding) {
-          await supabaseAdmin
+            months_paid: 0,
+            notes: `Pago automático Wompi. SOLO Landing Page. Ref: ${reference}. ID: ${transaction.id}`
+          });
+          
+          if (activateLanding) {
+            await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
+            console.log(`[Wompi] Mini-landing activada (pago único) para brand ${brandId}`);
+          }
+        } else {
+          // Renovar suscripción normal con meses y plan extraídos de la referencia
+          // Si el plan cambió respecto al actual → es un upgrade, resetear fecha desde hoy
+          const { data: currentBrand } = await supabaseAdmin
             .from('brands')
-            .update({ has_landing_page: true, landing_suspended_at: null })
-            .eq('id', brandId);
-          console.log(`[Wompi] Mini-landing activada para brand ${brandId}`);
-        }
+            .select('plan')
+            .eq('id', brandId)
+            .single();
 
-        console.log(`[Wompi] Suscripción renovada para brand ${brandId} — Plan: ${effectivePlan}, Meses: ${months}`);
+          const isUpgrade = currentBrand?.plan !== effectivePlan;
+
+          await subscriptionService.renewSubscription(
+            brandId,
+            {
+              brand_id: brandId,
+              amount: amountInCents / 100,
+              currency: 'COP',
+              payment_date: new Date().toISOString(),
+              payment_method: 'wompi',
+              status: 'completed',
+              months_paid: months,
+              notes: `Pago automático Wompi. Plan: ${effectivePlan}. Meses: ${months}. Ref: ${reference}. ID: ${transaction.id}`,
+            },
+            months,
+            effectivePlan,
+            isUpgrade
+          );
+
+          // Si el pago incluía landing, activarla
+          if (activateLanding) {
+            await supabaseAdmin
+              .from('brands')
+              .update({ has_landing_page: true, landing_suspended_at: null })
+              .eq('id', brandId);
+            console.log(`[Wompi] Mini-landing activada junto con plan para brand ${brandId}`);
+          }
+
+          console.log(`[Wompi] Suscripción renovada para brand ${brandId} — Plan: ${effectivePlan}, Meses: ${months}`);
+        }
 
         // Enviar email de confirmación de compra
         const { data: updatedBrandForEmail } = await supabaseAdmin

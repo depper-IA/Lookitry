@@ -68,6 +68,9 @@ Tablas principales:
 ## 7. RESOLUCIÓN DE PROBLEMAS PREVIOS (Histórico)
 *Nota: Tareas antiguas como la falta de páginas en admin (`analytics`, `conversion`) ya fueron resueltas y el código existe correctamente. Menciones previas a "Mostrador" o "Virtual Try On" han sido erradicadas para la marca unificada **LOOKITRY**.*
 
+- **Checkout Landing Activo**: Para clientes con un plan PRO o BASIC, comprar la mini-landing individual NO procesa una mensualidad doble, logrando esto enviando `plan=NONE` a las APIs de Wompi / Paypal.
+- **Trial Landing Preview**: La vista previa gratuita es de 3 minutos guiados enteramente por el frontend local-storage (`MiniLanding.tsx`). No uses verificaciones basadas en `brand.created_at` ya que eso expira el tiempo sin que el usuario haya siquiera tocado la ruta pública.
+
 Si surge un bug visual en el Panel Admin (ej. fondos desfasados en modo oscuro `bg-white`), se debe siempre usar `var(--bg-card)` y variables CSS del sistema en lugar de clases Tailwind estáticas.
 
 

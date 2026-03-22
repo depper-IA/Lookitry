@@ -88,17 +88,26 @@ export class PaypalController {
         })
         .eq('reference', reference);
     } else if (brandId) {
-      // Renovación/Upgrade de marca existente
-      await subscriptionService.renewSubscription(brandId, {
-        brand_id: brandId,
-        amount: amountUSD,
-        currency: 'USD',
-        payment_method: 'paypal',
-        status: 'completed',
-        months_paid: months,
-        payment_date: new Date().toISOString(),
-        notes: `PayPal Order: ${orderId}. Plan: ${plan}. Meses: ${months}.`,
-      }, months, plan as string);
+      if (plan === 'NONE') {
+        // Solo compra de Landing Page, no renovar suscripción
+        await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
+      } else {
+        // Renovación/Upgrade de marca existente
+        await subscriptionService.renewSubscription(brandId, {
+          brand_id: brandId,
+          amount: amountUSD,
+          currency: 'USD',
+          payment_method: 'paypal',
+          status: 'completed',
+          months_paid: months,
+          payment_date: new Date().toISOString(),
+          notes: `PayPal Order: ${orderId}. Plan: ${plan}. Meses: ${months}.`,
+        }, months, plan as string);
+        
+        if (includesLanding) {
+          await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
+        }
+      }
       
       // Registrar pago
       await supabaseAdmin.from('subscription_payments').insert({
@@ -107,8 +116,9 @@ export class PaypalController {
         currency: 'USD',
         payment_method: 'paypal',
         status: 'completed',
-        months_paid: months,
-        reference: orderId
+        months_paid: plan === 'NONE' ? 0 : months,
+        reference: orderId,
+        notes: plan === 'NONE' ? 'SOLO Landing Page' : undefined
       });
     }
 
