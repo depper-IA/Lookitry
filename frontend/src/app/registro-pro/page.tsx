@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '@/hooks/useAuth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 
@@ -96,6 +97,8 @@ function RegistroProContent() {
   const [altEmailError, setAltEmailError] = useState('');
   const [pendingData, setPendingData] = useState<{ plan: string; months: number; includes_landing: boolean; status: string } | null>(null);
   const [fetchingPending, setFetchingPending] = useState(true);
+  const { brand, isAuthenticated } = useAuth();
+  const [autoLinking, setAutoLinking] = useState(false);
 
   useEffect(() => {
     getFingerprint().then(setFingerprint);
@@ -138,16 +141,67 @@ function RegistroProContent() {
     }
   }, [ref]);
 
-  if (recoveringRef || fetchingPending) {
+  // Efecto de auto-vinculación si ya hay sesión
+  useEffect(() => {
+    if (isAuthenticated && ref && pendingData && !loading && !autoLinking && !apiError) {
+      if (pendingData.status === 'paid' || pendingData.status === 'confirmed') {
+        // Si el pending es solo landing (plan=NONE) y el usuario ya tiene plan activo,
+        // igual vinculamos — el backend ya protege el plan existente.
+        // Pero si el email del pending no coincide con el usuario logueado y el plan no es NONE,
+        // mostramos el formulario normal en lugar de auto-vincular para evitar sobreescribir planes.
+        const brandPlanUpper = brand?.plan?.toUpperCase() || '';
+        const hasActivePlan = brandPlanUpper === 'BASIC' || brandPlanUpper === 'PRO';
+        const pendingPlanIsNone = !pendingData.plan || pendingData.plan.toUpperCase() === 'NONE';
+
+        // Auto-vincular si: es solo landing (NONE) con plan activo, o si el plan del pending coincide
+        if (pendingPlanIsNone || !hasActivePlan) {
+          handleAutoLink();
+        }
+        // Si tiene plan activo y el pending quiere cambiar el plan, mostrar formulario normal
+      }
+    }
+  }, [isAuthenticated, ref, pendingData]);
+
+  async function handleAutoLink() {
+    setAutoLinking(true);
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/auth/register-post-payment`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ ref, fingerprint }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Actualizar datos locales y redirigir
+        localStorage.setItem('brand', JSON.stringify(data.brand));
+        router.push('/dashboard');
+      } else {
+        setApiError(data.message || 'No se pudo vincular la compra automáticamente.');
+        setAutoLinking(false);
+      }
+    } catch (err) {
+      console.error('Auto-link error:', err);
+      setAutoLinking(false);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (recoveringRef || fetchingPending || autoLinking) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-t-transparent border-[#FF5C3A] rounded-full animate-spin mx-auto mb-4"></div>
           <h2 className="text-white font-syne text-xl">
-            {recoveringRef ? 'Recuperando tu pago...' : 'Cargando detalles...'}
+            {recoveringRef ? 'Recuperando tu pago...' : autoLinking ? 'Vinculando compra a tu cuenta...' : 'Cargando detalles...'}
           </h2>
           <p className="text-[#666] text-sm mt-2">
-            {recoveringRef ? 'Estamos verificando la transacción.' : 'Preparando tu cuenta.'}
+            {recoveringRef ? 'Estamos verificando la transacción.' : autoLinking ? `Detectamos tu sesión activa como ${brand?.name || 'marca'}.` : 'Preparando tu cuenta.'}
           </p>
         </div>
       </main>
@@ -226,9 +280,13 @@ function RegistroProContent() {
       if (showAltEmail && altEmail.trim()) {
         body.override_email = altEmail.trim();
       }
+      const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/auth/register-post-payment`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify(body),
       });
       const data = await res.json();

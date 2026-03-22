@@ -48,10 +48,13 @@ export class RevenueController {
 
         const amount = parseFloat(payment.amount);
         
-        // Mejora detección de pago de landing: plan es LANDING o notas contienen 'landing' (case insensitive)
+        // Mejora detección de pago de landing: plan es LANDING o notas contienen 'landing' o 'plan: none' (case insensitive)
         const isLandingPayment =
           payment.brands?.plan === 'LANDING' ||
-          (typeof payment.notes === 'string' && payment.notes.toLowerCase().includes('landing'));
+          (typeof payment.notes === 'string' && (
+            payment.notes.toLowerCase().includes('landing') ||
+            payment.notes.toLowerCase().includes('plan: none')
+          ));
 
         monthlyData[month].total += amount;
         monthlyData[month].count += 1;
@@ -134,7 +137,10 @@ export class RevenueController {
         const amount = parseFloat(payment.amount);
         const isLanding =
           payment.brands?.plan === 'LANDING' ||
-          (typeof payment.notes === 'string' && payment.notes.toLowerCase().includes('landing'));
+          (typeof payment.notes === 'string' && (
+            payment.notes.toLowerCase().includes('landing') ||
+            payment.notes.toLowerCase().includes('plan: none')
+          ));
 
         if (isLanding) {
           totalLandingRevenue += amount;
