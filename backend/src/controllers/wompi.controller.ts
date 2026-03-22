@@ -300,30 +300,60 @@ export class WompiController {
   }
 
   /**
-   * POST /api/payments/free-checkout
+   * POST /api/payments/wompi/free-checkout
    *
    * Activa servicios directamente cuando el total es $0 (cupón del 100%).
-   * Requiere auth (JWT de marca).
+   * Auth opcional: si hay JWT aplica a la marca, sino crea pending_registration.
    */
   async freeCheckout(req: Request, res: Response): Promise<void> {
     try {
       const brand = (req as any).brand;
-      if (!brand?.id) {
-        res.status(401).json({ error: 'Autenticación requerida' });
-        return;
-      }
-
-      const { plan, months, includes_landing, reference } = req.body;
+      const { plan, months, includes_landing, reference, email } = req.body;
 
       if (!plan || months === undefined) {
         res.status(400).json({ error: 'Parámetros plan y months son requeridos' });
         return;
       }
 
-      const brandId = brand.id;
       const effectivePlan = plan === 'LANDING' ? 'BASIC' : plan;
       const activateLanding = plan === 'LANDING' || includes_landing === true;
 
+      // ── FLUJO VISITANTE SIN SESIÓN (NUEVO) ──────────────────────────────
+      if (!brand?.id) {
+        if (!email) {
+          res.status(400).json({ error: 'Email requerido para usar cupón sin cuenta' });
+          return;
+        }
+
+        const visitorBrandId = `visitor_${Date.now()}`;
+        const newRef = reference || wompiService.generateReference(visitorBrandId, months, effectivePlan);
+
+        const { error: insertError } = await supabaseAdmin
+          .from('pending_registrations')
+          .insert({
+            email,
+            reference: newRef,
+            plan: effectivePlan,
+            months: months,
+            includes_landing: activateLanding,
+            status: 'paid', // Marcamos de una vez como 'pagado' porque es 100% cupón
+            payment_id: 'coupon_100_free_checkout',
+            updated_at: new Date().toISOString()
+          });
+
+        if (insertError) {
+          console.error('[FreeCheckout] Error guardando registro pendiente:', insertError);
+          res.status(500).json({ error: 'Error interno al generar registro temporal' });
+          return;
+        }
+
+        console.log(`[FreeCheckout] Visitante con 100% descuento registrado. Ref: ${newRef}`);
+        res.json({ success: true, isVisitor: true, reference: newRef });
+        return;
+      }
+
+      // ── FLUJO USUARIO CON SESIÓN ACTIVA ──────────────────────────────────
+      const brandId = brand.id;
       console.log(`[FreeCheckout] Activando servicios gratuitos para brand ${brandId}. Plan: ${effectivePlan}, Meses: ${months}, Landing: ${activateLanding}`);
 
       if (effectivePlan !== 'NONE') {
