@@ -310,12 +310,6 @@ function CheckoutContent() {
       // Solo aplica para usuarios con sesión activa — un visitante sin cuenta no
       // puede activar un plan porque no tiene brand_id.
       if (totalPrice === 0) {
-        if (!hasSession) {
-          setError('Para usar un cupón del 100% debes iniciar sesión primero. Si ya pagaste, ve a /registro-pro para crear tu cuenta.');
-          setLoading(false);
-          return;
-        }
-
         const planToSend = isLanding ? subPlan : selectedPlan;
         const includesLanding = isLanding;
 
@@ -328,6 +322,7 @@ function CheckoutContent() {
             months: selectedMonths,
             includes_landing: includesLanding,
             coupon_id: appliedCoupon?.id || null,
+            email: email.trim() || undefined, // Agregado para visitantes
           }),
         });
 
@@ -336,6 +331,8 @@ function CheckoutContent() {
           try { const d = await res.json(); msg = d.error || d.message || msg; } catch {}
           throw new Error(msg);
         }
+
+        const responseData = await res.json();
 
         // Marcar cupón como consumido
         if (appliedCoupon?.id) {
@@ -346,7 +343,14 @@ function CheckoutContent() {
           }).catch(() => {});
         }
 
-        // Redirigir a pago exitoso
+        // Si es un visitante, el backend lo guardó en pending_registrations con status='paid'
+        // y nos devuelve reference, para que termine el registro en /registro-pro
+        if (responseData.isVisitor && responseData.reference) {
+          window.location.href = `/registro-pro?ref=${responseData.reference}&free=1`;
+          return;
+        }
+
+        // Si es usuario con sesión activa, el pago gratuito se aplicó de una vez.
         const planParam = isLanding ? subPlan : selectedPlan;
         window.location.href = `/pago-exitoso?plan=${planParam}&months=${selectedMonths}&free=1`;
         return;

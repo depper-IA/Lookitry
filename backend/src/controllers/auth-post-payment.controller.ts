@@ -52,7 +52,7 @@ export async function registerPostPayment(req: Request, res: Response) {
     // 3. Buscar pending_registration por referencia
     const { data: pending, error: pendingError } = await supabaseAdmin
       .from('pending_registrations')
-      .select('email, plan, months, includes_landing')
+      .select('email, plan, months, includes_landing, status, payment_id') // Añadimos status, payment_id
       .eq('reference', ref)
       .maybeSingle();
 
@@ -61,36 +61,38 @@ export async function registerPostPayment(req: Request, res: Response) {
     }
 
     // 4. Verificar estado de la transacción según el método
-    let paymentConfirmed = false;
+    let paymentConfirmed = pending.status === 'paid';
     let finalMethod = method || 'wompi';
-    let transactionDetails = '';
+    let transactionDetails = pending.payment_id ? `ID guardado: ${pending.payment_id}` : '';
 
-    if (finalMethod === 'paypal') {
-      if (!orderId) {
-        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'ID de orden de PayPal requerido' });
-      }
-      try {
-        const order = await paypalService.getOrder(orderId);
-        // Si la orden está aprobada pero no capturada, capturarla
-        if (order.status === 'APPROVED') {
-          const capture = await paypalService.captureOrder(orderId);
-          paymentConfirmed = capture.status === 'COMPLETED';
-        } else {
-          paymentConfirmed = order.status === 'COMPLETED';
+    if (!paymentConfirmed) {
+      if (finalMethod === 'paypal') {
+        if (!orderId) {
+          return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'ID de orden de PayPal requerido' });
         }
-        transactionDetails = `PayPal Order: ${orderId}`;
-      } catch (err: any) {
-        console.error('[PostPayment] PayPal Error:', err.message);
-        return res.status(502).json({ error: 'GATEWAY_ERROR', message: 'Error al verificar con PayPal' });
-      }
-    } else {
-      // Por defecto Wompi
-      try {
-        const transaction = await wompiService.getTransactionByReference(ref);
-        paymentConfirmed = transaction?.status === 'APPROVED';
-        transactionDetails = `Wompi Ref: ${ref}`;
-      } catch {
-        return res.status(502).json({ error: 'GATEWAY_ERROR', message: 'Error al verificar con Wompi' });
+        try {
+          const order = await paypalService.getOrder(orderId);
+          // Si la orden está aprobada pero no capturada, capturarla
+          if (order.status === 'APPROVED') {
+            const capture = await paypalService.captureOrder(orderId);
+            paymentConfirmed = capture.status === 'COMPLETED';
+          } else {
+            paymentConfirmed = order.status === 'COMPLETED';
+          }
+          transactionDetails = `PayPal Order: ${orderId}`;
+        } catch (err: any) {
+          console.error('[PostPayment] PayPal Error:', err.message);
+          return res.status(502).json({ error: 'GATEWAY_ERROR', message: 'Error al verificar con PayPal' });
+        }
+      } else {
+        // Por defecto Wompi
+        try {
+          const transaction = await wompiService.getTransactionByReference(ref);
+          paymentConfirmed = transaction?.status === 'APPROVED';
+          transactionDetails = `Wompi Ref: ${ref}`;
+        } catch {
+          return res.status(502).json({ error: 'GATEWAY_ERROR', message: 'Error al verificar con Wompi' });
+        }
       }
     }
 
