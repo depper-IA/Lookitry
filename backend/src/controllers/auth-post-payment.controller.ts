@@ -199,7 +199,7 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
           status: 'completed',
           months_paid: pending.months,
           payment_date: new Date().toISOString(),
-          notes: `Activación post-registro. Plan: ${pending.plan}. Meses: ${pending.months}. ${transactionDetails}`,
+          notes: `Activación post-registro. Plan: ${pending.plan}. Meses: ${pending.months}.${pending.includes_landing ? ' Incluye Landing Page.' : ''} ${transactionDetails}`,
         },
         pending.months,
         pending.plan

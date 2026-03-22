@@ -168,7 +168,7 @@ export class WompiController {
               payment_method: 'wompi',
               status: 'completed',
               months_paid: months,
-              notes: `Pago automático Wompi. Plan: ${effectivePlan}. Meses: ${months}. Ref: ${reference}. ID: ${transaction.id}`,
+              notes: `Pago automático Wompi. Plan: ${effectivePlan}. Meses: ${months}.${activateLanding ? ' Incluye Landing Page.' : ''} Ref: ${reference}. ID: ${transaction.id}`,
             },
             months,
             effectivePlan,
