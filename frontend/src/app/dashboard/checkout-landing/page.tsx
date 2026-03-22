@@ -62,15 +62,20 @@ export default function CheckoutLandingPage() {
     setLoading(true);
     setError('');
     try {
+      const planToSend = includePlan ? selectedPlan : 'NONE';
+      const monthsToSend = includePlan ? months : 0;
+      
       if (paymentMethod === 'wompi') {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/checkout-url?plan=${selectedPlan}&months=${months}&includeLanding=true`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/checkout-url?plan=${planToSend}&months=${monthsToSend}&includes_landing=true&amount=${totalPrice}`);
         const data = await res.json();
-        if (data.url) window.location.href = data.url;
+        if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+        else if (data.url) window.location.href = data.url;
         else throw new Error(data.error || 'Error al generar link de pago');
       } else {
         // PayPal Flow (Simulado por ahora o redirigir a whatsapp para manual)
         const usdAmount = Math.ceil(totalPrice / pricing.trm);
-        const msg = `Hola, quiero activar mi Mini-landing (${selectedPlan} x ${months} meses) mediante PayPal por un total de USD $${usdAmount}. Mi marca es ${brand?.name} (${brand?.slug})`;
+        const mdText = includePlan ? `Activar Mini-landing + Plan ${planToSend} x ${monthsToSend} meses` : `Activar Mini-landing (Pago Único)`;
+        const msg = `Hola, quiero ${mdText} mediante PayPal por un total de USD $${usdAmount}. Mi marca es ${brand?.name} (${brand?.slug})`;
         window.open(`https://wa.me/573001234567?text=${encodeURIComponent(msg)}`, '_blank');
       }
     } catch (err: any) {
