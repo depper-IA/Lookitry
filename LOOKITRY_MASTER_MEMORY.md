@@ -7,6 +7,7 @@
 - **Diseño UI/UX (Pro Max)**: Aplicar SIEMPRE (`.agent/skills/ui-ux-pro-max/SKILL.md`) a cualquier componente frontend. Lookitry debe sentirse premium.
 - **Testing & QA**: Referir a (`.gemini/skills/testing/SKILL.md`) al tocar lógicas de pago (Wompi) o Try-On (n8n).
 - **Optimización de Desarrollo**: Referir a (`.agent/skills/dev-optimization/SKILL.md`) para flujos ultra rápidos.
+- **SEO & Metadata**: Referir a (`.kiro/skills/seo/SKILL.md`) al crear o editar páginas públicas (gestión de sitemap, robots, OG tags, JSON-LD estructurado).
 - **Database**: Usar `supabaseAdmin` solo en backend para bypass RLS. El frontend NUNCA debe exponer `SERVICE_KEY`.
 
 ## 2. STACK TÉCNICO & INFRAESTRUCTURA
