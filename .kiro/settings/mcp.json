@@ -2,9 +2,9 @@
   "mcpServers": {
     "hostinger": {
       "command": "npx",
-      "args": ["-y", "@hostinger/api-mcp-server"],
+      "args": ["-y", "hostinger-api-mcp"],
       "env": {
-        "HOSTINGER_API_KEY": "SVSF0lYza8eTPqjng6USp6Y9uCV1Zh6XNgfGeDyV015ed894"
+        "API_TOKEN": "SVSF0lYza8eTPqjng6USp6Y9uCV1Zh6XNgfGeDyV015ed894"
       },
       "disabled": false,
       "autoApprove": []

@@ -93,7 +93,7 @@ describe('SubscriptionService', () => {
 
   describe('checkSubscriptionStatus', () => {
     it('debe retornar true si subscription_status es "active"', async () => {
-      (supabase.from as jest.Mock).mockReturnValue(
+      (supabaseAdmin.from as jest.Mock).mockReturnValue(
         mockSupabaseChain({ data: { subscription_status: 'active', trial_end_date: null }, error: null })
       );
       const result = await service.checkSubscriptionStatus('brand-1');
@@ -101,7 +101,7 @@ describe('SubscriptionService', () => {
     });
 
     it('debe retornar true si subscription_status es "expiring_soon"', async () => {
-      (supabase.from as jest.Mock).mockReturnValue(
+      (supabaseAdmin.from as jest.Mock).mockReturnValue(
         mockSupabaseChain({ data: { subscription_status: 'expiring_soon', trial_end_date: null }, error: null })
       );
       const result = await service.checkSubscriptionStatus('brand-1');
@@ -109,7 +109,7 @@ describe('SubscriptionService', () => {
     });
 
     it('debe retornar false si subscription_status es "suspended"', async () => {
-      (supabase.from as jest.Mock).mockReturnValue(
+      (supabaseAdmin.from as jest.Mock).mockReturnValue(
         mockSupabaseChain({ data: { subscription_status: 'suspended', trial_end_date: null }, error: null })
       );
       const result = await service.checkSubscriptionStatus('brand-1');
@@ -118,7 +118,7 @@ describe('SubscriptionService', () => {
 
     it('debe retornar true si está en período de prueba activo', async () => {
       const futureDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
-      (supabase.from as jest.Mock).mockReturnValue(
+      (supabaseAdmin.from as jest.Mock).mockReturnValue(
         mockSupabaseChain({ data: { subscription_status: 'suspended', trial_end_date: futureDate }, error: null })
       );
       const result = await service.checkSubscriptionStatus('brand-1');
@@ -127,7 +127,7 @@ describe('SubscriptionService', () => {
 
     it('debe retornar false si el trial ya venció', async () => {
       const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      (supabase.from as jest.Mock).mockReturnValue(
+      (supabaseAdmin.from as jest.Mock).mockReturnValue(
         mockSupabaseChain({ data: { subscription_status: 'suspended', trial_end_date: pastDate }, error: null })
       );
       const result = await service.checkSubscriptionStatus('brand-1');
@@ -135,7 +135,7 @@ describe('SubscriptionService', () => {
     });
 
     it('debe retornar false si hay error de base de datos', async () => {
-      (supabase.from as jest.Mock).mockReturnValue(
+      (supabaseAdmin.from as jest.Mock).mockReturnValue(
         mockSupabaseChain({ data: null, error: new Error('DB error') })
       );
       const result = await service.checkSubscriptionStatus('brand-1');
@@ -170,7 +170,7 @@ describe('SubscriptionService', () => {
   describe('getDaysRemaining', () => {
     it('debe retornar días positivos si la suscripción no ha vencido', async () => {
       const futureDate = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString();
-      (supabase.from as jest.Mock).mockReturnValue(
+      (supabaseAdmin.from as jest.Mock).mockReturnValue(
         mockSupabaseChain({ data: { subscription_end_date: futureDate }, error: null })
       );
       const result = await service.getDaysRemaining('brand-1');
@@ -178,7 +178,7 @@ describe('SubscriptionService', () => {
     });
 
     it('debe retornar null si no hay fecha de vencimiento', async () => {
-      (supabase.from as jest.Mock).mockReturnValue(
+      (supabaseAdmin.from as jest.Mock).mockReturnValue(
         mockSupabaseChain({ data: { subscription_end_date: null }, error: null })
       );
       const result = await service.getDaysRemaining('brand-1');
@@ -187,7 +187,7 @@ describe('SubscriptionService', () => {
 
     it('debe retornar valor negativo o cero si la suscripción ya venció', async () => {
       const pastDate = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
-      (supabase.from as jest.Mock).mockReturnValue(
+      (supabaseAdmin.from as jest.Mock).mockReturnValue(
         mockSupabaseChain({ data: { subscription_end_date: pastDate }, error: null })
       );
       const result = await service.getDaysRemaining('brand-1');
@@ -250,12 +250,12 @@ describe('SubscriptionService', () => {
       expect(result.subscription_status).toBe('active');
     });
 
-    it('debe lanzar error si falla la actualización', async () => {
+    it('debe lanzar error si falla la consulta inicial', async () => {
       (supabaseAdmin.from as jest.Mock).mockReturnValue(
         mockSupabaseChain({ data: null, error: { message: 'DB error' } })
       );
       await expect(service.reactivateSubscription('brand-1')).rejects.toThrow(
-        'Error al reactivar la suscripción'
+        'Marca no encontrada'
       );
     });
   });

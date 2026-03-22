@@ -116,7 +116,12 @@ export default function NotificationsPage() {
   // Notificaciones
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [preferences, setPreferences] = useState<NotificationPreference[]>([]);
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const [readIds, setReadIds] = useState<Set<string>>(() => {
+    try {
+      const r = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+      return r ? new Set(JSON.parse(r)) : new Set();
+    } catch { return new Set(); }
+  });
   const [loading, setLoading] = useState(true);
   const [prefLoading, setPrefLoading] = useState(false);
   const [togglingType, setTogglingType] = useState<string | null>(null);
@@ -145,7 +150,7 @@ export default function NotificationsPage() {
       const res = await fetch(`${apiBase}/api/admin/notifications`, { credentials: 'include', headers: authHeaders() });
       const data = await res.json();
       setNotifications(data.notifications || []);
-      setReadIds(getStoredReadIds());
+      // readIds ya está inicializado desde localStorage — no sobreescribir
     } catch { } finally { setLoading(false); }
   }, [apiBase]);
 

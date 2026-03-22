@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -76,6 +76,7 @@ function RegistroProContent() {
 
   const months = Number(searchParams.get('months') || 1);
   const ref = searchParams.get('ref') || '';
+  const wompiId = searchParams.get('id');
 
   const [form, setForm] = useState({
     contact_name: '',
@@ -88,10 +89,41 @@ function RegistroProContent() {
   const [apiError, setApiError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [fingerprint, setFingerprint] = useState<string | null>(null);
+  const [recoveringRef, setRecoveringRef] = useState(false);
 
   useEffect(() => {
     getFingerprint().then(setFingerprint);
   }, []);
+
+  useEffect(() => {
+    if (!ref && wompiId) {
+      setRecoveringRef(true);
+      fetch(`${API_URL}/api/payments/wompi/transaction/${wompiId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.reference) {
+            router.replace(`/registro-pro?ref=${data.reference}&months=${months}`);
+          } else {
+            setRecoveringRef(false);
+          }
+        })
+        .catch(() => {
+          setRecoveringRef(false);
+        });
+    }
+  }, [ref, wompiId, months, router]);
+
+  if (recoveringRef) {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-t-transparent border-[#FF5C3A] rounded-full animate-spin mx-auto mb-4"></div>
+          <h2 className="text-white font-syne text-xl">Recuperando tu pago...</h2>
+          <p className="text-[#666] text-sm mt-2">Estamos verificando la transacción con Wompi.</p>
+        </div>
+      </main>
+    );
+  }
 
   // Si no hay ref, mostrar error en lugar del formulario
   if (!ref) {
@@ -108,7 +140,13 @@ function RegistroProContent() {
           </div>
           <div className="bg-[#1f0f0f] border border-[#5a1a1a] rounded-xl p-8">
             <p className="text-[#ff6b6b] font-semibold text-[15px] mb-2">Referencia de pago requerida</p>
-            <p className="text-[#666] text-[13px]">Accede desde el enlace de confirmación de tu pago.</p>
+            <p className="text-[#666] text-[13px] mb-6">Accede desde el enlace de confirmación de tu pago.</p>
+            <Link
+              href="/"
+              className="inline-block px-6 py-2 bg-[#2a2a2a] hover:bg-[#333] text-white text-[13px] font-medium rounded-lg transition-colors border border-[#444]"
+            >
+              Volver al inicio
+            </Link>
           </div>
         </div>
       </main>

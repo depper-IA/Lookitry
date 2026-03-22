@@ -43,6 +43,8 @@ describe('NotificationService', () => {
       widget_template: null,
       button_text: null,
       welcome_message: null,
+      header_color: null,
+      custom_domain: null,
       trial_end_date: null,
       trial_generations_limit: 10,
       created_at: new Date().toISOString(),
@@ -77,7 +79,7 @@ describe('NotificationService', () => {
       expect(emailService.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
           to: mockBrand.email,
-          subject: '¡Bienvenido a Virtual Try-On SaaS!',
+          subject: '¡Bienvenido a Lookitry!',
           html: expect.stringContaining(mockBrand.name),
         })
       );
@@ -166,7 +168,7 @@ describe('NotificationService', () => {
       expect(emailService.sendEmail).toHaveBeenCalledWith(
         expect.objectContaining({
           to: mockBrand.email,
-          subject: '✅ Renovación Exitosa - Virtual Try-On SaaS',
+          subject: '✅ Renovación Exitosa - Lookitry',
           html: expect.stringContaining(mockBrand.name),
         })
       );
