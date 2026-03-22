@@ -374,29 +374,9 @@ function CheckoutContent() {
             Look<span className="text-[#FF5C3A]">itry</span>
           </span>
         </Link>
-        <div className="flex items-center gap-3">
-          {hasSession && sessionInfo ? (
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-[#666] hidden sm:block truncate max-w-[140px]">{sessionInfo.email}</span>
-              <button
-                onClick={() => {
-                  localStorage.removeItem('token');
-                  localStorage.removeItem('brandToken');
-                  localStorage.removeItem('brand');
-                  setHasSession(false);
-                  setSessionInfo(null);
-                }}
-                className="text-[11px] text-[#888] hover:text-[#ff6b6b] border border-[#2a2a2a] hover:border-[#5a1a1a] px-2.5 py-1 rounded-lg transition-colors"
-              >
-                Cerrar sesión
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 text-[12px] text-[#888]">
-              <IconLock />
-              Pago seguro con Wompi
-            </div>
-          )}
+        <div className="flex items-center gap-1.5 text-[12px] text-[#888]">
+          <IconLock />
+          Pago seguro con Wompi
         </div>
       </nav>
 
@@ -794,17 +774,31 @@ function CheckoutContent() {
 
               {/* Sesión activa o campo de email */}
               {hasSession && sessionInfo ? (
-                <div className="mb-4 flex items-center gap-3 bg-[#0f1a0f] border border-emerald-900/40 rounded-lg px-3 py-2.5">
-                  <div className="w-7 h-7 rounded-full bg-[#FF5C3A] flex items-center justify-center flex-shrink-0">
-                    <span className="text-[11px] font-bold text-white">
-                      {sessionInfo.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase() || '?'}
-                    </span>
+                <div className="mb-4 bg-[#0f1a0f] border border-emerald-900/40 rounded-lg px-3 py-2.5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-full bg-[#FF5C3A] flex items-center justify-center flex-shrink-0">
+                      <span className="text-[11px] font-bold text-white">
+                        {sessionInfo.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase() || '?'}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-semibold text-white truncate">{sessionInfo.name}</p>
+                      <p className="text-[11px] text-[#666] truncate">{sessionInfo.email}</p>
+                    </div>
+                    <span className="text-[10px] text-emerald-500 font-medium flex-shrink-0">Sesión activa</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-white truncate">{sessionInfo.name}</p>
-                    <p className="text-[11px] text-[#666] truncate">{sessionInfo.email}</p>
-                  </div>
-                  <span className="text-[10px] text-emerald-500 font-medium flex-shrink-0">Sesión activa</span>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('token');
+                      localStorage.removeItem('brandToken');
+                      localStorage.removeItem('brand');
+                      setHasSession(false);
+                      setSessionInfo(null);
+                    }}
+                    className="mt-2 w-full text-[11px] text-[#666] hover:text-[#ff6b6b] border border-[#1a2a1a] hover:border-[#5a1a1a] py-1.5 rounded-lg transition-colors text-center"
+                  >
+                    Cerrar sesión
+                  </button>
                 </div>
               ) : !hasSession ? (
                 <div className="mb-4">
