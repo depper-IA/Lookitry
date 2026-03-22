@@ -150,9 +150,11 @@ export class AuthController {
           const newToken = generateToken({ brandId: fullBrand.id, email: fullBrand.email });
           setCookieToken(res, newToken);
           
-          // Disparar correo de Bienvenida con los datos del plan tras la verificación exitosa
+          // Disparar correo de Bienvenida con los datos del plan tras la verificación exitosa.
+          // skipPreferenceCheck=true porque la tabla notification_preferences puede estar
+          // vacía para esta marca (recién creada).
           import('../services/notification.service')
-            .then(({ notificationService }) => notificationService.sendWelcomeEmail(fullBrand as any))
+            .then(({ notificationService }) => notificationService.sendWelcomeEmail(fullBrand as any, true))
             .catch(err => console.error('[Auth] Error importando notificationService:', err));
           
           return res.status(200).json({ 

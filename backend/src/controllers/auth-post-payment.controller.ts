@@ -114,7 +114,8 @@ export async function registerPostPayment(req: Request, res: Response) {
     });
 
     // 5.1 Enviar email de bienvenida tras registro exitoso (Requirement 13.1)
-    notificationService.sendWelcomeEmail(result.brand as any).catch(err => {
+    // skipPreferenceCheck=true: las preferencias aún no existen para marcas recién creadas
+    notificationService.sendWelcomeEmail(result.brand as any, true).catch(err => {
       console.error('[PostPayment] Error enviando email de bienvenida:', err);
     });
 
@@ -141,7 +142,12 @@ export async function registerPostPayment(req: Request, res: Response) {
           .from('brands')
           .update({ has_landing_page: true, landing_suspended_at: null })
           .eq('id', result.brand.id);
+        
+        // Sincronizar el objeto brand retornado para el frontend
+        (result.brand as any).has_landing_page = true;
+        (result.brand as any).landing_suspended_at = null;
       }
+
     } catch (subError) {
       console.error('[PostPayment] Error activando suscripción:', subError);
     }
@@ -165,5 +171,32 @@ export async function registerPostPayment(req: Request, res: Response) {
   } catch (error: any) {
     console.error('[PostPayment] Error en registro:', error);
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message || 'Error al crear la cuenta' });
+  }
+}
+
+/**
+ * Consulta los datos de la cuenta pendiente por su referencia.
+ */
+export async function getPendingRegistration(req: Request, res: Response) {
+  try {
+    const { ref } = req.params;
+    if (!ref) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La referencia de pago es requerida' });
+    }
+
+    const { data: pending, error } = await supabaseAdmin
+      .from('pending_registrations')
+      .select('email, plan, months, includes_landing, status')
+      .eq('reference', ref)
+      .maybeSingle();
+
+    if (error || !pending) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: 'Referencia de pago no encontrada' });
+    }
+
+    return res.status(200).json(pending);
+  } catch (err: any) {
+    console.error('[PostPayment] Error obteniendo referencia:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error interno del servidor' });
   }
 }

@@ -25,7 +25,7 @@ function IconAlert() {
 
 export default function CheckoutLandingPage() {
   const router = useRouter();
-  const { brand } = useAuth();
+  const { brand, isLoading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [pricing, setPricing] = useState({ 
@@ -38,16 +38,64 @@ export default function CheckoutLandingPage() {
   });
   const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
   
-  // Estado de selección
-  const isTrial = brand?.plan === 'TRIAL' || !brand?.plan;
-  const hasActivePlan = brand?.plan === 'BASIC' || brand?.plan === 'PRO';
+  // Normalizar el plan para comparación insensible a mayúsculas
+  const brandPlan = brand?.plan?.toUpperCase() || '';
+  const isTrial = !brandPlan || brandPlan === 'TRIAL';
+  const hasActivePlan = brandPlan === 'BASIC' || brandPlan === 'PRO';
   
-  // Si ya tiene plan, NO incluimos plan nuevo por defecto y bloqueamos el selector
-  const [selectedPlan, setSelectedPlan] = useState<'BASIC' | 'PRO'>(brand?.plan === 'PRO' ? 'PRO' : 'BASIC');
-  const [months, setMonths] = useState<number>(1);
-  const [includePlan, setIncludePlan] = useState(isTrial);
+  // Derivamos si se incluye plan: obligatorio para Trial, prohibido para Activos
+  // Si auth está cargando, asumimos false para no mostrar nada prematuramente
+  const includePlan = !authLoading && isTrial;
 
-  // ... (efectos de carga de precios se mantienen igual)
+  const [selectedPlan, setSelectedPlan] = useState<'BASIC' | 'PRO'>('BASIC');
+  const [months, setMonths] = useState<number>(1);
+
+  // Sincronizar selección inicial cuando carga la marca
+  useEffect(() => {
+    if (brandPlan === 'PRO') setSelectedPlan('PRO');
+    else if (brandPlan === 'BASIC') setSelectedPlan('BASIC');
+  }, [brandPlan]);
+
+  // Cargar precios reales de Supabase
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?select=id,data`, {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+          },
+        });
+        const rows = await res.json();
+        if (Array.isArray(rows)) {
+          const basic = rows.find(r => r.id === 'basic')?.data;
+          const pro = rows.find(r => r.id === 'pro')?.data;
+          const landing = rows.find(r => r.id === 'landing')?.data;
+          const discounts = rows.find(r => r.id === 'descuentos_duracion')?.data;
+          
+          setPricing(prev => ({
+            ...prev,
+            basicPrice: basic?.precio_mensual_cop || prev.basicPrice,
+            proPrice: pro?.precio_mensual_cop || prev.proPrice,
+            landingPrice: landing?.precio || prev.landingPrice,
+            landingOriginalPrice: landing?.precio_original || prev.landingOriginalPrice,
+            discounts: discounts || prev.discounts
+          }));
+        }
+      } catch (err) {
+        console.error('Error fetching pricing:', err);
+      }
+    };
+    fetchPricing();
+  }, []);
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   // Cálculos dinámicos
   const basePlanPrice = selectedPlan === 'PRO' ? pricing.proPrice : pricing.basicPrice;
@@ -65,6 +113,31 @@ export default function CheckoutLandingPage() {
       const planToSend = includePlan ? selectedPlan : 'NONE';
       const monthsToSend = includePlan ? months : 0;
       
+      // CASO ESPECIAL: TOTAL 0 (Cupón 100% o Crédito total)
+      if (totalPrice === 0) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/free-checkout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            plan: planToSend,
+            months: monthsToSend,
+            includes_landing: true,
+            reference: `FREE-${brand?.id}-${Date.now()}`
+          })
+        });
+        
+        const data = await res.json();
+        if (data.success) {
+          router.push(`/pago-exitoso?plan=${planToSend}&months=${monthsToSend}`);
+          return;
+        } else {
+          throw new Error(data.error || 'Error en la activación gratuita');
+        }
+      }
+
       if (paymentMethod === 'wompi') {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/checkout-url?plan=${planToSend}&months=${monthsToSend}&includes_landing=true&amount=${totalPrice}`);
         const data = await res.json();
