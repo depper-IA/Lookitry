@@ -1,5 +1,144 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 23 de Marzo, 2026 — Fix: SubscriptionBadge del navbar muestra nombre del plan activo
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/SubscriptionBadge.tsx`
+
+**Cambios:**
+- El badge del navbar ahora muestra "Plan Básico activo · 89D" en lugar de solo "89D restantes", alineado con la captura de referencia del usuario.
+
+---
+
+
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/checkout/page.tsx`
+
+**Cambios:**
+- Corregido el fetch de `/api/payments/wompi/upgrade-preview`: ahora envía el header `Authorization: Bearer <token>` desde `localStorage`. Antes usaba solo `credentials: 'include'` (cookies), lo que hacía que el middleware `optionalAuth` del backend no encontrara el JWT y devolviera 401 silenciosamente. Resultado: `prorationPreview` quedaba `null` y el checkout mostraba el precio completo del plan sin aplicar el crédito proporcional.
+- Corregido el `currentPlanPriceTotal` del fallback: ahora usa `planInfo[currentPlan].price * selectedMonths` en lugar de solo `planInfo[currentPlan].price` (que era el precio mensual, no el total).
+
+**Motivo:** El rediseño visual del checkout (commit `877b3e7`) no tocó esta lógica, pero el bug ya existía desde antes — el fetch nunca enviaba el token correctamente.
+
+---
+
+## 23 de Marzo, 2026 — Unificación de spinners en dashboard de usuario + datos dinámicos en checkout
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/checkout/page.tsx`
+- `frontend/src/app/dashboard/profile/page.tsx`
+
+**Cambios:**
+
+1. **Checkout interno (`/dashboard/checkout`) — datos 100% dinámicos:**
+   - `planInfo` (nombre, precio, features de BASIC y PRO) ahora se carga desde `pricing_config` en Supabase. Los valores en `PLAN_INFO_FALLBACK` solo se usan si la API falla.
+   - Campo `nombre` del plan leído desde `basicData.nombre` / `proData.nombre` (antes solo se leía `precio_mensual_cop` y `features`).
+   - `pricingLoaded` flag: el spinner de carga se mantiene hasta que los precios dinámicos lleguen, evitando que el usuario vea precios fallback por un instante.
+   - Si la carga de precios falla, `setPricingLoaded(true)` igual se llama para mostrar los fallbacks.
+
+2. **Badge de plan activo en el header del checkout:**
+   - El encabezado ahora muestra un badge pill con el nombre del plan activo y los días restantes (ej: "Plan Básico activo · 45d").
+   - Color naranja `#FF5C3A` para PRO, violeta `#6366f1` para BASIC.
+
+3. **Unificación de spinners — `<Spinner>` centralizado:**
+   - `checkout/page.tsx`: spinners de página completa (carga inicial y Suspense fallback) reemplazados por `<Spinner size="lg" />` del componente centralizado.
+   - `profile/page.tsx`: spinner de carga `border-b-2 border-[#FF5C3A]` (estilo diferente) reemplazado por `<Spinner size="lg" />`. Agregado import de `Spinner`.
+   - Los spinners inline pequeños (dentro de botones, prorrateo) se mantienen inline ya que son contextuales y no son spinners de página.
+
+**Motivo:** El usuario reportó que el plan activo no se mostraba en el header del checkout y que los datos de planes debían ser 100% dinámicos. Además se solicitó unificar el spinner de carga en todo el dashboard de usuario.
+
+## 23 de Marzo, 2026 — Auditoría y corrección de datos dinámicos en checkout interno
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/checkout/page.tsx`
+
+**Bugs corregidos:**
+
+1. **Bug crítico — fallback de prorrateo incorrecto:**
+   - `currentPlanPriceTotal` se calculaba como `planInfo[currentPlan].price * selectedMonths` — multiplicaba el precio del plan actual por los meses del **nuevo** plan, enviando un fallback inflado al backend.
+   - Corregido a `planInfo[currentPlan].price` (precio mensual × 1 mes). El backend de todas formas busca el monto real en `subscription_payments` y solo usa este valor como fallback si no hay registro.
+
+2. **Bug — wompiEnabled no se actualizaba al cambiar de plan:**
+   - La verificación de Wompi usaba `initialPlan` (fijo al montar) en lugar de `selectedPlan`.
+   - Separado en su propio `useEffect([selectedPlan])` que resetea `wompiEnabled = null` y re-verifica al cambiar de plan.
+
+3. **Bug — useEffect de carga inicial con dependencia incorrecta:**
+   - El `useEffect` principal tenía `[selectedPlan]` como dependencia, causando que `getSubscriptionInfo()` y `pricing_config` se llamaran de nuevo cada vez que el usuario cambiaba de plan.
+   - Separado en dos efectos: uno con `[]` (solo al montar) para suscripción y precios, y otro con `[selectedPlan]` solo para verificar Wompi.
+
+**Datos dinámicos verificados como correctos:**
+- Precios BASIC/PRO: cargados desde `pricing_config` en Supabase con fallback estático ✅
+- Descuentos por duración: cargados desde `pricing_config.descuentos_duracion` ✅
+- Precio mini-landing: cargado desde `payment-settings/public` ✅
+- TRM: cargado desde `payment-settings/public` ✅
+- PayPal habilitado: cargado desde `payment-settings/public` ✅
+- Features de cada plan: cargadas desde `pricing_config` ✅
+- Estado de suscripción actual: cargado desde `subscriptionService.getSubscriptionInfo()` ✅
+- Prorrateo: calculado en backend con datos reales de `subscription_payments` ✅
+
+**Motivo:** El usuario reportó que el prorrateo no aplicaba correctamente los créditos y solicitó verificar que todos los datos sean dinámicos.
+
+## 23 de Marzo, 2026 — Fix botones método de pago (v2) y prorrateo visible en resumen
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/checkout/page.tsx`
+
+**Cambios:**
+- Botones de método de pago rediseñados: layout horizontal con ícono lucide + texto en dos líneas, fondo `transparent` cuando no están activos y `rgba` sutil cuando sí. Sin fondos negros sólidos.
+- Resumen del prorrateo: ahora muestra un mini-panel con fondo `rgba(99,102,241,0.05)` que incluye precio bruto del plan, crédito en verde con días restantes, y subtotal del upgrade — todo visible antes del "Total a pagar" final.
+
+**Motivo:** Botones anteriores eran demasiado grandes y oscuros. El prorrateo no mostraba la resta de forma clara.
+
+## 23 de Marzo, 2026 — Fix prorrateo en resumen del checkout
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/checkout/page.tsx`
+
+**Cambios:**
+- El resumen del pedido (columna derecha) ahora muestra correctamente el desglose del prorrateo en upgrades: precio del plan PRO, crédito en verde con días restantes, y total final.
+- Mientras carga el prorrateo se muestra un spinner dentro del resumen en lugar de no mostrar nada.
+- Cuando `prorationPreview.isFree`, el total muestra "Sin costo" en verde en lugar del precio.
+- Eliminado el panel duplicado de prorrateo de la columna izquierda — reemplazado por un banner informativo simple que solo indica que el crédito se descuenta automáticamente.
+- Corregido tag JSX `</ArrowUpCircle>` incorrecto introducido por el reemplazo anterior.
+
+**Motivo:** El usuario reportó que el sistema de prorrateo no aparecía en el resumen del nuevo layout de dos columnas.
+
+## 23 de Marzo, 2026 — Fix botones de método de pago en Checkout
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/checkout/page.tsx`
+
+**Cambios:**
+- Eliminados los `<img>` de logos SVG externos (wompi-logo.svg con `invert brightness-200` y PayPal.svg de Wikipedia) que eran invisibles en modo claro.
+- Reemplazados por wordmarks SVG inline (`<text>` SVG) con color dinámico según estado seleccionado.
+- Fondo del botón Wompi seleccionado cambiado de `rgba(255,92,58,0.06)` (casi blanco en light mode) a `#1f1008` (oscuro sólido).
+- Fondo del botón PayPal seleccionado cambiado de `rgba(0,112,186,0.06)` a `#071828` (oscuro sólido).
+- Iconos de tarjeta y globo añadidos como SVG inline con color dinámico.
+- Texto descriptivo de cada método más visible y con color reactivo al estado.
+
+**Motivo:** Los logos no se distinguían y los botones tenían fondos casi blancos que rompían el diseño oscuro.
+
+## 23 de Marzo, 2026 — Rediseño UI del Checkout del Dashboard
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/checkout/page.tsx`
+
+**Cambios:**
+- Layout de dos columnas en desktop (configuración izquierda + resumen/pago sticky derecha), una columna en mobile.
+- Spinners reemplazados por animación de borde circular con color `#FF5C3A` (más premium).
+- Estados de éxito y error con círculo de fondo semitransparente alrededor del ícono.
+- Selector de plan: badge "Popular" en Plan Pro, precio más grande, radio button más visible.
+- Selector de meses: número en color naranja cuando está seleccionado, badge de descuento en verde.
+- Banner de ahorro con ícono `Zap` de lucide-react.
+- Add-on mini-landing como card seleccionable con borde naranja al activar.
+- Resumen del pedido en columna derecha con total en `text-2xl` y color `#FF5C3A`.
+- Sección de pago con header separado y métodos de pago con fondo de color al seleccionar.
+- Todos los botones e interactivos con `cursor-pointer` y `hover:opacity-90`.
+- Toda la lógica de negocio (prorrateo, upgrade, Wompi, PayPal, estados) intacta.
+
+**Motivo:** El usuario solicitó mejorar la interfaz del checkout sin dañar la lógica existente.
+
 ## 23 de Marzo, 2026 — Rediseño de UpgradeModal y SubscriptionModal
 
 **Archivos modificados:**

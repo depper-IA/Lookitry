@@ -4,6 +4,44 @@ import React, { useState } from 'react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { SubscriptionModal } from './SubscriptionModal';
 
+// Convierte días a texto compacto: >30d → "3M 2D", ≤30d → "15D"
+function formatTimeRemaining(days: number | null): { full: string; short: string } {
+  if (days === null || days <= 0) return { full: '0D', short: '0D' };
+
+  if (days > 30) {
+    const months = Math.floor(days / 30);
+    const rem = days % 30;
+    const full = rem > 0 ? `${months}M ${rem}D` : `${months}M`;
+    return { full, short: `${months}M` };
+  }
+
+  return { full: `${days}D`, short: `${days}D` };
+}
+
+// Paleta de estilos por estado — alineada con brand Lookitry (dark mode first)
+const BADGE_STYLES = {
+  green: {
+    wrapper: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50',
+    dot: 'bg-emerald-400',
+  },
+  yellow: {
+    wrapper: 'border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/50',
+    dot: 'bg-amber-400',
+  },
+  red: {
+    wrapper: 'border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50',
+    dot: 'bg-red-500 animate-pulse',
+  },
+  trial: {
+    wrapper: 'border-violet-500/30 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/50',
+    dot: 'bg-violet-400',
+  },
+  expired: {
+    wrapper: 'border-red-500/40 bg-red-500/10 text-red-400',
+    dot: 'bg-red-500 animate-pulse',
+  },
+} as const;
+
 export function SubscriptionBadge() {
   const {
     subscriptionInfo,
@@ -15,123 +53,81 @@ export function SubscriptionBadge() {
   } = useSubscription();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  if (isLoading || !subscriptionInfo) {
-    return null;
-  }
+  if (isLoading || !subscriptionInfo) return null;
 
   const inTrial = isInTrial();
   const trialDays = getTrialDaysRemaining();
   const daysRemaining = getDaysRemaining();
   const badgeColor = getBadgeColor();
 
-  const colorClasses = {
-    green: 'bg-green-100 text-green-800 border-green-300',
-    yellow: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-    red: 'bg-red-100 text-red-800 border-red-300',
-  };
-
-  // Trial vencido sin suscripción activa
   const trialExpired =
     subscriptionInfo.trialEndDate !== null &&
     (trialDays === 0 || trialDays === null) &&
     subscriptionInfo.status !== 'active' &&
     subscriptionInfo.status !== 'expiring_soon';
 
-  // Sin suscripción pagada y sin trial — cuenta nueva sin campaña activa
   const noSubscription =
     !inTrial &&
     !trialExpired &&
     subscriptionInfo.status === null &&
     subscriptionInfo.trialEndDate === null;
 
+  if (noSubscription) return null;
+
+  // --- Trial vencido ---
   if (trialExpired) {
+    const s = BADGE_STYLES.expired;
     return (
-      <div className="inline-flex items-center px-2.5 py-1.5 border border-red-300 rounded-full text-xs font-medium bg-red-100 text-red-800 whitespace-nowrap">
-        <AlertIcon className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
-        <span className="hidden sm:inline">Prueba vencida — Activa tu plan</span>
-        <span className="sm:hidden">Plan vencido</span>
+      <div
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium whitespace-nowrap backdrop-blur-sm ${s.wrapper}`}
+      >
+        <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
+        <span className="hidden sm:inline">Prueba vencida · Activa tu plan</span>
+        <span className="sm:hidden">Vencida</span>
       </div>
     );
   }
 
-  if (noSubscription) {
-    return null; // cuenta sin trial ni suscripción — no mostrar badge
-  }
-
+  // --- Trial activo ---
   if (inTrial) {
-    const trialColor = trialDays !== null && trialDays > 3 ? 'green' : trialDays !== null && trialDays >= 1 ? 'yellow' : 'red';
-    const trialColorClass = colorClasses[trialColor];
+    const trialTime = formatTimeRemaining(trialDays);
+    const s = BADGE_STYLES.trial;
 
     return (
       <>
         <button
           onClick={() => setIsModalOpen(true)}
-          className={`inline-flex items-center px-2.5 py-1.5 border rounded-full text-xs font-medium transition-all hover:shadow-md whitespace-nowrap ${trialColorClass}`}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium whitespace-nowrap backdrop-blur-sm transition-all duration-200 cursor-pointer ${s.wrapper}`}
           title="Ver detalles del período de prueba"
         >
-          <BeakerIcon className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
-          <span className="hidden sm:inline">Prueba gratuita — {trialDays} {trialDays === 1 ? 'día' : 'días'}</span>
-          <span className="sm:hidden">{trialDays}d prueba</span>
+          <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
+          <span className="hidden sm:inline">Prueba · {trialTime.full}</span>
+          <span className="sm:hidden">{trialTime.short}</span>
         </button>
-
-        <SubscriptionModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          subscriptionInfo={subscriptionInfo}
-        />
+        <SubscriptionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} subscriptionInfo={subscriptionInfo} />
       </>
     );
   }
 
-  const colorClass = colorClasses[badgeColor];
+  // --- Suscripción activa ---
+  const time = formatTimeRemaining(daysRemaining);
+  const s = BADGE_STYLES[badgeColor];
+  const planLabel = subscriptionInfo.plan === 'PRO' ? 'Plan Pro' : 'Plan Básico';
 
   return (
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className={`inline-flex items-center px-2.5 py-1.5 border rounded-full text-xs font-medium transition-all hover:shadow-md whitespace-nowrap ${colorClass}`}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium whitespace-nowrap backdrop-blur-sm transition-all duration-200 cursor-pointer ${s.wrapper}`}
         title="Ver detalles de suscripción"
       >
-        <ClockIcon className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
-        <span className="hidden sm:inline">{daysRemaining} {daysRemaining === 1 ? 'día' : 'días'} restantes</span>
-        <span className="sm:hidden">{daysRemaining}d</span>
+        <span className={`h-1.5 w-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
+        {/* Desktop: plan + días */}
+        <span className="hidden sm:inline">{planLabel} activo · {time.full}</span>
+        {/* Mobile: solo el número corto */}
+        <span className="sm:hidden">{time.short}</span>
       </button>
-
-      <SubscriptionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        subscriptionInfo={subscriptionInfo}
-      />
+      <SubscriptionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} subscriptionInfo={subscriptionInfo} />
     </>
-  );
-}
-
-function ClockIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-  );
-}
-
-function BeakerIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-        d="M9 3v10.5a3 3 0 006 0V3M6 3h12M5 21h14a1 1 0 000-2H5a1 1 0 000 2z"
-      />
-    </svg>
-  );
-}
-
-function AlertIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-      />
-    </svg>
   );
 }
