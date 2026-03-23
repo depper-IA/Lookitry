@@ -53,22 +53,6 @@ const STATUS_CONFIG: Record<string, { label: string; style: React.CSSProperties;
 
 // ── Componente principal ──────────────────────────────────────────────────────
 
-interface Payment {
-  id: string;
-  amount: number;
-  currency: string;
-  payment_method: string;
-  payment_date: string;
-  created_at: string;
-  status: string;
-  notes?: string;
-  brands?: {
-    name: string;
-    email: string;
-    plan: string;
-  };
-}
-
 export default function AdminPaymentsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
 
