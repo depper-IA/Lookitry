@@ -103,7 +103,7 @@ function SeverityIcon({ severity }: { severity: Severity }) {
 function Toggle({ enabled, onChange, loading }: { enabled: boolean; onChange: () => void; loading?: boolean }) {
   return (
     <button onClick={onChange} disabled={loading} className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none disabled:opacity-50"
-      style={{ backgroundColor: enabled ? '#FF5C3A' : '#d1d5db' }} aria-checked={enabled} role="switch">
+      style={{ backgroundColor: enabled ? '#FF5C3A' : 'var(--border-color)' }} aria-checked={enabled} role="switch">
       <span className="inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform"
         style={{ transform: enabled ? 'translateX(18px)' : 'translateX(2px)' }} />
     </button>
@@ -574,7 +574,7 @@ export default function NotificationsPage() {
                 <SeverityIcon severity={selected.severity} />
                 <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{selected.title}</h3>
               </div>
-              <button onClick={() => setSelected(null)} className="p-1 rounded-lg hover:bg-white/10 transition-colors" style={{ color: 'var(--text-muted)' }}>
+              <button onClick={() => setSelected(null)} className="p-1 rounded-lg hover:bg-[#ffffff]/10 transition-colors" style={{ color: 'var(--text-muted)' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>

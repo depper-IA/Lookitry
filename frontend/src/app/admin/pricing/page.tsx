@@ -172,7 +172,7 @@ function SaveBtn({
     <button
       onClick={() => onSave(id, data)}
       disabled={isSaving}
-      className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+      className="px-4 py-2 rounded-2xl text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-[#FF5C3A]/20"
       style={{
         background: isSaved ? '#10b981' : '#FF5C3A',
         color: '#fff',
@@ -214,8 +214,8 @@ function PlanSection({
     : 0;
 
   return (
-    <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-      <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>{title}</h3>
+    <div className="rounded-[2rem] border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+      <h3 className="text-base font-jakarta font-bold uppercase italic" style={{ color: 'var(--text-primary)' }}>{title}</h3>
 
       {/* Cálculos automáticos — solo lectura */}
       <div className="grid grid-cols-4 gap-3 p-4 rounded-xl" style={{ background: 'var(--bg-base)' }}>
@@ -393,7 +393,7 @@ export default function PricingAdminPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>
+          <h1 className="text-2xl font-jakarta font-black uppercase italic tracking-tight" style={{ color: 'var(--text-primary)' }}>
             Configuración de Precios
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>

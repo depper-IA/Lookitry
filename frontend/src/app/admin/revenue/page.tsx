@@ -47,9 +47,9 @@ function pct(a: number, b: number) { return b === 0 ? 0 : Math.round((a / b) * 1
 
 function KpiCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
-    <div className="rounded-2xl border p-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+    <div className="rounded-[2rem] border p-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
       <p className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>{label}</p>
-      <p className="text-2xl font-bold font-syne" style={{ color: color ?? 'var(--text-primary)' }}>{value}</p>
+      <p className="text-2xl font-bold font-jakarta" style={{ color: color ?? 'var(--text-primary)' }}>{value}</p>
       {sub && <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{sub}</p>}
     </div>
   );
@@ -128,14 +128,14 @@ function ClientesCard({
   const colorMeta   = pctMetaVal >= 100 ? '#10b981' : pctMetaVal >= 60 ? '#f59e0b' : '#ef4444';
 
   return (
-    <div className="rounded-2xl border p-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+    <div className="rounded-[2rem] border p-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
       <div className="flex items-center justify-between mb-4">
         <span className="text-sm font-semibold px-2.5 py-1 rounded-full"
           style={{ background: `${color}18`, color }}>{planLabel}</span>
         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatCurrency(precio)}/mes</span>
       </div>
       <div className="text-center mb-5 py-3 rounded-xl" style={{ background: 'var(--bg-base)' }}>
-        <p className="text-3xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>{clientesActuales}</p>
+        <p className="text-3xl font-bold font-jakarta" style={{ color: 'var(--text-primary)' }}>{clientesActuales}</p>
         <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>clientes activos ahora</p>
       </div>
       <div className="mb-4">
@@ -214,7 +214,7 @@ function TabConfig({
         <div className="flex justify-end">
           <button
             onClick={onSaveCosts} disabled={saving === 'costs'}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            className="px-4 py-2 rounded-2xl text-sm font-black uppercase tracking-widest transition-all"
             style={{ background: saved === 'costs' ? '#10b981' : '#FF5C3A', color: '#fff', opacity: saving === 'costs' ? 0.7 : 1 }}
           >
             {saving === 'costs' ? 'Guardando...' : saved === 'costs' ? 'Guardado' : 'Guardar costos'}
@@ -247,7 +247,7 @@ function TabConfig({
         <div className="flex justify-end">
           <button
             onClick={onSaveMeta} disabled={saving === 'meta_financiera'}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            className="px-4 py-2 rounded-2xl text-sm font-black uppercase tracking-widest transition-all"
             style={{ background: saved === 'meta_financiera' ? '#10b981' : '#FF5C3A', color: '#fff', opacity: saving === 'meta_financiera' ? 0.7 : 1 }}
           >
             {saving === 'meta_financiera' ? 'Guardando...' : saved === 'meta_financiera' ? 'Guardado' : 'Guardar metas'}
@@ -291,7 +291,7 @@ function TabConfig({
         <div className="flex justify-end">
           <button
             onClick={onSaveTrm} disabled={saving === 'trm'}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+            className="px-4 py-2 rounded-2xl text-sm font-black uppercase tracking-widest transition-all"
             style={{ background: saved === 'trm' ? '#10b981' : '#FF5C3A', color: '#fff', opacity: saving === 'trm' ? 0.7 : 1 }}
           >
             {saving === 'trm' ? 'Guardando...' : saved === 'trm' ? 'Guardado' : 'Guardar TRM'}
@@ -316,7 +316,7 @@ function TabIngresos({ stats, basicPrecio, proPrecio, landingPrecio }: {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Mes actual" value={formatCurrency(stats.currentMonth.total)} sub={`${stats.currentMonth.paymentsCount} pagos`} />
         <KpiCard label="Proyección próximo mes" value={formatCurrency(stats.projection.total)} sub={`${stats.projection.activeSubscriptions} suscripciones activas`} color="#FF5C3A" />
         <KpiCard label="Landings activas" value={String(stats.projection.activeLandings)} sub="Total de landings publicadas" color="#10b981" />
@@ -361,8 +361,8 @@ function TabIngresos({ stats, basicPrecio, proPrecio, landingPrecio }: {
         })}
       </div>
 
-      <div className="rounded-2xl border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <h3 className="text-base font-semibold mb-6" style={{ color: 'var(--text-primary)' }}>Ingresos mensuales (últimos 12 meses)</h3>
+      <div className="rounded-[2rem] border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+        <h3 className="text-base font-jakarta font-bold uppercase italic mb-6" style={{ color: 'var(--text-primary)' }}>Ingresos mensuales (últimos 12 meses)</h3>
         <div className="space-y-4">
           {stats.monthlyRevenue.slice(-12).map(month => {
             const basicPct   = (month.basic   / maxRevenue) * 100;
@@ -458,12 +458,12 @@ function TabROI({
     <div className="space-y-6">
 
       {/* 1. Estado actual vs meta */}
-      <div className="rounded-2xl border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <h3 className="text-base font-semibold mb-5" style={{ color: 'var(--text-primary)' }}>Estado actual vs meta mensual</h3>
+      <div className="rounded-[2rem] border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+        <h3 className="text-base font-jakarta font-bold uppercase italic mb-5" style={{ color: 'var(--text-primary)' }}>Estado actual vs meta mensual</h3>
         <div className="mb-4">
           <div className="flex justify-between items-end mb-2">
             <div>
-              <span className="text-3xl font-bold font-syne" style={{ color: metaColor }}>{pctMeta}%</span>
+              <span className="text-3xl font-bold font-jakarta" style={{ color: metaColor }}>{pctMeta}%</span>
               <span className="text-sm ml-2" style={{ color: 'var(--text-muted)' }}>de la meta alcanzada</span>
             </div>
             <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Objetivo: {formatCurrency(metaCop)}</span>
@@ -489,16 +489,16 @@ function TabROI({
           ].map(item => (
             <div key={item.label} className="text-center">
               <p className="text-[11px] mb-1" style={{ color: 'var(--text-muted)' }}>{item.label}</p>
-              <p className="text-lg font-bold font-syne" style={{ color: item.color }}>{item.value}</p>
+              <p className="text-lg font-bold font-jakarta" style={{ color: item.color }}>{item.value}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* 2. Desglose de gastos */}
-      <div className="rounded-2xl border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+      <div className="rounded-[2rem] border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Desglose de gastos y punto de equilibrio</h3>
+          <h3 className="text-base font-jakarta font-bold uppercase italic" style={{ color: 'var(--text-primary)' }}>Desglose de gastos y punto de equilibrio</h3>
           <button
             onClick={onGoToConfig}
             className="text-xs font-medium px-3 py-1 rounded-lg border border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/5 transition-colors"
@@ -547,7 +547,7 @@ function TabROI({
         </div>
         <div className="mt-4 p-3 rounded-xl flex items-center justify-between" style={{ background: 'var(--bg-base)' }}>
           <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Margen de beneficio operativo</span>
-          <span className="text-lg font-bold font-syne" style={{ color: margenColor }}>{margenPct}%</span>
+          <span className="text-lg font-bold font-jakarta" style={{ color: margenColor }}>{margenPct}%</span>
         </div>
       </div>
 
@@ -577,26 +577,26 @@ function TabROI({
       </div>
 
       {/* 4. Proyección */}
-      <div className="rounded-2xl border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <h3 className="text-base font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
+      <div className="rounded-[2rem] border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+        <h3 className="text-base font-jakarta font-bold uppercase italic mb-4" style={{ color: 'var(--text-primary)' }}>
           Resumen histórico y Proyecciones
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 rounded-xl" style={{ background: 'var(--bg-base)' }}>
             <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Media de ingresos (3 meses)</p>
-            <p className="text-xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>{formatCurrency(avg3)}</p>
+            <p className="text-xl font-bold font-jakarta" style={{ color: 'var(--text-primary)' }}>{formatCurrency(avg3)}</p>
             <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>{pct(avg3, metaCop)}% del objetivo mensual</p>
           </div>
           <div className="p-4 rounded-xl" style={{ background: 'var(--bg-base)' }}>
             <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Neto proyectado/mes</p>
-            <p className="text-xl font-bold font-syne" style={{ color: (avg3 - totalNecesario) >= 0 ? '#10b981' : '#ef4444' }}>
+            <p className="text-xl font-bold font-jakarta" style={{ color: (avg3 - totalNecesario) >= 0 ? '#10b981' : '#ef4444' }}>
               {formatCurrency(avg3 - totalNecesario)}
             </p>
             <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>Después de cubrir {formatCurrency(totalNecesario)}</p>
           </div>
           <div className="p-4 rounded-xl" style={{ background: 'var(--bg-base)' }}>
             <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Tasa TRM aplicada</p>
-            <p className="text-xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>{trm.toLocaleString('es-CO')}</p>
+            <p className="text-xl font-bold font-jakarta" style={{ color: 'var(--text-primary)' }}>{trm.toLocaleString('es-CO')}</p>
             <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>COP/USD — Referencia Superfinanciera</p>
           </div>
         </div>
@@ -735,7 +735,7 @@ export default function RevenuePage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-syne font-bold" style={{ color: 'var(--text-primary)' }}>Ingresos y ROI</h1>
+          <h1 className="text-2xl font-jakarta font-black uppercase italic tracking-tight" style={{ color: 'var(--text-primary)' }}>Ingresos y ROI</h1>
           <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>Estadísticas financieras, metas y proyecciones</p>
         </div>
         <button
@@ -752,24 +752,26 @@ export default function RevenuePage() {
       </div>
 
       {/* Pestañas */}
-      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-        {([
-          ['ingresos', 'Ingresos'],
-          ['roi',      'ROI / Metas'],
-          ['config',   'Configuración'],
-        ] as const).map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className="px-4 py-2 rounded-lg text-[13px] font-medium transition-all"
-            style={{
-              background: tab === key ? '#FF5C3A' : 'transparent',
-              color: tab === key ? '#fff' : 'var(--text-secondary)',
-            }}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="overflow-x-auto">
+        <div className="flex gap-4 p-1.5 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] w-fit">
+          {([
+            ['ingresos', 'Ingresos'],
+            ['roi',      'ROI / Metas'],
+            ['config',   'Configuración'],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              className={`px-4 py-2 rounded-xl text-[13px] transition-all whitespace-nowrap ${
+                tab === key
+                  ? 'bg-[#FF5C3A] text-white shadow-lg font-black uppercase tracking-widest'
+                  : 'text-gray-500 hover:text-gray-300 font-medium'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Contenido */}

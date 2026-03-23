@@ -4,12 +4,16 @@ interface CardProps {
   children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  interactive?: boolean;
 }
 
-export function Card({ children, className = '', style }: CardProps) {
+export function Card({ children, className = '', style, interactive = false }: CardProps) {
+  const interactiveClasses = interactive
+    ? 'cursor-pointer hover:border-[#FF5C3A]/40 hover:shadow-md transition-all duration-200 motion-safe:hover:scale-[1.01]'
+    : '';
   return (
     <div
-      className={`rounded-xl border overflow-hidden ${className}`}
+      className={`rounded-xl border overflow-hidden ${interactiveClasses} ${className}`}
       style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', ...style }}
     >
       {children}

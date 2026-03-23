@@ -35,6 +35,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [resendSending, setResendSending] = useState(false);
   const [resendSent, setResendSent] = useState(false);
 
+  // Bloquear scroll del body cuando el drawer móvil está abierto
+  React.useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [sidebarOpen]);
+
   const showVerificationBanner = !verificationBannerDismissed && brand && !(brand as any).emailVerified;
 
   const handleResendVerification = async () => {
@@ -60,7 +72,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const sidebarContent = (
     <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
       {/* Logo */}
-      <div className="flex items-center justify-between h-16 px-5 border-b" style={{ borderColor: '#1f1f1f' }}>
+      <div className="flex items-center justify-between h-16 px-5 border-b" style={{ borderColor: 'var(--border-color)' }}>
         <Link href="/dashboard/products" className="flex items-center gap-2">
           <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
           <span className="hidden sm:inline font-syne font-extrabold text-base leading-none text-white tracking-tight">
@@ -88,7 +100,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               key={item.name}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                 isActive
                   ? 'text-white'
                   : 'hover:text-white'
@@ -108,7 +120,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </nav>
 
       {/* Brand info + logout */}
-      <div className="p-4 border-t" style={{ borderColor: '#1f1f1f' }}>
+      <div className="p-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
             style={{ backgroundColor: '#FF5C3A' }}>
@@ -166,10 +178,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Contenido principal */}
-      <div className="lg:pl-60 flex flex-col min-h-screen">
+      <div className="lg:pl-60 flex flex-col h-screen overflow-hidden">
         {/* Banner de verificación de email — elegante y minimalista */}
         {showVerificationBanner && (
-          <div className="w-full bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 py-3 flex items-center justify-between gap-4 flex-shrink-0 animate-in fade-in slide-in-from-top duration-500">
+          <div className="w-full border-b px-6 py-3 flex items-center justify-between gap-4 flex-shrink-0 animate-in fade-in slide-in-from-top duration-500" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-8 h-8 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center shrink-0">
                 <svg className="w-4 h-4 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -207,7 +219,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
         {/* Header */}
         <header
-          className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 h-14 border-b"
+          className="flex-shrink-0 flex items-center justify-between px-4 sm:px-6 h-16 border-b"
           style={{
             backgroundColor: 'var(--bg-header)',
             borderColor: 'var(--border-color)',
@@ -241,7 +253,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Contenido de página */}
-        <main className="flex-1 p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
           <OnboardingWizard />
           <DashboardNotifications />
           <TrialBanner />
