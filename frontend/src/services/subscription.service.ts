@@ -74,7 +74,7 @@ class SubscriptionService {
         ? response.data
         : [];
     
-    return rawPayments.map(p => ({
+    return rawPayments.map((p: any) => ({
       id: p.id,
       brandId: p.brand_id,
       amount: p.amount,
