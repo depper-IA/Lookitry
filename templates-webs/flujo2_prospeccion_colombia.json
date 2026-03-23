@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "VirtualTryOn — Prospección Automática Colombia",
   "nodes": [
     {
@@ -251,7 +251,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"sender\": { \"name\": \"n8n VirtualTryOn\", \"email\": \"info@pruebalo.wilkiedevs.com\" },\n  \"to\": [{ \"email\": \"admin@pruebalo.wilkiedevs.com\" }],\n  \"subject\": \"[Prospección semanal] {{ $json.total_nuevos }} leads nuevos captados\",\n  \"htmlContent\": \"<h2>Resumen prospección semanal</h2><p><strong>{{ $json.total_nuevos }}</strong> leads nuevos hoy.</p><p><strong>{{ $json.total_auto }}</strong> captados automáticamente.</p><p>Accede al panel admin para revisar: <a href='https://pruebalo.wilkiedevs.com/admin/marketing'>Ver leads</a></p>\"\n}",
+        "jsonBody": "={\n  \"sender\": { \"name\": \"n8n VirtualTryOn\", \"email\": \"info@lookitry.com\" },\n  \"to\": [{ \"email\": \"admin@lookitry.com\" }],\n  \"subject\": \"[Prospección semanal] {{ $json.total_nuevos }} leads nuevos captados\",\n  \"htmlContent\": \"<h2>Resumen prospección semanal</h2><p><strong>{{ $json.total_nuevos }}</strong> leads nuevos hoy.</p><p><strong>{{ $json.total_auto }}</strong> captados automáticamente.</p><p>Accede al panel admin para revisar: <a href='https://lookitry.com/admin/marketing'>Ver leads</a></p>\"\n}",
         "options": {}
       },
       "id": "notify-report",

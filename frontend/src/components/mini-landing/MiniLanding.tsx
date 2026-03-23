@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { TemplateClassic } from './TemplateClassic';
@@ -7,7 +7,7 @@ import { TemplateModerno } from './TemplateModerno';
 import type { BrandData, ProductData, MiniLandingProps } from './shared';
 import { DynamicFontStyles } from './shared';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingProps) {
   const [data, setData] = useState<{ brand: BrandData; products: ProductData[] } | null>(initialData);

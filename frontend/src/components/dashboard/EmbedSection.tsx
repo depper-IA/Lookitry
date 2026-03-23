@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -272,12 +272,12 @@ export function EmbedSection() {
             WhatsApp +57 310 543 6281
           </a>
           <a
-            href="mailto:info@pruebalo.wilkiedevs.com"
+            href="mailto:info@lookitry.com"
             style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             className="flex items-center gap-2 px-4 py-2 min-h-[44px] bg-[#FF5C3A]/10 rounded-xl border text-sm font-medium hover:bg-[#FF5C3A]/20 transition-colors"
           >
             <Mail className="w-4 h-4 text-[#FF5C3A]" />
-            info@pruebalo.wilkiedevs.com
+            info@lookitry.com
           </a>
         </div>
       </div>

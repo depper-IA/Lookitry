@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -115,7 +115,7 @@ export default function SubscriptionPage() {
         const [subResult, paymentsResult, settingsResult, pricingResult] = await Promise.allSettled([
           subscriptionService.getSubscriptionInfo(),
           subscriptionService.getPayments(),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/payment-settings/public`)
             .then(r => r.ok ? r.json() : null),
           fetch(
             `${process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vkdooutklowctuudjnkl.supabase.co'}/rest/v1/pricing_config?id=in.(basic,pro)&select=id,data`,
@@ -405,7 +405,7 @@ export default function SubscriptionPage() {
                   </a>
                 )}
                 {(paySettings?.manualEmail || !paySettings) && (
-                  <a href={`mailto:${paySettings?.manualEmail || 'info@pruebalo.wilkiedevs.com'}`}
+                  <a href={`mailto:${paySettings?.manualEmail || 'info@lookitry.com'}`}
                     className="flex items-center gap-2 px-4 py-2.5 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-xl font-black uppercase tracking-widest text-[10px] transition-all hover:border-[var(--text-muted)] active:scale-95">
                     <Mail className="w-3.5 h-3.5" /> Email
                   </a>

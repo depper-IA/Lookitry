@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -57,7 +57,7 @@ function ResetPasswordForm() {
     setLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/auth/reset-password`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/auth/reset-password`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

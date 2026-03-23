@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useRef, useState } from 'react';
 import { Spinner } from '@/components/ui/Spinner';
@@ -38,7 +38,7 @@ export function LogoUpload({
         reader.readAsDataURL(file);
       });
       const token = authService.getToken();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/upload`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/upload`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_base64: base64, filename: file.name }),
@@ -101,7 +101,7 @@ export function CoverImageUpload({
         reader.readAsDataURL(file);
       });
       const token = authService.getToken();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/upload`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/upload`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_base64: base64, filename: file.name }),

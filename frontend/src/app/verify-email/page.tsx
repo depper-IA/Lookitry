@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 export default function VerifyEmailPage() {
   const [email, setEmail] = useState('');

@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '../config/supabase';
+﻿import { supabaseAdmin } from '../config/supabase';
 
 export interface PaymentSettings {
   id?: string;
@@ -56,7 +56,7 @@ export interface PaymentSettings {
 const DEFAULT_SETTINGS: PaymentSettings = {
   landing_price: 650000,
   landing_original_price: 900000,
-  footer_brand_url: 'https://pruebalo.wilkiedevs.com',
+  footer_brand_url: 'https://lookitry.com',
   wompi_enabled: false,
   wompi_public_key: '',
   wompi_private_key: '',

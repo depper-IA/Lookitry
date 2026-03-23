@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -74,6 +74,7 @@ function CheckoutContent() {
 
   // Pagos
   const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
+  const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
   const [wompiEnabled, setWompiEnabled] = useState<boolean | null>(null);
   const [paypalEnabled, setPaypalEnabled] = useState<boolean>(true);
   const [trm, setTrm] = useState(3900);
@@ -110,7 +111,7 @@ function CheckoutContent() {
   const handlePagarPaypal = async () => {
     setRedirecting(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
       const landingParam = includeLanding ? '&includes_landing=true' : '';
       const res = await fetch(
         `${apiUrl}/api/payments/paypal/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${selectedPlan}${landingParam}&trm=${trm}`,
@@ -147,7 +148,7 @@ function CheckoutContent() {
       .catch(() => setWompiEnabled(false));
 
     Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/payment-settings/public`)
         .then(r => r.ok ? r.json() : null),
       fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?select=id,data`, {
         headers: {
@@ -193,6 +194,25 @@ function CheckoutContent() {
     });
   }, [selectedPlan]);
 
+  // Manejo del cambio de moneda
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem('currency') as 'COP' | 'USD';
+    if (savedCurrency) {
+      setCurrency(savedCurrency);
+      if (savedCurrency === 'USD') setPaymentMethod('paypal');
+    }
+
+    const handleCurrencyChange = () => {
+      const current = localStorage.getItem('currency') as 'COP' | 'USD';
+      if (current) {
+        setCurrency(current);
+        if (current === 'USD') setPaymentMethod('paypal');
+      }
+    };
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
+  }, []);
+
   // Calcular prorrateo cuando hay cambio de plan (Upgrade o Downgrade)
   useEffect(() => {
     if (!isChange || loadingInfo) {
@@ -200,7 +220,7 @@ function CheckoutContent() {
       return;
     }
     setLoadingProration(true);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
     const newPlanPricePerMonth = planInfo[selectedPlan].price;
     const currentPlanPriceTotal = Math.ceil(planInfo[currentPlan as PlanType].price * selectedMonths);
 
@@ -217,7 +237,7 @@ function CheckoutContent() {
   const handleFreeUpgrade = async () => {
     if (!prorationPreview || !prorationPreview.isFree) return;
     setApplyingFreeUpgrade(true);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     try {
       const res = await fetch(`${apiUrl}/api/payments/wompi/apply-free-upgrade`, {
@@ -585,7 +605,7 @@ function CheckoutContent() {
                     <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{formatPrice(miniLandingPrice, paymentMethod, trm)}</span>
                   </div>
                   <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                    Página pública en pruebalo.wilkiedevs.com/tu-marca con hero, galería, probador virtual y contacto.
+                    Página pública en lookitry.com/tu-marca con hero, galería, probador virtual y contacto.
                   </p>
                 </div>
               </label>
@@ -681,6 +701,7 @@ function CheckoutContent() {
           onPaypal={handlePagarPaypal}
           paymentMethod={paymentMethod}
           setPaymentMethod={setPaymentMethod}
+          currency={currency}
         />
       )}
 
@@ -708,6 +729,7 @@ function PaymentSection({
   onPaypal,
   paymentMethod,
   setPaymentMethod,
+  currency,
 }: {
   wompiEnabled: boolean | null;
   paypalEnabled: boolean;
@@ -722,6 +744,7 @@ function PaymentSection({
   onPaypal: () => void;
   paymentMethod: 'wompi' | 'paypal';
   setPaymentMethod: (m: 'wompi' | 'paypal') => void;
+  currency: 'COP' | 'USD';
 }) {
   return (
     <div className="rounded-2xl border px-6 py-5 space-y-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
@@ -732,13 +755,15 @@ function PaymentSection({
 
       {/* Selector de método */}
       <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => setPaymentMethod('wompi')}
-          className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all ${paymentMethod === 'wompi' ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[#2a2a2a] bg-[#1a1a1a] opacity-60'}`}
-        >
-          <img src="/wompi-logo.svg" alt="Wompi" className="h-6 w-auto invert brightness-200" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-white">Tarjetas / PSE</span>
-        </button>
+        {currency === 'COP' && (
+          <button
+            onClick={() => setPaymentMethod('wompi')}
+            className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all ${paymentMethod === 'wompi' ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[#2a2a2a] bg-[#1a1a1a] opacity-60'}`}
+          >
+            <img src="/wompi-logo.svg" alt="Wompi" className="h-6 w-auto invert brightness-200" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white">Tarjetas / PSE</span>
+          </button>
+        )}
         {paypalEnabled && (
           <button
             onClick={() => setPaymentMethod('paypal')}
@@ -808,11 +833,11 @@ function PaymentSection({
           </p>
           <div className="flex flex-wrap gap-3">
             <a
-              href="mailto:info@pruebalo.wilkiedevs.com"
+              href="mailto:info@lookitry.com"
               className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl border text-sm transition-colors hover:opacity-80"
               style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
             >
-              info@pruebalo.wilkiedevs.com
+              info@lookitry.com
             </a>
           </div>
         </div>

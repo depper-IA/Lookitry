@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -206,7 +206,7 @@ export default function SobreNosotrosPage() {
                   Estamos aquí para ayudarte a escalar tu marca con la mejor tecnología de IA del mercado.
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
-                  <a href="mailto:info@pruebalo.wilkiedevs.com" className="bg-white text-[#FF5C3A] px-8 py-3 rounded-xl font-bold hover:scale-105 transition-all flex items-center justify-center gap-2">
+                  <a href="mailto:info@lookitry.com" className="bg-white text-[#FF5C3A] px-8 py-3 rounded-xl font-bold hover:scale-105 transition-all flex items-center justify-center gap-2">
                     <Mail size={18} /> Escríbenos
                   </a>
                   <a href="https://wa.me/573105436281" target="_blank" className="bg-[#0a0a0a] text-white px-8 py-3 rounded-xl font-bold hover:scale-105 transition-all flex items-center justify-center gap-2">

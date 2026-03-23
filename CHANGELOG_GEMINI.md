@@ -1,4 +1,4 @@
-# Registro de Cambios — Lookitry (IA Gemini)
+﻿# Registro de Cambios — Lookitry (IA Gemini)
 
 ## 22 de Marzo, 2026 — Fix código duplicado en subscription/page.tsx + precios dinámicos + borde sidebar
 
@@ -294,6 +294,8 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 - **Implementación:** Se incluyó un nuevo Global Banner (Componente `CookieConsent` en `layout.tsx`) con diseño premium responsivo y adaptativo. 
 - **Privacidad y Auditoría:** Este banner informa clara y concisamente a los visitantes y usuarios sobre la naturaleza de las cookies empleadas durante la sesión y ofrece botones funcionales para aprobar y/o rechazar cookies no esenciales sin bloquear las JWT principales de autenticación (cumpliendo GDPR de Europa y CCPA de California).
 - **Backend Analytics:** En el backend no existen interceptores de third-party cookies ocultos o sin autorizar (el servicio se basaba principalmente en la JWT en `localStorage`). Las cookies aceptadas son delegadas al frontend mediante despachos de eventos DOM.
+
+- **Estatus VPS:** Despliegue completado con éxito. El sitio `https://lookitry.com` ya cuenta con el nuevo banner de consentimiento de cookies y está operando con la lógica de precios y suscripciones sincronizada.
 
 ---
 

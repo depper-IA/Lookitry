@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -33,7 +33,7 @@ function PagoExitosoContent() {
 
       if (!currentRef && wompiId) {
         try {
-          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
           const res = await fetch(`${API_URL}/api/payments/wompi/transaction/${wompiId}`);
           const data = await res.json();
           if (data && data.reference) {
@@ -51,7 +51,7 @@ function PagoExitosoContent() {
 
       if (method === 'paypal' && paypalToken) {
         try {
-          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+          const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
           const res = await fetch(`${API_URL}/api/payments/paypal/capture`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -163,8 +163,8 @@ function PagoExitosoContent() {
           <div className="bg-[rgba(255,92,58,0.06)] border border-[rgba(255,92,58,0.15)] rounded-lg px-4 py-3 mb-6 text-[13px] text-left" style={{ color: 'var(--text-secondary)' }}>
             Recibirás un correo de confirmación con los detalles de tu suscripción.
             Si tienes dudas escríbenos a{' '}
-            <a href="mailto:info@pruebalo.wilkiedevs.com" className="text-[#FF5C3A] hover:underline">
-              info@pruebalo.wilkiedevs.com
+            <a href="mailto:info@lookitry.com" className="text-[#FF5C3A] hover:underline">
+              info@lookitry.com
             </a>
           </div>
 

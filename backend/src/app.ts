@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
@@ -49,17 +49,17 @@ app.use(globalRateLimiter);
 
 // CORS — solo orígenes permitidos
 // CORS_ORIGIN puede ser un dominio único o una lista separada por comas
-// Ejemplo producción: CORS_ORIGIN=https://pruebalo.wilkiedevs.com,https://www.pruebalo.wilkiedevs.com
+// Ejemplo producción: CORS_ORIGIN=https://lookitry.com,https://www.lookitry.com
 const corsOriginEnv = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
   : [];
 
 const allowedOrigins = [
   ...new Set([
-    process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com',
-    'https://pruebalo.wilkiedevs.com',
-    'https://api.pruebalo.wilkiedevs.com',
-    'https://pruebalo.wilkiedevs.com',
+    process.env.FRONTEND_URL || 'https://lookitry.com',
+    'https://lookitry.com',
+    'https://api.lookitry.com',
+    'https://lookitry.com',
     // Desarrollo local (cualquier puerto de Next.js)
     'http://localhost:3000',
     'http://localhost:3001',

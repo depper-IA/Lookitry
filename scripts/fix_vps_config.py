@@ -1,64 +1,47 @@
-
 import paramiko
-import os
 
-# Configuración del VPS extraída del .env local
-VPS_HOST = '31.220.18.39'
-VPS_USER = 'root'
-VPS_PASS = 'Travis18456916#'
-ENV_PATH = '/root/virtual-tryon/backend/.env'
-
-# Valor correcto de la Service Key
-CORRECT_KEY = '***REMOVED-SECRET***'
-
-def fix_vps_env():
-    print(f"🚀 Conectando al VPS {VPS_HOST}...")
+def fix_vps():
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect("31.220.18.39", username="root", password="Travis18456916#")
     
-    try:
-        ssh.connect(VPS_HOST, username=VPS_USER, password=VPS_PASS)
-        print("✅ Conexión establecida.")
+    print("=== Iniciando correccion de dominios en VPS ===")
+    
+    # 1. Backups preventivos
+    ssh.exec_command("cp /root/virtual-tryon/backend/.env /root/virtual-tryon/backend/.env.bak")
+    ssh.exec_command("cp /root/virtual-tryon/frontend/.env.production /root/virtual-tryon/frontend/.env.production.bak")
+    ssh.exec_command("cp /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/default.bak")
+    
+    # 2. Reemplazo de dominios en archivos .env (FRONTEND_URL, API_URL, etc.)
+    # Usamos lookitry.com en lugar de pruebalo.wilkiedevs.com
+    print("Actualizando archivos .env...")
+    ssh.exec_command("sed -i 's/pruebalo.wilkiedevs.com/lookitry.com/g' /root/virtual-tryon/backend/.env")
+    ssh.exec_command("sed -i 's/pruebalo.wilkiedevs.com/lookitry.com/g' /root/virtual-tryon/frontend/.env.production")
+    
+    # 3. Actualizar Nginx
+    # Buscamos la linea server_name y la actualizamos
+    print("Actualizando configuracion de Nginx...")
+    ssh.exec_command("sed -i 's/pruebalo.wilkiedevs.com/lookitry.com/g' /etc/nginx/sites-enabled/default")
+    ssh.exec_command("sed -i 's/api.pruebalo.wilkiedevs.com/api.lookitry.com/g' /etc/nginx/sites-enabled/default")
+    
+    # 4. Reiniciar Nginx
+    print("Reiniciando Nginx...")
+    ssh.exec_command("nginx -t && systemctl restart nginx")
+    
+    # 5. Reiniciar Docker para que tome los cambios de .env
+    print("Reiniciando contenedores Docker...")
+    ssh.exec_command("cd /root/virtual-tryon && docker compose -f docker-compose.backend.yml restart")
+    ssh.exec_command("cd /root/virtual-tryon && docker compose -f docker-compose.frontend.yml restart")
+    
+    print("\n=== Verificacion final ===")
+    stdin, stdout, stderr = ssh.exec_command("grep -r 'lookitry.com' /root/virtual-tryon/backend/.env /etc/nginx/sites-enabled/default")
+    print(stdout.read().decode())
+    
+    stdin, stdout, stderr = ssh.exec_command("grep -r 'n8n.wilkiedevs.com' /etc/nginx/sites-enabled/")
+    print("Configuracion n8n detectada:", stdout.read().decode())
+    
+    ssh.close()
+    print("Migracion completada exitosamente.")
 
-        # Leer el contenido actual del .env
-        stdin, stdout, stderr = ssh.exec_command(f'cat {ENV_PATH}')
-        content = stdout.read().decode()
-        
-        lines = content.splitlines()
-        new_lines = []
-        found = False
-        
-        for line in lines:
-            if line.startswith('SUPABASE_SERVICE_KEY='):
-                new_lines.append(f'SUPABASE_SERVICE_KEY={CORRECT_KEY}')
-                found = True
-            else:
-                new_lines.append(line)
-        
-        if not found:
-            new_lines.append(f'SUPABASE_SERVICE_KEY={CORRECT_KEY}')
-            print("➕ SUPABASE_SERVICE_KEY no existía, añadiendo al final.")
-        else:
-            print("🔄 SUPABASE_SERVICE_KEY encontrada, actualizando valor.")
-
-        # Escribir el nuevo contenido de forma segura
-        final_content = "\n".join(new_lines)
-        # Escapamos comillas simples para el comando echo
-        escaped_content = final_content.replace("'", "'\\''")
-        
-        # Guardar archivo
-        ssh.exec_command(f"echo '{escaped_content}' > {ENV_PATH}")
-        print("💾 Archivo .env guardado en el VPS.")
-
-        # Reiniciar contenedores
-        print("🔄 Reiniciando backend para aplicar cambios...")
-        ssh.exec_command('cd /root/virtual-tryon && docker compose -f docker-compose.backend.yml restart')
-        print("✨ Proceso completado exitosamente.")
-
-    except Exception as e:
-        print(f"❌ Error: {str(e)}")
-    finally:
-        ssh.close()
-
-if __name__ == "__main__":
-    fix_vps_env()
+if __name__ == '__main__':
+    fix_vps()

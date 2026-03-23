@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
@@ -140,7 +140,7 @@ function ApplyPlanChangeButton({ brandId, toPlan, onDone }: { brandId: string; t
     try {
       const token = localStorage.getItem('adminToken');
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/admin/brands/${brandId}/plan`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/admin/brands/${brandId}/plan`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -195,7 +195,7 @@ export function AdminNotifications() {
     try {
       const token = localStorage.getItem('adminToken');
       const headers = { Authorization: `Bearer ${token}` };
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
       const [notifRes, fbRes] = await Promise.all([
         fetch(`${apiBase}/api/admin/notifications`, { headers }),
         fetch(`${apiBase}/api/admin/feedback/count-unresolved`, { headers }),

@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { ArrowUpDown } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://lookitry.com';
 
 interface LandingBrand {
   id: string;

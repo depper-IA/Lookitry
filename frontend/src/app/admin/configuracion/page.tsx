@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -234,7 +234,7 @@ export default function SystemConfigPage() {
   // Precio mini-landing y footer URL
   const [landingPrice, setLandingPrice] = useState<number>(650000);
   const [landingOriginalPrice, setLandingOriginalPrice] = useState<number>(900000);
-  const [footerBrandUrl, setFooterBrandUrl] = useState<string>('https://pruebalo.wilkiedevs.com');
+  const [footerBrandUrl, setFooterBrandUrl] = useState<string>('https://lookitry.com');
   const [savingLandingConfig, setSavingLandingConfig] = useState(false);
 
   // Moneda del sistema
@@ -730,7 +730,7 @@ export default function SystemConfigPage() {
                   type="url"
                   value={footerBrandUrl}
                   onChange={e => setFooterBrandUrl(e.target.value)}
-                  placeholder="https://pruebalo.wilkiedevs.com"
+                  placeholder="https://lookitry.com"
                   style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                   className="flex-1 px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
                 />
@@ -752,7 +752,7 @@ export default function SystemConfigPage() {
               Vista previa en mini-landings:{' '}
               <span style={{ color: 'var(--text-secondary)' }}>Probador virtual impulsado por </span>
               <span className="font-medium" style={{ color: '#FF5C3A' }}>
-                {(footerBrandUrl || 'pruebalo.wilkiedevs.com').replace(/^https?:\/\//, '')}
+                {(footerBrandUrl || 'lookitry.com').replace(/^https?:\/\//, '')}
               </span>
             </p>
           </div>

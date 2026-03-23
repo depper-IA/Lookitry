@@ -1,11 +1,11 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import { getPricingConfig, getPriceOverrides } from '@/lib/pricing';
 import PlanesClient from './PlanesClient';
 
 // ISR: revalidar cada 5 minutos para reflejar overrides de precio
 export const revalidate = 300;
 
-const BASE_URL = 'https://pruebalo.wilkiedevs.com';
+const BASE_URL = 'https://lookitry.com';
 
 export const metadata: Metadata = {
   title: 'Planes y precios — Probador virtual IA para tiendas',

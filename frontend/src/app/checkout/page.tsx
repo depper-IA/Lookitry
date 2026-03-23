@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -57,7 +57,7 @@ const PLAN_FEATURES: Record<PlanKey, string[]> = {
     'Integración con sistemas externos',
   ],
   LANDING: [
-    'Página pública en pruebalo.wilkiedevs.com/tu-marca',
+    'Página pública en lookitry.com/tu-marca',
     'Catálogo visual con probador IA integrado',
     '3 templates de diseño (Clásico, Editorial, Probador)',
     'Botón de WhatsApp flotante',
@@ -142,6 +142,7 @@ function CheckoutContent() {
   const [sessionInfo, setSessionInfo] = useState<{ name: string; email: string } | null>(null);
   const [pricing, setPricing] = useState<PricingSettings | null>(null);
   const [trm, setTrm] = useState(3900);
+  const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
 
   // Precios dinámicos desde la API de pricing
   const [planBase, setPlanBase] = useState<Record<'BASIC' | 'PRO', number>>(PLAN_BASE_FALLBACK);
@@ -206,6 +207,23 @@ function CheckoutContent() {
         if (brand) setSessionInfo({ name: brand.name || '', email: brand.email || '' });
       } catch {}
     }
+    
+    // Configurar moneda
+    const savedCurrency = localStorage.getItem('currency') as 'COP' | 'USD';
+    if (savedCurrency) {
+      setCurrency(savedCurrency);
+      if (savedCurrency === 'USD') setPaymentMethod('paypal');
+    }
+
+    const handleCurrencyChange = () => {
+      const current = localStorage.getItem('currency') as 'COP' | 'USD';
+      if (current) {
+        setCurrency(current);
+        if (current === 'USD') setPaymentMethod('paypal');
+      }
+    };
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
   }, []);
   const landingPrice    = pricing?.landingPrice         ?? 650000;
   const landingOriginal = pricing?.landingOriginalPrice ?? 900000;
@@ -796,13 +814,15 @@ function CheckoutContent() {
 
               {/* Selector de método */}
               <div className="flex gap-2 mb-6">
-                <button
-                  onClick={() => setPaymentMethod('wompi')}
-                  className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all ${paymentMethod === 'wompi' ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[#2a2a2a] bg-[#1a1a1a] opacity-60'}`}
-                >
-                  <img src="/wompi-logo.svg" alt="Wompi" className="h-8 md:h-10 w-auto invert brightness-200" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white">Tarjetas / PSE</span>
-                </button>
+                {currency === 'COP' && (
+                  <button
+                    onClick={() => setPaymentMethod('wompi')}
+                    className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all ${paymentMethod === 'wompi' ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[#2a2a2a] bg-[#1a1a1a] opacity-60'}`}
+                  >
+                    <img src="/wompi-logo.svg" alt="Wompi" className="h-8 md:h-10 w-auto invert brightness-200" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white">Tarjetas / PSE</span>
+                  </button>
+                )}
                 <button
                   onClick={() => setPaymentMethod('paypal')}
                   className={`flex-1 flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all ${paymentMethod === 'paypal' ? 'border-[#0070ba] bg-[#0070ba]/5' : 'border-[#2a2a2a] bg-[#1a1a1a] opacity-60'}`}
@@ -911,13 +931,13 @@ function CheckoutContent() {
                 Contactar por WhatsApp
               </a>
               <a
-                href={`mailto:${pricing?.manualEmail || 'info@pruebalo.wilkiedevs.com'}`}
+                href={`mailto:${pricing?.manualEmail || 'info@lookitry.com'}`}
                 className="flex items-center gap-2 text-[12px] text-[#999] hover:text-white transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                {pricing?.manualEmail || 'info@pruebalo.wilkiedevs.com'}
+                {pricing?.manualEmail || 'info@lookitry.com'}
               </a>
               <p className="text-[11px] text-[#777] pt-1 border-t border-[#1f1f1f]">
                 {isLanding

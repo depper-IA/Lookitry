@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { Eye, EyeOff, KeyRound, CheckCircle } from 'lucide-react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 
 

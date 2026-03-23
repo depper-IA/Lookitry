@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -120,13 +120,13 @@ export function LandingFooter() {
           {/* Contacto */}
           <div className="flex flex-col gap-3">
             <a
-              href="mailto:info@pruebalo.wilkiedevs.com"
+              href="mailto:info@lookitry.com"
               className="inline-flex items-center gap-2.5 text-[12px] text-[#666] hover:text-[#FF5C3A] transition-colors group"
             >
               <span className="w-7 h-7 rounded-lg bg-[#111] border border-[#1e1e1e] flex items-center justify-center flex-shrink-0 group-hover:border-[#FF5C3A]/30 transition-colors">
                 <Mail size={13} />
               </span>
-              info@pruebalo.wilkiedevs.com
+              info@lookitry.com
             </a>
             <a
               href="https://wa.me/573105436281"
