@@ -1,6 +1,6 @@
-import type { TryOnConfigResponse, GenerateTryOnDto, GenerateTryOnResponse } from '@/types';
+﻿import type { TryOnConfigResponse, GenerateTryOnDto, GenerateTryOnResponse } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 /** Tiempo máximo (ms) que esperamos una respuesta del endpoint de generación */
 const GENERATION_TIMEOUT_MS = 95_000;

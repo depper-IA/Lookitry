@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
@@ -241,7 +241,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
 
       <footer className="py-16 px-6 text-center border-t border-gray-50 bg-white mt-auto">
         <p className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-gray-300">
-          Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-all text-gray-900">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
+          Powered by <a href={footerUrl || 'https://lookitry.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-all text-gray-900">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
         </p>
       </footer>
 

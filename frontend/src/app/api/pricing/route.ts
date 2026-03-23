@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -34,7 +34,7 @@ export async function PUT(req: NextRequest) {
 
   // Verificar token admin contra Supabase
   const verifyRes = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/admin/verify`,
+    `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/admin/verify`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   if (!verifyRes.ok) {

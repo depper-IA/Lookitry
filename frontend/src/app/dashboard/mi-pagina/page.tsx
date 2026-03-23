@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -23,7 +23,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { DesignTab } from './components/DesignTab';
 import { DomainTab } from './components/DomainTab';
 
-const FRONTEND_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://pruebalo.wilkiedevs.com');
+const FRONTEND_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://lookitry.com');
 
 export default function MiPaginaPage() {
   const { brand: authBrand } = useAuth();

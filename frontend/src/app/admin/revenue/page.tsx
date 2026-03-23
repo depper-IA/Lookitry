@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { formatCurrency } from '@/utils/currency';
@@ -632,7 +632,7 @@ export default function RevenuePage() {
   const handleSave = useCallback(async (id: string, data: Record<string, unknown>) => {
     setSaving(id);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
       const res = await fetch(`${apiBase}/api/admin/revenue/payments`, {
         method: 'PUT',
         credentials: 'include',
@@ -661,7 +661,7 @@ export default function RevenuePage() {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
       const [statsRes, pricingRes, trmRes] = await Promise.all([
         fetch(`${apiBase}/api/admin/revenue/stats`, { credentials: 'include' }),
         fetch('/api/pricing', { credentials: 'include' }),

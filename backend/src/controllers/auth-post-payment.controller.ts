@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
 import { EmailService } from '../services/email.service';
 import { SubscriptionService } from '../services/subscription.service';
@@ -227,7 +227,7 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
 
     // 7. Email de verificación
     if (result.verificationToken) {
-      const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://pruebalo.wilkiedevs.com');
+      const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://lookitry.com');
       const verifyUrl = `${frontendUrl}/auth/verify?token=${result.verificationToken}`;
       emailService.sendEmail({
         to: pending.email,

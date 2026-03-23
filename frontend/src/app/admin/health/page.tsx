@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 
@@ -90,7 +90,7 @@ export default function HealthPage() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15000);
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/health`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/health`,
         { signal: controller.signal }
       );
       clearTimeout(timeout);

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -21,12 +21,12 @@ export async function middleware(request: NextRequest) {
   // ── Resolución de Dominios Personalizados ─────────────────────────────────────
   // Solo si no estamos en una ruta de sistema (dashboard, admin, login, etc)
   // y el host no es el dominio base.
-  const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'pruebalo.wilkiedevs.com';
+  const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'lookitry.com';
   const isBaseDomain = host === baseDomain || host.includes('localhost') || host.endsWith('.vercel.app');
 
   if (!isBaseDomain && !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && pathname === '/') {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
       const res = await fetch(`${apiUrl}/api/pruebalo/resolve-domain?host=${host}`);
       if (res.ok) {
         const { slug } = await res.json();

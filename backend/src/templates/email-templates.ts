@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Templates de email para el sistema de notificaciones
  * Todos los templates incluyen estilos inline para compatibilidad con clientes de email
  */
@@ -11,8 +11,8 @@ interface BrandInfo {
 /**
  * Template base con estilos comunes — paleta corporativa LOOKITRY (negro y acento naranja)
  */
-const LOGO_URL = 'https://pruebalo.wilkiedevs.com/logo.svg';
-const APP_URL = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+const LOGO_URL = 'https://lookitry.com/logo.svg';
+const APP_URL = process.env.FRONTEND_URL || 'https://lookitry.com';
 const ACCENT_COLOR = '#FF5C3A';
 
 const baseTemplate = (content: string) => `
@@ -53,7 +53,7 @@ const baseTemplate = (content: string) => `
               </p>
               <p style="margin: 8px 0 0 0; color: #888; font-size: 12px;">
                 ¿Tienes preguntas? Escríbenos a
-                <a href="mailto:info@pruebalo.wilkiedevs.com" style="color: ${ACCENT_COLOR}; text-decoration: none;">info@pruebalo.wilkiedevs.com</a>
+                <a href="mailto:info@lookitry.com" style="color: ${ACCENT_COLOR}; text-decoration: none;">info@lookitry.com</a>
               </p>
             </td>
           </tr>

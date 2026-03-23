@@ -1,4 +1,4 @@
-import { Response } from 'express';
+﻿import { Response } from 'express';
 import { BrandsService, UpdateBrandDto } from '../services/brands.service';
 import { AuthRequest } from '../middleware/auth';
 import { notificationPreferencesService } from '../services/notificationPreferences.service';
@@ -312,7 +312,7 @@ export class BrandsController {
         });
       }
 
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pruebalo.wilkiedevs.com';
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
       emailService.sendEmail({
         to: adminEmail,
@@ -395,7 +395,7 @@ export class BrandsController {
 
       const isUpgrade = targetPlan === 'PRO';
       const changeType = isUpgrade ? 'Upgrade' : 'Downgrade';
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://pruebalo.wilkiedevs.com';
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
       const monthsLabel = monthsCount > 1
         ? `${monthsCount} meses${discountPct > 0 ? ` (${discountPct}% descuento — Total: ${totalPrice.toLocaleString('es-CO')} COP)` : ''}`

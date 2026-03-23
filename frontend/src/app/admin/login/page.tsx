@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
     setLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/admin/auth/login`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/admin/auth/login`,
         { 
           method: 'POST', 
           headers: { 'Content-Type': 'application/json' }, 

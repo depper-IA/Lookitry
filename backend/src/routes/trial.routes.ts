@@ -1,4 +1,4 @@
-import { Router } from 'express';
+﻿import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { authMiddleware } from '../middleware/auth';
 import { supabaseAdmin } from '../config/supabase';
@@ -73,7 +73,7 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
     .update({ trial_payment_status: 'pending_payment' })
     .eq('id', brand.id);
 
-  const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+  const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
   const redirectUrl = `${frontendUrl}/trial-activado`;
 
   // Monto mínimo de Wompi: 100 COP — cardOnly=true restringe a solo tarjeta débito/crédito
