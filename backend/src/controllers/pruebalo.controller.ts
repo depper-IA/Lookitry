@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { getCachedBrandConfig, setCachedBrandConfig, invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { BrandsService } from '../services/brands.service';
@@ -65,7 +65,7 @@ export class PruebaloController {
 
     // Obtener configuración global de pagos y modal
     const paymentSettings = await paymentSettingsService.getSettings();
-    const footerBrandUrl = paymentSettings.footer_brand_url || 'https://pruebalo.wilkiedevs.com';
+    const footerBrandUrl = paymentSettings.footer_brand_url || 'https://lookitry.com';
     // El timer global es de 3 minutos (180 segundos)
     const globalTimerSeconds = (paymentSettings as any).landing_preview_timer_seconds || 180;
 
@@ -398,7 +398,7 @@ export class PruebaloController {
     const cleanHost = host.split(':')[0].toLowerCase();
     
     // Si es el dominio base o localhost, no hay nada que resolver aquí
-    const baseDomain = process.env.BASE_DOMAIN || 'pruebalo.wilkiedevs.com';
+    const baseDomain = process.env.BASE_DOMAIN || 'lookitry.com';
     if (cleanHost === baseDomain || cleanHost === 'localhost') {
       return res.status(200).json({ slug: null });
     }

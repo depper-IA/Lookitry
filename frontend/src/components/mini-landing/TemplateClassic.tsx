@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import Image from 'next/image';
@@ -300,7 +300,7 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
         <div className="pt-8 border-t border-gray-50 flex flex-col md:flex-row items-center justify-between gap-6">
           <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest text-center md:text-left">© 2026 {brand.name} </p>
           <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest text-center md:text-right">
-            Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-colors text-gray-900">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
+            Powered by <a href={footerUrl || 'https://lookitry.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-colors text-gray-900">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
           </p>
         </div>
       </div>

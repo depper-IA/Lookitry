@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { formatCurrency } from '@/utils/currency';
@@ -284,7 +284,7 @@ function PlanSection({
   );
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 // ── Página principal ──────────────────────────────────────────────────────────
 

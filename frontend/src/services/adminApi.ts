@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Cliente HTTP centralizado para el panel de administración.
  * Maneja automáticamente el token de admin y redirige a /admin/login en caso de 401.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 function handleUnauthorized() {
   if (typeof window === 'undefined') return;

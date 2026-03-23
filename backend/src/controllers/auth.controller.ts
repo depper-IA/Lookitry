@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
 import { EmailService } from '../services/email.service';
 import { verifyEmailTemplate, passwordResetTemplate } from '../templates/email-templates';
@@ -213,7 +213,7 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email requerido' });
       }
 
-      const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://pruebalo.wilkiedevs.com');
+      const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://lookitry.com');
       const { brand, token } = await authService.requestPasswordResetGetToken(email);
 
       // Siempre responder OK para no revelar si el email existe
@@ -261,7 +261,7 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email requerido' });
       }
 
-      const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://pruebalo.wilkiedevs.com');
+      const frontendUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://lookitry.com');
       const { brand, token } = await authService.resendVerificationEmail(email);
 
       if (brand && token) {

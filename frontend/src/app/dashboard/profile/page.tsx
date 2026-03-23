@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { brandsService } from '@/services/brands.service';
@@ -29,7 +29,7 @@ export default function ProfilePage() {
     setVerifySending(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/auth/resend-verification`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/auth/resend-verification`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -118,7 +118,7 @@ export default function ProfilePage() {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/auth/change-password`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/auth/change-password`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

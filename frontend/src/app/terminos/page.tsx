@@ -1,7 +1,7 @@
 ﻿import type { Metadata } from 'next';
 import TerminosClient from './TerminosClient';
 
-const BASE_URL = 'https://pruebalo.wilkiedevs.com';
+const BASE_URL = 'https://lookitry.com';
 
 export const metadata: Metadata = {
   title: 'Términos y Condiciones — Lookitry',

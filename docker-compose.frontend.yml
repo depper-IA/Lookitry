@@ -1,0 +1,43 @@
+services:
+  frontend:
+    build:
+      context: /root/virtual-tryon/frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://api.lookitry.com
+        NEXT_PUBLIC_APP_URL: https://lookitry.com
+        NEXT_PUBLIC_SUPABASE_URL: https://vkdooutklowctuudjnkl.supabase.co
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM
+        NEXT_PUBLIC_N8N_DESCRIPTOR_URL: https://n8n.wilkiedevs.com/webhook/descriptor
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: 0x4AAAAAACsmy7e_yL9iyAXM
+    container_name: virtual-tryon-frontend
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vt-frontend.rule=Host(`pruebalo.wilkiedevs.com`) || Host(`lookitry.com`) || Host(`www.lookitry.com`)"
+      - "traefik.http.routers.vt-frontend.entrypoints=websecure"
+      - "traefik.http.routers.vt-frontend.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.vt-frontend.loadbalancer.server.port=3000"
+
+  backend:
+    build:
+      context: /root/virtual-tryon/backend
+      dockerfile: Dockerfile
+    container_name: virtual-tryon-backend
+    restart: unless-stopped
+    env_file:
+      - /root/virtual-tryon/backend/.env
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vt-backend.rule=Host(`api.pruebalo.wilkiedevs.com`) || Host(`api.lookitry.com`)"
+      - "traefik.http.routers.vt-backend.entrypoints=websecure"
+      - "traefik.http.routers.vt-backend.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.vt-backend.loadbalancer.server.port=3001"
+
+networks:
+  proxy:
+    external: true

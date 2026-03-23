@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      context: /root/virtual-tryon/backend
+      dockerfile: Dockerfile
+    container_name: virtual-tryon-backend
+    restart: unless-stopped
+    env_file:
+      - /root/virtual-tryon/backend/.env.production
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vt-backend.rule=Host(`api.pruebalo.wilkiedevs.com`) || Host(`api.lookitry.com`)"
+      - "traefik.http.routers.vt-backend.entrypoints=websecure"
+      - "traefik.http.routers.vt-backend.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.vt-backend.loadbalancer.server.port=3001"
+
+networks:
+  proxy:
+    external: true
+

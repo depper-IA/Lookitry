@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -54,7 +54,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     setResendSending(true);
     try {
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/auth/resend-verification`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/auth/resend-verification`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

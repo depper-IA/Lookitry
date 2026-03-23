@@ -15,10 +15,19 @@ Tiempos aproximados:
 import paramiko
 import time
 import sys
+import os
+from dotenv import load_dotenv
 
-HOST = "31.220.18.39"
-USER = "root"
-PASS = "Travis18456916#"
+# Cargar variables de entorno desde el .env del backend
+load_dotenv(os.path.join(os.path.dirname(__file__), '../backend/.env'))
+
+HOST = os.getenv("VPS_HOST", "31.220.18.39")
+USER = os.getenv("VPS_USER", "root")
+PASS = os.getenv("VPS_PASS")
+
+if not PASS:
+    print("Error: La variable VPS_PASS no está definida en el archivo .env del backend.")
+    sys.exit(1)
 
 args = sys.argv[1:]
 no_cache     = "--no-cache" in args

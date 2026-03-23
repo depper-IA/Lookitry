@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -72,7 +72,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     if (pathname !== '/admin/login') {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
       fetch(`${apiBase}/api/admin/verify`, { credentials: 'include' })
         .then(r => {
@@ -119,7 +119,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = async () => {
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
       await fetch(`${apiBase}/api/admin/auth/logout`, { method: 'POST', credentials: 'include' });
     } catch (e) { console.error('Error logging out:', e); }
     localStorage.removeItem('adminUser');

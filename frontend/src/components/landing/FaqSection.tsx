@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { PricingConfig } from '@/lib/pricing';
@@ -97,7 +97,7 @@ const getFaqTabs = (pricing?: PricingConfig): FaqTab[] => [
     items: [
       {
         q: '¿Qué es la mini-landing y para qué sirve?',
-        a: 'Es una página pública profesional en pruebalo.wilkiedevs.com/tu-marca. Incluye tu catálogo de productos con probador virtual integrado, botón de WhatsApp flotante y hasta 3 templates de diseño. La puedes compartir en redes sociales, WhatsApp o en la bio de Instagram.',
+        a: 'Es una página pública profesional en lookitry.com/tu-marca. Incluye tu catálogo de productos con probador virtual integrado, botón de WhatsApp flotante y hasta 3 templates de diseño. La puedes compartir en redes sociales, WhatsApp o en la bio de Instagram.',
       },
       {
         q: '¿Cuánto cuesta la mini-landing?',
@@ -337,7 +337,7 @@ export default function FaqSection({ pricing }: { pricing?: PricingConfig }) {
               WhatsApp
             </a>
             <a
-              href="mailto:info@pruebalo.wilkiedevs.com"
+              href="mailto:info@lookitry.com"
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-medium border border-[#2a2a2a] text-[#a1a1aa] hover:text-white hover:border-[#444] transition-all"
             >
               <IconMail />

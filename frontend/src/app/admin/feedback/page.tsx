@@ -1,8 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 const ERROR_TYPE_LABELS: Record<string, string> = {
   wrong_clothing_removed: 'Ropa incorrecta eliminada',

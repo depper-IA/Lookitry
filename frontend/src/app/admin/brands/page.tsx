@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 
@@ -37,7 +37,7 @@ interface Product {
 type FilterPlan = 'all' | 'TRIAL' | 'BASIC' | 'PRO' | 'LANDING';
 type FilterTrial = 'all' | 'trial' | 'active' | 'suspended';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 export default function AdminBrandsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);

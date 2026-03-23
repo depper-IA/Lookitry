@@ -1,9 +1,9 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 
-const BASE_URL = 'https://pruebalo.wilkiedevs.com';
+const BASE_URL = 'https://lookitry.com';
 
 export const metadata: Metadata = {
   title: 'Política de Privacidad — Lookitry',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 const SECTIONS = [
   {
     title: '1. Responsable del tratamiento',
-    content: `Lookitry, operada por Wilkie Devs SAS, es responsable del tratamiento de los datos personales recopilados a través de la plataforma pruebalo.wilkiedevs.com.\n\nContacto: info@pruebalo.wilkiedevs.com · WhatsApp: +57 310 543 6281`,
+    content: `Lookitry, operada por Wilkie Devs SAS, es responsable del tratamiento de los datos personales recopilados a través de la plataforma lookitry.com.\n\nContacto: info@lookitry.com · WhatsApp: +57 310 543 6281`,
   },
   {
     title: '2. Datos que recopilamos',
@@ -46,7 +46,7 @@ const SECTIONS = [
   },
   {
     title: '7. Derechos del titular (Ley 1581 de 2012)',
-    content: `Como titular de datos personales, tienes derecho a:\n\n— Conocer, actualizar y rectificar tus datos personales.\n— Solicitar prueba de la autorización otorgada.\n— Ser informado sobre el uso de tus datos.\n— Presentar quejas ante la Superintendencia de Industria y Comercio (SIC).\n— Revocar la autorización y solicitar la supresión de tus datos, salvo que exista obligación legal de conservarlos.\n\nPara ejercer estos derechos, escríbenos a info@pruebalo.wilkiedevs.com.`,
+    content: `Como titular de datos personales, tienes derecho a:\n\n— Conocer, actualizar y rectificar tus datos personales.\n— Solicitar prueba de la autorización otorgada.\n— Ser informado sobre el uso de tus datos.\n— Presentar quejas ante la Superintendencia de Industria y Comercio (SIC).\n— Revocar la autorización y solicitar la supresión de tus datos, salvo que exista obligación legal de conservarlos.\n\nPara ejercer estos derechos, escríbenos a info@lookitry.com.`,
   },
   {
     title: '8. Seguridad de los datos',

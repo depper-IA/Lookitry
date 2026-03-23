@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
@@ -303,7 +303,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
               <span>© 2026 {brand.name} </span>
               <span className="hidden md:block">|</span>
               <p>
-                Powered by <a href={footerUrl || 'https://pruebalo.wilkiedevs.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-opacity text-white">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
+                Powered by <a href={footerUrl || 'https://lookitry.com'} target="_blank" rel="noopener noreferrer" className="font-bold hover:opacity-80 transition-opacity text-white">Look<span className="text-[#FF5C3A]">itry</span> IA</a>
               </p>
             </div>
           </div>

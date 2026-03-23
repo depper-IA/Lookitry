@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 /**
  * POST /api/coupons/validate

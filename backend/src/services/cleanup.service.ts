@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import { supabaseAdmin } from '../config/supabase';
 
 interface CleanupConfig {
@@ -7,7 +7,7 @@ interface CleanupConfig {
 }
 
 export class CleanupService {
-  private readonly wpDeleteUrl = 'https://pruebalo.wilkiedevs.com/wp-json/n8n/v1/delete';
+  private readonly wpDeleteUrl = 'https://lookitry.com/wp-json/n8n/v1/delete';
   private readonly bearerToken = process.env.N8N_BEARER_TOKEN || '';
   
   private config: CleanupConfig = {
@@ -44,7 +44,7 @@ export class CleanupService {
       for (const product of deletedProducts) {
         try {
           // Solo eliminar si la imagen está en nuestro dominio
-          if (product.image_url && product.image_url.includes('pruebalo.wilkiedevs.com')) {
+          if (product.image_url && product.image_url.includes('lookitry.com')) {
             await this.deleteImageFromWordPress(product.image_url);
             deleted++;
             console.log(`[Cleanup] ✅ Imagen eliminada: ${product.image_url}`);
@@ -95,7 +95,7 @@ export class CleanupService {
 
       for (const product of oldProducts) {
         try {
-          if (product.image_url && product.image_url.includes('pruebalo.wilkiedevs.com')) {
+          if (product.image_url && product.image_url.includes('lookitry.com')) {
             await this.deleteImageFromWordPress(product.image_url);
             deleted++;
             console.log(`[Cleanup] ✅ Imagen antigua eliminada: ${product.image_url}`);

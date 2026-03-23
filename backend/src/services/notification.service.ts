@@ -1,4 +1,4 @@
-import { emailService } from './email.service';
+﻿import { emailService } from './email.service';
 import { SubscriptionService } from './subscription.service';
 import { notificationPreferencesService } from './notificationPreferences.service';
 import { supabaseAdmin } from '../config/supabase';
@@ -425,7 +425,7 @@ export class NotificationService {
    */
   async sendLandingActivatedEmail(brand: Brand): Promise<void> {
     try {
-      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
       const landingUrl = `${frontendUrl}/sitio/${(brand as any).slug}`;
       const html = landingActivatedEmail(
         { name: brand.name, email: brand.email },
@@ -452,7 +452,7 @@ export class NotificationService {
    */
   async sendLandingDeletionWarning(brand: Brand, diasRestantes: number): Promise<void> {
     try {
-      const frontendUrl = process.env.FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
       const html = landingDeletionWarningEmail(
         { name: brand.name, email: brand.email },
         diasRestantes,

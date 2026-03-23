@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Search, CreditCard, RefreshCw, CheckCircle, XCircle, Clock, Banknote, Wifi, ArrowUpDown } from 'lucide-react';
@@ -27,7 +27,7 @@ interface Payment {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function adminApi(path: string, options?: RequestInit) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
   return fetch(`${base}/api${path}`, { ...options, credentials: 'include' });
 }
 

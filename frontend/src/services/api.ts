@@ -1,6 +1,6 @@
-import { authService } from './auth.service';
+﻿import { authService } from './auth.service';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 // Wrapper que imita la interfaz de axios ({ data, status })
 async function apiFetch<T>(

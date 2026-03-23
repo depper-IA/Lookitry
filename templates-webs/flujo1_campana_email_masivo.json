@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "VirtualTryOn — Campaña Email Masivo",
   "nodes": [
     {
@@ -74,7 +74,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"sender\": { \"name\": \"Pruébalo — Probador Virtual\", \"email\": \"info@pruebalo.wilkiedevs.com\" },\n  \"to\": [{ \"email\": \"{{ $json.email }}\", \"name\": \"{{ $json.nombre_contacto || $json.nombre_empresa }}\" }],\n  \"subject\": \"{{ $json.nombre_empresa }} — probador virtual gratis para tu tienda\",\n  \"htmlContent\": \"<html><body style='font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px'><h2 style='color:#FF5C3A'>Hola {{ $json.nombre_contacto || 'equipo de ' + $json.nombre_empresa }},</h2><p>¿Tus clientes no saben cómo les queda la ropa antes de comprar? Eso genera devoluciones y ventas perdidas.</p><p><strong>Pruébalo</strong> es un probador virtual con IA que tus clientes usan desde el celular — sin instalar nada, resultado en 12 segundos.</p><ul><li>7 días gratis, sin tarjeta</li><li>Sin instalación — solo un enlace</li><li>Resultado en 12 segundos</li></ul><p style='text-align:center;margin:30px 0'><a href='https://pruebalo.wilkiedevs.com/register?utm_source=email&utm_campaign=masivo&ref={{ $json.crm_ref }}' style='background:#FF5C3A;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold'>Activar probador gratis</a></p><p style='color:#888;font-size:12px'>Si no deseas recibir más correos, responde con CANCELAR.</p></body></html>\"\n}",
+        "jsonBody": "={\n  \"sender\": { \"name\": \"Pruébalo — Probador Virtual\", \"email\": \"info@lookitry.com\" },\n  \"to\": [{ \"email\": \"{{ $json.email }}\", \"name\": \"{{ $json.nombre_contacto || $json.nombre_empresa }}\" }],\n  \"subject\": \"{{ $json.nombre_empresa }} — probador virtual gratis para tu tienda\",\n  \"htmlContent\": \"<html><body style='font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px'><h2 style='color:#FF5C3A'>Hola {{ $json.nombre_contacto || 'equipo de ' + $json.nombre_empresa }},</h2><p>¿Tus clientes no saben cómo les queda la ropa antes de comprar? Eso genera devoluciones y ventas perdidas.</p><p><strong>Pruébalo</strong> es un probador virtual con IA que tus clientes usan desde el celular — sin instalar nada, resultado en 12 segundos.</p><ul><li>7 días gratis, sin tarjeta</li><li>Sin instalación — solo un enlace</li><li>Resultado en 12 segundos</li></ul><p style='text-align:center;margin:30px 0'><a href='https://lookitry.com/register?utm_source=email&utm_campaign=masivo&ref={{ $json.crm_ref }}' style='background:#FF5C3A;color:white;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold'>Activar probador gratis</a></p><p style='color:#888;font-size:12px'>Si no deseas recibir más correos, responde con CANCELAR.</p></body></html>\"\n}",
         "options": {
           "response": {
             "response": {
