@@ -1,5 +1,83 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 23 de Marzo, 2026 — Rediseño de UpgradeModal y SubscriptionModal
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/UpgradeModal.tsx`
+- `frontend/src/components/dashboard/SubscriptionModal.tsx`
+
+**Cambios:**
+- `UpgradeModal`: header con precio destacado, features con iconos, botones con hover states, responsive en mobile/desktop. Vista trial con dos tarjetas de plan.
+- `SubscriptionModal`: rediseño completo usando variables CSS del sistema (`var(--bg-card)`, `var(--text-primary)`, etc.). Eliminados colores hardcoded (`bg-white`, `text-gray-900`, `bg-indigo-600`). Pill de estado con color semántico, filas con iconos, botón Cerrar en naranja Lookitry.
+- Ambos modales: overlay con `onClick` para cerrar, `stopPropagation` en el contenido, totalmente responsive.
+
+**Motivo:** El usuario solicitó mejorar ambos modales y verificar responsividad.
+
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/SettingsForm.tsx`
+
+**Cambios:**
+- Tab "Pro" movido al último lugar: General → Apariencia → Código Embed → Pro
+
+**Motivo:** El usuario solicitó que la opción Pro quede de último en el menú lateral de configuración.
+
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/EmbedSection.tsx`
+
+**Cambios:**
+- Texto del bloque iframe: `text-emerald-300` → `text-black`
+- Texto del bloque URL (Wix): `text-blue-300` → `text-black`
+- Bordes de ambos contenedores: `var(--border-color)` → `#000000`
+
+**Motivo:** El usuario solicitó que la letra del código sea negra y los bordes del bloque también negros.
+
+
+## 23 de Marzo, 2026 — Migración nombre repo: virtual-tryon → Lookitry
+
+**Archivos modificados:**
+- `backend/.env`
+- `docker-compose.backend.yml`
+- `docker-compose.frontend.yml`
+- `scripts/_deploy_now.py` y todos los scripts en `scripts/*.py`
+
+**Descripción:**
+- Git remote local actualizado: `https://github.com/depper-IA/virtual-tryon.git` → `https://github.com/depper-IA/Lookitry.git`
+- Git remote del VPS actualizado al mismo URL
+- `GITHUB_REPO` en `backend/.env` y en `.env.production` del VPS actualizado
+- `docker-compose.backend.yml`: rutas `/root/virtual-tryon/` → `/root/Lookitry/`, container `virtual-tryon-backend` → `lookitry-backend`
+- `docker-compose.frontend.yml`: mismas correcciones + container `virtual-tryon-frontend` → `lookitry-frontend`
+- Todos los scripts Python en `scripts/`: reemplazadas todas las rutas `/root/virtual-tryon/` y nombres de contenedor `virtual-tryon-backend/frontend`
+- `GITHUB_TOKEN` agregado al `backend/.env` local (estaba vacío)
+
+**Motivo:** El repositorio fue renombrado de `virtual-tryon` a `Lookitry` en GitHub. Todas las referencias al nombre antiguo causarían fallos en el deploy y en el git pull del VPS.
+
+---
+
+## 23 de Marzo, 2026 — Sincronización backend/.env con .env.production del VPS
+
+**Archivos modificados:**
+- `backend/.env`
+
+**Descripción:**
+Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregando todas las variables que existían en producción pero faltaban localmente:
+- `SUPABASE_DB_PASSWORD`
+- `JWT_SECRET` (actualizado al valor real de producción)
+- `JWT_EXPIRES_IN=30d`
+- `N8N_TIMEOUT=90000`, `N8N_HEADER_NAME=Authorization`
+- `OPENROUTER_API_KEY` y `GEMINI_API_KEY`
+- `MAX_FILE_SIZE`, `ALLOWED_FILE_TYPES`
+- `SMTP_SECURE=true`, `SMTP_FROM`
+- `CORS_ORIGIN`
+- Llaves Wompi de **producción** (reemplazando las de sandbox/test)
+- `MINIO_PUBLIC_URL`
+- `VPS_PORT=22`, `GITHUB_REPO`
+
+**Motivo:** El `.env` local estaba desincronizado con el `.env.production` del VPS. Tenía llaves de Wompi sandbox en lugar de producción, faltaban variables de IA (OpenRouter, Gemini) y otras configuraciones necesarias para que el entorno local refleje fielmente producción.
+
+---
+
 ## 23 de Marzo, 2026 — Fix migración dominio: backend/.env
 
 **Archivos modificados:**
@@ -614,3 +692,45 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 **Motivo:** Las cards de planes mostraban precios estáticos ($150.000/$250.000 hardcodeados) porque el fetch fallaba silenciosamente al usar el campo incorrecto `config` en lugar de `data`. El header tenía 56px de alto vs 64px del sidebar, causando desalineación visual.
 
 ---
+
+## 23 de Marzo, 2026 — Badge de suscripción: mostrar meses cuando quedan más de 30 días
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/SubscriptionBadge.tsx`
+
+**Descripción:** Cuando `daysRemaining > 30`, el badge del header ahora muestra el tiempo en meses (ej: "2 meses y 29d restantes") en lugar de días. Si los días son exactamente múltiplo de 30, muestra solo los meses (ej: "3 meses restantes"). En mobile muestra la versión corta: `2m` en lugar de `89d`. Por debajo de 30 días sigue mostrando días como antes.
+
+## 23 de Marzo, 2026 — Badge de suscripción: rediseño estético y responsive
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/SubscriptionBadge.tsx`
+
+**Descripción:** Rediseño completo del badge del header. Se reemplazaron las clases Tailwind estáticas (`bg-green-100 text-green-800`) por un sistema de estilos con transparencia y backdrop-blur alineado al dark mode de Lookitry. Se eliminaron los SVG de íconos y se reemplazaron por un dot indicator animado (pulse en rojo/vencido). El responsive ahora muestra texto completo en `sm+` y solo el valor corto (`2m`, `15d`) en mobile, sin el hack de dos `<span>` con `hidden`. La lógica de meses/días se extrajo a una función `formatTimeRemaining` reutilizable.
+
+## 23 de Marzo, 2026 — EmbedSection: rediseño para alinear estética con el resto de Settings
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/EmbedSection.tsx`
+
+**Descripción:** Rediseño completo de la sección "Código Embed" en `/dashboard/settings` para que sea visualmente consistente con las otras pestañas (General, Apariencia, Pro). Cambios principales: `rounded-2xl` → `rounded-[2.5rem]` en todas las cards; se crearon componentes internos `SectionCard` y `SectionHeader` que replican el patrón de ícono naranja + título italic uppercase + subtítulo tracking-widest; los bloques de código ahora tienen barra superior con dots decorativos y botón de copiar con estilo `bg-[#FF5C3A]/10` en lugar de `bg-gray-800`; los botones de plataforma usan `rounded-2xl`; los pasos usan `rounded-2xl` con el mismo `var(--bg-hover)`; los botones de ayuda usan `rounded-2xl` con borde naranja translúcido.
+
+## 23 de Marzo, 2026 — Badge suscripción: formato compacto "3M 2D"
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/SubscriptionBadge.tsx`
+
+**Descripción:** Se simplificó el formato del tiempo restante. Antes mostraba "2 meses y 29d restantes", ahora muestra "3M 2D restantes" en desktop y "3M" en mobile.
+
+## 23 de Marzo, 2026 — EmbedSection: pasos de plataforma en acordeón
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/EmbedSection.tsx`
+
+**Descripción:** Los pasos de instalación (WordPress, Wix, Shopify, Otro) ahora están colapsados por defecto. Al hacer click en una plataforma se expanden sus pasos con animación de chevron. Se fusionaron los pasos 1 y 2 en una sola card. El estado inicial es `null` (ninguna plataforma seleccionada). Hacer click en la plataforma activa la colapsa.
+
+## 23 de Marzo, 2026 — EmbedSection: fix numeración pasos y color bloque código
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/EmbedSection.tsx`
+
+**Descripción:** Corregida la numeración de pasos (1 → plataforma, 2 → código, sin salto al 3). Reemplazado `rgba(0,0,0,0.4)` por `var(--bg-base)` en el fondo del bloque de código para mantener consistencia con el sistema de diseño en ambos modos (claro/oscuro).
