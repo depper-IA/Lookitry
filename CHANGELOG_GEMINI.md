@@ -1,5 +1,18 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 23 de Marzo, 2026 — Fix migración dominio: backend/.env
+
+**Archivos modificados:**
+- `backend/.env`
+
+**Descripción:**
+- `SMTP_USER`: `info@pruebalo.wilkiedevs.com` → `info@lookitry.com`
+- `FRONTEND_URL`: `https://pruebalo.wilkiedevs.com` → `https://lookitry.com`
+
+**Motivo:** Completar la migración al nuevo dominio lookitry.com. El código fuente (frontend/src, backend/src, docker-compose) ya estaba migrado correctamente. Solo quedaban estas 2 variables de entorno sin actualizar.
+
+---
+
 ## 23 de Marzo, 2026 — Migración a lookitry.com y Health Check MinIO
 
 **Archivos modificados:**
