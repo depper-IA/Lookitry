@@ -113,8 +113,8 @@ function ConfirmModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border shadow-xl w-full max-w-sm p-6 space-y-4">
-        <h3 style={{ color: 'var(--text-primary)' }} className="font-bold text-lg">{title}</h3>
+      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border shadow-xl w-full max-w-sm p-6 space-y-4">
+        <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold uppercase italic text-lg">{title}</h3>
         <p style={{ color: 'var(--text-secondary)' }} className="text-sm">{message}</p>
         <div className="flex gap-3 justify-end pt-2">
           <button onClick={onCancel} style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }} className="px-4 py-2 rounded-xl border text-sm hover:opacity-80 transition-opacity">
@@ -195,9 +195,9 @@ function RenewModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border shadow-xl w-full max-w-md">
+      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border shadow-xl w-full max-w-md">
         <div style={{ borderColor: 'var(--border-color)' }} className="px-6 py-5 border-b">
-          <h3 style={{ color: 'var(--text-primary)' }} className="font-bold text-lg">Registrar pago — {brand.name}</h3>
+          <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold uppercase italic text-lg">Registrar pago — {brand.name}</h3>
           <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">
             {brand.is_in_trial ? 'Plan Trial' : `Plan ${brand.plan}`} · {brand.is_in_trial ? formatPlanPrice('BASIC') : formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes
           </p>
@@ -340,9 +340,9 @@ function ChangePlanModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border shadow-xl w-full max-w-sm">
+      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border shadow-xl w-full max-w-sm">
         <div style={{ borderColor: 'var(--border-color)' }} className="px-6 py-5 border-b">
-          <h3 style={{ color: 'var(--text-primary)' }} className="font-bold text-lg">Cambiar plan — {brand.name}</h3>
+          <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold uppercase italic text-lg">Cambiar plan — {brand.name}</h3>
         </div>
         <div className="px-6 py-5 space-y-4">
           {error && <p className="text-sm text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
@@ -552,7 +552,7 @@ export default function AdminSubscriptionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-syne font-bold">Suscripciones</h1>
+        <h1 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-black uppercase italic tracking-tight text-2xl">Suscripciones</h1>
         <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">{subscriptions.length} suscripciones en total</p>
       </div>
 
@@ -567,7 +567,7 @@ export default function AdminSubscriptionsPage() {
       )}
 
       {/* Filtros */}
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border p-4 space-y-4">
+      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border p-4 space-y-4">
         <input type="text" value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Buscar por nombre, email o slug..."
           style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
@@ -589,7 +589,7 @@ export default function AdminSubscriptionsPage() {
       </div>
 
       {/* Tabla */}
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border overflow-hidden">
+      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border overflow-hidden">
 
         {/* Barra de acciones masivas */}
         {selected.size > 0 && (
@@ -597,7 +597,7 @@ export default function AdminSubscriptionsPage() {
             <span className="text-sm font-medium text-[#FF5C3A]">
               {selected.size} seleccionada{selected.size > 1 ? 's' : ''}
             </span>
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center flex-wrap gap-2 ml-auto">
               <button onClick={() => setConfirmBulk('suspend')} disabled={bulkLoading}
                 className="flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors">
                 <Ban className="w-3.5 h-3.5" /> Suspender
@@ -624,24 +624,25 @@ export default function AdminSubscriptionsPage() {
                     checked={paginated.length > 0 && selected.size === paginated.length}
                     ref={el => { if (el) el.indeterminate = selected.size > 0 && selected.size < paginated.length; }}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-gray-300 accent-[#FF5C3A] cursor-pointer" />
+                    style={{ borderColor: 'var(--border-color)' }}
+                    className="w-4 h-4 rounded accent-[#FF5C3A] cursor-pointer" />
                 </th>
                 <th onClick={() => toggleSort('name')} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide cursor-pointer hover:bg-black/5 transition-colors">
                   <div className="flex items-center gap-1">
                     Marca
-                    <ArrowUpDown className={`w-3 h-3 ${sortField === 'name' ? 'text-[#FF5C3A]' : 'text-gray-400'}`} />
+                    <ArrowUpDown className="w-3 h-3" style={{ color: sortField === 'name' ? '#FF5C3A' : 'var(--text-muted)' }} />
                   </div>
                 </th>
                 <th onClick={() => toggleSort('plan')} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide cursor-pointer hover:bg-black/5 transition-colors">
                   <div className="flex items-center gap-1">
                     Plan
-                    <ArrowUpDown className={`w-3 h-3 ${sortField === 'plan' ? 'text-[#FF5C3A]' : 'text-gray-400'}`} />
+                    <ArrowUpDown className="w-3 h-3" style={{ color: sortField === 'plan' ? '#FF5C3A' : 'var(--text-muted)' }} />
                   </div>
                 </th>
                 <th onClick={() => toggleSort('vencimiento')} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide cursor-pointer hover:bg-black/5 transition-colors">
                   <div className="flex items-center gap-1">
                     Vencimiento
-                    <ArrowUpDown className={`w-3 h-3 ${sortField === 'vencimiento' ? 'text-[#FF5C3A]' : 'text-gray-400'}`} />
+                    <ArrowUpDown className="w-3 h-3" style={{ color: sortField === 'vencimiento' ? '#FF5C3A' : 'var(--text-muted)' }} />
                   </div>
                 </th>
                 <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Días</th>
@@ -657,7 +658,8 @@ export default function AdminSubscriptionsPage() {
                 }} className="hover:opacity-90 transition-opacity">
                   <td className="px-4 py-3.5 text-center">
                     <input type="checkbox" checked={selected.has(s.id)} onChange={() => toggleSelect(s.id)}
-                      className="w-4 h-4 rounded border-gray-300 accent-[#FF5C3A] cursor-pointer" />
+                      style={{ borderColor: 'var(--border-color)' }}
+                      className="w-4 h-4 rounded accent-[#FF5C3A] cursor-pointer" />
                   </td>
                   <td className="px-5 py-3.5">
                     <p style={{ color: 'var(--text-primary)' }} className="font-medium">{s.name}</p>
@@ -694,7 +696,7 @@ export default function AdminSubscriptionsPage() {
                         </button>
                       ) : (
                         <button onClick={() => setConfirmAction({ brand: s, action: 'suspend' })} title="Suspender"
-                          className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors">
+                          className="p-2 rounded-xl bg-[#ef4444]/10 text-[#ef4444] hover:bg-[#ef4444]/20 transition-colors">
                           <Ban className="w-4 h-4" />
                         </button>
                       )}
@@ -715,7 +717,7 @@ export default function AdminSubscriptionsPage() {
 
       {/* Paginación */}
       {totalPages > 1 && (
-        <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="flex items-center justify-between border rounded-2xl px-5 py-3">
+        <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="flex items-center justify-between border rounded-[2rem] px-5 py-3">
           <p style={{ color: 'var(--text-muted)' }} className="text-sm">
             {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filtered.length)} de {filtered.length}
           </p>

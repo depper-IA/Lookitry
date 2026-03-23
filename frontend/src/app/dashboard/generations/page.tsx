@@ -251,11 +251,13 @@ function GenerationCard({
   if (viewMode === 'list') {
     return (
       <div 
-        className={`flex items-center gap-4 p-3 rounded-xl border transition-all hover:bg-gray-50/50 cursor-pointer ${selected ? 'ring-2 ring-[#FF5C3A] bg-[#FF5C3A]/5' : 'bg-card'}`}
-        style={{ borderColor: selected ? '#FF5C3A' : 'var(--border-color)' }}
+        className={`flex items-center gap-4 p-3 rounded-xl border transition-all cursor-pointer ${selected ? 'ring-2 ring-[#FF5C3A] bg-[#FF5C3A]/5' : ''}`}
+        style={{ borderColor: selected ? '#FF5C3A' : 'var(--border-color)', backgroundColor: selected ? undefined : 'var(--bg-card)' }}
+        onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLDivElement).style.backgroundColor = 'var(--bg-hover)'; }}
+        onMouseLeave={e => { if (!selected) (e.currentTarget as HTMLDivElement).style.backgroundColor = 'var(--bg-card)'; }}
         onClick={selecting ? onToggle : onOpen}
       >
-        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--bg-hover)' }}>
           <img src={gen.resultImageUrl} alt={gen.productName} className="w-full h-full object-cover" />
         </div>
         <div className="flex-1 min-w-0">
@@ -265,16 +267,16 @@ function GenerationCard({
         <div className="flex items-center gap-2">
           {!selecting && (
             <>
-              <button onClick={handleDownload} className="p-2 text-gray-400 hover:text-[#FF5C3A] transition-colors">
+              <button onClick={handleDownload} className="p-2 transition-colors hover:text-[#FF5C3A]" style={{ color: 'var(--text-muted)' }}>
                 {downloading ? '...' : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}
               </button>
-              <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+              <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-2 transition-colors hover:text-[#ef4444]" style={{ color: 'var(--text-muted)' }}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
               </button>
             </>
           )}
           {selecting && (
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selected ? 'bg-[#FF5C3A] border-[#FF5C3A]' : 'border-gray-300'}`}>
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selected ? 'bg-[#FF5C3A] border-[#FF5C3A]' : ''}`} style={!selected ? { borderColor: 'var(--border-color)' } : {}}>
               {selected && <svg className="w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
             </div>
           )}
@@ -293,7 +295,7 @@ function GenerationCard({
       }}
       onClick={selecting ? onToggle : onOpen}
     >
-      <div className={`relative ${viewMode === 'thumbnails' ? 'aspect-square' : 'aspect-[3/4]'} overflow-hidden bg-gray-100`}>
+      <div className={`relative ${viewMode === 'thumbnails' ? 'aspect-square' : 'aspect-[3/4]'} overflow-hidden`} style={{ backgroundColor: 'var(--bg-hover)' }}>
         <img
           src={gen.resultImageUrl}
           alt={`Prueba virtual — ${gen.productName}`}
@@ -320,7 +322,7 @@ function GenerationCard({
         {!selecting && (
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
             <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-              <svg className="w-5 h-5 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: 'var(--text-primary)' }}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
               </svg>
             </div>
@@ -462,13 +464,14 @@ export default function GenerationsPage() {
 
           <div className="flex items-center gap-2">
             {!selecting && (
-              <div className="flex items-center bg-card border border-border rounded-lg p-0.5 gap-0.5">
+              <div className="flex items-center rounded-lg p-0.5 gap-0.5 border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
                 {VIEW_MODES.map(({ id, label, icon }) => (
                   <button
                     key={id}
                     onClick={() => { setViewMode(id); localStorage.setItem('generations-view-mode', id); }}
                     title={label}
-                    className={`p-1.5 rounded-md transition-colors ${viewMode === id ? 'bg-[#FF5C3A] text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`p-1.5 rounded-md transition-colors ${viewMode === id ? 'bg-[#FF5C3A] text-white' : 'hover:text-[#FF5C3A]'}`}
+                    style={viewMode !== id ? { color: 'var(--text-secondary)' } : {}}
                   >
                     {icon}
                   </button>
@@ -478,18 +481,18 @@ export default function GenerationsPage() {
 
             {selecting ? (
               <div className="flex items-center gap-2">
-                <button onClick={toggleSelectAll} className="px-3 py-2 rounded-xl text-xs font-medium border border-border">
+                <button onClick={toggleSelectAll} className="px-3 py-2 rounded-xl text-xs font-medium border" style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
                   {selected.size === filteredGenerations.length ? 'Deseleccionar todo' : 'Seleccionar todo'}
                 </button>
-                <button onClick={handleDeleteSelected} disabled={selected.size === 0} className="px-4 py-2 rounded-xl text-xs font-semibold bg-red-500 text-white disabled:opacity-50">
+                <button onClick={handleDeleteSelected} disabled={selected.size === 0} className="px-4 py-2 rounded-xl text-xs font-semibold text-white disabled:opacity-50" style={{ backgroundColor: '#ef4444' }}>
                   {deleting ? '...' : `Eliminar (${selected.size})`}
                 </button>
-                <button onClick={() => { setSelecting(false); setSelected(new Set()); }} className="px-3 py-2 rounded-xl text-xs font-medium border border-border">
+                <button onClick={() => { setSelecting(false); setSelected(new Set()); }} className="px-3 py-2 rounded-xl text-xs font-medium border" style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
                   Cancelar
                 </button>
               </div>
             ) : (
-              <button onClick={() => setSelecting(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-border">
+              <button onClick={() => setSelecting(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border" style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
                 Seleccionar
               </button>
@@ -499,7 +502,7 @@ export default function GenerationsPage() {
 
         {/* Buscador */}
         <div className="relative max-w-md">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style={{ color: 'var(--text-muted)' }}>
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </div>
           <input
@@ -507,16 +510,17 @@ export default function GenerationsPage() {
             placeholder="Buscar por nombre de producto..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-card text-sm focus:ring-2 focus:ring-[#FF5C3A]/20 outline-none"
+            className="block w-full pl-10 pr-4 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-[#FF5C3A]/20 outline-none"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12 text-gray-400">Cargando generaciones...</div>
+        <div className="flex justify-center py-12" style={{ color: 'var(--text-muted)' }}>Cargando generaciones...</div>
       ) : filteredGenerations.length === 0 ? (
-        <div className="text-center py-16 bg-card border border-dashed border-border rounded-3xl">
-          <p className="text-gray-500">No se encontraron generaciones</p>
+        <div className="text-center py-16 rounded-3xl border border-dashed" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <p style={{ color: 'var(--text-secondary)' }}>No se encontraron generaciones</p>
         </div>
       ) : (
         <div className={

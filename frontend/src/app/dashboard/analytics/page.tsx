@@ -62,7 +62,7 @@ export default function AnalyticsPage() {
           <h1 style={{ color: 'var(--text-primary)' }} className="text-3xl font-syne font-bold">Analytics</h1>
           <p style={{ color: 'var(--text-secondary)' }} className="mt-2 text-sm">Estadísticas de uso y rendimiento</p>
         </div>
-        <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-3 rounded-xl text-sm">
+        <div className="border border-[#ef4444]/30 bg-[#ef4444]/10 text-[#ef4444] px-4 py-3 rounded-xl text-sm">
           {error}
         </div>
       </div>
