@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { brandsService } from '@/services/brands.service';
+import { Spinner } from '@/components/ui/Spinner';
 import type { Brand } from '@/types';
 
 export default function ProfilePage() {
@@ -140,7 +141,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF5C3A]" />
+        <Spinner size="lg" />
       </div>
     );
   }
