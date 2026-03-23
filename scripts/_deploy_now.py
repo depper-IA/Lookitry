@@ -1,5 +1,5 @@
 """
-Deploy script -- virtual-tryon
+Deploy script -- Lookitry
 Uso:
   python _deploy_now.py              -> rebuild solo lo que cambio (rapido, usa cache Docker)
   python _deploy_now.py --no-cache   -> rebuild completo sin cache (lento, para cambios en deps)
@@ -24,6 +24,12 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '../backend/.env'))
 HOST = os.getenv("VPS_HOST", "31.220.18.39")
 USER = os.getenv("VPS_USER", "root")
 PASS = os.getenv("VPS_PASS")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
+GITHUB_REPO  = os.getenv("GITHUB_REPO", "https://github.com/depper-IA/Lookitry.git")
+REPO         = "/root/virtual-tryon"
+
+# URL con token para autenticación sin prompt
+REPO_URL = GITHUB_REPO.replace("https://", f"https://{GITHUB_TOKEN}@") if GITHUB_TOKEN else GITHUB_REPO
 
 if not PASS:
     print("Error: La variable VPS_PASS no está definida en el archivo .env del backend.")
@@ -59,17 +65,17 @@ print(f"Conectado al VPS  [no-cache={no_cache}  backend={do_backend}  frontend={
 if restart_only:
     print("\n=== Restart rapido (sin rebuild) ===")
     if do_backend:
-        run(ssh, "docker compose -f /root/virtual-tryon/docker-compose.backend.yml restart")
+        run(ssh, f"docker compose -f {REPO}/docker-compose.backend.yml restart")
     if do_frontend:
-        run(ssh, "docker compose -f /root/virtual-tryon/docker-compose.frontend.yml restart")
+        run(ssh, f"docker compose -f {REPO}/docker-compose.frontend.yml restart")
     time.sleep(3)
-    run(ssh, "docker ps --format 'table {{.Names}}\t{{.Status}}' | grep virtual-tryon")
+    run(ssh, "docker ps --format 'table {{.Names}}\t{{.Status}}'")
     ssh.close()
     print("\nRestart completado.")
     sys.exit(0)
 
 # 1. Git pull -- detectar que archivos cambiaron
-out, _ = run(ssh, "cd /root/virtual-tryon && git pull origin main")
+out, _ = run(ssh, f"cd {REPO} && git remote set-url origin {REPO_URL} && git pull origin main")
 
 # Inferir que rebuildar si no se especifico flag
 if not only_back and not only_front:
@@ -93,18 +99,18 @@ if do_backend and "package.json" in out and not no_cache:
 # 2. Rebuild backend
 if do_backend:
     print("\n=== Rebuild BACKEND ===")
-    run(ssh, f"cd /root/virtual-tryon && docker compose -f docker-compose.backend.yml build {build_flag} 2>&1 | tail -15", timeout=300)
-    run(ssh, "cd /root/virtual-tryon && docker compose -f docker-compose.backend.yml up -d")
+    run(ssh, f"cd {REPO} && docker compose -f docker-compose.backend.yml build {build_flag} 2>&1 | tail -15", timeout=300)
+    run(ssh, f"cd {REPO} && docker compose -f docker-compose.backend.yml up -d")
 
 # 3. Rebuild frontend
 if do_frontend:
     print("\n=== Rebuild FRONTEND ===")
-    run(ssh, f"cd /root/virtual-tryon && docker compose -f docker-compose.frontend.yml build {build_flag} 2>&1 | tail -20", timeout=600)
-    run(ssh, "cd /root/virtual-tryon && docker compose -f docker-compose.frontend.yml up -d")
+    run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml build {build_flag} 2>&1 | tail -20", timeout=600)
+    run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml up -d")
 
 # 4. Estado de contenedores
 time.sleep(4)
-run(ssh, "docker ps --format 'table {{.Names}}\t{{.Status}}' | grep virtual-tryon")
+run(ssh, "docker ps --format 'table {{.Names}}\t{{.Status}}'")
 
 # 5. Health check
 print("\n=== Health check ===")
