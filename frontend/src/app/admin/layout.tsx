@@ -11,25 +11,25 @@ const adminNav = [
   {
     label: null,
     items: [
-      { href: '/admin/dashboard', label: 'Dashboard', icon: DashboardIcon },
-      { href: '/admin/brands',    label: 'Marcas',    icon: BrandsIcon },
+      { href: '/admin/dashboard',     label: 'Dashboard',     icon: DashboardIcon },
+      { href: '/admin/brands',        label: 'Marcas',        icon: BrandsIcon },
       { href: '/admin/subscriptions', label: 'Suscripciones', icon: SubsIcon },
     ],
   },
   {
     label: 'Finanzas',
     items: [
-      { href: '/admin/revenue',          label: 'Ingresos',          icon: RevenueIcon },
+      { href: '/admin/revenue',          label: 'Ingresos',           icon: RevenueIcon },
       { href: '/admin/payments',         label: 'Historial de Pagos', icon: PaymentsIcon },
-      { href: '/admin/payment-settings', label: 'Medios de Pago',    icon: PaySettingsIcon },
-      { href: '/admin/pricing',          label: 'Precios',           icon: PricingIcon },
+      { href: '/admin/payment-settings', label: 'Medios de Pago',     icon: PaySettingsIcon },
+      { href: '/admin/pricing',          label: 'Precios',            icon: PricingIcon },
     ],
   },
   {
     label: 'Analítica',
     items: [
-      { href: '/admin/analytics',  label: 'Analytics',   icon: AnalyticsIcon },
-      { href: '/admin/conversion', label: 'Conversión',  icon: ConversionIcon },
+      { href: '/admin/analytics',  label: 'Analytics',  icon: AnalyticsIcon },
+      { href: '/admin/conversion', label: 'Conversión', icon: ConversionIcon },
     ],
   },
   {
@@ -47,21 +47,21 @@ const adminNav = [
   {
     label: 'Sistema',
     items: [
-      { href: '/admin/notifications',  label: 'Notificaciones',  icon: BellIcon },
+      { href: '/admin/notifications', label: 'Notificaciones',  icon: BellIcon },
       { href: '/admin/configuracion', label: 'Configuración',   icon: TrialIcon },
-      { href: '/admin/admins',         label: 'Administradores', icon: AdminsIcon },
+      { href: '/admin/admins',        label: 'Administradores', icon: AdminsIcon },
     ],
   },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
-  const [adminUser, setAdminUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [adminUser, setAdminUser]         = useState<any>(null);
+  const [loading, setLoading]             = useState(true);
+  const [sidebarOpen, setSidebarOpen]     = useState(false);
   const [feedbackCount, setFeedbackCount] = useState(0);
-  const [notifCount, setNotifCount] = useState(0);
+  const [notifCount, setNotifCount]       = useState(0);
 
   useEffect(() => {
     const user = localStorage.getItem('adminUser');
@@ -71,15 +71,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return;
     }
 
-    // Verificar que el token (cookie) sigue siendo válido haciendo una llamada ligera
     if (pathname !== '/admin/login') {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
-      
-      // Verificar token (cookie) con una llamada al perfil o stats
+
       fetch(`${apiBase}/api/admin/verify`, { credentials: 'include' })
         .then(r => {
           if (r.status === 401) {
-            // Cookie expirada o inválida — limpiar y redirigir
             localStorage.removeItem('adminUser');
             router.push('/admin/login');
             return null;
@@ -87,11 +84,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           return r.ok ? r.json() : null;
         })
         .then(profileData => {
-          if (!profileData) return;
+          if (!profileData) {
+            if (user) setAdminUser(JSON.parse(user));
+            setLoading(false);
+            return;
+          }
           if (user) setAdminUser(JSON.parse(user));
           setLoading(false);
 
-          // Cargar conteo de feedbacks sin resolver y notificaciones
           Promise.all([
             fetch(`${apiBase}/api/admin/feedback/count-unresolved`, { credentials: 'include' }).then(r => r.ok ? r.json() : null),
             fetch(`${apiBase}/api/admin/notifications`, { credentials: 'include' }).then(r => r.ok ? r.json() : null),
@@ -108,7 +108,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }).catch(() => {});
         })
         .catch(() => {
-          // Error de red — igual mostrar el panel (no redirigir por error de red)
           if (user) setAdminUser(JSON.parse(user));
           setLoading(false);
         });
@@ -123,7 +122,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
       await fetch(`${apiBase}/api/admin/auth/logout`, { method: 'POST', credentials: 'include' });
     } catch (e) { console.error('Error logging out:', e); }
-
     localStorage.removeItem('adminUser');
     router.push('/admin/login');
   };
@@ -132,70 +130,95 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-base)' }}>
-        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#0a0a0a' }}>
+        <div className="flex flex-col items-center gap-4">
+          <div
+            className="w-9 h-9 rounded-full border-2 animate-spin"
+            style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }}
+          />
+          <p className="text-xs font-medium tracking-widest uppercase" style={{ color: '#555' }}>Cargando</p>
+        </div>
       </div>
     );
   }
 
   const sidebarContent = (
-    <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
+    <div className="flex flex-col h-full" style={{ backgroundColor: '#0a0a0a', borderRight: '1px solid #1a1a1a' }}>
       {/* Logo */}
-      <div className="flex items-center justify-between h-14 px-5 border-b" style={{ borderColor: '#1f1f1f' }}>
-        <Link href="/admin/dashboard" className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-          <span className="hidden sm:inline font-syne font-extrabold text-base leading-none text-white tracking-tight">
-            Look<span style={{ color: '#FF5C3A' }}>itry</span>
-          </span>
-          <span className="hidden sm:inline font-syne font-semibold text-xs" style={{ color: '#FF5C3A' }}>Admin</span>
+      <div className="flex items-center justify-between px-5 h-[60px] flex-shrink-0" style={{ borderBottom: '1px solid #1a1a1a' }}>
+        <Link href="/admin/dashboard" className="flex items-center gap-2.5">
+          <Image src="/logo.svg" alt="Lookitry" width={26} height={26} className="object-contain flex-shrink-0" priority />
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-jakarta font-extrabold text-[15px] leading-none text-white tracking-tight">
+              Look<span style={{ color: '#FF5C3A' }}>itry</span>
+            </span>
+            <span
+              className="text-[9px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded"
+              style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.2)' }}
+            >
+              Admin
+            </span>
+          </div>
         </Link>
         <button
-          className="lg:hidden p-1 rounded text-gray-400 hover:text-white"
+          className="lg:hidden p-1.5 rounded-lg transition-colors cursor-pointer"
+          style={{ color: '#555' }}
           onClick={() => setSidebarOpen(false)}
           aria-label="Cerrar menú"
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#fff'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#555'; }}
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-4 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
         {adminNav.map((group, gi) => (
           <div key={gi}>
             {group.label && (
-              <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest" style={{ color: '#4a4a4a' }}>
+              <p className="px-3 mb-1.5 text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: '#3a3a3a' }}>
                 {group.label}
               </p>
             )}
             <div className="space-y-0.5">
               {group.items.map(item => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-                const isFeedback = item.href === '/admin/feedback';
                 const isNotifications = item.href === '/admin/notifications';
-                const sidebarBadge = isNotifications ? (feedbackCount + notifCount) : 0;
+                const badge = isNotifications ? (feedbackCount + notifCount) : 0;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 cursor-pointer"
                     style={{
                       backgroundColor: isActive ? '#FF5C3A' : 'transparent',
-                      color: isActive ? '#ffffff' : 'var(--text-sidebar)',
+                      color: isActive ? '#ffffff' : '#666',
                     }}
-                    onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-sidebar-hover)'; }}
-                    onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+                    onMouseEnter={e => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = '#161616';
+                        (e.currentTarget as HTMLElement).style.color = '#ccc';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                        (e.currentTarget as HTMLElement).style.color = '#666';
+                      }
+                    }}
                   >
-                    <item.icon className="w-4 h-4 flex-shrink-0" />
-                    <span className="flex-1">{item.label}</span>
-                    {sidebarBadge > 0 && (
+                    <item.icon className="w-[15px] h-[15px] flex-shrink-0" />
+                    <span className="flex-1 leading-none">{item.label}</span>
+                    {badge > 0 && (
                       <span
-                        className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white flex-shrink-0"
-                        style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : '#ef4444' }}
+                        className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white flex-shrink-0 leading-none"
+                        style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : '#ef4444' }}
                       >
-                        {sidebarBadge > 99 ? '99+' : sidebarBadge}
+                        {badge > 99 ? '99+' : badge}
                       </span>
                     )}
                   </Link>
@@ -206,13 +229,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         ))}
       </nav>
 
-      {/* User */}
-      <div className="p-4 border-t" style={{ borderColor: '#1f1f1f' }}>
-        <div className="flex items-center gap-3">
+      {/* User footer */}
+      <div className="px-3 py-3 flex-shrink-0" style={{ borderTop: '1px solid #1a1a1a' }}>
+        <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg" style={{ backgroundColor: '#111' }}>
           <Link
             href="/admin/profile"
             onClick={() => setSidebarOpen(false)}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 transition-opacity hover:opacity-80"
+            className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0 cursor-pointer transition-opacity hover:opacity-80"
             style={{ backgroundColor: '#FF5C3A' }}
             title="Mi perfil"
           >
@@ -222,23 +245,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               href="/admin/profile"
               onClick={() => setSidebarOpen(false)}
-              className="block text-sm font-medium text-white truncate hover:opacity-80 transition-opacity"
+              className="block text-[12px] font-semibold text-white truncate hover:opacity-80 transition-opacity cursor-pointer leading-tight"
             >
               {adminUser?.name || 'Admin'}
             </Link>
-            <p className="text-xs truncate" style={{ color: 'var(--text-sidebar)' }}>{adminUser?.email || ''}</p>
+            <p className="text-[10px] truncate leading-tight mt-0.5" style={{ color: '#444' }}>
+              {adminUser?.email || ''}
+            </p>
           </div>
           <button
             onClick={handleLogout}
-            className="p-1.5 rounded-lg transition-colors flex-shrink-0"
-            style={{ color: 'var(--text-sidebar)' }}
+            className="p-1.5 rounded-md transition-colors flex-shrink-0 cursor-pointer"
+            style={{ color: '#444' }}
             title="Cerrar sesión"
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#ffffff'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-sidebar)'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#ef4444'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#444'; }}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
           </button>
         </div>
@@ -248,54 +272,81 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
-      {/* Overlay móvil */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-black/60 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-30 bg-black/70 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar desktop */}
-      <div className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-60 lg:z-20">
+      <div className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-[220px] lg:z-20">
         {sidebarContent}
       </div>
 
-      {/* Sidebar móvil */}
-      <div className={`fixed inset-y-0 left-0 w-64 z-40 transform transition-transform duration-200 ease-in-out lg:hidden ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 w-[220px] z-40 transform transition-transform duration-200 ease-in-out lg:hidden ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {sidebarContent}
       </div>
 
-      {/* Main */}
-      <div className="lg:pl-60 flex flex-col min-h-screen">
+      <div className="lg:pl-[220px] flex flex-col min-h-screen">
         <header
-          className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 h-14 border-b"
-          style={{ backgroundColor: 'var(--bg-header)', borderColor: 'var(--border-color)', boxShadow: 'var(--shadow-header)' }}
+          className="sticky top-0 z-10 flex items-center justify-between px-5 sm:px-7 h-[60px]"
+          style={{
+            backgroundColor: 'var(--bg-header)',
+            borderBottom: '1px solid var(--border-color)',
+          }}
         >
-          <button
-            className="lg:hidden p-2 rounded-lg -ml-1"
-            style={{ color: 'var(--text-secondary)' }}
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Abrir menú"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <h2 className="hidden lg:block font-syne font-semibold text-base" style={{ color: 'var(--text-primary)' }}>
-            Panel de Administración
-          </h2>
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-3">
+            <button
+              className="lg:hidden p-2 rounded-lg -ml-1 cursor-pointer transition-colors"
+              style={{ color: 'var(--text-secondary)' }}
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Abrir menú"
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <PageTitle pathname={pathname} />
+          </div>
+          <div className="flex items-center gap-1.5">
             <AdminNotifications />
             <ThemeToggle />
           </div>
         </header>
-        <main className="flex-1 p-4 sm:p-6">{children}</main>
+
+        <main className="flex-1 p-5 sm:p-7">{children}</main>
       </div>
     </div>
   );
 }
 
-/* ── Iconos ─────────────────────────────────────────────────────────────────── */
+function PageTitle({ pathname }: { pathname: string }) {
+  const map: Record<string, string> = {
+    '/admin/dashboard':            'Dashboard',
+    '/admin/brands':               'Marcas',
+    '/admin/subscriptions':        'Suscripciones',
+    '/admin/revenue':              'Ingresos',
+    '/admin/payments':             'Historial de Pagos',
+    '/admin/payment-settings':     'Medios de Pago',
+    '/admin/pricing':              'Precios',
+    '/admin/analytics':            'Analytics',
+    '/admin/conversion':           'Conversión',
+    '/admin/mini-landings':        'Mini-Landings',
+    '/admin/marketing/promotions': 'Promociones',
+    '/admin/notifications':        'Notificaciones',
+    '/admin/configuracion':        'Configuración',
+    '/admin/admins':               'Administradores',
+    '/admin/profile':              'Mi Perfil',
+  };
+  const title = Object.entries(map).find(([k]) => pathname === k || pathname.startsWith(k + '/'))?.[1] ?? 'Admin';
+  return (
+    <h1 className="font-jakarta font-bold text-[15px] leading-none" style={{ color: 'var(--text-primary)' }}>
+      {title}
+    </h1>
+  );
+}
+
 function DashboardIcon({ className }: { className?: string }) {
-  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>;
+  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>;
 }
 function BrandsIcon({ className }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>;
@@ -315,9 +366,6 @@ function PaySettingsIcon({ className }: { className?: string }) {
 function TrialIcon({ className }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
 }
-function HealthIcon({ className }: { className?: string }) {
-  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>;
-}
 function AdminsIcon({ className }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>;
 }
@@ -330,18 +378,12 @@ function BellIcon({ className }: { className?: string }) {
 function PricingIcon({ className }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>;
 }
-function FeedbackIcon({ className }: { className?: string }) {
-  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>;
-}
-
 function MegaphoneIcon({ className }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>;
 }
-
 function AnalyticsIcon({ className }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>;
 }
-
 function ConversionIcon({ className }: { className?: string }) {
-  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>;
+  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" /></svg>;
 }
