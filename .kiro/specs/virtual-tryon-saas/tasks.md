@@ -389,7 +389,7 @@
 ---
 
 - [x] 49. Footer de templates: URL provisional de Lookitry
-  - [x] 49.1 Cambiar el link del footer en todos los templates de `lookitry.com` a `pruebalo.wilkiedevs.com`
+  - [x] 49.1 Cambiar el link del footer en todos los templates de `lookitry.com` a `lookitry.com`
     - Afecta `LandingFooter` en `MiniLanding.tsx` y cualquier otro footer de template
     - _Archivos: frontend/src/components/mini-landing/MiniLanding.tsx_
     - agregame una opcion para cambiar la URL actual Pruebalo.wilkiedevs.com por la nueva con toda la logica para que funcione el nuevo enlace y me haga automaticamente todas las redirecciones necesarias para que funcione la nueva URL, esto lo puedes crear en el apartado configuracion del panel de administracion.
@@ -849,7 +849,7 @@
     - Contenedores `frontend`, `backend`, `nginx` corriendo sin errores críticos en logs
     - VPS con suficiente espacio en disco y RAM
   - [ ] 66.2 Verificar DNS y SSL
-    - `pruebalo.wilkiedevs.com` y `api.pruebalo.wilkiedevs.com` resuelven correctamente
+    - `lookitry.com` y `api.lookitry.com` resuelven correctamente
     - Certificados SSL no próximos a vencer
     - `minio.wilkiedevs.com` y `n8n.wilkiedevs.com` activos
   - [ ] 66.3 Verificar sitemap y SEO técnico

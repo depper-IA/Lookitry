@@ -40,7 +40,7 @@ time.sleep(6)
 
 # Health check
 _, stdout, _ = ssh.exec_command(
-    'curl -s -w "\\nHTTP: %{http_code}" https://api.pruebalo.wilkiedevs.com/health',
+    'curl -s -w "\\nHTTP: %{http_code}" https://api.lookitry.com/health',
     timeout=15
 )
 print(stdout.read().decode(errors="replace").strip())

@@ -31,8 +31,8 @@ inclusion: always
 
 | Servicio | URL |
 |----------|-----|
-| Frontend prod | `https://pruebalo.wilkiedevs.com` |
-| API prod | `https://api.pruebalo.wilkiedevs.com` |
+| Frontend prod | `https://lookitry.com` |
+| API prod | `https://api.lookitry.com` |
 | n8n | `https://n8n.wilkiedevs.com` |
 | MinIO | `https://minio.wilkiedevs.com` |
 | Supabase | `https://vkdooutklowctuudjnkl.supabase.co` |
@@ -295,7 +295,7 @@ Preferencias de notificaciones por tipo.
 
 ## Backend — Rutas API
 
-Base URL: `https://api.pruebalo.wilkiedevs.com/api`
+Base URL: `https://api.lookitry.com/api`
 
 ### Auth (`/api/auth/*`)
 | Método | Ruta | Auth | Descripción |
@@ -546,13 +546,13 @@ TURNSTILE_SECRET_KEY=0x4AAAA...
 TURNSTILE_ENABLED=true
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=465
-SMTP_USER=info@pruebalo.wilkiedevs.com
+SMTP_USER=info@lookitry.com
 SMTP_PASS=Travis2305*
 MINIO_ENDPOINT=https://minio.wilkiedevs.com
 MINIO_BUCKET=images
 MINIO_ACCESS_KEY=Wilkiedevs
 MINIO_SECRET_KEY=Travis2305*
-FRONTEND_URL=https://pruebalo.wilkiedevs.com
+FRONTEND_URL=https://lookitry.com
 VPS_HOST=31.220.18.39
 VPS_USER=root
 VPS_PASS=Travis18456916#
@@ -729,8 +729,8 @@ python scripts/_deploy_now.py --restart
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=465
 SMTP_SECURE=true
-SMTP_USER=info@pruebalo.wilkiedevs.com
-SMTP_FROM=Virtual LOOKITRY <info@pruebalo.wilkiedevs.com>
+SMTP_USER=info@lookitry.com
+SMTP_FROM=Virtual LOOKITRY <info@lookitry.com>
 ```
 
 ---
@@ -745,7 +745,7 @@ SMTP_FROM=Virtual LOOKITRY <info@pruebalo.wilkiedevs.com>
 
 ### Logo en templates de email
 
-**Cambio:** El `baseTemplate` en `backend/src/templates/email-templates.ts` ahora muestra el logo de Lookitry (`https://pruebalo.wilkiedevs.com/logo.svg`) en el header de todos los emails, en lugar del texto "Virtual Try-On". El logo se carga como `<img>` con `onerror` para degradar graciosamente si no carga. El footer también fue actualizado de "Virtual Try-On SaaS" a "Lookitry".
+**Cambio:** El `baseTemplate` en `backend/src/templates/email-templates.ts` ahora muestra el logo de Lookitry (`https://lookitry.com/logo.svg`) en el header de todos los emails, en lugar del texto "Virtual Try-On". El logo se carga como `<img>` con `onerror` para degradar graciosamente si no carga. El footer también fue actualizado de "Virtual Try-On SaaS" a "Lookitry".
 
 
 ## 6. Idioma de Respuesta
@@ -866,8 +866,8 @@ var(--shadow-header)    /* Sombra del header */
 
 | Servicio   | URL                                   |
 |------------|---------------------------------------|
-| Frontend   | `https://pruebalo.wilkiedevs.com`     |
-| API        | `https://api.pruebalo.wilkiedevs.com` |
+| Frontend   | `https://lookitry.com`     |
+| API        | `https://api.lookitry.com` |
 | n8n        | `https://n8n.wilkiedevs.com`          |
 | MinIO      | `https://minio.wilkiedevs.com`        |
 

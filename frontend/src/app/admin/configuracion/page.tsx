@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 
@@ -24,7 +24,7 @@ interface HealthData {
   status: 'ok' | 'degraded' | 'down';
   timestamp: string;
   uptime: number;
-  services: { supabase: ServiceResult; n8n: ServiceResult; email: ServiceResult; };
+  services: { supabase: ServiceResult; n8n: ServiceResult; email: ServiceResult; minio: ServiceResult; };
 }
 
 interface OpenRouterCredits {
@@ -176,6 +176,7 @@ const SERVICE_LABELS: Record<string, { name: string; desc: string }> = {
   supabase: { name: 'Base de datos', desc: 'Supabase PostgreSQL' },
   n8n:      { name: 'Motor de IA',   desc: 'n8n Webhook' },
   email:    { name: 'Email',         desc: 'Servidor SMTP' },
+  minio:    { name: 'Archivos',      desc: 'MinIO Storage' },
 };
 
 function formatUptime(s: number) {
@@ -280,7 +281,13 @@ export default function SystemConfigPage() {
       setHealth(await res.json());
     } catch {
       setHealth({ status: 'down', timestamp: new Date().toISOString(), uptime: 0,
-        services: { supabase: { status: 'down', latency: 0 }, n8n: { status: 'down', latency: 0 }, email: { status: 'down', latency: 0 } } });
+        services: { 
+          supabase: { status: 'down', latency: 0 }, 
+          n8n: { status: 'down', latency: 0 }, 
+          email: { status: 'down', latency: 0 },
+          minio: { status: 'down', latency: 0 }
+        } 
+      });
     } finally { setLoadingHealth(false); }
   }, []);
 

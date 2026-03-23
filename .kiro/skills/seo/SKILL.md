@@ -39,10 +39,10 @@ Activa este skill cuando el usuario pida:
 
 | Entorno | URL base |
 |---------|----------|
-| Producción | `https://pruebalo.wilkiedevs.com` |
+| Producción | `https://lookitry.com` |
 | Local | `http://localhost:3000` |
 
-Siempre usar la constante `BASE_URL = 'https://pruebalo.wilkiedevs.com'` en los archivos de metadata.
+Siempre usar la constante `BASE_URL = 'https://lookitry.com'` en los archivos de metadata.
 
 ---
 
@@ -85,7 +85,7 @@ robots: { index: false, follow: false }
 ```typescript
 import type { Metadata } from 'next';
 
-const BASE_URL = 'https://pruebalo.wilkiedevs.com';
+const BASE_URL = 'https://lookitry.com';
 
 export const metadata: Metadata = {
   title: 'Título de la página — Lookitry',
@@ -127,10 +127,10 @@ export const metadata: Metadata = {
 ```json
 {
   "@type": "Organization",
-  "@id": "https://pruebalo.wilkiedevs.com/#organization",
+  "@id": "https://lookitry.com/#organization",
   "name": "Lookitry",
-  "url": "https://pruebalo.wilkiedevs.com",
-  "logo": { "@type": "ImageObject", "url": "https://pruebalo.wilkiedevs.com/logo.svg" },
+  "url": "https://lookitry.com",
+  "logo": { "@type": "ImageObject", "url": "https://lookitry.com/logo.svg" },
   "contactPoint": {
     "@type": "ContactPoint",
     "telephone": "+57-310-543-6281",
@@ -147,8 +147,8 @@ export const metadata: Metadata = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://pruebalo.wilkiedevs.com/" },
-    { "@type": "ListItem", "position": 2, "name": "Nombre de la página", "item": "https://pruebalo.wilkiedevs.com/ruta" }
+    { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://lookitry.com/" },
+    { "@type": "ListItem", "position": 2, "name": "Nombre de la página", "item": "https://lookitry.com/ruta" }
   ]
 }
 ```
@@ -167,7 +167,7 @@ Ya implementado. Actualizar `priceValidUntil` y `reviewCount` periódicamente.
   "datePublished": "2026-01-15",
   "dateModified": "2026-03-20",
   "author": { "@type": "Organization", "name": "Lookitry" },
-  "publisher": { "@id": "https://pruebalo.wilkiedevs.com/#organization" }
+  "publisher": { "@id": "https://lookitry.com/#organization" }
 }
 ```
 

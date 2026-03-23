@@ -11,10 +11,10 @@ def fix_cookie_domain():
     ssh.connect(HOST, username=USER, password=PASS, timeout=30)
     
     print("--- Fixing COOKIE_DOMAIN in VPS ---")
-    # Cambiar .pruebalo.wilkiedevs.com por pruebalo.wilkiedevs.com (sin el punto inicial)
+    # Cambiar .lookitry.com por lookitry.com (sin el punto inicial)
     # También asegurar que CORS_ORIGIN incluya el dominio sin www si no está
     
-    cmd = "sed -i 's/COOKIE_DOMAIN=.pruebalo.wilkiedevs.com/COOKIE_DOMAIN=pruebalo.wilkiedevs.com/g' /root/virtual-tryon/backend/.env.production"
+    cmd = "sed -i 's/COOKIE_DOMAIN=.lookitry.com/COOKIE_DOMAIN=lookitry.com/g' /root/virtual-tryon/backend/.env.production"
     ssh.exec_command(cmd)
     
     print("Restarting backend to apply changes...")

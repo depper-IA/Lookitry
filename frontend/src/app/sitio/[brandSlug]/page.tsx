@@ -9,7 +9,7 @@ interface PageProps {
   params: { brandSlug: string };
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 async function getBrandConfig(slug: string) {
   try {
@@ -158,7 +158,7 @@ function PaginaSuspendida({ brandName }: { brandName?: string }) {
         </p>
 
         <a
-          href="mailto:info@pruebalo.wilkiedevs.com"
+          href="mailto:info@lookitry.com"
           style={{
             display: 'inline-flex',
             alignItems: 'center',

@@ -8,7 +8,7 @@ import random
 import string
 import time
 
-BASE = "https://api.pruebalo.wilkiedevs.com"
+BASE = "https://api.lookitry.com"
 
 def post(url, data, token=None):
     body = json.dumps(data).encode()

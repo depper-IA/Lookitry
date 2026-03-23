@@ -1,5 +1,5 @@
 {
-  "name": "virtual-tryon-backend",
+  "name": "lookitry-backend",
   "version": "1.0.0",
   "description": "Backend API for Virtual Try-On SaaS",
   "main": "dist/index.js",
