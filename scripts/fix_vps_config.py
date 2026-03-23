@@ -13,16 +13,16 @@ def fix_vps():
     ssh.exec_command("cp /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/default.bak")
     
     # 2. Reemplazo de dominios en archivos .env (FRONTEND_URL, API_URL, etc.)
-    # Usamos lookitry.com en lugar de pruebalo.wilkiedevs.com
+    # Usamos lookitry.com en lugar de lookitry.com
     print("Actualizando archivos .env...")
-    ssh.exec_command("sed -i 's/pruebalo.wilkiedevs.com/lookitry.com/g' /root/virtual-tryon/backend/.env")
-    ssh.exec_command("sed -i 's/pruebalo.wilkiedevs.com/lookitry.com/g' /root/virtual-tryon/frontend/.env.production")
+    ssh.exec_command("sed -i 's/lookitry.com/lookitry.com/g' /root/virtual-tryon/backend/.env")
+    ssh.exec_command("sed -i 's/lookitry.com/lookitry.com/g' /root/virtual-tryon/frontend/.env.production")
     
     # 3. Actualizar Nginx
     # Buscamos la linea server_name y la actualizamos
     print("Actualizando configuracion de Nginx...")
-    ssh.exec_command("sed -i 's/pruebalo.wilkiedevs.com/lookitry.com/g' /etc/nginx/sites-enabled/default")
-    ssh.exec_command("sed -i 's/api.pruebalo.wilkiedevs.com/api.lookitry.com/g' /etc/nginx/sites-enabled/default")
+    ssh.exec_command("sed -i 's/lookitry.com/lookitry.com/g' /etc/nginx/sites-enabled/default")
+    ssh.exec_command("sed -i 's/api.lookitry.com/api.lookitry.com/g' /etc/nginx/sites-enabled/default")
     
     # 4. Reiniciar Nginx
     print("Reiniciando Nginx...")

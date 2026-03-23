@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 
@@ -17,6 +17,7 @@ interface HealthData {
     supabase: ServiceResult;
     n8n: ServiceResult;
     email: ServiceResult;
+    minio: ServiceResult;
   };
 }
 
@@ -68,6 +69,7 @@ const SERVICE_LABELS: Record<string, { name: string; description: string }> = {
   supabase: { name: 'Base de datos', description: 'Supabase PostgreSQL' },
   n8n:      { name: 'Motor de IA',   description: 'n8n Webhook / Generación' },
   email:    { name: 'Email',         description: 'Servidor SMTP' },
+  minio:    { name: 'Archivos',      description: 'MinIO Storage' },
 };
 
 function formatUptime(seconds: number): string {
@@ -106,6 +108,7 @@ export default function HealthPage() {
           supabase: { status: 'down', latency: 0 },
           n8n:      { status: 'down', latency: 0 },
           email:    { status: 'down', latency: 0 },
+          minio:    { status: 'down', latency: 0 },
         },
       });
     } finally {

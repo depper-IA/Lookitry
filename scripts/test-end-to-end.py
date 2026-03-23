@@ -4,7 +4,7 @@ Sube una selfie real al endpoint /generate y verifica que devuelve imageUrl.
 """
 import requests, base64, struct, zlib, json, time
 
-BACKEND = 'https://api.pruebalo.wilkiedevs.com'
+BACKEND = 'https://api.lookitry.com'
 BRAND_SLUG = 'wilkie-devs'
 PRODUCT_ID = 'ee5bf4ec-da9b-4cd5-b8da-2484797d0a71'
 

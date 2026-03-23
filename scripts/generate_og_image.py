@@ -105,7 +105,7 @@ draw.ellipse([ax, 448 + 11, ax + 24, 448 + 35], fill=(255, 255, 255, 51))
 draw.text((ax + 6, 448 + 13), '→', font=f_badge, fill=(255, 255, 255, 255))
 
 # URL
-draw.text((PAD, 560), 'pruebalo.wilkiedevs.com', font=f_url, fill=(255, 255, 255, 64))
+draw.text((PAD, 560), 'lookitry.com', font=f_url, fill=(255, 255, 255, 64))
 
 # ── ZONA DERECHA: logo real ───────────────────────────────────────────────────
 logo_src = Image.open(os.path.join(PUB, 'logo-light.png')).convert('RGBA')

@@ -12,7 +12,7 @@ def test_login_api():
     
     print("--- Testing Login API with curl from VPS ---")
     # Intentar login con credenciales ficticias para ver el comportamiento de la cookie y headers
-    cmd = "curl -i -X POST https://api.pruebalo.wilkiedevs.com/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"nonexistent@lookitry.com\",\"password\":\"wrongpassword\"}'"
+    cmd = "curl -i -X POST https://api.lookitry.com/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"nonexistent@lookitry.com\",\"password\":\"wrongpassword\"}'"
     stdin, stdout, stderr = ssh.exec_command(cmd)
     print(stdout.read().decode())
     print(stderr.read().decode())

@@ -39,7 +39,7 @@ if __name__ == "__main__":
     
     if not out or "server_name" not in out:
         print("Domain lookitry.com not found in Nginx server_name. Adding to configuration...")
-        # Intentamos encontrar el archivo de configuración de pruebalo.wilkiedevs.com para usarlo de base
+        # Intentamos encontrar el archivo de configuración de lookitry.com para usarlo de base
         # O simplemente agregamos un nuevo bloque.
         # En este caso, probablemente sea el archivo que maneja la app principal.
         # Vamos a ver que hay en /etc/nginx/sites-enabled
@@ -48,18 +48,18 @@ if __name__ == "__main__":
         
         # Asumimos que hay uno llamado 'virtual-tryon' o similar (según el nombre del proyecto)
         # O simplemente vamos a inyectar el server_name en el bloque de pruebalo
-        # Vamos a buscar el archivo que contiene 'pruebalo.wilkiedevs.com'
-        out, _ = run_ssh_command("grep -l 'pruebalo.wilkiedevs.com' /etc/nginx/sites-enabled/*")
+        # Vamos a buscar el archivo que contiene 'lookitry.com'
+        out, _ = run_ssh_command("grep -l 'lookitry.com' /etc/nginx/sites-enabled/*")
         config_file = out.strip() if out else ""
         
         if config_file:
              print(f"Adding lookitry.com to {config_file}...")
-             # Reemplazamos 'server_name pruebalo.wilkiedevs.com;' por 'server_name pruebalo.wilkiedevs.com lookitry.com www.lookitry.com;'
-             sed_cmd = f"sed -i 's/server_name .*pruebalo.wilkiedevs.com/server_name pruebalo.wilkiedevs.com lookitry.com www.lookitry.com/g' {config_file}"
+             # Reemplazamos 'server_name lookitry.com;' por 'server_name lookitry.com lookitry.com www.lookitry.com;'
+             sed_cmd = f"sed -i 's/server_name .*lookitry.com/server_name lookitry.com lookitry.com www.lookitry.com/g' {config_file}"
              run_ssh_command(sed_cmd)
              run_ssh_command("nginx -t && systemctl reload nginx")
         else:
-             print("Could not find Nginx config file for pruebalo.wilkiedevs.com. Creating a new one might be risky.")
+             print("Could not find Nginx config file for lookitry.com. Creating a new one might be risky.")
     
     # 2. Ejecutar Certbot
     print("\nRunning Certbot for lookitry.com and www.lookitry.com...")

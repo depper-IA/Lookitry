@@ -57,8 +57,8 @@ Cada vez que se realice cualquier cambio en el código, la IA DEBE documentarlo 
 - **Deploy**: Docker Compose en VPS Hostinger `31.220.18.39` (user: `root`)
 
 URLs de Producción:
-- Frontend: `https://pruebalo.wilkiedevs.com`
-- API: `https://api.pruebalo.wilkiedevs.com`
+- Frontend: `https://lookitry.com`
+- API: `https://api.lookitry.com`
 - n8n: `https://n8n.wilkiedevs.com`
 - Supabase: `https://vkdooutklowctuudjnkl.supabase.co`
 - MinIO: `https://minio.wilkiedevs.com`
@@ -146,8 +146,8 @@ inclusion: always
 
 | Servicio | URL |
 |----------|-----|
-| Frontend prod | `https://pruebalo.wilkiedevs.com` |
-| API prod | `https://api.pruebalo.wilkiedevs.com` |
+| Frontend prod | `https://lookitry.com` |
+| API prod | `https://api.lookitry.com` |
 | n8n | `https://n8n.wilkiedevs.com` |
 | MinIO | `https://minio.wilkiedevs.com` |
 | Supabase | `https://vkdooutklowctuudjnkl.supabase.co` |
@@ -440,7 +440,7 @@ Preferencias de notificaciones por tipo.
 
 ## Backend — Rutas API
 
-Base URL: `https://api.pruebalo.wilkiedevs.com/api`
+Base URL: `https://api.lookitry.com/api`
 
 ### Auth (`/api/auth/*`)
 | Método | Ruta | Auth | Descripción |
@@ -748,13 +748,13 @@ TURNSTILE_SECRET_KEY=0x4AAAA...
 TURNSTILE_ENABLED=true
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=465
-SMTP_USER=info@pruebalo.wilkiedevs.com
+SMTP_USER=info@lookitry.com
 SMTP_PASS=Travis2305*
 MINIO_ENDPOINT=https://minio.wilkiedevs.com
 MINIO_BUCKET=images
 MINIO_ACCESS_KEY=Wilkiedevs
 MINIO_SECRET_KEY=Travis2305*
-FRONTEND_URL=https://pruebalo.wilkiedevs.com
+FRONTEND_URL=https://lookitry.com
 VPS_HOST=31.220.18.39
 VPS_USER=root
 VPS_PASS=Travis18456916#
@@ -930,7 +930,7 @@ El archivo `architecture.md` tenía marcadores de conflicto Git (`<<<<<<< HEAD`,
 Después de `renewSubscription()`, se consulta la marca actualizada y se llama a `notificationService.sendRenewalConfirmation()`.
 
 ### Logo en templates de email
-El `baseTemplate` muestra el logo de Lookitry (`https://pruebalo.wilkiedevs.com/logo.svg`) en el header de todos los emails.
+El `baseTemplate` muestra el logo de Lookitry (`https://lookitry.com/logo.svg`) en el header de todos los emails.
 
 ### Fix: Auto-vinculación de landing no sobreescribe plan (22/03/2026)
 - **Problema:** Al entrar a `/registro-pro?ref=TRYON-visitor_...` con sesión activa (plan BASIC/PRO), el backend tomaba `pending.plan = 'NONE'` y lo guardaba en la cuenta, rompiendo el plan del usuario.
@@ -1041,8 +1041,8 @@ var(--shadow-header)    /* Sombra del header */
 
 | Servicio   | URL                                   |
 |------------|---------------------------------------|
-| Frontend   | `https://pruebalo.wilkiedevs.com`     |
-| API        | `https://api.pruebalo.wilkiedevs.com` |
+| Frontend   | `https://lookitry.com`     |
+| API        | `https://api.lookitry.com` |
 | n8n        | `https://n8n.wilkiedevs.com`          |
 | MinIO      | `https://minio.wilkiedevs.com`        |
 
@@ -1197,6 +1197,6 @@ python scripts/_deploy_now.py --frontend   # solo frontend
 ```
 
 ## URLs
-- Frontend: https://pruebalo.wilkiedevs.com
-- Backend API: https://api.pruebalo.wilkiedevs.com
-- Health check: https://api.pruebalo.wilkiedevs.com/health
+- Frontend: https://lookitry.com
+- Backend API: https://api.lookitry.com
+- Health check: https://api.lookitry.com/health

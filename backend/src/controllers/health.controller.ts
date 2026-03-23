@@ -3,6 +3,7 @@ import axios from 'axios';
 import { supabase } from '../config/supabase';
 import { emailService } from '../services/email.service';
 import { N8nClient } from '../services/n8n.client';
+import { UploadService } from '../services/upload.service';
 import { createAdminNotification } from '../utils/adminNotifications';
 
 type ServiceStatus = 'ok' | 'degraded' | 'down';
@@ -13,6 +14,7 @@ interface ServiceResult {
 }
 
 const n8nClient = new N8nClient();
+const uploadService = new UploadService();
 
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   const timeout = new Promise<never>((_, reject) =>
@@ -68,6 +70,22 @@ async function checkEmail(): Promise<ServiceResult> {
   }
 }
 
+async function checkMinio(): Promise<ServiceResult> {
+  const start = Date.now();
+  const endpoint = process.env.MINIO_ENDPOINT;
+
+  if (!endpoint) return { status: 'degraded', latency: 0 };
+
+  try {
+    // Intentar un HEAD request al endpoint público o revisar accesibilidad
+    // Una opción más robusta sería intentar listar un objeto o simplemente un ping HTTP
+    await axios.get(`${endpoint}/minio/health/live`, { timeout: 3000, validateStatus: () => true });
+    return { status: 'ok', latency: Date.now() - start };
+  } catch {
+    return { status: 'down', latency: Date.now() - start };
+  }
+}
+
 // Estado previo de servicios para detectar cambios (en memoria, se resetea al reiniciar)
 const previousStatus: Record<string, ServiceStatus> = {};
 
@@ -82,6 +100,7 @@ const SERVICE_LABELS: Record<string, string> = {
   supabase: 'Base de datos (Supabase)',
   n8n: 'Automatizaciones (n8n)',
   email: 'Servicio de email (SMTP)',
+  minio: 'Almacenamiento (MinIO)',
 };
 
 // Mapeo de servicio → tipo de notificación (down/recovered)
@@ -89,6 +108,7 @@ const SERVICE_NOTIF_TYPE: Record<string, { down: string; recovered: string }> = 
   supabase: { down: 'service_down', recovered: 'service_recovered' },
   n8n:      { down: 'service_down', recovered: 'service_recovered' },
   email:    { down: 'smtp_down',    recovered: 'smtp_recovered' },
+  minio:    { down: 'service_down', recovered: 'service_recovered' },
 };
 
 async function notifyServiceChange(name: string, prev: ServiceStatus, current: ServiceStatus) {
@@ -114,10 +134,11 @@ async function notifyServiceChange(name: string, prev: ServiceStatus, current: S
 }
 
 export async function getHealthStatus(_req: Request, res: Response): Promise<void> {
-  const [supabaseResult, n8nResult, emailResult] = await Promise.allSettled([
+  const [supabaseResult, n8nResult, emailResult, minioResult] = await Promise.allSettled([
     checkSupabase(),
     checkN8n(),
     checkEmail(),
+    checkMinio(),
   ]);
 
   const services = {
@@ -129,6 +150,9 @@ export async function getHealthStatus(_req: Request, res: Response): Promise<voi
       : { status: 'down' as ServiceStatus, latency: 0 },
     email: emailResult.status === 'fulfilled'
       ? emailResult.value
+      : { status: 'down' as ServiceStatus, latency: 0 },
+    minio: minioResult.status === 'fulfilled'
+      ? minioResult.value
       : { status: 'down' as ServiceStatus, latency: 0 },
   };
 

@@ -11,7 +11,7 @@ def check_vps():
     ssh.connect(HOST, username=USER, password=PASS, timeout=30)
     
     print("\n--- Frontend Health Check ---")
-    stdin, stdout, stderr = ssh.exec_command("curl -s -I https://pruebalo.wilkiedevs.com")
+    stdin, stdout, stderr = ssh.exec_command("curl -s -I https://lookitry.com")
     print(stdout.read().decode())
     
     ssh.close()

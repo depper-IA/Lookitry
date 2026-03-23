@@ -4,7 +4,7 @@ Crea una campaña trial activa via API de admin.
 import json
 import urllib.request
 
-API = "https://api.pruebalo.wilkiedevs.com"
+API = "https://api.lookitry.com"
 
 # 1. Login admin
 login_data = json.dumps({"email": "info.samwilkie@gmail.com", "password": "Travis2305*"}).encode()

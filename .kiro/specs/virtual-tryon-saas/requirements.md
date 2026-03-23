@@ -454,9 +454,9 @@ Frontend → Backend → WordPress REST API → Hosting
 
 **Componentes:**
 1. **Plugin de WordPress:** `n8n Image Upload API v1.1.0`
-2. **Endpoint de subida:** `https://pruebalo.wilkiedevs.com/wp-json/n8n/v1/upload`
-3. **Endpoint de eliminación:** `https://pruebalo.wilkiedevs.com/wp-json/n8n/v1/delete`
-4. **Endpoint de prueba:** `https://pruebalo.wilkiedevs.com/wp-json/n8n/v1/test`
+2. **Endpoint de subida:** `https://lookitry.com/wp-json/n8n/v1/upload`
+3. **Endpoint de eliminación:** `https://lookitry.com/wp-json/n8n/v1/delete`
+4. **Endpoint de prueba:** `https://lookitry.com/wp-json/n8n/v1/test`
 
 #### Acceptance Criteria
 
@@ -485,7 +485,7 @@ Frontend → Backend → WordPress REST API → Hosting
 
 #### Configuración del Plugin
 
-**Ubicación:** Plugin de WordPress instalado en `pruebalo.wilkiedevs.com`
+**Ubicación:** Plugin de WordPress instalado en `lookitry.com`
 
 **Token de Autenticación:**
 - Definido en `wp-config.php`: `define('N8N_API_SECRET', 'Travis2305**');`
@@ -589,7 +589,7 @@ El plugin completo está documentado en el archivo fuente y proporciona:
 7. THE Try_On_System SHALL proporcionar endpoint manual `/api/cleanup/run` para ejecutar limpieza bajo demanda
 8. THE Try_On_System SHALL requerir autenticación para ejecutar limpieza manual
 9. THE Try_On_System SHALL retornar estadísticas de limpieza: imágenes eliminadas y errores
-10. THE Try_On_System SHALL solo eliminar imágenes alojadas en `pruebalo.wilkiedevs.com`
+10. THE Try_On_System SHALL solo eliminar imágenes alojadas en `lookitry.com`
 11. THE Try_On_System SHALL ignorar imágenes externas (URLs de otros dominios)
 12. THE Try_On_System SHALL permitir configurar días de retención (por defecto 30 días)
 13. THE Try_On_System SHALL continuar limpieza aunque algunas imágenes fallen
@@ -619,7 +619,7 @@ El plugin completo está documentado en el archivo fuente y proporciona:
    - Filtra productos eliminados hace más de 30 días
 
 2. **Validación:**
-   - Verifica que la URL de imagen sea del dominio `pruebalo.wilkiedevs.com`
+   - Verifica que la URL de imagen sea del dominio `lookitry.com`
    - Ignora URLs externas
 
 3. **Eliminación:**
@@ -652,8 +652,8 @@ cleanupService.setConfig({
 ```
 [Cleanup Job] 🧹 Iniciando limpieza automática programada...
 [Cleanup] Iniciando limpieza de imágenes de productos eliminados...
-[Cleanup] ✅ Imagen eliminada: https://pruebalo.wilkiedevs.com/wp-content/uploads/tryon/product-123.jpg
-[Cleanup] ✅ Imagen eliminada: https://pruebalo.wilkiedevs.com/wp-content/uploads/tryon/product-456.jpg
+[Cleanup] ✅ Imagen eliminada: https://lookitry.com/wp-content/uploads/tryon/product-123.jpg
+[Cleanup] ✅ Imagen eliminada: https://lookitry.com/wp-content/uploads/tryon/product-456.jpg
 [Cleanup] Limpieza completada: 2 eliminadas, 0 errores
 [Cleanup Job] ✅ Limpieza completada: 2 eliminadas, 0 errores
 ```
@@ -1225,7 +1225,7 @@ Mientras las columnas no existan, el `brands.service.ts` tiene un fallback que d
 
 #### Información de Contacto para Renovaciones
 
-- **Email:** info@pruebalo.wilkiedevs.com
+- **Email:** info@lookitry.com
 - **WhatsApp:** +57 310 543 6281 (enlace: `https://wa.me/573105436281`)
 
 #### Precios de Planes
