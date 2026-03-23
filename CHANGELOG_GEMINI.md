@@ -1,5 +1,22 @@
-﻿# Registro de Cambios — Lookitry (IA Gemini)
+# Registro de Cambios — Lookitry (IA Gemini)
 
+## 23 de Marzo, 2026 — Migración a lookitry.com y Health Check MinIO
+
+**Archivos modificados:**
+- Multiples archivos (script de búsqueda y reemplazo)
+- `docker-compose.frontend.yml` y `docker-compose.backend.yml`
+- `backend/src/controllers/health.controller.ts`
+- `frontend/src/app/admin/health/page.tsx`
+- `frontend/src/app/admin/configuracion/page.tsx`
+- `frontend/package.json` y `backend/package.json`
+
+**Descripción:**
+- **Rebranding de Dominio**: Migrados todos los endpoints públicos y de API de `pruebalo.wilkiedevs.com` y `api.pruebalo.wilkiedevs.com` a `lookitry.com` y `api.lookitry.com` respectivamente, sin alterar la infraestructura para n8n o MinIO original.
+- **SSL y Traefik**: Limpiadas etiquetas de ruteo de Traefik para forzar la emisión de los nuevos certificados SSL bajo los nuevos dominios.
+- **Service Tags**: Los nombres de los paquetes de node fueron actualizados a `lookitry-frontend` y `lookitry-backend`.
+- **Health Checks Panel Administrativo**: Añadida la verificación del estado y latencia del servicio MinIO en tiempo real. Ahora el panel de administración (/admin/health y configuracion general) muestra si el servicio de almacenamiento de imágenes está operativo (`ok`, `degraded` o `down`).
+
+---
 ## 22 de Marzo, 2026 — Fix código duplicado en subscription/page.tsx + precios dinámicos + borde sidebar
 
 **Archivos modificados:**
