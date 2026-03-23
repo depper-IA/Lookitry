@@ -138,14 +138,14 @@ Historial de todas las tareas ya implementadas y en producción.
   - Variables de entorno configuradas en el servidor
   - Dependencias instaladas y build ejecutado
   - Proceso Node.js persistente configurado con Docker + PM2
-  - Backend responde en https://api.pruebalo.wilkiedevs.com/health (HTTP 200)
+  - Backend responde en https://api.lookitry.com/health (HTTP 200)
 - [x] 34.5 Deploy del frontend en VPS
   - Código subido vía Git al VPS
   - Variables de entorno de producción configuradas (NEXT_PUBLIC_API_URL)
   - Build ejecutado y contenedor corriendo
-  - Frontend carga correctamente en https://pruebalo.wilkiedevs.com (HTTP 200)
+  - Frontend carga correctamente en https://lookitry.com (HTTP 200)
 - [x] 34.6 Configurar dominio y HTTPS
-  - Dominio principal apunta al frontend (pruebalo.wilkiedevs.com)
-  - Subdominio API apunta al backend (api.pruebalo.wilkiedevs.com)
+  - Dominio principal apunta al frontend (lookitry.com)
+  - Subdominio API apunta al backend (api.lookitry.com)
   - Certificados SSL Let's Encrypt activos (válidos hasta Jun 14 2026) — gestionados por Traefik
-  - CORS en backend configurado para aceptar https://pruebalo.wilkiedevs.com
+  - CORS en backend configurado para aceptar https://lookitry.com

@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY!;
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 async function verifyAdmin(req: NextRequest): Promise<boolean> {
   const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '');

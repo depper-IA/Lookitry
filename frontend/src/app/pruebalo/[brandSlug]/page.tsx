@@ -9,7 +9,7 @@ interface PageProps {
   params: { brandSlug: string };
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 async function getBrandConfig(slug: string) {
   try {

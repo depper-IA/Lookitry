@@ -9,7 +9,7 @@ cmds = [
     'cd /root/virtual-tryon && docker compose -f docker-compose.backend.yml build --no-cache 2>&1 | tail -25',
     'cd /root/virtual-tryon && docker compose -f docker-compose.backend.yml up -d 2>&1',
     'docker ps --format "table {{.Names}}  {{.Status}}" | grep virtual-tryon',
-    'curl -s -w "\\nHTTP: %{http_code}" https://api.pruebalo.wilkiedevs.com/health',
+    'curl -s -w "\\nHTTP: %{http_code}" https://api.lookitry.com/health',
 ]
 
 for cmd in cmds:

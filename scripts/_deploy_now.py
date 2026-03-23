@@ -108,7 +108,7 @@ run(ssh, "docker ps --format 'table {{.Names}}\t{{.Status}}' | grep virtual-tryo
 
 # 5. Health check
 print("\n=== Health check ===")
-run(ssh, "curl -s -w '\\nHTTP: %{http_code}' https://api.pruebalo.wilkiedevs.com/health")
+run(ssh, "curl -s -w '\\nHTTP: %{http_code}' https://api.lookitry.com/health")
 
 ssh.close()
 print("\nDeploy completado.")

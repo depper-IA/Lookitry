@@ -56,5 +56,5 @@ check();
     ssh.close()
 
 if __name__ == "__main__":
-    email = sys.argv[1] if len(sys.argv) > 1 else "info@pruebalo.wilkiedevs.com"
+    email = sys.argv[1] if len(sys.argv) > 1 else "info@lookitry.com"
     check_user_exists(email)
