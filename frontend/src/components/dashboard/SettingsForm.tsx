@@ -401,8 +401,8 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
   const tabs = [
     { id: 'general', label: 'General' },
     { id: 'appearance', label: 'Apariencia' },
-    { id: 'pro', label: isPro ? 'Pro' : 'Pro' },
     { id: 'embed', label: 'Código Embed' },
+    { id: 'pro', label: isPro ? 'Pro' : 'Pro' },
   ] as const;
 
   return (
