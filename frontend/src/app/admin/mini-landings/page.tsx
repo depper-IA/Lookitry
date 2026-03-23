@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { ArrowUpDown } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com';
 const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://pruebalo.wilkiedevs.com';
@@ -21,6 +22,8 @@ interface LandingBrand {
 
 type FilterEstado = 'all' | 'activa' | 'suspendida' | 'inactiva';
 type FilterPlanML = 'all' | 'TRIAL' | 'BASIC' | 'PRO';
+type SortFieldML = 'name' | 'plan' | 'estado' | 'dias';
+type SortOrder = 'asc' | 'desc';
 
 function getEstado(b: LandingBrand): 'activa' | 'suspendida' | 'inactiva' {
   if (b.landing_suspended_at) return 'suspendida';
@@ -29,9 +32,9 @@ function getEstado(b: LandingBrand): 'activa' | 'suspendida' | 'inactiva' {
 }
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
-function IconGlobe({ className }: { className?: string }) {
+function IconGlobe({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+    <svg className={className} style={style} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
       <circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20" />
     </svg>
   );
@@ -97,7 +100,18 @@ export default function AdminMiniLandingsPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<{ brand: LandingBrand; action: 'activate' | 'deactivate' | 'suspend' | 'restore' } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortField, setSortField] = useState<SortFieldML>('name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const ITEMS_PER_PAGE = 10;
+
+  const toggleSort = (field: SortFieldML) => {
+    if (sortField === field) {
+      setSortOrder(o => o === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
 
   const fetchBrands = useCallback(async () => {
     try {
@@ -117,20 +131,40 @@ export default function AdminMiniLandingsPage() {
   useEffect(() => { fetchBrands(); }, [fetchBrands]);
   useEffect(() => { setCurrentPage(1); }, [search, filterEstado, filterPlan]);
 
-  const filtered = brands.filter(b => {
-    const matchSearch =
-      !search ||
-      b.name.toLowerCase().includes(search.toLowerCase()) ||
-      b.email.toLowerCase().includes(search.toLowerCase()) ||
-      b.slug.toLowerCase().includes(search.toLowerCase());
-    const matchEstado = filterEstado === 'all' || getEstado(b) === filterEstado;
-    const matchPlan = filterPlan === 'all'
-      ? true
-      : filterPlan === 'TRIAL'
-      ? b.is_in_trial === true
-      : b.plan === filterPlan && !b.is_in_trial;
-    return matchSearch && matchEstado && matchPlan;
-  });
+  const filtered = useMemo(() => {
+    const base = brands.filter(b => {
+      const matchSearch =
+        !search ||
+        b.name.toLowerCase().includes(search.toLowerCase()) ||
+        b.email.toLowerCase().includes(search.toLowerCase()) ||
+        b.slug.toLowerCase().includes(search.toLowerCase());
+      const matchEstado = filterEstado === 'all' || getEstado(b) === filterEstado;
+      const matchPlan = filterPlan === 'all'
+        ? true
+        : filterPlan === 'TRIAL'
+        ? b.is_in_trial === true
+        : b.plan === filterPlan && !b.is_in_trial;
+      return matchSearch && matchEstado && matchPlan;
+    });
+
+    return [...base].sort((a, b) => {
+      let valA: any = '';
+      let valB: any = '';
+      if (sortField === 'name') {
+        valA = a.name.toLowerCase(); valB = b.name.toLowerCase();
+      } else if (sortField === 'plan') {
+        valA = a.is_in_trial ? 'TRIAL' : a.plan; valB = b.is_in_trial ? 'TRIAL' : b.plan;
+      } else if (sortField === 'estado') {
+        const order = { activa: 0, suspendida: 1, inactiva: 2 };
+        valA = order[getEstado(a)]; valB = order[getEstado(b)];
+      } else if (sortField === 'dias') {
+        valA = a.dias_para_eliminacion ?? 999; valB = b.dias_para_eliminacion ?? 999;
+      }
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [brands, search, filterEstado, filterPlan, sortField, sortOrder]);
 
   const counts = {
     all: brands.length,
@@ -183,7 +217,7 @@ export default function AdminMiniLandingsPage() {
   );
 
   if (error) return (
-    <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm">
+    <div className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}>
       <IconWarning className="w-4 h-4 flex-shrink-0" />
       {error}
     </div>
@@ -194,7 +228,7 @@ export default function AdminMiniLandingsPage() {
       {/* Encabezado */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-syne font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
+          <h1 className="font-jakarta font-black uppercase italic tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>
             Mini-Landings
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
@@ -204,7 +238,7 @@ export default function AdminMiniLandingsPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={fetchBrands}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest border transition-colors"
             style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-card)' }}
           >
             <IconRefresh className="w-4 h-4" />
@@ -224,7 +258,7 @@ export default function AdminMiniLandingsPage() {
           <button
             key={key}
             onClick={() => setFilterEstado(key)}
-            className="p-4 rounded-xl border text-left transition-all"
+            className="p-4 rounded-[2rem] border text-left transition-all"
             style={{
               backgroundColor: filterEstado === key ? 'rgba(255,92,58,0.06)' : 'var(--bg-card)',
               borderColor: filterEstado === key ? '#FF5C3A' : 'var(--border-color)',
@@ -237,7 +271,7 @@ export default function AdminMiniLandingsPage() {
       </div>
 
       {/* Filtros */}
-      <div className="rounded-xl border p-4 space-y-3" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+      <div className="rounded-[2rem] border p-4 space-y-3" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input
             type="text"
@@ -272,14 +306,31 @@ export default function AdminMiniLandingsPage() {
       </div>
 
       {/* Tabla */}
-      <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+      <div className="rounded-[2rem] border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead>
               <tr style={{ backgroundColor: 'var(--bg-base)' }}>
-                {['Marca', 'Plan', 'Estado landing', 'Suscripción', 'Días para eliminación', 'Acciones'].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>
-                    {h}
+                {([
+                  { label: 'Marca',               field: 'name'   as SortFieldML },
+                  { label: 'Plan',                field: 'plan'   as SortFieldML },
+                  { label: 'Estado landing',      field: 'estado' as SortFieldML },
+                  { label: 'Suscripción',         field: null },
+                  { label: 'Días para eliminación', field: 'dias' as SortFieldML },
+                  { label: 'Acciones',            field: null },
+                ]).map(h => (
+                  <th
+                    key={h.label}
+                    onClick={() => h.field && toggleSort(h.field)}
+                    className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide ${h.field ? 'cursor-pointer hover:bg-black/5 transition-colors' : ''}`}
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    <div className="flex items-center gap-1">
+                      {h.label}
+                      {h.field && (
+                        <ArrowUpDown className="w-3 h-3" style={{ color: sortField === h.field ? '#FF5C3A' : 'var(--text-muted)' }} />
+                      )}
+                    </div>
                   </th>
                 ))}
               </tr>
@@ -452,7 +503,7 @@ export default function AdminMiniLandingsPage() {
 
         {filtered.length === 0 && (
           <div className="text-center py-12">
-            <IconGlobe className="mx-auto w-10 h-10 mb-3 text-gray-400" />
+            <IconGlobe className="mx-auto w-10 h-10 mb-3" style={{ color: 'var(--text-muted)' }} />
             <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Sin resultados</p>
             <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Ajusta los filtros de búsqueda.</p>
           </div>

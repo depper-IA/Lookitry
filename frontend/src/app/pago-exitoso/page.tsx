@@ -99,11 +99,11 @@ function PagoExitosoContent() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4 bg-[#0a0a0a]">
+      <main className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg-base)' }}>
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-t-transparent border-[#FF5C3A] rounded-full animate-spin mx-auto mb-4"></div>
           <h2 className="text-white font-syne text-xl">Validando tu pago con PayPal...</h2>
-          <p className="text-[#666] text-sm mt-2">Esto tomará solo unos segundos.</p>
+          <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>Esto tomará solo unos segundos.</p>
         </div>
       </main>
     );
@@ -111,21 +111,21 @@ function PagoExitosoContent() {
 
   if (error) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4 bg-[#0a0a0a]">
-        <div className="w-full max-w-md bg-[#141414] border border-[#2a2a2a] rounded-xl p-8 text-center">
+      <main className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg-base)' }}>
+        <div className="w-full max-w-md rounded-xl p-8 text-center border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-5 text-red-500">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
           </div>
           <h1 className="text-white font-syne text-xl mb-4">¡Ups! Algo salió mal</h1>
-          <p className="text-[#666] text-sm mb-8">{error}</p>
-          <Link href="/checkout" className="block w-full py-2.5 bg-[#FF5C3A] text-white font-medium rounded-lg">Volver al checkout</Link>
+          <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>{error}</p>
+          <Link href="/checkout" className="block w-full py-2.5 bg-[#FF5C3A] text-white font-medium rounded-lg cursor-pointer">Volver al checkout</Link>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 bg-[#0a0a0a]">
+    <main className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg-base)' }}>
       <div className="w-full max-w-md">
 
         {/* Logo */}
@@ -138,7 +138,7 @@ function PagoExitosoContent() {
           </Link>
         </div>
 
-        <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8 text-center">
+        <div className="rounded-xl p-7 md:p-8 text-center border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
 
           <div className="w-16 h-16 bg-[rgba(255,92,58,0.1)] border border-[rgba(255,92,58,0.2)] rounded-full flex items-center justify-center mx-auto mb-5">
             <IconCheck />
@@ -147,20 +147,20 @@ function PagoExitosoContent() {
           <h1 className="font-syne font-bold text-[24px] text-white mb-2">
             Pago recibido
           </h1>
-          <p className="text-[14px] text-[#666] mb-6">
+          <p className="text-[14px] mb-6" style={{ color: 'var(--text-secondary)' }}>
             {dashboardHref.startsWith('/registro-pro')
               ? 'Tu pago fue confirmado. Ahora crea tu cuenta para activar el plan.'
               : `Tu pago fue procesado correctamente. Tu Plan ${plan} por ${months} ${months === 1 ? 'mes' : 'meses'} ya está activo.`}
           </p>
 
           {ref && (
-            <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-4 py-3 mb-6 text-left">
-              <p className="text-[11px] text-[#444] mb-1 uppercase tracking-wide">Referencia de pago</p>
-              <p className="text-[13px] font-mono text-[#888] break-all">{ref}</p>
+            <div className="rounded-lg px-4 py-3 mb-6 text-left border" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)' }}>
+              <p className="text-[11px] mb-1 uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Referencia de pago</p>
+              <p className="text-[13px] font-mono break-all" style={{ color: 'var(--text-secondary)' }}>{ref}</p>
             </div>
           )}
 
-          <div className="bg-[rgba(255,92,58,0.06)] border border-[rgba(255,92,58,0.15)] rounded-lg px-4 py-3 mb-6 text-[13px] text-[#888] text-left">
+          <div className="bg-[rgba(255,92,58,0.06)] border border-[rgba(255,92,58,0.15)] rounded-lg px-4 py-3 mb-6 text-[13px] text-left" style={{ color: 'var(--text-secondary)' }}>
             Recibirás un correo de confirmación con los detalles de tu suscripción.
             Si tienes dudas escríbenos a{' '}
             <a href="mailto:info@pruebalo.wilkiedevs.com" className="text-[#FF5C3A] hover:underline">
@@ -171,13 +171,14 @@ function PagoExitosoContent() {
           <div className="flex flex-col gap-3">
             <Link
               href={dashboardHref}
-              className="block w-full py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white font-medium rounded-lg transition-colors text-[13px]"
+              className="block w-full py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white font-medium rounded-lg transition-colors text-[13px] cursor-pointer"
             >
               {dashboardLabel}
             </Link>
             <Link
               href="/"
-              className="block w-full py-2.5 border border-[#2a2a2a] hover:border-[#444] text-[#666] hover:text-[#aaa] font-medium rounded-lg transition-colors text-[13px]"
+              className="block w-full py-2.5 rounded-lg transition-colors text-[13px] font-medium border cursor-pointer"
+              style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
             >
               Volver al inicio
             </Link>

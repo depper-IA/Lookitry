@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { Search, CreditCard, RefreshCw, CheckCircle, XCircle, Clock, Banknote, Wifi } from 'lucide-react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { Search, CreditCard, RefreshCw, CheckCircle, XCircle, Clock, Banknote, Wifi, ArrowUpDown } from 'lucide-react';
 import { formatCurrency } from '@/utils/currency';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -71,6 +71,19 @@ export default function AdminPaymentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
+  // Ordenamiento
+  const [sortField, setSortField] = useState<'name' | 'amount' | 'date' | 'status'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  const toggleSort = (field: 'name' | 'amount' | 'date' | 'status') => {
+    if (sortField === field) {
+      setSortOrder(o => o === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
   const fetchPayments = useCallback(async () => {
     setLoading(true);
     try {
@@ -98,7 +111,24 @@ export default function AdminPaymentsPage() {
   useEffect(() => { setCurrentPage(1); }, [methodFilter, statusFilter, fromDate, toDate, search]);
 
   const totalPages = Math.ceil(payments.length / itemsPerPage);
-  const paginated = payments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const sorted = useMemo(() => [...payments].sort((a, b) => {
+    let valA: any = '';
+    let valB: any = '';
+    if (sortField === 'name') {
+      valA = (a.brands?.name ?? '').toLowerCase(); valB = (b.brands?.name ?? '').toLowerCase();
+    } else if (sortField === 'amount') {
+      valA = a.amount; valB = b.amount;
+    } else if (sortField === 'date') {
+      valA = new Date(a.payment_date || a.created_at).getTime();
+      valB = new Date(b.payment_date || b.created_at).getTime();
+    } else if (sortField === 'status') {
+      valA = a.status; valB = b.status;
+    }
+    if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+    if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  }), [payments, sortField, sortOrder]);
+  const paginated = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Resumen por método
   const byMethod = payments.reduce<Record<string, { count: number; total: number }>>((acc, p) => {
@@ -116,7 +146,7 @@ export default function AdminPaymentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-syne font-bold">Pagos</h1>
+          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-black uppercase italic tracking-tight">Pagos</h1>
           <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">Historial completo de pagos registrados</p>
         </div>
         <button onClick={fetchPayments}
@@ -149,7 +179,7 @@ export default function AdminPaymentsPage() {
       </div>
 
       {/* Filtros */}
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border p-4 space-y-3">
+      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border p-4 space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div className="relative md:col-span-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
@@ -201,7 +231,7 @@ export default function AdminPaymentsPage() {
       </div>
 
       {/* Tabla */}
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border overflow-hidden">
+      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <div className="w-8 h-8 border-4 border-[#FF5C3A]/30 border-t-[#FF5C3A] rounded-full animate-spin" />
@@ -212,13 +242,29 @@ export default function AdminPaymentsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="border-b">
-                    <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Marca</th>
-                    <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Plan</th>
-                    <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Monto</th>
-                    <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Método</th>
-                    <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Fecha</th>
-                    <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Estado</th>
-                    <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Notas</th>
+                    {([
+                      { label: 'Marca',   field: 'name'   as const },
+                      { label: 'Plan',    field: null },
+                      { label: 'Monto',   field: 'amount' as const },
+                      { label: 'Método',  field: null },
+                      { label: 'Fecha',   field: 'date'   as const },
+                      { label: 'Estado',  field: 'status' as const },
+                      { label: 'Notas',   field: null },
+                    ]).map(h => (
+                      <th
+                        key={h.label}
+                        onClick={() => h.field && toggleSort(h.field)}
+                        style={{ color: 'var(--text-muted)' }}
+                        className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide ${h.field ? 'cursor-pointer hover:bg-black/5 transition-colors' : ''}`}
+                      >
+                        <div className="flex items-center gap-1">
+                          {h.label}
+                          {h.field && (
+                            <ArrowUpDown className="w-3 h-3" style={{ color: sortField === h.field ? '#FF5C3A' : 'var(--text-muted)' }} />
+                          )}
+                        </div>
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody style={{ borderColor: 'var(--border-color)' }} className="divide-y">
@@ -267,7 +313,7 @@ export default function AdminPaymentsPage() {
 
       {/* Paginación */}
       {totalPages > 1 && (
-        <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="flex items-center justify-between border rounded-2xl px-5 py-3">
+        <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="flex items-center justify-between border rounded-[2rem] px-5 py-3">
           <p style={{ color: 'var(--text-muted)' }} className="text-sm">
             {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, payments.length)} de {payments.length}
           </p>

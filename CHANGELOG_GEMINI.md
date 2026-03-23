@@ -1,5 +1,272 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 22 de Marzo, 2026 — Fix código duplicado en subscription/page.tsx + precios dinámicos + borde sidebar
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/subscription/page.tsx`
+- `frontend/src/components/dashboard/DashboardLayout.tsx`
+
+**Descripción:**
+- Eliminado bloque JSX duplicado (~200 líneas) que quedó colgando después del cierre de la función `SubscriptionPage`, causando ~49 errores de TypeScript. El archivo fue reescrito limpiamente.
+- Los cards de planes ahora muestran precios dinámicos desde `pricing_config` (campo `data.precio_mensual_cop`), igual que el checkout.
+- Unificado el color del borde del logo del sidebar (`#1f1f1f` → `var(--border-color)`) para que coincida visualmente con el borde del header y eliminar el desajuste visual entre sidebar y header.
+
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/DashboardLayout.tsx`
+
+**Descripción:**
+- Eliminado `overflow-x-hidden` del contenedor `lg:pl-60` — estaba rompiendo el `sticky` del header (CSS: `overflow: hidden` en un ancestro cancela `position: sticky` en hijos).
+- El `overflow-x-hidden` se mantiene solo en el `<main>` para contener el desbordamiento del contenido sin afectar el navbar.
+
+**Motivo:** El header del dashboard dejaba de ser sticky al hacer scroll porque el contenedor padre tenía `overflow-x-hidden`.
+
+---
+
+## 22 de Marzo, 2026 — Fix overflow horizontal: DashboardLayout
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/DashboardLayout.tsx`
+
+**Descripción:**
+- Agregado `overflow-x-hidden` al contenedor principal `lg:pl-60` y al `<main>` del layout del dashboard.
+- Esto corta cualquier contenido que se desborde horizontalmente (como las plan cards de la página de suscripción que salían por la izquierda del viewport).
+
+**Motivo:** Fix de desbordamiento horizontal en el dashboard — contenido salía fuera del viewport por la izquierda.
+
+---
+
+## 22 de Marzo, 2026 — Fix Responsive: Dashboard Subscription — Layout y solapamiento
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/subscription/page.tsx`
+
+**Descripción:**
+- Grid principal: `lg:grid-cols-12` con `xl:col-span-7/5` → `lg:grid-cols-2` (más simple y estable en tablets)
+- Columna derecha: eliminado `lg:sticky lg:top-[80px]` que causaba solapamiento al hacer scroll
+- Plan cards: eliminado `scale-[1.02]` en la card activa (causaba overflow en mobile); `rounded-[2.5rem]` → `rounded-[2rem]`; `p-8` → `p-6`
+- Métodos de pago: `ml-14` → `pl-12` (evita overflow en pantallas pequeñas)
+- Tabla historial: typo `tracking-widesttext-right` → `tracking-widest text-right` en `<th>`
+- Badge de estado en tabla: reemplazado `bg-current bg-opacity-10 border-current border-opacity-20` por `style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}` (compatible con CSS variables del design system)
+
+**Motivo:** Fix de problemas responsive — solapamiento al hacer scroll, overflow en mobile y typo en clase CSS.
+
+## 22 de Marzo, 2026 — Tarea 33: Admin Marketing/Promotions — Upgrade Visual
+
+**Archivos modificados:**
+- `frontend/src/app/admin/marketing/promotions/page.tsx`
+
+**Descripción:**
+- 33.1: `font-syne` ya no existía (corregido en sesión anterior). Sin cambios.
+- 33.2: H1 "Promociones" ya tenía `font-jakarta font-black uppercase italic tracking-tight text-2xl`. Sin cambios.
+- 33.3: Cards de formularios de promo/cupón: `rounded-xl` → `rounded-[2rem]`. Tablas de listado: `rounded-xl` → `rounded-[2rem]`. Estados vacíos: `rounded-xl` → `rounded-[2rem]`.
+- 33.4: Botón "Nueva promoción": `rounded-lg font-semibold` → `rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-[#FF5C3A]/20`. Botón "Nuevo cupón": mismo upgrade. Botones "Guardar" en formularios: mismo upgrade.
+
+**Motivo:** Upgrade visual premium — alineación con el sistema de diseño Lookitry: bordes grandes, tipografía bold uppercase, sombras accent.
+
+---
+
+## 22 de Marzo, 2026 — Fix visual: Dashboard Subscription — Hero sin morado/azul/verde
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/subscription/page.tsx`
+
+**Descripción:**
+- Reemplazados los gradientes y colores de acento por plan: BASIC (azul `#4f8ef7`) y PRO (violeta `#a78bfa`) y TRIAL (verde `#34d399`) → todos unificados a naranja `#FF5C3A` con gradiente negro `#0a0a0a → #141414`.
+- Botones primarios del hero: `color: '#08051e'` → `color: '#ffffff'` (texto blanco sobre naranja).
+- El hero card ahora es consistente con la identidad de marca Lookitry en todos los planes.
+
+**Motivo:** El usuario solicitó eliminar los colores morado/azul/verde del hero de suscripción y unificar con naranja y negro de la marca.
+
+---
+
+## 22 de Marzo, 2026 — Tarea 30: Admin Analytics — Upgrade Visual
+
+**Archivos modificados:**
+- `frontend/src/app/admin/analytics/page.tsx`
+
+**Descripción:**
+- 30.1: Verificado — no existía `font-syne` en el archivo (sin cambios necesarios).
+- 30.2: H1 "Analíticas Globales" actualizado a `font-jakarta font-black uppercase italic tracking-tight text-2xl`.
+- 30.3: Secciones de charts (`rounded-2xl` → `rounded-[2rem]`); h3 "Uso de IA por Mes" y "Suscripciones" con `uppercase italic` añadidos.
+- 30.4: `StatCard` actualizado de `rounded-2xl` → `rounded-[1.5rem]`; padding `p-5` ya estaba correcto.
+
+**Motivo:** Upgrade visual premium — complemento al task 12 ya completado. Alineación con el sistema de diseño Lookitry: bordes grandes, tipografía bold uppercase italic en headers.
+
+---
+
+## 22 de Marzo, 2026 — Tarea 26: Admin Revenue — Upgrade Visual
+
+**Archivos modificados:**
+- `frontend/src/app/admin/revenue/page.tsx`
+
+**Descripción:**
+- 26.1: Reemplazado `font-syne` → `font-jakarta` en todo el archivo: `KpiCard` (valor principal), `ClientesCard` (número grande), `TabROI` (porcentaje meta, valores ROI, margen, proyecciones), `TabIngresos`.
+- 26.2: H1 "Ingresos y ROI" actualizado a `font-jakarta font-black uppercase italic tracking-tight text-2xl`.
+- 26.3: Tabs de navegación (Ingresos / ROI / Configuración) migrados al patrón pill: contenedor `flex gap-4 p-1.5 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] w-fit` con `overflow-x-auto` para mobile; tab activo `bg-[#FF5C3A] text-white rounded-xl shadow-lg font-black uppercase tracking-widest`; tab inactivo `text-gray-500 hover:text-gray-300 font-medium`.
+- 26.4: `KpiCard`: `rounded-2xl` → `rounded-[2rem]`, valor principal usa `font-jakarta font-bold`.
+- 26.5: Secciones de contenido (ingresos mensuales, desglose de gastos, estado vs meta, proyecciones): `rounded-2xl` → `rounded-[2rem]`; h3 con `font-jakarta font-bold uppercase italic`.
+- 26.6: `ClientesCard`: `rounded-2xl` → `rounded-[2rem]`, número grande usa `font-jakarta font-bold`.
+- 26.7: Botones "Guardar" en `TabConfig`: `rounded-lg` → `rounded-2xl`, agregado `font-black uppercase tracking-widest`.
+- Responsive: KPI cards actualizados a `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`; tabs con `overflow-x-auto` para scroll horizontal en mobile.
+
+**Motivo:** Upgrade visual premium alineado con el sistema de diseño Lookitry — bordes grandes `rounded-[2rem]`, tipografía bold uppercase italic en headers, patrón pill en tabs de navegación.
+
+---
+
+## 22 de Marzo, 2026 — Tarea 25: Admin Subscriptions — Upgrade Visual
+
+**Archivos modificados:**
+- `frontend/src/app/admin/subscriptions/page.tsx`
+
+**Descripción:**
+- 25.1: Verificado — no existía `font-syne` en el archivo (sin cambios necesarios).
+- 25.2: H1 "Suscripciones" actualizado a `font-jakarta font-black uppercase italic tracking-tight text-2xl`.
+- 25.3: Tabla wrapper: `rounded-2xl` → `rounded-[2rem]`.
+- 25.4: Panel de filtros: `rounded-2xl` → `rounded-[2rem]`.
+- 25.5: Filtros de estado (botones pill): ya usaban `bg-[#FF5C3A]` para el activo — sin cambios necesarios.
+- 25.6: Modales internos (RenewModal, ChangePlanModal, ConfirmModal): paneles `rounded-2xl` → `rounded-[2rem]`; headers con `font-jakarta font-bold uppercase italic`.
+- Paginación: `rounded-2xl` → `rounded-[2rem]`.
+- Responsive: `overflow-x-auto` ya presente en tabla; agregado `flex-wrap` a botones de acción masiva para mobile.
+
+**Motivo:** Upgrade visual premium alineado con el sistema de diseño Lookitry — bordes grandes `rounded-[2rem]`, tipografía bold uppercase italic en headers y modales.
+
+---
+
+## [Fecha actual] — Tarea 23: Admin Dashboard — Upgrade Visual Premium
+
+**Archivos modificados:**
+- `frontend/src/app/admin/dashboard/page.tsx`
+
+**Descripción:**
+- 23.1: Verificado — no existía `font-syne` en el archivo (sin cambios necesarios).
+- 23.2: H1 "Dashboard" actualizado a `font-jakarta font-black uppercase italic tracking-tight text-2xl`.
+- 23.3: Stat cards: `rounded-xl` → `rounded-[1.5rem]`, padding `p-4` → `p-5`.
+- 23.4: Secciones "Distribución por plan", "Conversiones por mes" y "Mini-landings": `rounded-xl` → `rounded-[2rem]`; h2 de cada sección con `font-jakarta font-bold uppercase italic`.
+- 23.5: Tabla "Detalle mensual de conversiones": wrapper `rounded-xl` → `rounded-[2rem]`; h2 del header con `font-jakarta font-bold uppercase italic`. Los `<th>` ya tenían `uppercase` — sin cambios adicionales.
+
+**Motivo:** Upgrade visual premium alineado con el estilo editorial de `dashboard/mi-pagina/page.tsx` — bordes grandes, tipografía bold uppercase italic, consistencia con el sistema de diseño Lookitry.
+
+---
+
+## 22 de Marzo, 2026 — Sort en Mini-Landings y Pagos + Fix OpenRouter
+
+**Archivos modificados:**
+- `frontend/src/app/admin/mini-landings/page.tsx`
+- `frontend/src/app/admin/payments/page.tsx`
+- `backend/.env`
+
+**Descripción:**
+- Mini-Landings: agregado sort por Marca (A-Z), Plan, Estado landing y Días para eliminación. Headers de tabla clickeables con `ArrowUpDown` de lucide-react, mismo patrón que `subscriptions/page.tsx`. Filtrado migrado a `useMemo` para incluir el sort.
+- Pagos: agregado sort por Marca, Monto, Fecha (default desc) y Estado. Headers clickeables con `ArrowUpDown`. Sort aplicado antes de paginar con `useMemo`.
+- `backend/.env`: agregada variable `OPENROUTER_API_KEY=` (vacía, pendiente de completar con la key real de openrouter.ai/keys para que funcione la pestaña Créditos IA).
+
+**Motivo:** Mejora de UX en tablas admin — consistencia con el patrón de sort ya existente en Marcas y Suscripciones. Fix del endpoint `/api/admin/openrouter-credits` que fallaba por variable de entorno faltante.
+
+---
+
+## 22 de Marzo, 2026 — Tasks 15–22: Admin Pages — Correcciones CSS Variables (Checkpoint)
+
+**Archivos modificados:**
+- `frontend/src/app/admin/payment-settings/page.tsx`
+- `frontend/src/app/admin/notifications/page.tsx`
+- `frontend/src/app/admin/brands/page.tsx`
+- `frontend/src/app/admin/mini-landings/page.tsx`
+- `frontend/src/app/admin/analytics/page.tsx`
+- `.kiro/specs/ui-ux-redesign/tasks.md`
+
+**Descripción:**
+- Task 16.1: Badges de métodos inactivos en `payment-settings` — `bg-gray-500/10 text-gray-400 border-gray-500/20` → inline style con `rgba(255,255,255,0.05)`, `var(--text-muted)`, `var(--border-color)`. Dot inactivo `bg-gray-400` → `backgroundColor: 'var(--text-muted)'`
+- Task 17.2: Botón cerrar modal en `notifications` — `hover:bg-white/10` → `hover:bg-[#ffffff]/10`
+- Task 18.2: Iconos de sort en `brands` — `text-gray-400` → `style={{ color: 'var(--text-muted)' }}` (condicional con `#FF5C3A` cuando activo)
+- Fix `mini-landings`: `IconGlobe` extendido con prop `style?: React.CSSProperties` para aceptar color via inline style
+- Fix `analytics`: `</div>` extra eliminado en `StatCard` que causaba error JSX (TS2657)
+- Tasks 19, 20, 21: Auditadas — ya usaban CSS variables correctamente, marcadas como completadas sin cambios
+- TypeScript: `npx tsc --noEmit` → 0 errores
+
+**Motivo:** Completar el checkpoint admin (task 22) del spec UI/UX redesign. Todas las páginas admin ahora usan el design system de variables CSS sin colores Tailwind hardcodeados.
+
+---
+
+## 22 de Marzo, 2026 — Task 13: Admin Conversion — Rediseño Visual
+
+**Archivos modificados:**
+- `frontend/src/app/admin/conversion/page.tsx`
+
+**Descripción:**
+- 13.1: Error state `bg-red-50 border-red-200 text-red-700` → `bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444]`
+- 13.2: Cards del funnel (Step 1, 2, 3 y conectores de flecha) `bg-white dark:bg-zinc-900` → `style={{ backgroundColor: 'var(--bg-card)' }}`; `text-gray-300` en ArrowRight → `style={{ color: 'var(--text-muted)' }}`
+- 13.3: KPI rows `bg-gray-50 dark:bg-white/5` → `style={{ backgroundColor: 'var(--bg-hover)' }}` (3 filas: Tasa de Conversión, Drop-off Rate, LTV)
+
+**Motivo:** UI/UX redesign spec task 13 — alineación con design system admin usando CSS variables en lugar de clases Tailwind hardcodeadas.
+
+---
+
+## 22 de Marzo, 2026 — Task 12: Admin Analytics — Rediseño Visual
+
+**Archivos modificados:**
+- `frontend/src/app/admin/analytics/page.tsx`
+
+**Descripción:**
+- 12.1: Error state `bg-red-50 border-red-200 text-red-700` → `bg-[#ef4444]/10 border-[#ef4444]/30 text-[#ef4444]`
+- 12.2: Barras del chart `bg-gray-100 dark:bg-gray-800/50` → `style={{ backgroundColor: 'var(--bg-hover)' }}`
+- 12.3: Barras de progreso `bg-gray-100 dark:bg-gray-800` → `style={{ backgroundColor: 'var(--bg-hover)' }}`
+- 12.4: H1 principal: agregado `font-jakarta`
+- 12.5: H3/H4 de sección: agregado `font-jakarta`
+- 12.6: StatCard — eliminado fondo `${color}15` del icono, color directo al icono, `borderLeft: 3px solid <accent>` en la card
+
+**Motivo:** Alineación con design system admin (CSS variables, tipografía Jakarta en headings, stat cards con borderLeft según dirección estética establecida en `admin/dashboard/page.tsx`).
+
+---
+
+## 22 de Marzo, 2026 — Actualización tasks.md: Tareas Admin Rediseño
+
+**Archivos modificados:**
+- `.kiro/specs/ui-ux-redesign/tasks.md`
+
+**Descripción:**
+Reescritura completa del `tasks.md` para incluir las tareas de rediseño de todas las páginas del panel admin. Se mantuvieron las tareas anteriores (1–11) como completadas y se agregaron las tareas 12–22 cubriendo:
+- Task 12: `admin/analytics/page.tsx` — error state, barras chart, barras progreso, headings, stat cards con icono de fondo
+- Task 13: `admin/conversion/page.tsx` — error state, cards funnel, KPI rows
+- Task 14: `admin/subscriptions/page.tsx` — checkboxes, iconos sort, botón suspender
+- Task 15: `admin/mini-landings/page.tsx` — error state, icono vacío
+- Task 16: `admin/payment-settings/page.tsx` — badges métodos inactivos
+- Task 17: `admin/notifications/page.tsx` — toggle inactivo, botón cerrar modal
+- Task 18: `admin/brands/page.tsx` — error state, iconos sort
+- Task 19: `admin/marketing/promotions/page.tsx` — toggle track
+- Task 20: `admin/revenue/page.tsx` — auditoría (ya correcto)
+- Task 21: `admin/payments/page.tsx` — auditoría (ya correcto)
+- Task 22: Checkpoint final admin
+
+**Motivo:** Continuar el rediseño visual del panel admin con dirección estética consistente (borde izquierdo de color en cards, sin fondos de color en iconos, variables CSS en todo, `font-jakarta` en headings).
+
+---
+
+## 22 de Marzo, 2026 — Rediseño Estético del Panel Admin
+
+**Archivos modificados:**
+- `frontend/src/app/admin/layout.tsx`
+- `frontend/src/app/admin/dashboard/page.tsx`
+
+**Admin Layout (`layout.tsx`):**
+- Sidebar refinado: altura de header unificada a 60px, badge pill "Admin" con borde naranja sutil, etiquetas de grupo con mayor contraste (`#3a3a3a`), hover states más definidos (`#161616`), user footer con card de fondo `#111`.
+- Nuevo componente `PageTitle` en el header que muestra el nombre de la sección activa dinámicamente según el pathname.
+- Estado de carga mejorado: spinner con label "Cargando" en uppercase tracking.
+- Ancho del sidebar ajustado a 220px (antes 240px) para mayor densidad visual.
+- Todos los elementos interactivos tienen `cursor-pointer` explícito.
+- Fuente `font-jakarta` aplicada al logo y título de página según brand guidelines.
+
+**Dashboard (`dashboard/page.tsx`):**
+- Stat cards rediseñadas: borde izquierdo de color por categoría (`borderLeft: 3px solid accent`) en lugar de icon backgrounds planos — patrón más limpio y profesional.
+- Icono de cada card alineado a la derecha con color del acento, sin fondo de color.
+- Mini-landing cards con el mismo patrón de borde izquierdo de color.
+- Barras del gráfico de conversiones con `opacity: 0` cuando el valor es 0 (evita barras fantasma).
+- Todos los valores numéricos usan `tabular-nums` para alineación consistente.
+- Cabeceras de tabla con color `var(--text-muted)` en lugar de `var(--text-secondary)` para mayor jerarquía visual.
+- Fuente `font-jakarta` en todos los títulos de sección y valores numéricos grandes.
+
+**Commit:** `38bf169` — pusheado a `main`.
+
 ## 22 de Marzo, 2026 — Fix Crítico: Auto-vinculación de Landing + Email de Activación
 
 **Problema 1 — Plan sobreescrito con `NONE` al vincular landing a cuenta existente:**
@@ -194,3 +461,124 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 
 ---
 *Nota para la IA: Antes de empezar, lee este archivo y actualízalo al finalizar cada tarea.*
+
+## 22 de Marzo, 2026 — UI/UX Redesign: Tareas 1–4 (Shared Components + Layouts)
+
+**Spec:** `.kiro/specs/ui-ux-redesign/` — Rediseño visual incremental del frontend de Lookitry.
+
+### Tarea 1 — Shared UI Components (correcciones base)
+
+**`frontend/src/components/ui/Button.tsx`**
+- Confirmado: `cursor-pointer` y `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A]/50` ya presentes en la clase `base`.
+- Confirmado: `focus:outline-none` genérico eliminado, reemplazado por `focus-visible`.
+- Requirements: 1.3, 1.8, 7.1, 7.2, 7.8
+
+**`frontend/src/components/ui/Input.tsx`**
+- Confirmado: `backgroundColor` cambiado de `var(--bg-card)` → `var(--bg-input)` en el `style` del `<input>`.
+- Confirmado: `cursor-text` presente en el className del `<input>`.
+- Requirements: 1.1, 2.3, 8.3
+
+**`frontend/src/components/ui/Card.tsx`**
+- Confirmado: prop `interactive?: boolean` agregada a `CardProps`.
+- Confirmado: cuando `interactive=true`, aplica `cursor-pointer hover:border-[#FF5C3A]/40 hover:shadow-md transition-all duration-200 motion-safe:hover:scale-[1.01]`.
+- Requirements: 1.8, 7.1, 7.3, 7.7, 7.8
+
+### Tarea 2 — Checkpoint componentes base
+
+- `npx tsc --noEmit` en `frontend/` → sin errores de TypeScript.
+
+### Tarea 3 — DashboardLayout (correcciones de layout)
+
+**`frontend/src/components/dashboard/DashboardLayout.tsx`**
+- **3.1** Email verification banner: `bg-[#0a0a0a] border-[#1a1a1a]` → `style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}`. Requirements: 3.8, 8.1, 8.2
+- **3.2** Nav Links del sidebar: agregado `cursor-pointer` al className de cada `<Link>` en `sidebarContent`. Requirements: 3.13, 7.1
+- **3.3** Body scroll lock: agregado `useEffect` que aplica `document.body.style.overflow = 'hidden'` cuando `sidebarOpen = true` y lo limpia al cerrar o desmontar. Requirements: 3.12, 6.8
+
+### Tarea 4 — AdminLayout (cursor-pointer en nav items)
+
+**`frontend/src/app/admin/layout.tsx`**
+- **4.1** Agregado `cursor-pointer` al className del `<Link>` dentro de `group.items.map(...)` en el nav del sidebar. Requirements: 5.7, 7.1
+
+**Verificación:** `getDiagnostics` en ambos archivos → sin errores.
+
+## 22 de Marzo, 2026 — Task 14: Admin Subscriptions — Correcciones visuales
+
+**Archivos modificados:**
+- `frontend/src/app/admin/subscriptions/page.tsx`
+
+**Descripción:**
+- 14.1: Checkboxes (select-all en thead y por fila en tbody) — eliminado `border-gray-300`, agregado `style={{ borderColor: 'var(--border-color)' }}`
+- 14.2: Iconos `ArrowUpDown` de sort en columnas Marca, Plan y Vencimiento — reemplazado `text-gray-400` por `style={{ color: 'var(--text-muted)' }}` (activo sigue usando `#FF5C3A` via style inline)
+- 14.3: Botón suspender — `bg-red-500/10 text-red-500 hover:bg-red-500/20` → `bg-[#ef4444]/10 text-[#ef4444] hover:bg-[#ef4444]/20`
+
+**Motivo:** UI/UX redesign spec task 14 — alineación con design system admin usando CSS variables y colores de estado definidos.
+
+---
+
+## 22 de Marzo, 2026 — Reescritura tasks 23–39: Upgrade Visual Admin Premium
+
+**Archivos modificados:**
+- `.kiro/specs/ui-ux-redesign/tasks.md`
+
+**Descripción:**
+Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. Los cambios principales respecto a la versión anterior:
+
+1. **Doble fuente de referencia visual:** Se agregó `dashboard/settings/page.tsx` como segunda referencia junto a `dashboard/mi-pagina/page.tsx`. Settings aporta el estilo limpio/funcional (alertas con `rounded-lg`, espaciado `space-y-5`), mientras mi-pagina aporta el estilo bold/editorial (bordes grandes, tipografía uppercase italic, tabs pill).
+
+2. **Corrección crítica de fuente (`font-syne` → `font-jakarta`):** Se detectó que varias páginas admin usan `font-syne` que NO existe en el design system del proyecto. La fuente correcta para headings es `font-jakarta` (Plus Jakarta Sans). Se agregó una subtarea de corrección de fuente como primer paso en CADA página (23.1, 24.1, 25.1, 26.1, 27.1, 28.1, 29.1, 30.1, 31.1, 32.1, 33.1, 34.1, 35.1, 36.1, 37.1, 38.1). Afectados confirmados: `brands/page.tsx`, `subscriptions/page.tsx`, `revenue/page.tsx` (KpiCard, ClientesCard, valores ROI).
+
+3. **Tokens de diseño más precisos:** Se especificaron las clases exactas para H1 (`font-jakarta font-black uppercase italic tracking-tight text-2xl`), H2/H3 (`font-jakarta font-bold uppercase italic`), tabs, botones y toasts, referenciando el código real de ambas páginas fuente.
+
+4. **Task 39 ampliado:** Se agregó subtarea 39.1 de búsqueda global de `font-syne` en `/admin/` para confirmar cero ocurrencias antes del checkpoint final.
+
+**Motivo:** El usuario señaló que las tareas anteriores solo referenciaban `mi-pagina` y no incluían la corrección de fuentes incorrectas.
+
+
+---
+
+## 22 de Marzo, 2026 — Tarea 24: Admin Brands — Upgrade Visual Premium
+
+**Archivos modificados:**
+- `frontend/src/app/admin/brands/page.tsx`
+
+**Descripción:**
+- 24.1: Reemplazadas todas las ocurrencias de `font-syne` → `font-jakarta` en el archivo (6 ocurrencias: h3 "Estadísticas", valor numérico en stat cards del modal detalles, h2 modal productos, h2 modal crear marca, h2 modal activar plan, h2 modal configuración de modal).
+- 24.2: H1 "Gestión de Marcas" ya tenía `font-jakarta font-black uppercase italic tracking-tight text-2xl` — sin cambios adicionales.
+- 24.3: Panel de filtros ya tenía `rounded-[2rem]` — sin cambios adicionales.
+- 24.4: Tabla wrapper ya tenía `rounded-[2rem]` — sin cambios adicionales.
+- 24.5: Botón "Nueva Marca" ya tenía `rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-[#FF5C3A]/20` — sin cambios adicionales.
+- 24.6: Modales actualizados — `rounded-2xl` → `rounded-[2rem]` en paneles de: modal productos, modal crear marca, modal activar plan, modal confirmación masiva, modal configuración de modal. Headers de todos los modales actualizados a `font-jakarta font-black uppercase italic`.
+
+**Verificación:** `getDiagnostics` → sin errores TypeScript.
+
+**Motivo:** Upgrade visual premium alineado con el estilo editorial de `dashboard/mi-pagina/page.tsx` — bordes grandes `rounded-[2rem]`, tipografía bold uppercase italic en todos los modales, eliminación de `font-syne` (fuente inexistente en el proyecto).
+
+## 22 de Marzo, 2026 — Fix definitivo navbar siempre visible: DashboardLayout
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/DashboardLayout.tsx`
+
+**Descripción:**
+- Cambio de arquitectura de scroll: el contenedor `lg:pl-60` ahora tiene `h-screen overflow-hidden` en lugar de `min-h-screen`.
+- El `<main>` ahora tiene `overflow-y-auto overflow-x-hidden` — el scroll ocurre dentro del main, no en el body.
+- El header ya no necesita `sticky top-0 z-10` — al estar fuera del área scrolleable, queda naturalmente fijo. Se cambió a `flex-shrink-0`.
+- Esto elimina definitivamente el problema de solapamiento y el header que se ocultaba al hacer scroll.
+
+**Motivo:** Con `sticky` en el body, el header podía ser desplazado por componentes con `z-index` alto o `transform`. Al mover el scroll al `<main>`, el header siempre permanece visible sin depender de z-index.
+
+---
+
+## 22 de Marzo, 2026 — Fix header height + precios dinámicos en subscription
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/DashboardLayout.tsx`
+- `frontend/src/app/dashboard/subscription/page.tsx`
+
+**Descripción:**
+- `DashboardLayout`: header `h-14` → `h-16` para coincidir con la altura del logo del sidebar (`h-16`). Ahora sidebar y navbar están alineados visualmente.
+- `subscription/page.tsx`: corregido el fetch de `pricing_config` — el campo era `config` pero la tabla usa `data` (igual que en `checkout/page.tsx`). También corregido `select=id,config` → `select=id,data`.
+- Limpiados imports no usados: `ShoppingBag`, `api`, `PlanType`, variables `heroGlow` y `heroSubtitle`.
+
+**Motivo:** Las cards de planes mostraban precios estáticos ($150.000/$250.000 hardcodeados) porque el fetch fallaba silenciosamente al usar el campo incorrecto `config` en lugar de `data`. El header tenía 56px de alto vs 64px del sidebar, causando desalineación visual.
+
+---

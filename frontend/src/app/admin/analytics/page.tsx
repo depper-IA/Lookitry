@@ -72,7 +72,7 @@ export default function AdminAnalyticsPage() {
 
   if (error || !stats) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center gap-3">
+      <div className="bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444] p-4 rounded-xl flex items-center gap-3">
         <AlertCircle className="w-5 h-5" />
         <p>{error || 'No se pudieron cargar las estadísticas'}</p>
       </div>
@@ -83,7 +83,7 @@ export default function AdminAnalyticsPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Analíticas Globales</h1>
+        <h1 className="text-2xl font-jakarta font-black uppercase italic tracking-tight" style={{ color: 'var(--text-primary)' }}>Analíticas Globales</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Resumen del rendimiento y salud del ecosistema Lookitry.</p>
       </div>
 
@@ -121,10 +121,10 @@ export default function AdminAnalyticsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Gráfica de Generaciones */}
-        <div className="lg:col-span-2 rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+        <div className="lg:col-span-2 rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Uso de IA por Mes</h3>
+              <h3 className="text-lg font-jakarta font-bold uppercase italic" style={{ color: 'var(--text-primary)' }}>Uso de IA por Mes</h3>
               <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Volumen de generaciones en los últimos 6 meses</p>
             </div>
             <BarChart3 className="w-5 h-5 text-gray-400" />
@@ -138,7 +138,7 @@ export default function AdminAnalyticsPage() {
               
               return (
                 <div key={m.month} className="flex-1 flex flex-col items-center gap-2 group relative">
-                  <div className="w-full bg-gray-100 dark:bg-gray-800/50 rounded-t-lg relative overflow-hidden h-full flex items-end">
+                  <div className="w-full rounded-t-lg relative overflow-hidden h-full flex items-end" style={{ backgroundColor: 'var(--bg-hover)' }}>
                     <div 
                       className="w-full bg-[#FF5C3A]/20 transition-all duration-500" 
                       style={{ height: `${height}%` }}
@@ -176,8 +176,8 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Distribución de Planes */}
-        <div className="rounded-2xl border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <h3 className="text-lg font-bold mb-6" style={{ color: 'var(--text-primary)' }}>Suscripciones</h3>
+        <div className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <h3 className="text-lg font-jakarta font-bold uppercase italic mb-6" style={{ color: 'var(--text-primary)' }}>Suscripciones</h3>
           
           <div className="space-y-6">
             <PlanStats 
@@ -193,7 +193,7 @@ export default function AdminAnalyticsPage() {
               color="#8b5cf6" 
             />
             <div className="pt-6 mt-6 border-t" style={{ borderColor: 'var(--border-color)' }}>
-              <h4 className="text-sm font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Mini-Landings</h4>
+              <h4 className="text-sm font-jakarta font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Mini-Landings</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-3 rounded-xl bg-green-500/5 border border-green-500/10">
                   <p className="text-[10px] font-bold text-green-600 uppercase">Activas</p>
@@ -223,9 +223,9 @@ export default function AdminAnalyticsPage() {
 
 function StatCard({ title, value, icon, color, description }: { title: string; value: string | number; icon: React.ReactNode; color: string; description?: string }) {
   return (
-    <div className="rounded-2xl border p-5 transition-all hover:shadow-lg" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+    <div className="rounded-[1.5rem] border p-5 transition-all hover:shadow-lg" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', borderLeft: `3px solid ${color}` }}>
       <div className="flex items-center justify-between mb-3">
-        <div className="p-2 rounded-xl" style={{ backgroundColor: `${color}15`, color }}>
+        <div style={{ color }}>
           {icon}
         </div>
         <ArrowUpRight className="w-4 h-4 text-gray-300" />
@@ -248,7 +248,7 @@ function PlanStats({ label, count, total, color }: { label: string; count: numbe
         <span className="font-bold" style={{ color: 'var(--text-secondary)' }}>{label}</span>
         <span className="font-black" style={{ color: 'var(--text-primary)' }}>{count}</span>
       </div>
-      <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+      <div className="h-2 w-full rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-hover)' }}>
         <div 
           className="h-full transition-all duration-1000" 
           style={{ width: `${percentage}%`, backgroundColor: color }}

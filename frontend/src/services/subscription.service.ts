@@ -66,8 +66,13 @@ class SubscriptionService {
   }
 
   async getPayments(): Promise<SubscriptionPayment[]> {
-    const response = await api.get<any[]>('/brands/me/payments');
-    const rawPayments = Array.isArray(response.data) ? response.data : [];
+    const response = await api.get<any>('/brands/me/payments');
+    // El backend retorna { payments: [...] }
+    const rawPayments = Array.isArray(response.data?.payments)
+      ? response.data.payments
+      : Array.isArray(response.data)
+        ? response.data
+        : [];
     
     return rawPayments.map(p => ({
       id: p.id,

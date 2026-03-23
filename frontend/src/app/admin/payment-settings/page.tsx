@@ -133,7 +133,7 @@ export default function PaymentSettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 style={{ color: 'var(--text-primary)' }} className="text-3xl font-bold">Medios de Pago</h1>
+          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-black uppercase italic tracking-tight">Medios de Pago</h1>
           <p style={{ color: 'var(--text-muted)' }} className="mt-1 text-sm">Configura los métodos de pago disponibles para tus clientes</p>
         </div>
         <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export default function PaymentSettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-lg disabled:opacity-50 font-medium transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-2xl disabled:opacity-50 font-black uppercase tracking-widest transition-colors shadow-lg shadow-[#FF5C3A]/20"
             style={{ backgroundColor: '#FF5C3A' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e04e30')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FF5C3A')}
@@ -166,7 +166,7 @@ export default function PaymentSettingsPage() {
       )}
 
       {/* Tabs de métodos de pago */}
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-xl shadow-sm border overflow-hidden">
+      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] shadow-sm border overflow-hidden">
         <div style={{ borderColor: 'var(--border-color)' }} className="flex border-b">
           {tabs.map(tab => (
             <button
@@ -428,17 +428,19 @@ export default function PaymentSettingsPage() {
       </div>
 
       {/* Resumen de métodos activos */}
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-xl shadow-sm border p-5">
+      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] shadow-sm border p-5">
         <h3 style={{ color: 'var(--text-primary)' }} className="font-semibold mb-3">Métodos activos</h3>
         <div className="flex flex-wrap gap-2">
           {tabs.map(tab => (
             <span
               key={tab.id}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                tab.enabled ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
-              }`}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+              style={tab.enabled
+                ? { backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' }
+                : { backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }
+              }
             >
-              <span className={`w-1.5 h-1.5 rounded-full ${tab.enabled ? 'bg-green-500' : 'bg-gray-400'}`} />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tab.enabled ? '#10b981' : 'var(--text-muted)' }} />
               {tab.label}
             </span>
           ))}

@@ -216,7 +216,7 @@ function PromoForm({ initial, onSave, onCancel, saving }: {
       </div>
 
       <div className="flex gap-2 pt-2">
-        <button onClick={() => onSave(form)} disabled={saving || !form.name.trim()} className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold text-white transition-all disabled:opacity-50" style={{ backgroundColor: '#FF5C3A' }}>
+        <button onClick={() => onSave(form)} disabled={saving || !form.name.trim()} className="flex items-center gap-2 px-4 py-2 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all disabled:opacity-50 shadow-lg shadow-[#FF5C3A]/20" style={{ backgroundColor: '#FF5C3A' }}>
           {saving && <IconSpinner />}Guardar
         </button>
         <button onClick={onCancel} className="px-4 py-2 rounded-lg text-[13px] transition-colors" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
@@ -303,7 +303,7 @@ function CouponForm({ initial, onSave, onCancel, saving }: {
         <span className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>Cupón activo</span>
       </div>
       <div className="flex gap-2 pt-1">
-        <button onClick={() => onSave(form)} disabled={saving || !form.code.trim()} className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold text-white transition-all disabled:opacity-50" style={{ backgroundColor: '#FF5C3A' }}>
+        <button onClick={() => onSave(form)} disabled={saving || !form.code.trim()} className="flex items-center gap-2 px-4 py-2 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all disabled:opacity-50 shadow-lg shadow-[#FF5C3A]/20" style={{ backgroundColor: '#FF5C3A' }}>
           {saving && <IconSpinner />}Guardar cupón
         </button>
         <button onClick={onCancel} className="px-4 py-2 rounded-lg text-[13px] transition-colors" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
@@ -401,17 +401,17 @@ export default function PromotionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255,92,58,0.15)', color: '#FF5C3A' }}>
+          <div className="w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255,92,58,0.15)', color: '#FF5C3A' }}>
             <IconMegaphone />
           </div>
           <div>
-            <h1 className="font-syne font-bold text-xl" style={{ color: 'var(--text-primary)' }}>Promociones</h1>
+            <h1 className="font-jakarta font-black uppercase italic tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Promociones</h1>
             <p className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>Modales, banners, cupones y precios especiales</p>
           </div>
         </div>
         <button
           onClick={() => { setShowPromoForm(true); setEditingPromo(null); setTab('promos'); }}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-semibold text-white transition-all hover:opacity-90 w-full sm:w-auto"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all hover:opacity-90 shadow-lg shadow-[#FF5C3A]/20 w-full sm:w-auto"
           style={{ backgroundColor: '#FF5C3A' }}
         >
           <IconPlus />Nueva promoción
@@ -443,8 +443,8 @@ export default function PromotionsPage() {
       {tab === 'promos' && (
         <div className="space-y-4">
           {showPromoForm && (
-            <div className="rounded-xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-              <p className="font-syne font-semibold text-[15px] mb-4" style={{ color: 'var(--text-primary)' }}>
+            <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <p className="font-jakarta font-bold uppercase italic text-[15px] mb-4" style={{ color: 'var(--text-primary)' }}>
                 {editingPromo ? 'Editar promoción' : 'Nueva promoción'}
               </p>
               <PromoForm
@@ -461,12 +461,12 @@ export default function PromotionsPage() {
           {loading ? (
             <div className="flex justify-center py-12" style={{ color: 'var(--text-muted)' }}><IconSpinner /></div>
           ) : promos.length === 0 ? (
-            <div className="text-center py-16 rounded-xl" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
+            <div className="text-center py-16 rounded-[2rem]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}>
               <div className="flex justify-center mb-3"><IconTag /></div>
               <p className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>No hay promociones. Crea la primera.</p>
             </div>
           ) : (
-            <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <div className="rounded-[2rem] border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
               <div className="overflow-x-auto overflow-y-hidden">
                 <table className="w-full text-[13px] min-w-[600px]">
                   <thead>
@@ -516,7 +516,7 @@ export default function PromotionsPage() {
         <div className="space-y-4">
           <div className="flex justify-end">
             <button onClick={() => { setShowCouponForm(true); setEditingCoupon(null); }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold text-white transition-all hover:opacity-90"
+              className="flex items-center gap-2 px-4 py-2 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all hover:opacity-90 shadow-lg shadow-[#FF5C3A]/20"
               style={{ backgroundColor: '#10b981' }}
             >
               <IconPlus />Nuevo cupón
@@ -524,8 +524,8 @@ export default function PromotionsPage() {
           </div>
 
           {showCouponForm && (
-            <div className="rounded-xl p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-              <p className="font-syne font-semibold text-[15px] mb-4" style={{ color: 'var(--text-primary)' }}>
+            <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <p className="font-jakarta font-bold uppercase italic text-[15px] mb-4" style={{ color: 'var(--text-primary)' }}>
                 {editingCoupon ? 'Editar cupón' : 'Nuevo cupón'}
               </p>
               <CouponForm
@@ -542,11 +542,11 @@ export default function PromotionsPage() {
           {loading ? (
             <div className="flex justify-center py-12" style={{ color: 'var(--text-muted)' }}><IconSpinner /></div>
           ) : coupons.length === 0 ? (
-            <div className="text-center py-16 rounded-xl" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <div className="text-center py-16 rounded-[2rem]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
               <p className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>No hay cupones. Crea el primero.</p>
             </div>
           ) : (
-            <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <div className="rounded-[2rem] border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
               <div className="overflow-x-auto overflow-y-hidden">
                 <table className="w-full text-[13px] min-w-[700px]">
                   <thead>
