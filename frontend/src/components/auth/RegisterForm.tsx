@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import Script from 'next/script';
 
 function EyeIcon() {
   return (
@@ -52,11 +51,9 @@ async function getFingerprint(): Promise<string | null> {
   }
 }
 
-const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
-
 export default function RegisterForm() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', email: '', password: '', slug: '', contact_name: '', phone: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', slug: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
@@ -65,22 +62,6 @@ export default function RegisterForm() {
   const [trialDays, setTrialDays] = useState(7);
   const [requireCard, setRequireCard] = useState(false);
   const [fingerprint, setFingerprint] = useState<string | null>(null);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const turnstileRef = useRef<HTMLDivElement>(null);
-  const widgetIdRef = useRef<string | null>(null);
-
-  const renderTurnstile = useCallback(() => {
-    if (!TURNSTILE_SITE_KEY || !turnstileRef.current) return;
-    if (typeof window === 'undefined' || !(window as any).turnstile) return;
-    if (widgetIdRef.current) return; // ya renderizado
-    widgetIdRef.current = (window as any).turnstile.render(turnstileRef.current, {
-      sitekey: TURNSTILE_SITE_KEY,
-      theme: 'dark',
-      callback: (token: string) => setTurnstileToken(token),
-      'expired-callback': () => setTurnstileToken(null),
-      'error-callback': () => setTurnstileToken(null),
-    });
-  }, []);
 
   useEffect(() => {
     getFingerprint().then(setFingerprint);
@@ -96,15 +77,6 @@ export default function RegisterForm() {
       })
       .catch(() => setTrialActive(false));
   }, []);
-
-  // Renderizar Turnstile cuando el script cargue y el trial esté activo
-  useEffect(() => {
-    if (trialActive === true) {
-      // Pequeño delay para asegurar que el DOM esté listo
-      const t = setTimeout(renderTurnstile, 100);
-      return () => clearTimeout(t);
-    }
-  }, [trialActive, renderTurnstile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -133,7 +105,7 @@ export default function RegisterForm() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, fingerprint, turnstileToken }),
+        body: JSON.stringify({ ...form, fingerprint }),
       });
       const data = await res.json();
 
@@ -269,23 +241,7 @@ export default function RegisterForm() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* 1. Nombre y apellido del responsable */}
-            <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">
-                Nombre y apellido
-              </label>
-              <input
-                name="contact_name"
-                value={form.contact_name}
-                onChange={handleChange}
-                required
-                minLength={3}
-                placeholder="Juan Pérez"
-                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
-              />
-            </div>
-
-            {/* 2. Nombre de la marca */}
+            {/* Nombre de la marca */}
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">
                 Nombre de la marca
@@ -300,7 +256,7 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* 3. Slug */}
+            {/* Slug */}
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">
                 Slug (URL del probador)
@@ -320,9 +276,9 @@ export default function RegisterForm() {
               </div>
             </div>
 
-            {/* 4. Correo electrónico */}
+            {/* Email */}
             <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">Correo electrónico</label>
+              <label className="block text-[13px] font-medium text-[#888] mb-1.5">Email</label>
               <input
                 name="email"
                 type="email"
@@ -334,22 +290,7 @@ export default function RegisterForm() {
               />
             </div>
 
-            {/* 5. Teléfono (opcional) */}
-            <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">
-                Teléfono <span className="text-[#555]">(opcional)</span>
-              </label>
-              <input
-                name="phone"
-                type="tel"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="+57 300 000 0000"
-                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
-              />
-            </div>
-
-            {/* 6. Contraseña */}
+            {/* Contraseña */}
             <div>
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">Contraseña</label>
               <div className="relative">
@@ -402,14 +343,9 @@ export default function RegisterForm() {
               </div>
             )}
 
-            {/* Turnstile widget — solo visible si hay site key configurada */}
-            {TURNSTILE_SITE_KEY && (
-              <div ref={turnstileRef} className="flex justify-center" />
-            )}
-
             <button
               type="submit"
-              disabled={loading || (!!TURNSTILE_SITE_KEY && !turnstileToken)}
+              disabled={loading}
               className="w-full bg-[#FF5C3A] hover:bg-[#e84d2c] disabled:opacity-50 text-white font-medium py-2.5 rounded-lg text-[13px] transition-colors mt-2 flex items-center justify-center gap-2"
             >
               {loading ? (
@@ -442,15 +378,6 @@ export default function RegisterForm() {
         </div>
 
       </div>
-
-      {/* Script de Cloudflare Turnstile — carga solo si hay site key */}
-      {TURNSTILE_SITE_KEY && (
-        <Script
-          src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-          strategy="lazyOnload"
-          onLoad={renderTurnstile}
-        />
-      )}
     </div>
   );
 }
