@@ -22,6 +22,7 @@ const mockSupabaseChain = (returnValue: any) => ({
   gt: jest.fn().mockReturnThis(),
   order: jest.fn().mockReturnThis(),
   single: jest.fn().mockResolvedValue(returnValue),
+  maybeSingle: jest.fn().mockResolvedValue(returnValue),
 });
 
 const mockSupabaseChainList = (returnValue: any) => ({
@@ -192,6 +193,60 @@ describe('SubscriptionService', () => {
       );
       const result = await service.getDaysRemaining('brand-1');
       expect(result).toBeLessThanOrEqual(0);
+    });
+  });
+
+  // ─── calculateUpgradeProration ────────────────────────────────────────────
+
+  describe('calculateUpgradeProration', () => {
+    it('debe aplicar crédito de pro a basic usando días remanentes', async () => {
+      const now = new Date();
+      const start = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString();
+      const end = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000).toISOString();
+
+      (supabaseAdmin.from as jest.Mock)
+        .mockReturnValueOnce(
+          mockSupabaseChain({
+            data: { subscription_start_date: start, subscription_end_date: end, plan: 'PRO' },
+            error: null,
+          })
+        )
+        .mockReturnValueOnce(
+          mockSupabaseChain({ data: { amount: 250000, months_paid: 1 }, error: null })
+        );
+
+      const result = await service.calculateUpgradeProration('brand-1', 'BASIC', 1, 150000, 150000);
+
+      expect(result.daysRemaining).toBeGreaterThanOrEqual(14);
+      expect(result.creditAmount).toBeGreaterThan(0);
+      expect(result.newPlanTotal).toBe(150000);
+      expect(result.amountToPay).toBe(25000);
+      expect(result.remainingCredit).toBe(0);
+      expect(result.isFree).toBe(false);
+    });
+
+    it('debe dar prorrateo libre y crédito restante si monto de pro > basic', async () => {
+      const now = new Date();
+      const start = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString();
+      const end = new Date(now.getTime() + 28 * 24 * 60 * 60 * 1000).toISOString();
+
+      (supabaseAdmin.from as jest.Mock)
+        .mockReturnValueOnce(
+          mockSupabaseChain({
+            data: { subscription_start_date: start, subscription_end_date: end, plan: 'PRO' },
+            error: null,
+          })
+        )
+        .mockReturnValueOnce(
+          mockSupabaseChain({ data: { amount: 250000, months_paid: 1 }, error: null })
+        );
+
+      const result = await service.calculateUpgradeProration('brand-1', 'BASIC', 1, 150000, 150000);
+
+      expect(result.creditAmount).toBeGreaterThan(150000);
+      expect(result.amountToPay).toBe(0);
+      expect(result.remainingCredit).toBeGreaterThan(0);
+      expect(result.isFree).toBe(true);
     });
   });
 

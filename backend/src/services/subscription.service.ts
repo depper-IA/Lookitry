@@ -254,11 +254,12 @@ export class SubscriptionService {
     const endDate = brand.subscription_end_date ? new Date(brand.subscription_end_date) : now;
     const startDate = brand.subscription_start_date ? new Date(brand.subscription_start_date) : now;
 
-    // Días totales del plan actual y días restantes
-    const totalDays = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+    // Días restantes calculados exactamente desde el fin actual.
     const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
-    // Obtener el monto real pagado desde subscription_payments (el más reciente completado)
+    // Días totales considerados para la prorrata: usar el ciclo del último pago si está disponible (en meses),
+    // o fallback de 30 días (período del plan).
+    // Esto evita que un subscription_start_date mal configurado reduzca totalDays a 1 y cause un crédito injusto.
     const { data: lastPayment } = await supabaseAdmin
       .from('subscription_payments')
       .select('amount, months_paid')
@@ -268,6 +269,9 @@ export class SubscriptionService {
       .order('payment_date', { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    const paymentMonths = lastPayment?.months_paid || 1;
+    const totalDays = Math.max(1, 30 * paymentMonths); // prorrateo basado en meses pagados
 
     // Usar el monto real del último pago; si no hay registro, usar el fallback del frontend
     const currentPlanPriceTotal = lastPayment?.amount && lastPayment.amount > 0
@@ -283,8 +287,9 @@ export class SubscriptionService {
     // Precio total del nuevo plan (el frontend ya aplica descuentos por duración)
     const newPlanTotal = Math.round(newPlanPricePerMonth * newMonths);
 
-    // Monto a cobrar: diferencia, mínimo 0
+    // Monto a cobrar: diferencia, mínimo 0 (hace downgrades gratis si el crédito excede)
     const amountToPay = Math.max(0, newPlanTotal - creditAmount);
+    const remainingCredit = Math.max(0, creditAmount - newPlanTotal);
 
     // Nueva fecha de fin: siempre desde hoy + meses nuevos
     const newEndDate = this.calculateExpirationDate(now, newMonths);
@@ -294,6 +299,7 @@ export class SubscriptionService {
       creditAmount,
       newPlanTotal,
       amountToPay,
+      remainingCredit,
       newEndDate: newEndDate.toISOString(),
       isFree: amountToPay === 0,
     };
