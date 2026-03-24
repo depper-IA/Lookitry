@@ -9,6 +9,7 @@ export interface CreateProductDto {
   category: string;
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
+  external_id?: string | null;
 }
 
 export interface UpdateProductDto {
@@ -18,6 +19,7 @@ export interface UpdateProductDto {
   category?: string;
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
+  external_id?: string | null;
 }
 
 export class ProductsService {
@@ -46,6 +48,7 @@ export class ProductsService {
       category: product.category,
       price: product.price ?? null,
       badge: product.badge ?? null,
+      externalId: product.external_id ?? null,
       isActive: product.is_active,
       createdAt: product.created_at,
       updatedAt: product.updated_at
@@ -60,6 +63,26 @@ export class ProductsService {
       .from('products')
       .select('*')
       .eq('id', productId)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data as Product;
+  }
+
+  /**
+   * Obtener un producto por su ID externo (WordPress, Shopify, etc.)
+   */
+  async getProductByExternalId(brandId: string, externalId: string): Promise<Product | null> {
+    const { data, error } = await supabaseAdmin
+      .from('products')
+      .select('*')
+      .eq('brand_id', brandId)
+      .eq('external_id', externalId)
+      .eq('is_active', true)
+      .limit(1)
       .single();
 
     if (error || !data) {
@@ -157,6 +180,7 @@ export class ProductsService {
         category: productData.category.trim(),
         price: productData.price ?? null,
         badge: productData.badge ?? null,
+        external_id: productData.external_id || null,
         is_active: true
       })
       .select()
@@ -174,6 +198,9 @@ export class ProductsService {
       description: data.description,
       imageUrl: data.image_url,
       category: data.category,
+      price: data.price ?? null,
+      badge: data.badge ?? null,
+      externalId: data.external_id ?? null,
       isActive: data.is_active,
       createdAt: data.created_at,
       updatedAt: data.updated_at
@@ -216,6 +243,7 @@ export class ProductsService {
     if (updates.category !== undefined) updateData.category = updates.category.trim();
     if (updates.price !== undefined) updateData.price = updates.price ?? null;
     if (updates.badge !== undefined) updateData.badge = updates.badge ?? null;
+    if (updates.external_id !== undefined) updateData.external_id = updates.external_id || null;
 
     // Actualizar el producto
     const { data, error } = await supabaseAdmin
@@ -239,6 +267,7 @@ export class ProductsService {
       category: data.category,
       price: data.price ?? null,
       badge: data.badge ?? null,
+      externalId: data.external_id ?? null,
       isActive: data.is_active,
       createdAt: data.created_at,
       updatedAt: data.updated_at
