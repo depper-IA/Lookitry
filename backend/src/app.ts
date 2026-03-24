@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
@@ -16,6 +16,8 @@ import wompiRoutes from './routes/wompi.routes';
 import paypalRoutes from './routes/paypal.routes';
 import trialRoutes from './routes/trial.routes';
 import couponsRoutes from './routes/coupons.routes';
+import embedRoutes from './routes/embed.routes';
+import imageRoutes from './routes/image.routes';
 import { getPublicPaymentSettings } from './controllers/paymentSettings.controller';
 import { getHealthStatus } from './controllers/health.controller';
 import { getTrialStatus } from './controllers/trialCampaign.controller';
@@ -37,8 +39,9 @@ app.set('trust proxy', 1);
 
 // ── Seguridad: Helmet (reemplaza los headers manuales y añade muchos más) ──────
 app.use(helmet({
-  crossOriginEmbedderPolicy: false, // Permite que el embed iframe de marcas funcione
-  contentSecurityPolicy: false,     // CSP se configura opcionalmente en el gateway/nginx
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false,
 }));
 
 // ── Cookie Parser (necesario para leer cookies HTTP-Only del JWT) ──────────────
@@ -103,6 +106,8 @@ app.use('/api/cleanup', cleanupRoutes);
 app.use('/api/admin/revenue', revenueRoutes);
 app.use('/api/payments/wompi', wompiRoutes);
 app.use('/api/payments/paypal', paypalRoutes);
+app.use('/api/embed', embedRoutes);
+app.use('/api/images', imageRoutes);
 
 // Configuración pública de medios de pago (sin auth, para el frontend de marcas)
 app.get('/api/payment-settings/public', getPublicPaymentSettings);

@@ -2,26 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { downloadImage } from '@/utils/download';
+import { getProxiedImageUrl } from '@/utils/imageProxy';
 
 // ── Marca de agua dinámica (Visual Overlay) ──────────────────────────────────
+// Ya no es necesaria porque el backend la quema físicamente, 
+// pero la mantenemos vacía para no romper el layout si se usaba en absoluto.
 function Watermark({ plan }: { plan?: string }) {
-  if (plan !== 'BASIC' && plan !== 'TRIAL') return null;
-
-  if (plan === 'BASIC') {
-    return (
-      <div className="absolute bottom-[3.5%] right-[3.5%] w-[12%] pointer-events-none select-none z-10 opacity-70">
-        <img src="/watermark-basic.webp" alt="Lookitry Basic" className="w-full h-auto drop-shadow-md" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
-      <div className="w-[45%] opacity-50">
-        <img src="/watermark-trial.webp" alt="Lookitry Trial" className="w-full h-auto drop-shadow-lg" />
-      </div>
-    </div>
-  );
+  return null;
 }
 
 // ── Imagen con skeleton de carga ──────────────────────────────────────────────
@@ -63,9 +50,8 @@ function ResultImage({
       <img
         src={imageUrl}
         alt={`Prueba virtual de ${productName}`}
-        className={`w-full transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0 absolute inset-0'} ${aspectRatio ? 'object-cover h-full' : 'h-auto'}`}
+        className={`w-full ${aspectRatio ? 'object-cover h-full' : 'h-auto'}`}
         onLoad={() => setLoaded(true)}
-        crossOrigin="anonymous"
       />
       {loaded && !compact && (
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10">
@@ -126,62 +112,11 @@ export function ResultDisplay({
   const [feedbackSending, setFeedbackSending] = useState(false);
   const [feedbackSent, setFeedbackSent]       = useState(false);
 
-  // ── Aplicar marca de agua física a la imagen para descarga/compartir ──────────
-  const applyWatermark = async (srcUrl: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        // Usar dimensiones naturales para no perder calidad
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return reject('No context');
-
-        ctx.drawImage(img, 0, 0);
-
-        if (brandPlan !== 'BASIC' && brandPlan !== 'TRIAL') {
-          return resolve(canvas.toDataURL('image/jpeg', 1.0));
-        }
-
-        const wmImg = new Image();
-        wmImg.crossOrigin = 'anonymous';
-        wmImg.onload = () => {
-          if (brandPlan === 'BASIC') {
-            // BASIC: Esquina inferior derecha (bot-right), 12% width, opacidad 70%
-            const wmWidth = canvas.width * 0.12;
-            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            const paddingX = canvas.width * 0.035;
-            const paddingY = canvas.height * 0.035;
-            ctx.globalAlpha = 0.7;
-            ctx.drawImage(wmImg, canvas.width - wmWidth - paddingX, canvas.height - wmHeight - paddingY, wmWidth, wmHeight);
-          } else if (brandPlan === 'TRIAL') {
-            // TRIAL: Centro, 45% width, opacidad 50%
-            const wmWidth = canvas.width * 0.45;
-            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            const x = (canvas.width - wmWidth) / 2;
-            const y = (canvas.height - wmHeight) / 2;
-            ctx.globalAlpha = 0.5;
-            ctx.drawImage(wmImg, x, y, wmWidth, wmHeight);
-          }
-          resolve(canvas.toDataURL('image/jpeg', 1.0));
-        };
-        wmImg.onerror = () => resolve(canvas.toDataURL('image/jpeg', 1.0));
-        wmImg.src = brandPlan === 'BASIC' ? '/watermark-basic.webp' : '/watermark-trial.webp';
-      };
-      img.onerror = reject;
-      img.src = srcUrl;
-    });
-  };
-
-  // Fix #3: si hay error CORS al aplicar watermark, NO descargamos sin él
-  // (evita que usuarios en TRIAL/BASIC se salten la protección)
   const handleDownload = async () => {
     setDownloading(true);
     setDownloadError(null);
     try {
-      const watermarkedUrl = await applyWatermark(imageUrl);
+      const watermarkedUrl = getProxiedImageUrl(imageUrl, brandPlan);
       const link = document.createElement('a');
       link.href = watermarkedUrl;
       link.download = `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`;
@@ -190,14 +125,12 @@ export function ResultDisplay({
       document.body.removeChild(link);
     } catch (err) {
       console.error('Error descargando imagen:', err);
-      // Fix #3: no fallback a descarga sin watermark
       setDownloadError('No se pudo descargar la imagen. Por favor intenta de nuevo.');
     } finally {
       setDownloading(false);
     }
   };
 
-  // Fix #5: reemplaza alert() nativo con estado shareError renderizado en la UI
   const handleShare = async () => {
     setShareError(null);
     if (!navigator.share) {
@@ -207,7 +140,7 @@ export function ResultDisplay({
 
     setSharing(true);
     try {
-      const watermarkedUrl = await applyWatermark(imageUrl);
+      const watermarkedUrl = getProxiedImageUrl(imageUrl, brandPlan);
       const res = await fetch(watermarkedUrl);
       const blob = await res.blob();
       const file = new File([blob], 'prueba-virtual.jpg', { type: 'image/jpeg' });

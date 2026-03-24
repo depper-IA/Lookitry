@@ -1,106 +1,67 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '@/services/api';
 import { downloadImage } from '@/utils/download';
 import { useAuth } from '@/hooks/useAuth';
+import { getProxiedImageUrl } from '@/utils/imageProxy';
+import {
+  LayoutGrid,
+  LayoutList,
+  Grid3X3,
+  Search,
+  Trash2,
+  Download,
+  Maximize2,
+  X,
+  CheckCircle2,
+  Clock,
+  Shirt,
+  Filter,
+  AlertTriangle,
+  Loader2,
+  ChevronRight
+} from 'lucide-react';
+import { Spinner } from '@/components/ui/Spinner';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
 interface Generation {
   id: string;
   productId: string;
   productName: string;
   productImageUrl: string | null;
-  resultImageUrl: string;
+  resultImageUrl: string | null;
+  status: 'PENDING' | 'SUCCESS' | 'FAILED';
+  error_message?: string | null;
   generatedAt: string;
   processingTime: number | null;
 }
 
 export type ViewMode = 'grid' | 'thumbnails' | 'list';
 
-// ── Iconos de vista ──────────────────────────────────────────────────────────
-function IconGrid() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 0113.5 18v-2.25z" />
-    </svg>
-  );
-}
+const containerVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, staggerChildren: 0.08 }
+  }
+};
 
-function IconThumbnails() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25a2.25 2.25 0 0113.5 18v-2.25z" />
-    </svg>
-  );
-}
-
-function IconList() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-    </svg>
-  );
-}
-
-const VIEW_MODES: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
-  { id: 'grid',       label: 'Cuadrícula',  icon: <IconGrid /> },
-  { id: 'thumbnails', label: 'Miniaturas',  icon: <IconThumbnails /> },
-  { id: 'list',       label: 'Lista',       icon: <IconList /> },
-];
+const itemVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: { opacity: 1, y: 0, scale: 1 }
+};
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
 function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: string; productName: string; onClose: () => void; brandPlan?: string }) {
   const [downloading, setDownloading] = useState(false);
 
-  // ── Aplicar marca de agua física ───────────────────────────────────────────
-  const applyWatermark = async (srcUrl: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return reject('No context');
-        ctx.drawImage(img, 0, 0);
-
-        if (brandPlan !== 'BASIC' && brandPlan !== 'TRIAL') {
-          return resolve(canvas.toDataURL('image/jpeg', 1.0));
-        }
-
-        const wmImg = new Image();
-        wmImg.crossOrigin = 'anonymous';
-        wmImg.onload = () => {
-          if (brandPlan === 'BASIC') {
-            const wmWidth = canvas.width * 0.12;
-            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            const paddingX = canvas.width * 0.035;
-            const paddingY = canvas.height * 0.035;
-            ctx.globalAlpha = 0.7;
-            ctx.drawImage(wmImg, canvas.width - wmWidth - paddingX, canvas.height - wmHeight - paddingY, wmWidth, wmHeight);
-          } else if (brandPlan === 'TRIAL') {
-            const wmWidth = canvas.width * 0.45;
-            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            const x = (canvas.width - wmWidth) / 2;
-            const y = (canvas.height - wmHeight) / 2;
-            ctx.globalAlpha = 0.5;
-            ctx.drawImage(wmImg, x, y, wmWidth, wmHeight);
-          }
-          resolve(canvas.toDataURL('image/jpeg', 1.0));
-        };
-        wmImg.onerror = () => resolve(canvas.toDataURL('image/jpeg', 1.0));
-        wmImg.src = brandPlan === 'BASIC' ? '/watermark-basic.webp' : '/watermark-trial.webp';
-      };
-      img.onerror = reject;
-      img.src = srcUrl;
-    });
-  };
-
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      const watermarkedUrl = await applyWatermark(imageUrl);
+      const watermarkedUrl = getProxiedImageUrl(imageUrl, brandPlan);
       const link = document.createElement('a');
       link.href = watermarkedUrl;
       link.download = `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`;
@@ -115,257 +76,165 @@ function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: str
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={onClose}>
-      <button
-        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
-        onClick={onClose}
-      >
-        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4 backdrop-blur-xl"
+      onClick={onClose}
+    >
+      <button className="absolute top-6 right-6 w-12 h-12 rounded-2xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all border border-white/10 active:scale-90" onClick={onClose}>
+        <X className="w-6 h-6 text-white" />
       </button>
-      <div className="relative max-w-full max-h-[85vh]">
-        <img
-          src={imageUrl}
-          alt={`Prueba virtual — ${productName}`}
-          className="w-full h-full object-contain rounded-xl shadow-2xl"
-          onClick={e => e.stopPropagation()}
-        />
-        {brandPlan === 'BASIC' && (
-          <div className="absolute bottom-[3.5%] right-[3.5%] w-[12%] pointer-events-none select-none z-10 opacity-70">
-            <img src="/watermark-basic.webp" alt="Lookitry Basic" className="w-full h-auto drop-shadow-md" />
-          </div>
-        )}
-        {brandPlan === 'TRIAL' && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-10">
-            <div className="w-[45%] opacity-50">
-              <img src="/watermark-trial.webp" alt="Lookitry Trial" className="w-full h-auto drop-shadow-lg" />
-            </div>
-          </div>
-        )}
-      </div>
-      <button
-        onClick={e => { e.stopPropagation(); handleDownload(); }}
-        disabled={downloading}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold text-white shadow-lg transition-opacity disabled:opacity-60"
-        style={{ backgroundColor: '#FF5C3A' }}
+
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }}
+        className="relative max-w-full max-h-[85vh] group shadow-[0_0_100px_rgba(255,92,58,0.2)]"
+        onClick={e => e.stopPropagation()}
       >
-        {downloading ? (
-          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-        ) : (
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-        )}
-        {downloading ? 'Descargando...' : 'Descargar'}
+        <img src={imageUrl} alt={productName} className="w-auto h-full max-h-[80vh] object-contain rounded-3xl" />
+      </motion.div>
+
+      <button
+        onClick={handleDownload} disabled={downloading}
+        className="absolute bottom-10 px-10 py-4 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center gap-3 shadow-2xl hover:brightness-110 active:scale-95 transition-all"
+      >
+        {downloading ? <Spinner size="sm" /> : <Download size={18} />}
+        {downloading ? 'Codificando...' : 'Descargar DNA'}
       </button>
-    </div>
+    </motion.div>
   );
 }
 
-// ── Tarjeta ───────────────────────────────────────────────────────────────────
+// ── Tarjeta de Generación ─────────────────────────────────────────────────────
 function GenerationCard({
-  gen, selected, selecting, viewMode, onOpen, onToggle, onDelete, brandPlan,
+  gen, selected, selecting, viewMode, onOpen, onToggle, onDelete, brandPlan
 }: {
-  gen: Generation;
-  selected: boolean;
-  selecting: boolean;
-  viewMode: ViewMode;
-  onOpen: () => void;
-  onToggle: () => void;
-  onDelete: () => void;
-  brandPlan?: string;
+  gen: Generation; selected: boolean; selecting: boolean; viewMode: ViewMode;
+  onOpen: () => void; onToggle: () => void; onDelete: () => void; brandPlan?: string;
 }) {
-  const [downloading, setDownloading] = useState(false);
-
-  // ── Aplicar marca de agua física ───────────────────────────────────────────
-  const applyWatermark = async (srcUrl: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return reject('No context');
-        ctx.drawImage(img, 0, 0);
-
-        if (brandPlan !== 'BASIC' && brandPlan !== 'TRIAL') {
-          return resolve(canvas.toDataURL('image/jpeg', 1.0));
-        }
-
-        const wmImg = new Image();
-        wmImg.crossOrigin = 'anonymous';
-        wmImg.onload = () => {
-          if (brandPlan === 'BASIC') {
-            const wmWidth = canvas.width * 0.12;
-            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            const paddingX = canvas.width * 0.035;
-            const paddingY = canvas.height * 0.035;
-            ctx.globalAlpha = 0.7;
-            ctx.drawImage(wmImg, canvas.width - wmWidth - paddingX, canvas.height - wmHeight - paddingY, wmWidth, wmHeight);
-          } else if (brandPlan === 'TRIAL') {
-            const wmWidth = canvas.width * 0.45;
-            const wmHeight = (wmImg.naturalHeight / wmImg.naturalWidth) * wmWidth;
-            const x = (canvas.width - wmWidth) / 2;
-            const y = (canvas.height - wmHeight) / 2;
-            ctx.globalAlpha = 0.5;
-            ctx.drawImage(wmImg, x, y, wmWidth, wmHeight);
-          }
-          resolve(canvas.toDataURL('image/jpeg', 1.0));
-        };
-        wmImg.onerror = () => resolve(canvas.toDataURL('image/jpeg', 1.0));
-        wmImg.src = brandPlan === 'BASIC' ? '/watermark-basic.webp' : '/watermark-trial.webp';
-      };
-      img.onerror = reject;
-      img.src = srcUrl;
-    });
-  };
-
-  const handleDownload = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setDownloading(true);
-    try {
-      const watermarkedUrl = await applyWatermark(gen.resultImageUrl);
-      const link = document.createElement('a');
-      link.href = watermarkedUrl;
-      link.download = `prueba-virtual-${gen.productName.toLowerCase().replace(/\s+/g, '-')}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch {
-      await downloadImage(gen.resultImageUrl, `prueba-virtual-${gen.productName.toLowerCase().replace(/\s+/g, '-')}.jpg`);
-    } finally {
-      setDownloading(false);
-    }
-  };
-
   const date = new Date(gen.generatedAt);
-  const dateStr = date.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+  const dateStr = date.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
   const timeStr = date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+
+  const isFailed = gen.status === 'FAILED';
+  const isPending = gen.status === 'PENDING';
 
   if (viewMode === 'list') {
     return (
-      <div 
-        className={`flex items-center gap-4 p-3 rounded-xl border transition-all cursor-pointer ${selected ? 'ring-2 ring-[#FF5C3A] bg-[#FF5C3A]/5' : ''}`}
-        style={{ borderColor: selected ? '#FF5C3A' : 'var(--border-color)', backgroundColor: selected ? undefined : 'var(--bg-card)' }}
-        onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLDivElement).style.backgroundColor = 'var(--bg-hover)'; }}
-        onMouseLeave={e => { if (!selected) (e.currentTarget as HTMLDivElement).style.backgroundColor = 'var(--bg-card)'; }}
-        onClick={selecting ? onToggle : onOpen}
+      <motion.div
+        variants={itemVariants}
+        className={`flex items-center gap-4 p-4 rounded-3xl border transition-all cursor-pointer group ${selected ? 'bg-[#FF5C3A]/10 border-[#FF5C3A] shadow-[0_0_20px_rgba(255,92,58,0.1)]' : 'bg-[var(--bg-card)] border-[var(--border-color)] hover:border-[var(--text-muted)]/50'}`}
+        onClick={selecting ? onToggle : (isFailed || isPending ? undefined : onOpen)}
       >
-        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--bg-hover)' }}>
-          <img src={gen.resultImageUrl} alt={gen.productName} className="w-full h-full object-cover" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{gen.productName}</p>
-          <p className="text-[11px]" style={{ color: 'var(--text-secondary)' }}>{dateStr} · {timeStr}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {!selecting && (
+        <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 border border-[var(--border-color)] bg-[var(--bg-hover)] flex items-center justify-center relative shadow-inner">
+          {isPending ? (
+            <Loader2 className="w-6 h-6 text-[#FF5C3A] animate-spin" />
+          ) : isFailed ? (
+            <AlertTriangle className="w-6 h-6 text-rose-500" />
+          ) : (
             <>
-              <button onClick={handleDownload} className="p-2 transition-colors hover:text-[#FF5C3A]" style={{ color: 'var(--text-muted)' }}>
-                {downloading ? '...' : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}
-              </button>
-              <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-2 transition-colors hover:text-[#ef4444]" style={{ color: 'var(--text-muted)' }}>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-              </button>
+              <img
+                src={gen.resultImageUrl || '/placeholder-gen.jpg'}
+                alt={gen.productName}
+                className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x600?text=Error+Imagen'; }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             </>
           )}
-          {selecting && (
-            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selected ? 'bg-[#FF5C3A] border-[#FF5C3A]' : ''}`} style={!selected ? { borderColor: 'var(--border-color)' } : {}}>
-              {selected && <svg className="w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+        </div>
+        <div className="flex-1 min-w-0 px-2">
+          <p className="text-[12px] font-[900] uppercase tracking-tight text-[var(--text-primary)] italic truncate">{gen.productName}</p>
+          <div className="flex items-center gap-2 mt-1.5">
+            {isPending && <span className="text-[8px] font-black uppercase text-[#FF5C3A] bg-[#FF5C3A]/10 px-2 py-0.5 rounded-full border border-[#FF5C3A]/20">Sincronizando...</span>}
+            {isFailed && <span className="text-[8px] font-black uppercase text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">Interrupción</span>}
+            <div className="flex items-center gap-1.5 text-[var(--text-muted)] opacity-60">
+              <Clock size={10} />
+              <p className="text-[9px] font-bold uppercase tracking-[0.1em]">{dateStr} · {timeStr}</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 pr-2">
+          {selecting ? (
+            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${selected ? 'bg-[#FF5C3A] border-[#FF5C3A] shadow-lg shadow-[#FF5C3A]/30' : 'border-[var(--border-color)] bg-black/5'}`}>
+              {selected && <CheckCircle2 size={16} className="text-white" />}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+              {!isFailed && !isPending && (
+                <button onClick={(e) => { e.stopPropagation(); onOpen(); }} className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/10 transition-all">
+                  <Maximize2 size={16} />
+                </button>
+              )}
+              <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--bg-hover)] text-[var(--text-muted)] hover:text-rose-500 hover:bg-rose-500/10 transition-all">
+                <Trash2 size={16} />
+              </button>
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div
-      className={`rounded-2xl overflow-hidden border group cursor-pointer transition-all hover:shadow-lg ${selected ? 'ring-2' : ''}`}
-      style={{
-        borderColor: selected ? '#FF5C3A' : 'var(--border-color)',
-        backgroundColor: 'var(--bg-card)',
-        ...(selected ? { ringColor: '#FF5C3A' } : {}),
-      }}
-      onClick={selecting ? onToggle : onOpen}
+    <motion.div
+      variants={itemVariants}
+      className={`relative group rounded-[2.8rem] overflow-hidden border transition-all cursor-pointer ${selected ? 'border-[#FF5C3A] ring-[6px] ring-[#FF5C3A]/10 shadow-[0_20px_50px_rgba(255,92,58,0.2)]' : 'border-[var(--border-color)] hover:border-[#FF5C3A]/40'} bg-[var(--bg-card)] shadow-xl hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]`}
+      onClick={selecting ? onToggle : (isFailed || isPending ? undefined : onOpen)}
     >
-      <div className={`relative ${viewMode === 'thumbnails' ? 'aspect-square' : 'aspect-[3/4]'} overflow-hidden`} style={{ backgroundColor: 'var(--bg-hover)' }}>
-        <img
-          src={gen.resultImageUrl}
-          alt={`Prueba virtual — ${gen.productName}`}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
+      <div className={`relative ${viewMode === 'thumbnails' ? 'aspect-square' : 'aspect-[3/4.5]'} overflow-hidden bg-[var(--bg-hover)] flex items-center justify-center`}>
+        {isPending ? (
+          <div className="flex flex-col items-center gap-4 p-8">
+            <div className="relative">
+              <Loader2 className="w-12 h-12 text-[#FF5C3A] animate-spin opacity-40" />
+              <div className="absolute inset-0 bg-[#FF5C3A]/20 blur-xl rounded-full animate-pulse" />
+            </div>
+            <p className="text-[9px] font-black uppercase tracking-[0.4em] text-[#FF5C3A] animate-pulse">Procesando ADN</p>
+          </div>
+        ) : isFailed ? (
+          <div className="flex flex-col items-center gap-4 p-10 text-center bg-rose-500/5 w-full h-full justify-center">
+            <AlertTriangle className="w-10 h-10 text-rose-500/40" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-rose-500/60 leading-tight">Generación de IA<br />Interrumpida</p>
+          </div>
+        ) : (
+          <>
+            <img
+              src={gen.resultImageUrl || '/placeholder-gen.jpg'}
+              alt={gen.productName}
+              className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+              onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x600?text=Error+Imagen'; }}
+            />
+            {/* Vibrant Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700" />
 
-        {/* Checkbox de selección */}
+            <div className="absolute inset-x-0 bottom-0 p-8 transform translate-y-6 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out">
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2">
+                  <Shirt size={10} className="text-[#FF5C3A]" />
+                  <p className="text-[11px] font-black uppercase text-white tracking-[0.15em] truncate italic shadow-sm">{gen.productName}</p>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-[8px] font-bold text-white/40 uppercase tracking-[0.2em]">{dateStr} · {timeStr}</p>
+                  <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-[#FF5C3A] transition-colors">
+                    <Maximize2 size={12} className="text-white" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
         {selecting && (
-          <div className="absolute top-2 left-2">
-            <div
-              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${selected ? 'border-transparent' : 'border-white bg-black/30'}`}
-              style={selected ? { backgroundColor: '#FF5C3A' } : {}}
-            >
-              {selected && (
-                <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              )}
+          <div className="absolute top-8 left-8 z-10">
+            <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center backdrop-blur-xl transition-all duration-300 ${selected ? 'bg-[#FF5C3A] border-[#FF5C3A] scale-110 shadow-[0_0_20px_rgba(255,92,58,0.4)]' : 'bg-black/20 border-white/30 hover:border-white/60'}`}>
+              {selected && <CheckCircle2 size={20} className="text-white" />}
             </div>
           </div>
         )}
-
-        {/* Overlay lupa (solo cuando no está en modo selección) */}
-        {!selecting && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
-            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: 'var(--text-primary)' }}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
-              </svg>
-            </div>
-          </div>
-        )}
-
-        {/* Miniatura del producto */}
-        {gen.productImageUrl && viewMode === 'grid' && (
-          <div className="absolute top-2 right-2 w-10 h-10 rounded-lg overflow-hidden border-2 border-white shadow-md">
-            <img src={gen.productImageUrl} alt={gen.productName} className="w-full h-full object-cover" />
-          </div>
-        )}
       </div>
-
-      <div className="p-3">
-        <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{gen.productName}</p>
-        <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{dateStr} · {timeStr}</p>
-
-        {viewMode === 'grid' && !selecting && (
-          <div className="mt-3 flex gap-2">
-            <button
-              onClick={handleDownload}
-              disabled={downloading}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold border transition-colors disabled:opacity-60"
-              style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
-            >
-              {downloading ? '...' : 'Descargar'}
-            </button>
-            <button
-              onClick={e => { e.stopPropagation(); onDelete(); }}
-              className="w-9 h-9 flex items-center justify-center rounded-xl border transition-colors"
-              style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
-            >
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+    </motion.div>
   );
 }
 
-// ── Página principal ──────────────────────────────────────────────────────────
 export default function GenerationsPage() {
   const { brand } = useAuth();
   const [generations, setGenerations] = useState<Generation[]>([]);
@@ -376,10 +245,10 @@ export default function GenerationsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Selección masiva
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; id?: string; bulk?: boolean }>({ isOpen: false });
 
   useEffect(() => {
     const saved = localStorage.getItem('generations-view-mode') as ViewMode | null;
@@ -414,139 +283,194 @@ export default function GenerationsPage() {
     });
   };
 
-  const toggleSelectAll = () => {
-    if (selected.size === filteredGenerations.length) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(filteredGenerations.map(g => g.id)));
-    }
+  const handleDeleteOne = async (id: string) => {
+    setConfirmDelete({ isOpen: true, id });
   };
 
-  const handleDeleteOne = async (id: string) => {
-    if (!confirm('¿Eliminar esta generación?')) return;
+  const handleConfirmDeleteOne = async () => {
+    const id = confirmDelete.id;
+    if (!id) return;
+    setDeleting(true);
     try {
       await api.delete(`/generations/${id}`);
       setGenerations(prev => prev.filter(g => g.id !== id));
-    } catch {
-      alert('Error al eliminar la generación');
+      setConfirmDelete({ isOpen: false });
+    } catch (err: any) {
+      console.error('Error al eliminar generación:', err);
+      alert('Error al eliminar: ' + (err.response?.data?.message || err.message || 'Error desconocido'));
+    } finally {
+      setDeleting(false);
     }
   };
 
   const handleDeleteSelected = async () => {
     if (selected.size === 0) return;
-    if (!confirm(`¿Eliminar ${selected.size} generaciones?`)) return;
+    setConfirmDelete({ isOpen: true, bulk: true });
+  };
+
+  const handleConfirmDeleteBulk = async () => {
+    if (selected.size === 0) return;
     setDeleting(true);
     try {
-      await api.delete('/generations', { data: { ids: Array.from(selected) } });
+      await api.delete('/generations', { ids: Array.from(selected) });
       setGenerations(prev => prev.filter(g => !selected.has(g.id)));
       setSelected(new Set());
       setSelecting(false);
-    } catch {
-      alert('Error al eliminar las generaciones');
+      setConfirmDelete({ isOpen: false });
+    } catch (err: any) {
+      console.error('Error en el borrado masivo:', err);
+      alert('Error en el borrado masivo: ' + (err.response?.data?.message || err.message || 'Error desconocido'));
     } finally {
       setDeleting(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-5">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <h1 className="font-syne font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
-              Historial de generaciones
-            </h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-              {filteredGenerations.length} resultados encontrados
+    <motion.div
+      initial="hidden" animate="visible" variants={containerVariants}
+      className="max-w-7xl mx-auto space-y-12 pb-20 px-4"
+    >
+      {/* ══ HEADER & CONTROLS ══ */}
+      <motion.div variants={itemVariants} className="flex flex-col gap-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-[var(--border-color)] pb-10">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+                <Clock className="w-5 h-5 text-[#FF5C3A]" />
+              </div>
+              <h1 className="text-4xl font-[950] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none">
+                Mis Generaciones
+              </h1>
+            </div>
+            <p className="text-sm text-[var(--text-secondary)] font-bold uppercase tracking-tight opacity-60">
+              Archivo de Generaciones / <span className="text-[#FF5C3A]">{generations.length} items</span>
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            {!selecting && (
-              <div className="flex items-center rounded-lg p-0.5 gap-0.5 border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-                {VIEW_MODES.map(({ id, label, icon }) => (
-                  <button
-                    key={id}
-                    onClick={() => { setViewMode(id); localStorage.setItem('generations-view-mode', id); }}
-                    title={label}
-                    className={`p-1.5 rounded-md transition-colors ${viewMode === id ? 'bg-[#FF5C3A] text-white' : 'hover:text-[#FF5C3A]'}`}
-                    style={viewMode !== id ? { color: 'var(--text-secondary)' } : {}}
-                  >
-                    {icon}
-                  </button>
-                ))}
-              </div>
-            )}
+          <div className="flex items-center gap-4">
+            <div className="flex bg-[var(--bg-card)] rounded-2xl p-1.5 border border-[var(--border-color)] shadow-xl">
+              {([
+                { id: 'grid', icon: <LayoutGrid size={16} /> },
+                { id: 'thumbnails', icon: <Grid3X3 size={16} /> },
+                { id: 'list', icon: <LayoutList size={16} /> },
+              ] as const).map(({ id, icon }) => (
+                <button
+                  key={id}
+                  onClick={() => { setViewMode(id); localStorage.setItem('generations-view-mode', id); }}
+                  className={`p-3 rounded-xl transition-all ${viewMode === id ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
 
-            {selecting ? (
-              <div className="flex items-center gap-2">
-                <button onClick={toggleSelectAll} className="px-3 py-2 rounded-xl text-xs font-medium border" style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
-                  {selected.size === filteredGenerations.length ? 'Deseleccionar todo' : 'Seleccionar todo'}
-                </button>
-                <button onClick={handleDeleteSelected} disabled={selected.size === 0} className="px-4 py-2 rounded-xl text-xs font-semibold text-white disabled:opacity-50" style={{ backgroundColor: '#ef4444' }}>
-                  {deleting ? '...' : `Eliminar (${selected.size})`}
-                </button>
-                <button onClick={() => { setSelecting(false); setSelected(new Set()); }} className="px-3 py-2 rounded-xl text-xs font-medium border" style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
-                  Cancelar
-                </button>
-              </div>
-            ) : (
-              <button onClick={() => setSelecting(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border" style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                Seleccionar
-              </button>
-            )}
+            <button
+              onClick={() => { setSelecting(!selecting); setSelected(new Set()); }}
+              className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] border transition-all shadow-xl active:scale-95 ${selecting ? 'bg-[#FF5C3A] text-white border-transparent' : 'bg-[var(--bg-card)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[var(--text-muted)]'}`}
+            >
+              {selecting ? <X size={14} /> : <Filter size={14} />}
+              {selecting ? 'Cerrar' : 'Gestionar'}
+            </button>
           </div>
         </div>
 
-        {/* Buscador */}
-        <div className="relative max-w-md">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" style={{ color: 'var(--text-muted)' }}>
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        {/* Search & Bulk Actions Bar */}
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          <div className="relative flex-1 group">
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-4 border-r border-[var(--border-color)] pr-4">
+              <Search className="w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
+            </div>
+            <input
+              type="text" placeholder="BUSCAR POR NOMBRE DE PRODUCTO..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-20 pr-6 py-5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl text-sm font-black uppercase tracking-widest text-[var(--text-primary)] outline-none focus:border-[#FF5C3A]/50 transition-all shadow-2xl placeholder:text-[var(--text-muted)]/30"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Buscar por nombre de producto..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="block w-full pl-10 pr-4 py-2 rounded-xl border text-sm focus:ring-2 focus:ring-[#FF5C3A]/20 outline-none"
-            style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-          />
-        </div>
-      </div>
 
+          <AnimatePresence>
+            {selecting && selected.size > 0 && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
+                className="flex items-center gap-3 w-full sm:w-auto"
+              >
+                <button
+                  onClick={handleDeleteSelected} disabled={deleting}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-10 py-5 bg-rose-500 text-white rounded-3xl font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-rose-500/20 active:scale-95 transition-all"
+                >
+                  <Trash2 size={16} /> ELIMINAR {selected.size} GENERACIONES
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+
+      {/* ══ GRID ══ */}
       {loading ? (
-        <div className="flex justify-center py-12" style={{ color: 'var(--text-muted)' }}>Cargando generaciones...</div>
+        <div className="flex flex-col items-center justify-center p-32 gap-6 bg-[var(--bg-card)] rounded-[4rem] border border-[var(--border-color)]">
+          <div className="relative">
+            <Spinner size="lg" />
+            <div className="absolute inset-0 bg-[#FF5C3A]/10 blur-xl rounded-full"></div>
+          </div>
+          <div className="text-center space-y-2">
+            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[var(--text-primary)] animate-pulse">Cargando Generaciones</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Actualizando tu historial...</p>
+          </div>
+        </div>
       ) : filteredGenerations.length === 0 ? (
-        <div className="text-center py-16 rounded-3xl border border-dashed" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <p style={{ color: 'var(--text-secondary)' }}>No se encontraron generaciones</p>
+        <div className="text-center py-40 rounded-[4rem] border border-[var(--border-color)] bg-[var(--bg-card)] shadow-inner group overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+          <div className="w-28 h-28 bg-[var(--bg-hover)] rounded-full flex items-center justify-center mx-auto mb-10 relative border border-[var(--border-color)]">
+            <Shirt size={48} className="text-[var(--text-muted)] opacity-20" />
+          </div>
+          <h3 className="text-3xl font-[950] uppercase italic text-[var(--text-primary)] mb-4 tracking-tighter">Sin Generaciones</h3>
+          <p className="text-[12px] text-[var(--text-muted)] font-black uppercase tracking-[0.3em] opacity-40 max-w-xs mx-auto leading-relaxed">Aún no has realizado pruebas con IA. Los resultados aparecerán aquí.</p>
         </div>
       ) : (
-        <div className={
-          viewMode === 'list' 
-            ? "flex flex-col gap-2" 
-            : `grid gap-4 ${viewMode === 'thumbnails' ? 'grid-cols-3 sm:grid-cols-4 lg:grid-cols-6' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'}`
-        }>
-          {filteredGenerations.map(gen => (
-            <GenerationCard
-              key={gen.id}
-              gen={gen}
-              viewMode={viewMode}
-              selected={selected.has(gen.id)}
-              selecting={selecting}
-              onOpen={() => setLightbox(gen)}
-              onToggle={() => toggleSelect(gen.id)}
-              onDelete={() => handleDeleteOne(gen.id)}
-              brandPlan={brand?.plan}
-            />
-          ))}
-        </div>
+        <motion.div
+          layout
+          className={
+            viewMode === 'list'
+              ? "flex flex-col gap-8"
+              : `grid gap-12 ${viewMode === 'thumbnails' ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`
+          }
+        >
+          <AnimatePresence mode="popLayout" initial={false}>
+            {filteredGenerations.map(gen => (
+              <GenerationCard
+                key={gen.id}
+                gen={gen}
+                viewMode={viewMode}
+                selected={selected.has(gen.id)}
+                selecting={selecting}
+                onOpen={() => setLightbox(gen)}
+                onToggle={() => toggleSelect(gen.id)}
+                onDelete={() => handleDeleteOne(gen.id)}
+                brandPlan={brand?.plan}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
 
-      {lightbox && (
-        <Lightbox imageUrl={lightbox.resultImageUrl} productName={lightbox.productName} onClose={() => setLightbox(null)} brandPlan={brand?.plan} />
-      )}
-    </div>
+      {/* ══ MODALS ══ */}
+      <AnimatePresence>
+        {lightbox && lightbox.resultImageUrl && (
+          <Lightbox imageUrl={lightbox.resultImageUrl} productName={lightbox.productName} onClose={() => setLightbox(null)} brandPlan={brand?.plan} />
+        )}
+      </AnimatePresence>
+
+      <ConfirmModal
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete({ isOpen: false })}
+        onConfirm={confirmDelete.bulk ? handleConfirmDeleteBulk : handleConfirmDeleteOne}
+        title={confirmDelete.bulk ? 'Eliminar Generaciones' : 'Eliminar Generación'}
+        message={confirmDelete.bulk
+          ? `¿Estás seguro de que deseas eliminar permanentemente estas ${selected.size} generaciones? Esta acción no se puede deshacer.`
+          : '¿Estás seguro de que deseas eliminar permanentemente esta generación? Esta acción no se puede deshacer.'
+        }
+        confirmLabel={deleting ? 'Eliminando...' : 'Eliminar permanentemente'}
+        isLoading={deleting}
+      />
+    </motion.div>
   );
 }
