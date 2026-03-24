@@ -309,8 +309,20 @@ export class SubscriptionService {
     const amountToPay = Math.max(0, newPlanTotal - creditAmount);
     const remainingCredit = Math.max(0, creditAmount - newPlanTotal);
 
-    // Nueva fecha de fin: siempre desde hoy + meses nuevos
-    const newEndDate = this.calculateExpirationDate(now, newMonths);
+    // Nueva fecha de fin base: hoy + meses nuevos
+    let newEndDate = this.calculateExpirationDate(now, newMonths);
+
+    // LÓGICA DE CONVERSIÓN DE VALOR (Upgrade con excedente)
+    // Si el crédito sobra, convertir el restante en días adicionales de PRO
+    if (remainingCredit > 0) {
+      const newPlanPricePerDay = (newPlanPricePerMonth * 12) / 365; // precio diario del plan PRO
+      const extraDays = Math.floor(remainingCredit / newPlanPricePerDay);
+      
+      if (extraDays > 0) {
+        newEndDate.setDate(newEndDate.getDate() + extraDays);
+        console.log(`[Proration] Crédito excedente ($${remainingCredit}) convertido en ${extraDays} días extra de ${newPlan}`);
+      }
+    }
 
     return {
       daysRemaining,

@@ -267,12 +267,15 @@ function CheckoutContent() {
   // Lógica de suscripción
   const isUpgrade   = hasActiveSub && currentPlan?.toUpperCase() === 'BASIC' && selectedPlan.toUpperCase() === 'PRO';
   const isDowngrade = hasActiveSub && currentPlan?.toUpperCase() === 'PRO'   && selectedPlan.toUpperCase() === 'BASIC';
-  const isChange    = isUpgrade || isDowngrade;
   const isRenewal   = hasActiveSub && currentPlan?.toUpperCase() === selectedPlan.toUpperCase();
 
   const monthDiscount = monthDiscounts.find(d => d.months === selectedMonths) ?? monthDiscounts[0];
   const planTotal  = Math.round(planInfo[selectedPlan].price * selectedMonths * (1 - monthDiscount.pct / 100));
-  const totalPrice = isChange && prorationPreview
+
+  // Cálculo del total final: 
+  // 1. Si es Upgrade, usar el prorrateo (crédito).
+  // 2. Si es Renovación o Downgrade diferido, cobrar el monto completo.
+  const totalPrice = isUpgrade && prorationPreview
     ? Math.max(0, prorationPreview.amountToPay + (includeLanding ? miniLandingPrice : 0))
     : (planTotal + (includeLanding ? miniLandingPrice : 0));
 
