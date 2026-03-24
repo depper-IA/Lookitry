@@ -23,12 +23,12 @@ services:
 
   backend:
     build:
-      context: /root/Lookitry/backend
+      context: /root/virtual-tryon/backend
       dockerfile: Dockerfile
     container_name: lookitry-backend
     restart: unless-stopped
     env_file:
-      - /root/Lookitry/backend/.env.production
+      - /root/virtual-tryon/backend/.env.production
     networks:
       - proxy
     labels:
