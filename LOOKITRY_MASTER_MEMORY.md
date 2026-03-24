@@ -1,4 +1,4 @@
-﻿# LOOKITRY — MASTER MEMORY CONTEXT
+# LOOKITRY — MASTER MEMORY CONTEXT
 
 > **REGLA DE ORO:** Este archivo DEBE ser leído en su totalidad por la IA antes de realizar cualquier acción. Es la única fuente de verdad para la continuidad del proyecto.
 
@@ -41,6 +41,7 @@ URLs de Producción:
 - **Prorrateo & Suscripciones (REGLAS DE ORO)**:
   - **Renovación (Mismo Plan)**: SIN prorrateo. Se cobra 100% y se SUMAN los meses a la fecha de vencimiento actual.
   - **Upgrade (BASIC -> PRO)**: CON prorrateo. El crédito de días BASIC no usados descuenta del total PRO. Si el crédito sobra, se convierte en DÍAS EXTRA de PRO (Conversión de Valor). El plan PRO inicia HOY.
+  - **Enforcement Backend**: El backend (`WompiController`) recalcula y REFUERZA el monto prorrateado en `getWidgetConfig` y `getCheckoutUrl` detectando upgrades automáticamente. Esto evita cobros incorrectos del plan completo.
   - **Downgrade (PRO -> BASIC)**: Cambio DIFERIDO. El cliente sigue siendo PRO hasta que venza su tiempo actual. El plan BASIC inicia automáticamente al expirar el PRO. No hay devolución de dinero.
   - **Case Sensitivity**: Siempre normalizar planes a `.toUpperCase()` antes de comparar en Backend y Frontend para evitar "falsos upgrades".
   - **Landing Page**: Es pago único. NUNCA se incluye en el cálculo del precio diario para prorrateo. Si el pago anterior incluyó landing, se debe restar su valor antes de calcular el crédito.
