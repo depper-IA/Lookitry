@@ -184,6 +184,11 @@ export class PaymentSettingsService {
     transferAccountType: string;
     transferAccountHolder: string;
     currency: string;
+    modalPromoConfig: any;
+    modalTitle: string;
+    modalDescription: string;
+    modalImageUrl: string;
+    miniLandingPreviewSeconds: number;
   }> {
     const s = await this.getSettings();
     // En modo producción usar la llave pública de producción
@@ -209,6 +214,11 @@ export class PaymentSettingsService {
       transferAccountType: s.transfer_account_type,
       transferAccountHolder: s.transfer_account_holder,
       currency: s.currency,
+      modalPromoConfig: s.modal_promo_config,
+      modalTitle: s.modal_title,
+      modalDescription: s.modal_description,
+      modalImageUrl: s.modal_image_url,
+      miniLandingPreviewSeconds: s.mini_landing_preview_seconds,
     };
   }
 }
