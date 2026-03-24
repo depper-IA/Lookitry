@@ -286,7 +286,7 @@ export default function MiPaginaPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
         
         {/* PANEL DE EDICIÓN */}
-        <div className="lg:col-span-7 space-y-12">
+        <div className="lg:col-span-6 space-y-12">
           <motion.header variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="space-y-1">
               <h1 className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Editor de Página</h1>
@@ -299,6 +299,27 @@ export default function MiPaginaPage() {
                </a>
             </div>
           </motion.header>
+
+          {/* ══ BONUS MARKETING ══ */}
+          <motion.div variants={itemVariants} className="p-10 rounded-[3rem] bg-gradient-to-br from-[var(--bg-card)] to-[#FF5C3A]/5 border border-[#FF5C3A]/20 shadow-2xl relative overflow-hidden group/bonus">
+             <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-1000">
+                <Sparkles size={150} />
+             </div>
+             <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                <div className="space-y-3 text-center md:text-left">
+                   <h3 className="text-2xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">¿Buscas algo más potente?</h3>
+                   <p className="text-sm text-[var(--text-secondary)] font-medium max-w-md">
+                      Escala tu negocio a una <span className="text-[#FF5C3A] font-bold">Tienda Profesional</span> con WooCommerce y domina el mercado.
+                   </p>
+                </div>
+                <Link 
+                  href="/dashboard/tienda-profesional"
+                  className="px-8 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+                >
+                  Conocer Beneficios <ArrowRight size={14} className="inline ml-2" />
+                </Link>
+             </div>
+          </motion.div>
 
           <AnimatePresence>
             {!brand?.has_landing_page && (
@@ -348,16 +369,17 @@ export default function MiPaginaPage() {
 
           <AnimatePresence mode="wait">
             {activeTab === 'design' ? (
-              <motion.div key="design" initial={{ opacity: 0, x: -20, scale: 0.98 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, x: 20, scale: 0.98 }} transition={{ duration: 0.4 }} className="space-y-12">
+              <motion.div key="design" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-12">
                 
-                <section className="bg-[var(--bg-card)] rounded-[3.5rem] border border-[var(--border-color)] p-10 md:p-14 shadow-3xl relative overflow-hidden group/templates">
+                {/* 1. SELECCIÓN DE PLANTILLA */}
+                <section className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-7 md:p-10 shadow-3xl relative overflow-hidden group/templates">
                   <div className="flex items-center gap-4 border-b border-[var(--border-color)] pb-8 mb-10">
                     <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center">
                        <Monitor className="text-white" size={20} />
                     </div>
                     <div>
-                      <h3 className="text-xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Plantillas</h3>
-                      <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60">Selecciona el estilo de tu marca</p>
+                       <h3 className="text-xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Plantillas Disponibles</h3>
+                       <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60">Selecciona el estilo de tu página</p>
                     </div>
                   </div>
 
@@ -384,23 +406,26 @@ export default function MiPaginaPage() {
                   </div>
                 </section>
 
-                <DesignTab
-                  {...{
-                    description, setDescription, slogan, setSlogan,
-                    whatsapp, setWhatsapp, whatsappMessage, setWhatsappMessage,
-                    ctaButtonText, setCtaButtonText, coverImageUrl, setCoverImageUrl,
-                    logoUrl, setLogoUrl, logoLightUrl, setLogoLightUrl,
-                    logoDarkUrl, setLogoDarkUrl, coverBgColor, setCoverBgColor,
-                    coverOverlayOpacity, setCoverOverlayOpacity, headerColor, setHeaderColor,
-                    instagram, setInstagram, facebook, setFacebook, tiktok, setTiktok,
-                    youtube, setYoutube, x, setX,
-                    cityDisplay, setCityDisplay, nationalShipping, setNationalShipping,
-                    showBrandName, setShowBrandName,
-                    primaryColor, setPrimaryColor, secondaryColor, setSecondaryColor, widgetBgColor, setWidgetBgColor, landingFont, setLandingFont,
-                    rating, setRating, totalReviews, setTotalReviews,
-                    schedule, setSchedule,
-                  }}
-                />
+                {/* 2. CONFIGURACIÓN DETALLADA (DesignTab) */}
+                <div className="relative">
+                  <DesignTab
+                    {...{
+                      description, setDescription, slogan, setSlogan,
+                      whatsapp, setWhatsapp, whatsappMessage, setWhatsappMessage,
+                      ctaButtonText, setCtaButtonText, coverImageUrl, setCoverImageUrl,
+                      logoUrl, setLogoUrl, logoLightUrl, setLogoLightUrl,
+                      logoDarkUrl, setLogoDarkUrl, coverBgColor, setCoverBgColor,
+                      coverOverlayOpacity, setCoverOverlayOpacity, headerColor, setHeaderColor,
+                      instagram, setInstagram, facebook, setFacebook, tiktok, setTiktok,
+                      youtube, setYoutube, x, setX,
+                      cityDisplay, setCityDisplay, nationalShipping, setNationalShipping,
+                      showBrandName, setShowBrandName,
+                      primaryColor, setPrimaryColor, secondaryColor, setSecondaryColor, widgetBgColor, setWidgetBgColor, landingFont, setLandingFont,
+                      rating, setRating, totalReviews, setTotalReviews,
+                      schedule, setSchedule,
+                    }}
+                  />
+                </div>
               </motion.div>
             ) : (
               <motion.div key="domain" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
@@ -409,74 +434,53 @@ export default function MiPaginaPage() {
             )}
           </AnimatePresence>
 
-          {/* ══ BONUS MARKETING ══ */}
-          <motion.div variants={itemVariants} className="p-10 rounded-[3rem] bg-gradient-to-br from-[var(--bg-card)] to-[#FF5C3A]/5 border border-[#FF5C3A]/20 shadow-2xl relative overflow-hidden group/bonus">
-             <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-1000">
-                <Sparkles size={150} />
-             </div>
-             <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-                <div className="space-y-3 text-center md:text-left">
-                   <h3 className="text-2xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">¿Buscas algo más potente?</h3>
-                   <p className="text-sm text-[var(--text-secondary)] font-medium max-w-md">
-                      Escala tu negocio a una <span className="text-[#FF5C3A] font-bold">Tienda Profesional</span> con WooCommerce y domina el mercado.
-                   </p>
-                </div>
-                <Link 
-                  href="/dashboard/tienda-profesional"
-                  className="px-8 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
-                >
-                  Conocer Beneficios <ArrowRight size={14} className="inline ml-2" />
-                </Link>
-             </div>
-          </motion.div>
-
-          <footer className="pt-10 border-t-2 border-[var(--border-color)] border-dashed">
+          <footer className="pt-16 pb-20 border-t-2 border-[var(--border-color)] border-dashed">
             <button
                onClick={handleSave} disabled={saving}
-               className="w-full flex items-center justify-center gap-4 py-6 bg-[#FF5C3A] text-white rounded-[2.5rem] text-sm font-black uppercase tracking-[0.3em] shadow-4xl shadow-[#FF5C3A]/20 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 italic group/save"
+               className="w-full flex items-center justify-center gap-4 py-5 bg-[#FF5C3A] text-white rounded-2xl text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-[#FF5C3A]/20 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 italic group/save"
             >
                {saving ? <Spinner size="sm" /> : <Save size={20} className="group-hover:scale-125 transition-transform" />}
-               {saving ? 'Publicando...' : 'Publicar Cambios'}
+               {saving ? 'Guardando...' : 'Guardar Cambios'}
             </button>
             <AnimatePresence>
                {success && (
-                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl mt-6 flex items-center justify-center gap-3">
-                   <Check className="text-emerald-500" size={18} /> 
-                   <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest italic">Sincronización Exitosa</span>
+                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl mt-6 flex items-center justify-center gap-3 italic">
+                   <Check className="text-emerald-500 font-bold" size={16} /> 
+                   <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest leading-none">Cambios guardados correctamente</span>
                  </motion.div>
                )}
             </AnimatePresence>
           </footer>
         </div>
 
-        {/* PREVIEW STICKY */}
-        <div className="hidden lg:block lg:col-span-5 sticky top-12 z-40">
-           <div className="bg-[var(--bg-card)] rounded-[3.5rem] border border-[var(--border-color)] overflow-hidden shadow-4xl max-h-[calc(100vh-100px)] flex flex-col group/preview">
-              <div className="h-14 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-8 gap-4">
+        {/* PREVIEW STICKY (Visualización Full-Width v2) */}
+        <div className="hidden lg:block lg:col-span-6 sticky top-10 z-40 h-[620px]">
+           <div className="h-full bg-white rounded-2xl border border-[var(--border-color)] overflow-hidden shadow-4xl flex flex-col group/preview relative">
+              
+              {/* Browser Bar (Full Width) */}
+              <div className="h-16 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-8 gap-6">
                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500/20 group-hover/preview:bg-red-500/80 transition-colors" />
-                    <div className="w-3 h-3 rounded-full bg-amber-500/20 group-hover/preview:bg-amber-500/80 transition-colors" />
-                    <div className="w-3 h-3 rounded-full bg-emerald-500/20 group-hover/preview:bg-emerald-500/80 transition-colors" />
+                    <div className="w-3 h-3 rounded-full bg-[#ff5f57] border border-black/5" />
+                    <div className="w-3 h-3 rounded-full bg-[#febc2e] border border-black/5" />
+                    <div className="w-3 h-3 rounded-full bg-[#28c840] border border-black/5" />
                  </div>
-                 <div className="flex-1 bg-[var(--bg-input)] h-8 rounded-xl border border-[var(--border-color)] flex items-center px-4 overflow-hidden">
-                    <span className="text-[10px] text-[var(--text-muted)] truncate font-mono">{brandSlug}.lookitry.com</span>
-                 </div>
-              </div>
-              <div className="flex-1 bg-[var(--bg-base)] overflow-hidden p-8 flex items-center justify-center">
-                 {/* SIMULADOR NATIVO LOOKITRY - MÁS LIMPIO */}
-                 <div className="w-[340px] h-[680px] bg-black rounded-[3rem] border-[12px] border-black shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative overflow-hidden ring-1 ring-white/10">
-                    {/* Notch sutil */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-[1.5rem] z-50 flex items-center justify-center">
-                       <div className="w-10 h-1 rounded-full bg-white/10" />
-                    </div>
-                    {/* Content Frame */}
-                    <div className="w-full h-full bg-white overflow-y-auto overflow-x-hidden custom-scrollbar rounded-[2rem]">
-                       <LandingPreview {...previewProps} brandSlug={brandSlug} />
-                    </div>
+                 <div className="flex-1 bg-[var(--bg-input)] h-10 rounded-2xl border border-[var(--border-color)] flex items-center px-6 overflow-hidden">
+                    <Globe size={14} className="text-[var(--text-muted)] mr-3 shrink-0" />
+                    <span className="text-[11px] text-[var(--text-muted)] truncate font-mono tracking-tight">{brandSlug}.lookitry.com</span>
                  </div>
               </div>
-              <div className="p-6 bg-[var(--bg-card)] border-t border-[var(--border-color)] text-center">
-                 <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest opacity-40">Renderizado IA • Vista Previa Móvil</p>
+
+              {/* Main Preview Area - Cubriendo todo de izquierda a derecha */}
+              <div className="flex-1 bg-white overflow-y-auto custom-scrollbar relative">
+                 <LandingPreview {...previewProps} brandSlug={brandSlug} isPreview={true} />
+              </div>
+
+              {/* Status Bar */}
+              <div className="p-6 bg-[var(--bg-card)] border-t border-[var(--border-color)] flex items-center justify-center">
+                 <div className="flex items-center gap-3">
+                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                   <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest leading-none">Vista Previa en Vivo</span>
+                 </div>
               </div>
            </div>
         </div>

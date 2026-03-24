@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -144,7 +144,7 @@ export default function ProfilePage() {
         nit,
         billing_email: billingEmail
       });
-      setSuccessMsg('Perfil sincronizado con éxito / Frecuencia actualizada');
+      setSuccessMsg('Perfil actualizado con éxito');
       refreshBrand();
       
       // Ocultar mensaje de éxito después de 5 segundos
@@ -172,7 +172,7 @@ export default function ProfilePage() {
         currentPassword,
         newPassword
       });
-      setSuccessMsg('Contraseña actualizada / Nivel de seguridad elevado');
+      setSuccessMsg('Contraseña actualizada correctamente');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -194,16 +194,16 @@ export default function ProfilePage() {
           {brand?.emailVerified && (
             <div className="flex items-center gap-3 px-5 py-2.5 bg-emerald-500/5 border border-emerald-500/10 rounded-full w-fit mb-4">
                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
-               <p className="text-[10px] font-[950] text-emerald-500 uppercase tracking-widest italic leading-none">Canal Verificado / Identidad Asegurada</p>
+               <p className="text-[10px] font-[950] text-emerald-500 uppercase tracking-widest italic leading-none">Email Verificado</p>
             </div>
           )}
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
                 <User className="w-5 h-5 text-[#FF5C3A]" />
              </div>
-             <h1 className="text-4xl font-[900] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta">Identidad Marca</h1>
+             <h1 className="text-4xl font-[900] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta">Mi Perfil</h1>
           </div>
-          <p className="text-[11px] font-black tracking-[0.2em] text-[var(--text-muted)] uppercase opacity-60">Configuración de núcleo y facturación galáctica</p>
+          <p className="text-[11px] font-black tracking-[0.2em] text-[var(--text-muted)] uppercase opacity-60">Información de cuenta y facturación</p>
         </div>
       </motion.header>
 
@@ -247,14 +247,14 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-4">
                    <div className="w-10 h-10 rounded-2xl bg-[var(--bg-hover)] flex items-center justify-center text-[var(--text-muted)]"><Mail size={18} /></div>
                    <div className="min-w-0">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Canal Principal</p>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Email</p>
                       <p className="text-xs font-bold text-[var(--text-primary)] truncate">{email}</p>
                    </div>
                 </div>
                 <div className="flex items-center gap-4">
                    <div className="w-10 h-10 rounded-2xl bg-[var(--bg-hover)] flex items-center justify-center text-[var(--text-muted)]"><Phone size={18} /></div>
                    <div className="min-w-0">
-                      <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Línea de Comando</p>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Teléfono</p>
                       <p className="text-xs font-bold text-[var(--text-primary)]">{phone || 'Pendiente'}</p>
                    </div>
                 </div>
@@ -274,7 +274,7 @@ export default function ProfilePage() {
                    <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/10">
                       <Layout className="w-6 h-6 text-indigo-500" />
-                    </div>  <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">Módulo Suscripción</span>
+                    </div>  <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">Mi Suscripción</span>
                    </div>
                    <h3 className="text-4xl font-[950] tracking-tighter italic uppercase text-white leading-tight">
                       Lookitry<br/>
@@ -284,8 +284,8 @@ export default function ProfilePage() {
 
                 <div className="flex items-end justify-between border-t border-white/10 pt-6">
                    <div className="space-y-1">
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-30 italic">Estado de Red</p>
-                      <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">Sincronizado</p>
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-30 italic">Estado</p>
+                      <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">Activo</p>
                    </div>
                    <button 
                      onClick={() => (window.location.href = '/dashboard/subscription')} 
@@ -354,7 +354,7 @@ export default function ProfilePage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Nación (País)</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">País</label>
                       <select 
                         value={countryCode} 
                         onChange={e => { setCountryCode(e.target.value); setStateCode(''); setCity(''); }}
@@ -387,13 +387,13 @@ export default function ProfilePage() {
                          <option value="">Seleccionar...</option>
                          {cities.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
                          {/* Fallback override */}
-                         {cities.length === 0 && stateCode && <option value="">Cargando urbes...</option>}
+                         {cities.length === 0 && stateCode && <option value="">Cargando ciudades...</option>}
                       </select>
                     </div>
                   </div>
 
                   <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Dirección de Operaciones</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Dirección</label>
                     <div className="relative group">
                       <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
                       <input
@@ -410,7 +410,7 @@ export default function ProfilePage() {
                       className="px-10 py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-[#FF5C3A]/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-3"
                     >
                       {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                      Sincronizar Datos
+                      Guardar Cambios
                     </button>
                   </div>
                 </motion.form>
@@ -456,7 +456,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-3 text-center pt-20 pb-10">
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-4">Plan Actual en Despliegue</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-4">Plan Activo</p>
                     <div className="inline-block px-10 py-6 bg-gradient-to-br from-zinc-900 to-black rounded-[2.5rem] border border-white/5 shadow-2xl">
                       <span className="text-3xl font-[950] tracking-tighter italic uppercase text-white">Lookitry <span className="text-[#FF5C3A]">{brand?.plan}</span></span>
                       <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-2">Próximo vencimiento: {formatDate(brand?.subscriptionEndDate)}</p>
@@ -485,13 +485,13 @@ export default function ProfilePage() {
                   <div className="bg-rose-500/5 border border-rose-500/10 p-6 rounded-3xl flex gap-4">
                      <Shield className="w-8 h-8 text-rose-500 flex-shrink-0" />
                      <p className="text-[11px] font-medium text-rose-600/70 leading-relaxed italic">
-                        La seguridad de tu red neuronal es primordial. Recomendamos rotar tu contraseña cada 90 días galácticos para mantener la integridad de tus datos.
+                        Mantén tu cuenta segura. Recomendamos actualizar tu contraseña periódicamente.
                      </p>
                   </div>
 
                   <div className="space-y-8">
                      <div className="space-y-3">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Clave Maestra Actual</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Contraseña Actual</label>
                         <div className="relative group">
                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
                            <input
@@ -506,7 +506,7 @@ export default function ProfilePage() {
 
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-3">
-                           <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Nueva Clave ADN</label>
+                           <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Nueva Contraseña</label>
                            <div className="relative group">
                               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
                               <input
@@ -540,7 +540,7 @@ export default function ProfilePage() {
                       className="px-10 py-5 bg-rose-500 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-rose-500/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-3"
                     >
                       {loading ? <Loader2 size={16} className="animate-spin" /> : <Shield size={16} />}
-                      Elevar Seguridad
+                      Cambiar Contraseña
                     </button>
                   </div>
                 </motion.form>

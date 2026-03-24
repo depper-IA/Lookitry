@@ -54,7 +54,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="font-syne font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
+        <h1 className="font-jakarta font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
           Configuración
         </h1>
         <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>

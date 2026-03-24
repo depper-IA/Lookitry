@@ -273,7 +273,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                <div className="p-5 rounded-[2rem] bg-[var(--bg-base)] border border-[var(--border-color)] space-y-3 shadow-inner">
                   <p className="text-[8px] font-black uppercase text-[var(--text-muted)] tracking-widest leading-none">Acceso Directo</p>
                   <div className="flex items-center justify-between gap-3 overflow-hidden">
-                    <p className="text-[10px] font-black font-mono text-[var(--text-primary)] truncate opacity-50">pruebalo.wilkiedevs.com/pruebalo/{formData.slug || brand.slug}</p>
+                    <p className="text-[10px] font-black font-mono text-[var(--text-primary)] truncate opacity-50">lookitry.com/pruebalo/{formData.slug || brand.slug}</p>
                     <a href={`/pruebalo/${formData.slug || brand.slug}`} target="_blank" className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all shrink-0 shadow-lg"><ExternalLink size={14} /></a>
                   </div>
                </div>
@@ -291,15 +291,15 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
                  <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><Settings className="w-6 h-6 text-[#FF5C3A]" /></div>
                  <div>
-                   <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter">Genoma de Marca</h3>
-                   <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-[0.2em] opacity-60">Identidad raíz y presencia</p>
+                   <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter">Identidad de Marca</h3>
+                   <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-[0.2em] opacity-60">Nombre, slug y logotipo</p>
                  </div>
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-6 relative z-10">
                  <div className="space-y-6">
                    <div>
-                     <label className={labelStyle}>ADN de la Marca (Nombre)</label>
+                     <label className={labelStyle}>Nombre de la Marca</label>
                      <input type="text" name="name" value={formData.name || ''} onChange={handleChange} className={inputStyle} placeholder="Ej: Lookitry Fashion" />
                    </div>
                    <div>
@@ -352,7 +352,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                    className="px-12 py-5 bg-[#FF5C3A] text-white rounded-[2rem] font-[950] italic uppercase tracking-widest shadow-4xl shadow-[#FF5C3A]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
                  >
                    {isSubmitting ? <Zap className="w-5 h-5 animate-pulse" /> : <Check className="w-5 h-5" strokeWidth={4} />}
-                   Sincronizar Genoma
+                   Guardar Cambios
                  </button>
                </div>
              </motion.section>
@@ -365,13 +365,13 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                  <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><Palette className="w-6 h-6 text-[#FF5C3A]" /></div>
                  <div>
                    <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter">Atmósfera Visual</h3>
-                   <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-[0.2em] opacity-60">Skin, Templates y Color Flow</p>
+                   <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-[0.2em] opacity-60">Plantilla, colores y apariencia</p>
                  </div>
                </div>
 
                <div className="space-y-12 pt-6 relative z-10">
                  <div className="space-y-6">
-                    <label className={labelStyle}>Arquitectura de Interfaz (Templates)</label>
+                    <label className={labelStyle}>Plantilla de Interfaz</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                        {TEMPLATES.map((tpl) => {
                          const locked = tpl.proOnly && !isPro;
@@ -493,7 +493,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                             <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase mt-1 opacity-50 tracking-tighter">Tu marca está operando a máxima potencia</p>
                           </div>
                        </div>
-                       <button onClick={handleSubmit} className="px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-card)] rounded-2xl text-[10px] font-950 uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl">Salvar ADN</button>
+                       <button onClick={handleSubmit} className="px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-card)] rounded-2xl text-[10px] font-950 uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl">Guardar</button>
                     </div>
                  </div>
                )}
