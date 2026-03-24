@@ -17,14 +17,14 @@ def run_bg(cmd, wait=5):
 # Lanzar builds en background con logs
 print("Lanzando build backend en background...")
 print(run_bg(
-    "cd /root/virtual-tryon && docker compose -f docker-compose.backend.yml build > /tmp/build_backend.log 2>&1 && "
+    "cd /root/Lookitry && docker compose -f docker-compose.backend.yml build > /tmp/build_backend.log 2>&1 && "
     "docker compose -f docker-compose.backend.yml up -d >> /tmp/build_backend.log 2>&1 && echo 'BACKEND_DONE' >> /tmp/build_backend.log &",
     wait=3
 ))
 
 print("Lanzando build frontend en background...")
 print(run_bg(
-    "cd /root/virtual-tryon && docker compose -f docker-compose.frontend.yml build > /tmp/build_frontend.log 2>&1 && "
+    "cd /root/Lookitry && docker compose -f docker-compose.frontend.yml build > /tmp/build_frontend.log 2>&1 && "
     "docker compose -f docker-compose.frontend.yml up -d >> /tmp/build_frontend.log 2>&1 && echo 'FRONTEND_DONE' >> /tmp/build_frontend.log &",
     wait=3
 ))

@@ -102,16 +102,16 @@ sftp = ssh.open_sftp()
 sftp.put(local_path, "/tmp/migrate_template.js")
 sftp.close()
 
-_, out, err = ssh.exec_command("docker cp /tmp/migrate_template.js virtual-tryon-backend:/app/migrate_template.js", timeout=15)
+_, out, err = ssh.exec_command("docker cp /tmp/migrate_template.js lookitry-backend:/app/migrate_template.js", timeout=15)
 out.read(); err.read()
 
-_, out, err = ssh.exec_command("docker exec virtual-tryon-backend node /app/migrate_template.js", timeout=30)
+_, out, err = ssh.exec_command("docker exec lookitry-backend node /app/migrate_template.js", timeout=30)
 stdout = out.read().decode()
 stderr = err.read().decode()
 print("Output:", stdout)
 if stderr:
     print("Stderr:", stderr)
 
-ssh.exec_command("docker exec virtual-tryon-backend rm /app/migrate_template.js", timeout=10)
+ssh.exec_command("docker exec lookitry-backend rm /app/migrate_template.js", timeout=10)
 ssh.close()
 print("Migración completada.")

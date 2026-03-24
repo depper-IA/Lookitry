@@ -6,7 +6,7 @@ HOST = '31.220.18.39'
 USER = 'root'
 PASS = 'Travis18456916#'
 NEW_JWT = 'PE5uvUMbFsyrxjyL8JPmvxxtcxY9lMDnqePvfy3LRtmDIJIGFvg+N+i6FpVxulVPTYZfvo5rVmzb5V5Y/WWSsA=='
-ENV_PATH = '/root/virtual-tryon/backend/.env'
+ENV_PATH = '/root/Lookitry/backend/.env'
 
 client = paramiko.SSHClient()
 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
