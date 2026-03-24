@@ -1,5 +1,33 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 24 de Marzo, 2026 — Historial de transacciones con hora exacta
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/subscription/page.tsx`
+
+**Cambios:**
+- Creada función `formatDateTime` para mostrar fecha y hora con formato `es-CO`.
+- Actualizada la tabla de historial de pagos en el dashboard de suscripción para mostrar la hora exacta de cada transacción, facilitando la verificación de pagos recientes.
+
+---
+
+## 24 de Marzo, 2026 — Roadmap: Planificación de Autenticación Social y Plugin WooCommerce
+
+**Archivos modificados:**
+- `LOOKITRY_MASTER_MEMORY.md`
+- `LOOKITRY_WOOCOMMERCE_PLUGIN_SPEC.md` (Nuevo archivo)
+
+**Cambios:**
+- Agregada la sección "8. PRÓXIMAS IMPLEMENTACIONES (Corto Plazo)" al documento de memoria maestra.
+- **Estrategia Lookitry for WooCommerce:** Definida la arquitectura técnica y de negocio para el plugin oficial.
+- **Estrategia de Conversión (Hook):** Implementación de un "Free Trial de 7 días" (1 slot de producto / 10-15 generaciones) para reducir fricción.
+- **Definición de Slots:** Los planes BASIC (5), PRO (20) y GOLD (50+) ahora actúan como "espacios de activación" dinámicos en el catálogo de WooCommerce.
+- **ROI & Beneficios:** Documentadas las métricas de retención y reducción de devoluciones para el cliente final.
+
+**Motivo:** Planificación estratégica para escalar el producto a través de integraciones nativas en WordPress, asegurando rentabilidad y bajo costo de adquisición de clientes.
+
+---
+
 ## 23 de Marzo, 2026 — Fix: SubscriptionBadge del navbar muestra nombre del plan activo
 
 **Archivos modificados:**

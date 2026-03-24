@@ -312,10 +312,11 @@ export class SubscriptionService {
     // Nueva fecha de fin base: hoy + meses nuevos
     let newEndDate = this.calculateExpirationDate(now, newMonths);
 
-    // LÓGICA DE CONVERSIÓN DE VALOR (Upgrade con excedente)
-    // Si el crédito sobra, convertir el restante en días adicionales de PRO
+    // LÓGICA DE CONVERSIÓN DE VALOR (Excedente a Tiempo)
+    // Si el crédito sobra (típico en Downgrade de PRO a BASIC), convertir el restante en días adicionales
     if (remainingCredit > 0) {
-      const newPlanPricePerDay = (newPlanPricePerMonth * 12) / 365; // precio diario del plan PRO
+      // Calculamos el precio diario del NUEVO plan basándonos en el precio mensual pactado
+      const newPlanPricePerDay = newPlanPricePerMonth / 30;
       const extraDays = Math.floor(remainingCredit / newPlanPricePerDay);
       
       if (extraDays > 0) {
@@ -336,8 +337,8 @@ export class SubscriptionService {
   }
 
   /**
-   * Aplica un upgrade gratuito (cuando el crédito cubre el costo del nuevo plan).
-   * Cambia el plan y resetea la fecha de fin desde hoy.
+   * Aplica un upgrade/downgrade gratuito (cuando el crédito cubre el costo del nuevo plan).
+   * Cambia el plan y usa la fecha de fin calculada con los días de regalo.
    */
   async applyFreeUpgrade(
     brandId: string,
@@ -345,10 +346,18 @@ export class SubscriptionService {
     newMonths: number,
     creditAmount: number,
     newPlanTotal: number,
-    reference: string
+    reference: string,
+    forcedEndDate?: string // Opcional: permite al frontend enviar la fecha con días extra
   ): Promise<Brand> {
     const now = new Date();
-    const newEndDate = this.calculateExpirationDate(now, newMonths);
+    
+    // Si no viene fecha forzada (con días extra), calculamos la estándar
+    let newEndDate: Date;
+    if (forcedEndDate) {
+      newEndDate = new Date(forcedEndDate);
+    } else {
+      newEndDate = this.calculateExpirationDate(now, newMonths);
+    }
 
     const { data: updatedBrand, error } = await supabaseAdmin
       .from('brands')
@@ -364,7 +373,7 @@ export class SubscriptionService {
       .select()
       .single();
 
-    if (error || !updatedBrand) throw new Error('Error al aplicar upgrade: ' + error?.message);
+    if (error || !updatedBrand) throw new Error('Error al aplicar cambio de plan: ' + error?.message);
 
     // Registrar en historial con monto $0 (crédito cubrió todo)
     await this.createPaymentRecord({
@@ -375,7 +384,7 @@ export class SubscriptionService {
       payment_method: 'credit_proration',
       status: 'completed',
       months_paid: newMonths,
-      notes: `Upgrade gratuito por prorrateo. Plan: ${newPlan}. Crédito aplicado: $${creditAmount}. Valor plan: $${newPlanTotal}. Ref: ${reference}`,
+      notes: `Cambio de plan gratuito por prorrateo. Plan: ${newPlan}. Crédito aplicado: $${creditAmount}. Valor plan: $${newPlanTotal}. Ref: ${reference}`,
     });
 
     return updatedBrand as Brand;

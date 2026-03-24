@@ -107,13 +107,23 @@ export function EmbedSection() {
   const [showPreview, setShowPreview] = useState(false);
   const [embedUrl, setEmbedUrl] = useState('');
   const [iframeCode, setIframeCode] = useState('');
+  const [widgetCode, setWidgetCode] = useState('');
+  const [activeTab, setActiveTab] = useState<'widget' | 'iframe'>('widget');
 
   useEffect(() => {
     if (brand?.slug) {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+      const baseUrl = 'https://lookitry.com';
       const url = `${baseUrl}/marca/${brand.slug}`;
       setEmbedUrl(url);
-      setIframeCode(`<iframe src="${url}" width="100%" height="750" frameborder="0" style="border-radius:12px; box-shadow:0 4px 24px rgba(0,0,0,0.10);"></iframe>`);
+      
+      // Iframe clásico
+      setIframeCode(`<iframe src="${baseUrl}/embed/${brand.slug}" width="100%" height="750" frameborder="0" style="border-radius:12px; box-shadow:0 4px 24px rgba(0,0,0,0.10);"></iframe>`);
+      
+      // Widget inteligente
+      setWidgetCode(
+        `<div id="lookitry-tester-container" data-slug="${brand.slug}"></div>\n` +
+        `<script src="${baseUrl}/widget.js" async defer></script>`
+      );
     }
   }, [brand]);
 

@@ -420,10 +420,11 @@ function CheckoutContent() {
         body: JSON.stringify({
           newPlan: selectedPlan, newMonths: selectedMonths,
           creditAmount: prorationPreview.creditAmount, newPlanTotal: prorationPreview.newPlanTotal,
+          forcedEndDate: prorationPreview.newEndDate // Enviamos la fecha con días extra
         }),
       });
       if (res.ok) { setState('success'); }
-      else { const e = await res.json(); setErrorMsg(e.error || 'Error al aplicar el upgrade'); setState('error'); }
+      else { const e = await res.json(); setErrorMsg(e.error || 'Error al aplicar el cambio'); setState('error'); }
     } catch { setErrorMsg('Error de conexión'); setState('error'); }
     finally { setApplyingFreeUpgrade(false); }
   };

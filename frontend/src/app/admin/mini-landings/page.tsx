@@ -104,6 +104,55 @@ export default function AdminMiniLandingsPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const ITEMS_PER_PAGE = 10;
 
+  // ── Modal Promo Global ───────────────────────────────────────────────────
+  const [modalConfig, setModalConfig] = useState({
+    title: 'Activa tu Mini-Landing personalizada',
+    description: 'Muestra tus productos en una página web profesional optimizada para móviles y aumenta tus ventas.',
+    imageUrl: '',
+    previewSeconds: 15,
+  });
+  const [savingModal, setSavingModal] = useState(false);
+
+  const fetchModalConfig = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/payment-settings`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.modal_promo_config) {
+          setModalConfig(data.modal_promo_config);
+        } else {
+          setModalConfig({
+            title: data.modal_title || 'Activa tu Mini-Landing personalizada',
+            description: data.modal_description || 'Muestra tus productos en una página web profesional.',
+            imageUrl: data.modal_image_url || '',
+            previewSeconds: data.mini_landing_preview_seconds || 15,
+          });
+        }
+      }
+    } catch {}
+  }, []);
+
+  const handleSaveModalConfig = async () => {
+    setSavingModal(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          modal_promo_config: modalConfig,
+          modal_title: modalConfig.title,
+          modal_description: modalConfig.description,
+          modal_image_url: modalConfig.imageUrl,
+          mini_landing_preview_seconds: modalConfig.previewSeconds
+        }),
+      });
+      if (!res.ok) throw new Error('Error al guardar');
+      alert('Configuración guardada correctamente');
+    } catch (err: any) { alert(err.message); }
+    finally { setSavingModal(false); }
+  };
+
   const toggleSort = (field: SortFieldML) => {
     if (sortField === field) {
       setSortOrder(o => o === 'asc' ? 'desc' : 'asc');
@@ -128,7 +177,7 @@ export default function AdminMiniLandingsPage() {
     }
   }, []);
 
-  useEffect(() => { fetchBrands(); }, [fetchBrands]);
+  useEffect(() => { fetchBrands(); fetchModalConfig(); }, [fetchBrands, fetchModalConfig]);
   useEffect(() => { setCurrentPage(1); }, [search, filterEstado, filterPlan]);
 
   const filtered = useMemo(() => {
@@ -554,6 +603,125 @@ export default function AdminMiniLandingsPage() {
           </div>
         </div>
       )}
+
+      {/* ── SECCIÓN: CONFIGURACIÓN MODAL PROMO GLOBAL (NUEVO) ── */}
+      <div className="mt-16 pt-10 border-t border-[var(--border-color)]">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+            <IconGlobe className="w-6 h-6 text-[#FF5C3A]" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Configuración Modal Promo</h2>
+            <p className="text-sm text-[var(--text-secondary)] mt-0.5 font-medium">Define el mensaje global que verán las marcas que aún no tienen mini-landing.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Formulario de Edición */}
+          <div className="bg-[var(--bg-card)] p-8 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl shadow-black/5 space-y-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-2 ml-1">Título del Modal</label>
+                <input
+                  type="text"
+                  value={modalConfig.title}
+                  onChange={e => setModalConfig({ ...modalConfig, title: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm font-bold outline-none focus:border-[#FF5C3A] transition-all"
+                  placeholder="Ej: ¡Potencia tu marca hoy!"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-2 ml-1">Descripción / Beneficios</label>
+                <textarea
+                  value={modalConfig.description}
+                  onChange={e => setModalConfig({ ...modalConfig, description: e.target.value })}
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm outline-none focus:border-[#FF5C3A] transition-all resize-none leading-relaxed"
+                  placeholder="Explica las ventajas de tener una mini-landing..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-2 ml-1">Imagen URL (Opcional)</label>
+                  <input
+                    type="text"
+                    value={modalConfig.imageUrl}
+                    onChange={e => setModalConfig({ ...modalConfig, imageUrl: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm outline-none focus:border-[#FF5C3A] transition-all"
+                    placeholder="https://ejemplo.com/imagen.jpg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-2 ml-1">Tiempo de Vista Previa (Seg)</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={0}
+                      max={600}
+                      value={modalConfig.previewSeconds}
+                      onChange={e => setModalConfig({ ...modalConfig, previewSeconds: parseInt(e.target.value) || 0 })}
+                      className="w-full pl-4 pr-12 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm font-mono font-bold outline-none focus:border-[#FF5C3A] transition-all"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[var(--text-muted)] uppercase">seg</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <button
+                onClick={handleSaveModalConfig}
+                disabled={savingModal}
+                className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#FF5C3A] text-white text-xs font-black uppercase tracking-[0.2em] hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-[#FF5C3A]/20"
+              >
+                {savingModal ? <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin border-white" /> : <IconRefresh className="w-5 h-5" />}
+                Guardar Configuración Global
+              </button>
+              <p className="text-[9px] text-center text-[var(--text-muted)] mt-4 uppercase font-bold tracking-widest">Aplica instantáneamente para todos los usuarios</p>
+            </div>
+          </div>
+
+          {/* Vista Previa Interactiva */}
+          <div className="bg-[var(--bg-base)] p-10 rounded-[3rem] border border-dashed border-[var(--border-color)] flex flex-col items-center justify-center relative overflow-hidden group">
+            <div className="absolute top-6 left-8 flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#FF5C3A] animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Simulación en vivo</span>
+            </div>
+            
+            {/* Modal Mockup */}
+            <div className="w-full max-w-sm bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] shadow-2xl p-8 space-y-6 transform transition-transform duration-500 group-hover:scale-[1.02]">
+              <div className="w-20 h-20 mx-auto rounded-[1.5rem] bg-[#FF5C3A]/10 flex items-center justify-center">
+                <IconGlobe className="w-10 h-10 text-[#FF5C3A]" />
+              </div>
+              <div className="text-center space-y-3">
+                <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic leading-tight">{modalConfig.title}</h3>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{modalConfig.description}</p>
+              </div>
+              
+              <div className="space-y-3 pt-2">
+                <div className="w-full py-3.5 rounded-xl bg-[#FF5C3A] text-white text-[10px] font-black uppercase tracking-[0.2em] text-center shadow-lg shadow-[#FF5C3A]/20">
+                  Activar mi página
+                </div>
+                <button className="w-full py-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
+                  Quizás más tarde
+                </button>
+              </div>
+
+              <div className="pt-4 border-t border-[var(--border-color)]">
+                <p className="text-[9px] text-center text-[var(--text-muted)] font-bold uppercase tracking-widest">
+                  Se activará tras <span className="text-[#FF5C3A]">{modalConfig.previewSeconds} segundos</span> de navegación
+                </p>
+              </div>
+            </div>
+
+            {/* Decoración de fondo */}
+            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#FF5C3A]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-20 -left-20 w-64 h-64 bg-[#FF5C3A]/5 rounded-full blur-3xl pointer-events-none" />
+          </div>
+        </div>
+      </div>
 
       {/* Modal de confirmación */}
       {confirmModal && (

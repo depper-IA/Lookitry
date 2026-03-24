@@ -83,6 +83,12 @@ Tablas principales:
 Si surge un bug visual en el Panel Admin (ej. fondos desfasados en modo oscuro `bg-white`), se debe siempre usar `var(--bg-card)` y variables CSS del sistema en lugar de clases Tailwind estáticas.
 
 
+## 8. PRÓXIMAS IMPLEMENTACIONES (Corto Plazo)
+- **Autenticación Social (Google & Facebook)**:
+  - Implementar flujo OAuth2 para permitir registro y login rápido.
+  - Integrar con el sistema de JWT propio actual (manteniendo la arquitectura custom).
+  - Manejar el registro en dos pasos: El primer login vía Google/FB creará el usuario básico, pero requerirá un paso adicional para que el dueño de la marca elija su `slug` y `nombre de marca` antes de activar el dashboard.
+  - Configurar credenciales en Google Cloud Console y Meta for Developers.
 
 ## ARCHITECTURE ##
 ---
