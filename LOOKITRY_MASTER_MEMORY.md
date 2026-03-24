@@ -38,8 +38,12 @@ URLs de Producción:
   - `PRO` ($250.000 COP/mes): 15 productos activos, 1200 gen/mes.
   - `LANDING`: Pago único $650.000 COP (requiere plan BASIC o PRO).
 - **Descuentos**: 1 mes (0%), 3 meses (5%), 6 meses (10%), 12 meses (15%).
-- **Prorrateo Wompi (BASIC -> PRO)**: 
-  Se calcula el crédito no consumido (`pricePerDay * díasRestantes`). Si `montoACobrar = 0`, aplica upgrade gratis (`applyFreeUpgrade`). La fecha de inicio se resetea a `now()`.
+- **Prorrateo & Suscripciones (REGLAS DE ORO)**:
+  - **Renovación (Mismo Plan)**: SIN prorrateo. Se cobra 100% y se SUMAN los meses a la fecha de vencimiento actual.
+  - **Upgrade (BASIC -> PRO)**: CON prorrateo. El crédito de días BASIC no usados descuenta del total PRO. Si el crédito sobra, se convierte en DÍAS EXTRA de PRO (Conversión de Valor). El plan PRO inicia HOY.
+  - **Downgrade (PRO -> BASIC)**: Cambio DIFERIDO. El cliente sigue siendo PRO hasta que venza su tiempo actual. El plan BASIC inicia automáticamente al expirar el PRO. No hay devolución de dinero.
+  - **Case Sensitivity**: Siempre normalizar planes a `.toUpperCase()` antes de comparar en Backend y Frontend para evitar "falsos upgrades".
+  - **Landing Page**: Es pago único. NUNCA se incluye en el cálculo del precio diario para prorrateo. Si el pago anterior incluyó landing, se debe restar su valor antes de calcular el crédito.
 
 ## 4. BASE DE DATOS (Supabase)
 Tablas principales:
