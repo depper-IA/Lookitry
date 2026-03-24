@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -251,8 +251,35 @@ export function EmbedSection() {
       <SectionCard>
         <SectionHeader step={2} title="Copia el código" subtitle="Pégalo en el lugar elegido de tu sitio" />
 
-        {/* Bloque de código iframe */}
-        <div style={{ borderColor: '#000000' }} className="rounded-2xl border overflow-hidden mb-4">
+        {/* Sistema de pestañas */}
+        <div className="flex bg-[var(--bg-base)] p-1 rounded-2xl mb-6 border border-[var(--border-color)]">
+          <button
+            onClick={() => setActiveTab('widget')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+              activeTab === 'widget'
+                ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            <Code2 className="w-4 h-4" />
+            Widget Inteligente
+            <span className="hidden sm:inline-block ml-1 opacity-60 text-[8px] border border-white/30 px-1 rounded">REC</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('iframe')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+              activeTab === 'iframe'
+                ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            iFrame Clásico
+          </button>
+        </div>
+
+        {/* Bloque de código */}
+        <div style={{ borderColor: 'var(--border-color)' }} className="rounded-2xl border overflow-hidden mb-4 shadow-sm bg-[var(--bg-base)]">
           {/* Barra superior del bloque de código */}
           <div
             style={{ background: 'var(--bg-sidebar)', borderColor: 'var(--border-color)' }}
@@ -264,46 +291,56 @@ export function EmbedSection() {
                 <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/60" />
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/60" />
               </div>
-              <span style={{ color: 'var(--text-muted)' }} className="text-xs font-mono ml-1">index.html</span>
+              <span style={{ color: 'var(--text-muted)' }} className="text-xs font-mono ml-1">
+                {activeTab === 'widget' ? 'lookitry-widget.html' : 'index.html'}
+              </span>
             </div>
             <button
-              onClick={() => copy(iframeCode, 'iframe')}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                copiedKey === 'iframe'
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+              onClick={() => copy(activeTab === 'widget' ? widgetCode : iframeCode, activeTab)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 cursor-pointer ${
+                copiedKey === activeTab
+                  ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30'
                   : 'bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20 hover:bg-[#FF5C3A]/20'
               }`}
             >
-              {copiedKey === 'iframe'
+              {copiedKey === activeTab
                 ? <><Check className="w-3.5 h-3.5" /> Copiado</>
                 : <><Copy className="w-3.5 h-3.5" /> Copiar código</>
               }
             </button>
           </div>
+
           {/* Contenido del código */}
-          <div
-            style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)' }}
-            className="px-5 py-5 overflow-x-auto"
-          >
-            <pre className="text-xs text-black whitespace-pre-wrap break-all font-mono leading-relaxed">
-              {iframeCode}
+          <div className="px-5 py-6 overflow-x-auto min-h-[120px] flex items-center">
+            <pre className="text-xs text-[var(--text-primary)] whitespace-pre-wrap break-all font-mono leading-relaxed w-full">
+              {activeTab === 'widget' ? widgetCode : iframeCode}
             </pre>
+          </div>
+
+          {/* Nota descriptiva según el tab */}
+          <div className="px-5 py-3 bg-[var(--bg-sidebar)] border-t border-[var(--border-color)]">
+             <p className="text-[10px] text-[var(--text-muted)] font-medium italic">
+                {activeTab === 'widget' 
+                  ? '💡 El Widget se adapta automáticamente al botón de "Añadir al carrito" y ofrece una integración más limpia.'
+                  : '⚠️ El iFrame usa un contenedor fijo. Recomendado si el widget tiene conflictos con tu plantilla.'
+                }
+             </p>
           </div>
         </div>
 
-        {/* URL sola para Wix */}
-        {platform === 'wix' && (
-          <div style={{ borderColor: '#000000' }} className="rounded-2xl border overflow-hidden">
+        {/* URL sola para Wix o configuraciones manuales */}
+        {(platform === 'wix' || activeTab === 'iframe') && (
+          <div style={{ borderColor: 'var(--border-color)' }} className="rounded-2xl border overflow-hidden mt-6 bg-[var(--bg-base)] shadow-sm">
             <div
               style={{ background: 'var(--bg-sidebar)', borderColor: 'var(--border-color)' }}
               className="flex items-center justify-between px-4 py-3 border-b"
             >
-              <span style={{ color: 'var(--text-muted)' }} className="text-xs font-mono">URL del probador (para Wix iFrame)</span>
+              <span style={{ color: 'var(--text-muted)' }} className="text-[10px] font-black uppercase tracking-widest">URL del probador</span>
               <button
                 onClick={() => copy(embedUrl, 'url')}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-200 cursor-pointer ${
                   copiedKey === 'url'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30'
                     : 'bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20 hover:bg-[#FF5C3A]/20'
                 }`}
               >
@@ -313,8 +350,8 @@ export function EmbedSection() {
                 }
               </button>
             </div>
-            <div style={{ background: 'var(--bg-base)' }} className="px-5 py-4">
-              <code className="text-xs text-black font-mono break-all">{embedUrl}</code>
+            <div className="px-5 py-4">
+              <code className="text-xs text-[var(--text-primary)] font-mono break-all">{embedUrl}</code>
             </div>
           </div>
         )}
