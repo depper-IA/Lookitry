@@ -32,10 +32,11 @@ export class WompiController {
       const checksum = req.headers['x-event-checksum'] as string;
 
       // El body puede llegar como Buffer (raw) o como objeto (json parseado)
-      // app.ts registra express.raw() antes de express.json() para esta ruta
       const rawBody = Buffer.isBuffer(req.body)
         ? req.body.toString('utf8')
         : JSON.stringify(req.body);
+
+      console.log(`[Wompi Webhook] Recibido. Checksum: ${checksum || 'NINGUNO'}. Body length: ${rawBody.length}`);
 
       // Verificar firma HMAC antes de procesar nada
       const firmaValida = await wompiService.verifyWebhookSignature(rawBody, checksum);

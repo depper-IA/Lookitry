@@ -137,8 +137,8 @@ export class WompiService {
    */
   extractBrandIdFromReference(reference: string): string | null {
     const parts = reference.split('-');
-    if (parts.length < 3 || parts[0] !== 'TRYON') return null;
-    // Formato nuevo: TRYON-{uuid4parts}-M{n}-P{plan}-{ts}
+    if (parts.length < 3 || (parts[0] !== 'TRYON' && parts[0] !== 'WOMPI')) return null;
+    // Formato nuevo: PREFIX-{brandId}-M{n}-P{plan}-{ts}
     // Buscar el índice del segmento que empieza con 'M' seguido de dígitos
     const mIdx = parts.findIndex((p, i) => i > 0 && /^M\d+$/.test(p));
     if (mIdx > 1) {
