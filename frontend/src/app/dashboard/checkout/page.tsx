@@ -331,6 +331,8 @@ function CheckoutContent() {
         if (paySettings.landingPrice)                       setMiniLandingPrice(paySettings.landingPrice);
         if (paySettings.trm)                                setTrm(paySettings.trm);
         if (typeof paySettings.paypalEnabled === 'boolean') setPaypalEnabled(paySettings.paypalEnabled);
+        // Si Wompi está habilitado globalmente, lo habilitamos por defecto en el estado local
+        if (typeof paySettings.wompiEnabled === 'boolean')  setWompiEnabled(paySettings.wompiEnabled);
       }
       if (Array.isArray(pricingRows)) {
         const basicData = pricingRows.find((r: any) => r.id === 'basic')?.data;
