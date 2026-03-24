@@ -1,29 +1,98 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { brandsService } from '@/services/brands.service';
 import { api } from '@/services/api';
 import { 
   Globe, 
-  Image as ImageIcon, 
-  Palette, 
-  MessageSquare, 
-  ChevronRight, 
-  Smartphone, 
-  Layout,
   ExternalLink,
   Check,
   Save,
-  AlertCircle
+  AlertCircle,
+  Monitor,
+  Layout,
+  Smartphone,
+  Sparkles,
+  ChevronRight,
+  ShieldCheck,
+  Zap,
+  ArrowRight,
 } from 'lucide-react';
 import { LandingPreview } from './components/LandingPreview';
 import { Spinner } from '@/components/ui/Spinner';
 import { DesignTab } from './components/DesignTab';
 import { DomainTab } from './components/DomainTab';
 
-const FRONTEND_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://lookitry.com');
+const FRONTEND_URL = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://pruebalo.wilkiedevs.com');
+
+function TemplateWireframe({ type, active }: { type: string; active: boolean }) {
+  const accent = active ? '#FF5C3A' : '#444';
+  
+  return (
+    <div className="w-full h-full p-6 flex flex-col gap-3 relative overflow-hidden group">
+      {type === 'classic' && (
+        <>
+          <div className="w-1/3 h-1.5 rounded-full mx-auto" style={{ background: accent, opacity: 0.3 }} />
+          <div className="w-full h-24 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-3">
+            <div className="w-1/2 h-2 rounded-full bg-white/10" />
+            <div className="w-1/4 h-2 rounded-full bg-white/5" />
+          </div>
+          <div className="grid grid-cols-2 gap-3 flex-1 pb-2">
+            <div className="rounded-xl bg-white/5 border border-white/10 h-full" />
+            <div className="rounded-xl bg-white/5 border border-white/10 h-full" />
+          </div>
+        </>
+      )}
+      {type === 'editorial' && (
+        <div className="flex gap-4 h-full">
+          <div className="flex-1 flex flex-col gap-3 py-2">
+            <div className="w-full h-3 rounded-md bg-white/10" />
+            <div className="w-full h-3 rounded-md bg-white/10" />
+            <div className="w-2/3 h-3 rounded-md bg-white/5" />
+            <div className="mt-auto w-full h-10 rounded-2xl" style={{ background: accent, opacity: 0.2 }} />
+          </div>
+          <div className="w-1/2 h-full rounded-2xl bg-white/5 border border-white/10 relative overflow-hidden">
+             <div className="absolute top-4 -left-2 w-full h-1/2 rounded-xl bg-white/10 border border-white/20 shadow-2xl" />
+          </div>
+        </div>
+      )}
+      {type === 'moderno' && (
+        <div className="h-full flex flex-col justify-between py-2">
+          <div className="w-full h-2/5 rounded-[2rem] bg-gradient-to-br from-white/10 to-transparent border border-white/10 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full border-4 border-white/20" />
+          </div>
+          <div className="space-y-3 px-1">
+            <div className="w-full h-4 rounded-full" style={{ background: accent, opacity: 0.15 }} />
+            <div className="w-3/4 h-2 rounded-full bg-white/10" />
+          </div>
+          <div className="w-full h-12 rounded-2xl mt-4 flex items-center justify-center" style={{ background: accent }}>
+             <div className="w-1/3 h-1 rounded-full bg-white/30" />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1, 
+    transition: { duration: 0.5, staggerChildren: 0.08 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { type: "spring" as const, stiffness: 100 }
+  }
+};
 
 export default function MiPaginaPage() {
   const { brand: authBrand } = useAuth();
@@ -35,7 +104,6 @@ export default function MiPaginaPage() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'design' | 'domain'>('design');
 
-  // Estados locales para edición
   const [landingTemplate, setLandingTemplate] = useState<'classic' | 'editorial' | 'moderno'>('classic');
   const [landingFont, setLandingFont] = useState('font-jakarta');
   const [slogan, setSlogan] = useState('');
@@ -71,14 +139,13 @@ export default function MiPaginaPage() {
       try {
         const [brandData, productsData] = await Promise.all([
           brandsService.getCurrentBrand(),
-          api.get('/products').then(r => (r.data || []) as any[]).catch(() => [] as any[])
+          api.get('/products').then(r => (Array.isArray(r.data) ? r.data : [])).catch(() => [])
         ]);
         
         setBrand(brandData);
         setProducts(productsData);
         
         const b = brandData as any;
-        // Cargar estados locales
         setLandingTemplate(b.landing_template || 'classic');
         setLandingFont(b.landing_font || 'font-jakarta');
         setSlogan(b.slogan || '');
@@ -109,7 +176,6 @@ export default function MiPaginaPage() {
         setSchedule(b.schedule || {});
         setCustomDomain(b.custom_domain || '');
       } catch (err) {
-        console.error('Error al cargar datos:', err);
         setError('No se pudo cargar la información');
       } finally {
         setLoading(false);
@@ -172,21 +238,20 @@ export default function MiPaginaPage() {
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center py-24"><Spinner size="lg" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Spinner size="lg" /></div>;
 
   const brandSlug = brand?.slug || authBrand?.slug || '';
   const pageUrl = `${FRONTEND_URL}/sitio/${brandSlug}`;
   
-  // OBJETO DE MARCA TEMPORAL PARA PREVIEW REAL
   const tempBrand = {
     ...brand,
+    name: brand?.name || authBrand?.name,
+    slug: brandSlug,
     landing_template: landingTemplate,
     landing_font: landingFont,
     widget_bg_color: widgetBgColor,
     slogan,
     brand_description: description,
-    // primary_color removed from landing payload
-    // secondary_color removed from landing payload
     header_color: headerColor,
     cover_bg_color: coverBgColor,
     cover_overlay_opacity: coverOverlayOpacity,
@@ -203,152 +268,117 @@ export default function MiPaginaPage() {
     show_brand_name: showBrandName,
     rating: rating ? parseFloat(rating) : null,
     total_reviews: totalReviews ? parseInt(totalReviews, 10) : null,
-    schedule
+    schedule,
+    primary_color: primaryColor,
+    secondary_color: secondaryColor
   };
 
   const previewProps = {
     brand: tempBrand,
-    products,
-    brandSlug
+    products
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    <motion.div 
+      initial="hidden" animate="visible" variants={containerVariants}
+      className="max-w-[1600px] mx-auto px-4 sm:px-8 py-10 pb-40"
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
         
-        {/* PANEL DE EDICIÓN (Columna Izquierda) */}
-        <div className="lg:col-span-7 xl:col-span-7 space-y-6">
-          <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[var(--text-primary)] italic uppercase">Mi Página Pública</h1>
-              <p className="text-sm text-[var(--text-secondary)] mt-1 flex items-center gap-2 font-medium">
-                Configura tu vitrina digital personalizada
-                <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="text-[#FF5C3A] hover:underline flex items-center gap-1 font-bold">
-                  Ver sitio real <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </p>
+        {/* PANEL DE EDICIÓN */}
+        <div className="lg:col-span-7 space-y-12">
+          <motion.header variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div className="space-y-1">
+              <h1 className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Editor de Página</h1>
+              <p className="text-sm text-[var(--text-secondary)] uppercase font-black tracking-widest opacity-60">Personaliza tu mini-landing premium</p>
             </div>
-          </header>
-
-          {/* Banner de estado (Trial) */}
-          {!brand?.has_landing_page && (
-            <div className="p-5 rounded-[2rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shrink-0">
-                  <Globe className="w-6 h-6 text-[#FF5C3A]" />
-                </div>
-                <div>
-                  <p className="text-sm font-black text-[var(--text-primary)] uppercase tracking-tight italic">Modo Previsualización</p>
-                  <p className="text-xs text-[var(--text-secondary)] mt-0.5 font-medium leading-relaxed max-w-md">Tu página no es pública aún. Los cambios que realices aquí se verán reflejados una vez actives tu mini-landing.</p>
-                </div>
-              </div>
-              <Link href="/dashboard/checkout-landing" className="px-6 py-2.5 bg-[#FF5C3A] text-white text-[10px] font-black uppercase rounded-xl hover:brightness-110 transition-all shadow-lg whitespace-nowrap">Activar ahora</Link>
+            
+            <div className="flex items-center gap-4">
+               <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl text-xs font-black uppercase tracking-widest text-[var(--text-primary)] hover:border-[#FF5C3A] hover:text-[#FF5C3A] transition-all shadow-xl group/link">
+                 Ver mi Sitio <ExternalLink size={14} className="group-hover:rotate-12 transition-transform" />
+               </a>
             </div>
-          )}
+          </motion.header>
 
-          {/* Tabs Navegación */}
-          <div className="flex gap-4 p-1.5 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] w-fit">
-            <button 
-              onClick={() => setActiveTab('design')} 
-              className={`px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all rounded-xl ${activeTab === 'design' ? 'bg-[#FF5C3A] text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
-            >
-              Diseño Visual
-            </button>
-            <button 
-              onClick={() => setActiveTab('domain')} 
-              className={`px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all rounded-xl ${activeTab === 'domain' ? 'bg-[#FF5C3A] text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
-            >
-              Identidad Digital
-            </button>
-          </div>
-
-          <div className="space-y-8">
-            {activeTab === 'design' ? (
-              <div className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
-                {/* Selector de Plantilla */}
-                <section className="p-8 bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] space-y-6">
-                  <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
-                    <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-                      <Layout className="w-5 h-5 text-[#FF5C3A]" />
-                    </div>
-                    <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Selecciona tu Plantilla</h3>
+          <AnimatePresence>
+            {!brand?.has_landing_page && (
+              <motion.div 
+                variants={itemVariants} 
+                className="p-8 rounded-[2.5rem] border-2 border-dashed border-[#FF5C3A]/20 bg-[#FF5C3A]/5 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group/unlock"
+              >
+                <div className="flex items-center gap-6 relative z-10 text-center md:text-left">
+                  <div className="w-16 h-16 rounded-[2rem] bg-[#FF5C3A] text-white flex items-center justify-center shadow-2xl shadow-[#FF5C3A]/20 transform group-hover/unlock:rotate-12 transition-transform duration-500">
+                    <Zap className="w-8 h-8 fill-current" />
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  <div>
+                    <p className="text-lg font-black text-[var(--text-primary)] uppercase italic leading-none">Módulo de Sitio Desactivado</p>
+                    <p className="text-[11px] text-[var(--text-secondary)] font-bold uppercase tracking-widest mt-2 opacity-60 italic">Adquiere tu mini-landing hoy mismo</p>
+                  </div>
+                </div>
+                <Link href="/dashboard/checkout-landing" className="px-10 py-5 bg-[#FF5C3A] text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-[#FF5C3A]/20 relative z-10 italic">
+                  Desbloquear Ahora
+                </Link>
+                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover/unlock:scale-150 transition-transform duration-1000">
+                  <ShieldCheck size={120} />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <motion.div variants={itemVariants} className="flex gap-3 p-1.5 bg-[var(--bg-card)] rounded-[2rem] border border-[var(--border-color)] w-fit shadow-2xl">
+            {( [
+              { id: 'design', label: 'Diseño y Estilo', icon: <Layout size={18} /> },
+              { id: 'domain', label: 'Dominio y Enlace', icon: <Globe size={18} /> },
+            ] as const).map(tab => (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)} 
+                className={`flex items-center gap-3 px-8 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all rounded-[1.5rem] relative overflow-hidden group/tab ${activeTab === tab.id ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/10 italic' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}
+              >
+                <span className="relative z-10 flex items-center gap-3">
+                   {tab.icon}
+                   {tab.label}
+                </span>
+                {activeTab === tab.id && (
+                   <motion.div layoutId="tabGlow" className="absolute inset-0 bg-white/10 blur-xl" />
+                )}
+              </button>
+            ))}
+          </motion.div>
+
+          <AnimatePresence mode="wait">
+            {activeTab === 'design' ? (
+              <motion.div key="design" initial={{ opacity: 0, x: -20, scale: 0.98 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, x: 20, scale: 0.98 }} transition={{ duration: 0.4 }} className="space-y-12">
+                
+                <section className="bg-[var(--bg-card)] rounded-[3.5rem] border border-[var(--border-color)] p-10 md:p-14 shadow-3xl relative overflow-hidden group/templates">
+                  <div className="flex items-center gap-4 border-b border-[var(--border-color)] pb-8 mb-10">
+                    <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center">
+                       <Monitor className="text-white" size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Plantillas</h3>
+                      <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60">Selecciona el estilo de tu marca</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
                     {[
-                      { 
-                        id: 'classic', 
-                        name: 'Clásico', 
-                        desc: 'Institucional',
-                        visual: (active: boolean) => (
-                          <div className={`w-full aspect-[16/10] rounded-xl border-2 mb-3 overflow-hidden flex flex-col transition-all ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-base)]'}`}>
-                            {/* Header */}
-                            <div className="h-2 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-2 justify-between">
-                              <div className="w-3 h-0.5 rounded-full bg-[var(--text-muted)] opacity-30" />
-                              <div className="w-4 h-1 rounded-full bg-[#FF5C3A]/20" />
-                            </div>
-                            {/* Hero Side-by-Side */}
-                            <div className="flex-1 flex p-2 gap-2 bg-[var(--bg-base)]">
-                              <div className="flex-1 flex flex-col justify-center gap-1">
-                                <div className="w-8 h-1 bg-[var(--text-muted)] opacity-20 rounded-full" />
-                                <div className="w-10 h-2 bg-[#FF5C3A]/30 rounded-sm" />
-                              </div>
-                              <div className="w-1/3 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)]" />
-                            </div>
-                            {/* Steps representation */}
-                            <div className="h-4 flex gap-1 px-2 items-center bg-[var(--bg-card)] border-t border-[var(--border-color)]">
-                              {[1,2,3].map(i => <div key={i} className="flex-1 h-1.5 rounded-full bg-[var(--text-muted)] opacity-10" />)}
-                            </div>
-                          </div>
-                        )
-                      },
-                      { 
-                        id: 'editorial', 
-                        name: 'Editorial', 
-                        desc: '2 Columnas',
-                        visual: (active: boolean) => (
-                          <div className={`w-full aspect-[16/10] rounded-xl border-2 mb-3 overflow-hidden flex flex-col transition-all ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-base)]'}`}>
-                            <div className="h-6 bg-gradient-to-br from-gray-800 to-black relative flex items-end p-1.5">
-                              <div className="w-8 h-1 bg-white/30 rounded-full" />
-                            </div>
-                            <div className="flex-1 flex p-1.5 gap-1.5">
-                              <div className="flex-1 space-y-1">
-                                <div className="grid grid-cols-2 gap-1">
-                                  {[1,2,3,4].map(i => <div key={i} className="aspect-square bg-[var(--bg-card)] border border-[var(--border-color)] rounded-sm" />)}
-                                </div>
-                              </div>
-                              <div className="w-1/3 rounded-lg border border-[#FF5C3A]/20 bg-[var(--bg-card)] p-1 flex flex-col gap-1">
-                                <div className="w-full h-2 bg-black rounded-sm" />
-                                <div className="flex-1 bg-[var(--bg-base)] rounded-sm border border-[var(--border-color)]" />
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      },
-                      { 
-                        id: 'moderno', 
-                        name: 'Moderno', 
-                        desc: 'Probador Single',
-                        visual: (active: boolean) => (
-                          <div className={`w-full aspect-[16/10] rounded-xl border-2 mb-3 overflow-hidden flex flex-col transition-all ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-base)]'}`}>
-                            <div className="h-10 bg-black relative flex flex-col items-center justify-center gap-1.5">
-                              <div className="w-10 h-1 bg-white/20 rounded-full" />
-                              <div className="w-8 h-2.5 bg-[#FF5C3A] rounded-sm" />
-                            </div>
-                            <div className="flex-1 p-2 grid grid-cols-4 gap-1">
-                                {[1,2,3,4].map(i => <div key={i} className="aspect-square bg-[var(--bg-card)] border border-[var(--border-color)] rounded-sm" />)}
-                            </div>
-                          </div>
-                        )
-                      },
+                      { id: 'classic', name: 'Original', accent: '#FF5C3A' },
+                      { id: 'editorial', name: 'Editorial', accent: '#6366f1' },
+                      { id: 'moderno', name: 'Obsidian', accent: '#10b981' }
                     ].map(t => (
                       <button
                         key={t.id}
                         onClick={() => setLandingTemplate(t.id as any)}
-                        className={`p-4 rounded-[2rem] border-2 text-center transition-all group ${landingTemplate === t.id ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-xl scale-[1.02]' : 'border-[var(--border-color)] bg-[var(--bg-card)] hover:border-[var(--text-muted)]'}`}
+                        className={`relative p-2 rounded-[2.5rem] border-2 transition-all group/card active:scale-[0.97] ${landingTemplate === t.id ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-2xl scale-[1.03]' : 'border-transparent bg-[var(--bg-input)] hover:border-[#FF5C3A]/30 hover:scale-[1.01]'}`}
                       >
-                        {t.visual(landingTemplate === t.id)}
-                        <p className={`text-xs font-black uppercase tracking-widest ${landingTemplate === t.id ? 'text-[#FF5C3A]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'}`}>{t.name}</p>
-                        <p className="text-[9px] font-bold text-gray-500 mt-1 uppercase tracking-tighter opacity-60">{t.desc}</p>
+                         <div className="aspect-[3/4] rounded-[2rem] mb-4 overflow-hidden border border-[var(--border-color)] bg-black shadow-inner">
+                            <TemplateWireframe type={t.id} active={landingTemplate === t.id} />
+                         </div>
+                         <div className="pb-4 px-2 text-center">
+                            <p className={`text-xs font-black uppercase tracking-[0.2em] italic ${landingTemplate === t.id ? 'text-[#FF5C3A]' : 'text-[var(--text-muted)] group-hover/card:text-[var(--text-primary)]'}`}>{t.name}</p>
+                            <div className={`h-1 w-8 mx-auto mt-2 rounded-full transition-all duration-500 ${landingTemplate === t.id ? 'bg-[#FF5C3A] w-12' : 'bg-transparent'}`} />
+                         </div>
                       </button>
                     ))}
                   </div>
@@ -371,76 +401,98 @@ export default function MiPaginaPage() {
                     schedule, setSchedule,
                   }}
                 />
-              </div>
+              </motion.div>
             ) : (
-              <div className="animate-in fade-in slide-in-from-left-4 duration-500">
+              <motion.div key="domain" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
                 <DomainTab {...{ customDomain, setCustomDomain, brand, saving, handleSave, FRONTEND_URL }} />
-              </div>
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
 
-          {success && (
-            <div className="p-5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold uppercase tracking-widest rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-              <Check className="w-5 h-5" /> ¡Configuración guardada correctamente!
-            </div>
-          )}
-          {error && (
-            <div className="p-5 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold uppercase tracking-widest rounded-2xl flex items-center gap-3 animate-in shake duration-500">
-              <AlertCircle className="w-5 h-5" /> {error}
-            </div>
-          )}
-
-          <div className="pt-6 border-t border-[var(--border-color)]">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-widest text-sm transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-50 shadow-xl shadow-[#FF5C3A]/20"
-            >
-              {saving ? <Spinner size="sm" /> : <Save className="w-5 h-5" />}
-              {saving ? 'Guardando...' : 'Guardar Cambios'}
-            </button>
-          </div>
-        </div>
-
-        {/* PREVIEW STICKY (Columna Derecha) */}
-        <div className="hidden lg:block lg:col-span-5 xl:col-span-5 sticky top-[80px] z-0">
-          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] mb-4 px-2 flex items-center gap-3">
-            <Globe className="w-4 h-4" /> Previsualización en Vivo
-          </div>
-          
-          <div className="bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] overflow-hidden shadow-2xl flex flex-col transition-all duration-500 h-[calc(100vh-160px)] max-h-[850px] w-full">
-            {/* Barra del preview - Browser Look */}
-            <div className="h-10 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-5 gap-4 shrink-0">
-              <div className="flex gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500/20" />
-                <div className="w-3 h-3 rounded-full bg-amber-500/20" />
-                <div className="w-3 h-3 rounded-full bg-emerald-500/20" />
-              </div>
-              <div className="flex-1 bg-[var(--bg-base)] h-6 rounded-lg border border-[var(--border-color)] flex items-center px-3 gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#FF5C3A]/20 flex items-center justify-center">
-                  <div className="w-1 h-1 rounded-full bg-[#FF5C3A]" />
+          {/* ══ BONUS MARKETING ══ */}
+          <motion.div variants={itemVariants} className="p-10 rounded-[3rem] bg-gradient-to-br from-[var(--bg-card)] to-[#FF5C3A]/5 border border-[#FF5C3A]/20 shadow-2xl relative overflow-hidden group/bonus">
+             <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-1000">
+                <Sparkles size={150} />
+             </div>
+             <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                <div className="space-y-3 text-center md:text-left">
+                   <h3 className="text-2xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">¿Buscas algo más potente?</h3>
+                   <p className="text-sm text-[var(--text-secondary)] font-medium max-w-md">
+                      Escala tu negocio a una <span className="text-[#FF5C3A] font-bold">Tienda Profesional</span> con WooCommerce y domina el mercado.
+                   </p>
                 </div>
-                <span className="text-[10px] text-[var(--text-muted)] font-mono truncate opacity-60 italic">lookitry.com/sitio/{brandSlug}</span>
-              </div>
-            </div>
+                <Link 
+                  href="/dashboard/tienda-profesional"
+                  className="px-8 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+                >
+                  Conocer Beneficios <ArrowRight size={14} className="inline ml-2" />
+                </Link>
+             </div>
+          </motion.div>
 
-            {/* AREA DE CONTENIDO REAL */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar bg-white overflow-x-hidden">
-              <div className="w-full h-full">
-                <LandingPreview {...previewProps} />
-              </div>
-            </div>
-
-            <div className="h-8 border-t border-[var(--border-color)] bg-[var(--bg-card)] flex items-center justify-center px-4 shrink-0">
-              <span className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest opacity-30">Renderizado de Componentes Reales</span>
-            </div>
-          </div>
-          <p className="text-[10px] text-center mt-6 font-bold uppercase tracking-widest text-[var(--text-muted)] max-w-sm mx-auto leading-relaxed opacity-60">
-            Los cambios se reflejan automáticamente.<br />Usa el botón &quot;Guardar&quot; para hacerlos públicos.
-          </p>
+          <footer className="pt-10 border-t-2 border-[var(--border-color)] border-dashed">
+            <button
+               onClick={handleSave} disabled={saving}
+               className="w-full flex items-center justify-center gap-4 py-6 bg-[#FF5C3A] text-white rounded-[2.5rem] text-sm font-black uppercase tracking-[0.3em] shadow-4xl shadow-[#FF5C3A]/20 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 italic group/save"
+            >
+               {saving ? <Spinner size="sm" /> : <Save size={20} className="group-hover:scale-125 transition-transform" />}
+               {saving ? 'Publicando...' : 'Publicar Cambios'}
+            </button>
+            <AnimatePresence>
+               {success && (
+                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl mt-6 flex items-center justify-center gap-3">
+                   <Check className="text-emerald-500" size={18} /> 
+                   <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest italic">Sincronización Exitosa</span>
+                 </motion.div>
+               )}
+            </AnimatePresence>
+          </footer>
         </div>
 
+        {/* PREVIEW STICKY */}
+        <div className="hidden lg:block lg:col-span-5 sticky top-12 z-40">
+           <div className="bg-[var(--bg-card)] rounded-[3.5rem] border border-[var(--border-color)] overflow-hidden shadow-4xl max-h-[calc(100vh-100px)] flex flex-col group/preview">
+              <div className="h-14 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-8 gap-4">
+                 <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500/20 group-hover/preview:bg-red-500/80 transition-colors" />
+                    <div className="w-3 h-3 rounded-full bg-amber-500/20 group-hover/preview:bg-amber-500/80 transition-colors" />
+                    <div className="w-3 h-3 rounded-full bg-emerald-500/20 group-hover/preview:bg-emerald-500/80 transition-colors" />
+                 </div>
+                 <div className="flex-1 bg-[var(--bg-input)] h-8 rounded-xl border border-[var(--border-color)] flex items-center px-4 overflow-hidden">
+                    <span className="text-[10px] text-[var(--text-muted)] truncate font-mono">{brandSlug}.lookitry.com</span>
+                 </div>
+              </div>
+              <div className="flex-1 bg-[var(--bg-base)] overflow-hidden p-8 flex items-center justify-center">
+                 {/* SIMULADOR NATIVO LOOKITRY - MÁS LIMPIO */}
+                 <div className="w-[340px] h-[680px] bg-black rounded-[3rem] border-[12px] border-black shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] relative overflow-hidden ring-1 ring-white/10">
+                    {/* Notch sutil */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-black rounded-b-[1.5rem] z-50 flex items-center justify-center">
+                       <div className="w-10 h-1 rounded-full bg-white/10" />
+                    </div>
+                    {/* Content Frame */}
+                    <div className="w-full h-full bg-white overflow-y-auto overflow-x-hidden custom-scrollbar rounded-[2rem]">
+                       <LandingPreview {...previewProps} brandSlug={brandSlug} />
+                    </div>
+                 </div>
+              </div>
+              <div className="p-6 bg-[var(--bg-card)] border-t border-[var(--border-color)] text-center">
+                 <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest opacity-40">Renderizado IA • Vista Previa Móvil</p>
+              </div>
+           </div>
+        </div>
       </div>
-    </div>
+    </motion.div>
+  );
+}
+
+function Loader2({ size, className }: { size?: number; className?: string }) {
+  return (
+    <svg 
+      width={size || 24} height={size || 24} viewBox="0 0 24 24" fill="none" 
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" 
+      className={className}
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
   );
 }
