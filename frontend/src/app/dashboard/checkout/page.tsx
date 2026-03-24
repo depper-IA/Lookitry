@@ -386,9 +386,9 @@ function CheckoutContent() {
     return () => window.removeEventListener('currencyChange', handler);
   }, []);
 
-  // Calcular prorrateo cuando hay cambio de plan
+  // Calcular prorrateo cuando hay cambio de plan (SOLO UPGRADES)
   useEffect(() => {
-    if (!isChange || loadingInfo) { setProrationPreview(null); return; }
+    if (!isUpgrade || loadingInfo) { setProrationPreview(null); return; }
     setLoadingProration(true);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
     const token  = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -404,7 +404,7 @@ function CheckoutContent() {
       .then(data => { if (data) setProrationPreview(data); })
       .catch(() => {})
       .finally(() => setLoadingProration(false));
-  }, [isChange, selectedMonths, loadingInfo, planInfo, selectedPlan, currentPlan]);
+  }, [isUpgrade, selectedMonths, loadingInfo, planInfo, selectedPlan, currentPlan]);
 
   const handleFreeUpgrade = async () => {
     if (!prorationPreview?.isFree) return;
