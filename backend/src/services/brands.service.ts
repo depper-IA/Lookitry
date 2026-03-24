@@ -19,6 +19,9 @@ export interface UpdateBrandDto {
   country?: string;
   nit?: string;
   website?: string;
+  state_province?: string;
+  postal_code?: string;
+  billing_email?: string;
   // Campos de mini-landing
   brand_description?: string;
   whatsapp_contact?: string;

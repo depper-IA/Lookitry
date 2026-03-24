@@ -64,11 +64,17 @@ export class GenerationsService {
     return data as Generation;
   }
 
-  async getGenerationsByBrand(brandId: string, limit = 50): Promise<Generation[]> {
-    const { data, error } = await supabaseAdmin
+  async getGenerationsByBrand(brandId: string, limit = 50, status?: string): Promise<Generation[]> {
+    let query = supabaseAdmin
       .from('generations')
       .select('*')
-      .eq('brand_id', brandId)
+      .eq('brand_id', brandId);
+
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    const { data, error } = await query
       .order('generated_at', { ascending: false })
       .limit(limit);
 

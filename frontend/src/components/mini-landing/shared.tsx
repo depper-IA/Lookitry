@@ -85,7 +85,17 @@ export function BrandLogo({ src, alt, className }: { src?: string | null; alt: s
 
 export function CoverImage({ src, alt, className, style }: { src?: string | null; alt: string; className?: string; style?: React.CSSProperties }) {
   if (!src) return null;
-  return <div className={className} style={{ ...style, backgroundImage: `url(${src})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />;
+  return (
+    <div 
+      className={`transition-opacity duration-1000 ${className}`} 
+      style={{ 
+        ...style, 
+        backgroundImage: `url("${src}")`, 
+        backgroundSize: 'cover', 
+        backgroundPosition: 'center' 
+      }} 
+    />
+  );
 }
 
 export function ProductImage({ src, alt, className }: { src: string; alt: string; className?: string }) {

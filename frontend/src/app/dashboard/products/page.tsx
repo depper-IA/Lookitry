@@ -1,45 +1,48 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ProductList, type ViewMode } from '@/components/dashboard/ProductList';
 import { ProductForm } from '@/components/dashboard/ProductForm';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { productsService } from '@/services/products.service';
 import type { Product, CreateProductDto } from '@/types';
+import { 
+  Package, 
+  Plus, 
+  LayoutGrid, 
+  Grid3X3, 
+  LayoutList, 
+  AlertCircle,
+  X,
+  ChevronLeft,
+  Sparkles,
+  Zap,
+  Tag,
+  Search,
+  ArrowRight
+} from 'lucide-react';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 
-// ── Iconos de vista ──────────────────────────────────────────────────────────
-function IconGrid() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-    </svg>
-  );
-}
+// ── Animaciones ──────────────────────────────────────────────────────────────
+const containerVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { 
+      duration: 0.7,
+      staggerChildren: 0.1
+    }
+  }
+};
 
-function IconThumbnails() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-    </svg>
-  );
-}
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
 
-function IconList() {
-  return (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-    </svg>
-  );
-}
-
-const VIEW_MODES: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
-  { id: 'grid',       label: 'Cuadrícula',  icon: <IconGrid /> },
-  { id: 'thumbnails', label: 'Miniaturas',  icon: <IconThumbnails /> },
-  { id: 'list',       label: 'Lista',       icon: <IconList /> },
-];
-
-// ── Página ───────────────────────────────────────────────────────────────────
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLimit, setProductsLimit] = useState(0);
@@ -48,19 +51,18 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; id?: string }>({ isOpen: false });
 
-  // Persistir preferencia de vista
   useEffect(() => {
     const saved = localStorage.getItem('products-view-mode') as ViewMode | null;
     if (saved && ['grid', 'thumbnails', 'list'].includes(saved)) setViewMode(saved);
+    loadProducts();
   }, []);
 
   const handleViewMode = (mode: ViewMode) => {
     setViewMode(mode);
     localStorage.setItem('products-view-mode', mode);
   };
-
-  useEffect(() => { loadProducts(); }, []);
 
   const loadProducts = async () => {
     try {
@@ -70,7 +72,7 @@ export default function ProductsPage() {
       setProductsLimit(data.limit);
       setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al cargar productos');
+      setError(err.response?.data?.message || 'Error al sincronizar catálogo');
     } finally {
       setIsLoading(false);
     }
@@ -84,7 +86,7 @@ export default function ProductsPage() {
       setError(null);
     } catch (err: any) {
       if (err.response?.status === 403) {
-        setError('Has alcanzado el límite de productos para tu plan');
+        setError('Límite Alcanzado: Evoluciona tu plan para añadir más productos.');
       } else {
         setError(err.response?.data?.message || 'Error al crear producto');
       }
@@ -107,11 +109,17 @@ export default function ProductsPage() {
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) return;
+    setConfirmDelete({ isOpen: true, id: productId });
+  };
+
+  const handleConfirmDelete = async () => {
+    const productId = confirmDelete.id;
+    if (!productId) return;
     try {
       await productsService.deleteProduct(productId);
       await loadProducts();
       setError(null);
+      setConfirmDelete({ isOpen: false });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al eliminar producto');
     }
@@ -119,7 +127,7 @@ export default function ProductsPage() {
 
   const handleNewProduct = () => {
     if (products.length >= productsLimit) {
-      setError(`Has alcanzado el límite de ${productsLimit} productos para tu plan`);
+      setError(`Límite de Productos: ${productsLimit} alcanzado. Amplía tu plan para añadir más.`);
       return;
     }
     setEditingProduct(null);
@@ -128,42 +136,49 @@ export default function ProductsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
         <Spinner size="lg" />
+        <Spinner size="lg" />
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] animate-pulse">Cargando Catálogo...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="font-syne font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
-            Productos
-          </h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-            {products.length} de {productsLimit} productos
-          </p>
+    <motion.div 
+      initial="hidden" animate="visible" variants={containerVariants}
+      className="max-w-[1400px] mx-auto space-y-16 pb-32 px-4 relative"
+    >
+      {/* 🔮 ORBES DE FONDO 🔮 */}
+      <div className="absolute top-0 -left-20 w-[400px] h-[400px] bg-[#FF5C3A]/5 blur-[150px] rounded-full -z-10" />
+      <div className="absolute top-1/2 -right-40 w-[500px] h-[500px] bg-indigo-500/5 blur-[180px] rounded-full -z-10" />
+
+      {/* ══ HEADER ══ */}
+      <motion.header variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-10 border-b border-[var(--border-color)] pb-12">
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-[2rem] bg-indigo-500/10 flex items-center justify-center border border-indigo-500/10 shadow-inner group transition-all">
+              <Package className="w-7 h-7 text-indigo-500" />
+            </div>
+            <h1 className="text-5xl font-[950] tracking-tighter text-[var(--text-primary)] uppercase leading-none font-jakarta">Catálogo de Productos</h1>
+            </div>
+            <p className="text-[11px] font-black tracking-[0.3em] text-[var(--text-muted)] uppercase opacity-60">
+            Productos Activos: <span className="text-[#FF5C3A] font-[950]">{products.length}</span> / <span className="text-indigo-400 font-[950] font-mono">{productsLimit}</span>
+            </p>
+
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Selector de vista — solo visible cuando no hay formulario abierto */}
+        <div className="flex flex-wrap items-center gap-6">
           {!showForm && (
-            <div
-              className="flex items-center rounded-lg p-0.5 gap-0.5"
-              style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}
-            >
-              {VIEW_MODES.map(({ id, label, icon }) => (
+            <div className="flex items-center bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-2 shadow-2xl">
+              {( [
+                { id: 'grid',       icon: <LayoutGrid size={16} /> },
+                { id: 'thumbnails', icon: <Grid3X3 size={16} /> },
+                { id: 'list',       icon: <LayoutList size={16} /> },
+              ] as const).map(({ id, icon }) => (
                 <button
-                  key={id}
-                  onClick={() => handleViewMode(id)}
-                  title={label}
-                  className="p-1.5 rounded-md transition-colors"
-                  style={{
-                    backgroundColor: viewMode === id ? '#FF5C3A' : 'transparent',
-                    color: viewMode === id ? '#fff' : 'var(--text-secondary)',
-                  }}
+                  key={id} onClick={() => handleViewMode(id)}
+                  className={`p-3 rounded-full transition-all duration-500 ${viewMode === id ? 'bg-[#FF5C3A] text-white shadow-2xl shadow-[#FF5C3A]/30 scale-[1.15]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
                 >
                   {icon}
                 </button>
@@ -171,40 +186,109 @@ export default function ProductsPage() {
             </div>
           )}
 
-          {!showForm && (
-            <Button onClick={handleNewProduct} size="md">
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              Nuevo Producto
-            </Button>
+          {!showForm ? (
+            <button 
+              onClick={handleNewProduct}
+              className="flex items-center gap-4 px-10 py-5 bg-[#FF5C3A] text-white rounded-[2rem] font-[950] uppercase tracking-widest text-[11px] shadow-[0_20px_40px_rgba(255,92,58,0.3)] hover:scale-[1.02] active:scale-95 transition-all group"
+            >
+              <Plus size={18} className="group-hover:rotate-90 transition-transform" /> Añadir Producto
+            </button>
+          ) : (
+             <button 
+              onClick={() => { setShowForm(false); setEditingProduct(null); }}
+              className="flex items-center gap-4 px-10 py-5 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-[2rem] font-[950] uppercase tracking-widest text-[11px] hover:bg-white/5 active:scale-95 transition-all shadow-xl"
+            >
+              <ChevronLeft size={18} /> Volver al Catálogo
+            </button>
           )}
         </div>
-      </div>
+      </motion.header>
 
-      {error && (
-        <div className="flex items-start gap-2 px-4 py-3 rounded-lg border border-[#ef4444]/30 bg-[#ef4444]/10 text-[#ef4444] text-sm">
-          <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-          </svg>
-          {error}
-        </div>
-      )}
+      {/* ══ ERROR ALERT ══ */}
+      <AnimatePresence>
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            className="p-8 bg-rose-500/5 border border-rose-500/20 rounded-[3rem] text-rose-500 text-[11px] font-black uppercase tracking-widest flex items-center justify-between shadow-4xl shadow-rose-500/5"
+          >
+            <div className="flex items-center gap-4">
+              <AlertCircle size={22} />
+              {error}
+            </div>
+            <button onClick={() => setError(null)} className="p-2 hover:bg-rose-500/10 rounded-full transition-all">
+              <X size={18} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {showForm ? (
-        <ProductForm
-          product={editingProduct}
-          onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
-          onCancel={() => { setShowForm(false); setEditingProduct(null); }}
-        />
-      ) : (
-        <ProductList
-          products={products}
-          viewMode={viewMode}
-          onEdit={(p) => { setEditingProduct(p); setShowForm(true); }}
-          onDelete={handleDeleteProduct}
-        />
-      )}
-    </div>
+      {/* ══ MAIN CONTENT ══ */}
+      <motion.div variants={itemVariants} className="relative z-0">
+        <AnimatePresence mode="wait">
+          {showForm ? (
+            <motion.div 
+              key="form" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}
+              className="bg-[var(--bg-card)] rounded-[4rem] border border-[var(--border-color)] p-12 shadow-4xl relative overflow-hidden group"
+            >
+               <div className="absolute top-0 right-0 p-12 opacity-5 translate-x-10 translate-y-[-10px] group-hover:scale-105 transition-transform duration-1000">
+                  <Sparkles size={200} strokeWidth={1} />
+               </div>
+               <div className="relative z-10 space-y-10">
+                  <header className="flex items-center gap-6 border-b border-[var(--border-color)] pb-10">
+                     <div className="w-14 h-14 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center border border-[#FF5C3A]/10">
+                        <Tag className="w-6 h-6 text-[#FF5C3A]" />
+                     </div>
+                     <div>
+                        <h2 className="text-2xl font-[950] text-[var(--text-primary)] uppercase tracking-tighter">{editingProduct ? 'Editar Producto' : 'Nuevo Producto'}</h2>
+                        <p className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest mt-2">{editingProduct ? `ID: ${editingProduct.id}` : 'Módulo de Creación'}</p>
+                     </div>
+                  </header>
+                  <ProductForm
+                    product={editingProduct}
+                    onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
+                    onCancel={() => { setShowForm(false); setEditingProduct(null); }}
+                  />
+               </div>
+            </motion.div>
+          ) : (
+            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-12">
+              <ProductList
+                products={products}
+                viewMode={viewMode}
+                onEdit={(p) => { setEditingProduct(p); setShowForm(true); }}
+                onDelete={handleDeleteProduct}
+              />
+              
+              {products.length === 0 && (
+                <div className="py-40 text-center space-y-10 border-2 border-dashed border-[var(--border-color)] rounded-[5rem] bg-[var(--bg-card)]/30">
+                  <div className="relative inline-block">
+                    <Package size={120} strokeWidth={0.5} className="text-[var(--text-muted)] opacity-20" />
+                    <Zap size={40} className="absolute -top-4 -right-4 text-[#FF5C3A] animate-pulse" />
+                  </div>
+                  <div className="space-y-4">
+                    <h3 className="text-3xl font-[950] text-[var(--text-muted)] uppercase tracking-tighter opacity-30">Tu catálogo está vacío</h3>
+                    <p className="text-[11px] font-black text-[var(--text-muted)] uppercase tracking-[0.3em] opacity-20">Empieza subiendo tu primera prenda para activar el probador</p>
+                  </div>
+                  <button 
+                    onClick={handleNewProduct}
+                    className="px-12 py-6 bg-white text-black border border-white/10 rounded-[2.5rem] font-[950] uppercase tracking-widest text-[11px] hover:scale-[1.05] transition-all"
+                  >
+                     Añadir Mi Primer Producto <ArrowRight size={14} className="inline ml-3" />
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      <ConfirmModal
+        isOpen={confirmDelete.isOpen}
+        onClose={() => setConfirmDelete({ isOpen: false })}
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Producto"
+        message="¿Estás seguro de que deseas eliminar este producto de tu catálogo? Esta acción retirará el producto del probador virtual permanentemente."
+      />
+    </motion.div>
   );
 }

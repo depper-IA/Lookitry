@@ -80,7 +80,7 @@ const BADGE_OPTIONS = [
 ];
 
 export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
-  const [formData, setFormData] = useState<CreateProductDto>({ name: '', description: '', imageUrl: '', category: 'tshirt', price: undefined, badge: undefined });
+  const [formData, setFormData] = useState<CreateProductDto>({ name: '', description: '', imageUrl: '', category: 'tshirt', price: undefined, badge: undefined, externalId: undefined });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -102,7 +102,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       autoTriggeredRef.current = false;
       return;
     }
-    if (autoTriggeredRef.current || aiGenerated || describingWithAI) return;
+    if (autoTriggeredRef.current || aiGenerated || describingWithAI || !!product) return;
     autoTriggeredRef.current = true;
     const category = formData.category === 'other' ? customCategory : formData.category;
     triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), category);
@@ -177,7 +177,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   useEffect(() => {
     if (product) {
       const isCustom = !STANDARD_CATEGORIES.includes(product.category);
-      setFormData({ name: product.name, description: product.description || '', imageUrl: product.imageUrl, category: isCustom ? 'other' : product.category, price: product.price ?? undefined, badge: product.badge ?? undefined });
+      setFormData({ name: product.name, description: product.description || '', imageUrl: product.imageUrl, category: isCustom ? 'other' : product.category, price: product.price ?? undefined, badge: product.badge ?? undefined, externalId: product.externalId ?? undefined });
       setImagePreview(product.imageUrl);
       if (isCustom) { setShowCustomCategory(true); setCustomCategory(product.category); }
     }
@@ -207,7 +207,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       // Disparar auto-descripción directamente con valores actuales
       const currentName = formData.name.trim();
       const currentCategory = formData.category === 'other' ? customCategory : formData.category;
-      if (currentName && N8N_DESCRIPTOR_URL) {
+      // Solo disparar descripción automática SI NO estamos editando
+      if (currentName && N8N_DESCRIPTOR_URL && !product) {
         triggerDescribeWithAI(url, currentName, currentCategory);
       }
     } catch (err: any) {
@@ -284,6 +285,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         category: formData.category === 'other' ? customCategory.trim() : formData.category,
         price: formData.price ? Number(formData.price) : undefined,
         badge: formData.badge || undefined,
+        externalId: formData.externalId || undefined,
       });
     } catch { /* error manejado por el padre */ } finally { setIsSubmitting(false); }
   };
@@ -318,6 +320,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       <CardBody>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input label="Nombre" name="name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Ej: Camiseta Logo" required />
+          <Input label="ID Externo (WooCommerce/Shopify)" name="externalId" value={formData.externalId || ''} onChange={handleChange} error={errors.externalId} placeholder="Ej: 12345 (opcional)" />
 
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
@@ -327,9 +330,9 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 {/* TOOLTIP */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1a1a1a] border border-[#333] text-white text-xs rounded-xl p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-50 text-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-                  <p className="mb-2 leading-relaxed">Para asegurar una generación de calidad y exitosa asegurate de subir tus prendas y/o las de tu cliente a estas medidas <a href="#" target="_blank" className="text-[#FF5C3A] font-semibold hover:underline">ver medidas</a>.</p>
-                  <p className="text-[10px] text-[#888] pb-0.5 border-t border-[#333] pt-2">Recuerda decirle de esto a tus cliente con una nota o un aviso en tu sitio.</p>
+                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1a1a1a] border border-[#333] text-white text-xs rounded-xl p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 text-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                  <p className="mb-2 leading-relaxed">Para asegurar una generación de calidad y exitosa asegúrate de subir tus prendas y/o las de tu cliente a estas medidas <a href="#" target="_blank" className="text-[#FF5C3A] font-semibold hover:underline">ver medidas</a>.</p>
+                  <p className="text-[10px] text-[#888] pb-0.5 border-t border-[#333] pt-2">Recuerda decirle de esto a tus clientes con una nota o un aviso en tu sitio.</p>
                   <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#333]"></div>
                 </div>
               </div>

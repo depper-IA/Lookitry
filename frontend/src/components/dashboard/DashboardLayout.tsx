@@ -17,11 +17,12 @@ interface DashboardLayoutProps {
 }
 
 const navigation = [
+  { name: 'Inicio',         href: '/dashboard',              icon: HomeIcon },
   { name: 'Productos',      href: '/dashboard/products',     icon: ProductsIcon },
   { name: 'Generaciones',   href: '/dashboard/generations',  icon: GenerationsIcon },
   { name: 'Mi página',      href: '/dashboard/mi-pagina',    icon: LandingIcon },
-  { name: 'Tienda Profesional', href: '/dashboard/tienda-profesional', icon: AgencyIcon },
   { name: 'Widget Probador',  href: '/dashboard/settings',     icon: SettingsIcon },
+  { name: 'Integraciones',  href: '/dashboard/integrations',     icon: EmbedIcon },
   { name: 'Uso',            href: '/dashboard/usage',        icon: UsageIcon },
   { name: 'Suscripción',    href: '/dashboard/subscription', icon: SubscriptionIcon },
   { name: 'Analytics',      href: '/dashboard/analytics',    icon: AnalyticsIcon },
@@ -71,83 +72,75 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-[#0a0a0a]" style={{ borderRight: '1px solid #1a1a1a' }}>
+    <div className="flex flex-col h-full bg-[var(--bg-sidebar)] border-r border-[var(--border-color)]">
       {/* Logo */}
-      <div className="flex items-center justify-between h-[60px] px-5 border-b border-[#1a1a1a] flex-shrink-0">
-        <Link href="/dashboard/products" className="flex items-center gap-2.5">
-          <Image src="/logo.svg" alt="Lookitry" width={26} height={26} className="object-contain" priority />
-          <span className="font-jakarta font-extrabold text-[15px] leading-none text-white tracking-tight">
-            Look<span style={{ color: '#FF5C3A' }}>itry</span>
+      <div className="flex items-center justify-between h-[64px] px-6 border-b border-[var(--border-color)] flex-shrink-0 bg-[var(--bg-sidebar)]">
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="relative w-8 h-8 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 group-hover:border-[#FF5C3A]/50 transition-all duration-500 shadow-lg">
+            <Image src="/logo.svg" alt="Lookitry" width={22} height={22} className="object-contain group-hover:rotate-12 transition-transform duration-500" priority />
+          </div>
+          <span className="font-jakarta font-[950] text-sm leading-none text-white tracking-tighter uppercase italic">
+            Look<span className="text-[#FF5C3A]">itry</span>
           </span>
         </Link>
         {/* Botón cerrar en móvil */}
         <button
-          className="lg:hidden p-1.5 rounded-lg text-[#555] hover:text-white transition-colors"
+          className="lg:hidden p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all"
           onClick={() => setSidebarOpen(false)}
           aria-label="Cerrar menú"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto no-scrollbar">
         {navigation.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          const isActive = pathname === item.href;
           return (
             <Link
               key={item.name}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 cursor-pointer"
-              style={{
-                backgroundColor: isActive ? '#FF5C3A' : 'transparent',
-                color: isActive ? '#ffffff' : '#666',
-              }}
-              onMouseEnter={e => {
-                if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.backgroundColor = '#161616';
-                  (e.currentTarget as HTMLElement).style.color = '#ccc';
-                }
-              }}
-              onMouseLeave={e => {
-                if (!isActive) {
-                  (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-                  (e.currentTarget as HTMLElement).style.color = '#666';
-                }
-              }}
+              className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 group
+                ${isActive 
+                  ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' 
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
             >
-              <item.icon className="w-[15px] h-[15px] flex-shrink-0" />
+              <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-600 group-hover:text-[#FF5C3A]'}`} />
               <span className="leading-none">{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Brand info + logout */}
-      <div className="px-3 py-3 border-t border-[#1a1a1a] flex-shrink-0">
-        <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg bg-[#111]">
-          <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
-            style={{ backgroundColor: '#FF5C3A' }}>
+      {/* Brand info + logout section */}
+      <div className="p-4 border-t border-[var(--border-color)] flex-shrink-0">
+        <div className="flex items-center gap-3 p-3 rounded-[2rem] bg-white/5 border border-white/5 shadow-inner group/profile">
+          <div className="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center text-[12px] font-black text-white flex-shrink-0 bg-[#FF5C3A] shadow-lg group-hover/profile:scale-105 transition-transform duration-500">
             {(brand as any)?.logo
               ? <img src={(brand as any).logo} alt={brand?.name} className="w-full h-full object-cover" />
               : brand?.name?.charAt(0)?.toUpperCase() ?? 'M'
             }
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-semibold text-white truncate leading-tight">{brand?.name}</p>
-            <p className="text-[10px] truncate leading-tight mt-0.5 text-[#444]">
-              Plan {brand?.plan}
-            </p>
+            <p className="text-[12px] font-black text-white truncate leading-tight uppercase tracking-tight italic">{brand?.name}</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-[10px] truncate leading-none text-gray-500 font-bold uppercase tracking-tighter">
+                Plan {brand?.plan}
+              </p>
+            </div>
           </div>
           <button
             onClick={logout}
-            className="p-1.5 rounded-md transition-colors flex-shrink-0 text-[#444] hover:text-[#FF5C3A] cursor-pointer"
+            className="w-8 h-8 rounded-xl transition-all flex items-center justify-center text-gray-600 hover:text-white hover:bg-white/10 group/logout"
             title="Cerrar sesión"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-4 h-4 transition-transform group-hover/logout:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
@@ -243,10 +236,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </button>
 
           <h2
-            className="hidden lg:block font-syne font-semibold text-base flex-shrink-0"
+            className="hidden lg:block font-jakarta font-bold text-base flex-shrink-0 tracking-tight"
             style={{ color: 'var(--text-primary)' }}
           >
-            Dashboard
+            {navigation.find(n => n.href === pathname)?.name || 'Dashboard'}
           </h2>
 
           <div className="flex items-center gap-1.5 sm:gap-2 ml-auto min-w-0">
@@ -269,6 +262,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 }
 
 /* ── Iconos ─────────────────────────────────────────────────────────────────── */
+function HomeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    </svg>
+  );
+}
 function ProductsIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>

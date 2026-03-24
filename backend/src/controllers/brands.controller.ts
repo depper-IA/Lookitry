@@ -1,4 +1,4 @@
-﻿import { Response } from 'express';
+import { Response } from 'express';
 import { BrandsService, UpdateBrandDto } from '../services/brands.service';
 import { AuthRequest } from '../middleware/auth';
 import { notificationPreferencesService } from '../services/notificationPreferences.service';
@@ -90,6 +90,7 @@ export class BrandsController {
       // Campos de contacto / perfil
       const contactFields: (keyof UpdateBrandDto)[] = [
         'phone', 'contact_name', 'address', 'city', 'country', 'nit', 'website',
+        'state_province', 'postal_code', 'billing_email',
       ];
       for (const field of contactFields) {
         if (req.body[field] !== undefined) {

@@ -12,7 +12,7 @@ export class ImageController {
    * Renderiza una imagen con marca de agua dinámica.
    */
   renderImage = asyncHandler(async (req: Request, res: Response) => {
-    const { src, plan } = req.query as { src: string; plan: string };
+    const { src, plan, download } = req.query as { src: string; plan: string; download?: string };
 
     if (!src || !plan) {
       throw new ValidationError('Faltan parámetros: src y plan son requeridos');
@@ -37,6 +37,11 @@ export class ImageController {
         res.setHeader('X-Cache', 'HIT');
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+
+        if (download === 'true') {
+          res.setHeader('Content-Disposition', 'attachment; filename="lookitry-result.jpg"');
+        }
+
         return res.send(cached);
       }
     } catch (e) {
@@ -59,6 +64,10 @@ export class ImageController {
       res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
       res.setHeader('Access-Control-Allow-Credentials', 'true');
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+
+      if (download === 'true') {
+        res.setHeader('Content-Disposition', 'attachment; filename="lookitry-result.jpg"');
+      }
       
       return res.send(processedBuffer);
     } catch (error: any) {
