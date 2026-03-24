@@ -84,6 +84,14 @@ function formatDate(d?: string | null): string {
   });
 }
 
+function formatDateTime(d?: string | null): string {
+  if (!d) return '—';
+  return new Date(d).toLocaleString('es-CO', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: true
+  });
+}
+
 // ── Página principal ──────────────────────────────────────────────────────────
 
 export default function SubscriptionPage() {
@@ -91,6 +99,12 @@ export default function SubscriptionPage() {
   const [info, setInfo] = useState<SubscriptionInfo | null>(null);
   const [payments, setPayments] = useState<SubscriptionPayment[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Estados para Filtrado y Paginación del Historial
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
   const [dynamicPrices, setDynamicPrices] = useState<{ BASIC: number; PRO: number }>({
     BASIC: PLAN_INFO_STATIC.BASIC.price,
     PRO: PLAN_INFO_STATIC.PRO.price,
@@ -174,6 +188,29 @@ export default function SubscriptionPage() {
   const inTrial     = info.isInTrial ?? false;
   const trialDaysLeft = info.trialDaysRemaining ?? 0;
 
+  // Filtrado de pagos
+  const filteredPayments = payments.filter(p => {
+    if (!p.paymentDate) return true;
+    const pDate = new Date(p.paymentDate);
+    if (startDate) {
+      const start = new Date(startDate);
+      if (pDate < start) return false;
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      if (pDate > end) return false;
+    }
+    return true;
+  });
+
+  // Paginación
+  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
+  const paginatedPayments = filteredPayments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const progressPercent = info.daysRemaining != null
     ? Math.min(100, Math.max(0, Math.round(((30 - info.daysRemaining) / 30) * 100)))
     : 100;
@@ -225,13 +262,20 @@ export default function SubscriptionPage() {
                 {inTrial ? 'Trial activo' : statusInfo.label}
               </span>
             </div>
-            <p className="text-white/80 text-lg font-black tracking-tight">
-              {inTrial ? (
-                <span className="text-sm font-bold uppercase tracking-widest opacity-60">Período de prueba gratuito</span>
-              ) : (
-                <>{formatCurrency(planInfo.price)}<span className="text-sm font-bold uppercase tracking-widest opacity-50"> /mes</span></>
+            <div className="space-y-1">
+              <p className="text-white/80 text-lg font-black tracking-tight">
+                {inTrial ? (
+                  <span className="text-sm font-bold uppercase tracking-widest opacity-60">Período de prueba gratuito</span>
+                ) : (
+                  <>{formatCurrency(planInfo.price)}<span className="text-sm font-bold uppercase tracking-widest opacity-50"> /mes</span></>
+                )}
+              </p>
+              {!inTrial && info.endDate && (
+                <p className="text-[10px] font-black uppercase tracking-[0.1em] text-white/40">
+                  Próxima facturación: <span className="text-white/80 ml-1">{formatDate(info.endDate)}</span>
+                </p>
               )}
-            </p>
+            </div>
             <div className="mt-8 max-w-sm">
               <div className="flex justify-between items-center mb-2 gap-2">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 flex-shrink-0">Renovación</span>
@@ -417,48 +461,95 @@ export default function SubscriptionPage() {
 
         {/* Historial de Transacciones */}
         <div className="bg-[var(--bg-card)] p-8 rounded-[2rem] border border-[var(--border-color)] shadow-xl shadow-black/5">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-[#FF5C3A]" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+                <CreditCard className="w-5 h-5 text-[#FF5C3A]" />
+              </div>
+              <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Historial</h3>
             </div>
-            <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Historial</h3>
+            
+            {/* Filtros de Fecha */}
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => { setStartDate(e.target.value); setCurrentPage(1); }}
+                className="text-[10px] font-bold uppercase bg-[var(--bg-base)] border border-[var(--border-color)] rounded-lg px-2 py-1.5 text-[var(--text-primary)] outline-none focus:border-[#FF5C3A]/50 transition-colors"
+              />
+              <span className="text-[var(--text-muted)] text-[10px] font-black">—</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => { setEndDate(e.target.value); setCurrentPage(1); }}
+                className="text-[10px] font-bold uppercase bg-[var(--bg-base)] border border-[var(--border-color)] rounded-lg px-2 py-1.5 text-[var(--text-primary)] outline-none focus:border-[#FF5C3A]/50 transition-colors"
+              />
+            </div>
           </div>
-          {(!Array.isArray(payments) || payments.length === 0) ? (
+
+          {(!Array.isArray(paginatedPayments) || paginatedPayments.length === 0) ? (
             <div className="text-center py-12 bg-[var(--bg-base)] rounded-2xl border border-dashed border-[var(--border-color)]">
               <CreditCard className="w-8 h-8 mx-auto mb-3 opacity-20" style={{ color: 'var(--text-muted)' }} />
               <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Sin transacciones aún</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-[var(--border-color)]">
-                    <th className="pb-3 text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Fecha</th>
-                    <th className="pb-3 text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Monto</th>
-                    <th className="pb-3 text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest text-right">Estado</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--border-color)]">
-                  {payments.map(p => {
-                    const st = PAYMENT_STATUS[p.status] ?? { label: p.status, color: 'text-[var(--text-muted)]' };
-                    return (
-                      <tr key={p.id} className="hover:bg-[var(--bg-base)] transition-colors">
-                        <td className="py-4 pr-4">
-                          <p className="text-xs font-black tracking-tight text-[var(--text-primary)]">{formatDate(p.paymentDate)}</p>
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mt-0.5">{p.paymentMethod ?? 'Manual'}</p>
-                        </td>
-                        <td className="py-4 pr-4 text-sm font-black text-[#FF5C3A] tracking-tighter">{formatCurrency(p.amount)}</td>
-                        <td className="py-4 text-right">
-                          <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${st.color}`}
-                            style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
-                            {st.label}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="space-y-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-[var(--border-color)]">
+                      <th className="pb-3 text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Fecha</th>
+                      <th className="pb-3 text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Monto</th>
+                      <th className="pb-3 text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest text-right">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border-color)]">
+                    {paginatedPayments.map(p => {
+                      const st = PAYMENT_STATUS[p.status] ?? { label: p.status, color: 'text-[var(--text-muted)]' };
+                      return (
+                        <tr key={p.id} className="hover:bg-[var(--bg-base)] transition-colors">
+                          <td className="py-4 pr-4">
+                            <p className="text-xs font-black tracking-tight text-[var(--text-primary)]">{formatDateTime(p.paymentDate)}</p>
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mt-0.5">{p.paymentMethod ?? 'Manual'}</p>
+                          </td>
+                          <td className="py-4 pr-4 text-sm font-black text-[#FF5C3A] tracking-tighter">{formatCurrency(p.amount)}</td>
+                          <td className="py-4 text-right">
+                            <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${st.color}`}
+                              style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
+                              {st.label}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-4 border-t border-[var(--border-color)]">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">
+                    Página {currentPage} de {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-[var(--bg-base)] transition-all cursor-pointer"
+                    >
+                      Anterior
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-[var(--bg-base)] transition-all cursor-pointer"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
