@@ -70,13 +70,13 @@ export default function AdminPaymentsPage() {
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 10;
 
   // Ordenamiento
-  const [sortField, setSortField] = useState<'name' | 'amount' | 'date' | 'status'>('date');
+  const [sortField, setSortField] = useState<'name' | 'amount' | 'date' | 'status' | 'method'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  const toggleSort = (field: 'name' | 'amount' | 'date' | 'status') => {
+  const toggleSort = (field: 'name' | 'amount' | 'date' | 'status' | 'method') => {
     if (sortField === field) {
       setSortOrder(o => o === 'asc' ? 'desc' : 'asc');
     } else {
@@ -124,6 +124,8 @@ export default function AdminPaymentsPage() {
       valB = new Date(b.payment_date || b.created_at).getTime();
     } else if (sortField === 'status') {
       valA = a.status; valB = b.status;
+    } else if (sortField === 'method') {
+      valA = (a.payment_method || '').toLowerCase(); valB = (b.payment_method || '').toLowerCase();
     }
     if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
     if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
@@ -247,7 +249,7 @@ export default function AdminPaymentsPage() {
                       { label: 'Marca',   field: 'name'   as const },
                       { label: 'Plan',    field: null },
                       { label: 'Monto',   field: 'amount' as const },
-                      { label: 'Método',  field: null },
+                      { label: 'Método',  field: 'method' as const },
                       { label: 'Fecha',   field: 'date'   as const },
                       { label: 'Estado',  field: 'status' as const },
                       { label: 'Notas',   field: null },

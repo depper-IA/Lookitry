@@ -252,37 +252,37 @@ Stack: Next.js 14, TypeScript, Tailwind CSS. Sin tocar lógica, APIs ni funciona
   - [x] 33.3 Cards de promociones/cupones: `rounded-xl` → `rounded-[2rem]`, header con icono naranja + título `font-jakarta font-bold uppercase italic`
   - [x] 33.4 Botón "Nueva Promoción" / "Nuevo Cupón": `rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-[#FF5C3A]/20`
 
-- [ ] 34. Admin Notifications — upgrade visual
-  - [ ] 34.1 Corrección de fuente: buscar `font-syne` → reemplazar por `font-jakarta`
-  - [ ] 34.2 H1: cambiar a `font-jakarta font-black uppercase italic tracking-tight text-2xl`
-  - [ ] 34.3 Cards de notificaciones: `rounded-xl` → `rounded-[2rem]`
-  - [ ] 34.4 Panel de preferencias: `rounded-xl` → `rounded-[2rem]`, header con icono + título `font-jakarta font-bold uppercase italic`
+- [x] 34. Admin Notifications — upgrade visual
+  - [x] 34.1 Corrección de fuente: buscar `font-syne` → reemplazar por `font-jakarta`
+  - [x] 34.2 H1: cambiar a `font-jakarta font-black uppercase italic tracking-tight text-2xl`
+  - [x] 34.3 Cards de notificaciones: `rounded-xl` → `rounded-[2rem]`
+  - [x] 34.4 Panel de preferencias: `rounded-xl` → `rounded-[2rem]`, header con icono + título `font-jakarta font-bold uppercase italic`
 
-- [ ] 35. Admin Configuración (Trial) — upgrade visual
-  - [ ] 35.1 Corrección de fuente: buscar `font-syne` → reemplazar por `font-jakarta`
-  - [ ] 35.2 H1: cambiar a `font-jakarta font-black uppercase italic tracking-tight text-2xl`
-  - [ ] 35.3 Cards de configuración: `rounded-xl` → `rounded-[2rem]`, headers con icono naranja + título `font-jakarta font-bold uppercase italic`
-  - [ ] 35.4 Botones "Guardar": `rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-[#FF5C3A]/20`
+- [x] 35. Admin Configuración (Trial) — upgrade visual
+  - [x] 35.1 Corrección de fuente: buscar `font-syne` → reemplazar por `font-jakarta`
+  - [x] 35.2 H1: cambiar a `font-jakarta font-black uppercase italic tracking-tight text-2xl`
+  - [x] 35.3 Cards de configuración: `rounded-xl` → `rounded-[2rem]`, headers con icono naranja + título `font-jakarta font-bold uppercase italic`
+  - [x] 35.4 Botones "Guardar": `rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-[#FF5C3A]/20`
 
-- [ ] 36. Admin Admins — upgrade visual
-  - [ ] 36.1 Corrección de fuente: buscar `font-syne` → reemplazar por `font-jakarta`
-  - [ ] 36.2 H1: cambiar a `font-jakarta font-black uppercase italic tracking-tight text-2xl`
-  - [ ] 36.3 Tabla wrapper: `rounded-xl` → `rounded-[2rem]`
-  - [ ] 36.4 Modal "Nuevo Admin": `rounded-[2rem]`, header con `font-jakarta font-black uppercase italic`
+- [x] 36. Admin Admins — upgrade visual
+  - [x] 36.1 Corrección de fuente: buscar `font-syne` → reemplazar por `font-jakarta`
+  - [x] 36.2 H1: cambiar a `font-jakarta font-black uppercase italic tracking-tight text-2xl`
+  - [x] 36.3 Tabla wrapper: `rounded-xl` → `rounded-[2rem]`
+  - [x] 36.4 Modal "Nuevo Admin": `rounded-[2rem]`, header con `font-jakarta font-black uppercase italic`
 
-- [ ] 37. Admin Profile — upgrade visual
-  - [ ] 37.1 Corrección de fuente: buscar `font-syne` → reemplazar por `font-jakarta`
-  - [ ] 37.2 H1: cambiar a `font-jakarta font-black uppercase italic tracking-tight text-2xl`
-  - [ ] 37.3 Card de perfil: `rounded-xl` → `rounded-[2rem]`, secciones internas con header icono + título `font-jakarta font-bold uppercase italic`
-  - [ ] 37.4 Botón "Guardar cambios": full-width, `rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-[#FF5C3A]/20`
+- [x] 37. Admin Profile — upgrade visual
+  - [x] 37.1 Corrección de fuente: buscar `font-syne` → reemplazar por `font-jakarta`
+  - [x] 37.2 H1: cambiar a `font-jakarta font-black uppercase italic tracking-tight text-2xl`
+  - [x] 37.3 Card de perfil: `rounded-xl` → `rounded-[2rem]`, secciones internas con header icono + título `font-jakarta font-bold uppercase italic`
+  - [x] 37.4 Botón "Guardar cambios": full-width, `rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-[#FF5C3A]/20`
 
-- [ ] 38. Admin Health — upgrade visual
-  - [ ] 38.1 Corrección de fuente: buscar `font-syne` → reemplazar por `font-jakarta`
-  - [ ] 38.2 H1: cambiar a `font-jakarta font-black uppercase italic tracking-tight text-2xl`
-  - [ ] 38.3 Cards de estado de servicios: `rounded-xl` → `rounded-[2rem]`, header con icono de color según estado + título `font-jakarta font-bold uppercase italic`
+- [x] 38. Admin Health — upgrade visual
+  - [x] 38.1 Corrección de fuente: buscar `font-syne` → reemplazar por `font-jakarta`
+  - [x] 38.2 H1: cambiar a `font-jakarta font-black uppercase italic tracking-tight text-2xl`
+  - [x] 38.3 Cards de estado de servicios: `rounded-xl` → `rounded-[2rem]`, header con icono de color según estado + título `font-jakarta font-bold uppercase italic`
 
-- [ ] 39. Checkpoint final — Admin Premium Style
-  - [ ] 39.1 Búsqueda global de `font-syne` en `frontend/src/app/admin/` — confirmar cero ocurrencias
-  - [ ] 39.2 Revisión visual rápida en todas las páginas admin — confirmar consistencia de bordes, tipografía y colores
-  - [ ] 39.3 Ejecutar `npx tsc --noEmit` en `frontend/` — cero errores TypeScript
-  - [ ] 39.4 Actualizar `CHANGELOG_GEMINI.md` con el upgrade visual completo
+- [x] 39. Checkpoint final — Admin Premium Style
+  - [x] 39.1 Búsqueda global de `font-syne` en `frontend/src/app/admin/` — confirmar cero ocurrencias
+  - [x] 39.2 Revisión visual rápida en todas las páginas admin — confirmar consistencia de bordes, tipografía y colores
+  - [x] 39.3 Ejecutar `npx tsc --noEmit` en `frontend/` — cero errores TypeScript
+  - [x] 39.4 Actualizar `CHANGELOG_GEMINI.md` con el upgrade visual completo

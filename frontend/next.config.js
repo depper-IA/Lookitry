@@ -14,24 +14,36 @@ const nextConfig = {
   },
   async headers() {
     return [
-      // Rutas del probador: permitir embeber en iframe (sin X-Frame-Options)
+      // Rutas del probador (Embed y Marca): Permitir ser embebidas en cualquier dominio
       {
-        source: '/marca/:slug*',
+        source: '/(embed|marca)/:slug*',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { 
+            key: 'Content-Security-Policy', 
+            value: "frame-ancestors *; camera 'self' *; clipboard-write 'self' *;" 
+          },
+          // Eliminamos X-Frame-Options para estas rutas específicas para permitir el embed
         ],
       },
-      // Resto de rutas: bloquear iframe
+      // Script del Widget: Permitir acceso CORS desde cualquier origen
       {
-        source: '/((?!marca/).*)',
+        source: '/widget.js',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=86400' },
+        ],
+      },
+      // Resto de rutas: Seguridad estándar (bloquear iframe)
+      {
+        source: '/((?!embed/|marca/|widget.js).*)',
         headers: [
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
         ],
       },
     ];
