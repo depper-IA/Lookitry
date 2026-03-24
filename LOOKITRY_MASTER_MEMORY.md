@@ -6,6 +6,7 @@
 1. **Lectura Obligatoria:** Al iniciar una nueva sesión o tarea, la IA debe leer este archivo (`LOOKITRY_MASTER_MEMORY.md`) para entender el estado actual, el stack y las reglas de negocio.
 2. **Registro de Cambios (Changelog):** Sin excepción, TODOS los cambios realizados por cualquier editor (IA o humano) deben quedar reflejados en `CHANGELOG_GEMINI.md`. Cada entrada debe ser detallada y referenciar los archivos modificados.
 3. **No Placeholders:** Prohibido dejar comentarios `// TODO` o placeholders. El código debe ser funcional y premium desde la primera versión.
+4. **Idioma de Comunicación:** TODO lo que aparezca en el chat y la documentación generada por la IA debe ser ESTRICTAMENTE en ESPAÑOL. Esta es una regla obligatoria para la IA.
 
 ## 1. SKILLS & PROCEDIMIENTOS OBLIGATORIOS
 - **Diseño UI/UX (Pro Max)**: Aplicar SIEMPRE (`.agent/skills/ui-ux-pro-max/SKILL.md`) a cualquier componente frontend. Lookitry debe sentirse premium.

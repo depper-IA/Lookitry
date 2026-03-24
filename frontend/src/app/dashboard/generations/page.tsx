@@ -87,7 +87,7 @@ function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: str
         className="absolute bottom-10 px-10 py-4 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] flex items-center gap-3 shadow-2xl hover:brightness-110 active:scale-95 transition-all"
       >
         {downloading ? <Spinner size="sm" /> : <Download size={18} />}
-        {downloading ? 'Codificando...' : 'Descargar DNA'}
+        {downloading ? 'Codificando...' : 'Descargar Imagen'}
       </button>
     </motion.div>
   );
@@ -111,7 +111,7 @@ function GenerationCard({
     return (
       <motion.div
         variants={itemVariants}
-        className={`flex items-center gap-4 p-4 rounded-3xl border transition-all cursor-pointer group ${selected ? 'bg-[#FF5C3A]/10 border-[#FF5C3A] shadow-[0_0_20px_rgba(255,92,58,0.1)]' : 'bg-[var(--bg-card)] border-[var(--border-color)] hover:border-[var(--text-muted)]/50'}`}
+        className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer group ${selected ? 'bg-[#FF5C3A]/10 border-[#FF5C3A] shadow-[0_0_20px_rgba(255,92,58,0.1)]' : 'bg-[var(--bg-card)] border-[var(--border-color)] hover:border-[var(--text-muted)]/50'}`}
         onClick={selecting ? onToggle : (isFailed || isPending ? undefined : onOpen)}
       >
         <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 border border-[var(--border-color)] bg-[var(--bg-hover)] flex items-center justify-center relative shadow-inner">
@@ -167,17 +167,17 @@ function GenerationCard({
   return (
     <motion.div
       variants={itemVariants}
-      className={`relative group rounded-[2.8rem] overflow-hidden border transition-all cursor-pointer ${selected ? 'border-[#FF5C3A] ring-[6px] ring-[#FF5C3A]/10 shadow-[0_20px_50px_rgba(255,92,58,0.2)]' : 'border-[var(--border-color)] hover:border-[#FF5C3A]/40'} bg-[var(--bg-card)] shadow-xl hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]`}
+      className={`relative group rounded-2xl overflow-hidden border transition-all cursor-pointer ${selected ? 'border-[#FF5C3A] ring-[6px] ring-[#FF5C3A]/10 shadow-[0_20px_50px_rgba(255,92,58,0.2)]' : 'border-[var(--border-color)] hover:border-[#FF5C3A]/40'} bg-[var(--bg-card)] shadow-xl hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)]`}
       onClick={selecting ? onToggle : (isFailed || isPending ? undefined : onOpen)}
     >
-      <div className={`relative ${viewMode === 'thumbnails' ? 'aspect-square' : 'aspect-[3/4.5]'} overflow-hidden bg-[var(--bg-hover)] flex items-center justify-center`}>
+      <div className={`relative ${viewMode === 'thumbnails' ? 'aspect-[3/4]' : 'aspect-[3/4.5]'} overflow-hidden bg-[var(--bg-hover)] flex items-center justify-center`}>
         {isPending ? (
           <div className="flex flex-col items-center gap-4 p-8">
             <div className="relative">
               <Loader2 className="w-12 h-12 text-[#FF5C3A] animate-spin opacity-40" />
               <div className="absolute inset-0 bg-[#FF5C3A]/20 blur-xl rounded-full animate-pulse" />
             </div>
-            <p className="text-[9px] font-black uppercase tracking-[0.4em] text-[#FF5C3A] animate-pulse">Procesando ADN</p>
+            <p className="text-[9px] font-black uppercase tracking-[0.4em] text-[#FF5C3A] animate-pulse">Procesando Imagen</p>
           </div>
         ) : isFailed ? (
           <div className="flex flex-col items-center gap-4 p-10 text-center bg-rose-500/5 w-full h-full justify-center">
@@ -189,24 +189,26 @@ function GenerationCard({
             <img
               src={gen.resultImageUrl || '/placeholder-gen.jpg'}
               alt={gen.productName}
-              className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
+              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
               onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x600?text=Error+Imagen'; }}
             />
             {/* Vibrant Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
 
-            <div className="absolute inset-x-0 bottom-0 p-8 transform translate-y-6 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out">
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-2">
-                  <Shirt size={10} className="text-[#FF5C3A]" />
-                  <p className="text-[11px] font-black uppercase text-white tracking-[0.15em] truncate italic shadow-sm">{gen.productName}</p>
+            <div className={`absolute inset-x-0 bottom-0 ${viewMode === 'thumbnails' ? 'p-3' : 'p-6'} transform ${viewMode === 'thumbnails' ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0 group-hover:translate-y-0 group-hover:opacity-100'} transition-all duration-500 ease-out bg-gradient-to-t from-black/80 via-black/20 to-transparent`}>
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-1.5 font-jakarta">
+                  {viewMode !== 'thumbnails' && <Shirt size={10} className="text-[#FF5C3A]" />}
+                  <p className={`${viewMode === 'thumbnails' ? 'text-[9px]' : 'text-[11px]'} font-bold uppercase text-white tracking-[0.1em] truncate italic shadow-sm`}>{gen.productName}</p>
                 </div>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-[8px] font-bold text-white/40 uppercase tracking-[0.2em]">{dateStr} · {timeStr}</p>
-                  <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-[#FF5C3A] transition-colors">
-                    <Maximize2 size={12} className="text-white" />
+                {viewMode !== 'thumbnails' && (
+                  <div className="flex items-center justify-between mt-1">
+                    <p className="text-[8px] font-bold text-white/40 uppercase tracking-[0.2em]">{dateStr} · {timeStr}</p>
+                    <div className="w-8 h-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-[#FF5C3A] transition-colors">
+                      <Maximize2 size={12} className="text-white" />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </>
@@ -401,7 +403,7 @@ export default function GenerationsPage() {
             <div className="absolute inset-0 bg-[#FF5C3A]/10 blur-xl rounded-full"></div>
           </div>
           <div className="text-center space-y-2">
-            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[var(--text-primary)] animate-pulse">Cargando Generaciones</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[var(--text-primary)] animate-pulse">Cargando Historial</p>
             <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Actualizando tu historial...</p>
           </div>
         </div>
@@ -420,7 +422,7 @@ export default function GenerationsPage() {
           className={
             viewMode === 'list'
               ? "flex flex-col gap-8"
-              : `grid gap-12 ${viewMode === 'thumbnails' ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`
+              : `grid ${viewMode === 'thumbnails' ? 'gap-4 md:gap-6' : 'gap-10'} ${viewMode === 'thumbnails' ? 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`
           }
         >
           <AnimatePresence mode="popLayout" initial={false}>

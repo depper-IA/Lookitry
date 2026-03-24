@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 import type { Product, CreateProductDto } from '@/types';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
@@ -91,6 +93,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [describingWithAI, setDescribingWithAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiGenerated, setAiGenerated] = useState(false);
+  const [showImageTooltip, setShowImageTooltip] = useState(false);
+  const [showDescTooltip, setShowDescTooltip] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canDescribeWithAI = !!formData.imageUrl && !!formData.name.trim() && !!N8N_DESCRIPTOR_URL;
@@ -325,16 +329,38 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Imagen del Producto</label>
-              <div className="group relative flex items-center cursor-help">
-                <svg className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="relative flex items-center">
+                <button 
+                  type="button"
+                  onClick={() => setShowImageTooltip(!showImageTooltip)}
+                  className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5" style={{ color: showImageTooltip ? '#FF5C3A' : 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
                 {/* TOOLTIP */}
-                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1a1a1a] border border-[#333] text-white text-xs rounded-xl p-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 text-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-                  <p className="mb-2 leading-relaxed">Para asegurar una generación de calidad y exitosa asegúrate de subir tus prendas y/o las de tu cliente a estas medidas <a href="#" target="_blank" className="text-[#FF5C3A] font-semibold hover:underline">ver medidas</a>.</p>
-                  <p className="text-[10px] text-[#888] pb-0.5 border-t border-[#333] pt-2">Recuerda decirle de esto a tus clientes con una nota o un aviso en tu sitio.</p>
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#333]"></div>
-                </div>
+                <AnimatePresence>
+                  {showImageTooltip && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1a1a1a] border border-[#333] text-white text-xs rounded-xl p-3 z-50 text-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                    >
+                      <button 
+                        type="button" 
+                        onClick={() => setShowImageTooltip(false)}
+                        className="absolute top-2 right-2 text-white/40 hover:text-white"
+                      >
+                        <X size={12} />
+                      </button>
+                      <p className="mb-2 leading-relaxed pr-4">Sube una foto de tu prenda en alta calidad, centrada y sin perchas. Para mejores resultados, usa formato vertical (3:4) o <a href="#" target="_blank" className="text-[#FF5C3A] font-semibold hover:underline">revisa las medidas</a>.</p>
+                      <p className="text-[10px] text-[#888] pb-0.5 border-t border-[#333] pt-2">Una buena iluminación garantiza una prueba virtual perfecta.</p>
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#333]"></div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
             <div className="space-y-3">
@@ -369,7 +395,41 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Descripción</label>
+              <div className="flex items-center gap-1.5">
+                <label className="block text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Descripción</label>
+                <div className="relative flex items-center">
+                  <button 
+                    type="button"
+                    onClick={() => setShowDescTooltip(!showDescTooltip)}
+                    className="p-1 rounded-full hover:bg-[var(--bg-hover)] transition-colors"
+                  >
+                    <svg className="w-3.5 h-3.5" style={{ color: showDescTooltip ? '#FF5C3A' : 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
+                  {/* TOOLTIP DESCRIPCIÓN */}
+                  <AnimatePresence>
+                    {showDescTooltip && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-[#1a1a1a] border border-[#333] text-white text-xs rounded-xl p-3 z-50 text-center shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+                      >
+                        <button 
+                          type="button" 
+                          onClick={() => setShowDescTooltip(false)}
+                          className="absolute top-2 right-2 text-white/40 hover:text-white"
+                        >
+                          <X size={12} />
+                        </button>
+                        <p className="leading-relaxed pr-4">Recomendamos <strong>no modificar</strong> la descripción generada por la IA para obtener una mayor precisión en la generación de la prueba virtual.</p>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#333]"></div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
               <div className="flex items-center gap-2">
                 {aiGenerated && (
                   <button

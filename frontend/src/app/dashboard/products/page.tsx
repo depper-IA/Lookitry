@@ -138,7 +138,6 @@ export default function ProductsPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
         <Spinner size="lg" />
-        <Spinner size="lg" />
         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] animate-pulse">Cargando Catálogo...</p>
       </div>
     );
@@ -168,9 +167,9 @@ export default function ProductsPage() {
 
         </div>
 
-        <div className="flex flex-wrap items-center gap-6">
+        <div className="flex flex-col-reverse md:flex-row items-center justify-center md:justify-end gap-6">
           {!showForm && (
-            <div className="flex items-center bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-2 shadow-2xl">
+            <div className="flex items-center bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-1.5 shadow-2xl">
               {( [
                 { id: 'grid',       icon: <LayoutGrid size={16} /> },
                 { id: 'thumbnails', icon: <Grid3X3 size={16} /> },
@@ -178,7 +177,7 @@ export default function ProductsPage() {
               ] as const).map(({ id, icon }) => (
                 <button
                   key={id} onClick={() => handleViewMode(id)}
-                  className={`p-3 rounded-full transition-all duration-500 ${viewMode === id ? 'bg-[#FF5C3A] text-white shadow-2xl shadow-[#FF5C3A]/30 scale-[1.15]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                  className={`p-3 rounded-full transition-all duration-500 ${viewMode === id ? 'bg-[#FF5C3A] text-white shadow-2xl shadow-[#FF5C3A]/30 scale-[1.1]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
                 >
                   {icon}
                 </button>

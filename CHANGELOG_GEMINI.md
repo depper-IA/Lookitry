@@ -1,5 +1,131 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 24 de Marzo, 2026 — Sprint Final: Rediseño Dashboard & Premium Branding (Fases 1-8)
+
+### Paneles de Usuario (Dashboard)
+- **Suscripción & Perfil:** Eliminación masiva de terminología sci-fi ("ADN", "Orbital", "Galáctico", "Sincronizar", "Evolucionar"). Reemplazados por términos profesionales: "Plan", "Renovación", "Suscripción", "Contraseña", "Guardar Cambios".
+- **Integraciones:** Rediseño completo y limpieza de términos. "Red Neuronal" → "Integraciones", "Inyectar Matriz" → "Instalar Plugin".
+- **Productos:** 
+  - Badges de categoría y estado ("Nuevo", "Top", "Oferta") con fondo blanco/sólido para legibilidad total.
+  - Tooltips migrados a formato "clic" para evitar ruido visual.
+  - Descripción oculta en vista de cuadrícula para priorizar la estética visual.
+  - Advertencia sobre optimización de descripción mediante IA agregada.
+  - Eliminado spinner de carga duplicado.
+- **Generaciones:** Rediseño estético para una cuadrícula más premium y bordes menos redondeados.
+- **Configuración Widget:** URL de acceso directo actualizada a `lookitry.com`, tipografía Jakarta unificada y template Minimal Canvas como default.
+- **Mi Página:** Corregido error de previsualización (teléfono dentro de teléfono) y restaurado enlace de marketing bonus.
+
+### Backend & Estabilidad
+- **Products Controller:** Corregido bug crítico en la actualización de productos (mapeo de `externalId`).
+- **Infraestructura:** Resolución de conflictos de puertos y verificación de API operativa.
+
+### General
+- **Comunicación:** Configuración de idioma 100% en español para el agente y toda la documentación del proyecto.
+- **Documentación:** Actualización de memoria maestra y lista de tareas completada.
+
+---
+## 24 de Marzo, 2026 — Fase 6: Limpieza de Terminología en Panel de Integraciones
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/integrations/page.tsx`
+
+**Cambios (terminología reemplazada):**
+- H1: "Red Neuronal" → "Integraciones"
+- Subtítulo: "Conexión Headless y Puentes Nativos" → "Conecta tu tienda con el probador virtual"
+- Paso 1: "Inyectar Matriz" → "Instalar Plugin"
+- Paso 2: "Enlace de Red" → "Configurar Credenciales"
+- Paso 3: "Sincronía Eterna" → "Sincronización Automática"
+- Card WooCommerce: "Matriz WooCommerce" → "WooCommerce", "Sync Nativo v4.2.0" → "Integración Nativa"
+- Label API Key: "Llave de Acceso Cuántico (API KEY)" → "Clave de API (API KEY)"
+- Aviso privacidad: "Nunca expongas esta secuencia..." → "No compartas esta clave con nadie..."
+- Botón confirmación: "Sistema Ok" → "Copiado"
+- Card SDK: "Inyectar via SDK" → "Integrar via SDK"
+- Card soporte: "Desplegar Soporte" → "Contactar Soporte"
+- Código de ejemplo: comentario y variables renombrados a términos estándar REST
+
+**Motivo:** Eliminar jerga sci-fi del panel de integraciones. La audiencia son marcas de moda, no desarrolladores avanzados.
+
+---
+## 24 de Marzo, 2026 — Fase 5: Correcciones de UI en Configuración del Widget
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/SettingsForm.tsx`
+- `frontend/src/app/dashboard/settings/page.tsx`
+
+**Cambios:**
+- **URL del Widget:** Actualizada la URL de Acceso Directo en la previsualización de `pruebalo.wilkiedevs.com` → `lookitry.com`. Alineado con el nuevo dominio del producto.
+- **Terminología:** Eliminados todos los términos sci-fi/ADN del formulario de configuración. Reemplazos clave:
+  - "Genoma de Marca" → "Identidad de Marca"
+  - "ADN de la Marca (Nombre)" → "Nombre de la Marca"
+  - "Sincronizar Genoma" → "Guardar Cambios"
+  - "Atmósfera Visual" → "Estética del Widget"
+  - "Arquitectura de Interfaz (Templates)" → "Plantilla de Interfaz"
+  - "Salvar ADN" → "Guardar"
+- **Tipografía:** Reemplazado `font-syne` → `font-jakarta` en el H1 de la página de configuración.
+- **Template Predeterminado:** Confirmado que `bare` (Minimal Canvas) ya es el default en `formData.widgetTemplate`.
+
+**Motivo:** Alinear la terminología del panel de configuración con la identidad de moda premium de Lookitry, eliminando jerga técnica que no corresponde a la audiencia de marca.
+
+---
+
+
+**Archivos modificados:**
+- `backend/src/controllers/products.controller.ts`
+- `LOOKITRY_MASTER_MEMORY.md`
+- `.gemini/antigravity/brain/.../task.md`
+- `.gemini/antigravity/brain/.../implementation_plan.md`
+
+**Cambios:**
+- **Fix Backend (Productos):** Corregido error en `updateProduct` que causaba fallos al actualizar. Se añadió el mapeo obligatorio de `externalId` a `external_id` y se mejoró el manejo del campo `price` para evitar errores con valores vacíos o inválidos.
+- **Traducción de Proyecto:** Se tradujeron todos los artefactos de seguimiento (`task.md` e `implementation_plan.md`) al español para cumplir con la nueva directriz del usuario.
+- **Memoria Maestra:** Actualizado `LOOKITRY_MASTER_MEMORY.md` con la regla obligatoria de comunicación 100% en español.
+- **Panel "Mi Página":** Verificación de la prop `isPreview={true}` en plantillas para corregir el layout de previsualización.
+
+**Motivo:** Resolver el error crítico de actualización de productos reportado y alinear la comunicación del asistente con las preferencias del usuario.
+
+---
+
+## 24 de Marzo, 2026 — Refinamiento UI/UX: Panel de Generaciones (Lookitry Premium)
+
+**Archivos modificados:**
+- `frontend/src/app/dashboard/generations/page.tsx`
+
+**Cambios:**
+- **Estética de Tarjetas:** Reducido el redondeo extremo de las tarjetas de `rounded-[2.8rem]` a `rounded-3xl` para una apariencia más profesional y contemporánea.
+- **Optimización de Vista Media (Thumbnails):**
+  - Reducido el espacio entre elementos (`gap`) de 3rem a 1rem-1.5rem, permitiendo una visualización más densa y elegante.
+  - Añadidas etiquetas sutiles con el nombre del producto visibles permanentemente en la vista de miniaturas.
+  - Ajustados los gradientes y overlays para mejorar la legibilidad del texto sobre las imágenes.
+- **Eliminación de Terminología "Cyberpunk":**
+  - "Procesando ADN" cambiado a "Procesando Imagen".
+  - "Descargar DNA" cambiado a "Descargar Imagen".
+  - "Cargando Generaciones" cambiado a "Cargando Historial".
+- **Refinamiento de Grid:** Reducido el gap general de la cuadrícula principal para un diseño más compacto y equilibrado.
+
+**Motivo:** Mejorar la sofisticación visual del panel de historial y estandarizar la comunicación con el usuario final, eliminando jerga técnica/sci-fi innecesaria.
+
+---
+
+## 24 de Marzo, 2026 — Refinamiento UI/UX: Panel de Productos (Lookitry Premium)
+
+**Archivos modificados:**
+- `frontend/src/components/dashboard/ProductList.tsx`
+- `frontend/src/components/dashboard/ProductForm.tsx`
+- `frontend/src/app/dashboard/products/page.tsx`
+
+**Cambios:**
+- **Contraste de Badges:** La etiqueta de categoría (`CategoryBadge`) ahora usa un fondo blanco sólido con texto negro y borde sutil para asegurar visibilidad total sobre cualquier fondo de imagen de producto.
+- **Limpieza de Grid:** Eliminada la previsualización de la descripción en la vista de cuadrícula para un diseño más limpio y orientado a la imagen ("Premium Fashion").
+- **Tooltips Refinados:** 
+  - El tooltip de "Imagen del Producto" ahora es más claro y directo, enfocado en la calidad y formato (3:4) para el usuario.
+  - Se agregó un nuevo tooltip de recomendación en el campo "Descripción", aconsejando no modificar el texto generado por IA para mejores resultados.
+  - Ambos tooltips aparecen estrictamente al pasar el mouse por el icono de ayuda, evitando ruido visual.
+- **Fix "Doble Slider":** Eliminado un spinner de carga duplicado en la página de productos que causaba un efecto visual erróneo durante la carga del catálogo.
+
+**Motivo:** Alineación con la identidad de marca premium de Lookitry y corrección de inconsistencias visuales reportadas por el usuario. Se respetó íntegramente la lógica funcional existente.
+
+---
+
 ## 24 de Marzo, 2026 — Historial de transacciones con hora exacta
 
 **Archivos modificados:**

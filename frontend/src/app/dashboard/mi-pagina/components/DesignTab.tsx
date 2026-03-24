@@ -27,11 +27,11 @@ import {
 } from 'lucide-react';
 
 const Tooltip = ({ text }: { text: string }) => (
-  <div className="group relative inline-block ml-1.5">
+  <div className="group/tooltip relative inline-block ml-1.5 align-middle">
     <div className="w-4 h-4 rounded-full bg-[var(--bg-input)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[#FF5C3A] cursor-help transition-all shadow-sm">
-      <Info className="w-2.5 h-2.5" />
+      <Info className="w-2.5 h-2.5 transition-transform group-hover/tooltip:scale-110" />
     </div>
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 shadow-2xl z-50 pointer-events-none border-b-4 border-b-[#FF5C3A]">
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-300 shadow-2xl z-[100] pointer-events-none border-b-4 border-b-[#FF5C3A]">
       <p className="text-[10px] leading-relaxed text-[var(--text-primary)] font-black uppercase tracking-wider italic">{text}</p>
       <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#FF5C3A]"></div>
     </div>
@@ -87,7 +87,7 @@ export function DesignTab(props: DesignTabProps) {
     schedule, setSchedule,
   } = props;
 
-  const sectionStyle = "bg-[var(--bg-card)] rounded-[3rem] border border-[var(--border-color)] p-8 md:p-12 space-y-10 shadow-3xl hover:border-[#FF5C3A]/30 transition-all duration-700 relative overflow-hidden group";
+  const sectionStyle = "bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] p-6 md:p-8 space-y-6 shadow-3xl hover:border-[#FF5C3A]/30 transition-all duration-700 relative overflow-hidden group";
   const labelStyle = "text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] mb-4 block italic leading-none";
   const inputStyle = "w-full px-6 py-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] text-sm font-bold text-[var(--text-primary)] focus:border-[#FF5C3A] hover:bg-[var(--bg-hover)] focus:ring-4 focus:ring-[#FF5C3A]/5 outline-none transition-all placeholder:text-[var(--text-muted)] placeholder:font-medium shadow-inner";
 
@@ -97,15 +97,15 @@ export function DesignTab(props: DesignTabProps) {
       {/* 1. Identidad Visual */}
       <motion.section variants={itemVariants} className={sectionStyle}>
         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
-          <Star size={80} fill="#FF5C3A" />
+          <Star size={45} fill="#FF5C3A" />
         </div>
         <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
           <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
             <Star className="w-6 h-6 text-[#FF5C3A]" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Genoma de Marca</h3>
-            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Logos, tipografía y esencia</p>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Identidad Visual</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Logos y Tipografía</p>
           </div>
         </div>
 
@@ -165,7 +165,7 @@ export function DesignTab(props: DesignTabProps) {
             </div>
           </div>
           <div className="space-y-6">
-            <label className={labelStyle}>Header Settings</label>
+            <label className={labelStyle}>Configuración Header</label>
             <button 
               onClick={() => setShowBrandName(!showBrandName)}
               className={`flex items-center gap-4 px-8 py-5 rounded-2xl border transition-all w-full group/btn ${showBrandName ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 text-[var(--text-primary)] shadow-xl shadow-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)] hover:border-[#FF5C3A]/30'}`}
@@ -185,15 +185,15 @@ export function DesignTab(props: DesignTabProps) {
       {/* 2. Paleta de Colores */}
       <motion.section variants={itemVariants} className={sectionStyle}>
          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
-          <Palette size={80} />
+          <Palette size={45} />
         </div>
         <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
           <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
             <Palette className="w-6 h-6 text-[#FF5C3A]" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">ADN Cromático</h3>
-            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Vibración visual y contraste</p>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Colores de Marca</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Paleta de colores y contraste</p>
           </div>
         </div>
 
@@ -221,15 +221,15 @@ export function DesignTab(props: DesignTabProps) {
       {/* 3. Hero y Portada */}
       <motion.section variants={itemVariants} className={sectionStyle}>
         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
-          <ImageIcon size={80} />
+          <ImageIcon size={45} />
         </div>
         <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
           <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
             <ImageIcon className="w-6 h-6 text-[#FF5C3A]" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Atmósfera Visual</h3>
-            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Cinematografía de portada</p>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Imagen de Portada</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Fondo y visual de cabecera</p>
           </div>
         </div>
 
@@ -267,15 +267,15 @@ export function DesignTab(props: DesignTabProps) {
       {/* 4. Contenido */}
       <motion.section variants={itemVariants} className={sectionStyle}>
         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
-          <Type size={80} />
+          <Type size={45} />
         </div>
         <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
           <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
             <Type className="w-6 h-6 text-[#FF5C3A]" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Relativa Editorial</h3>
-            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Copywriting y Mensajes</p>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Textos y Mensajes</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Slogan y descripciones</p>
           </div>
         </div>
 
@@ -303,15 +303,15 @@ export function DesignTab(props: DesignTabProps) {
       {/* 5. Ubicación y Redes */}
       <motion.section variants={itemVariants} className={sectionStyle}>
         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
-          <Share2 size={80} />
+          <Share2 size={45} />
         </div>
         <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
           <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
-            <Share2 className="w-6 h-6 text-[#FF5C3A]" />
+            <Share2 className="w-5 h-5 text-[#FF5C3A]" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Ecosistema Social</h3>
-            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Contacto y Presencia</p>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Redes Sociales y Ubicación</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Contacto y presencia online</p>
           </div>
         </div>
 
