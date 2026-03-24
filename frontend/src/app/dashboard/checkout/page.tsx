@@ -265,10 +265,10 @@ function CheckoutContent() {
   const [applyingFreeUpgrade, setApplyingFreeUpgrade] = useState(false);
 
   // Lógica de suscripción
-  const isUpgrade   = hasActiveSub && currentPlan === 'BASIC' && selectedPlan === 'PRO';
-  const isDowngrade = hasActiveSub && currentPlan === 'PRO'   && selectedPlan === 'BASIC';
+  const isUpgrade   = hasActiveSub && currentPlan?.toUpperCase() === 'BASIC' && selectedPlan.toUpperCase() === 'PRO';
+  const isDowngrade = hasActiveSub && currentPlan?.toUpperCase() === 'PRO'   && selectedPlan.toUpperCase() === 'BASIC';
   const isChange    = isUpgrade || isDowngrade;
-  const isRenewal   = hasActiveSub && currentPlan === selectedPlan;
+  const isRenewal   = hasActiveSub && currentPlan?.toUpperCase() === selectedPlan.toUpperCase();
 
   const monthDiscount = monthDiscounts.find(d => d.months === selectedMonths) ?? monthDiscounts[0];
   const planTotal  = Math.round(planInfo[selectedPlan].price * selectedMonths * (1 - monthDiscount.pct / 100));
@@ -389,7 +389,7 @@ function CheckoutContent() {
     setLoadingProration(true);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
     const token  = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const currentPlanPriceFallback = planInfo[currentPlan as PlanType].price * selectedMonths;
+    const currentPlanPriceFallback = planInfo[currentPlan as PlanType].price; // Precio mensual base
     fetch(
       `${apiUrl}/api/payments/wompi/upgrade-preview?newPlan=${selectedPlan}&newMonths=${selectedMonths}&newPlanPricePerMonth=${planInfo[selectedPlan].price}&currentPlanPriceTotal=${currentPlanPriceFallback}`,
       {
@@ -869,8 +869,8 @@ function CheckoutContent() {
                 ))}
               </ul>
 
-              {/* Desglose upgrade con prorrateo */}
-              {isUpgrade ? (
+              {/* Desglose de cambio con prorrateo (upgrade o downgrade) */}
+              {isChange ? (
                 loadingProration ? (
                   <div className="flex items-center gap-2 py-2 text-xs" style={{ color: 'var(--text-muted)' }}>
                     <div
@@ -939,9 +939,9 @@ function CheckoutContent() {
                 <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Total a pagar</span>
                 <span
                   className="text-2xl font-bold"
-                  style={{ color: isUpgrade && prorationPreview?.isFree ? '#10b981' : '#FF5C3A' }}
+                  style={{ color: isChange && prorationPreview?.isFree ? '#10b981' : '#FF5C3A' }}
                 >
-                  {isUpgrade && prorationPreview?.isFree
+                  {isChange && prorationPreview?.isFree
                     ? 'Sin costo'
                     : formatPrice(totalPrice, paymentMethod, trm)}
                 </span>

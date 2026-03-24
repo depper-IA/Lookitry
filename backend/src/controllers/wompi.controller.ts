@@ -6,6 +6,8 @@ import { EmailService } from '../services/email.service';
 import { verifyEmailTemplate } from '../templates/email-templates';
 import { supabaseAdmin } from '../config/supabase';
 
+import { pricingService } from '../services/pricing.service';
+
 const subscriptionService = new SubscriptionService();
 const notificationService = new NotificationService();
 const emailService = new EmailService();
@@ -127,7 +129,7 @@ export class WompiController {
           }).catch(err => console.error('[Wompi] Error enviando email de verificación post-trial:', err));
         }
       } else {
-        const effectivePlan = plan === 'LANDING' ? 'BASIC' : plan;
+        const effectivePlan = (plan === 'LANDING' ? 'BASIC' : plan).toUpperCase();
         const activateLanding = plan === 'LANDING' || includesLanding;
 
         // Si es SOLO compra de landing page (plan='NONE'), no tocamos la suscripción actual
@@ -363,7 +365,7 @@ export class WompiController {
           .eq('id', brandId)
           .single();
 
-        const isUpgrade = currentBrand?.plan !== effectivePlan;
+        const isUpgrade = currentBrand?.plan !== effectivePlan.toUpperCase();
 
         await subscriptionService.renewSubscription(
           brandId,
@@ -378,7 +380,7 @@ export class WompiController {
             notes: `Activación gratuita (Cupón 100%). Plan: ${effectivePlan}. Ref: ${reference || 'FREE-' + Date.now()}`,
           },
           months,
-          effectivePlan,
+          effectivePlan.toUpperCase(),
           isUpgrade
         );
       } else {
@@ -428,17 +430,16 @@ export class WompiController {
   async getWidgetConfig(req: Request, res: Response): Promise<void> {
     try {
       const brand = (req as any).brand;
-      const { plan, amount, months } = req.query;
+      const { plan, months } = req.query;
 
       const planStr = (plan as string)?.toUpperCase() || 'BASIC';
       const monthsNum = months ? parseInt(months as string, 10) : 1;
-      const planAmounts: Record<string, number> = { BASIC: 150000, PRO: 250000 };
-      const amountCOP = amount
-        ? parseInt(amount as string, 10)
-        : planAmounts[planStr] ?? 150000;
+      const isLandingPurchase = (req.query.includes_landing as string) === 'true';
+
+      // RECALCULAR MONTO EN BACKEND (SEGURIDAD)
+      const amountCOP = await pricingService.calculateTotal(planStr, monthsNum, isLandingPurchase);
 
       const brandId = brand?.id ?? `visitor_${Date.now()}`;
-      const isLandingPurchase = (req.query.includes_landing as string) === 'true';
 
       // Pasar months y plan para que la referencia los incluya y el webhook los pueda extraer
       const config = await wompiService.getWidgetConfig(brandId, amountCOP, monthsNum, planStr, isLandingPurchase);
@@ -491,13 +492,15 @@ export class WompiController {
   async getCheckoutUrl(req: Request, res: Response): Promise<void> {
     try {
       const brand = (req as any).brand;
-      const { amount, months, plan } = req.query;
+      const { months, plan } = req.query;
       const email = req.query.email as string | undefined;
 
-      const amountCOP = amount ? parseInt(amount as string, 10) : 250000;
       const monthsNum = months ? parseInt(months as string, 10) : 1;
       const planStr = (plan as string)?.toUpperCase() || 'BASIC';
       const isLandingPurchase = (req.query.includes_landing as string) === 'true';
+
+      // RECALCULAR MONTO EN BACKEND (SEGURIDAD)
+      const amountCOP = await pricingService.calculateTotal(planStr, monthsNum, isLandingPurchase);
 
       const brandId = brand?.id ?? `visitor_${Date.now()}`;
 
