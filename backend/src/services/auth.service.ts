@@ -396,6 +396,20 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
     return data as Brand;
   }
 
+  async getBrandByApiKey(apiKey: string): Promise<Brand | null> {
+    const { data, error } = await supabaseAdmin
+      .from('brands')
+      .select('*')
+      .eq('api_key', apiKey)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data as Brand;
+  }
+
   async requestPasswordReset(email: string): Promise<void> {
     const { data: brand } = await supabaseAdmin
       .from('brands')

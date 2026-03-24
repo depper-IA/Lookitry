@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { ArrowUpDown } from 'lucide-react';
@@ -102,14 +102,14 @@ export default function AdminMiniLandingsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState<SortFieldML>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 5;
 
   // ── Modal Promo Global ───────────────────────────────────────────────────
   const [modalConfig, setModalConfig] = useState({
     title: 'Activa tu Mini-Landing personalizada',
     description: 'Muestra tus productos en una página web profesional optimizada para móviles y aumenta tus ventas.',
     imageUrl: '',
-    previewSeconds: 15,
+    previewMinutes: 0.25,
   });
   const [savingModal, setSavingModal] = useState(false);
 
@@ -119,13 +119,18 @@ export default function AdminMiniLandingsPage() {
       if (res.ok) {
         const data = await res.json();
         if (data.modal_promo_config) {
-          setModalConfig(data.modal_promo_config);
+          setModalConfig({
+            title: data.modal_promo_config.title,
+            description: data.modal_promo_config.description,
+            imageUrl: data.modal_promo_config.imageUrl,
+            previewMinutes: (data.modal_promo_config.previewSeconds || data.modal_promo_config.previewMinutes * 60 || 15) / 60,
+          });
         } else {
           setModalConfig({
             title: data.modal_title || 'Activa tu Mini-Landing personalizada',
             description: data.modal_description || 'Muestra tus productos en una página web profesional.',
             imageUrl: data.modal_image_url || '',
-            previewSeconds: data.mini_landing_preview_seconds || 15,
+            previewMinutes: (data.mini_landing_preview_seconds || 15) / 60,
           });
         }
       }
@@ -140,11 +145,14 @@ export default function AdminMiniLandingsPage() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          modal_promo_config: modalConfig,
+          modal_promo_config: {
+            ...modalConfig,
+            previewSeconds: Math.round(modalConfig.previewMinutes * 60)
+          },
           modal_title: modalConfig.title,
           modal_description: modalConfig.description,
           modal_image_url: modalConfig.imageUrl,
-          mini_landing_preview_seconds: modalConfig.previewSeconds
+          mini_landing_preview_seconds: Math.round(modalConfig.previewMinutes * 60)
         }),
       });
       if (!res.ok) throw new Error('Error al guardar');
@@ -353,6 +361,39 @@ export default function AdminMiniLandingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Paginación Superior */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-[2rem] border px-6 py-3"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--text-secondary)' }}>
+            Página {currentPage} de {totalPages} <span className="mx-1 opacity-30">|</span> {filtered.length} marcas
+          </div>
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => setCurrentPage(p => p - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest disabled:opacity-40 transition-all hover:bg-black/5"
+              style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-base)' }}
+            >
+              Anterior
+            </button>
+            <div className="flex gap-1 items-center px-2">
+              <span className="text-[10px] font-black text-[#FF5C3A]">{currentPage}</span>
+              <span className="text-[10px] font-black opacity-20">/</span>
+              <span className="text-[10px] font-black text-[var(--text-muted)]">{totalPages}</span>
+            </div>
+            <button
+              onClick={() => setCurrentPage(p => p + 1)}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-widest disabled:opacity-40 transition-all hover:bg-black/5"
+              style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-base)' }}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Tabla */}
       <div className="rounded-[2rem] border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
@@ -654,17 +695,18 @@ export default function AdminMiniLandingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-2 ml-1">Tiempo de Vista Previa (Seg)</label>
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-2 ml-1">Tiempo de Vista Previa (Min)</label>
                   <div className="relative">
                     <input
                       type="number"
+                      step="0.1"
                       min={0}
-                      max={600}
-                      value={modalConfig.previewSeconds}
-                      onChange={e => setModalConfig({ ...modalConfig, previewSeconds: parseInt(e.target.value) || 0 })}
+                      max={60}
+                      value={modalConfig.previewMinutes}
+                      onChange={e => setModalConfig({ ...modalConfig, previewMinutes: parseFloat(e.target.value) || 0 })}
                       className="w-full pl-4 pr-12 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm font-mono font-bold outline-none focus:border-[#FF5C3A] transition-all"
                     />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[var(--text-muted)] uppercase">seg</span>
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[var(--text-muted)] uppercase">min</span>
                   </div>
                 </div>
               </div>
@@ -711,7 +753,7 @@ export default function AdminMiniLandingsPage() {
 
               <div className="pt-4 border-t border-[var(--border-color)]">
                 <p className="text-[9px] text-center text-[var(--text-muted)] font-bold uppercase tracking-widest">
-                  Se activará tras <span className="text-[#FF5C3A]">{modalConfig.previewSeconds} segundos</span> de navegación
+                  Se activará tras <span className="text-[#FF5C3A]">{modalConfig.previewMinutes} minutos</span> de navegación
                 </p>
               </div>
             </div>

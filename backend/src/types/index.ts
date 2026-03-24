@@ -7,6 +7,7 @@ export interface Brand {
   slug: string;
   plan: 'BASIC' | 'PRO';
   logo: string | null;
+  api_key: string | null; // Token para integraciones externas
   primary_color: string;
   secondary_color: string;
   header_color: string | null;
@@ -36,6 +37,7 @@ export interface Product {
   image_url: string;
   category: string;
   is_active: boolean;
+  external_id: string | null; // ID de plataforma externa (WordPress, Shopify, etc.)
   created_at: string;
   updated_at: string;
 }
