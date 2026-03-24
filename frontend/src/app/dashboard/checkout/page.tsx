@@ -872,8 +872,8 @@ function CheckoutContent() {
                 ))}
               </ul>
 
-              {/* Desglose de cambio con prorrateo (upgrade o downgrade) */}
-              {isChange ? (
+              {/* Desglose de cambio con prorrateo (SOLO UPGRADES) */}
+              {isUpgrade ? (
                 loadingProration ? (
                   <div className="flex items-center gap-2 py-2 text-xs" style={{ color: 'var(--text-muted)' }}>
                     <div
@@ -942,9 +942,9 @@ function CheckoutContent() {
                 <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Total a pagar</span>
                 <span
                   className="text-2xl font-bold"
-                  style={{ color: isChange && prorationPreview?.isFree ? '#10b981' : '#FF5C3A' }}
+                  style={{ color: isUpgrade && prorationPreview?.isFree ? '#10b981' : '#FF5C3A' }}
                 >
-                  {isChange && prorationPreview?.isFree
+                  {isUpgrade && prorationPreview?.isFree
                     ? 'Sin costo'
                     : formatPrice(totalPrice, paymentMethod, trm)}
                 </span>
