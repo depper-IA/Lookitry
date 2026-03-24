@@ -5,6 +5,8 @@ import { supabaseAdmin } from '../config/supabase';
 import { asyncHandler } from '../middleware/errorHandler';
 import { TrmService } from '../utils/trm';
 
+import { pricingService } from '../services/pricing.service';
+
 const subscriptionService = new SubscriptionService();
 
 export class PaypalController {
@@ -13,23 +15,25 @@ export class PaypalController {
    * Genera el link de PayPal y crea el registro pendiente
    */
   getCheckoutUrl = asyncHandler(async (req: Request, res: Response) => {
-    const { amount, months, plan, email, trm, includes_landing } = req.query;
+    const { months, plan, email, trm, includes_landing } = req.query;
 
-    if (!amount || !months || !plan) {
-      return res.status(400).json({ error: 'Faltan parámetros requeridos' });
+    if (!months || !plan) {
+      return res.status(400).json({ error: 'Faltan parámetros requeridos: months, plan' });
     }
 
-    const amountCOP = parseInt(amount as string, 10);
     const selectedMonths = parseInt(months as string, 10);
+    const planStr = (plan as string).toUpperCase();
+    const landing = includes_landing === 'true';
+
+    // RECALCULAR MONTO EN BACKEND (SEGURIDAD)
+    const amountCOP = await pricingService.calculateTotal(planStr, selectedMonths, landing);
     
     // Obtener TRM (usar la de query si existe, sino automática)
     const currentTrm = trm ? parseFloat(trm as string) : await TrmService.getCurrentTrm();
     
-    const landing = includes_landing === 'true';
-
     // Crear referencia única
     const brandId = (req as any).brand?.id || `visitor_${Date.now()}`;
-    const reference = `PAYPAL-${brandId}-M${selectedMonths}-P${plan}${landing ? '-LANDING' : ''}-${Date.now()}`;
+    const reference = `PAYPAL-${brandId}-M${selectedMonths}-P${planStr}${landing ? '-LANDING' : ''}-${Date.now()}`;
 
     // 1. Si es un registro nuevo (viene email), crear registro pendiente
     if (email) {
