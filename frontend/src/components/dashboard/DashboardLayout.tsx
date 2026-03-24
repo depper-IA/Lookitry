@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -70,29 +70,29 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
+    <div className="flex flex-col h-full bg-[#0a0a0a]" style={{ borderRight: '1px solid #1a1a1a' }}>
       {/* Logo */}
-      <div className="flex items-center justify-between h-16 px-5 border-b" style={{ borderColor: 'var(--border-color)' }}>
-        <Link href="/dashboard/products" className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-          <span className="hidden sm:inline font-syne font-extrabold text-base leading-none text-white tracking-tight">
+      <div className="flex items-center justify-between h-[60px] px-5 border-b border-[#1a1a1a] flex-shrink-0">
+        <Link href="/dashboard/products" className="flex items-center gap-2.5">
+          <Image src="/logo.svg" alt="Lookitry" width={26} height={26} className="object-contain" priority />
+          <span className="font-jakarta font-extrabold text-[15px] leading-none text-white tracking-tight">
             Look<span style={{ color: '#FF5C3A' }}>itry</span>
           </span>
         </Link>
         {/* Botón cerrar en móvil */}
         <button
-          className="lg:hidden p-1 rounded text-gray-400 hover:text-white"
+          className="lg:hidden p-1.5 rounded-lg text-[#555] hover:text-white transition-colors"
           onClick={() => setSidebarOpen(false)}
           aria-label="Cerrar menú"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navigation.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           return (
@@ -100,29 +100,35 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               key={item.name}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                isActive
-                  ? 'text-white'
-                  : 'hover:text-white'
-              }`}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 cursor-pointer"
               style={{
                 backgroundColor: isActive ? '#FF5C3A' : 'transparent',
-                color: isActive ? '#ffffff' : 'var(--text-sidebar)',
+                color: isActive ? '#ffffff' : '#666',
               }}
-              onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-sidebar-hover)'; }}
-              onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+              onMouseEnter={e => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = '#161616';
+                  (e.currentTarget as HTMLElement).style.color = '#ccc';
+                }
+              }}
+              onMouseLeave={e => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                  (e.currentTarget as HTMLElement).style.color = '#666';
+                }
+              }}
             >
-              <item.icon className="w-4 h-4 flex-shrink-0" />
-              {item.name}
+              <item.icon className="w-[15px] h-[15px] flex-shrink-0" />
+              <span className="leading-none">{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
       {/* Brand info + logout */}
-      <div className="p-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+      <div className="px-3 py-3 border-t border-[#1a1a1a] flex-shrink-0">
+        <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg bg-[#111]">
+          <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0"
             style={{ backgroundColor: '#FF5C3A' }}>
             {(brand as any)?.logo
               ? <img src={(brand as any).logo} alt={brand?.name} className="w-full h-full object-cover" />
@@ -130,20 +136,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             }
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">{brand?.name}</p>
-            <p className="text-xs truncate" style={{ color: 'var(--text-sidebar)' }}>
+            <p className="text-[12px] font-semibold text-white truncate leading-tight">{brand?.name}</p>
+            <p className="text-[10px] truncate leading-tight mt-0.5 text-[#444]">
               Plan {brand?.plan}
             </p>
           </div>
           <button
             onClick={logout}
-            className="p-1.5 rounded-lg transition-colors flex-shrink-0"
-            style={{ color: 'var(--text-sidebar)' }}
+            className="p-1.5 rounded-md transition-colors flex-shrink-0 text-[#444] hover:text-[#FF5C3A] cursor-pointer"
             title="Cerrar sesión"
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#ffffff'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-sidebar)'; }}
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round"
                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
@@ -164,13 +167,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       )}
 
       {/* Sidebar desktop (fijo) */}
-      <div className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-60 lg:z-20">
+      <div className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-[220px] lg:z-20">
         {sidebarContent}
       </div>
 
       {/* Sidebar móvil (drawer) */}
       <div
-        className={`fixed inset-y-0 left-0 w-64 z-40 transform transition-transform duration-200 ease-in-out lg:hidden ${
+        className={`fixed inset-y-0 left-0 w-[220px] z-40 transform transition-transform duration-200 ease-in-out lg:hidden ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -178,7 +181,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Contenido principal */}
-      <div className="lg:pl-60 flex flex-col h-screen overflow-hidden">
+      <div className="lg:pl-[220px] flex flex-col h-screen overflow-hidden">
         {/* Banner de verificación de email — elegante y minimalista */}
         {showVerificationBanner && (
           <div className="w-full border-b px-6 py-3 flex items-center justify-between gap-4 flex-shrink-0 animate-in fade-in slide-in-from-top duration-500" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>

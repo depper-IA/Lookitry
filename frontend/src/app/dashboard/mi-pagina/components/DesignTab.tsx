@@ -15,8 +15,21 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  Plus
+  Plus,
+  Info
 } from 'lucide-react';
+
+const Tooltip = ({ text }: { text: string }) => (
+  <div className="group relative inline-block ml-1.5">
+    <div className="w-4 h-4 rounded-full bg-[var(--bg-input)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[#FF5C3A] cursor-help transition-all shadow-sm">
+      <Info className="w-2.5 h-2.5" />
+    </div>
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-xl z-50 pointer-events-none">
+      <p className="text-[9px] leading-normal text-[var(--text-primary)] font-bold uppercase tracking-wider">{text}</p>
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[var(--border-color)]"></div>
+    </div>
+  </div>
+);
 
 interface DesignTabProps {
   description: string; setDescription: (v: string) => void;
@@ -161,28 +174,40 @@ export function DesignTab(props: DesignTabProps) {
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-2">
           <div className="space-y-2">
-            <label className={labelStyle}>Acnto Primario</label>
+            <div className="flex items-center">
+              <label className={labelStyle}>Acento Primario</label>
+              <Tooltip text="Color de botones, enlaces y elementos destacados. Es la esencia de tu marca." />
+            </div>
             <div className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 rounded-2xl border border-[var(--border-color)] shadow-sm hover:shadow-md transition-shadow">
               <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="w-8 h-8 rounded-xl overflow-hidden cursor-pointer border-0 bg-transparent flex-shrink-0" />
               <input type="text" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="flex-1 min-w-0 bg-transparent border-0 text-xs font-mono font-bold text-[var(--text-primary)] outline-none" />
             </div>
           </div>
           <div className="space-y-2">
-            <label className={labelStyle}>Acento Secun...</label>
+            <div className="flex items-center">
+              <label className={labelStyle}>Acento Secundario</label>
+              <Tooltip text="Color complementario para bordes, sombras y elementos de apoyo visual." />
+            </div>
             <div className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 rounded-2xl border border-[var(--border-color)] shadow-sm hover:shadow-md transition-shadow">
               <input type="color" value={secondaryColor} onChange={e => setSecondaryColor(e.target.value)} className="w-8 h-8 rounded-xl overflow-hidden cursor-pointer border-0 bg-transparent flex-shrink-0" />
               <input type="text" value={secondaryColor} onChange={e => setSecondaryColor(e.target.value)} className="flex-1 min-w-0 bg-transparent border-0 text-xs font-mono font-bold text-[var(--text-primary)] outline-none" />
             </div>
           </div>
           <div className="space-y-2">
-            <label className={labelStyle}>Fte / Probador</label>
+            <div className="flex items-center">
+              <label className={labelStyle}>Fondo Probador</label>
+              <Tooltip text="Color de fondo para la sección del probador virtual. Recomendamos tonos oscuros." />
+            </div>
             <div className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 rounded-2xl border border-[var(--border-color)] shadow-sm hover:shadow-md transition-shadow">
               <input type="color" value={widgetBgColor || '#0a0a0a'} onChange={e => setWidgetBgColor(e.target.value)} className="w-8 h-8 rounded-xl overflow-hidden cursor-pointer border-0 bg-transparent flex-shrink-0" />
               <input type="text" value={widgetBgColor} onChange={e => setWidgetBgColor(e.target.value)} placeholder="#0a0a0a" className="flex-1 min-w-0 bg-transparent border-0 text-xs font-mono font-bold text-[var(--text-primary)] outline-none" />
             </div>
           </div>
           <div className="space-y-2">
-            <label className={labelStyle}>Fte / Respaldo</label>
+            <div className="flex items-center">
+              <label className={labelStyle}>Fondo Respaldo</label>
+              <Tooltip text="Color de respaldo que aparece detrás de la portada o en secciones de contraste." />
+            </div>
             <div className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 rounded-2xl border border-[var(--border-color)] shadow-sm hover:shadow-md transition-shadow">
               <input type="color" value={coverBgColor || '#0a0a0a'} onChange={e => setCoverBgColor(e.target.value)} className="w-8 h-8 rounded-xl overflow-hidden cursor-pointer border-0 bg-transparent flex-shrink-0" />
               <input type="text" value={coverBgColor} onChange={e => setCoverBgColor(e.target.value)} placeholder="#0a0a0a" className="flex-1 min-w-0 bg-transparent border-0 text-xs font-mono font-bold text-[var(--text-primary)] outline-none" />
