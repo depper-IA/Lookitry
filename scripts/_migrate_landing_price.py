@@ -48,15 +48,15 @@ sftp.close()
 print("Script copiado al VPS")
 
 # Copiar del host al contenedor en el directorio del proyecto (donde están node_modules)
-_, out, err = ssh.exec_command("docker cp /tmp/migrate_landing.js virtual-tryon-backend:/app/migrate_landing.js", timeout=15)
+_, out, err = ssh.exec_command("docker cp /tmp/migrate_landing.js lookitry-backend:/app/migrate_landing.js", timeout=15)
 print("Docker cp:", out.read().decode(), err.read().decode())
 
-_, out, err = ssh.exec_command("docker exec virtual-tryon-backend node /app/migrate_landing.js", timeout=30)
+_, out, err = ssh.exec_command("docker exec lookitry-backend node /app/migrate_landing.js", timeout=30)
 print("Run:", out.read().decode())
 print("Err:", err.read().decode())
 
 # Limpiar
-ssh.exec_command("docker exec virtual-tryon-backend rm /app/migrate_landing.js", timeout=10)
+ssh.exec_command("docker exec lookitry-backend rm /app/migrate_landing.js", timeout=10)
 
 ssh.close()
 print("Migración completada.")

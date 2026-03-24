@@ -76,7 +76,7 @@ print(run("ls -lh /var/lib/docker/volumes/n8n_data/_data/database.sqlite", wait=
 
 # ── 6. Limpiar screenshots del bot que quedaron en /root ─────────────────────
 print("\n=== [6/6] Limpiando screenshots y archivos temporales del bot ===")
-print(run("find /root -name '*.png' -not -path '*/virtual-tryon/*' -delete 2>/dev/null && echo OK", wait=8))
+print(run("find /root -name '*.png' -not -path '*/Lookitry/*' -delete 2>/dev/null && echo OK", wait=8))
 print(run("find /home/ubuntu -name '*.png' -not -path '*/superprof_bot/*' -delete 2>/dev/null && echo OK", wait=8))
 
 # ── Resultado final ──────────────────────────────────────────────────────────

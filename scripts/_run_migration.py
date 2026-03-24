@@ -26,14 +26,14 @@ sb.from('pending_registrations').select('id').limit(1).then(() => {{
 }}).catch(e => console.error('Error:', e.message));
 """
 
-cmd = f'docker exec virtual-tryon-backend node -e "{node_script.strip()}"'
+cmd = f'docker exec lookitry-backend node -e "{node_script.strip()}"'
 
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect(HOST, username=USER, password=PASS, timeout=30)
 
 # Ejecutar directamente el SQL via psql si está disponible, o via el script de migración
-sql_cmd = f"""docker exec virtual-tryon-backend node -e "
+sql_cmd = f"""docker exec lookitry-backend node -e "
 const {{ createClient }} = require('@supabase/supabase-js');
 const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 sb.rpc('exec_sql', {{ sql: '{SQL}' }}).then(r => console.log('OK:', JSON.stringify(r.error))).catch(e => console.error('ERR:', e.message));

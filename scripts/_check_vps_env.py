@@ -11,7 +11,7 @@ def check_env():
     ssh.connect(HOST, username=USER, password=PASS, timeout=30)
     
     print("--- Environment Variables in VPS (.env.production) ---")
-    stdin, stdout, stderr = ssh.exec_command("cat /root/virtual-tryon/backend/.env.production")
+    stdin, stdout, stderr = ssh.exec_command("cat /root/Lookitry/backend/.env.production")
     out = stdout.read().decode()
     
     keys_to_show = ["FRONTEND_URL", "CORS_ORIGIN", "COOKIE_DOMAIN", "NODE_ENV", "JWT_SECRET", "SUPABASE_URL"]

@@ -20,14 +20,14 @@ with open("backend/.env.production", "r") as f:
 
 # Escribirlo en el VPS via SFTP
 sftp = ssh.open_sftp()
-with sftp.open("/root/virtual-tryon/backend/.env.production", "w") as remote_file:
+with sftp.open("/root/Lookitry/backend/.env.production", "w") as remote_file:
     remote_file.write(env_content)
 sftp.close()
 print(".env copiado al VPS")
 
 # Reiniciar solo el backend (up -d aplica los cambios del .env)
 _, stdout, stderr = ssh.exec_command(
-    "docker compose -f /root/virtual-tryon/docker-compose.backend.yml up -d",
+    "docker compose -f /root/Lookitry/docker-compose.backend.yml up -d",
     timeout=60
 )
 out = stdout.read().decode(errors="replace")
