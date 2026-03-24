@@ -30,9 +30,20 @@ export class WompiService {
     integritySecret: string;
     testMode: boolean;
   }> {
+    const isProdEnv = process.env.NODE_ENV === 'production' || process.env.FRONTEND_URL?.includes('lookitry.com');
     try {
       const s = await settingsService.getSettings();
-      if (s.wompi_test_mode) {
+      // Si el registro de la DB dice explícitamente test_mode=false, usamos PROD
+      if (s.wompi_test_mode === false) {
+        return {
+          publicKey: s.wompi_prod_public_key || process.env.WOMPI_PROD_PUBLIC_KEY || process.env.WOMPI_PUBLIC_KEY || '',
+          privateKey: s.wompi_prod_private_key || process.env.WOMPI_PROD_PRIVATE_KEY || process.env.WOMPI_PRIVATE_KEY || '',
+          eventsSecret: s.wompi_prod_events_secret || process.env.WOMPI_PROD_EVENTS_SECRET || process.env.WOMPI_EVENTS_SECRET || '',
+          integritySecret: s.wompi_prod_integrity_secret || process.env.WOMPI_PROD_INTEGRITY_SECRET || process.env.WOMPI_INTEGRITY_SECRET || '',
+          testMode: false,
+        };
+      } else {
+        // Por defecto (o si test_mode=true), usamos llaves de test
         return {
           publicKey: s.wompi_public_key || process.env.WOMPI_PUBLIC_KEY || '',
           privateKey: s.wompi_private_key || process.env.WOMPI_PRIVATE_KEY || '',
@@ -40,23 +51,17 @@ export class WompiService {
           integritySecret: s.wompi_integrity_secret || process.env.WOMPI_INTEGRITY_SECRET || '',
           testMode: true,
         };
-      } else {
-        return {
-          publicKey: s.wompi_prod_public_key || process.env.WOMPI_PUBLIC_KEY || '',
-          privateKey: s.wompi_prod_private_key || process.env.WOMPI_PRIVATE_KEY || '',
-          eventsSecret: s.wompi_prod_events_secret || process.env.WOMPI_EVENTS_SECRET || '',
-          integritySecret: s.wompi_prod_integrity_secret || process.env.WOMPI_INTEGRITY_SECRET || '',
-          testMode: false,
-        };
       }
     } catch {
       // Fallback a variables de entorno si falla la BD
+      // CRÍTICO: Si detectamos entorno de producción, usamos variables PROD_ correspondientes
+      const isActuallyProd = isProdEnv && process.env.WOMPI_PROD_PUBLIC_KEY;
       return {
-        publicKey: process.env.WOMPI_PUBLIC_KEY || '',
-        privateKey: process.env.WOMPI_PRIVATE_KEY || '',
-        eventsSecret: process.env.WOMPI_EVENTS_SECRET || '',
-        integritySecret: process.env.WOMPI_INTEGRITY_SECRET || '',
-        testMode: true,
+        publicKey: (isActuallyProd ? process.env.WOMPI_PROD_PUBLIC_KEY : process.env.WOMPI_PUBLIC_KEY) || '',
+        privateKey: (isActuallyProd ? process.env.WOMPI_PROD_PRIVATE_KEY : process.env.WOMPI_PRIVATE_KEY) || '',
+        eventsSecret: (isActuallyProd ? process.env.WOMPI_PROD_EVENTS_SECRET : process.env.WOMPI_EVENTS_SECRET) || '',
+        integritySecret: (isActuallyProd ? process.env.WOMPI_PROD_INTEGRITY_SECRET : process.env.WOMPI_INTEGRITY_SECRET) || '',
+        testMode: !isActuallyProd,
       };
     }
   }
@@ -87,7 +92,6 @@ export class WompiService {
   /**
    * Verifica la firma del webhook de Wompi.
    * Wompi docs: https://docs.wompi.co/en/docs/colombia/eventos/
-   * Intenta múltiples variantes de la fórmula para máxima compatibilidad.
    */
   async verifyWebhookSignature(payload: string, checksum: string): Promise<boolean> {
     const { eventsSecret, testMode } = await this.getActiveKeys();
@@ -99,35 +103,38 @@ export class WompiService {
     const tryHash = (data: string) => crypto.createHash('sha256').update(data).digest('hex');
 
     try {
+      // Intentar variante 1 (recomendada por Wompi para transacciones actualizadas)
+      // Estructura: transaction.id + transaction.status + transaction.amount_in_cents + timestamp + secret
       const event = JSON.parse(payload);
       const tx = event?.data?.transaction;
-      if (tx) {
-        const timestamp = event.timestamp?.toString() || '';
+      const timestamp = event?.timestamp;
 
-        // Variante 1 (nueva): id + status + amount_in_cents + timestamp + secret
-        const v1 = tryHash(`${tx.id}${tx.status}${tx.amount_in_cents}${timestamp}${eventsSecret}`);
+      if (tx && timestamp) {
+        // Aseguramos que amount sea string exacto como llega
+        const amountStr = String(tx.amount_in_cents);
+        const v1String = `${tx.id}${tx.status}${amountStr}${timestamp}${eventsSecret}`;
+        const v1 = tryHash(v1String);
         if (v1 === checksum) return true;
-
-        // Variante 2 (legacy): id + status + amount_in_cents + currency + secret
-        const v2 = tryHash(`${tx.id}${tx.status}${tx.amount_in_cents}${tx.currency}${eventsSecret}`);
+        
+        // Variante 2: legacy id + status + amount + currency + secret
+        const v2String = `${tx.id}${tx.status}${amountStr}${tx.currency}${eventsSecret}`;
+        const v2 = tryHash(v2String);
         if (v2 === checksum) return true;
-
-        // Variante 3: solo body raw + secret
-        const v3 = tryHash(payload + eventsSecret);
-        if (v3 === checksum) return true;
-
-        // Log para debug cuando falla
-        console.warn(`[Wompi] Firma NO coincide con ninguna variante. testMode=${testMode} tx.id=${tx.id} tx.status=${tx.status} tx.amount=${tx.amount_in_cents} timestamp=${timestamp}`);
-        console.warn(`[Wompi] checksum_recibido=${checksum}`);
-        console.warn(`[Wompi] v1=${v1} v2=${v2} v3=${v3}`);
       }
+
+      // Variante 3 (fallback universal): Body completo + Secret
+      // Importante: payload debe ser el raw string exacto
+      const v3 = tryHash(payload + eventsSecret);
+      if (v3 === checksum) return true;
+
+      // Debug detallado si todas fallan
+      console.warn(`[Wompi] Fallo de firma. testMode=${testMode} tx.id=${tx?.id} status=${tx?.status}`);
+      console.log(`[Wompi] Esperado checksum: ${checksum}`);
     } catch (e) {
-      console.error('[Wompi] Error parseando payload para verificación:', e);
+      console.error('[Wompi] Error parseando payload:', e);
     }
 
-    // Fallback final: body completo + secret
-    const vFinal = tryHash(payload + eventsSecret);
-    return vFinal === checksum;
+    return false;
   }
 
   /**
