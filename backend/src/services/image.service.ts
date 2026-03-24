@@ -50,6 +50,10 @@ export class ImageService {
       if (plan === 'BASIC') {
         // BASIC: Marca de agua pequeña en la esquina inferior derecha
         const wmWidth = Math.round(width * 0.10); // 10% del ancho es suficiente y elegante
+        const padding = 20; // Padding de 20px para evitar que se corte
+
+        const wmMetadata = await sharp(watermarkBuffer).metadata();
+        const wmHeight = Math.round((wmMetadata.height! / wmMetadata.width!) * wmWidth);
 
         const resizedWatermark = await sharp(watermarkBuffer)
           .resize({ width: wmWidth })
@@ -59,7 +63,8 @@ export class ImageService {
           .composite([
             {
               input: resizedWatermark,
-              gravity: 'southeast',
+              top: height - wmHeight - padding,
+              left: width - wmWidth - padding,
               blend: 'over'
             }
           ])

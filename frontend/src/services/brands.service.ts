@@ -1,5 +1,16 @@
 import { api } from './api';
 import type { Brand, UpdateBrandConfigDto } from '@/types';
+import type {
+  Command,
+  Smartphone,
+  Cpu,
+  Package,
+  Globe,
+  Sparkles,
+  Zap,
+  Rocket,
+  ChevronRight
+} from 'lucide-react';
 
 class BrandsService {
   async getCurrentBrand(): Promise<Brand> {
@@ -22,6 +33,11 @@ class BrandsService {
       trialGenerationsLimit: response.data.trial_generations_limit,
       headerColor: response.data.header_color,
       emailVerified: response.data.email_verified,
+      contactName: response.data.contact_name,
+      stateProvince: response.data.state_province,
+      postalCode: response.data.postal_code,
+      billingEmail: response.data.billing_email,
+      apiKey: response.data.api_key,
     };
     
     return brandData;
@@ -34,8 +50,19 @@ class BrandsService {
     address?: string;
     city?: string;
     country?: string;
+    state_province?: string;
+    postal_code?: string;
     nit?: string;
+    billing_email?: string;
     website?: string;
+    logo?: string;
+    primary_color?: string;
+    secondary_color?: string;
+    widget_template?: string;
+    button_text?: string;
+    welcome_message?: string;
+    header_color?: string;
+    slug?: string;
   }): Promise<void> {
     await api.patch('/brands/me', data);
   }
@@ -72,6 +99,12 @@ class BrandsService {
       trialEndDate: response.data.trial_end_date,
       trialGenerationsLimit: response.data.trial_generations_limit,
       headerColor: response.data.header_color,
+      emailVerified: response.data.email_verified,
+      contactName: response.data.contact_name,
+      stateProvince: response.data.state_province,
+      postalCode: response.data.postal_code,
+      billingEmail: response.data.billing_email,
+      apiKey: response.data.api_key,
     };
     
     return brandData;

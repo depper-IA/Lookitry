@@ -1,80 +1,111 @@
-﻿'use client';
+'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { CreditCard, CheckCircle, Mail, MessageCircle, ArrowUpCircle, ArrowDownCircle, AlertCircle, Banknote, RefreshCw } from 'lucide-react';
+import { 
+  CreditCard, 
+  CheckCircle, 
+  Mail, 
+  MessageCircle, 
+  ArrowUpCircle, 
+  ArrowDownCircle, 
+  AlertCircle, 
+  Banknote, 
+  RefreshCw,
+  Sparkles,
+  Zap,
+  Globe,
+  Rocket,
+  ChevronRight
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { subscriptionService } from '@/services/subscription.service';
 import { formatCurrency } from '@/utils/currency';
 import type { SubscriptionPayment } from '@/types';
 import type { SubscriptionInfo } from '@/services/subscription.service';
 import { Spinner } from '@/components/ui/Spinner';
 
-// ── Constantes ────────────────────────────────────────────────────────────────
-
-const PLAN_INFO_STATIC = {
-  BASIC: {
-    name: 'Plan Básico',
-    price: 150000,
-    gradient: 'from-[#0a0a0a] via-[#141414] to-[#0d0a08]',
-    accentColor: '#FF5C3A',
-    glowColor: 'rgba(255,92,58,0.25)',
-    features: [
-      'Hasta 5 productos',
-      '400 generaciones/mes',
-      'Branding básico (logo, colores)',
-      'Templates Minimal y Modern',
-      'Soporte por WhatsApp/email',
-      'URL propia del probador',
-    ],
-  },
-  PRO: {
-    name: 'Plan Pro',
-    price: 250000,
-    gradient: 'from-[#080808] via-[#111111] to-[#0a0806]',
-    accentColor: '#FF5C3A',
-    glowColor: 'rgba(255,92,58,0.35)',
-    features: [
-      'Hasta 15 productos',
-      '1.200 generaciones/mes',
-      'Branding avanzado + personalización completa',
-      'Templates Minimal, Modern y Bold',
-      'Texto del botón personalizado',
-      'Mensaje de bienvenida personalizado',
-      'Modificación del slug del probador',
-      'Soporte prioritario',
-      'Integración con sistemas externos',
-    ],
-  },
-} as const;
-
-const TRIAL_INFO = {
-  name: 'Plan Trial',
-  gradient: 'from-[#0a0a0a] via-[#141414] to-[#0d0a08]',
-  accentColor: '#FF5C3A',
-  glowColor: 'rgba(255,92,58,0.25)',
-  features: [
-    '1 producto',
-    '50 generaciones incluidas',
-    'Acceso completo al probador virtual',
-    'Mini-landing pública',
-    'Soporte por WhatsApp/email',
-  ],
+// ── Animaciones ──────────────────────────────────────────────────────────────
+const containerVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { 
+      duration: 0.7,
+      staggerChildren: 0.12
+    }
+  }
 };
 
-type PlanKey = keyof typeof PLAN_INFO_STATIC;
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
+// ── Constantes Estilográficas ────────────────────────────────────────────────
+const DESIGN_SYSTEM = {
+  BASIC: {
+    name: 'Lookitry Basic',
+    color: '#FF5C3A',
+    secondaryColor: '#FF5C3A',
+    glow: 'rgba(255, 92, 58, 0.3)',
+    bg: 'bg-[var(--bg-card)]',
+    icon: <Globe className="w-8 h-8" />,
+    label: 'Impulso Inicial'
+  },
+  PRO: {
+    name: 'Lookitry Pro',
+    color: '#FF5C3A',
+    secondaryColor: '#D13C1C',
+    glow: 'rgba(255, 92, 58, 0.4)',
+    bg: 'bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-card)] to-[#FF5C3A]/5',
+    icon: <Rocket className="w-8 h-8" />,
+    label: 'Máximo ADN'
+  },
+  TRIAL: {
+     name: 'Laboratorio Trial',
+     color: '#FF5C3A',
+     secondaryColor: '#FF5C3A',
+     glow: 'rgba(255, 92, 58, 0.3)',
+     bg: 'bg-[var(--bg-card)]',
+     icon: <Zap className="w-8 h-8" />,
+     label: 'Puerta de Enlace'
+  }
+};
+
+const PLAN_FEATURES = {
+  BASIC: [
+    'Hasta 5 productos activos',
+    '400 generaciones mensuales',
+    'Branding base (Logo / Colores)',
+    'Templates: Minimal & Modern',
+    'Soporte estándar WhatsApp',
+    'Probador en URL propia slug'
+  ],
+  PRO: [
+    'Hasta 15 productos activos',
+    '1.200 generaciones mensuales',
+    'Control Total de Branding',
+    'Templates: All Incl. Bold',
+    'Textos de botón personalizados',
+    'Mensaje de bienvenida único',
+    'Slug personalizado ilimitado',
+    'Soporte Prioritario VIP'
+  ]
+};
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
-  active:        { label: 'Activa',      color: 'text-emerald-500', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-  expiring_soon: { label: 'Por vencer',  color: 'text-amber-500',   bg: 'bg-amber-500/10 border-amber-500/20'   },
-  expired:       { label: 'Vencida',     color: 'text-red-500',     bg: 'bg-red-500/10 border-red-500/20'       },
-  suspended:     { label: 'Suspendida',  color: 'text-red-500',     bg: 'bg-red-500/10 border-red-500/20'       },
+  active:        { label: 'Sincronizada', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
+  expiring_soon: { label: 'Fuga de ADN',   color: 'text-amber-400',   bg: 'bg-amber-500/10 border-amber-500/20'   },
+  expired:       { label: 'Desactivada',  color: 'text-rose-400',    bg: 'bg-rose-500/10 border-rose-500/20'       },
+  suspended:     { label: 'Suspendida',   color: 'text-rose-400',    bg: 'bg-rose-500/10 border-rose-500/20'       },
 };
 
 const PAYMENT_STATUS: Record<string, { label: string; color: string }> = {
-  completed: { label: 'Completado',  color: 'text-emerald-500' },
-  pending:   { label: 'Pendiente',   color: 'text-amber-500'   },
-  failed:    { label: 'Fallido',     color: 'text-red-500'     },
-  refunded:  { label: 'Reembolsado', color: 'text-[var(--text-muted)]' },
+  completed: { label: 'Completado',  color: 'text-emerald-400' },
+  pending:   { label: 'Pendiente',   color: 'text-amber-400'   },
+  failed:    { label: 'Excepción',   color: 'text-rose-400'     },
 };
 
 function formatDate(d?: string | null): string {
@@ -92,36 +123,19 @@ function formatDateTime(d?: string | null): string {
   });
 }
 
-// ── Página principal ──────────────────────────────────────────────────────────
-
 export default function SubscriptionPage() {
   const router = useRouter();
   const [info, setInfo] = useState<SubscriptionInfo | null>(null);
   const [payments, setPayments] = useState<SubscriptionPayment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dynamicPrices, setDynamicPrices] = useState<{ BASIC: number; PRO: number; TRIAL: number }>({ BASIC: 150000, PRO: 250000, TRIAL: 0 });
+  const [paySettings, setPaySettings] = useState<any>(null);
 
-  // Estados para Filtrado y Paginación del Historial
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  // Filtros y paginación
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
-  const [dynamicPrices, setDynamicPrices] = useState<{ BASIC: number; PRO: number }>({
-    BASIC: PLAN_INFO_STATIC.BASIC.price,
-    PRO: PLAN_INFO_STATIC.PRO.price,
-  });
-  const [paySettings, setPaySettings] = useState<{
-    wompiEnabled: boolean;
-    wompiPublicKey: string;
-    manualEnabled: boolean;
-    manualInstructions: string;
-    manualWhatsapp: string;
-    manualEmail: string;
-    transferEnabled: boolean;
-    transferBankName: string;
-    transferAccountNumber: string;
-    transferAccountType: string;
-    transferAccountHolder: string;
-  } | null>(null);
+  const itemsPerPage = 6;
 
   useEffect(() => {
     const load = async () => {
@@ -129,29 +143,20 @@ export default function SubscriptionPage() {
         const [subResult, paymentsResult, settingsResult, pricingResult] = await Promise.allSettled([
           subscriptionService.getSubscriptionInfo(),
           subscriptionService.getPayments(),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/payment-settings/public`)
-            .then(r => r.ok ? r.json() : null),
-          fetch(
-            `${process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vkdooutklowctuudjnkl.supabase.co'}/rest/v1/pricing_config?id=in.(basic,pro)&select=id,data`,
-            {
-              headers: {
-                apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-                Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-              },
-            }
-          ).then(r => r.ok ? r.json() : null),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
+          fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?id=in.(basic,pro)&select=id,data`, {
+            headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}` },
+          }).then(r => r.ok ? r.json() : null),
         ]);
         if (subResult.status === 'fulfilled') setInfo(subResult.value);
         if (paymentsResult.status === 'fulfilled') setPayments(paymentsResult.value);
-        if (settingsResult.status === 'fulfilled' && settingsResult.value) {
-          setPaySettings(settingsResult.value);
-        }
+        if (settingsResult.status === 'fulfilled') setPaySettings(settingsResult.value);
         if (pricingResult.status === 'fulfilled' && Array.isArray(pricingResult.value)) {
-          const prices = { BASIC: PLAN_INFO_STATIC.BASIC.price, PRO: PLAN_INFO_STATIC.PRO.price };
-          for (const row of pricingResult.value) {
-            if (row.id === 'basic' && row.data?.precio_mensual_cop) prices.BASIC = row.data.precio_mensual_cop;
-            if (row.id === 'pro'   && row.data?.precio_mensual_cop) prices.PRO   = row.data.precio_mensual_cop;
-          }
+          const prices = { BASIC: 150000, PRO: 250000, TRIAL: 0 };
+          pricingResult.value.forEach((row: any) => {
+            if (row.id === 'basic') prices.BASIC = row.data.precio_mensual_cop;
+            if (row.id === 'pro') prices.PRO = row.data.precio_mensual_cop;
+          });
           setDynamicPrices(prices);
         }
       } finally {
@@ -161,400 +166,312 @@ export default function SubscriptionPage() {
     load();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-64 py-24">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  const planKey = (info?.brand?.plan ?? 'BASIC') as keyof typeof DESIGN_SYSTEM;
+  const inTrial = info?.isInTrial ?? false;
+  const currentDesign = inTrial ? DESIGN_SYSTEM.TRIAL : DESIGN_SYSTEM[planKey];
+  const nextPlan = planKey === 'BASIC' ? 'PRO' : 'BASIC';
 
-  if (!info) {
-    return (
-      <div className="text-center py-16 flex flex-col items-center justify-center">
-        <AlertCircle className="w-12 h-12 mb-4 opacity-50 text-[var(--text-muted)]" />
-        <p className="text-sm font-bold uppercase tracking-widest text-[var(--text-muted)]">No se pudo cargar la información de suscripción.</p>
-      </div>
-    );
-  }
-
-  const plan = (info.brand.plan as PlanKey) in PLAN_INFO_STATIC ? (info.brand.plan as PlanKey) : 'BASIC';
-  const PLAN_INFO = {
-    BASIC: { ...PLAN_INFO_STATIC.BASIC, price: dynamicPrices.BASIC },
-    PRO:   { ...PLAN_INFO_STATIC.PRO,   price: dynamicPrices.PRO },
-  };
-  const planInfo    = PLAN_INFO[plan];
-  const statusInfo  = STATUS_LABELS[info.status ?? 'active'] ?? STATUS_LABELS.active;
-  const inTrial     = info.isInTrial ?? false;
-  const trialDaysLeft = info.trialDaysRemaining ?? 0;
-
-  // Filtrado de pagos
-  const filteredPayments = payments.filter(p => {
-    if (!p.paymentDate) return true;
-    const pDate = new Date(p.paymentDate);
-    if (startDate) {
-      const start = new Date(startDate);
-      if (pDate < start) return false;
-    }
-    if (endDate) {
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
-      if (pDate > end) return false;
-    }
-    return true;
-  });
-
-  // Paginación
-  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
-  const paginatedPayments = filteredPayments.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const progressPercent = info.daysRemaining != null
+  const progressPercent = info?.daysRemaining != null
     ? Math.min(100, Math.max(0, Math.round(((30 - info.daysRemaining) / 30) * 100)))
     : 100;
 
-  const heroGradient = inTrial ? TRIAL_INFO.gradient  : planInfo.gradient;
-  const heroAccent   = inTrial ? TRIAL_INFO.accentColor : planInfo.accentColor;
-  const heroTitle    = inTrial ? TRIAL_INFO.name : planInfo.name;
+  // Lógica de filtrado y paginación
+  const filteredPayments = useMemo(() => {
+    return payments.filter(p => {
+      const matchesSearch = p.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          p.amount.toString().includes(searchTerm);
+      const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [payments, searchTerm, statusFilter]);
+
+  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
+  const pagedPayments = filteredPayments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Spinner size="lg" /></div>;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 pb-16">
-
-      {/* HEADER */}
-      <header className="flex flex-col gap-1.5">
-        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[var(--text-primary)] italic uppercase font-jakarta">
-          Facturación y Planes
-        </h1>
-        <p className="text-sm text-[var(--text-secondary)] font-medium max-w-2xl leading-relaxed">
-          Administra los recursos de tu probador virtual, revisa tus límites y actualiza tus métodos de pago en cualquier momento.
-        </p>
-      </header>
-
-      {/* ══ HERO PLAN ══ */}
-      <div className={`rounded-[2rem] sm:rounded-[3rem] bg-gradient-to-br ${heroGradient} p-6 sm:p-8 md:p-10 text-white shadow-2xl relative overflow-hidden`}>
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full blur-3xl opacity-60"
-            style={{ background: `radial-gradient(circle, ${heroAccent}55 0%, transparent 70%)` }} />
-          <div className="absolute -bottom-16 -left-16 w-64 h-64 rounded-full blur-2xl opacity-40"
-            style={{ background: `radial-gradient(circle, ${heroAccent}33 0%, transparent 70%)` }} />
-          <div className="absolute inset-0 opacity-[0.04]"
-            style={{ backgroundImage: `linear-gradient(${heroAccent} 1px, transparent 1px), linear-gradient(90deg, ${heroAccent} 1px, transparent 1px)`, backgroundSize: '60px 60px' }} />
-          <div className="absolute top-0 left-0 right-0 h-px"
-            style={{ background: `linear-gradient(90deg, transparent, ${heroAccent}88, transparent)` }} />
-        </div>
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-start md:justify-between gap-6 md:gap-8">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="inline-block w-2 h-2 rounded-full animate-pulse flex-shrink-0"
-                style={{ backgroundColor: heroAccent, boxShadow: `0 0 8px ${heroAccent}` }} />
-              <p className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: `${heroAccent}cc` }}>Tu plan actual</p>
-            </div>
-            <div className="flex items-end gap-3 flex-wrap mb-3">
-              <h2 className="text-4xl sm:text-5xl font-black tracking-tighter italic uppercase leading-none"
-                style={{ textShadow: `0 0 60px ${heroAccent}44` }}>
-                {heroTitle}
-              </h2>
-              <span className="px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest mb-1 border flex-shrink-0"
-                style={{ color: heroAccent, borderColor: `${heroAccent}44`, background: `${heroAccent}15`, boxShadow: `0 0 20px ${heroAccent}20` }}>
-                {inTrial ? 'Trial activo' : statusInfo.label}
-              </span>
-            </div>
-            <div className="space-y-1">
-              <p className="text-white/80 text-lg font-black tracking-tight">
-                {inTrial ? (
-                  <span className="text-sm font-bold uppercase tracking-widest opacity-60">Período de prueba gratuito</span>
-                ) : (
-                  <>{formatCurrency(planInfo.price)}<span className="text-sm font-bold uppercase tracking-widest opacity-50"> /mes</span></>
-                )}
-              </p>
-              {!inTrial && info.endDate && (
-                <p className="text-[10px] font-black uppercase tracking-[0.1em] text-white/40">
-                  Próxima facturación: <span className="text-white/80 ml-1">{formatDate(info.endDate)}</span>
-                </p>
-              )}
-            </div>
-            <div className="mt-8 max-w-sm">
-              <div className="flex justify-between items-center mb-2 gap-2">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 flex-shrink-0">Renovación</span>
-                <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg flex-shrink-0"
-                  style={{ color: heroAccent, background: `${heroAccent}18`, border: `1px solid ${heroAccent}30` }}>
-                  {inTrial
-                    ? (trialDaysLeft > 0 ? `${trialDaysLeft} días` : 'Trial vencido')
-                    : (info.daysRemaining != null && info.daysRemaining > 0 ? `${info.daysRemaining} días` : 'Vencida')}
-                </span>
-              </div>
-              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                <div className="h-full rounded-full transition-all duration-1000"
-                  style={{
-                    width: `${inTrial ? Math.max(5, Math.round((trialDaysLeft / (info.trialDaysRemaining ?? 7)) * 100)) : progressPercent}%`,
-                    background: `linear-gradient(90deg, ${heroAccent}88, ${heroAccent})`,
-                    boxShadow: `0 0 12px ${heroAccent}88`,
-                  }} />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-row md:flex-col gap-3 flex-shrink-0 flex-wrap">
-            {inTrial ? (
-              <>
-                <button onClick={() => router.push('/dashboard/checkout?plan=BASIC')}
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all hover:scale-[1.02] active:scale-95 shadow-2xl whitespace-nowrap"
-                  style={{ background: heroAccent, color: '#ffffff', boxShadow: `0 8px 32px ${heroAccent}50` }}>
-                  <ArrowUpCircle className="w-4 h-4 flex-shrink-0" /> Activar Básico
-                </button>
-                <button onClick={() => router.push('/dashboard/checkout?plan=PRO')}
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all hover:scale-[1.02] active:scale-95 border whitespace-nowrap"
-                  style={{ color: heroAccent, borderColor: `${heroAccent}40`, background: `${heroAccent}12`, backdropFilter: 'blur(12px)' }}>
-                  <ArrowUpCircle className="w-4 h-4 flex-shrink-0" /> Activar PRO
-                </button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => router.push(`/dashboard/checkout?plan=${plan === 'BASIC' ? 'PRO' : 'BASIC'}`)}
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all hover:scale-[1.02] active:scale-95 border whitespace-nowrap"
-                  style={{ color: heroAccent, borderColor: `${heroAccent}40`, background: `${heroAccent}12`, backdropFilter: 'blur(12px)' }}>
-                  {plan === 'BASIC'
-                    ? <><ArrowUpCircle className="w-4 h-4 flex-shrink-0" /> Cambiar a Pro</>
-                    : <><ArrowDownCircle className="w-4 h-4 flex-shrink-0" /> Cambiar a Básico</>}
-                </button>
-                {(info?.status === 'expiring_soon' || info?.status === 'expired') && (
-                  <button onClick={() => router.push(`/dashboard/checkout?plan=${plan}`)}
-                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all hover:scale-[1.02] active:scale-95 shadow-2xl whitespace-nowrap"
-                    style={{ background: heroAccent, color: '#ffffff', boxShadow: `0 8px 32px ${heroAccent}50` }}>
-                    <CreditCard className="w-4 h-4 flex-shrink-0" /> Renovar ahora
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ══ PLANES EN FILA ══ */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-            <RefreshCw className="w-5 h-5 text-[#FF5C3A]" />
-          </div>
-          <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Nuestros Planes</h3>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {(Object.keys(PLAN_INFO) as PlanKey[]).map(p => {
-            const pi = PLAN_INFO[p];
-            const isCurrent = !inTrial && p === plan;
-            return (
-              <div key={p}
-                className={`rounded-[2rem] border-2 p-6 transition-all duration-300 relative overflow-hidden flex flex-col ${isCurrent ? 'bg-[var(--bg-card)] border-[#FF5C3A] shadow-2xl shadow-[#FF5C3A]/10' : 'bg-[var(--bg-base)] border-[var(--border-color)] hover:border-[var(--text-muted)]'}`}>
-                {isCurrent && (
-                  <div className="absolute top-0 right-0 px-4 py-2 bg-[#FF5C3A] text-white text-[9px] font-black uppercase tracking-widest rounded-bl-3xl">
-                    Tu Plan Actual
-                  </div>
-                )}
-                <div className="mb-6">
-                  <h4 className={`text-3xl font-black uppercase italic tracking-tighter ${isCurrent ? 'text-[#FF5C3A]' : 'text-[var(--text-primary)]'}`}>{pi.name}</h4>
-                  <p className={`text-xs font-bold uppercase tracking-widest mt-2 ${isCurrent ? 'text-[#FF5C3A]' : 'text-[var(--text-muted)]'}`}>
-                    {formatCurrency(pi.price)}/mes
-                  </p>
-                </div>
-                <ul className="space-y-3 mb-6 flex-1">
-                  {pi.features.map((f, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${isCurrent ? 'bg-[#FF5C3A]/20' : 'bg-[#FF5C3A]/10'}`}>
-                        <CheckCircle className="w-3 h-3 text-[#FF5C3A]" />
-                      </div>
-                      <span className="text-sm font-medium text-[var(--text-secondary)] leading-snug">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                {(inTrial || !isCurrent) && (
-                  <button onClick={() => router.push(`/dashboard/checkout?plan=${p}`)}
-                    className="w-full py-3.5 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all bg-[#FF5C3A] text-white hover:brightness-110 active:scale-95 shadow-lg shadow-[#FF5C3A]/20">
-                    {inTrial ? `Activar ${pi.name}` : `Cambiar a ${pi.name}`}
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ══ MÉTODOS DE PAGO + HISTORIAL ══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-
-        {/* Métodos de Pago */}
-        <div className="bg-[var(--bg-card)] p-8 rounded-[2rem] border border-[var(--border-color)] space-y-5 shadow-xl shadow-black/5">
+    <motion.div 
+      initial="hidden" animate="visible" variants={containerVariants}
+      className="max-w-6xl mx-auto space-y-12 pb-24 px-4"
+    >
+      {/* ══ TITULO VANGUARDISTA ══ */}
+      <motion.header variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-              <Banknote className="w-5 h-5 text-[#FF5C3A]" />
-            </div>
-            <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Métodos de Pago</h3>
+             <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-[#FF5C3A]" />
+             </div>
+             <h1 className="text-4xl font-[900] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta">Ecosistema Orbital</h1>
           </div>
-
-          {paySettings?.wompiEnabled && (
-            <div className="bg-[var(--bg-base)] p-5 rounded-[1.5rem] border border-[var(--border-color)] hover:border-[#FF5C3A]/50 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-[#FF5C3A] flex items-center justify-center shadow-lg shadow-[#FF5C3A]/30 flex-shrink-0">
-                  <CreditCard className="w-4 h-4 text-white" />
-                </div>
-                <span className="font-black text-sm uppercase tracking-tight italic text-[var(--text-primary)]">Pago en línea</span>
-              </div>
-              <p className="text-xs font-medium text-[var(--text-secondary)] mb-4 leading-relaxed">
-                Paga de forma segura con tarjeta, PSE o Nequi vía Wompi.
-              </p>
-              <button onClick={() => router.push(`/dashboard/checkout?plan=${plan}`)}
-                className="flex items-center justify-center gap-2 w-full px-5 py-2.5 bg-[var(--bg-card)] border-2 border-[#FF5C3A] text-[#FF5C3A] rounded-xl font-black uppercase tracking-widest text-[10px] transition-all hover:bg-[#FF5C3A] hover:text-white active:scale-95">
-                Renovar ahora
-              </button>
-            </div>
-          )}
-
-          {paySettings?.transferEnabled && (
-            <div className="bg-[var(--bg-base)] p-5 rounded-[1.5rem] border border-[var(--border-color)] hover:border-[var(--text-muted)] transition-all duration-300">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-[var(--text-primary)]/10 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4" style={{ color: 'var(--text-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                  </svg>
-                </div>
-                <span className="font-black text-sm uppercase tracking-tight italic text-[var(--text-primary)]">Transferencia</span>
-              </div>
-              <div className="text-[11px] space-y-2 bg-[var(--bg-card)] p-3 rounded-xl border border-[var(--border-color)]">
-                {paySettings.transferBankName && <p className="font-medium text-[var(--text-secondary)] flex justify-between gap-2">Banco <span className="text-[var(--text-primary)] font-black uppercase tracking-tight">{paySettings.transferBankName}</span></p>}
-                {paySettings.transferAccountHolder && <p className="font-medium text-[var(--text-secondary)] flex justify-between gap-2">Titular <span className="text-[var(--text-primary)] font-black uppercase tracking-tight">{paySettings.transferAccountHolder}</span></p>}
-                {paySettings.transferAccountNumber && <p className="font-medium text-[var(--text-secondary)] flex justify-between gap-2">Cuenta {paySettings.transferAccountType} <span className="text-[var(--text-primary)] font-black tracking-widest">{paySettings.transferAccountNumber}</span></p>}
-              </div>
-            </div>
-          )}
-
-          {(paySettings?.manualEnabled || !paySettings) && (
-            <div className="bg-[var(--bg-base)] p-5 rounded-[1.5rem] border border-[var(--border-color)]">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                  <MessageCircle className="w-4 h-4 text-emerald-500" />
-                </div>
-                <span className="font-black text-sm uppercase tracking-tight italic text-[var(--text-primary)]">Soporte Directo</span>
-              </div>
-              <p className="text-xs font-medium text-[var(--text-secondary)] mb-4">
-                {paySettings?.manualInstructions || 'Contáctanos por WhatsApp para coordinar tu pago.'}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {(paySettings?.manualWhatsapp || !paySettings) && (
-                  <a href={`https://wa.me/${(paySettings?.manualWhatsapp || '573105436281').replace(/\D/g, '')}`}
-                    target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2.5 bg-[#25D366] text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all hover:brightness-110 active:scale-95">
-                    <MessageCircle className="w-3.5 h-3.5 fill-current" /> WhatsApp
-                  </a>
-                )}
-                {(paySettings?.manualEmail || !paySettings) && (
-                  <a href={`mailto:${paySettings?.manualEmail || 'info@lookitry.com'}`}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-xl font-black uppercase tracking-widest text-[10px] transition-all hover:border-[var(--text-muted)] active:scale-95">
-                    <Mail className="w-3.5 h-3.5" /> Email
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
+          <p className="text-[11px] font-black tracking-[0.2em] text-[var(--text-muted)] uppercase opacity-60">Matriz de facturación y control de ciclos</p>
         </div>
+      </motion.header>
 
-        {/* Historial de Transacciones */}
-        <div className="bg-[var(--bg-card)] p-8 rounded-[2rem] border border-[var(--border-color)] shadow-xl shadow-black/5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-                <CreditCard className="w-5 h-5 text-[#FF5C3A]" />
-              </div>
-              <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Historial</h3>
-            </div>
-            
-            {/* Filtros de Fecha */}
-            <div className="flex items-center gap-2">
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => { setStartDate(e.target.value); setCurrentPage(1); }}
-                className="text-[10px] font-bold uppercase bg-[var(--bg-base)] border border-[var(--border-color)] rounded-lg px-2 py-1.5 text-[var(--text-primary)] outline-none focus:border-[#FF5C3A]/50 transition-colors"
-              />
-              <span className="text-[var(--text-muted)] text-[10px] font-black">—</span>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => { setEndDate(e.target.value); setCurrentPage(1); }}
-                className="text-[10px] font-bold uppercase bg-[var(--bg-base)] border border-[var(--border-color)] rounded-lg px-2 py-1.5 text-[var(--text-primary)] outline-none focus:border-[#FF5C3A]/50 transition-colors"
-              />
-            </div>
-          </div>
+      {/* ══ HERO CARD PREMIUM (GLASS-METAL) ══ */}
+      <motion.div 
+        variants={itemVariants} 
+        className={`relative overflow-hidden rounded-[3.5rem] p-8 sm:p-12 ${currentDesign.bg} border border-[var(--border-color)] shadow-2xl shadow-black/5`}
+      >
+         {/* Animated Orbs */}
+         <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.15] transition-all duration-[3000ms]" style={{ background: `radial-gradient(circle, ${currentDesign.color} 0%, transparent 70%)` }} />
+         <div className="absolute -bottom-20 -left-20 w-[400px] h-[400px] rounded-full blur-[120px] opacity-[0.1]" style={{ background: `radial-gradient(circle, ${currentDesign.secondaryColor || '#FF5C3A'} 0%, transparent 70%)` }} />
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[160px] opacity-[0.03]" style={{ background: `radial-gradient(circle, ${currentDesign.color} 0%, transparent 70%)` }} />
+         
+         {/* Grid pattern overlay */}
+         <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
 
-          {(!Array.isArray(paginatedPayments) || paginatedPayments.length === 0) ? (
-            <div className="text-center py-12 bg-[var(--bg-base)] rounded-2xl border border-dashed border-[var(--border-color)]">
-              <CreditCard className="w-8 h-8 mx-auto mb-3 opacity-20" style={{ color: 'var(--text-muted)' }} />
-              <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Sin transacciones aún</p>
+         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+               <div className="space-y-1">
+                  <div className="flex items-center gap-2 mb-4">
+                     <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-[#FF5C3A] bg-[#FF5C3A]/10 border border-[#FF5C3A]/20">
+                        Frecuencia Actual
+                     </span>
+                  </div>
+                  <h2 className="text-6xl sm:text-7xl font-[950] tracking-tighter italic uppercase text-[var(--text-primary)] leading-none">
+                     {currentDesign.name}
+                  </h2>
+               </div>
+
+                <div className="flex items-center gap-10">
+                  <div className="space-y-1">
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Ciclo de Renovación</p>
+                     <p className="text-xl font-black text-[var(--text-primary)] italic">{formatDate(info?.brand?.subscriptionEndDate)}</p>
+                  </div>
+                  <div className="space-y-1">
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Inversión Mensual</p>
+                     <p className="text-xl font-black text-[#FF5C3A] italic">{inTrial ? '$0' : formatCurrency(dynamicPrices[planKey] ?? 0)}</p>
+                  </div>
+               </div>
+
+               <div className="space-y-3 max-w-sm">
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]">
+                     <span className="text-white/40">Días orbitales restantes</span>
+                     <span className="text-[#FF5C3A]">{info?.daysRemaining ?? 0} DÍAS</span>
+                  </div>
+                  <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                     <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progressPercent}%` }}
+                        transition={{ duration: 1.5, ease: "circOut" }}
+                        className="h-full rounded-full"
+                        style={{ background: `linear-gradient(90deg, ${currentDesign.color}44, ${currentDesign.color})`, boxShadow: `0 0 20px ${currentDesign.color}55` }}
+                     />
+                  </div>
+               </div>
             </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+
+            <div className="flex flex-col gap-4 bg-[var(--bg-input)] backdrop-blur-3xl p-10 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl">
+               <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-2xl bg-[var(--bg-card)] flex items-center justify-center text-[#FF5C3A] shadow-inner">
+                     {currentDesign.icon}
+                  </div>
+                  <div>
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Status General</p>
+                     <p className={`text-sm font-black uppercase italic ${STATUS_LABELS[info?.status ?? 'active'].color}`}>
+                        {STATUS_LABELS[info?.status ?? 'active'].label}
+                     </p>
+                  </div>
+               </div>
+
+               <div className="space-y-2 mb-6">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Acciones de Comando</p>
+                  {inTrial ? (
+                     <div className="grid grid-cols-1 gap-3">
+                        <button onClick={() => router.push('/dashboard/checkout?plan=BASIC')} className="w-full py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl hover:brightness-110 transition-all active:scale-95">Inyectar BASIC</button>
+                        <button onClick={() => router.push('/dashboard/checkout?plan=PRO')} className="w-full py-5 border-2 border-[var(--border-color)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95">Evolucionar PRO</button>
+                     </div>
+                  ) : (
+                     <div className="grid grid-cols-1 gap-3">
+                        <button onClick={() => router.push(`/dashboard/checkout?plan=${nextPlan}`)} className="w-full py-5 border-2 border-[#FF5C3A]/40 hover:bg-[#FF5C3A]/5 text-[#FF5C3A] rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95">
+                           Cambiar a {nextPlan}
+                        </button>
+                        {(info?.status !== 'active') && (
+                           <button onClick={() => router.push(`/dashboard/checkout?plan=${planKey}`)} className="w-full py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-[#FF5C3A]/30 active:scale-95 transition-all">Sincronizar Ciclo</button>
+                        )}
+                     </div>
+                  )}
+               </div>
+            </div>
+         </div>
+      </motion.div>
+
+      {/* ══ FILA DE PLANES ESTILIZADA ══ */}
+      <motion.div variants={itemVariants} className="space-y-8">
+         <div className="flex items-center gap-4">
+            <div className="h-px bg-[var(--border-color)] flex-1" />
+            <h3 className="text-xl font-[900] uppercase italic tracking-tighter text-[var(--text-primary)]">Amplía tu Alcance</h3>
+            <div className="h-px bg-[var(--border-color)] flex-1" />
+         </div>
+
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            {['BASIC', 'PRO'].map((p) => {
+               const pk = p as 'BASIC' | 'PRO';
+               const isCurrent = !inTrial && planKey === pk;
+               return (
+                  <motion.div 
+                     key={pk}
+                     whileHover={{ y: -8 }}
+                     className={`relative p-10 rounded-[3.5rem] border-2 transition-all duration-500 overflow-hidden ${isCurrent ? 'bg-[var(--bg-card)] border-[#FF5C3A] shadow-3xl shadow-[#FF5C3A]/5' : 'bg-[var(--bg-base)] border-[var(--border-color)] hover:border-[var(--text-muted)]'}`}
+                  >
+                     {isCurrent && (
+                        <div className="absolute top-0 right-0 px-8 py-3 bg-[#FF5C3A] text-white text-[9px] font-black uppercase tracking-[0.3em] rounded-bl-[2.5rem]">
+                           ADN Actual
+                        </div>
+                     )}
+                     <div className="mb-10">
+                        <h4 className={`text-4xl font-[950] tracking-tighter italic uppercase ${isCurrent ? 'text-[#FF5C3A]' : 'text-[var(--text-primary)]'}`}>{pk}</h4>
+                        <div className="flex items-baseline gap-2 mt-2">
+                           <span className="text-2xl font-black text-[var(--text-primary)]">{formatCurrency(dynamicPrices[pk])}</span>
+                           <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">/ MES</span>
+                        </div>
+                     </div>
+                     <ul className="space-y-4 mb-12">
+                        {PLAN_FEATURES[pk].map((f, i) => (
+                           <li key={i} className="flex items-start gap-4">
+                              <div className={`mt-1 flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${isCurrent ? 'bg-[#FF5C3A]/20' : 'bg-[#FF5C3A]/10'}`}>
+                                 <CheckCircle className="w-3 h-3 text-[#FF5C3A]" />
+                              </div>
+                              <span className="text-xs font-bold uppercase tracking-tight text-[var(--text-secondary)] opacity-80">{f}</span>
+                           </li>
+                        ))}
+                     </ul>
+                     <button 
+                        onClick={() => router.push(`/dashboard/checkout?plan=${pk}`)}
+                        className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95 ${isCurrent ? 'bg-[var(--bg-hover)] text-[var(--text-primary)] cursor-not-allowed opacity-50' : 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20 hover:brightness-110'}`}
+                        disabled={isCurrent}
+                     >
+                        {isCurrent ? 'SISTEMA CARGADO' : `ADQUIRIR ${pk}`}
+                     </button>
+                  </motion.div>
+               );
+            })}
+         </div>
+      </motion.div>
+
+      {/* ══ HISTORIAL & SOPORTE ══ */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+         <div className="lg:col-span-2 bg-[var(--bg-card)] rounded-[3rem] border border-[var(--border-color)] p-10 space-y-8 shadow-2xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+               <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+                     <RefreshCw className="w-5 h-5 text-[#FF5C3A]" />
+                  </div>
+                  <h3 className="text-xl font-black uppercase italic tracking-tighter text-[var(--text-primary)]">Trazas Financieras</h3>
+               </div>
+
+               <div className="flex flex-wrap items-center gap-4">
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      placeholder="Buscar por ID..." 
+                      value={searchTerm}
+                      onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                      className="bg-[var(--bg-input)] border border-[var(--border-color)] text-[10px] uppercase font-black tracking-widest px-10 py-3 rounded-full outline-none focus:border-[#FF5C3A] transition-all"
+                    />
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30 text-[var(--text-muted)]">
+                      <Zap size={14} />
+                    </div>
+                  </div>
+                  <select 
+                    value={statusFilter}
+                    onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                    className="bg-[var(--bg-input)] border border-[var(--border-color)] text-[10px] uppercase font-black tracking-widest px-6 py-3 rounded-full outline-none focus:border-[#FF5C3A] transition-all cursor-pointer"
+                  >
+                    <option value="all">TODOS</option>
+                    <option value="completed">COMPLETADOS</option>
+                    <option value="pending">PENDIENTES</option>
+                    <option value="failed">FALLIDOS</option>
+                  </select>
+               </div>
+            </div>
+
+            <div className="overflow-x-auto">
+               <table className="w-full text-left">
                   <thead>
-                    <tr className="border-b border-[var(--border-color)]">
-                      <th className="pb-3 text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Fecha</th>
-                      <th className="pb-3 text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest">Monto</th>
-                      <th className="pb-3 text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest text-right">Estado</th>
-                    </tr>
+                     <tr className="border-b border-[var(--border-color)] opacity-40">
+                        <th className="pb-5 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Fecha Astral</th>
+                        <th className="pb-5 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Inversión</th>
+                        <th className="pb-5 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] text-right">Efectuado</th>
+                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border-color)]">
-                    {paginatedPayments.map(p => {
-                      const st = PAYMENT_STATUS[p.status] ?? { label: p.status, color: 'text-[var(--text-muted)]' };
-                      return (
-                        <tr key={p.id} className="hover:bg-[var(--bg-base)] transition-colors">
-                          <td className="py-4 pr-4">
-                            <p className="text-xs font-black tracking-tight text-[var(--text-primary)]">{formatDateTime(p.paymentDate)}</p>
-                            <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mt-0.5">{p.paymentMethod ?? 'Manual'}</p>
-                          </td>
-                          <td className="py-4 pr-4 text-sm font-black text-[#FF5C3A] tracking-tighter">{formatCurrency(p.amount)}</td>
-                          <td className="py-4 text-right">
-                            <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border ${st.color}`}
-                              style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
-                              {st.label}
-                            </span>
-                          </td>
+                     {pagedPayments.map(p => (
+                        <tr key={p.id} className="group hover:bg-[var(--bg-hover)] transition-colors">
+                           <td className="py-6 pr-4">
+                              <p className="text-xs font-black italic text-[var(--text-primary)]">{formatDateTime(p.paymentDate)}</p>
+                              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50">{p.paymentMethod ?? 'Cibercrédito'}</p>
+                           </td>
+                           <td className="py-6 pr-4 text-sm font-black text-[#FF5C3A] tracking-tighter italic">{formatCurrency(p.amount)}</td>
+                           <td className="py-6 text-right">
+                              <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border border-[var(--border-color)] ${PAYMENT_STATUS[p.status]?.color ?? 'text-white'}`}>
+                                 {PAYMENT_STATUS[p.status]?.label ?? p.status}
+                              </span>
+                           </td>
                         </tr>
-                      );
-                    })}
+                     ))}
+                     {payments.length === 0 && (
+                        <tr><td colSpan={3} className="py-20 text-center text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-30">Vacío Galáctico</td></tr>
+                     )}
                   </tbody>
-                </table>
-              </div>
-
-              {/* Paginación */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-4 border-t border-[var(--border-color)]">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">
-                    Página {currentPage} de {totalPages}
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-[var(--bg-base)] transition-all cursor-pointer"
-                    >
-                      Anterior
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      className="px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-[var(--bg-base)] transition-all cursor-pointer"
-                    >
-                      Siguiente
-                    </button>
-                  </div>
-                </div>
-              )}
+               </table>
             </div>
-          )}
-        </div>
 
-      </div>
-    </div>
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+               <div className="flex items-center justify-center gap-4 pt-6">
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="p-3 rounded-full border border-[var(--border-color)] hover:border-[#FF5C3A] text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  >
+                    <ChevronRight size={16} className="rotate-180" />
+                  </button>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Página {currentPage} de {totalPages}</span>
+                  <button 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="p-3 rounded-full border border-[var(--border-color)] hover:border-[#FF5C3A] text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+               </div>
+            )}
+         </div>
+
+         <div className="space-y-8">
+            <div className="bg-[var(--bg-card)] p-10 rounded-[3rem] border border-[var(--border-color)] space-y-6 shadow-2xl relative overflow-hidden group">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF5C3A]/5 blur-3xl rounded-full" />
+               <h4 className="text-lg font-black uppercase italic tracking-tighter text-[var(--text-primary)]">Soporte Táctico</h4>
+               <p className="text-xs font-medium text-[var(--text-secondary)] leading-relaxed">¿Dificultades en la sincronización? Los arquitectos están listos.</p>
+               <div className="space-y-3">
+                  <a href={`https://wa.me/573105436281`} target="_blank" className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl group-hover:border-emerald-500/50 transition-all">
+                     <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">WhatsApp VIP</span>
+                     <MessageCircle className="w-4 h-4 text-emerald-400" />
+                  </a>
+                  <a href="mailto:info@lookitry.com" className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl hover:border-white/30 transition-all">
+                     <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Canal Email</span>
+                     <Mail className="w-4 h-4 text-white/60" />
+                  </a>
+               </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-[#FF5C3A]/10 to-indigo-500/10 p-10 rounded-[3rem] border border-[var(--border-color)] shadow-2xl relative overflow-hidden group">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#FF5C3A]/10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000" />
+                <div className="flex items-center gap-3 mb-6 relative z-10">
+                   <div className="w-8 h-8 rounded-xl bg-[#FF5C3A] flex items-center justify-center shadow-lg shadow-[#FF5C3A]/30">
+                      <Zap className="w-4 h-4 text-white" />
+                   </div>
+                   <h4 className="text-lg font-black uppercase italic tracking-tighter text-[var(--text-primary)]">Próximo Nivel</h4>
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-10 leading-relaxed italic relative z-10">Evoluciona tu sistema al Plan PRO y desbloquea el 100% de la red neuronal.</p>
+                <button onClick={() => router.push('/dashboard/checkout?plan=PRO')} className="w-full flex items-center justify-center gap-3 py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all relative z-10">
+                   EVOLUCIONAR <ChevronRight size={14} />
+                </button>
+             </div>
+         </div>
+      </motion.div>
+    </motion.div>
   );
 }

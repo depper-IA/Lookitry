@@ -64,9 +64,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [notifCount, setNotifCount]       = useState(0);
 
   useEffect(() => {
-    const user = localStorage.getItem('adminUser');
+    const userStr = localStorage.getItem('adminUser');
+    let userParsed = null;
 
-    if (!user && pathname !== '/admin/login') {
+    if (userStr) {
+      try {
+        userParsed = JSON.parse(userStr);
+      } catch (e) {
+        console.error('Error parseando adminUser:', e);
+        localStorage.removeItem('adminUser');
+      }
+    }
+
+    if (!userParsed && pathname !== '/admin/login') {
       router.push('/admin/login');
       return;
     }
@@ -85,11 +95,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         })
         .then(profileData => {
           if (!profileData) {
-            if (user) setAdminUser(JSON.parse(user));
+            if (userParsed) setAdminUser(userParsed);
             setLoading(false);
             return;
           }
-          if (user) setAdminUser(JSON.parse(user));
+          // Actualizar con datos frescos del servidor
+          setAdminUser(profileData.user || userParsed);
           setLoading(false);
 
           Promise.all([
@@ -108,11 +119,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }).catch(() => {});
         })
         .catch(() => {
-          if (user) setAdminUser(JSON.parse(user));
+          if (userParsed) setAdminUser(userParsed);
           setLoading(false);
         });
     } else {
-      if (user) setAdminUser(JSON.parse(user));
+      if (userParsed) setAdminUser(userParsed);
       setLoading(false);
     }
   }, [pathname, router]);

@@ -1,4 +1,6 @@
-﻿const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+
+import { Brand } from '@/types';
 
 export interface RegisterData {
   email: string;
@@ -14,13 +16,7 @@ export interface LoginData {
 
 export interface AuthResponse {
   token: string;
-  brand: {
-    id: string;
-    email: string;
-    name: string;
-    slug: string;
-    plan: string;
-  };
+  brand: Brand;
 }
 
 /**
@@ -91,7 +87,16 @@ class AuthService {
   getBrand(): AuthResponse['brand'] | null {
     if (typeof window === 'undefined') return null;
     const brandStr = localStorage.getItem('brand');
-    return brandStr ? JSON.parse(brandStr) : null;
+    
+    if (!brandStr || brandStr === 'undefined') return null;
+
+    try {
+      return JSON.parse(brandStr);
+    } catch (error) {
+      console.error('Error parseando brand desde localStorage:', error);
+      localStorage.removeItem('brand'); // Limpiar datos corruptos
+      return null;
+    }
   }
 
   isAuthenticated(): boolean {

@@ -1,446 +1,570 @@
-﻿'use client';
+'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  User, 
+  Mail, 
+  MapPin, 
+  Shield, 
+  CheckCircle2, 
+  Loader2, 
+  Eye, 
+  EyeOff, 
+  Lock,
+  Phone,
+  Briefcase,
+  ExternalLink,
+  ChevronRight,
+  Sparkles,
+  CreditCard,
+  Building2,
+  Receipt,
+  Globe,
+  Command,
+  Smartphone,
+  Cpu,
+  Package,
+  Layout,
+  AlertCircle,
+  X
+} from 'lucide-react';
+import { Country, State, City } from 'country-state-city';
+import { useAuth } from '@/hooks/useAuth';
+import { api } from '@/services/api';
 import { brandsService } from '@/services/brands.service';
 import { Spinner } from '@/components/ui/Spinner';
-import type { Brand } from '@/types';
+import { formatCurrency } from '@/utils/currency';
+
+function formatDate(d?: string | null): string {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('es-CO', {
+    day: '2-digit', month: 'short', year: 'numeric',
+  });
+}
+
+// ── Animaciones ──────────────────────────────────────────────────────────────
+const containerVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.7,
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
+// ── Tipos ────────────────────────────────────────────────────────────────────
+type Tab = 'personal' | 'billing' | 'security';
 
 export default function ProfilePage() {
-  const [brand, setBrand] = useState<Brand | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { brand, refreshBrand } = useAuth();
+  const [activeTab, setActiveTab] = useState<Tab>('personal');
+  const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Estado para cambio de contraseña
-  const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
-  const [pwSaving, setPwSaving] = useState(false);
-  const [pwSuccess, setPwSuccess] = useState(false);
-  const [pwError, setPwError] = useState<string | null>(null);
-  const [showPw, setShowPw] = useState({ current: false, new: false, confirm: false });
+  // Form states
+  const [name, setName] = useState(brand?.name || '');
+  const [email, setEmail] = useState(brand?.email || '');
+  const [phone, setPhone] = useState(brand?.phone || '');
+  const [address, setAddress] = useState(brand?.address || '');
 
-  // Estado para verificación de email
-  const [verifySending, setVerifySending] = useState(false);
-  const [verifySent, setVerifySent] = useState(false);
-  const [verifyError, setVerifyError] = useState<string | null>(null);
+  // Location states
+  const [countryCode, setCountryCode] = useState(brand?.country === 'Colombia' ? 'CO' : '');
+  const [stateCode, setStateCode] = useState('');
+  const [city, setCity] = useState(brand?.city || '');
+  const [stateProvince, setStateProvince] = useState(brand?.stateProvince || '');
+  const [postalCode, setPostalCode] = useState(brand?.postalCode || '');
 
-  const handleResendVerification = async () => {
-    if (!brand?.email) return;
-    setVerifyError(null);
-    setVerifySending(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/auth/resend-verification`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: brand.email }),
-        }
-      );
-      if (!res.ok) throw new Error('Error al reenviar');
-      setVerifySent(true);
-    } catch {
-      setVerifyError('No se pudo enviar el correo. Intenta de nuevo.');
-    } finally {
-      setVerifySending(false);
-    }
-  };
+  // Billing states
+  const [nit, setNit] = useState(brand?.nit || '');
+  const [billingEmail, setBillingEmail] = useState(brand?.billingEmail || brand?.email || '');
 
-  const [form, setForm] = useState({
-    name: '',
-    phone: '',
-    contact_name: '',
-    address: '',
-    city: '',
-    country: '',
-    nit: '',
-    website: '',
-  });
+  // Password states
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
+  // UI state
+  const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // Location Data
+  const countries = useMemo(() => Country.getAllCountries(), []);
+  const states = useMemo(() => countryCode ? State.getStatesOfCountry(countryCode) : [], [countryCode]);
+  const cities = useMemo(() => (countryCode && stateCode) ? City.getCitiesOfState(countryCode, stateCode) : [], [countryCode, stateCode]);
+
+  // Sync initial state with brand data
   useEffect(() => {
-    brandsService.getCurrentBrand().then((b) => {
-      setBrand(b);
-      setForm({
-        name: b.name ?? '',
-        phone: (b as any).phone ?? '',
-        contact_name: (b as any).contact_name ?? '',
-        address: (b as any).address ?? '',
-        city: (b as any).city ?? '',
-        country: (b as any).country ?? '',
-        nit: (b as any).nit ?? '',
-        website: (b as any).website ?? '',
+    if (brand) {
+      setName(brand.name);
+      setEmail(brand.email);
+      setPhone(brand.phone || '');
+      setAddress(brand.address || '');
+      setCity(brand.city || '');
+      setStateProvince(brand.stateProvince || '');
+      setPostalCode(brand.postalCode || '');
+      setNit(brand.nit || '');
+      setBillingEmail(brand.billingEmail || brand.email || '');
+
+      // Try to find country code by name
+      if (brand.country) {
+        const found = countries.find(c => c.name === brand.country);
+        if (found) setCountryCode(found.isoCode);
+      }
+    }
+  }, [brand, countries]);
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+    try {
+      const selectedCountry = countries.find(c => c.isoCode === countryCode)?.name || brand?.country || '';
+
+      await brandsService.updateMe({
+        name,
+        phone,
+        address,
+        country: selectedCountry,
+        city,
+        state_province: stateProvince,
+        postal_code: postalCode,
+        nit,
+        billing_email: billingEmail
       });
+      setSuccessMsg('Perfil sincronizado con éxito / Frecuencia actualizada');
+      refreshBrand();
+      
+      // Ocultar mensaje de éxito después de 5 segundos
+      setTimeout(() => {
+        setSuccessMsg('');
+      }, 5000);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Error al actualizar perfil');
+    } finally {
       setLoading(false);
-    });
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setError(null);
-    setSuccess(false);
-    try {
-      // Normalizar website: si tiene valor pero no tiene protocolo, agregar https://
-      const website = form.website.trim();
-      const normalizedWebsite = website && !website.match(/^https?:\/\//)
-        ? `https://${website}`
-        : website;
-
-      await brandsService.updateMe({ ...form, website: normalizedWebsite });
-      setForm(prev => ({ ...prev, website: normalizedWebsite }));
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    } catch (err: any) {
-      setError(err?.message ?? 'Error al guardar los cambios');
-    } finally {
-      setSaving(false);
     }
   };
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPwError(null);
-    setPwSuccess(false);
-
-    if (pwForm.newPassword.length < 6) {
-      setPwError('La nueva contraseña debe tener al menos 6 caracteres');
+    if (newPassword !== confirmPassword) {
+      setErrorMsg('Las contraseñas no coinciden');
       return;
     }
-    if (pwForm.newPassword !== pwForm.confirmPassword) {
-      setPwError('Las contraseñas no coinciden');
-      return;
-    }
-
-    setPwSaving(true);
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/auth/change-password`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword }),
-        }
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al cambiar la contraseña');
-      setPwSuccess(true);
-      setPwForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      setTimeout(() => setPwSuccess(false), 3000);
+      await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword
+      });
+      setSuccessMsg('Contraseña actualizada / Nivel de seguridad elevado');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
     } catch (err: any) {
-      setPwError(err.message || 'Error al cambiar la contraseña');
+      setErrorMsg(err.message || 'Error al cambiar contraseña');
     } finally {
-      setPwSaving(false);
+      setLoading(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-6">
-        <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-syne font-bold">Perfil de la marca</h1>
-        <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">
-          Información de contacto y datos de facturación
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit} style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border divide-y">
-        {/* Sección: Datos básicos */}
-        <div className="p-6 space-y-4">
-          <h2 style={{ color: 'var(--text-muted)' }} className="text-xs font-semibold uppercase tracking-wide">
-            Datos básicos
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
-                Nombre de la marca
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                className="w-full px-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
-              />
+    <motion.div
+      initial="hidden" animate="visible" variants={containerVariants}
+      className="max-w-6xl mx-auto space-y-12 pb-24 px-4"
+    >
+      {/* ══ HEADER ORBITAL ══ */}
+      <motion.header variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-4">
+          {brand?.emailVerified && (
+            <div className="flex items-center gap-3 px-5 py-2.5 bg-emerald-500/5 border border-emerald-500/10 rounded-full w-fit mb-4">
+               <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981]" />
+               <p className="text-[10px] font-[950] text-emerald-500 uppercase tracking-widest italic leading-none">Canal Verificado / Identidad Asegurada</p>
             </div>
-
-            <div>
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
-                Email
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={brand?.email ?? ''}
-                  disabled
-                  style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}
-                  className="w-full px-3 py-2 pr-28 min-h-[44px] border rounded-xl text-sm cursor-not-allowed"
-                />
-                {/* Badge de estado de verificación */}
-                {brand?.emailVerified ? (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[11px] font-medium text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded-full">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Verificado
-                  </span>
-                ) : (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[11px] font-medium text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full">
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                    </svg>
-                    Sin verificar
-                  </span>
-                )}
-              </div>
-              {/* Acción de reenvío si no está verificado */}
-              {!brand?.emailVerified && (
-                <div className="mt-2">
-                  {verifySent ? (
-                    <p className="flex items-center gap-1.5 text-[12px] text-emerald-400">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Correo enviado. Revisa tu bandeja de entrada.
-                    </p>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                        Verifica tu correo para usar las generaciones.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={handleResendVerification}
-                        disabled={verifySending}
-                        className="text-[12px] text-[#FF5C3A] hover:text-[#e04e30] underline disabled:opacity-50 transition-colors whitespace-nowrap"
-                      >
-                        {verifySending ? 'Enviando...' : 'Reenviar correo'}
-                      </button>
-                    </div>
-                  )}
-                  {verifyError && (
-                    <p className="text-[12px] text-[#ef4444] mt-1">{verifyError}</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
-                Nombre de contacto
-              </label>
-              <input
-                type="text"
-                name="contact_name"
-                value={form.contact_name}
-                onChange={handleChange}
-                placeholder="Persona de contacto"
-                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                className="w-full px-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
-              />
-            </div>
-
-            <div>
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
-                Teléfono / WhatsApp
-              </label>
-              <input
-                type="text"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="+57 300 000 0000"
-                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                className="w-full px-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
-              />
-            </div>
+          )}
+          <div className="flex items-center gap-3">
+             <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+                <User className="w-5 h-5 text-[#FF5C3A]" />
+             </div>
+             <h1 className="text-4xl font-[900] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta">Identidad Marca</h1>
           </div>
+          <p className="text-[11px] font-black tracking-[0.2em] text-[var(--text-muted)] uppercase opacity-60">Configuración de núcleo y facturación galáctica</p>
+        </div>
+      </motion.header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+
+        {/* ══ SIDEBAR / RESUMEN ══ */}
+        <div className="lg:col-span-4 space-y-8">
+
+          {/* USER CARD PREMIUM (GLASS) */}
+          <motion.div
+            variants={itemVariants}
+            className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[3rem] p-8 space-y-8 relative overflow-hidden shadow-2xl group"
+          >
+             <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF5C3A]/5 blur-3xl rounded-full" />
+
+             <div className="flex flex-col items-center text-center space-y-4 pt-4">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FF5C3A] to-[#D13C1C] flex items-center justify-center text-white text-3xl font-black shadow-[0_0_40px_rgba(255,92,58,0.3)]">
+                   {name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                   <h2 className="text-2xl font-black uppercase italic tracking-tighter text-[var(--text-primary)]">{name}</h2>
+                   <p className="text-sm font-bold text-[var(--text-muted)] opacity-60">@{brand?.slug}</p>
+                </div>
+
+                {brand?.emailVerified ? (
+                  <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                     <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 font-jakarta">Email Verificado</span>
+                  </div>
+                ) : (
+                  <button className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full hover:bg-amber-500/20 transition-all">
+                     <Shield className="w-4 h-4 text-amber-500" />
+                     <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">Verificar Ahora</span>
+                  </button>
+                )}
+             </div>
+
+             <div className="h-px bg-[var(--border-color)] w-full opacity-50" />
+
+             <div className="space-y-6">
+                <div className="flex items-center gap-4">
+                   <div className="w-10 h-10 rounded-2xl bg-[var(--bg-hover)] flex items-center justify-center text-[var(--text-muted)]"><Mail size={18} /></div>
+                   <div className="min-w-0">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Canal Principal</p>
+                      <p className="text-xs font-bold text-[var(--text-primary)] truncate">{email}</p>
+                   </div>
+                </div>
+                <div className="flex items-center gap-4">
+                   <div className="w-10 h-10 rounded-2xl bg-[var(--bg-hover)] flex items-center justify-center text-[var(--text-muted)]"><Phone size={18} /></div>
+                   <div className="min-w-0">
+                      <p className="text-[9px] font-black uppercase tracking-widest text-[var(--text-muted)]">Línea de Comando</p>
+                      <p className="text-xs font-bold text-[var(--text-primary)]">{phone || 'Pendiente'}</p>
+                   </div>
+                </div>
+             </div>
+          </motion.div>
+
+          {/* PLAN CARD PREMIUM (METALLIC) */}
+          <motion.div
+            variants={itemVariants}
+            className="bg-black text-white rounded-[3rem] p-10 space-y-6 relative overflow-hidden shadow-3xl shadow-black/80 ring-1 ring-white/10"
+          >
+             <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-[#FF5C3A] blur-[80px] opacity-20" />
+             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-500 blur-[80px] opacity-20" />
+
+             <div className="relative z-10 flex flex-col justify-between h-full min-h-[160px]">
+                <div className="space-y-4">
+                   <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/10">
+                      <Layout className="w-6 h-6 text-indigo-500" />
+                    </div>  <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40">Módulo Suscripción</span>
+                   </div>
+                   <h3 className="text-4xl font-[950] tracking-tighter italic uppercase text-white leading-tight">
+                      Lookitry<br/>
+                      <span className="text-[#FF5C3A]">{brand?.plan || 'BASIC'}</span>
+                   </h3>
+                </div>
+
+                <div className="flex items-end justify-between border-t border-white/10 pt-6">
+                   <div className="space-y-1">
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-30 italic">Estado de Red</p>
+                      <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">Sincronizado</p>
+                   </div>
+                   <button 
+                     onClick={() => (window.location.href = '/dashboard/subscription')} 
+                     className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all active:scale-95"
+                   >
+                      <ChevronRight className="w-4 h-4 text-white" />
+                   </button>
+                </div>
+             </div>
+          </motion.div>
         </div>
 
-        {/* Sección: Facturación */}
-        <div className="p-6 space-y-4" style={{ borderColor: 'var(--border-color)' }}>
-          <h2 style={{ color: 'var(--text-muted)' }} className="text-xs font-semibold uppercase tracking-wide">
-            Facturación
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {[
-              { name: 'nit', label: 'NIT / RUT', placeholder: '900.000.000-0' },
-              { name: 'website', label: 'Sitio web', placeholder: 'wilkiedevs.com' },
-              { name: 'address', label: 'Dirección', placeholder: 'Calle 123 # 45-67' },
-              { name: 'city', label: 'Ciudad', placeholder: 'Bogotá' },
-              { name: 'country', label: 'País', placeholder: 'Colombia' },
-            ].map(field => (
-              <div key={field.name}>
-                <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
-                  {field.label}
-                </label>
-                <input
-                  type="text"
-                  name={field.name}
-                  value={(form as any)[field.name]}
-                  onChange={handleChange}
-                  placeholder={field.placeholder}
-                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                  className="w-full px-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
-                />
-              </div>
+        {/* ══ MAIN PANEL ══ */}
+        <div className="lg:col-span-8 space-y-8">
+          
+          {/* TABS SELECTOR */}
+          <div className="flex bg-[var(--bg-card)] p-2 rounded-3xl border border-[var(--border-color)] shadow-xl overflow-x-auto no-scrollbar">
+            {(['personal', 'billing', 'security'] as Tab[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setActiveTab(t)}
+                className={`flex-1 min-w-[120px] px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 ${activeTab === t ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}
+              >
+                {t === 'personal' && <User size={14} />}
+                {t === 'billing' && <Receipt size={14} />}
+                {t === 'security' && <Lock size={14} />}
+                {t === 'personal' ? 'Perfil Base' : t === 'billing' ? 'Facturación' : 'Seguridad'}
+              </button>
             ))}
           </div>
-        </div>
 
-        {/* Footer del formulario */}
-        <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="px-6 py-4 flex items-center justify-between rounded-b-2xl">
-          <div>
-            {success && (
-              <span className="flex items-center gap-2 text-sm text-[#10b981]">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Cambios guardados
-              </span>
-            )}
-            {error && (
-              <span className="text-sm text-[#ef4444]">{error}</span>
-            )}
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[3.5rem] p-10 shadow-2xl min-h-[500px] relative overflow-hidden">
+            <AnimatePresence mode="wait">
+              {activeTab === 'personal' && (
+                <motion.form
+                  key="personal"
+                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                  onSubmit={handleUpdateProfile}
+                  className="space-y-10"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Nombre de la Marca</label>
+                      <div className="relative group">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
+                        <input
+                          type="text" value={name} onChange={e => setName(e.target.value)} required
+                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                          placeholder="Ej: Wilkiedevs Couture"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Email (No Editable)</label>
+                      <div className="relative opacity-50">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                        <input
+                          type="email" value={email} disabled
+                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-base)] border-2 border-transparent rounded-2xl font-bold text-sm tracking-tight outline-none text-[var(--text-primary)] cursor-not-allowed"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-[var(--border-color)] w-full opacity-30" />
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Nación (País)</label>
+                      <select 
+                        value={countryCode} 
+                        onChange={e => { setCountryCode(e.target.value); setStateCode(''); setCity(''); }}
+                        className="w-full px-5 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)] appearance-none"
+                      >
+                         <option value="">Seleccionar...</option>
+                         {countries.map(c => <option key={c.isoCode} value={c.isoCode}>{c.name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Departamento / Estado</label>
+                      <select 
+                        value={stateCode} 
+                        onChange={e => { setStateCode(e.target.value); setCity(''); setStateProvince(states.find(s => s.isoCode === e.target.value)?.name || ''); }}
+                        disabled={!countryCode}
+                        className="w-full px-5 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)] appearance-none disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                         <option value="">Seleccionar...</option>
+                         {states.map(s => <option key={s.isoCode} value={s.isoCode}>{s.name}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Municipio / Ciudad</label>
+                      <select 
+                        value={city} 
+                        onChange={e => setCity(e.target.value)}
+                        disabled={!stateCode}
+                        className="w-full px-5 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)] appearance-none disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                         <option value="">Seleccionar...</option>
+                         {cities.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                         {/* Fallback override */}
+                         {cities.length === 0 && stateCode && <option value="">Cargando urbes...</option>}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Dirección de Operaciones</label>
+                    <div className="relative group">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
+                      <input
+                        type="text" value={address} onChange={e => setAddress(e.target.value)}
+                        className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                        placeholder="Calle, Número, Oficina/Local"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <button
+                      type="submit" disabled={loading}
+                      className="px-10 py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-[#FF5C3A]/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-3"
+                    >
+                      {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                      Sincronizar Datos
+                    </button>
+                  </div>
+                </motion.form>
+              )}
+
+              {activeTab === 'billing' && (
+                <motion.form
+                  key="billing"
+                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                  onSubmit={handleUpdateProfile}
+                  className="space-y-10"
+                >
+                  <div className="bg-emerald-500/5 border border-emerald-500/10 p-6 rounded-3xl flex gap-4">
+                     <Building2 className="w-8 h-8 text-emerald-500 flex-shrink-0" />
+                     <p className="text-[11px] font-medium text-emerald-600/70 leading-relaxed italic">
+                        La información de facturación es necesaria para generar tus reportes legales y mantener la trazabilidad de tus ciclos de inversión.
+                     </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">NIT / RUT / Tax ID</label>
+                      <div className="relative group">
+                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
+                        <input
+                          type="text" value={nit} onChange={e => setNit(e.target.value)}
+                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                          placeholder="Número de identificación tributaria"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Email de Facturación</label>
+                      <div className="relative group">
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
+                        <input
+                          type="email" value={billingEmail} onChange={e => setBillingEmail(e.target.value)}
+                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                          placeholder="Donde lleguen los recibos..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 text-center pt-20 pb-10">
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-4">Plan Actual en Despliegue</p>
+                    <div className="inline-block px-10 py-6 bg-gradient-to-br from-zinc-900 to-black rounded-[2.5rem] border border-white/5 shadow-2xl">
+                      <span className="text-3xl font-[950] tracking-tighter italic uppercase text-white">Lookitry <span className="text-[#FF5C3A]">{brand?.plan}</span></span>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-2">Próximo vencimiento: {formatDate(brand?.subscriptionEndDate)}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit" disabled={loading}
+                      className="px-10 py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-[#FF5C3A]/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-3"
+                    >
+                      {loading ? <Loader2 size={16} className="animate-spin" /> : <Receipt size={16} />}
+                      Actualizar Facturación
+                    </button>
+                  </div>
+                </motion.form>
+              )}
+
+              {activeTab === 'security' && (
+                <motion.form
+                  key="security"
+                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                  onSubmit={handleChangePassword}
+                  className="space-y-10"
+                >
+                  <div className="bg-rose-500/5 border border-rose-500/10 p-6 rounded-3xl flex gap-4">
+                     <Shield className="w-8 h-8 text-rose-500 flex-shrink-0" />
+                     <p className="text-[11px] font-medium text-rose-600/70 leading-relaxed italic">
+                        La seguridad de tu red neuronal es primordial. Recomendamos rotar tu contraseña cada 90 días galácticos para mantener la integridad de tus datos.
+                     </p>
+                  </div>
+
+                  <div className="space-y-8">
+                     <div className="space-y-3">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Clave Maestra Actual</label>
+                        <div className="relative group">
+                           <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
+                           <input
+                              type={showCurrent ? 'text' : 'password'} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required
+                              className="w-full pl-12 pr-12 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                           />
+                           <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[#FF5C3A] transition-colors">
+                              {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+                           </button>
+                        </div>
+                     </div>
+
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Nueva Clave ADN</label>
+                           <div className="relative group">
+                              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
+                              <input
+                                 type={showNew ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} required
+                                 className="w-full pl-12 pr-12 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                              />
+                              <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[#FF5C3A] transition-colors">
+                                 {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                           </div>
+                        </div>
+                        <div className="space-y-3">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Confirmar Nueva Clave</label>
+                           <div className="relative group">
+                              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
+                              <input
+                                 type={showConfirm ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required
+                                 className="w-full pl-12 pr-12 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                              />
+                              <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[#FF5C3A] transition-colors">
+                                 {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div className="flex justify-end pt-4">
+                    <button
+                      type="submit" disabled={loading}
+                      className="px-10 py-5 bg-rose-500 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl shadow-rose-500/20 hover:brightness-110 active:scale-95 transition-all flex items-center gap-3"
+                    >
+                      {loading ? <Loader2 size={16} className="animate-spin" /> : <Shield size={16} />}
+                      Elevar Seguridad
+                    </button>
+                  </div>
+                </motion.form>
+              )}
+            </AnimatePresence>
+
+            {/* FEEDBACK OVERLAYS */}
+            <AnimatePresence>
+               {(successMsg || errorMsg) && (
+                  <motion.div 
+                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                     className={`absolute bottom-8 left-10 right-10 p-4 rounded-2xl border flex items-center justify-between backdrop-blur-3xl z-50 ${successMsg ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-rose-500/10 border-rose-500/20 text-rose-500'}`}
+                  >
+                     <div className="flex items-center gap-3">
+                        {successMsg ? <CheckCircle2 size={18} /> : <AlertCircle className="w-4.5 h-4.5" />}
+                        <p className="text-[10px] font-black uppercase tracking-widest">{successMsg || errorMsg}</p>
+                     </div>
+                     <button onClick={() => { setSuccessMsg(''); setErrorMsg(''); }} className="opacity-50 hover:opacity-100 transition-opacity"><X size={14} /></button>
+                  </motion.div>
+               )}
+            </AnimatePresence>
           </div>
-          <button
-            type="submit"
-            disabled={saving}
-            className="flex items-center gap-2 px-5 py-2 min-h-[44px] bg-[#FF5C3A] text-white text-sm font-medium rounded-xl hover:bg-[#e04e30] disabled:opacity-50 transition-colors"
-          >
-            {saving ? (
-              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-            ) : (
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-            {saving ? 'Guardando...' : 'Guardar cambios'}
-          </button>
         </div>
-      </form>
-
-      {/* Sección: Cambiar contraseña */}
-      <form onSubmit={handlePasswordChange} style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border mt-6 divide-y">
-        <div className="p-6 space-y-4">
-          <h2 style={{ color: 'var(--text-muted)' }} className="text-xs font-semibold uppercase tracking-wide">
-            Cambiar contraseña
-          </h2>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {/* Contraseña actual */}
-            <div className="sm:col-span-2">
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
-                Contraseña actual
-              </label>
-              <div className="relative">
-                <input
-                  type={showPw.current ? 'text' : 'password'}
-                  value={pwForm.currentPassword}
-                  onChange={e => setPwForm(p => ({ ...p, currentPassword: e.target.value }))}
-                  placeholder="Tu contraseña actual"
-                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                  className="w-full px-3 py-2 pr-10 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
-                />
-                <button type="button" onClick={() => setShowPw(p => ({ ...p, current: !p.current }))}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none transition-colors" style={{ color: 'var(--text-muted)' }} tabIndex={-1}>
-                  {showPw.current
-                    ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
-                    : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                  }
-                </button>
-              </div>
-            </div>
-
-            {/* Nueva contraseña */}
-            <div>
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
-                Nueva contraseña
-              </label>
-              <div className="relative">
-                <input
-                  type={showPw.new ? 'text' : 'password'}
-                  value={pwForm.newPassword}
-                  onChange={e => setPwForm(p => ({ ...p, newPassword: e.target.value }))}
-                  placeholder="Mínimo 6 caracteres"
-                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                  className="w-full px-3 py-2 pr-10 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
-                />
-                <button type="button" onClick={() => setShowPw(p => ({ ...p, new: !p.new }))}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none transition-colors" style={{ color: 'var(--text-muted)' }} tabIndex={-1}>
-                  {showPw.new
-                    ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
-                    : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                  }
-                </button>
-              </div>
-            </div>
-
-            {/* Confirmar contraseña */}
-            <div>
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">
-                Confirmar contraseña
-              </label>
-              <div className="relative">
-                <input
-                  type={showPw.confirm ? 'text' : 'password'}
-                  value={pwForm.confirmPassword}
-                  onChange={e => setPwForm(p => ({ ...p, confirmPassword: e.target.value }))}
-                  placeholder="Repite la nueva contraseña"
-                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                  className="w-full px-3 py-2 pr-10 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
-                />
-                <button type="button" onClick={() => setShowPw(p => ({ ...p, confirm: !p.confirm }))}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 focus:outline-none transition-colors" style={{ color: 'var(--text-muted)' }} tabIndex={-1}>
-                  {showPw.confirm
-                    ? <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
-                    : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                  }
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="px-6 py-4 flex items-center justify-between rounded-b-2xl">
-          <div>
-            {pwSuccess && (
-              <span className="flex items-center gap-2 text-sm text-[#10b981]">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Contraseña actualizada
-              </span>
-            )}
-            {pwError && <span className="text-sm text-[#ef4444]">{pwError}</span>}
-          </div>
-          <button
-            type="submit"
-            disabled={pwSaving}
-            className="flex items-center gap-2 px-5 py-2 min-h-[44px] bg-[#FF5C3A] text-white text-sm font-medium rounded-xl hover:bg-[#e04e30] disabled:opacity-50 transition-colors"
-          >
-            {pwSaving
-              ? <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-              : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-            }
-            {pwSaving ? 'Guardando...' : 'Cambiar contraseña'}
-          </button>
-        </div>
-      </form>
-    </div>
+      </div>
+    </motion.div>
   );
 }

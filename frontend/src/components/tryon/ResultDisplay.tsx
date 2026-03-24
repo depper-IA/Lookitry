@@ -112,23 +112,10 @@ export function ResultDisplay({
   const [feedbackSending, setFeedbackSending] = useState(false);
   const [feedbackSent, setFeedbackSent]       = useState(false);
 
-  const handleDownload = async () => {
-    setDownloading(true);
-    setDownloadError(null);
-    try {
-      const watermarkedUrl = getProxiedImageUrl(imageUrl, brandPlan);
-      const link = document.createElement('a');
-      link.href = watermarkedUrl;
-      link.download = `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      console.error('Error descargando imagen:', err);
-      setDownloadError('No se pudo descargar la imagen. Por favor intenta de nuevo.');
-    } finally {
-      setDownloading(false);
-    }
+  const handleDownload = () => {
+    // El servidor ahora envía cabeceras de descarga (Content-Disposition) automáticas
+    const downloadUrl = getProxiedImageUrl(imageUrl, brandPlan, true);
+    window.location.href = downloadUrl;
   };
 
   const handleShare = async () => {

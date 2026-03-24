@@ -37,9 +37,20 @@ export interface Brand {
   // Email verification
   emailVerified?: boolean;
   customDomain?: string | null;
+  // Contact & Billing (Requirement 503)
+  phone?: string | null;
+  contactName?: string | null;
+  address?: string | null;
+  city?: string | null;
+  stateProvince?: string | null;
+  country?: string | null;
+  postalCode?: string | null;
+  billingEmail?: string | null;
+  nit?: string | null;
+  website?: string | null;
+  apiKey?: string | null;
 }
 
-// Product types
 export interface Product {
   id: string;
   brandId: string;
@@ -49,6 +60,7 @@ export interface Product {
   category: string;
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
+  externalId?: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -61,6 +73,7 @@ export interface CreateProductDto {
   category: string;
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
+  externalId?: string | null;
 }
 
 export interface UpdateProductDto {
@@ -70,6 +83,7 @@ export interface UpdateProductDto {
   category?: string;
   price?: number | null;
   badge?: 'nuevo' | 'top' | 'oferta' | null;
+  externalId?: string | null;
 }
 
 // Usage types
@@ -167,3 +181,6 @@ export interface SubscriptionPayment {
   createdAt: string;
   updatedAt: string;
 }
+
+// Analytics types
+export * from '../services/analytics.service';

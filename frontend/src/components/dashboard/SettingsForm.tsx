@@ -1,13 +1,41 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { Brand, UpdateBrandConfigDto, WidgetTemplate } from '@/types';
-import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { Card, CardHeader, CardBody } from '../ui/Card';
-import { UpgradeModal } from './UpgradeModal';
+import { 
+  Settings, 
+  Palette, 
+  Code2, 
+  Zap, 
+  ChevronRight, 
+  Image as ImageIcon, 
+  Type, 
+  Globe, 
+  Lock,
+  Sparkles,
+  Info,
+  ExternalLink,
+  Smartphone,
+  Check,
+  X,
+  Plus,
+  Layout
+} from 'lucide-react';
 import { uploadService } from '@/services/upload.service';
 import { EmbedSection } from './EmbedSection';
+
+const Tooltip = ({ text }: { text: string }) => (
+  <div className="group relative inline-block ml-1.5">
+    <div className="w-4 h-4 rounded-full bg-[var(--bg-input)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[#FF5C3A] cursor-help transition-all shadow-sm">
+      <Info className="w-2.5 h-2.5" />
+    </div>
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 shadow-2xl z-50 pointer-events-none border-b-4 border-b-[#FF5C3A]">
+      <p className="text-[10px] leading-relaxed text-[var(--text-primary)] font-black uppercase tracking-wider italic">{text}</p>
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#FF5C3A]"></div>
+    </div>
+  </div>
+);
 
 interface SettingsFormProps {
   brand: Brand;
@@ -25,16 +53,16 @@ const TEMPLATES: Array<{
 }> = [
   {
     id: 'bare',
-    name: 'Bare',
-    description: 'Sin header ni sidebar — widget limpio, ideal para embed',
+    name: 'Minimal Canvas',
+    description: 'Sin distractores, ideal para integrar como capa directa',
     layout: 'bare',
     defaultPrimary: '#000000',
     defaultSecondary: '#FFFFFF',
   },
   {
     id: 'minimal',
-    name: 'Minimal',
-    description: 'Header superior fijo, productos en fila horizontal — solo Pro',
+    name: 'Top Stream',
+    description: 'Navegación fluida por la parte superior',
     layout: 'top-bar',
     defaultPrimary: '#111827',
     defaultSecondary: '#F9FAFB',
@@ -42,8 +70,8 @@ const TEMPLATES: Array<{
   },
   {
     id: 'modern',
-    name: 'Modern',
-    description: 'Panel lateral con productos, área principal a la derecha — solo Pro',
+    name: 'Side Panel',
+    description: 'Layout vertical para marcas con catálogos dinámicos',
     layout: 'sidebar',
     defaultPrimary: '#6366F1',
     defaultSecondary: '#EEF2FF',
@@ -51,8 +79,8 @@ const TEMPLATES: Array<{
   },
   {
     id: 'bold',
-    name: 'Bold',
-    description: 'Hero centrado grande, productos en grid inferior — solo Pro',
+    name: 'Hero Impact',
+    description: 'Focus total en el producto principal y la experiencia',
     layout: 'centered',
     defaultPrimary: '#F59E0B',
     defaultSecondary: '#111827',
@@ -61,326 +89,64 @@ const TEMPLATES: Array<{
 ];
 
 const COLOR_PRESETS = [
-  '#6366F1', '#8B5CF6', '#EC4899', '#EF4444',
-  '#F59E0B', '#10B981', '#3B82F6', '#111827',
+  '#FF5C3A', '#6366F1', '#10B981', '#F59E0B',
+  '#EC4899', '#3B82F6', '#111827', '#8B5CF6',
 ];
 
 const BG_PRESETS = [
-  '#FFFFFF', '#F9FAFB', '#EEF2FF', '#FFF7ED',
-  '#F0FDF4', '#111827', '#1E1B4B', '#0F172A',
+  '#FFFFFF', '#F8FAFC', '#EEF2FF', '#FFF7ED',
+  '#000000', '#0F172A', '#1E1B4B', '#111111',
 ];
 
-// Mini-preview visual de cada layout
-function LayoutMiniPreview({ layout, primary, secondary }: {
-  layout: 'top-bar' | 'sidebar' | 'centered' | 'bare';
-  primary: string;
-  secondary: string;
-}) {
-  if (layout === 'bare') {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center gap-1.5 p-2" style={{ backgroundColor: secondary }}>
-        {/* Upload area */}
-        <div className="w-full flex-1 rounded-lg border border-dashed flex items-center justify-center" style={{ borderColor: primary + '60' }}>
-          <div className="w-5 h-5 rounded" style={{ backgroundColor: primary, opacity: 0.3 }} />
-        </div>
-        {/* Botón */}
-        <div className="h-2.5 rounded-full w-3/4" style={{ backgroundColor: primary }} />
-      </div>
-    );
-  }
-  if (layout === 'top-bar') {
-    return (
-      <div className="w-full h-full flex flex-col" style={{ backgroundColor: secondary }}>
-        {/* Header bar */}
-        <div className="h-4 w-full flex items-center px-2 gap-1" style={{ backgroundColor: primary }}>
-          <div className="w-2 h-2 rounded-full bg-white opacity-80" />
-          <div className="h-1 w-8 rounded bg-white opacity-60" />
-        </div>
-        {/* Productos en fila */}
-        <div className="flex gap-1 px-2 pt-1.5">
-          {[1,2,3].map(i => (
-            <div key={i} className="flex-1 h-5 rounded" style={{ backgroundColor: primary, opacity: 0.15 + i * 0.1 }} />
-          ))}
-        </div>
-        {/* Selfie centrada */}
-        <div className="flex-1 flex items-center justify-center p-1">
-          <div className="w-8 h-8 rounded-full border-2" style={{ borderColor: primary, backgroundColor: secondary }} />
-        </div>
-        {/* Botón */}
-        <div className="px-2 pb-1.5">
-          <div className="h-2.5 rounded-full w-full" style={{ backgroundColor: primary }} />
-        </div>
-      </div>
-    );
-  }
-
-  if (layout === 'sidebar') {
-    return (
-      <div className="w-full h-full flex" style={{ backgroundColor: secondary }}>
-        {/* Sidebar */}
-        <div className="w-7 h-full flex flex-col gap-1 p-1" style={{ backgroundColor: primary }}>
-          <div className="w-full h-1.5 rounded bg-white opacity-40" />
-          {[1,2,3].map(i => (
-            <div key={i} className="w-full h-4 rounded" style={{ backgroundColor: secondary, opacity: 0.3 + i * 0.15 }} />
-          ))}
-        </div>
-        {/* Área principal */}
-        <div className="flex-1 flex flex-col items-center justify-center gap-1 p-1">
-          <div className="w-8 h-8 rounded-full border-2" style={{ borderColor: primary, backgroundColor: secondary }} />
-          <div className="h-2 w-10 rounded" style={{ backgroundColor: primary, opacity: 0.7 }} />
-        </div>
-      </div>
-    );
-  }
-
-  // centered
+// Layout Preview Components
+function LayoutPreview({ layout, primary, secondary }: { layout: string; primary: string; secondary: string }) {
+  const dot = <div className="w-1.5 h-1.5 rounded-full" style={{ background: primary }} />;
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-1 p-1" style={{ backgroundColor: secondary }}>
-      {/* Hero grande */}
-      <div className="w-10 h-10 rounded-xl border-2 flex items-center justify-center" style={{ borderColor: primary }}>
-        <div className="w-6 h-6 rounded-full" style={{ backgroundColor: primary, opacity: 0.5 }} />
-      </div>
-      {/* Grid de productos */}
-      <div className="flex gap-1">
-        {[1,2,3,4].map(i => (
-          <div key={i} className="w-3 h-3 rounded" style={{ backgroundColor: primary, opacity: 0.2 + i * 0.15 }} />
-        ))}
-      </div>
-      {/* Botón */}
-      <div className="h-2 w-12 rounded-full" style={{ backgroundColor: primary }} />
-    </div>
-  );
-}
-
-// Preview completo del widget según template
-function WidgetPreview({ formData, brandName }: { formData: UpdateBrandConfigDto; brandName: string }) {
-  const tpl = TEMPLATES.find(t => t.id === formData.widgetTemplate) || TEMPLATES[0];
-  const primary = formData.primaryColor || tpl.defaultPrimary;
-  const secondary = formData.secondaryColor || tpl.defaultSecondary;
-  const btnText = formData.buttonText || 'Probarme esto';
-  const welcome = formData.welcomeMessage || '¡Pruébate nuestros productos!';
-
-  if (tpl.layout === 'bare') {
-    return (
-      <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm flex flex-col" style={{ backgroundColor: secondary, minHeight: 260 }}>
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 p-5">
-          <div className="w-20 h-20 rounded-2xl border-2 border-dashed flex items-center justify-center" style={{ borderColor: primary + '80' }}>
-            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: primary }}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5A.75.75 0 0121 3.75v16.5a.75.75 0 01-.75.75H3.75A.75.75 0 013 20.25V3.75A.75.75 0 013.75 3z" />
-            </svg>
-          </div>
-          <p className="text-xs font-semibold" style={{ color: primary }}>Arrastra tu foto aquí</p>
-          <div className="flex gap-2 w-full">
-            {['Camiseta', 'Hoodie', 'Polo'].map((p, i) => (
-              <div key={p} className="flex-1 rounded-lg border p-1.5 text-center" style={{ borderColor: i === 0 ? primary : '#e5e7eb' }}>
-                <div className="w-full h-6 rounded bg-gray-100 mb-1" />
-                <p className="text-xs truncate" style={{ color: primary }}>{p}</p>
-              </div>
-            ))}
-          </div>
-          <button className="px-5 py-1.5 rounded-full text-white text-xs font-semibold w-full" style={{ backgroundColor: primary }}>{btnText}</button>
+    <div className="w-full h-full rounded-xl border border-black/5 overflow-hidden flex shadow-inner" style={{ background: secondary }}>
+      {layout === 'bare' && (
+        <div className="flex-1 flex flex-col items-center justify-center p-3 gap-2">
+          <div className="w-10 h-10 rounded-full border-2 border-dashed border-black/10 flex items-center justify-center">{dot}</div>
+          <div className="h-1.5 w-12 rounded-full" style={{ background: primary }} />
         </div>
-      </div>
-    );
-  }
-
-  if (tpl.layout === 'top-bar') {
-    return (
-      <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm" style={{ backgroundColor: secondary, minHeight: 260 }}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2.5" style={{ backgroundColor: primary }}>
-          {formData.logo
-            ? <img src={formData.logo} alt="logo" className="h-6 object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-            : <span className="text-white font-bold text-sm">{brandName}</span>}
-          <span className="text-xs text-white opacity-70">Probador Virtual</span>
+      )}
+      {layout === 'top-bar' && (
+        <div className="flex-1 flex flex-col">
+          <div className="h-3 w-full flex items-center px-1.5 gap-1 border-b border-black/5" style={{ background: primary }}><div className="w-1.5 h-1.5 rounded bg-white/40" /></div>
+          <div className="flex-1 flex flex-col items-center justify-center p-2 gap-1.5"><div className="w-8 h-8 rounded-full border border-black/5 bg-white shadow-sm" /><div className="h-1 w-10 rounded bg-black/10" /></div>
         </div>
-        {/* Mensaje bienvenida */}
-        <p className="text-center text-xs px-4 pt-3 pb-1 font-medium" style={{ color: primary }}>{welcome}</p>
-        {/* Productos en fila */}
-        <div className="flex gap-2 px-4 py-2 overflow-x-auto">
-          {['Camiseta', 'Hoodie', 'Polo'].map((p, i) => (
-            <div key={p} className={`flex-shrink-0 rounded-lg border-2 p-2 text-center cursor-pointer transition-all ${i === 0 ? 'shadow-md' : ''}`}
-              style={{ borderColor: i === 0 ? primary : '#e5e7eb', backgroundColor: i === 0 ? primary + '15' : 'white', minWidth: 64 }}>
-              <div className="w-10 h-10 rounded-md bg-gray-100 mx-auto mb-1" />
-              <p className="text-xs font-medium" style={{ color: primary }}>{p}</p>
-            </div>
-          ))}
+      )}
+      {layout === 'sidebar' && (
+        <div className="flex-1 flex">
+          <div className="w-6 h-full border-r border-black/5 p-1 flex flex-col gap-1" style={{ background: primary }}><div className="w-full h-4 bg-white/10 rounded" /></div>
+          <div className="flex-1 flex flex-col items-center justify-center p-2 gap-2"><div className="w-8 h-8 rounded-full border border-black/5 bg-white shadow-sm" /><div className="h-2 w-full rounded" style={{ background: primary }} /></div>
         </div>
-        {/* Selfie upload centrado */}
-        <div className="flex flex-col items-center py-3 px-4 gap-2">
-          <div className="w-16 h-16 rounded-full border-2 border-dashed flex items-center justify-center" style={{ borderColor: primary }}>
-            <svg className="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-            </svg>
-          </div>
-          <p className="text-xs text-gray-500">Sube tu selfie</p>
-          <button className="px-5 py-1.5 rounded-full text-white text-xs font-semibold" style={{ backgroundColor: primary }}>{btnText}</button>
+      )}
+      {layout === 'centered' && (
+        <div className="flex-1 flex flex-col items-center justify-center p-3 gap-3">
+          <div className="h-2 w-16" style={{ background: primary }} /><div className="w-12 h-12 rounded-2xl border border-black/5 bg-white shadow-sm flex items-center justify-center">{dot}</div>
         </div>
-      </div>
-    );
-  }
-
-  if (tpl.layout === 'sidebar') {
-    return (
-      <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm flex" style={{ backgroundColor: secondary, minHeight: 260 }}>
-        {/* Sidebar de productos */}
-        <div className="w-24 flex flex-col gap-1 p-2" style={{ backgroundColor: primary }}>
-          <p className="text-white text-xs font-bold mb-1 opacity-90">Productos</p>
-          {['Camiseta', 'Hoodie', 'Polo'].map((p, i) => (
-            <div key={p} className={`rounded-lg p-1.5 cursor-pointer transition-all ${i === 0 ? 'bg-white bg-opacity-20' : 'bg-white bg-opacity-10 hover:bg-opacity-15'}`}>
-              <div className="w-full h-8 rounded bg-white opacity-20 mb-1" />
-              <p className="text-white text-xs text-center truncate">{p}</p>
-            </div>
-          ))}
-        </div>
-        {/* Área principal */}
-        <div className="flex-1 flex flex-col items-center justify-center gap-2 p-3">
-          {formData.logo
-            ? <img src={formData.logo} alt="logo" className="h-5 object-contain mb-1" onError={e => { e.currentTarget.style.display = 'none'; }} />
-            : <span className="font-bold text-sm mb-1" style={{ color: primary }}>{brandName}</span>}
-          <p className="text-xs text-center text-gray-500 px-2">{welcome}</p>
-          <div className="w-14 h-14 rounded-full border-2 border-dashed flex items-center justify-center" style={{ borderColor: primary }}>
-            <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-            </svg>
-          </div>
-          <button className="px-4 py-1.5 rounded-full text-white text-xs font-semibold mt-1" style={{ backgroundColor: primary }}>{btnText}</button>
-        </div>
-      </div>
-    );
-  }
-
-  // centered / bold
-  return (
-    <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm flex flex-col items-center" style={{ backgroundColor: secondary, minHeight: 260 }}>
-      {/* Hero grande */}
-      <div className="w-full py-4 px-4 flex flex-col items-center gap-2" style={{ backgroundColor: primary }}>
-        {formData.logo
-          ? <img src={formData.logo} alt="logo" className="h-7 object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-          : <span className="text-white font-bold text-base">{brandName}</span>}
-        <p className="text-white text-xs opacity-80 text-center">{welcome}</p>
-        <div className="w-16 h-16 rounded-full border-2 border-white border-opacity-50 flex items-center justify-center bg-white bg-opacity-10">
-          <svg className="w-7 h-7 text-white opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
-          </svg>
-        </div>
-      </div>
-      {/* Grid de productos */}
-      <div className="grid grid-cols-4 gap-1.5 p-3 w-full">
-        {['Camiseta', 'Hoodie', 'Polo', 'Jacket'].map((p, i) => (
-          <div key={p} className={`rounded-lg border p-1 text-center ${i === 0 ? 'ring-2' : ''}`}
-            style={{ borderColor: i === 0 ? primary : '#e5e7eb' }}>
-            <div className="w-full h-7 rounded bg-gray-100 mb-0.5" />
-            <p className="text-xs truncate" style={{ color: primary }}>{p}</p>
-          </div>
-        ))}
-      </div>
-      <button className="mb-3 px-6 py-1.5 rounded-full text-xs font-semibold" style={{ backgroundColor: primary, color: secondary }}>{btnText}</button>
+      )}
     </div>
   );
 }
 
 export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
   const isPro = brand.plan === 'PRO';
-
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'embed' | 'pro'>(isPro ? 'general' : 'pro');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
-  const [logoError, setLogoError] = useState('');
-
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
   const [formData, setFormData] = useState<UpdateBrandConfigDto>({
     name: brand.name,
     slug: brand.slug,
     logo: brand.logo || '',
-    primaryColor: brand.primaryColor,
-    secondaryColor: brand.secondaryColor,
+    primaryColor: brand.primaryColor || '#FF5C3A',
+    secondaryColor: brand.secondaryColor || '#FFFFFF',
     widgetTemplate: brand.widgetTemplate || 'bare',
     buttonText: brand.buttonText || 'Probarme esto',
     welcomeMessage: brand.welcomeMessage || '',
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'pro' | 'embed'>('general');
-
-  useEffect(() => {
-    setFormData({
-      name: brand.name,
-      slug: brand.slug,
-      logo: brand.logo || '',
-      primaryColor: brand.primaryColor,
-      secondaryColor: brand.secondaryColor,
-      widgetTemplate: brand.widgetTemplate || 'bare',
-      buttonText: brand.buttonText || 'Probarme esto',
-      welcomeMessage: brand.welcomeMessage || '',
-    });
-  }, [brand]);
-
-  const isValidHex = (c: string) => /^#[0-9A-F]{6}$/i.test(c);
-
-  const validate = () => {
-    const e: Record<string, string> = {};
-    if (!formData.name?.trim()) e.name = 'El nombre es requerido';
-    if (formData.primaryColor && !isValidHex(formData.primaryColor)) e.primaryColor = 'Color hexadecimal inválido';
-    if (formData.secondaryColor && !isValidHex(formData.secondaryColor)) e.secondaryColor = 'Color hexadecimal inválido';
-    if (formData.slug !== undefined) {
-      if (!formData.slug?.trim()) e.slug = 'El slug no puede estar vacío';
-      else if (!/^[a-z0-9-]+$/.test(formData.slug)) e.slug = 'Solo letras minúsculas, números y guiones';
-      else if (formData.slug.length < 3) e.slug = 'Mínimo 3 caracteres';
-    }
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      setLogoError('Solo se permiten imágenes (PNG, JPG, SVG, WebP)');
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setLogoError('El archivo no puede superar 2 MB');
-      return;
-    }
-    setLogoError('');
-    setLogoUploading(true);
-    try {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          const base64 = (reader.result as string).split(',')[1];
-          const url = await uploadService.uploadImage(base64, `logo-${Date.now()}.${file.name.split('.').pop()}`, false);
-          setFormData(p => ({ ...p, logo: url }));
-        } catch (err: any) {
-          setLogoError(err.message || 'Error al subir el logo');
-        } finally {
-          setLogoUploading(false);
-        }
-      };
-      reader.onerror = () => {
-        setLogoError('Error al leer el archivo');
-        setLogoUploading(false);
-      };
-      reader.readAsDataURL(file);
-    } catch {
-      setLogoError('Error de conexión al subir el logo');
-      setLogoUploading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-    setIsSubmitting(true);
-    try { 
-      const payload = { ...formData };
-      if (!isPro) {
-        delete payload.slug;
-        delete payload.buttonText;
-        delete payload.welcomeMessage;
-      }
-      await onSubmit(payload); 
-    } finally { setIsSubmitting(false); }
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -388,341 +154,359 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     if (errors[name]) setErrors(p => ({ ...p, [name]: '' }));
   };
 
-  const applyTemplate = (tpl: typeof TEMPLATES[0]) => {
-    if (tpl.proOnly && !isPro) return;
-    setFormData(p => ({
-      ...p,
-      widgetTemplate: tpl.id,
-      primaryColor: tpl.defaultPrimary,
-      secondaryColor: tpl.defaultSecondary,
-    }));
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = (reader.result as string).split(',')[1];
+        const url = await uploadService.uploadImage(base64, `logo-${Date.now()}.${file.name.split('.').pop()}`, false);
+        setFormData(p => ({ ...p, logo: url }));
+        setLogoUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      setLogoUploading(false);
+    }
   };
 
-  const tabs = [
-    { id: 'general', label: 'General' },
-    { id: 'appearance', label: 'Apariencia' },
-    { id: 'embed', label: 'Código Embed' },
-    { id: 'pro', label: isPro ? 'Pro' : 'Pro' },
-  ] as const;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const tab_items = [
+    { id: 'pro', icon: <Sparkles size={18} />, label: 'Lookitry Pro', pro: true },
+    { id: 'general', icon: <Settings size={18} />, label: 'Esencia' },
+    { id: 'appearance', icon: <Palette size={18} />, label: 'Estética' },
+    { id: 'embed', icon: <Code2 size={18} />, label: 'Integración' },
+  ];
+
+  const sectionStyle = "bg-[var(--bg-card)] rounded-[3rem] border border-[var(--border-color)] p-10 space-y-8 shadow-xl shadow-black/5 relative overflow-hidden group";
+  const labelStyle = "text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-secondary)] mb-3 block italic opacity-70";
+  const inputStyle = "w-full px-6 py-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] text-sm font-bold text-[var(--text-primary)] focus:border-[#FF5C3A] outline-none transition-all placeholder:text-[var(--text-muted)] placeholder:font-medium shadow-inner";
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
-
-      {/* --- Navegacion Delineada Premium --- */}
-      <div className="lg:col-span-3 border-r border-gray-100 pr-0 lg:pr-6 pb-6 lg:pb-0 overflow-x-auto lg:overflow-visible">
-        <nav className="flex lg:flex-col gap-2 min-w-max lg:min-w-0">
-          {tabs.map(t => {
-            const isProLocked = t.id === 'pro' && !isPro;
-            const active = activeTab === t.id;
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+      
+      {/* ── SIDEBAR NAVIGATION (LEFT) ── */}
+      <div className="lg:col-span-1 space-y-8">
+        <div className="bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] p-3 shadow-xl shadow-black/5">
+          {tab_items.map((tab) => {
+            const active = activeTab === tab.id;
             return (
               <button
-                key={t.id}
-                type="button"
-                onClick={() => {
-                  if (isProLocked) { setShowUpgradeModal(true); return; }
-                  setActiveTab(t.id);
-                }}
-                className={`w-full text-left px-5 py-4 rounded-3xl flex items-center gap-3 transition-all duration-300 outline-none ${active ? 'bg-[var(--bg-card)] shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#FF5C3A]/20 scale-[1.02]' : 'hover:bg-[var(--bg-hover)]' }`}
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`w-full flex items-center gap-4 px-6 py-4 rounded-[1.8rem] transition-all duration-300 group/tab relative ${active ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
               >
-                <span className={`block text-xs font-black uppercase tracking-widest italic ${active ? 'text-[#FF5C3A]' : 'text-[var(--text-secondary)]'}`}>
-                  {isProLocked ? (
-                    <span className="flex items-center gap-1.5"><svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> Pro</span>
-                  ) : t.label}
-                </span>
+                <div className={`transition-transform duration-300 ${active ? 'scale-110' : 'opacity-40'}`}>
+                  {tab.icon}
+                </div>
+                <div className="text-left leading-none">
+                  <span className="text-[10px] uppercase font-black tracking-widest block mb-0.5">{tab.label}</span>
+                  {tab.id === 'pro' && !isPro && <span className="text-[8px] font-black uppercase text-[#FF5C3A] bg-white px-1.5 py-0.5 rounded italic">Bloqueado</span>}
+                </div>
+                {active && (
+                   <motion.div layoutId="tab-active" className="absolute right-4" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+                    <ChevronRight size={14} className="opacity-40" />
+                  </motion.div>
+                )}
               </button>
             );
           })}
-        </nav>
-      </div>
+        </div>
 
-      {/* Contenido — dinámico según tab */}
-      {activeTab !== 'embed' ? (
-        <>
-          <div className="lg:col-span-5">
-            <section className="p-6 md:p-8 rounded-[2.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
-                <form onSubmit={handleSubmit} className="space-y-5">
-
-                  {/* TAB: General */}
-              {activeTab === 'general' && (
-                <div className="space-y-8">
-                  <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
-                    <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><svg className="w-5 h-5 text-[#FF5C3A]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
-                    <div><h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">General</h3><p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Datos Básicos</p></div>
+        {/* ── PREVIEW COMPONENT (BELOW TABS) ── */}
+        <AnimatePresence>
+          {activeTab !== 'embed' && (
+            <motion.div 
+               initial={{ opacity: 0, y: 30 }}
+               animate={{ opacity: 1, y: 0 }}
+               exit={{ opacity: 0, y: 30 }}
+               className="bg-[var(--bg-card)] p-8 rounded-[3rem] border border-[var(--border-color)] shadow-2xl space-y-8 relative overflow-hidden group/preview"
+            >
+               <div className="flex justify-between items-center relative z-10">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] italic">Vista Previa Pro</h4>
+                  <div className="flex gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#FF5C3A]/40 animate-pulse" />
+                    <div className="w-2 h-2 rounded-full bg-indigo-500/40" />
                   </div>
-                  <Input label="Nombre de Marca" name="name" value={formData.name || ''} onChange={handleChange} error={errors.name} placeholder="Mi Marca" required />
-                  <div>
-                    <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Logo</label>
-                    <div className="flex gap-3 items-start">
-                      {/* Preview */}
-                      <div style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }}
-                        className="w-16 h-16 rounded-xl border-2 border-dashed flex items-center justify-center overflow-hidden flex-shrink-0">
+               </div>
+               
+               <div className="aspect-[4/5] rounded-[2.5rem] border border-[var(--border-color)] overflow-hidden shadow-4xl relative" style={{ background: formData.secondaryColor }}>
+                  <div className="p-8 h-full flex flex-col justify-between">
+                     <div className="space-y-3">
                         {formData.logo ? (
-                          <img src={formData.logo} alt="Logo" className="w-full h-full object-contain"
-                            onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                          <img src={formData.logo} className="mx-auto h-8 object-contain" />
                         ) : (
-                          <svg className="w-6 h-6" style={{ color: 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5A.75.75 0 0121 3.75v16.5a.75.75 0 01-.75.75H3.75A.75.75 0 013 20.25V3.75A.75.75 0 013.75 3z" />
-                          </svg>
+                          <div className="text-xs font-black uppercase italic tracking-tighter text-center" style={{ color: formData.primaryColor }}>{brand.name}</div>
                         )}
-                      </div>
-                      {/* Controles */}
-                      <div className="flex-1 space-y-2">
-                        <label
-                          style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)', color: 'var(--text-secondary)' }}
-                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-[13px] cursor-pointer hover:opacity-80 transition-opacity ${logoUploading ? 'opacity-50 pointer-events-none' : ''}`}
-                        >
-                          {logoUploading ? (
-                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                            </svg>
-                          ) : (
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-                            </svg>
-                          )}
-                          {logoUploading ? 'Subiendo...' : 'Subir imagen'}
-                          <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={logoUploading} />
-                        </label>
-                        {formData.logo && (
-                          <button type="button" onClick={() => setFormData(p => ({ ...p, logo: '' }))}
-                            style={{ color: 'var(--text-muted)' }}
-                            className="text-[12px] hover:text-red-400 transition-colors flex items-center gap-1">
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            Quitar logo
-                          </button>
-                        )}
-                        {logoError && <p className="text-xs text-red-400">{logoError}</p>}
-                        <p style={{ color: 'var(--text-muted)' }} className="text-xs">PNG, JPG, SVG o WebP — máx. 2 MB</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ borderColor: 'var(--border-color)' }} className="pt-2 border-t">
-                    <Button type="submit" disabled={isSubmitting} className="w-full">
-                      {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
-                    </Button>
-                  </div>
-                </div>
-              )}
+                        <p className="text-[9px] font-black text-center opacity-40 leading-tight uppercase tracking-widest" style={{ color: formData.primaryColor }}>{formData.welcomeMessage || '¡Bienvenido!'}</p>
+                     </div>
+                     
+                     <div className="w-24 h-24 rounded-full border-2 border-dashed mx-auto flex items-center justify-center transition-all group-hover/preview:scale-110" style={{ borderColor: formData.primaryColor }}>
+                        <Sparkles size={28} style={{ color: formData.primaryColor, opacity: 0.3 }} />
+                     </div>
 
-              {/* TAB: Apariencia */}
-              {activeTab === 'appearance' && (
-                <div className="space-y-8">
-                  <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
-                    <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><svg className="w-5 h-5 text-[#FF5C3A]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg></div>
-                    <div><h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Paleta Visual</h3><p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Esquema unificado</p></div>
+                     <div className="space-y-4">
+                        <div className="grid grid-cols-4 gap-2">
+                          {[1,2,3,4].map(i => <div key={i} className="aspect-square bg-[var(--bg-input)] rounded-lg shadow-inner group-hover/preview:scale-[1.05] transition-all" />)}
+                        </div>
+                        <button className="w-full py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-widest shadow-2xl transition-all hover:brightness-110 active:scale-95" style={{ background: formData.primaryColor }}>{formData.buttonText}</button>
+                     </div>
                   </div>
-                  {/* Selector de template */}
-                  <div>
-                    <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Layout del Widget</label>
-                    <p style={{ color: 'var(--text-muted)' }} className="text-xs mb-3">Cada template cambia la disposición de los elementos, no solo los colores</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {TEMPLATES.map(tpl => {
-                        const locked = tpl.proOnly && !isPro;
-                        const selected = formData.widgetTemplate === tpl.id;
-                        return (
-                          <button key={tpl.id} type="button" onClick={() => applyTemplate(tpl)}
-                            style={!selected ? { borderColor: 'var(--border-color)' } : {}}
-                            className={`relative rounded-xl border-2 p-2 text-left transition-all ${selected ? 'border-[#FF5C3A] shadow-md' : 'hover:opacity-80'} ${locked ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
-                            <div className="rounded-lg h-20 mb-2 overflow-hidden" style={{ backgroundColor: tpl.defaultSecondary }}>
-                              <LayoutMiniPreview layout={tpl.layout} primary={tpl.defaultPrimary} secondary={tpl.defaultSecondary} />
-                            </div>
-                            <p style={{ color: 'var(--text-primary)' }} className="text-xs font-semibold">{tpl.name}</p>
-                            <p style={{ color: 'var(--text-muted)' }} className="text-xs leading-tight mt-0.5">{tpl.description}</p>
-                            {locked && (
-                              <span className="absolute top-2 right-2 text-[10px] bg-[#ef4444] text-white px-2 py-0.5 rounded-full font-bold shadow-sm">
-                                PRO
-                              </span>
-                            )}
-                            {selected && !locked && (
-                              <div className="absolute top-2 right-2 w-4 h-4 bg-[#FF5C3A] rounded-full flex items-center justify-center">
-                                <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                              </div>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
+                  
+                  {/* Simulation Overlay */}
+                  <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-white/5 to-transparent flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-all duration-700">
+                     <div className="px-5 py-2 bg-[var(--bg-card)]/60 backdrop-blur-xl rounded-full text-[8px] text-white font-black uppercase tracking-[0.2em] border border-white/10 shadow-4xl">Modo En Vivo</div>
                   </div>
+               </div>
 
-                  {/* Colores */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Color Principal</label>
-                      <div className="flex gap-2 mb-2">
-                        <input type="color" name="primaryColor" value={formData.primaryColor || '#000000'} onChange={handleChange}
-                          style={{ borderColor: 'var(--border-color)' }}
-                          className="h-9 w-12 rounded-lg border cursor-pointer p-0.5" />
-                        <Input name="primaryColor" value={formData.primaryColor || ''} onChange={handleChange} error={errors.primaryColor} placeholder="#000000" className="flex-1 font-mono text-sm" />
-                      </div>
-                      <div className="flex gap-1.5 flex-wrap">
-                        {COLOR_PRESETS.map(c => (
-                          <button key={c} type="button" onClick={() => setFormData(p => ({ ...p, primaryColor: c }))}
-                            className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${formData.primaryColor === c ? 'border-[#FF5C3A] scale-110' : 'border-transparent'}`}
-                            style={{ backgroundColor: c }} />
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Color de Fondo</label>
-                      <div className="flex gap-2 mb-2">
-                        <input type="color" name="secondaryColor" value={formData.secondaryColor || '#ffffff'} onChange={handleChange}
-                          style={{ borderColor: 'var(--border-color)' }}
-                          className="h-9 w-12 rounded-lg border cursor-pointer p-0.5" />
-                        <Input name="secondaryColor" value={formData.secondaryColor || ''} onChange={handleChange} error={errors.secondaryColor} placeholder="#FFFFFF" className="flex-1 font-mono text-sm" />
-                      </div>
-                      <div className="flex gap-1.5 flex-wrap">
-                        {BG_PRESETS.map(c => (
-                          <button key={c} type="button" onClick={() => setFormData(p => ({ ...p, secondaryColor: c }))}
-                            className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${formData.secondaryColor === c ? 'scale-110 ring-2 ring-offset-1 ring-[#FF5C3A]' : 'border-transparent'}`}
-                            style={{ backgroundColor: c }} />
-                        ))}
-                      </div>
-                    </div>
+               <div className="p-5 rounded-[2rem] bg-[var(--bg-base)] border border-[var(--border-color)] space-y-3 shadow-inner">
+                  <p className="text-[8px] font-black uppercase text-[var(--text-muted)] tracking-widest leading-none">Acceso Directo</p>
+                  <div className="flex items-center justify-between gap-3 overflow-hidden">
+                    <p className="text-[10px] font-black font-mono text-[var(--text-primary)] truncate opacity-50">pruebalo.wilkiedevs.com/pruebalo/{formData.slug || brand.slug}</p>
+                    <a href={`/pruebalo/${formData.slug || brand.slug}`} target="_blank" className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all shrink-0 shadow-lg"><ExternalLink size={14} /></a>
                   </div>
+               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-                  <div style={{ borderColor: 'var(--border-color)' }} className="pt-2 border-t">
-                    <Button type="submit" disabled={isSubmitting} className="w-full">
-                      {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
-                    </Button>
-                  </div>
-                </div>
-              )}
+      {/* ── CONTENT AREA (RIGHT) ── */}
+      <div className="lg:col-span-3">
+         <AnimatePresence mode="wait">
+           {activeTab === 'general' && (
+             <motion.section key="general" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className={sectionStyle}>
+               <div className="absolute top-0 right-0 p-8 opacity-5"><Settings size={120} /></div>
+               <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
+                 <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><Settings className="w-6 h-6 text-[#FF5C3A]" /></div>
+                 <div>
+                   <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter">Genoma de Marca</h3>
+                   <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-[0.2em] opacity-60">Identidad raíz y presencia</p>
+                 </div>
+               </div>
 
-              {/* TAB: Pro */}
-              {activeTab === 'pro' && (
-                <div className="space-y-8">
-                  <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
-                    <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><svg className="w-5 h-5 text-[#FF5C3A]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
-                    <div><h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Opciones Pro</h3><p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Exclusivo Widget</p></div>
-                  </div>
-                  {!isPro ? (
-                    <div style={{ borderColor: 'var(--border-color)' }} className="rounded-2xl overflow-hidden border">
-                      <div className="bg-gradient-to-r from-[#FF5C3A] to-[#e04e30] px-5 py-4">
-                        <p className="font-bold text-white text-base">Plan Pro — Personalización Avanzada</p>
-                        <p className="text-white/70 text-xs mt-1">Desbloquea control total sobre tu widget</p>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-6 relative z-10">
+                 <div className="space-y-6">
+                   <div>
+                     <label className={labelStyle}>ADN de la Marca (Nombre)</label>
+                     <input type="text" name="name" value={formData.name || ''} onChange={handleChange} className={inputStyle} placeholder="Ej: Lookitry Fashion" />
+                   </div>
+                   <div>
+                      <div className="flex items-center mb-3">
+                        <label className={labelStyle}>Identificador único (Slug)</label>
+                        <Tooltip text="Esta será la URL de tu probador público. Solo disponible en planes PRO." />
                       </div>
-                      <div style={{ background: 'rgba(255,92,58,0.06)' }} className="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {[
-                          'Hasta 15 productos activos',
-                          '1.200 generaciones/mes',
-                          'Templates Minimal, Modern y Bold',
-                          'Texto del botón personalizado',
-                          'Mensaje de bienvenida en widget',
-                          'URL del widget personalizable',
-                          'Soporte prioritario',
-                        ].map(f => (
-                          <div key={f} className="flex items-center gap-2 text-xs text-[#FF5C3A]">
-                            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <span style={{ color: 'var(--text-secondary)' }}>{f}</span>
+                      <div className={`relative ${!isPro ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                         <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                         <input 
+                           type="text" 
+                           name="slug" 
+                           value={formData.slug || ''} 
+                           onChange={handleChange} 
+                           disabled={!isPro}
+                           className={`${inputStyle} pl-14 font-mono lowercase tracking-tight`} 
+                           placeholder="mi-marca-oficial" 
+                         />
+                      </div>
+                   </div>
+                 </div>
+
+                 <div className="space-y-6">
+                    <label className={labelStyle}>Emblema (Logo)</label>
+                    <div className="flex items-center gap-6 p-6 bg-[var(--bg-input)] rounded-[2.5rem] border border-[var(--border-color)] shadow-inner group/logo">
+                       <div className="w-24 h-24 rounded-3xl bg-white flex items-center justify-center p-3 border border-black/5 shadow-2xl relative overflow-hidden shrink-0">
+                         {formData.logo ? (
+                           <img src={formData.logo} alt="Logo" className="w-full h-full object-contain" />
+                         ) : (
+                           <ImageIcon className="w-8 h-8 opacity-10" />
+                         )}
+                         {logoUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Zap className="w-6 h-6 text-white animate-spin" /></div>}
+                       </div>
+                       <div className="flex-1 space-y-3">
+                         <label className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--text-primary)] text-[var(--bg-card)] rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-pointer hover:scale-105 active:scale-95 transition-all">
+                            <Plus size={14} /> Subir Nuevo
+                            <input type="file" className="hidden" onChange={handleLogoUpload} accept="image/*" />
+                         </label>
+                         {formData.logo && (
+                           <button onClick={() => setFormData(p => ({ ...p, logo: '' }))} className="w-full py-2 text-[8px] font-black uppercase text-rose-500 tracking-widest hover:bg-rose-500/5 transition-colors rounded-xl">Eliminar Emblema</button>
+                         )}
+                       </div>
+                    </div>
+                 </div>
+               </div>
+
+               <div className="pt-10 flex justify-end relative z-10 border-t border-[var(--border-color)]">
+                 <button 
+                   onClick={handleSubmit} disabled={isSubmitting}
+                   className="px-12 py-5 bg-[#FF5C3A] text-white rounded-[2rem] font-[950] italic uppercase tracking-widest shadow-4xl shadow-[#FF5C3A]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+                 >
+                   {isSubmitting ? <Zap className="w-5 h-5 animate-pulse" /> : <Check className="w-5 h-5" strokeWidth={4} />}
+                   Sincronizar Genoma
+                 </button>
+               </div>
+             </motion.section>
+           )}
+
+           {activeTab === 'appearance' && (
+             <motion.section key="appearance" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className={sectionStyle}>
+               <div className="absolute top-0 right-0 p-8 opacity-5"><Palette size={120} /></div>
+               <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
+                 <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><Palette className="w-6 h-6 text-[#FF5C3A]" /></div>
+                 <div>
+                   <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter">Atmósfera Visual</h3>
+                   <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-[0.2em] opacity-60">Skin, Templates y Color Flow</p>
+                 </div>
+               </div>
+
+               <div className="space-y-12 pt-6 relative z-10">
+                 <div className="space-y-6">
+                    <label className={labelStyle}>Arquitectura de Interfaz (Templates)</label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                       {TEMPLATES.map((tpl) => {
+                         const locked = tpl.proOnly && !isPro;
+                         const active = formData.widgetTemplate === tpl.id;
+                         return (
+                           <button 
+                             key={tpl.id}
+                             onClick={() => !locked && setFormData(p => ({ ...p, widgetTemplate: tpl.id }))}
+                             className={`p-4 rounded-[2.5rem] border transition-all relative group/tpl ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-4xl scale-105' : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[#FF5C3A]/30'} ${locked ? 'opacity-40 cursor-not-allowed' : ''}`}
+                           >
+                             <div className="aspect-[4/3] mb-4"><LayoutPreview layout={tpl.layout} primary={tpl.defaultPrimary} secondary={tpl.defaultSecondary} /></div>
+                             <div className="text-left px-2">
+                                <p className={`text-[10px] font-black uppercase tracking-tighter truncate ${active ? 'text-[#FF5C3A]' : 'text-[var(--text-primary)]'}`}>{tpl.name}</p>
+                                <p className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50 mt-1 truncate">{tpl.layout}</p>
+                             </div>
+                             {locked && <div className="absolute top-5 right-5 bg-black/80 backdrop-blur text-white p-2 rounded-xl"><Lock size={12} /></div>}
+                             {active && !locked && <div className="absolute top-5 right-5 bg-[#FF5C3A] text-white p-2 rounded-xl shadow-lg border border-white/20"><Check size={12} strokeWidth={4} /></div>}
+                           </button>
+                         );
+                       })}
+                    </div>
+                 </div>
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-10 border-t border-[var(--border-color)]">
+                    <div className="space-y-6">
+                       <label className={labelStyle}>Vibración Primaria (Accent)</label>
+                       <div className="flex gap-4 flex-wrap">
+                          {COLOR_PRESETS.map(c => (
+                            <button key={c} onClick={() => setFormData(p => ({ ...p, primaryColor: c }))} className={`w-12 h-12 rounded-2xl border-4 transition-all hover:scale-110 active:scale-95 ${formData.primaryColor === c ? 'border-white ring-8 ring-[#FF5C3A]/20 scale-110 z-10 shadow-4xl' : 'border-transparent opacity-60'}`} style={{ background: c }} />
+                          ))}
+                          <div className="relative w-12 h-12 rounded-2xl border-2 border-dashed border-[var(--border-color)] overflow-hidden group/cust flex items-center justify-center">
+                             <input type="color" value={formData.primaryColor || '#FF5C3A'} onChange={e => setFormData(p => ({ ...p, primaryColor: e.target.value }))} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                             <Plus className="text-[var(--text-muted)] group-hover/cust:text-[#FF5C3A] transition-colors" size={20} />
                           </div>
-                        ))}
+                       </div>
+                    </div>
+                    <div className="space-y-6">
+                       <label className={labelStyle}>Atmósfera de Fondo (Canvas)</label>
+                       <div className="flex gap-4 flex-wrap">
+                          {BG_PRESETS.map(c => (
+                            <button key={c} onClick={() => setFormData(p => ({ ...p, secondaryColor: c }))} className={`w-12 h-12 rounded-2xl border-2 transition-all hover:scale-110 active:scale-95 ${formData.secondaryColor === c ? 'border-[#FF5C3A] ring-4 ring-[#FF5C3A]/20 scale-110 z-10 shadow-2xl' : 'border-[var(--border-color)]'}`} style={{ background: c }} />
+                          ))}
+                       </div>
+                    </div>
+                 </div>
+               </div>
+
+               <div className="pt-10 flex justify-end relative z-10 border-t border-[var(--border-color)]">
+                 <button onClick={handleSubmit} className="px-12 py-5 bg-[#FF5C3A] text-white rounded-[2rem] font-[950] italic uppercase tracking-widest shadow-4xl shadow-[#FF5C3A]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+                   {isSubmitting ? <Zap className="w-5 h-5 animate-pulse" /> : <Sparkles className="w-5 h-5" />}
+                   Sellar Estética
+                 </button>
+               </div>
+             </motion.section>
+           )}
+
+           {activeTab === 'pro' && (
+             <motion.section key="pro" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className={sectionStyle}>
+               <div className="absolute top-0 right-0 p-8 opacity-5"><Sparkles size={120} /></div>
+               <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
+                 <div className="w-12 h-12 rounded-2xl bg-[var(--bg-base)] flex items-center justify-center border border-[var(--border-color)] shadow-inner"><Sparkles className="w-6 h-6 text-[#FF5C3A]" /></div>
+                 <div>
+                   <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter">Lookitry Pro</h3>
+                   <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-[0.2em] opacity-60">Control Total y Personalización</p>
+                 </div>
+               </div>
+
+               {!isPro ? (
+                 <div className="pt-8 space-y-10 relative z-10">
+                    <div className="p-12 rounded-[4rem] bg-gradient-to-br from-zinc-900 to-black text-white relative overflow-hidden shadow-4xl border border-white/5 group">
+                       <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-1000"><Zap size={250} strokeWidth={4} className="text-[#FF5C3A]" /></div>
+                       <div className="relative z-10 space-y-10">
+                          <div className="space-y-4">
+                            <h4 className="text-4xl font-[950] italic uppercase tracking-tighter leading-none">Domina cada <br /><span className="text-[#FF5C3A]">Píxel de tu Marca.</span></h4>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Evolución genética para marcas de alto impacto</p>
+                          </div>
+                          <ul className="space-y-5">
+                             {[
+                               'Slug de URL personalizado (/marca/tu-nombre)',
+                               'Mensajes de bienvenida editoriales custom',
+                               'Llamadas a la acción (CTA) 100% dinámicos',
+                               'Templates Side Panel y Bold Impact desbloqueados',
+                               'Prioridad máxima en el motor de IA (Zero Wait)',
+                               'Hasta 15 productos activos en catálogo'
+                             ].map((f, i) => (
+                               <li key={i} className="flex items-center gap-4 text-[10px] font-black uppercase tracking-tight opacity-80 leading-relaxed">
+                                  <div className="w-6 h-6 rounded-full bg-[#FF5C3A]/20 flex items-center justify-center shrink-0 border border-[#FF5C3A]/30">
+                                     <Check className="w-3 h-3 text-[#FF5C3A]" strokeWidth={5} />
+                                  </div>
+                                  {f}
+                               </li>
+                             ))}
+                          </ul>
+                          <button onClick={() => window.location.href='/dashboard/subscription'} className="w-full py-7 bg-[#FF5C3A] text-white rounded-[2.5rem] font-[950] uppercase tracking-[0.2em] text-[11px] shadow-[0_25px_50px_rgba(255,92,58,0.4)] hover:scale-[1.02] transition-all active:scale-95 border-t border-white/20">Activar Potencial Pro</button>
+                       </div>
+                    </div>
+                 </div>
+               ) : (
+                 <div className="pt-10 space-y-10 relative z-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                      <div className="space-y-3">
+                         <label className={labelStyle}>Texto del Botón (CTA)</label>
+                         <div className="relative">
+                            <Smartphone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                            <input type="text" name="buttonText" value={formData.buttonText || ''} onChange={handleChange} className={`${inputStyle} pl-14 font-black italic uppercase tracking-widest`} placeholder="Probarme esto" />
+                         </div>
                       </div>
-                      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="px-5 py-3 border-t">
-                        <button
-                          type="button"
-                          onClick={() => setShowUpgradeModal(true)}
-                          className="w-full py-2.5 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] transition-colors"
-                        >
-                          Activar plan
-                        </button>
+                      <div className="space-y-3">
+                         <label className={labelStyle}>Mensaje de Entrada (Welcome)</label>
+                         <input type="text" name="welcomeMessage" value={formData.welcomeMessage || ''} onChange={handleChange} className={inputStyle} placeholder="¡Bienvenido a nuestro probador!" />
                       </div>
                     </div>
-                  ) : (
-                    <div style={{ background: 'rgba(255,92,58,0.06)', borderColor: 'rgba(255,92,58,0.2)' }} className="flex items-center gap-2 border rounded-xl px-4 py-3">
-                      <svg className="w-4 h-4 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                      </svg>
-                      <p style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">Tienes acceso completo al Plan Pro</p>
+                    
+                    <div className="p-8 rounded-[3rem] bg-[#FF5C3A]/5 border border-[#FF5C3A]/10 flex items-center justify-between shadow-xl">
+                       <div className="flex items-center gap-5">
+                          <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A] flex items-center justify-center text-white shadow-lg"><Check size={20} strokeWidth={4} /></div>
+                          <div>
+                            <p className="text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)] leading-none italic">Sincronización Pro Activa</p>
+                            <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase mt-1 opacity-50 tracking-tighter">Tu marca está operando a máxima potencia</p>
+                          </div>
+                       </div>
+                       <button onClick={handleSubmit} className="px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-card)] rounded-2xl text-[10px] font-950 uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl">Salvar ADN</button>
                     </div>
-                  )}
+                 </div>
+               )}
+             </motion.section>
+           )}
 
-                  <div className={!isPro ? 'opacity-40 pointer-events-none select-none' : ''}>
-                    <div className="space-y-4">
-                      <div>
-                        <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">URL del widget (slug)</label>
-                        <div style={{ borderColor: 'var(--border-color)' }} className="flex items-center gap-0 rounded-lg border overflow-hidden focus-within:ring-2 focus-within:ring-[#FF5C3A]">
-                          <span style={{ background: 'var(--bg-hover)', color: 'var(--text-muted)', borderColor: 'var(--border-color)' }} className="px-3 py-2 text-sm border-r whitespace-nowrap select-none">/marca/</span>
-                          <input
-                            name="slug"
-                            value={formData.slug || ''}
-                            onChange={handleChange}
-                            placeholder="mi-marca"
-                            style={{ background: 'var(--bg-input)', color: 'var(--text-primary)' }}
-                            className="flex-1 px-3 py-2 text-sm font-mono focus:outline-none"
-                          />
-                        </div>
-                        {errors.slug
-                          ? <p className="text-xs text-red-500 mt-1">{errors.slug}</p>
-                          : <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Solo letras minúsculas, números y guiones. Cambiar esto actualiza la URL pública del probador.</p>
-                        }
-                      </div>
-                      <div>
-                        <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Texto del botón principal</label>
-                        <Input name="buttonText" value={formData.buttonText || ''} onChange={handleChange} placeholder="Probarme esto" />
-                        <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Texto que aparece en el botón de generar</p>
-                      </div>
-                      <div>
-                        <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Mensaje de bienvenida</label>
-                        <textarea name="welcomeMessage" value={formData.welcomeMessage || ''} onChange={handleChange}
-                          placeholder="¡Bienvenido! Pruébate nuestros productos virtualmente..."
-                          rows={3}
-                          style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                          className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] resize-none" />
-                        <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Aparece en la pantalla inicial del widget</p>
-                      </div>
-                      {isPro && (
-                        <div style={{ background: 'rgba(255,92,58,0.06)', borderColor: 'rgba(255,92,58,0.2)' }} className="mt-2 p-3 rounded-xl border">
-                          <p className="text-xs font-semibold text-[#FF5C3A] mb-1">Templates Pro desbloqueados</p>
-                          <p style={{ color: 'var(--text-secondary)' }} className="text-xs">Ve a la pestaña Apariencia para seleccionar entre los layouts Minimal, Modern y Bold.</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div style={{ borderColor: 'var(--border-color)' }} className="pt-2 border-t">
-                    <Button type="submit" disabled={isSubmitting || !isPro} className="w-full">
-                      {isSubmitting ? 'Guardando...' : isPro ? 'Guardar Cambios Pro' : 'Requiere Plan Pro'}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-            </form>
-        </section>
+           {activeTab === 'embed' && (
+             <motion.div key="embed" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}>
+               <EmbedSection />
+             </motion.div>
+           )}
+         </AnimatePresence>
       </div>
-
-      {/* Preview — 4 cols */}
-      <div className="lg:col-span-4 space-y-5">
-        <section className="p-6 rounded-[2.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-sm">
-          <div className="border-b border-[var(--border-color)] pb-4 mb-4">
-            <h3 style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">Vista Previa del Widget</h3>
-            <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
-              Layout: <span className="font-medium capitalize">{TEMPLATES.find(t => t.id === formData.widgetTemplate)?.name || 'Minimal'}</span>
-            </p>
-          </div>
-            <WidgetPreview formData={formData} brandName={formData.name || brand.name} />
-          
-        </section>
-        <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl p-4 border">
-          <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-semibold mb-2">URL de tu widget</p>
-          <code style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-muted)' }} className="text-xs break-all rounded p-2 block border">
-            {`/marca/${formData.slug || brand.slug}`}
-          </code>
-          <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-2">Los cambios se reflejan en tiempo real en el widget embebido</p>
-        </div>
-      </div>
-        </>
-      ) : (
-        <div className="lg:col-span-9">
-          <EmbedSection />
-        </div>
-      )}
     </div>
   );
 }
