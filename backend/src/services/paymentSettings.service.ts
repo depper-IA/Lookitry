@@ -141,7 +141,10 @@ export class PaymentSettingsService {
         .select()
         .single();
 
-      if (error) throw new Error('Error al actualizar configuración: ' + error.message);
+      if (error) {
+        console.error('[PaymentSettingsService] Error al actualizar Supabase:', error);
+        throw new Error('Error al actualizar configuración: ' + error.message);
+      }
       result = data;
     } else {
       const { data, error } = await supabaseAdmin
