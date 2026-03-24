@@ -263,9 +263,10 @@ export class SubscriptionService {
     // Esto evita que un subscription_start_date mal configurado reduzca totalDays a 1 y cause un crédito injusto.
     const { data: lastPayment } = await supabaseAdmin
       .from('subscription_payments')
-      .select('amount, months_paid')
+      .select('amount, months_paid, notes')
       .eq('brand_id', brandId)
       .eq('status', 'completed')
+      .gt('months_paid', 0) // excluir pagos de solo landing page
       .neq('payment_method', 'credit_proration') // excluir upgrades gratuitos previos
       .order('payment_date', { ascending: false })
       .limit(1)
@@ -275,9 +276,25 @@ export class SubscriptionService {
     const totalDays = Math.max(1, 30 * paymentMonths); // prorrateo basado en meses pagados
 
     // Usar el monto real del último pago; si no hay registro, usar el fallback del frontend
-    const currentPlanPriceTotal = lastPayment?.amount && lastPayment.amount > 0
+    let currentPlanPriceTotal = lastPayment?.amount && lastPayment.amount > 0
       ? lastPayment.amount
       : currentPlanPriceTotalFallback;
+
+    // Si el último pago incluía mini-landing, restar su valor para no prorratear un pago único
+    if (lastPayment?.notes?.includes('Incluye Landing Page')) {
+      try {
+        const { PaymentSettingsService } = require('./paymentSettings.service');
+        const settingsService = new PaymentSettingsService();
+        const settings = await settingsService.getSettings();
+        const landingPrice = settings.landing_price || 650000;
+        
+        const previousAmount = currentPlanPriceTotal;
+        currentPlanPriceTotal = Math.max(0, currentPlanPriceTotal - landingPrice);
+        console.log(`[Proration] Ajustando monto por landing page: ${previousAmount} -> ${currentPlanPriceTotal} (Restado: ${landingPrice})`);
+      } catch (err) {
+        console.error('[Proration] Error al obtener precio de landing para ajuste:', err);
+      }
+    }
 
     console.log(`[Proration] brandId=${brandId} lastPayment=${lastPayment?.amount} fallback=${currentPlanPriceTotalFallback} using=${currentPlanPriceTotal} totalDays=${totalDays} daysRemaining=${daysRemaining}`);
 
