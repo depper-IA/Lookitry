@@ -8,6 +8,7 @@ import { SuspensionModal } from '@/components/dashboard/SuspensionModal';
 import { ProUpgradeBanner } from '@/components/dashboard/ProUpgradeBanner';
 import { Spinner } from '@/components/ui/Spinner';
 import { brandsService } from '@/services/brands.service';
+import IdleTimer from '@/components/auth/IdleTimer';
 import type { Brand } from '@/types';
 
 export default function DashboardLayoutWrapper({
@@ -108,7 +109,9 @@ export default function DashboardLayoutWrapper({
       )}
       {/* El banner de verificación de email ahora vive dentro de DashboardLayout
           para respetar el padding del sidebar y no solaparse con el header sticky */}
-      <DashboardLayout>{children}</DashboardLayout>
+      <IdleTimer>
+        <DashboardLayout>{children}</DashboardLayout>
+      </IdleTimer>
     </>
   );
 }
