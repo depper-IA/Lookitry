@@ -112,6 +112,7 @@ export default function AdminMiniLandingsPage() {
     previewMinutes: 0.25,
   });
   const [savingModal, setSavingModal] = useState(false);
+  const [alertState, setAlertState] = useState<{ type: 'success' | 'error', message: string } | null>(null);
 
   const fetchModalConfig = useCallback(async () => {
     try {
@@ -139,6 +140,7 @@ export default function AdminMiniLandingsPage() {
 
   const handleSaveModalConfig = async () => {
     setSavingModal(true);
+    setAlertState(null);
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
         method: 'PUT',
@@ -155,10 +157,14 @@ export default function AdminMiniLandingsPage() {
           mini_landing_preview_seconds: Math.round(modalConfig.previewMinutes * 60)
         }),
       });
-      if (!res.ok) throw new Error('Error al guardar');
-      alert('Configuración guardada correctamente');
-    } catch (err: any) { alert(err.message); }
-    finally { setSavingModal(false); }
+      if (!res.ok) throw new Error('Error al guardar la configuración');
+      setAlertState({ type: 'success', message: 'Configuración guardada correctamente' });
+      setTimeout(() => setAlertState(null), 3000);
+    } catch (err: any) { 
+      setAlertState({ type: 'error', message: err.message });
+    } finally {
+      setSavingModal(false);
+    }
   };
 
   const toggleSort = (field: SortFieldML) => {
@@ -261,7 +267,7 @@ export default function AdminMiniLandingsPage() {
       if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
       await fetchBrands();
     } catch (err: any) {
-      alert(err.message || 'Error al ejecutar acción');
+      setAlertState({ type: 'error', message: err.message || 'Error al ejecutar acción' });
     } finally {
       setActionLoading(null);
     }
@@ -282,6 +288,20 @@ export default function AdminMiniLandingsPage() {
 
   return (
     <div className="space-y-5">
+      {alertState && (
+        <div className={`fixed top-6 right-6 z-[60] max-w-sm px-5 py-4 rounded-2xl border shadow-2xl flex items-start gap-3 animate-in fade-in slide-in-from-right-4 duration-300 ${
+          alertState.type === 'success' 
+            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' 
+            : 'bg-red-500/10 border-red-500/30 text-red-500'
+        }`} style={{ backdropFilter: 'blur(8px)' }}>
+          <div className="flex-1">
+            <p className="text-[10px] font-black uppercase tracking-widest mb-1">{alertState.type === 'success' ? 'Éxito' : 'Error'}</p>
+            <p className="text-sm font-bold leading-tight">{alertState.message}</p>
+          </div>
+          <button onClick={() => setAlertState(null)} className="hover:opacity-70 transition-opacity text-xs p-1 mt-1">✕</button>
+        </div>
+      )}
+
       {/* Encabezado */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>

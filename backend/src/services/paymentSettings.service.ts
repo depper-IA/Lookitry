@@ -1,4 +1,4 @@
-﻿import { supabaseAdmin } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 
 export interface PaymentSettings {
   id?: string;
@@ -47,6 +47,12 @@ export interface PaymentSettings {
   // IA Prompting
   ai_prompt_master: string;
   ai_prompt_negative: string;
+  // Modal Promocional Global
+  modal_promo_config: any;
+  modal_title: string;
+  modal_description: string;
+  modal_image_url: string;
+  mini_landing_preview_seconds: number;
   // Pruebas y desarrollo
   bypass_ip_protection: boolean;
   ip_whitelist: string; // IPs separadas por coma que siempre pasan el check
@@ -90,6 +96,11 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   currency: 'COP',
   ai_prompt_master: '',
   ai_prompt_negative: '',
+  modal_promo_config: {},
+  modal_title: '¡Oferta Especial!',
+  modal_description: 'Obtén un descuento exclusivo registrándote hoy.',
+  modal_image_url: '',
+  mini_landing_preview_seconds: 15,
   bypass_ip_protection: false,
   ip_whitelist: '',
 };
