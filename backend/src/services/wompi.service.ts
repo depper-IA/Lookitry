@@ -143,17 +143,34 @@ export class WompiService {
    * Formato legacy: TRYON-{brandId}-{timestamp}
    */
   extractBrandIdFromReference(reference: string): string | null {
-    const parts = reference.split('-');
-    if (parts.length < 3 || (parts[0] !== 'TRYON' && parts[0] !== 'WOMPI')) return null;
-    // Formato nuevo: PREFIX-{brandId}-M{n}-P{plan}-{ts}
-    // Buscar el índice del segmento que empieza con 'M' seguido de dígitos
-    const mIdx = parts.findIndex((p, i) => i > 0 && /^M\d+$/.test(p));
-    if (mIdx > 1) {
-      // brandId son las partes entre índice 1 y mIdx-1 (UUID tiene 5 partes con guiones)
-      return parts.slice(1, mIdx).join('-');
+    try {
+      if (!reference) return null;
+      const parts = reference.split('-');
+      
+      // Si no empieza con TRYON o WOMPI, no es nuestra
+      if (parts[0] !== 'TRYON' && parts[0] !== 'WOMPI') return null;
+
+      // Un UUID tiene 5 partes unidas por guiones (ej: 550e8400-e29b-41d4-a716-446655440000)
+      // Buscamos dónde empieza la parte de metadatos (M seguido de números)
+      const mIdx = parts.findIndex((p, i) => i > 0 && /^M\d+$/.test(p));
+      
+      if (mIdx > 1) {
+        // El brandId es todo lo que hay entre el prefijo y la M
+        // Esto funciona aunque el brandId sea un UUID con guiones
+        return parts.slice(1, mIdx).join('-');
+      }
+
+      // Si no hay M, asumimos formato legacy: PREFIX-brandId-timestamp
+      // El brandId es todo menos el primero y el último
+      if (parts.length >= 3) {
+        return parts.slice(1, -1).join('-');
+      }
+      
+      return null;
+    } catch (e) {
+      console.error('[Wompi] Error extrayendo brandId:', e);
+      return null;
     }
-    // Formato legacy: TRYON-{brandId}-{timestamp}
-    return parts.slice(1, -1).join('-');
   }
 
   /**
