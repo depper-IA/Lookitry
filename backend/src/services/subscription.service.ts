@@ -239,6 +239,7 @@ export class SubscriptionService {
     creditAmount: number;
     newPlanTotal: number;
     amountToPay: number;
+    remainingCredit: number;
     newEndDate: string;
     isFree: boolean;
   }> {
