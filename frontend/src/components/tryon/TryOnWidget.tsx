@@ -11,6 +11,7 @@ interface TryOnWidgetProps {
   brandSlug: string;
   isEmbed?: boolean;
   initialProductId?: string | null;
+  externalId?: string | null; // ID de plataforma externa
   forceLayout?: 'top-bar' | 'sidebar' | 'centered' | 'bare';
 }
 
@@ -22,6 +23,7 @@ interface Product {
   name: string;
   imageUrl: string;
   category: string;
+  externalId?: string | null;
 }
 
 /** Texto de tiempo estimado mostrado debajo del botón de generación */
