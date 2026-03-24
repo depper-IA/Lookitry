@@ -321,7 +321,6 @@ export function EmbedSection() {
             href="https://wa.me/573105436281"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ borderColor: 'rgba(255,92,58,0.2)' }}
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#FF5C3A]/10 rounded-2xl border text-sm font-semibold hover:bg-[#FF5C3A]/20 transition-colors duration-200 cursor-pointer"
             style={{ borderColor: 'rgba(255,92,58,0.2)', color: 'var(--text-primary)' } as React.CSSProperties}
           >
