@@ -21,11 +21,24 @@ export class WompiController {
       const checksum = req.headers['x-event-checksum'] as string;
       const rawBody = Buffer.isBuffer(req.body)
         ? req.body.toString('utf8')
-        : (typeof req.body === 'string' ? req.body : JSON.stringify(req.body));
+        : (typeof req.body === 'object' ? JSON.stringify(req.body) : String(req.body));
+
+      // --- LOG DE EMERGENCIA ---
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const logPath = path.join(process.cwd(), 'webhook_logs.txt');
+        const logEntry = `[${new Date().toISOString()}] CHECKSUM: ${checksum}\nBODY: ${rawBody}\n\n`;
+        fs.appendFileSync(logPath, logEntry);
+      } catch (logErr) {
+        // Silenciar error de log
+      }
+      // -------------------------
 
       console.log(`[Wompi Webhook] Recibido. Checksum: ${checksum || 'NINGUNO'}. Body length: ${rawBody.length}`);
 
       const firmaValida = await wompiService.verifyWebhookSignature(rawBody, checksum);
+
       
       if (!checksum || !firmaValida) {
         console.warn(`[Wompi] Firma inválida detectada para checksum: ${checksum}`);
