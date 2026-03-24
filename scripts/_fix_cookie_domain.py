@@ -14,11 +14,11 @@ def fix_cookie_domain():
     # Cambiar .lookitry.com por lookitry.com (sin el punto inicial)
     # También asegurar que CORS_ORIGIN incluya el dominio sin www si no está
     
-    cmd = "sed -i 's/COOKIE_DOMAIN=.lookitry.com/COOKIE_DOMAIN=lookitry.com/g' /root/virtual-tryon/backend/.env.production"
+    cmd = "sed -i 's/COOKIE_DOMAIN=.lookitry.com/COOKIE_DOMAIN=lookitry.com/g' /root/Lookitry/backend/.env.production"
     ssh.exec_command(cmd)
     
     print("Restarting backend to apply changes...")
-    ssh.exec_command("cd /root/virtual-tryon && docker compose -f docker-compose.backend.yml restart")
+    ssh.exec_command("cd /root/Lookitry && docker compose -f docker-compose.backend.yml restart")
     
     ssh.close()
     print("Done. Please try logging in again in 10 seconds.")

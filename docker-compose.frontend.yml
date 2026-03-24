@@ -1,7 +1,7 @@
 services:
   frontend:
     build:
-      context: /root/virtual-tryon/frontend
+      context: /root/Lookitry/frontend
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: https://api.lookitry.com
@@ -10,7 +10,7 @@ services:
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ***REMOVED-SECRET***
         NEXT_PUBLIC_N8N_DESCRIPTOR_URL: https://n8n.wilkiedevs.com/webhook/descriptor
         NEXT_PUBLIC_TURNSTILE_SITE_KEY: 0x4AAAAAACsmy7e_yL9iyAXM
-    container_name: virtual-tryon-frontend
+    container_name: lookitry-frontend
     restart: unless-stopped
     networks:
       - proxy
@@ -23,12 +23,12 @@ services:
 
   backend:
     build:
-      context: /root/virtual-tryon/backend
+      context: /root/Lookitry/backend
       dockerfile: Dockerfile
-    container_name: virtual-tryon-backend
+    container_name: lookitry-backend
     restart: unless-stopped
     env_file:
-      - /root/virtual-tryon/backend/.env
+      - /root/Lookitry/backend/.env.production
     networks:
       - proxy
     labels:

@@ -10,7 +10,7 @@ try:
     print("\n--- DOCKER PS ---")
     print(stdout.read().decode())
     
-    stdin, stdout, stderr = ssh.exec_command('docker logs virtual-tryon-backend --tail 50')
+    stdin, stdout, stderr = ssh.exec_command('docker logs lookitry-backend --tail 50')
     print("\n--- BACKEND LOGS ---")
     print(stdout.read().decode())
     print(stderr.read().decode())
