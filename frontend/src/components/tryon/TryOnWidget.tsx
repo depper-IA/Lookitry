@@ -162,7 +162,7 @@ function FriendlyProductSelector({
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
-export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = null, forceLayout }: TryOnWidgetProps) {
+export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = null, externalId = null, forceLayout }: TryOnWidgetProps) {
   const [step, setStep] = useState<Step>('upload');
   const [config, setConfig] = useState<TryOnConfigResponse | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
@@ -215,8 +215,19 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
       setError(null);
 
       // Pre-seleccionar producto si viene por props
-      if (initialProductId && data.products) {
-        const found = data.products.find((p: any) => p.id === initialProductId);
+      if (data.products) {
+        let found = null;
+        
+        // 1. Prioridad: Búsqueda por externalId (WordPress ID)
+        if (externalId) {
+          found = data.products.find((p: any) => String(p.externalId) === String(externalId));
+        }
+        
+        // 2. Fallback: Búsqueda por initialProductId (Lookitry UUID)
+        if (!found && initialProductId) {
+          found = data.products.find((p: any) => p.id === initialProductId);
+        }
+
         if (found) setSelectedProduct(found);
       }
     } catch (err: any) {
@@ -224,7 +235,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     } finally {
       setLoading(false);
     }
-  }, [brandSlug, initialProductId]);
+  }, [brandSlug, initialProductId, externalId]);
 
   useEffect(() => { loadConfig(); }, [loadConfig]);
 

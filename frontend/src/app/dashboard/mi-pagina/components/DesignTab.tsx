@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { LogoUpload, CoverImageUpload } from './Uploaders';
 import { 
   Palette, 
@@ -16,7 +17,13 @@ import {
   Eye,
   EyeOff,
   Plus,
-  Info
+  Info,
+  Layers,
+  Sparkles,
+  Phone,
+  Check,
+  Globe as GlobeIcon,
+  Link as LinkIcon
 } from 'lucide-react';
 
 const Tooltip = ({ text }: { text: string }) => (
@@ -24,9 +31,9 @@ const Tooltip = ({ text }: { text: string }) => (
     <div className="w-4 h-4 rounded-full bg-[var(--bg-input)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[#FF5C3A] cursor-help transition-all shadow-sm">
       <Info className="w-2.5 h-2.5" />
     </div>
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-xl z-50 pointer-events-none">
-      <p className="text-[9px] leading-normal text-[var(--text-primary)] font-bold uppercase tracking-wider">{text}</p>
-      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[var(--border-color)]"></div>
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 shadow-2xl z-50 pointer-events-none border-b-4 border-b-[#FF5C3A]">
+      <p className="text-[10px] leading-relaxed text-[var(--text-primary)] font-black uppercase tracking-wider italic">{text}</p>
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#FF5C3A]"></div>
     </div>
   </div>
 );
@@ -61,6 +68,11 @@ interface DesignTabProps {
   schedule: Record<string, string>; setSchedule: (v: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
 }
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0 }
+};
+
 export function DesignTab(props: DesignTabProps) {
   const {
     description, setDescription, slogan, setSlogan, whatsapp, setWhatsapp,
@@ -75,350 +87,257 @@ export function DesignTab(props: DesignTabProps) {
     schedule, setSchedule,
   } = props;
 
-  const sectionStyle = "bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] p-8 space-y-6 shadow-sm hover:border-[var(--text-muted)] transition-all";
-  const labelStyle = "text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-secondary)] mb-2 block";
-  const inputStyle = "w-full px-5 py-3 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] text-sm text-[var(--text-primary)] focus:border-[#FF5C3A] outline-none transition-all placeholder:text-[var(--text-muted)]";
+  const sectionStyle = "bg-[var(--bg-card)] rounded-[3rem] border border-[var(--border-color)] p-8 md:p-12 space-y-10 shadow-3xl hover:border-[#FF5C3A]/30 transition-all duration-700 relative overflow-hidden group";
+  const labelStyle = "text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] mb-4 block italic leading-none";
+  const inputStyle = "w-full px-6 py-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] text-sm font-bold text-[var(--text-primary)] focus:border-[#FF5C3A] hover:bg-[var(--bg-hover)] focus:ring-4 focus:ring-[#FF5C3A]/5 outline-none transition-all placeholder:text-[var(--text-muted)] placeholder:font-medium shadow-inner";
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-12 pb-10">
 
       {/* 1. Identidad Visual */}
-      <section className={sectionStyle}>
-        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
-          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-            <Star className="w-5 h-5 text-[#FF5C3A]" />
+      <motion.section variants={itemVariants} className={sectionStyle}>
+        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+          <Star size={80} fill="#FF5C3A" />
+        </div>
+        <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
+          <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
+            <Star className="w-6 h-6 text-[#FF5C3A]" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Identidad Visual</h3>
-            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Logos, tipografía y marca</p>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Genoma de Marca</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Logos, tipografía y esencia</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
+          <div className="space-y-6">
             <label className={labelStyle}>Logo Principal</label>
-            <div className="flex items-end gap-4">
-              <LogoUpload currentUrl={logoUrl} onUpload={setLogoUrl} />
+            <div className="flex items-end gap-5">
+              <div className="p-2 bg-[var(--bg-input)] rounded-[2.5rem] border border-[var(--border-color)] shadow-inner">
+                <LogoUpload currentUrl={logoUrl} onUpload={setLogoUrl} />
+              </div>
               {logoUrl && (
-                <button onClick={() => setLogoUrl('')} className="p-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all">
-                  <Trash2 className="w-4 h-4" />
+                <button onClick={() => setLogoUrl('')} className="p-4 rounded-2xl bg-red-500/5 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-lg active:scale-90">
+                  <Trash2 className="w-5 h-5" />
                 </button>
               )}
             </div>
           </div>
 
-          <div className="space-y-4">
-            <label className={labelStyle}>Variantes de Logo</label>
-            <div className="flex gap-6">
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase">Light</span>
-                <LogoUpload currentUrl={logoLightUrl} onUpload={setLogoLightUrl} />
+          <div className="space-y-6">
+            <label className={labelStyle}>Versiones Adaptativas</label>
+            <div className="flex gap-8">
+              <div className="flex flex-col items-center gap-3">
+                <span className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest italic opacity-50">Light</span>
+                <div className="p-1.5 bg-white rounded-2xl border border-gray-100 shadow-xl">
+                  <LogoUpload currentUrl={logoLightUrl} onUpload={setLogoLightUrl} />
+                </div>
               </div>
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-[9px] font-bold text-[var(--text-muted)] uppercase">Dark</span>
-                <LogoUpload currentUrl={logoDarkUrl} onUpload={setLogoDarkUrl} />
+              <div className="flex flex-col items-center gap-3">
+                <span className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-widest italic opacity-50">Dark</span>
+                <div className="p-1.5 bg-black rounded-2xl border border-white/10 shadow-xl">
+                  <LogoUpload currentUrl={logoDarkUrl} onUpload={setLogoDarkUrl} />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[var(--border-color)]">
-          <div className="space-y-4">
-            <label className={labelStyle}>Tipografía del Sitio</label>
-            <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-10 border-t border-[var(--border-color)] relative z-10">
+          <div className="space-y-6">
+            <label className={labelStyle}>Voz Tipográfica</label>
+            <div className="grid grid-cols-2 gap-3">
               {[
-                { id: 'font-jakarta', name: 'Jakarta', desc: 'SaaS / Moderna', class: 'font-jakarta' },
-                { id: 'font-playfair', name: 'Playfair', desc: 'Lujo / Elegante', class: 'font-playfair' },
-                { id: 'font-tech', name: 'Tech', desc: 'Código / Geek', class: 'font-tech' },
-                { id: 'font-syne', name: 'Syne', desc: 'Artística / Bold', class: 'font-syne' },
+                { id: 'font-jakarta', name: 'Jakarta', desc: 'Minimalista', class: 'font-jakarta' },
+                { id: 'font-playfair', name: 'Playfair', desc: 'Sartorial', class: 'font-playfair' },
+                { id: 'font-tech', name: 'Tech', desc: 'Innovadora', class: 'font-tech' },
+                { id: 'font-dm-sans', name: 'DM Sans', desc: 'Vanguardista', class: 'font-dm-sans' },
               ].map(f => (
                 <button
                   key={f.id}
                   onClick={() => setLandingFont(f.id)}
-                  className={`px-4 py-2 rounded-xl border transition-all text-left group border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]`}
-                  style={landingFont === f.id ? { borderColor: primaryColor, backgroundColor: `${primaryColor}1a`, color: primaryColor } : {}}
+                  className={`px-6 py-4 rounded-2xl border transition-all text-left relative overflow-hidden group/font active:scale-95 ${landingFont === f.id ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-xl shadow-[#FF5C3A]/5 scale-[1.02]' : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[#FF5C3A]/30'}`}
                 >
-                  <span className={`block text-xs font-bold ${f.class}`}>{f.name}</span>
-                  <span className="text-[8px] opacity-60 uppercase font-black tracking-tighter">{f.desc}</span>
+                  <span className={`block text-sm font-black italic tracking-tight mb-0.5 ${f.class} ${landingFont === f.id ? 'text-[#FF5C3A]' : 'text-[var(--text-primary)]'}`}>{f.name}</span>
+                  <span className={`text-[9px] font-black uppercase tracking-widest opacity-40 ${landingFont === f.id ? 'text-[#FF5C3A]' : 'text-[var(--text-muted)]'}`}>{f.desc}</span>
                 </button>
               ))}
             </div>
           </div>
-          <div className="space-y-4">
-            <label className={labelStyle}>Ajustes de visibilidad</label>
+          <div className="space-y-6">
+            <label className={labelStyle}>Header Settings</label>
             <button 
               onClick={() => setShowBrandName(!showBrandName)}
-              className={`flex items-center gap-3 px-5 py-4 rounded-2xl border transition-all w-full ${showBrandName ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 text-[var(--text-primary)]' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)]'}`}
+              className={`flex items-center gap-4 px-8 py-5 rounded-2xl border transition-all w-full group/btn ${showBrandName ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 text-[var(--text-primary)] shadow-xl shadow-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)] hover:border-[#FF5C3A]/30'}`}
             >
-              {showBrandName ? <Eye className="w-5 h-5 text-[#FF5C3A]" /> : <EyeOff className="w-5 h-5" />}
-              <span className="text-sm font-bold uppercase tracking-widest">Mostrar nombre en Header</span>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${showBrandName ? 'bg-[#FF5C3A] text-white shadow-lg' : 'bg-[var(--border-color)]'}`}>
+                {showBrandName ? <Eye size={20} /> : <EyeOff size={20} />}
+              </div>
+              <div className="text-left">
+                <span className="text-xs font-black uppercase tracking-widest block leading-none">Nombre en Header</span>
+                <span className="text-[9px] font-bold opacity-50 uppercase tracking-tighter mt-1 block italic">{showBrandName ? 'Visible' : 'Oculto'}</span>
+              </div>
             </button>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      
-      {/* 1.5. Paleta de Colores */}
-      <section className={sectionStyle}>
-        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
-          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-            <svg className="w-5 h-5 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-            </svg>
+      {/* 2. Paleta de Colores */}
+      <motion.section variants={itemVariants} className={sectionStyle}>
+         <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+          <Palette size={80} />
+        </div>
+        <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
+          <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
+            <Palette className="w-6 h-6 text-[#FF5C3A]" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Paleta de Colores</h3>
-            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Esquema unificado y estética</p>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">ADN Cromático</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Vibración visual y contraste</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-2">
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <label className={labelStyle}>Acento Primario</label>
-              <Tooltip text="Color de botones, enlaces y elementos destacados. Es la esencia de tu marca." />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+          {[
+            { label: 'Primario', val: primaryColor, set: setPrimaryColor, tip: 'Botones y destacados.' },
+            { label: 'Secundario', val: secondaryColor, set: setSecondaryColor, tip: 'Bordes y sombras.' },
+            { label: 'Probador', val: widgetBgColor || '#0a0a0a', set: setWidgetBgColor, tip: 'Fondo del probador virtual.' },
+            { label: 'Respaldo', val: coverBgColor || '#0a0a0a', set: setCoverBgColor, tip: 'Fondo de secciones.' }
+          ].map(c => (
+            <div key={c.label} className="space-y-3">
+              <div className="flex items-center">
+                <label className={labelStyle}>{c.label}</label>
+                <Tooltip text={c.tip} />
+              </div>
+              <div className="flex items-center gap-4 bg-[var(--bg-input)] p-2 rounded-3xl border border-[var(--border-color)] shadow-inner group/color transition-all active:scale-[0.98]">
+                <input type="color" value={c.val} onChange={e => c.set(e.target.value)} className="w-10 h-10 rounded-2xl overflow-hidden cursor-pointer border-0 bg-transparent flex-shrink-0 shadow-lg" />
+                <input type="text" value={c.val} onChange={e => c.set(e.target.value)} className="flex-1 min-w-0 bg-transparent border-0 text-xs font-black font-mono text-[var(--text-primary)] outline-none uppercase tracking-widest" />
+              </div>
             </div>
-            <div className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 rounded-2xl border border-[var(--border-color)] shadow-sm hover:shadow-md transition-shadow">
-              <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="w-8 h-8 rounded-xl overflow-hidden cursor-pointer border-0 bg-transparent flex-shrink-0" />
-              <input type="text" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="flex-1 min-w-0 bg-transparent border-0 text-xs font-mono font-bold text-[var(--text-primary)] outline-none" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <label className={labelStyle}>Acento Secundario</label>
-              <Tooltip text="Color complementario para bordes, sombras y elementos de apoyo visual." />
-            </div>
-            <div className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 rounded-2xl border border-[var(--border-color)] shadow-sm hover:shadow-md transition-shadow">
-              <input type="color" value={secondaryColor} onChange={e => setSecondaryColor(e.target.value)} className="w-8 h-8 rounded-xl overflow-hidden cursor-pointer border-0 bg-transparent flex-shrink-0" />
-              <input type="text" value={secondaryColor} onChange={e => setSecondaryColor(e.target.value)} className="flex-1 min-w-0 bg-transparent border-0 text-xs font-mono font-bold text-[var(--text-primary)] outline-none" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <label className={labelStyle}>Fondo Probador</label>
-              <Tooltip text="Color de fondo para la sección del probador virtual. Recomendamos tonos oscuros." />
-            </div>
-            <div className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 rounded-2xl border border-[var(--border-color)] shadow-sm hover:shadow-md transition-shadow">
-              <input type="color" value={widgetBgColor || '#0a0a0a'} onChange={e => setWidgetBgColor(e.target.value)} className="w-8 h-8 rounded-xl overflow-hidden cursor-pointer border-0 bg-transparent flex-shrink-0" />
-              <input type="text" value={widgetBgColor} onChange={e => setWidgetBgColor(e.target.value)} placeholder="#0a0a0a" className="flex-1 min-w-0 bg-transparent border-0 text-xs font-mono font-bold text-[var(--text-primary)] outline-none" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <label className={labelStyle}>Fondo Respaldo</label>
-              <Tooltip text="Color de respaldo que aparece detrás de la portada o en secciones de contraste." />
-            </div>
-            <div className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 rounded-2xl border border-[var(--border-color)] shadow-sm hover:shadow-md transition-shadow">
-              <input type="color" value={coverBgColor || '#0a0a0a'} onChange={e => setCoverBgColor(e.target.value)} className="w-8 h-8 rounded-xl overflow-hidden cursor-pointer border-0 bg-transparent flex-shrink-0" />
-              <input type="text" value={coverBgColor} onChange={e => setCoverBgColor(e.target.value)} placeholder="#0a0a0a" className="flex-1 min-w-0 bg-transparent border-0 text-xs font-mono font-bold text-[var(--text-primary)] outline-none" />
-            </div>
-          </div>
+          ))}
         </div>
-      </section>
+      </motion.section>
 
-      {/* 2. Hero y Portada */}
-      <section className={sectionStyle}>
-        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
-          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-            <ImageIcon className="w-5 h-5 text-[#FF5C3A]" />
+      {/* 3. Hero y Portada */}
+      <motion.section variants={itemVariants} className={sectionStyle}>
+        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+          <ImageIcon size={80} />
+        </div>
+        <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
+          <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
+            <ImageIcon className="w-6 h-6 text-[#FF5C3A]" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Portada y Estilo</h3>
-            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Visuales de alto impacto</p>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Atmósfera Visual</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Cinematografía de portada</p>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6 relative z-10">
           <label className={labelStyle}>Imagen de Portada</label>
-          <CoverImageUpload currentUrl={coverImageUrl} onUpload={setCoverImageUrl} />
+          <div className="p-2 bg-[var(--bg-input)] rounded-[2.5rem] border border-[var(--border-color)] shadow-inner overflow-hidden">
+            <CoverImageUpload currentUrl={coverImageUrl} onUpload={setCoverImageUrl} />
+          </div>
           {coverImageUrl && (
-            <button onClick={() => setCoverImageUrl('')} className="flex items-center gap-2 text-[10px] font-bold text-red-500 uppercase tracking-widest hover:opacity-70 transition-opacity">
-              <Trash2 className="w-3 h-3" /> Eliminar imagen de portada
+            <button onClick={() => setCoverImageUrl('')} className="flex items-center gap-3 px-6 py-2 bg-red-500/10 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all w-fit shadow-lg">
+              <Trash2 size={12} /> Eliminar
             </button>
           )}
         </div>
 
-        <div className="pt-2 border-t border-[var(--border-color)]">
-          <div className="space-y-3 pt-4">
-            <div className="flex justify-between items-end">
-              <label className={labelStyle}>Oscurecer Imagen</label>
-              <span className="text-[10px] font-bold text-[#FF5C3A]">{Math.round(coverOverlayOpacity * 100)}%</span>
+        <div className="pt-6 border-t border-[var(--border-color)] relative z-10">
+          <div className="space-y-5 bg-[var(--bg-input)] p-8 rounded-[2rem] border border-[var(--border-color)] shadow-inner">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <Plus size={14} className="opacity-40" />
+                <label className="text-[11px] font-[900] uppercase tracking-widest text-[var(--text-primary)] italic">Overlay Opacity</label>
+              </div>
+              <span className="text-[11px] font-black italic p-2 bg-[#FF5C3A] text-white rounded-lg">{Math.round(coverOverlayOpacity * 100)}%</span>
             </div>
             <input 
               type="range" min={0} max={1} step={0.05} 
               value={coverOverlayOpacity} 
               onChange={e => setCoverOverlayOpacity(parseFloat(e.target.value))} 
-              className="w-full h-1.5 rounded-full cursor-pointer accent-[#FF5C3A] appearance-none bg-[var(--bg-input)] border border-[var(--border-color)]" 
+              className="w-full h-2 rounded-full cursor-pointer accent-[#FF5C3A] appearance-none bg-[var(--border-color)] border-0" 
             />
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* 3. Contenido y Textos */}
-      <section className={sectionStyle}>
-        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
-          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-            <Type className="w-5 h-5 text-[#FF5C3A]" />
+      {/* 4. Contenido */}
+      <motion.section variants={itemVariants} className={sectionStyle}>
+        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+          <Type size={80} />
+        </div>
+        <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
+          <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
+            <Type className="w-6 h-6 text-[#FF5C3A]" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Contenido Editorial</h3>
-            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Slogan, descripción y llamadas a la acción</p>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Relativa Editorial</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Copywriting y Mensajes</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className={labelStyle}>Slogan Principal</label>
-            <input type="text" value={slogan} onChange={e => setSlogan(e.target.value)} placeholder="Ej: Nueva Colección 2026" className={inputStyle} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+          <div className="space-y-3">
+            <label className={labelStyle}>Slogan</label>
+            <input type="text" value={slogan} onChange={e => setSlogan(e.target.value)} placeholder="Ej: Eleva tu estilo" className={inputStyle} />
           </div>
-          <div className="space-y-2">
-            <label className={labelStyle}>Texto del Botón (CTA)</label>
-            <div className="relative">
-              <MousePointer2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-              <input type="text" value={ctaButtonText} onChange={e => setCtaButtonText(e.target.value)} className={`${inputStyle} pl-12`} />
-            </div>
+          <div className="space-y-3">
+            <label className={labelStyle}>Botón CTA</label>
+            <input type="text" value={ctaButtonText} onChange={e => setCtaButtonText(e.target.value)} className={inputStyle} />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className={labelStyle}>Historia de la Marca</label>
+        <div className="space-y-3 relative z-10">
+          <label className={labelStyle}>Descripción</label>
           <textarea 
             value={description} onChange={e => setDescription(e.target.value)} 
             rows={4} 
-            placeholder="Cuenta brevemente qué hace única a tu marca..." 
             className={`${inputStyle} resize-none`} 
           />
         </div>
+      </motion.section>
 
-        <div className="grid grid-cols-2 gap-6 p-6 bg-[var(--bg-base)] rounded-[2rem] border border-[var(--border-color)]">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-              <label className={labelStyle}>Rating</label>
-            </div>
-            <input type="number" step="0.1" min="0" max="5" value={rating} onChange={e => setRating(e.target.value)} className={inputStyle} />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-3 h-3 text-[#FF5C3A]" />
-              <label className={labelStyle}>Reseñas</label>
-            </div>
-            <input type="number" value={totalReviews} onChange={e => setTotalReviews(e.target.value)} className={inputStyle} />
-          </div>
+      {/* 5. Ubicación y Redes */}
+      <motion.section variants={itemVariants} className={sectionStyle}>
+        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+          <Share2 size={80} />
         </div>
-      </section>
-
-      {/* 4. Ubicación y Horarios */}
-      <section className={sectionStyle}>
-        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
-          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-            <MapPin className="w-5 h-5 text-[#FF5C3A]" />
+        <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
+          <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
+            <Share2 className="w-6 h-6 text-[#FF5C3A]" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Presencia Física</h3>
-            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Dónde encontrarte y cuándo</p>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Ecosistema Social</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Contacto y Presencia</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
           <div className="space-y-6">
-            <div className="space-y-2">
-              <label className={labelStyle}>Ciudad / Ubicación</label>
-              <input type="text" value={cityDisplay} onChange={e => setCityDisplay(e.target.value)} placeholder="Ej: Medellín, Colombia" className={inputStyle} />
+            <div className="space-y-3">
+              <label className={labelStyle}>WhatsApp</label>
+              <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} className={inputStyle} />
             </div>
-            <button 
-              onClick={() => setNationalShipping(!nationalShipping)}
-              className={`flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all w-full ${nationalShipping ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 text-[var(--text-primary)]' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)]'}`}
-            >
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${nationalShipping ? 'border-[#FF5C3A]' : 'border-[var(--border-color)]'}`}>
-                {nationalShipping && <div className="w-2.5 h-2.5 rounded-full bg-[#FF5C3A]" />}
-              </div>
-              <span className="text-xs font-bold uppercase tracking-widest">Envíos Nacionales Activos</span>
-            </button>
+            <div className="space-y-3">
+              <label className={labelStyle}>Instagram</label>
+              <input type="text" value={instagram} onChange={e => setInstagram(e.target.value)} className={inputStyle} />
+            </div>
           </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[var(--text-secondary)]" />
-              <label className={labelStyle}>Horarios Semanales</label>
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <label className={labelStyle}>TikTok</label>
+              <input type="text" value={tiktok} onChange={e => setTiktok(e.target.value)} className={inputStyle} />
             </div>
-            <div className="space-y-2 max-h-56 overflow-y-auto pr-2 custom-scrollbar bg-[var(--bg-input)] p-4 rounded-[2rem] border border-[var(--border-color)]">
-              {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(day => (
-                <div key={day} className="flex items-center gap-3">
-                  <span className="text-[9px] w-16 font-black uppercase text-[var(--text-muted)]">{day}</span>
-                  <input
-                    type="text"
-                    value={schedule[day] || ''}
-                    onChange={e => setSchedule(prev => {
-                      const newSchedule = { ...prev };
-                      newSchedule[day] = e.target.value;
-                      return newSchedule;
-                    })}
-                    placeholder="Cerrado o 00:00 - 00:00"
-                    className="flex-1 bg-transparent border-b border-[var(--border-color)] py-1 text-xs text-[var(--text-primary)] outline-none focus:border-[#FF5C3A] transition-colors"
-                  />
-                </div>
-              ))}
+            <div className="space-y-3">
+              <label className={labelStyle}>Ciudad</label>
+              <input type="text" value={cityDisplay} onChange={e => setCityDisplay(e.target.value)} className={inputStyle} />
             </div>
           </div>
         </div>
-      </section>
-
-      {/* 5. Contacto y Redes */}
-      <section className={sectionStyle}>
-        <div className="flex items-center gap-3 border-b border-[var(--border-color)] pb-5">
-          <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-            <Share2 className="w-5 h-5 text-[#FF5C3A]" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-[var(--text-primary)] italic uppercase tracking-tight">Conexión Directa</h3>
-            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-medium tracking-widest">Redes sociales y WhatsApp</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-4 bg-[var(--bg-base)] p-6 rounded-[2rem] border border-[var(--border-color)]">
-            <div className="flex items-center gap-2 mb-2">
-              <MessageSquare className="w-4 h-4 text-[#25D366]" />
-              <span className="text-xs font-bold text-[#25D366] uppercase tracking-widest">Canal WhatsApp</span>
-            </div>
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <label className={labelStyle}>Número (Internacional)</label>
-                <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="573001234567" className={inputStyle} />
-              </div>
-              <div className="space-y-1">
-                <label className={labelStyle}>Mensaje de Bienvenida</label>
-                <input type="text" value={whatsappMessage} onChange={e => setWhatsappMessage(e.target.value)} className={inputStyle} />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <label className={labelStyle}>Redes Sociales</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                { id: 'Instagram', val: instagram, set: setInstagram, color: '#E4405F' },
-                { id: 'Facebook', val: facebook, set: setFacebook, color: '#1877F2' },
-                { id: 'TikTok', val: tiktok, set: setTiktok, color: '#000000' },
-                { id: 'YouTube', val: youtube, set: setYoutube, color: '#FF0000' },
-                { id: 'X', val: x, set: setX, color: '#000000' }
-              ].map(plat => (
-                <div key={plat.id} className="flex items-center gap-3 bg-[var(--bg-input)] p-1.5 pl-4 rounded-2xl border border-[var(--border-color)] focus-within:border-[#FF5C3A]/30 transition-all">
-                  <span className="text-[9px] font-black uppercase text-[var(--text-muted)] w-16">{plat.id === 'X' ? 'X (Twitter)' : plat.id}</span>
-                  <input
-                    type="url"
-                    value={plat.val}
-                    onChange={e => plat.set(e.target.value)}
-                    placeholder={`URL de ${plat.id}`}
-                    className="flex-1 bg-transparent border-0 text-[11px] text-[var(--text-primary)] font-mono outline-none py-2"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      </motion.section>
 
     </div>
   );

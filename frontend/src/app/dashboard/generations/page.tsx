@@ -58,21 +58,10 @@ const itemVariants = {
 function Lightbox({ imageUrl, productName, onClose, brandPlan }: { imageUrl: string; productName: string; onClose: () => void; brandPlan?: string }) {
   const [downloading, setDownloading] = useState(false);
 
-  const handleDownload = async () => {
-    setDownloading(true);
-    try {
-      const watermarkedUrl = getProxiedImageUrl(imageUrl, brandPlan);
-      const link = document.createElement('a');
-      link.href = watermarkedUrl;
-      link.download = `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch {
-      await downloadImage(imageUrl, `prueba-virtual-${productName.toLowerCase().replace(/\s+/g, '-')}.jpg`);
-    } finally {
-      setDownloading(false);
-    }
+  const handleDownload = () => {
+    // Forzamos descarga mediante el proxy con header Content-Disposition
+    const downloadUrl = getProxiedImageUrl(imageUrl, brandPlan, true);
+    window.location.href = downloadUrl;
   };
 
   return (

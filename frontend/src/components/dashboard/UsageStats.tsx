@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import type { UsageStats as UsageStatsType } from '@/types';
-import { Card, CardHeader, CardBody } from '../ui/Card';
+import { Activity, Package, Calendar, AlertTriangle, TrendingUp, Zap } from 'lucide-react';
 
 interface UsageStatsProps {
   stats: UsageStatsType;
@@ -10,10 +11,16 @@ interface UsageStatsProps {
 
 function ProgressBar({ value, max }: { value: number; max: number }) {
   const pct = Math.min((value / max) * 100, 100);
-  const color = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#FF5C3A';
+  const color = pct >= 90 ? 'from-red-500 to-red-600' : pct >= 70 ? 'from-amber-400 to-amber-600' : 'from-[#FF5C3A] to-[#E84E2E]';
+  
   return (
-    <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-color)' }}>
-      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: color }} />
+    <div className="h-4 bg-[var(--bg-input)] rounded-full border border-[var(--border-color)] p-1 overflow-hidden shadow-inner">
+      <motion.div 
+        initial={{ width: 0 }}
+        animate={{ width: `${pct}%` }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className={`h-full rounded-full bg-gradient-to-r ${color} shadow-lg shadow-[#FF5C3A]/20`}
+      />
     </div>
   );
 }
@@ -26,105 +33,133 @@ export function UsageStats({ stats }: UsageStatsProps) {
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
 
+  const stats_items = [
+    {
+      id: 'generations',
+      label: 'Créditos de Generación',
+      used: generationsUsed,
+      limit: generationsLimit,
+      pct: genPct,
+      icon: <Activity className="w-6 h-6" />,
+      description: 'Pruebas virtuales mensuales.',
+      warning: genPct >= 90 ? '¡Límite crítico! Estás a punto de agotar tus créditos.' : null
+    },
+    {
+      id: 'products',
+      label: 'Slots de Catálogo',
+      used: productsCount,
+      limit: productsLimit,
+      pct: prodPct,
+      icon: <Package className="w-6 h-6" />,
+      description: 'Capacidad de prendas activas.',
+      warning: prodPct >= 100 ? 'Inventario lleno. Libera slots para nuevos productos.' : null
+    }
+  ];
+
   return (
-    <div className="space-y-5">
-      {/* Tarjetas resumen */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {[
-          {
-            label: 'Generaciones este mes',
-            used: generationsUsed,
-            limit: generationsLimit,
-            icon: (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            ),
-          },
-          {
-            label: 'Productos activos',
-            used: productsCount,
-            limit: productsLimit,
-            icon: (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-            ),
-          },
-        ].map(({ label, used, limit, icon }) => (
-          <Card key={label}>
-            <CardBody>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white" style={{ backgroundColor: '#FF5C3A' }}>
-                  {icon}
+    <div className="space-y-8">
+      {/* ── SUMMARY CARDS ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {stats_items.map((item) => (
+          <motion.div 
+            key={item.id}
+            whileHover={{ y: -5 }}
+            className="group p-8 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl hover:border-[#FF5C3A]/30 transition-all relative overflow-hidden"
+          >
+            <div className={`absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700`}>
+              {item.icon}
+            </div>
+
+            <div className="relative z-10 space-y-6">
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 rounded-[2rem] bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] shadow-inner">
+                  {item.icon}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium mb-0.5" style={{ color: 'var(--text-secondary)' }}>{label}</p>
-                  <p className="text-2xl font-bold font-syne" style={{ color: 'var(--text-primary)' }}>
-                    {used} <span className="text-base font-normal" style={{ color: 'var(--text-muted)' }}>/ {limit}</span>
-                  </p>
+                <div>
+                  <h4 className="text-lg font-bold text-[var(--text-primary)] uppercase tracking-tight">{item.label}</h4>
+                  <p className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-[0.2em]">{item.description}</p>
                 </div>
               </div>
-            </CardBody>
-          </Card>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-end">
+                   <div className="flex items-baseline gap-1.5">
+                    <span className="text-4xl font-extrabold tracking-tighter text-[var(--text-primary)]">{item.used}</span>
+                    <span className="text-lg font-bold text-[var(--text-muted)]">/ {item.limit}</span>
+                  </div>
+                  <span className={`text-xs font-black p-2 rounded-xl border ${item.pct >= 90 ? 'bg-red-500/10 border-red-500 text-red-500' : 'bg-[#FF5C3A]/10 border-[#FF5C3A]/20 text-[#FF5C3A]'}`}>
+                    {item.pct.toFixed(0)}%
+                  </span>
+                </div>
+                <ProgressBar value={item.used} max={item.limit} />
+              </div>
+
+              {item.warning && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 rounded-2xl bg-red-500/5 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-3 animate-pulse"
+                >
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  {item.warning}
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
         ))}
       </div>
 
-      {/* Detalle */}
-      <Card>
-        <CardHeader>
-          <h3 className="font-syne font-semibold text-base" style={{ color: 'var(--text-primary)' }}>Uso detallado</h3>
-        </CardHeader>
-        <CardBody className="space-y-6">
-          {/* Generaciones */}
+      {/* ── TIMELINE RESET ── */}
+      <motion.div 
+        className="p-8 rounded-[2.5rem] bg-gradient-to-br from-[var(--bg-card)] to-[var(--bg-base)] border border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden"
+      >
+         <div className="absolute top-0 left-0 p-8 opacity-[0.03]">
+          <Calendar size={120} />
+        </div>
+        <div className="flex items-center gap-6 relative z-10">
+          <div className="w-12 h-12 rounded-2xl bg-[var(--text-primary)]/5 flex items-center justify-center text-[var(--text-primary)]/40 border border-[var(--border-color)]">
+            <Calendar className="w-6 h-6" />
+          </div>
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Generaciones de imágenes</span>
-              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{genPct.toFixed(1)}%</span>
-            </div>
-            <ProgressBar value={generationsUsed} max={generationsLimit} />
-            <p className="mt-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
-              {generationsUsed} de {generationsLimit} generaciones usadas este mes.
-            </p>
-            {genPct >= 90 && (
-              <div className="mt-2 flex items-start gap-2 px-3 py-2.5 rounded-lg border border-red-200 bg-red-50 text-red-700 text-xs">
-                <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                </svg>
-                Estás cerca de alcanzar tu límite mensual de generaciones.
-              </div>
-            )}
+            <p className="text-[9px] font-black text-[var(--text-muted)] uppercase tracking-[0.3em] font-jakarta mb-1">Próximo Ciclo de Facturación</p>
+            <h4 className="text-xl font-bold uppercase text-[var(--text-primary)] tracking-tight">
+              Reinicio: {formatDate(stats.resetDate)}
+            </h4>
           </div>
+        </div>
 
-          {/* Productos */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Productos</span>
-              <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{prodPct.toFixed(1)}%</span>
-            </div>
-            <ProgressBar value={productsCount} max={productsLimit} />
-            <p className="mt-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
-              {productsCount} de {productsLimit} productos activos.
-            </p>
-            {prodPct >= 100 && (
-              <div className="mt-2 flex items-start gap-2 px-3 py-2.5 rounded-lg border border-red-200 bg-red-50 text-red-700 text-xs">
-                <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                </svg>
-                Has alcanzado el límite de productos. Elimina algunos para agregar nuevos.
-              </div>
-            )}
-          </div>
+        <div className="relative z-10 flex items-center gap-3 px-6 py-3 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] shadow-sm">
+           <Zap className="w-4 h-4 text-[#FF5C3A] animate-bounce" />
+           <span className="text-[10px] font-black uppercase text-[var(--text-primary)] tracking-widest whitespace-nowrap">Tus créditos se restaurarán al 100%</span>
+        </div>
+      </motion.div>
 
-          {/* Fecha reset */}
-          <div className="pt-4 border-t flex items-center gap-2 text-xs" style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            El contador se reiniciará el <strong className="ml-1" style={{ color: 'var(--text-primary)' }}>{formatDate(stats.resetDate)}</strong>
+      {/* ── UPGRADE SUGGESTION ── */}
+      {genPct >= 80 && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="p-10 rounded-[3.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] relative overflow-hidden shadow-2xl"
+        >
+          <div className="absolute top-0 right-0 p-10 opacity-5">
+             <TrendingUp size={150} strokeWidth={2.5} />
           </div>
-        </CardBody>
-      </Card>
+          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="space-y-3 text-center lg:text-left">
+              <h3 className="text-3xl font-extrabold uppercase tracking-tighter leading-none text-[var(--text-primary)]">¿Demasiado tráfico?</h3>
+              <p className="text-[var(--text-muted)] text-sm font-bold max-w-lg leading-relaxed uppercase tracking-tighter">
+                Has usado casi el <span className="text-[#FF5C3A]">{genPct.toFixed(0)}%</span> de tus créditos. El Plan PRO te ofrece 1,200 generaciones y mayor velocidad.
+              </p>
+            </div>
+            <button 
+              onClick={() => window.location.href='/dashboard/subscription'}
+              className="px-10 py-5 bg-[#FF5C3A] text-white rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl shadow-[#FF5C3A]/40 hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+            >
+              Mejorar Mi Potencia
+            </button>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }

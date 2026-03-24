@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService, RegisterData, LoginData, AuthResponse } from '@/services/auth.service';
+import { brandsService } from '@/services/brands.service';
 
 export function useAuth() {
   const router = useRouter();
@@ -70,11 +71,25 @@ export function useAuth() {
     router.push('/login');
   };
 
+  const refreshBrand = async () => {
+    try {
+      setIsLoading(true);
+      const data = await brandsService.getCurrentBrand();
+      setBrand(data);
+      localStorage.setItem('brand', JSON.stringify(data));
+    } catch (err) {
+      console.error('Error refreshing brand:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     brand,
     isAuthenticated: !!brand,
     isLoading,
     error,
+    refreshBrand,
     register,
     login,
     logout,

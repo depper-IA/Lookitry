@@ -101,24 +101,24 @@ export default function TiendaProfesionalPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
-        className="rounded-[2rem] bg-gradient-to-r from-[#FF5C3A] to-[#ff7d61] p-1 shadow-xl"
+        className="rounded-[3rem] bg-gradient-to-r from-[#FF5C3A] to-[#ff7d61] p-0.5 shadow-xl"
       >
-        <div className="bg-[#0a0a0a] rounded-[1.9rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+        <div className="bg-[var(--bg-card)] rounded-[2.9rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
           <div className="space-y-4">
-            <h2 className="text-3xl font-jakarta font-black uppercase italic leading-none">
+            <h2 className="text-3xl font-jakarta font-black uppercase italic leading-none text-[var(--text-primary)]">
               Oferta exclusiva <br />
               <span className="text-[#FF5C3A]">para clientes Lookitry</span>
             </h2>
             <p className="text-[var(--text-secondary)] max-w-md">
-              Si creas tu web profesional con Wilkiedevs, incluimos <span className="text-white font-bold">2 años del Plan PRO</span> de Lookitry totalmente gratis.
+              Si creas tu web profesional con Wilkiedevs, incluimos <span className="text-[var(--text-primary)] font-bold">2 meses del Plan PRO</span> de Lookitry totalmente gratis.
             </p>
           </div>
           <div className="flex flex-col items-center gap-2">
             <div className="text-5xl font-jakarta font-black italic text-[#FF5C3A]">
               FREE
             </div>
-            <div className="text-xs uppercase tracking-[0.3em] font-bold text-white/40">
-              PLAN PRO · 24 MESES
+            <div className="text-[10px] uppercase tracking-[0.3em] font-black text-[#FF5C3A]/40">
+              PLAN PRO · 2 MESES
             </div>
           </div>
         </div>

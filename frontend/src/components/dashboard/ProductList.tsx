@@ -1,9 +1,23 @@
 'use client';
 
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { Product } from '@/types';
-import { Card, CardBody } from '../ui/Card';
-import { Button } from '../ui/Button';
+import { 
+  Edit3, 
+  Trash2, 
+  Tag, 
+  ShoppingBag, 
+  MoreVertical, 
+  Eye, 
+  Plus,
+  ArrowUpRight,
+  Package,
+  Layers,
+  LayoutGrid,
+  LayoutList,
+  Grid
+} from 'lucide-react';
 
 export type ViewMode = 'grid' | 'thumbnails' | 'list';
 
@@ -14,254 +28,266 @@ interface ProductListProps {
   onDelete: (productId: string) => void;
 }
 
-// ── Imagen con fallback ──────────────────────────────────────────────────────
-function ProductImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
-  const [errored, setErrored] = React.useState(false);
-  if (errored) {
-    return (
-      <div className={`flex items-center justify-center ${className ?? ''}`} style={{ backgroundColor: 'var(--border-color)' }}>
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: '#555' }}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 21h18M3.75 3h16.5A.75.75 0 0121 3.75v16.5a.75.75 0 01-.75.75H3.75A.75.75 0 013 20.25V3.75A.75.75 0 013.75 3z" />
-        </svg>
-      </div>
-    );
-  }
-  return (
-    <img
-      src={src}
-      alt={alt}
-      className={`object-cover object-center ${className ?? ''}`}
-      onError={() => setErrored(true)}
-    />
-  );
-}
+// ── Shared Components ──────────────────────────────────────────────────────
 
-// ── Badges de categoría y badge ──────────────────────────────────────────────
 function CategoryBadge({ category }: { category: string }) {
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-      style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}>
+    <span className="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20 italic">
       {category}
     </span>
   );
 }
 
 function ProductBadge({ badge }: { badge: string }) {
-  const styles: Record<string, { bg: string; color: string }> = {
-    nuevo:  { bg: 'rgba(34,197,94,0.12)',  color: '#16a34a' },
-    top:    { bg: 'rgba(234,179,8,0.12)',  color: '#ca8a04' },
-    oferta: { bg: 'rgba(239,68,68,0.12)',  color: '#dc2626' },
+  const styles: Record<string, string> = {
+    nuevo:  'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    top:    'bg-amber-500/10 text-amber-500 border-amber-500/20',
+    oferta: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
   };
-  const s = styles[badge] ?? { bg: 'rgba(99,102,241,0.12)', color: '#6366f1' };
+  const s = styles[badge] ?? 'bg-[#6366f1]/10 text-[#6366f1] border-[#6366f1]/20';
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold capitalize"
-      style={{ backgroundColor: s.bg, color: s.color }}>
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border italic ${s}`}>
       {badge}
     </span>
   );
 }
 
-// ── Estado vacío ─────────────────────────────────────────────────────────────
 function EmptyState() {
   return (
-    <Card>
-      <CardBody>
-        <div className="text-center py-12">
-          <svg className="mx-auto h-10 w-10 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: 'var(--text-muted)' }}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-          </svg>
-          <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>No hay productos</p>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Comienza creando tu primer producto.</p>
-        </div>
-      </CardBody>
-    </Card>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="p-20 text-center bg-[var(--bg-card)] rounded-[3rem] border border-[var(--border-color)] border-dashed"
+    >
+      <div className="w-20 h-20 rounded-[2rem] bg-[var(--bg-input)] flex items-center justify-center mx-auto mb-6 text-[var(--text-muted)] border border-[var(--border-color)]">
+        <Package className="w-10 h-10 opacity-30" />
+      </div>
+      <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter mb-2">Catálogo Vacío</h3>
+      <p className="text-sm text-[var(--text-secondary)] font-medium max-w-xs mx-auto mb-8">
+        Tu inventario está esperando las próximas tendencias. Agrega tu primer producto para comenzar.
+      </p>
+    </motion.div>
   );
 }
 
-// ── Vista GRID (tarjetas grandes — vista actual) ─────────────────────────────
+// ── GRID VIEW ─────────────────────────────────────────────────────────────
+
 function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {products.map((product) => (
-        <Card key={product.id}>
-          <div className="aspect-square w-full overflow-hidden rounded-t-xl" style={{ backgroundColor: 'var(--border-color)' }}>
-            <ProductImage src={product.imageUrl} alt={product.name} className="h-full w-full" />
-          </div>
-          <CardBody>
-            <h3 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{product.name}</h3>
-            {product.description && (
-              <p className="mt-1 text-xs line-clamp-2" style={{ color: 'var(--text-secondary)' }}>
-                {product.description}
-              </p>
-            )}
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <CategoryBadge category={product.category} />
-              {product.badge && <ProductBadge badge={product.badge} />}
-              {product.price != null && (
-                <span className="text-xs font-semibold ml-auto" style={{ color: 'var(--text-primary)' }}>
-                  ${product.price.toLocaleString('es-CO')}
-                </span>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+      <AnimatePresence mode='popLayout'>
+        {products.map((product, idx) => (
+          <motion.div
+            key={product.id}
+            layout
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+            transition={{ delay: idx * 0.05 }}
+            className="group relative bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] overflow-hidden hover:border-[#FF5C3A]/40 transition-all duration-500 shadow-xl shadow-black/5"
+          >
+            {/* Image Section */}
+            <div className="aspect-[4/5] overflow-hidden relative">
+              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+              
+              {/* Overlay Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              {/* Floating Badges */}
+              <div className="absolute top-6 left-6 flex flex-col gap-2">
+                <ProductBadge badge={product.badge || 'New'} />
+                <CategoryBadge category={product.category} />
+              </div>
+
+              {/* Action Buttons Overlay */}
+              <div className="absolute bottom-8 left-0 right-0 px-8 flex justify-center gap-3 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
+                <button 
+                  onClick={() => onEdit(product)}
+                  className="p-4 rounded-2xl bg-white text-black hover:bg-black hover:text-white transition-all shadow-2xl active:scale-95"
+                >
+                  <Edit3 size={18} />
+                </button>
+                <button 
+                  onClick={() => onDelete(product.id)}
+                  className="p-4 rounded-2xl bg-rose-500 text-white hover:bg-rose-600 transition-all shadow-2xl active:scale-95"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Content Section */}
+            <div className="p-8 space-y-4">
+              <div className="flex justify-between items-start gap-4">
+                <div className="min-w-0 flex-1">
+                   <h3 className="text-base font-[950] italic uppercase tracking-tighter text-[var(--text-primary)] leading-[1.1] transition-all">{product.name}</h3>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest">{product.category}</span>
+                    <span className="w-1 h-1 rounded-full bg-[var(--border-color)]" />
+                    <span className="text-[10px] font-black uppercase text-[#FF5C3A] tracking-widest">Active</span>
+                  </div>
+                </div>
+                {product.price != null && (
+                  <div className="text-right shrink-0">
+                    <p className="text-xs font-black uppercase text-[var(--text-muted)] tracking-widest mb-0.5">Price</p>
+                    <p className="text-xl font-black italic text-[#FF5C3A]">${product.price.toLocaleString('es-CO')}</p>
+                  </div>
+                )}
+              </div>
+              
+              {product.description && (
+                <p className="text-xs text-[var(--text-secondary)] font-medium line-clamp-2 leading-relaxed opacity-70 italic">
+                   "{product.description}"
+                </p>
               )}
             </div>
-            <div className="mt-4 flex gap-2">
-              <Button size="sm" variant="secondary" onClick={() => onEdit(product)} className="flex-1">Editar</Button>
-              <Button size="sm" variant="danger" onClick={() => onDelete(product.id)} className="flex-1">Eliminar</Button>
-            </div>
-          </CardBody>
-        </Card>
-      ))}
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
 
-// ── Vista THUMBNAILS (miniaturas pequeñas) ───────────────────────────────────
+// ── THUMBNAILS VIEW ────────────────────────────────────────────────────────
+
 function ThumbnailsView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-      {products.map((product) => (
-        <div
-          key={product.id}
-          className="group relative rounded-xl overflow-hidden border transition-all"
-          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
-        >
-          {/* Imagen cuadrada */}
-          <div className="aspect-square w-full overflow-hidden" style={{ backgroundColor: 'var(--border-color)' }}>
-            <ProductImage src={product.imageUrl} alt={product.name} className="h-full w-full transition-transform duration-200 group-hover:scale-105" />
-          </div>
-
-          {/* Overlay con acciones al hover */}
-          <div className="absolute inset-0 flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-            style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}>
-            <button
-              onClick={() => onEdit(product)}
-              className="p-1.5 rounded-lg transition-colors"
-              style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
-              title="Editar"
-            >
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-              </svg>
-            </button>
-            <button
-              onClick={() => onDelete(product.id)}
-              className="p-1.5 rounded-lg transition-colors"
-              style={{ backgroundColor: 'rgba(239,68,68,0.25)' }}
-              title="Eliminar"
-            >
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Nombre debajo */}
-          <div className="px-2 py-1.5">
-            <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>{product.name}</p>
-            {product.price != null && (
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>${product.price.toLocaleString('es-CO')}</p>
-            )}
-          </div>
-        </div>
-      ))}
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+      <AnimatePresence mode='popLayout'>
+        {products.map((product, idx) => (
+          <motion.div
+            key={product.id}
+            layout
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ delay: idx * 0.03 }}
+            className="group relative bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] overflow-hidden shadow-lg hover:border-[#FF5C3A]/40 transition-all"
+          >
+            <div className="aspect-square relative overflow-hidden">
+               <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-all duration-700" />
+               <div className="absolute inset-0 bg-[#FF5C3A]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+               
+               {/* Quick Actions Overlay */}
+               <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0">
+                  <button onClick={() => onEdit(product)} className="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center shadow-2xl hover:bg-black hover:text-white transition-colors">
+                    <Edit3 size={16} />
+                  </button>
+                  <button onClick={() => onDelete(product.id)} className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-2xl hover:bg-rose-600 transition-colors">
+                    <Trash2 size={16} />
+                  </button>
+               </div>
+            </div>
+            <div className="p-4 text-center">
+               <p className="text-[10px] font-black uppercase tracking-tighter text-[var(--text-primary)] leading-tight">{product.name}</p>
+               {product.price && <p className="text-[9px] font-black text-[#FF5C3A] italic mt-1">${product.price.toLocaleString('es-CO')}</p>}
+            </div>
+          </motion.div>
+        ))}
+      </AnimatePresence>
     </div>
   );
 }
 
-// ── Vista LIST (tabla compacta) ──────────────────────────────────────────────
+// ── LIST VIEW ─────────────────────────────────────────────────────────────
+
 function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border-color)' }}>
-      <table className="w-full text-sm">
-        <thead>
-          <tr style={{ backgroundColor: 'var(--bg-card)', borderBottom: '1px solid var(--border-color)' }}>
-            <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>Producto</th>
-            <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wide hidden sm:table-cell" style={{ color: 'var(--text-secondary)' }}>Categoría</th>
-            <th className="text-left px-4 py-3 font-medium text-xs uppercase tracking-wide hidden md:table-cell" style={{ color: 'var(--text-secondary)' }}>Precio</th>
-            <th className="text-right px-4 py-3 font-medium text-xs uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product, i) => (
-            <tr
-              key={product.id}
-              className="transition-colors"
-              style={{
-                backgroundColor: i % 2 === 0 ? 'var(--bg-base)' : 'var(--bg-card)',
-                borderBottom: i < products.length - 1 ? '1px solid var(--border-color)' : undefined,
-              }}
-            >
-              {/* Producto: miniatura + nombre + descripción */}
-              <td className="px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0" style={{ backgroundColor: 'var(--border-color)' }}>
-                    <ProductImage src={product.imageUrl} alt={product.name} className="w-full h-full" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm truncate" style={{ color: 'var(--text-primary)' }}>{product.name}</p>
-                    {product.description && (
-                      <p className="text-xs truncate max-w-[200px]" style={{ color: 'var(--text-secondary)' }}>{product.description}</p>
-                    )}
-                  </div>
-                </div>
-              </td>
-
-              {/* Categoría */}
-              <td className="px-4 py-3 hidden sm:table-cell">
-                <div className="flex items-center gap-1.5">
-                  <CategoryBadge category={product.category} />
-                  {product.badge && <ProductBadge badge={product.badge} />}
-                </div>
-              </td>
-
-              {/* Precio */}
-              <td className="px-4 py-3 hidden md:table-cell">
-                {product.price != null ? (
-                  <span className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>
-                    ${product.price.toLocaleString('es-CO')}
-                  </span>
-                ) : (
-                  <span style={{ color: 'var(--text-muted)' }}>—</span>
-                )}
-              </td>
-
-              {/* Acciones */}
-              <td className="px-4 py-3">
-                <div className="flex items-center justify-end gap-2">
-                  <button
-                    onClick={() => onEdit(product)}
-                    className="p-1.5 rounded-lg transition-colors"
-                    style={{ color: 'var(--text-secondary)' }}
-                    title="Editar"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => onDelete(product.id)}
-                    className="p-1.5 rounded-lg transition-colors"
-                    style={{ color: '#ef4444' }}
-                    title="Eliminar"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                    </svg>
-                  </button>
-                </div>
-              </td>
+    <div className="bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] overflow-hidden shadow-2xl">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-[var(--bg-base)] border-b border-[var(--border-color)]">
+              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic">Prenda</th>
+              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic hidden lg:table-cell">Genoma</th>
+              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic hidden md:table-cell">Valuación</th>
+              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic text-right">Mantenimiento</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <AnimatePresence mode='popLayout'>
+              {products.map((product, idx) => (
+                <motion.tr
+                  key={product.id}
+                  layout
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ delay: idx * 0.03 }}
+                  className="group hover:bg-[var(--bg-base)]/50 transition-colors border-b border-[var(--border-color)] last:border-0"
+                >
+                  <td className="px-8 py-6">
+                    <div className="flex items-center gap-6">
+                       <div className="w-16 h-16 rounded-2xl overflow-hidden border border-[var(--border-color)] shrink-0 shadow-lg">
+                         <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                       </div>
+                       <div className="min-w-0 flex-1">
+                         <h4 className="text-sm font-black italic uppercase italic tracking-tighter text-[var(--text-primary)] leading-tight">{product.name}</h4>
+                         <p className="text-[10px] text-[var(--text-muted)] font-black uppercase tracking-widest mt-1 leading-none">{product.category}</p>
+                       </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-6 hidden lg:table-cell">
+                    <div className="flex gap-2">
+                       <CategoryBadge category={product.category} />
+                       {product.badge && <ProductBadge badge={product.badge} />}
+                    </div>
+                  </td>
+                  <td className="px-8 py-6 hidden md:table-cell">
+                     <span className="text-sm font-black italic text-[#FF5C3A]">
+                       {product.price ? `$${product.price.toLocaleString('es-CO')}` : 'N/A'}
+                     </span>
+                  </td>
+                  <td className="px-8 py-6 text-right">
+                     <div className="flex justify-end gap-3 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
+                        <button 
+                          onClick={() => onEdit(product)}
+                          className="p-3 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] hover:bg-black hover:text-white transition-all shadow-sm"
+                        >
+                          <Edit3 size={14} />
+                        </button>
+                        <button 
+                          onClick={() => onDelete(product.id)}
+                          className="p-3 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                     </div>
+                  </td>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-// ── Componente principal ─────────────────────────────────────────────────────
+// ── MAIN EXPORT ─────────────────────────────────────────────────────────────
+
 export function ProductList({ products, viewMode = 'grid', onEdit, onDelete }: ProductListProps) {
   if (products.length === 0) return <EmptyState />;
 
-  if (viewMode === 'list') return <ListView products={products} onEdit={onEdit} onDelete={onDelete} />;
-  if (viewMode === 'thumbnails') return <ThumbnailsView products={products} onEdit={onEdit} onDelete={onDelete} />;
-  return <GridView products={products} onEdit={onEdit} onDelete={onDelete} />;
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 }
+  };
+
+  return (
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="pb-20"
+    >
+      {viewMode === 'list' ? (
+        <ListView products={products} onEdit={onEdit} onDelete={onDelete} />
+      ) : viewMode === 'thumbnails' ? (
+        <ThumbnailsView products={products} onEdit={onEdit} onDelete={onDelete} />
+      ) : (
+        <GridView products={products} onEdit={onEdit} onDelete={onDelete} />
+      )}
+    </motion.div>
+  );
 }

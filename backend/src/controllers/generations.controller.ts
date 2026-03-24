@@ -11,7 +11,8 @@ export class GenerationsController {
     const brandId = (req as any).brand?.id;
     const limit = Math.min(Number(req.query.limit) || 50, 100);
 
-    const generations = await generationsService.getGenerationsByBrand(brandId, limit);
+    const status = (req.query.status as string) || 'SUCCESS';
+    const generations = await generationsService.getGenerationsByBrand(brandId, limit, status);
 
     const productIds = [...new Set(generations.map(g => g.product_id).filter(Boolean))];
     const productMap: Record<string, { name: string; imageUrl: string }> = {};
@@ -26,13 +27,14 @@ export class GenerationsController {
     );
 
     const result = generations
-      .filter(g => g.status === 'SUCCESS' && g.result_image_url)
       .map(g => ({
         id: g.id,
         productId: g.product_id,
         productName: productMap[g.product_id]?.name ?? 'Producto eliminado',
         productImageUrl: productMap[g.product_id]?.imageUrl ?? null,
         resultImageUrl: g.result_image_url,
+        status: g.status,
+        error_message: g.error_message,
         generatedAt: g.generated_at,
         processingTime: g.processing_time ?? null,
       }));
