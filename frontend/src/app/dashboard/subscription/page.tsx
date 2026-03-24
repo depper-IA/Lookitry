@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -52,7 +52,7 @@ const DESIGN_SYSTEM = {
     glow: 'rgba(255, 92, 58, 0.3)',
     bg: 'bg-[var(--bg-card)]',
     icon: <Globe className="w-8 h-8" />,
-    label: 'Impulso Inicial'
+    label: 'Plan Básico'
   },
   PRO: {
     name: 'Lookitry Pro',
@@ -61,16 +61,16 @@ const DESIGN_SYSTEM = {
     glow: 'rgba(255, 92, 58, 0.4)',
     bg: 'bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-card)] to-[#FF5C3A]/5',
     icon: <Rocket className="w-8 h-8" />,
-    label: 'Máximo ADN'
+    label: 'Plan Pro'
   },
   TRIAL: {
-     name: 'Laboratorio Trial',
+     name: 'Período Trial',
      color: '#FF5C3A',
      secondaryColor: '#FF5C3A',
      glow: 'rgba(255, 92, 58, 0.3)',
      bg: 'bg-[var(--bg-card)]',
      icon: <Zap className="w-8 h-8" />,
-     label: 'Puerta de Enlace'
+     label: 'Acceso Trial'
   }
 };
 
@@ -97,7 +97,7 @@ const PLAN_FEATURES = {
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   active:        { label: 'Sincronizada', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-  expiring_soon: { label: 'Fuga de ADN',   color: 'text-amber-400',   bg: 'bg-amber-500/10 border-amber-500/20'   },
+  expiring_soon: { label: 'Por Vencer',   color: 'text-amber-400',   bg: 'bg-amber-500/10 border-amber-500/20'   },
   expired:       { label: 'Desactivada',  color: 'text-rose-400',    bg: 'bg-rose-500/10 border-rose-500/20'       },
   suspended:     { label: 'Suspendida',   color: 'text-rose-400',    bg: 'bg-rose-500/10 border-rose-500/20'       },
 };
@@ -105,7 +105,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }
 const PAYMENT_STATUS: Record<string, { label: string; color: string }> = {
   completed: { label: 'Completado',  color: 'text-emerald-400' },
   pending:   { label: 'Pendiente',   color: 'text-amber-400'   },
-  failed:    { label: 'Excepción',   color: 'text-rose-400'     },
+  failed:    { label: 'Fallido',   color: 'text-rose-400'     },
 };
 
 function formatDate(d?: string | null): string {
@@ -202,9 +202,9 @@ export default function SubscriptionPage() {
              <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-[#FF5C3A]" />
              </div>
-             <h1 className="text-4xl font-[900] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta">Ecosistema Orbital</h1>
+             <h1 className="text-4xl font-[900] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta">Suscripción</h1>
           </div>
-          <p className="text-[11px] font-black tracking-[0.2em] text-[var(--text-muted)] uppercase opacity-60">Matriz de facturación y control de ciclos</p>
+          <p className="text-[11px] font-black tracking-[0.2em] text-[var(--text-muted)] uppercase opacity-60">Gestión de plan y pagos</p>
         </div>
       </motion.header>
 
@@ -226,7 +226,7 @@ export default function SubscriptionPage() {
                <div className="space-y-1">
                   <div className="flex items-center gap-2 mb-4">
                      <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-[#FF5C3A] bg-[#FF5C3A]/10 border border-[#FF5C3A]/20">
-                        Frecuencia Actual
+                        Plan Actual
                      </span>
                   </div>
                   <h2 className="text-6xl sm:text-7xl font-[950] tracking-tighter italic uppercase text-[var(--text-primary)] leading-none">
@@ -236,18 +236,18 @@ export default function SubscriptionPage() {
 
                 <div className="flex items-center gap-10">
                   <div className="space-y-1">
-                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Ciclo de Renovación</p>
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Próxima Renovación</p>
                      <p className="text-xl font-black text-[var(--text-primary)] italic">{formatDate(info?.brand?.subscriptionEndDate)}</p>
                   </div>
                   <div className="space-y-1">
-                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Inversión Mensual</p>
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Precio Mensual</p>
                      <p className="text-xl font-black text-[#FF5C3A] italic">{inTrial ? '$0' : formatCurrency(dynamicPrices[planKey] ?? 0)}</p>
                   </div>
                </div>
 
                <div className="space-y-3 max-w-sm">
                   <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]">
-                     <span className="text-white/40">Días orbitales restantes</span>
+                     <span className="text-white/40">Días restantes</span>
                      <span className="text-[#FF5C3A]">{info?.daysRemaining ?? 0} DÍAS</span>
                   </div>
                   <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
@@ -268,7 +268,7 @@ export default function SubscriptionPage() {
                      {currentDesign.icon}
                   </div>
                   <div>
-                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Status General</p>
+                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)]">Estado del Plan</p>
                      <p className={`text-sm font-black uppercase italic ${STATUS_LABELS[info?.status ?? 'active'].color}`}>
                         {STATUS_LABELS[info?.status ?? 'active'].label}
                      </p>
@@ -276,11 +276,11 @@ export default function SubscriptionPage() {
                </div>
 
                <div className="space-y-2 mb-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Acciones de Comando</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Opciones</p>
                   {inTrial ? (
                      <div className="grid grid-cols-1 gap-3">
-                        <button onClick={() => router.push('/dashboard/checkout?plan=BASIC')} className="w-full py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl hover:brightness-110 transition-all active:scale-95">Inyectar BASIC</button>
-                        <button onClick={() => router.push('/dashboard/checkout?plan=PRO')} className="w-full py-5 border-2 border-[var(--border-color)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95">Evolucionar PRO</button>
+                        <button onClick={() => router.push('/dashboard/checkout?plan=BASIC')} className="w-full py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl hover:brightness-110 transition-all active:scale-95">Activar BASIC</button>
+                        <button onClick={() => router.push('/dashboard/checkout?plan=PRO')} className="w-full py-5 border-2 border-[var(--border-color)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95">Cambiar a PRO</button>
                      </div>
                   ) : (
                      <div className="grid grid-cols-1 gap-3">
@@ -288,7 +288,7 @@ export default function SubscriptionPage() {
                            Cambiar a {nextPlan}
                         </button>
                         {(info?.status !== 'active') && (
-                           <button onClick={() => router.push(`/dashboard/checkout?plan=${planKey}`)} className="w-full py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-[#FF5C3A]/30 active:scale-95 transition-all">Sincronizar Ciclo</button>
+                           <button onClick={() => router.push(`/dashboard/checkout?plan=${planKey}`)} className="w-full py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-[#FF5C3A]/30 active:scale-95 transition-all">Renovar Plan</button>
                         )}
                      </div>
                   )}
@@ -317,7 +317,7 @@ export default function SubscriptionPage() {
                   >
                      {isCurrent && (
                         <div className="absolute top-0 right-0 px-8 py-3 bg-[#FF5C3A] text-white text-[9px] font-black uppercase tracking-[0.3em] rounded-bl-[2.5rem]">
-                           ADN Actual
+                           Plan Actual
                         </div>
                      )}
                      <div className="mb-10">
@@ -342,7 +342,7 @@ export default function SubscriptionPage() {
                         className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95 ${isCurrent ? 'bg-[var(--bg-hover)] text-[var(--text-primary)] cursor-not-allowed opacity-50' : 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20 hover:brightness-110'}`}
                         disabled={isCurrent}
                      >
-                        {isCurrent ? 'SISTEMA CARGADO' : `ADQUIRIR ${pk}`}
+                        {isCurrent ? 'PLAN ACTIVO' : `SELECCIONAR ${pk}`}
                      </button>
                   </motion.div>
                );
@@ -358,7 +358,7 @@ export default function SubscriptionPage() {
                   <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
                      <RefreshCw className="w-5 h-5 text-[#FF5C3A]" />
                   </div>
-                  <h3 className="text-xl font-black uppercase italic tracking-tighter text-[var(--text-primary)]">Trazas Financieras</h3>
+                  <h3 className="text-xl font-black uppercase italic tracking-tighter text-[var(--text-primary)]">Historial de Pagos</h3>
                </div>
 
                <div className="flex flex-wrap items-center gap-4">
@@ -391,9 +391,9 @@ export default function SubscriptionPage() {
                <table className="w-full text-left">
                   <thead>
                      <tr className="border-b border-[var(--border-color)] opacity-40">
-                        <th className="pb-5 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Fecha Astral</th>
+                        <th className="pb-5 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Fecha</th>
                         <th className="pb-5 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Inversión</th>
-                        <th className="pb-5 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] text-right">Efectuado</th>
+                        <th className="pb-5 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] text-right">Estado</th>
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border-color)]">
@@ -401,7 +401,7 @@ export default function SubscriptionPage() {
                         <tr key={p.id} className="group hover:bg-[var(--bg-hover)] transition-colors">
                            <td className="py-6 pr-4">
                               <p className="text-xs font-black italic text-[var(--text-primary)]">{formatDateTime(p.paymentDate)}</p>
-                              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50">{p.paymentMethod ?? 'Cibercrédito'}</p>
+                              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] opacity-50">{p.paymentMethod ?? 'Pago manual'}</p>
                            </td>
                            <td className="py-6 pr-4 text-sm font-black text-[#FF5C3A] tracking-tighter italic">{formatCurrency(p.amount)}</td>
                            <td className="py-6 text-right">
@@ -412,7 +412,7 @@ export default function SubscriptionPage() {
                         </tr>
                      ))}
                      {payments.length === 0 && (
-                        <tr><td colSpan={3} className="py-20 text-center text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-30">Vacío Galáctico</td></tr>
+                        <tr><td colSpan={3} className="py-20 text-center text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-30">Sin pagos registrados</td></tr>
                      )}
                   </tbody>
                </table>
@@ -443,15 +443,15 @@ export default function SubscriptionPage() {
          <div className="space-y-8">
             <div className="bg-[var(--bg-card)] p-10 rounded-[3rem] border border-[var(--border-color)] space-y-6 shadow-2xl relative overflow-hidden group">
                <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF5C3A]/5 blur-3xl rounded-full" />
-               <h4 className="text-lg font-black uppercase italic tracking-tighter text-[var(--text-primary)]">Soporte Táctico</h4>
-               <p className="text-xs font-medium text-[var(--text-secondary)] leading-relaxed">¿Dificultades en la sincronización? Los arquitectos están listos.</p>
+               <h4 className="text-lg font-black uppercase italic tracking-tighter text-[var(--text-primary)]">Soporte</h4>
+               <p className="text-xs font-medium text-[var(--text-secondary)] leading-relaxed">¿Necesitas ayuda con tu suscripción?</p>
                <div className="space-y-3">
                   <a href={`https://wa.me/573105436281`} target="_blank" className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl group-hover:border-emerald-500/50 transition-all">
                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">WhatsApp VIP</span>
                      <MessageCircle className="w-4 h-4 text-emerald-400" />
                   </a>
                   <a href="mailto:info@lookitry.com" className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-2xl hover:border-white/30 transition-all">
-                     <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Canal Email</span>
+                     <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Email</span>
                      <Mail className="w-4 h-4 text-white/60" />
                   </a>
                </div>
@@ -463,11 +463,11 @@ export default function SubscriptionPage() {
                    <div className="w-8 h-8 rounded-xl bg-[#FF5C3A] flex items-center justify-center shadow-lg shadow-[#FF5C3A]/30">
                       <Zap className="w-4 h-4 text-white" />
                    </div>
-                   <h4 className="text-lg font-black uppercase italic tracking-tighter text-[var(--text-primary)]">Próximo Nivel</h4>
+                   <h4 className="text-lg font-black uppercase italic tracking-tighter text-[var(--text-primary)]">Actualiza tu Plan</h4>
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-10 leading-relaxed italic relative z-10">Evoluciona tu sistema al Plan PRO y desbloquea el 100% de la red neuronal.</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-10 leading-relaxed italic relative z-10">Accede a más productos, generaciones y personalización total con el Plan PRO.</p>
                 <button onClick={() => router.push('/dashboard/checkout?plan=PRO')} className="w-full flex items-center justify-center gap-3 py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all relative z-10">
-                   EVOLUCIONAR <ChevronRight size={14} />
+                   ACTUALIZAR A PRO <ChevronRight size={14} />
                 </button>
              </div>
          </div>

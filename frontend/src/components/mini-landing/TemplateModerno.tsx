@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
@@ -68,14 +68,14 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
   );
 }
 
-function ProbadorHero({ brand, onScrollDown }: { brand: BrandData; onScrollDown: () => void }) {
+function ProbadorHero({ brand, onScrollDown, isPreview = false }: { brand: BrandData; onScrollDown: () => void; isPreview?: boolean }) {
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
   const secondary = brand.social_links?._landing_secondary || primary;
   const hasCover = !!brand.cover_image_url;
   const heroBg = brand.cover_bg_color || '#0f0f0f';
   const overlayOpacity = brand.cover_overlay_opacity ?? 0.6;
   return (
-    <section className="relative py-16 md:py-24 px-6 text-center overflow-hidden" style={{ backgroundColor: heroBg }}>
+    <section className={`relative ${isPreview ? 'py-8 md:py-12' : 'py-16 md:py-24'} px-6 text-center overflow-hidden`} style={{ backgroundColor: heroBg }}>
       {hasCover && (
         <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
       )}
@@ -202,7 +202,7 @@ function ProbadorInfo({ brand }: { brand: BrandData }) {
   );
 }
 
-export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
+export function TemplateModerno({ brandSlug, brand, products, footerUrl, isPreview = false }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string; isPreview?: boolean }) {
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
   const secondary = brand.social_links?._landing_secondary || primary;
   const [selectedId, setSelectedId] = useState<string | null>(products?.[0]?.id ?? null);
@@ -218,7 +218,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-white ${brand.landing_font || 'font-jakarta'} overflow-x-hidden`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
+    <div className={`min-h-screen flex flex-col bg-white ${brand.landing_font || 'font-jakarta'} overflow-x-hidden pb-32 ${isPreview ? 'p-0 h-auto' : ''}`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
       <ProbadorNav brand={brand} />
       <ProbadorHero brand={brand} onScrollDown={() => document.getElementById('probador-products')?.scrollIntoView({ behavior: 'smooth' })} />
       <ProbadorTrustBar brand={brand} />
@@ -231,7 +231,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
             <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase italic leading-none">Probador Virtual</h2>
             <p className="text-gray-500 text-xs md:text-sm font-medium">Sube tu foto y procesa el producto seleccionado con IA</p>
           </div>
-          <div className="rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/50 border border-white/5">
+          <div className={isPreview ? "overflow-hidden" : "rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/50 border border-white/5"}>
             <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" />
           </div>
         </div>
@@ -245,7 +245,7 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl }: { bra
         </p>
       </footer>
 
-      {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
+      {brand.whatsapp_contact && !isPreview && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
     </div>
   );
 }

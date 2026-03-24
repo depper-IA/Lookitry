@@ -32,7 +32,7 @@ interface ProductListProps {
 
 function CategoryBadge({ category }: { category: string }) {
   return (
-    <span className="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20 italic">
+    <span className="inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-white text-black border border-black/10 shadow-xl italic backdrop-blur-md">
       {category}
     </span>
   );
@@ -40,13 +40,13 @@ function CategoryBadge({ category }: { category: string }) {
 
 function ProductBadge({ badge }: { badge: string }) {
   const styles: Record<string, string> = {
-    nuevo:  'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    top:    'bg-amber-500/10 text-amber-500 border-amber-500/20',
-    oferta: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
+    nuevo:  'bg-emerald-500 text-white border-emerald-400',
+    top:    'bg-amber-500 text-white border-amber-400',
+    oferta: 'bg-rose-500 text-white border-rose-400',
   };
-  const s = styles[badge] ?? 'bg-[#6366f1]/10 text-[#6366f1] border-[#6366f1]/20';
+  const s = styles[badge] ?? 'bg-[#6366f1] text-white border-[#6366f1]';
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border italic ${s}`}>
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border italic shadow-xl ${s}`}>
       {badge}
     </span>
   );
@@ -95,7 +95,7 @@ function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
               
               {/* Floating Badges */}
               <div className="absolute top-6 left-6 flex flex-col gap-2">
-                <ProductBadge badge={product.badge || 'New'} />
+                <ProductBadge badge={product.badge || 'Nuevo'} />
                 <CategoryBadge category={product.category} />
               </div>
 
@@ -124,22 +124,17 @@ function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest">{product.category}</span>
                     <span className="w-1 h-1 rounded-full bg-[var(--border-color)]" />
-                    <span className="text-[10px] font-black uppercase text-[#FF5C3A] tracking-widest">Active</span>
+                    <span className="text-[10px] font-black uppercase text-[#FF5C3A] tracking-widest">Activo</span>
                   </div>
                 </div>
                 {product.price != null && (
                   <div className="text-right shrink-0">
-                    <p className="text-xs font-black uppercase text-[var(--text-muted)] tracking-widest mb-0.5">Price</p>
+                    <p className="text-xs font-black uppercase text-[var(--text-muted)] tracking-widest mb-0.5">Precio</p>
                     <p className="text-xl font-black italic text-[#FF5C3A]">${product.price.toLocaleString('es-CO')}</p>
                   </div>
                 )}
               </div>
               
-              {product.description && (
-                <p className="text-xs text-[var(--text-secondary)] font-medium line-clamp-2 leading-relaxed opacity-70 italic">
-                   "{product.description}"
-                </p>
-              )}
             </div>
           </motion.div>
         ))}
@@ -199,9 +194,9 @@ function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
           <thead>
             <tr className="bg-[var(--bg-base)] border-b border-[var(--border-color)]">
               <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic">Prenda</th>
-              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic hidden lg:table-cell">Genoma</th>
-              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic hidden md:table-cell">Valuación</th>
-              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic text-right">Mantenimiento</th>
+              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic hidden lg:table-cell">Categoría</th>
+              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic hidden md:table-cell">Precio</th>
+              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>

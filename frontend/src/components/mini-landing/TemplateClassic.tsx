@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import Image from 'next/image';
@@ -129,10 +129,10 @@ function ClassicHeader({ brand, primaryColor, onScrollDown }: { brand: BrandData
   );
 }
 
-function ClassicHero({ brand, primaryColor, onScrollDown }: { brand: BrandData; primaryColor: string; onScrollDown: () => void }) {
+function ClassicHero({ brand, primaryColor, onScrollDown, isPreview = false }: { brand: BrandData; primaryColor: string; onScrollDown: () => void; isPreview?: boolean }) {
   const hasCover = !!brand.cover_image_url;
   return (
-    <section className="relative w-full bg-[#f9f8f6] py-10 md:py-20 px-6 overflow-hidden">
+    <section className={`relative w-full bg-[#f9f8f6] ${isPreview ? 'py-6 md:py-10' : 'py-10 md:py-20'} px-6 overflow-hidden`}>
       <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-10 md:gap-16">
         <div className="flex-1 text-center lg:text-left space-y-5 md:space-y-6 z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--secondary-05)] border border-[var(--secondary-10)] text-[var(--secondary)] text-[9px] font-bold uppercase tracking-[0.2em]">
@@ -308,7 +308,7 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
   );
 }
 
-export function TemplateClassic({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
+export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPreview = false }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string; isPreview?: boolean }) {
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
   const secondary = brand.social_links?._landing_secondary || primary;
   const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id || null);
@@ -319,9 +319,9 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl }: { bra
   };
 
   return (
-    <div className={`min-h-screen bg-white flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
+    <div className={`min-h-screen bg-white flex flex-col ${brand.landing_font || 'font-jakarta'} overflow-x-hidden transition-colors duration-500 pb-32 ${isPreview ? 'p-0 h-auto' : ''}`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
       <ClassicHeader brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
-      <ClassicHero brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} />
+      <ClassicHero brand={brand} primaryColor={primary} onScrollDown={() => document.getElementById('productos')?.scrollIntoView({ behavior: 'smooth' })} isPreview={isPreview} />
       <ClassicSteps primaryColor={primary} />
       <ClassicProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} />
       
@@ -331,14 +331,14 @@ export function TemplateClassic({ brandSlug, brand, products, footerUrl }: { bra
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--secondary)]">Probador Virtual Premium</span>
             <h2 className="text-2xl md:text-4xl font-black text-white tracking-tighter uppercase italic">Experiencia Inteligente</h2>
           </div>
-          <div className="rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/5">
+          <div className={isPreview ? "overflow-hidden" : "rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] border border-white/5"}>
             <TryOnWidget brandSlug={brandSlug} isEmbed={true} initialProductId={selectedId} forceLayout="bare" />
           </div>
         </div>
       </section>
 
       <ClassicFooter brand={brand} primaryColor={primary} footerUrl={footerUrl} />
-      {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
+      {brand.whatsapp_contact && !isPreview && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
     </div>
   );
 }

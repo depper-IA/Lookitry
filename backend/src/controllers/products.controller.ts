@@ -118,11 +118,15 @@ export class ProductsController {
       }
 
       if (req.body.price !== undefined) {
-        updates.price = req.body.price != null ? Number(req.body.price) : null;
+        updates.price = req.body.price != null && req.body.price !== '' ? Number(req.body.price) : null;
       }
 
       if (req.body.badge !== undefined) {
         updates.badge = req.body.badge || null;
+      }
+
+      if (req.body.externalId !== undefined || req.body.external_id !== undefined) {
+        updates.external_id = req.body.external_id || req.body.externalId || null;
       }
 
       // Verificar que hay algo que actualizar

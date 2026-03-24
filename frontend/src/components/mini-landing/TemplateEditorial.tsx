@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
@@ -198,7 +198,7 @@ function EditorialAbout({ brand, primaryColor }: { brand: BrandData; primaryColo
   );
 }
 
-export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string }) {
+export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPreview = false }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string; isPreview?: boolean }) {
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
   const secondary = brand.social_links?._landing_secondary || primary;
   const [selectedId, setSelectedId] = useState<string | null>(products && products.length > 0 ? products[0].id : null);
@@ -220,7 +220,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-[#fcfcfc] ${brand.landing_font || 'font-jakarta'} overflow-x-hidden`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
+    <div className={`min-h-screen flex flex-col bg-[#fcfcfc] ${brand.landing_font || 'font-jakarta'} overflow-x-hidden pb-32 ${isPreview ? 'p-0 h-auto' : ''}`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
       <EditorialHeader brand={brand} entries={entries} socialIcons={socialIcons} />
       <EditorialHero brand={brand} />
       
@@ -243,7 +243,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
           {/* Probador Prioritario (Sidebar Sticky) */}
           <aside className="order-1 lg:order-2">
             <div id="editorial-tryon" className="lg:sticky lg:top-28">
-              <div className="rounded-[3rem] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] bg-white border border-gray-100">
+              <div className={isPreview ? "overflow-hidden bg-white" : "rounded-[3rem] overflow-hidden shadow-[0_40px_80px_-15px_rgba(0,0,0,0.15)] bg-white border border-gray-100"}>
                 <div className="px-6 py-4 text-white flex justify-between items-center" style={{ backgroundColor: primary }}>
                   <span className="font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
                     <SparklesIcon className="w-4 h-4" /> Probador IA
@@ -310,7 +310,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl }: { b
         </div>
       </footer>
 
-      {brand.whatsapp_contact && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
+      {brand.whatsapp_contact && !isPreview && <WhatsAppFAB phone={brand.whatsapp_contact} message={brand.whatsapp_message} />}
     </div>
   );
 }

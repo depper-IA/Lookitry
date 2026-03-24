@@ -7,9 +7,10 @@ interface LandingPreviewProps {
   brandSlug: string;
   brand: any;
   products: any[];
+  isPreview?: boolean;
 }
 
-export function LandingPreview({ brandSlug, brand, products }: LandingPreviewProps) {
+export function LandingPreview({ brandSlug, brand, products, isPreview = false }: LandingPreviewProps) {
   const template = brand.landing_template || 'classic';
 
   return (
@@ -21,6 +22,7 @@ export function LandingPreview({ brandSlug, brand, products }: LandingPreviewPro
             brandSlug={brandSlug} 
             brand={brand} 
             products={products} 
+            isPreview={isPreview}
           />
         )}
         {template === 'editorial' && (
@@ -28,6 +30,7 @@ export function LandingPreview({ brandSlug, brand, products }: LandingPreviewPro
             brandSlug={brandSlug} 
             brand={brand} 
             products={products} 
+            isPreview={isPreview}
           />
         )}
         {template === 'moderno' && (
@@ -35,6 +38,7 @@ export function LandingPreview({ brandSlug, brand, products }: LandingPreviewPro
             brandSlug={brandSlug} 
             brand={brand} 
             products={products} 
+            isPreview={isPreview}
           />
         )}
       </div>
