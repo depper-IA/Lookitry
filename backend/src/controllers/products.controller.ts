@@ -229,4 +229,53 @@ export class ProductsController {
       });
     }
   }
+
+  /**
+   * POST /api/products/describe-ai
+   * Proxy para llamar al webhook de n8n que genera descripciones con IA.
+   * Evita bloqueos de CORS del navegador al llamar a n8n directamente.
+   */
+  async describeProductWithAI(req: AuthRequest, res: Response) {
+    try {
+      const { image_url, product_name, category } = req.body;
+      const descriptorUrl = process.env.N8N_DESCRIPTOR_URL || 'https://n8n.wilkiedevs.com/webhook/descriptor';
+
+      if (!image_url || !product_name) {
+        return res.status(400).json({
+          error: 'VALIDATION_ERROR',
+          message: 'image_url y product_name son requeridos',
+        });
+      }
+
+      console.log(`[AI-Descriptor] Iniciando descripción para: ${product_name}`);
+
+      const response = await fetch(descriptorUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.N8N_BEARER_TOKEN || ''}`
+        },
+        body: JSON.stringify({ 
+          image_url, 
+          product_name, 
+          category: category || 'General' 
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[AI-Descriptor] Error de n8n:', errorText);
+        throw new Error('Error al conectar con el servicio de IA');
+      }
+
+      const data = await response.json();
+      return res.status(200).json(data);
+    } catch (error: any) {
+      console.error('[AI-Descriptor] Error general:', error);
+      return res.status(500).json({
+        error: 'INTERNAL_ERROR',
+        message: error.message || 'Error al procesar la descripción con IA',
+      });
+    }
+  }
 }

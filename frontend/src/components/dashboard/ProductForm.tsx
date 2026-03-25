@@ -222,15 +222,21 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
 
   // Versión interna que acepta valores explícitos (para llamar desde handleImageFile)
   const triggerDescribeWithAI = async (imageUrl: string, productName: string, category: string) => {
-    if (!N8N_DESCRIPTOR_URL) return;
     setDescribingWithAI(true);
     setAiError(null);
     try {
-      const res = await fetch(N8N_DESCRIPTOR_URL, {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+      const token = localStorage.getItem('token');
+
+      const res = await fetch(`${apiBase}/api/products/describe-ai`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ image_url: imageUrl, product_name: productName, category }),
       });
+
       if (!res.ok) throw new Error('Error al conectar con el servicio de IA');
       const raw = await res.text();
       if (!raw?.trim()) throw new Error('El servicio de IA no devolvió respuesta');
