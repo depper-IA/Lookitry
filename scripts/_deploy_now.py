@@ -75,19 +75,23 @@ if restart_only:
     sys.exit(0)
 
 # 1. Git pull -- detectar que archivos cambiaron
-out, _ = run(ssh, f"cd {REPO} && git remote set-url origin {REPO_URL} && git pull origin main")
+out, err = "", ""
+out, err = run(ssh, f"cd {REPO} && git remote set-url origin {REPO_URL} && git pull origin main")
 
-# Inferir que rebuildar si no se especifico flag
+# Inferir qué reconstruir si no se especificó flag
+backend_changed = False
+frontend_changed = False
+
 if not only_back and not only_front:
     backend_changed  = "backend/"  in out
     frontend_changed = "frontend/" in out
-    # Si git pull no reporto cambios, rebuildar todo de todas formas
+    # Si git pull no reportó cambios, reconstruir todo de todas formas
     if not backend_changed and not frontend_changed:
         backend_changed = frontend_changed = True
     do_backend  = backend_changed
     do_frontend = frontend_changed
-    if do_backend  and not do_frontend: print("\n-> Solo cambio backend")
-    if do_frontend and not do_backend:  print("\n-> Solo cambio frontend")
+    if do_backend  and not do_frontend: print("\n-> Solo cambió backend")
+    if do_frontend and not do_backend:  print("\n-> Solo cambió frontend")
     if do_backend  and do_frontend:     print("\n-> Cambiaron backend y frontend")
 
 # Avisar si cambiaron dependencias
