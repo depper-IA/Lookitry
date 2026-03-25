@@ -9,6 +9,9 @@ const pruebaloController = new PruebaloController();
 // GET /api/pruebalo/resolve-domain - Resolver slug mediante host/dominio
 router.get('/resolve-domain', publicRateLimiter, pruebaloController.resolveDomain);
 
+// GET /api/pruebalo/validate-api-key - Validar clave de API desde el plugin
+router.get('/validate-api-key', publicRateLimiter, pruebaloController.validateApiKey);
+
 // GET /api/pruebalo/:brandSlug - Obtener configuración pública de marca y productos
 router.get('/:brandSlug', publicRateLimiter, pruebaloController.getBrandConfig);
 

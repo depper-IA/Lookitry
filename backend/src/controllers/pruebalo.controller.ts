@@ -1,4 +1,4 @@
-﻿import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { getCachedBrandConfig, setCachedBrandConfig, invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { BrandsService } from '../services/brands.service';
@@ -410,6 +410,28 @@ export class PruebaloController {
     }
 
     return res.status(200).json({ slug: brand.slug });
+  });
+
+  /**
+   * GET /api/pruebalo/validate-api-key?key=...
+   * Endpoint público para validar una clave de API desde el plugin
+   */
+  validateApiKey = asyncHandler(async (req: Request, res: Response) => {
+    const key = req.query.key as string;
+    if (!key) {
+      return res.status(400).json({ valid: false, message: 'Clave de API requerida' });
+    }
+
+    const brand = await brandsService.getBrandByApiKey(key);
+    if (!brand) {
+      return res.status(200).json({ valid: false, message: 'Clave de API inválida' });
+    }
+
+    return res.status(200).json({ 
+      valid: true, 
+      brandName: brand.name,
+      plan: brand.plan 
+    });
   });
 }
 
