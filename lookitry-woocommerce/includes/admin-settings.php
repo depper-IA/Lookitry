@@ -97,7 +97,7 @@ function lookitry_settings_page() {
                                     // Header con Logo y Nombre
                                     brandInfo += '<div style="display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid #f1f5f9;">';
                                     if (response.logo) {
-                                        brandInfo += '<img src="' + response.logo + '" style="height: 40px; width: 40px; object-fit: contain; border-radius: 6px; background: #f8fafc; padding: 4px; border: 1px solid #f1f5f9;">';
+                                        brandInfo += '<img src="' + response.logo + '" style="height: 50px; width: 50px; object-fit: contain; border-radius: 8px; background: #1e293b; padding: 6px; border: 1px solid #0f172a; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);">';
                                     }
                                     brandInfo += '<div style="flex-grow: 1;">';
                                     brandInfo += '<div style="color: #059669; font-weight: 600; display: flex; align-items: center; gap: 5px; font-size: 14px;"><span style="font-size: 1.2em;">✔</span> Conexión Establecida</div>';
