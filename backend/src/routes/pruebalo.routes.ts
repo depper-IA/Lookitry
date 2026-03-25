@@ -21,6 +21,9 @@ router.post('/sync-woocommerce', publicRateLimiter, pruebaloController.syncWooCo
 // GET /api/pruebalo/:brandSlug - Obtener configuración pública de marca y productos
 router.get('/:brandSlug', publicRateLimiter, pruebaloController.getBrandConfig);
 
+// GET /api/pruebalo/img-proxy - Proxy de imágenes
+router.get('/img-proxy', publicRateLimiter, pruebaloController.imgProxy);
+
 // POST /api/pruebalo/:brandSlug/generate - Generar imagen de try-on
 router.post(
   '/:brandSlug/generate',
