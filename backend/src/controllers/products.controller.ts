@@ -238,30 +238,38 @@ export class ProductsController {
   async describeProductWithAI(req: AuthRequest, res: Response) {
     try {
       let { image_url, product_name, category } = req.body;
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
       const descriptorUrl = process.env.N8N_DESCRIPTOR_URL || 'https://n8n.wilkiedevs.com/webhook/descriptor';
 
-      // Si la imagen viene del proxy (WooCommerce sync), extraemos la URL real para n8n
+      // 1. Si la imagen ya viene del proxy (desde el frontend que lo aplicó), extraemos la URL real temporalmente
+      // para normalizarla, pero luego decidiremos si debe ir proxidada o no.
+      let finalImageUrl = image_url;
       if (image_url && image_url.includes('img-proxy?url=')) {
         try {
           const urlObj = new URL(image_url);
           const realUrl = urlObj.searchParams.get('url');
           if (realUrl) {
-            image_url = realUrl;
-            console.log(`[AI-Descriptor] URL de imagen desenmascarada: ${image_url}`);
+            finalImageUrl = realUrl;
           }
-        } catch (e) {
-          // Ignorar si hay error parseando
-        }
+        } catch (e) {}
       }
 
-      if (!image_url || !product_name) {
+      // 2. Si es una URL externa (no es de nuestro MinIO), la envolvemos en nuestro proxy 
+      // para que n8n pueda saltarse bloqueos de Hotlinking/CORS del servidor de origen.
+      const isInternal = finalImageUrl.includes('minio.wilkiedevs.com') || finalImageUrl.includes('supabase.co');
+      if (finalImageUrl && !isInternal && finalImageUrl.startsWith('http')) {
+        console.log(`[AI-Descriptor] Proxying external URL for n8n: ${finalImageUrl}`);
+        finalImageUrl = `${apiBase}/api/pruebalo/img-proxy?url=${encodeURIComponent(finalImageUrl)}`;
+      }
+
+      if (!finalImageUrl || !product_name) {
         return res.status(400).json({
           error: 'VALIDATION_ERROR',
           message: 'image_url y product_name son requeridos',
         });
       }
 
-      console.log(`[AI-Descriptor] Iniciando descripción para: ${product_name}`);
+      console.log(`[AI-Descriptor] Iniciando descripción para: ${product_name} | URL: ${finalImageUrl}`);
 
       const response = await fetch(descriptorUrl, {
         method: 'POST',
@@ -270,7 +278,7 @@ export class ProductsController {
           'Authorization': `Bearer ${process.env.N8N_BEARER_TOKEN || ''}`
         },
         body: JSON.stringify({ 
-          image_url, 
+          image_url: finalImageUrl, 
           product_name, 
           category: category || 'General' 
         }),
