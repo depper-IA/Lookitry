@@ -97,12 +97,12 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [showDescTooltip, setShowDescTooltip] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const canDescribeWithAI = !!formData.imageUrl && !!formData.name.trim() && !!N8N_DESCRIPTOR_URL;
+  const canDescribeWithAI = !!formData.imageUrl && !!formData.name.trim();
 
   // Auto-disparar cuando el usuario termina de escribir el nombre y ya hay imagen
   const autoTriggeredRef = useRef(false);
   useEffect(() => {
-    if (!formData.imageUrl || !formData.name.trim() || !N8N_DESCRIPTOR_URL) {
+    if (!formData.imageUrl || !formData.name.trim()) {
       autoTriggeredRef.current = false;
       return;
     }
@@ -153,7 +153,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       const currentName = formData.name.trim();
       const currentCategory = formData.category === 'other' ? customCategory : formData.category;
       // Solo disparar descripción automática SI NO estamos editando
-      if (currentName && N8N_DESCRIPTOR_URL && !product) {
+      if (currentName && !product) {
         triggerDescribeWithAI(url, currentName, currentCategory);
       }
     } catch (err: any) {
@@ -167,14 +167,12 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     setAiError(null);
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-      const token = localStorage.getItem('token');
-
+      // El JWT está en cookie HTTP-Only — no usar localStorage.
+      // El backend lo lee automáticamente desde la cookie en cada request.
       const res = await fetch(`${apiBase}/api/products/describe-ai`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // envía la cookie JWT automáticamente
         body: JSON.stringify({ image_url: imageUrl, product_name: productName, category }),
       });
 
@@ -392,8 +390,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                   </button>
                 )}
                 {N8N_DESCRIPTOR_URL && (
-                  <button
-                    type="button"
+                  <button                    type="button"
                     onClick={handleDescribeWithAI}
                     disabled={!canDescribeWithAI || describingWithAI}
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
@@ -454,7 +451,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                 {aiError}
               </p>
             )}
-            {!canDescribeWithAI && N8N_DESCRIPTOR_URL && (
+            {!canDescribeWithAI && (
               <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
                 Agrega nombre e imagen para habilitar la descripción con IA
               </p>
