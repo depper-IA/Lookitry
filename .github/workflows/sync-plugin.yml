@@ -12,14 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sync via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - name: Deploy via SCP
+        uses: appleboy/scp-action@v0.1.7
         with:
-          server: 92.112.189.47
+          host: 92.112.189.47
           username: u639440667
           password: ${{ secrets.FTP_PASS }}
-          local-dir: ./lookitry-woocommerce/
-          server-dir: domains/wilkiedevs.com/public_html/wp-content/plugins/lookitry-woocommerce/
-          exclude: |
-            **/.git*
-            **/node_modules/**
+          port: 65002
+          source: "./lookitry-woocommerce/*"
+          target: "/home/u639440667/domains/wilkiedevs.com/public_html/wp-content/plugins/lookitry-woocommerce/"
+          strip_components: 1
