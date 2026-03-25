@@ -16,6 +16,9 @@ router.use(checkActiveSubscription);
 // POST /api/products/upload - Subir imagen a WordPress via n8n
 router.post('/upload', (req, res) => uploadImage(req, res));
 
+// POST /api/products/describe-ai - Proxy para descripción de producto con IA
+router.post('/describe-ai', (req, res) => productsController.describeProductWithAI(req, res));
+
 // GET /api/products - Listar productos de marca autenticada
 router.get('/', (req, res) => productsController.getProducts(req, res));
 
