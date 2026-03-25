@@ -600,8 +600,16 @@ export class PruebaloController {
       const buffer = await response.arrayBuffer();
       return res.send(Buffer.from(buffer));
     } catch (error: any) {
-      console.error('[imgProxy] Error:', error.message);
-      return res.status(500).json({ error: 'FAILED_TO_PROXY_IMAGE', message: error.message });
+      const cause = error?.cause?.message || error?.cause?.code || 'unknown';
+      const detail = `${error.message} | cause: ${cause}`;
+      const logObj = { message: detail };
+      if (error?.cause) (logObj as any).cause = error.cause;
+      
+      console.error('[imgProxy] Error:', logObj);
+      return res.status(500).json({ 
+        error: 'FAILED_TO_PROXY_IMAGE', 
+        message: detail 
+      });
     }
   });
 }
