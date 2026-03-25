@@ -58,7 +58,8 @@ function lookitry_settings_page() {
                         </th>
                         <td>
                             <input name="lookitry_api_key" type="password" id="lookitry_api_key" value="<?php echo esc_attr( $api_key ); ?>" class="regular-text" style="width: 100%;">
-                            <p class="description">Puedes encontrar tu API Key en tu <a href="https://pruebalo.wilkiedevs.com/dashboard/integrations" target="_blank">Dashboard de Lookitry</a>.</p>
+                            <p class="description">Puedes encontrar tu API Key en tu <a href="https://lookitry.com/dashboard/integrations" target="_blank">Dashboard de Lookitry</a>.</p>
+
                         </td>
                     </tr>
                 </table>

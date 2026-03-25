@@ -210,6 +210,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       name: finalBrand.name,
       slug: finalBrand.slug,
       plan: finalBrand.plan,
+      api_key: finalBrand.api_key,
     },
     isTrial: false,
   };
@@ -312,6 +313,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
         name: newBrand.name,
         slug: newBrand.slug,
         plan: newBrand.plan,
+        api_key: newBrand.api_key,
       },
       verificationToken: newBrand.email_verification_token,
       requireCardVerification,
@@ -352,6 +354,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
         name: brand.name,
         slug: brand.slug,
         plan: brand.plan,
+        api_key: brand.api_key,
         emailVerified: brand.email_verified,
         trialEndDate: brand.trial_end_date ?? null,
         trialPaymentStatus: brand.trial_payment_status ?? null,

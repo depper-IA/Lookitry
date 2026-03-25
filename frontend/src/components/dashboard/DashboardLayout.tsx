@@ -11,6 +11,7 @@ import { LiveTryOnButton } from './LiveTryOnButton';
 import { DashboardNotifications } from './DashboardNotifications';
 import { TrialBanner } from './TrialBanner';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { LookitryLogoText } from '@/components/mini-landing/shared';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 
@@ -83,13 +84,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain group-hover:rotate-12 transition-transform duration-500" priority />
           </div>
           {!isCollapsed && (
-            <motion.span 
+            <motion.div 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="font-jakarta font-[950] text-lg leading-none text-white tracking-tighter uppercase italic"
+              className="text-lg leading-none shrink-0"
             >
-              Look<span className="text-[#FF5C3A]">itry</span>
-            </motion.span>
+              <LookitryLogoText className="text-white" />
+            </motion.div>
           )}
         </Link>
         

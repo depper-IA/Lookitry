@@ -77,6 +77,7 @@ export interface AuthResponse {
     name: string;
     slug: string;
     plan: string;
+    api_key?: string | null;
     emailVerified?: boolean;
     trialEndDate?: string | null;
     trialPaymentStatus?: string | null;

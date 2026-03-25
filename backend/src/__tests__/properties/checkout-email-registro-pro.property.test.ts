@@ -18,11 +18,29 @@ import * as fc from 'fast-check';
 
 // Mock de supabaseAdmin — captura los argumentos del INSERT
 const mockInsert = jest.fn();
-const mockFrom = jest.fn(() => ({ insert: mockInsert }));
+const mockSingle = jest.fn().mockResolvedValue({ data: null, error: null });
+const mockEq = jest.fn().mockReturnThis();
+const mockSelect = jest.fn().mockReturnThis();
+const mockFrom = jest.fn().mockImplementation(() => ({
+  insert: mockInsert,
+  select: mockSelect,
+  eq: mockEq,
+  single: mockSingle,
+}));
 
 jest.mock('../../config/supabase', () => ({
-  supabaseAdmin: { from: mockFrom },
+  supabaseAdmin: { 
+    from: (table: string) => mockFrom(table),
+  },
   supabase: { from: jest.fn() },
+}));
+
+// Mock de pricingService
+jest.mock('../../services/pricing.service', () => ({
+  pricingService: {
+    calculateTotal: jest.fn().mockResolvedValue(250000),
+    getPricingConfig: jest.fn().mockResolvedValue([]),
+  },
 }));
 
 // Mock de wompiService — devuelve una checkoutUrl y expone generateReference
@@ -95,7 +113,8 @@ describe('Property-Based Tests: checkout-email-registro-pro', () => {
             jest.clearAllMocks();
 
             // La referencia que genera el servicio para este caso
-            const expectedReference = `visitor_${Date.now()}-${plan}-${months}`;
+            const fixedNow = Date.now();
+            const expectedReference = `visitor_${fixedNow}-${plan}-${months}`;
             mockGenerateReference.mockReturnValue(expectedReference);
             mockInsert.mockResolvedValue({ error: null });
             mockGetCheckoutUrl.mockResolvedValue('https://checkout.wompi.co/l/?data=test');
@@ -136,8 +155,8 @@ describe('Property-Based Tests: checkout-email-registro-pro', () => {
           }),
           async ({ email, plan, months }) => {
             jest.clearAllMocks();
-
-            const expectedReference = `visitor_${Date.now()}-${plan}-${months}`;
+            const fixedNow = Date.now();
+            const expectedReference = `visitor_${fixedNow}-${plan}-${months}`;
             mockGenerateReference.mockReturnValue(expectedReference);
 
             // Simular fallo del INSERT

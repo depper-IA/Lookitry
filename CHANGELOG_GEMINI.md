@@ -1,6 +1,32 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 24 de Marzo, 2026 — Auditoría de Seguridad Completa (Backend & Frontend)
+
+**Archivos examinados:**
+- `backend/src/app.ts`, `auth.middleware.ts`, `auth.controller.ts`, `wompi.service.ts`
+- `frontend/src/middleware.ts`, `next.config.js`, `api.ts`
+- `LOOKITRY_MASTER_MEMORY.md` (Actualizado)
+
+**Hallazgos Clave:**
+- **Autenticación:** Confirmado uso seguro de cookies `HttpOnly`, `Secure` y `SameSite`. JWT protegidos.
+- **Webhooks:** Verificación de firmas de Wompi robusta con 3 variantes de validación.
+- **Infraestructura:** Ratelimiters globales y específicos operativos.
+- **Riesgos Identificados:** 
+    - El archivo `webhook_logs.txt` en el backend registra datos crudos de peticiones (Riesgo de exposición de datos).
+    - El uso de `supabaseAdmin` en el backend bypasea RLS (Se recomienda RLS como defensa en profundidad).
+- **Mejoras Implementadas:** 
+    - Actualización de la Memoria Maestra con los resultados de la auditoría.
+    - Generación de informe exhaustivo en español: `security_audit_report.md`.
+    - **Hardening:** Configuración de Helmet CSP (Backend), saneamiento de logs de Wompi y CSP estricta (Frontend y Widget).
+    - **Interoperabilidad:** Ajuste de CORS en `/api/embed` y `/api/pruebalo` para permitir el funcionamiento del plugin de WooCommerce en sitios externos.
+
+
+
+**Motivo:** Asegurar la integridad de la plataforma y cumplir con la solicitud del usuario de una auditoría completa antes de nuevas implementaciones.
+
+---
 ## 24 de Marzo, 2026 — Sprint Final: Rediseño Dashboard & Premium Branding (Fases 1-8)
+
 
 ### Paneles de Usuario (Dashboard)
 - **Suscripción & Perfil:** Eliminación masiva de terminología sci-fi ("ADN", "Orbital", "Galáctico", "Sincronizar", "Evolucionar"). Reemplazados por términos profesionales: "Plan", "Renovación", "Suscripción", "Contraseña", "Guardar Cambios".
@@ -677,6 +703,7 @@ Reescritura completa del `tasks.md` para incluir las tareas de rediseño de toda
 **Problema 2 — Bucle de auto-vinculación para usuarios con plan activo:**
 - El `useEffect` de auto-link en `/registro-pro` se disparaba para cualquier usuario autenticado con un `ref` pagado, sin importar si el pending era de otra persona o de un flujo de visitante con plan distinto.
 - **Fix en `frontend/src/app/registro-pro/page.tsx`:** El auto-link ahora solo se ejecuta si el pending es tipo landing-only (`plan = NONE`) o si el usuario no tiene plan activo. Si tiene plan activo y el pending quiere cambiar el plan, se muestra el formulario normal.
+
 
 **Nuevo email — Activación de Mini-landing:**
 - **`backend/src/templates/email-templates.ts`:** Nuevo template `landingActivatedEmail` con diseño premium, enlace directo a la mini-landing publicada y botones "Ver mi página" / "Personalizar".

@@ -71,7 +71,7 @@ export function DynamicFontStyles() {
 export function LookitryLogoText({ className = "" }: { className?: string }) {
   return (
     <span className={`font-jakarta font-extrabold tracking-tighter ${className}`}>
-      Look<span className="text-[var(--secondary)]">itry</span>
+      Look<span style={{ color: 'var(--secondary, #FF5C3A)' }}>itry</span>
     </span>
   );
 }
