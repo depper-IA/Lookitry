@@ -11,10 +11,23 @@ Tiempos aproximados:
   --restart   : ~5s   (solo reinicia, sin rebuild -- util para cambios de config/env)
   normal      : ~2min frontend, ~1min backend (con cache Docker)
   --no-cache  : ~5min (rebuild completo, solo cuando cambian package.json/deps)
+
+Dependencias requeridas (instalar una sola vez):
+  pip install paramiko python-dotenv
 """
+import subprocess
+import sys
+
+# Auto-instalar dependencias si no están disponibles
+for pkg, import_name in [("paramiko", "paramiko"), ("python-dotenv", "dotenv")]:
+    try:
+        __import__(import_name)
+    except ImportError:
+        print(f"[setup] Instalando {pkg}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", pkg, "-q"])
+
 import paramiko
 import time
-import sys
 import os
 from dotenv import load_dotenv
 
