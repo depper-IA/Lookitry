@@ -59,10 +59,8 @@ const corsOriginEnv = process.env.CORS_ORIGIN
 
 const allowedOrigins = [
   ...new Set([
-    process.env.FRONTEND_URL || 'https://lookitry.com',
-    'https://lookitry.com',
-    'https://api.lookitry.com',
-    'https://lookitry.com',
+    process.env.FRONTEND_URL || '',
+    process.env.API_URL || '',
     // Desarrollo local (cualquier puerto de Next.js)
     'http://localhost:3000',
     'http://localhost:3001',

@@ -75,15 +75,15 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
         onClick={onClose}
       >
         <div
-          className="relative w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl"
+          className="relative w-full max-w-lg rounded-3xl md:rounded-[2rem] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
           style={{ background: 'var(--bg-card)' }}
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="relative px-6 py-5" style={{ background: 'linear-gradient(135deg, #FF5C3A 0%, #e04e30 100%)' }}>
+          <div className="relative px-6 py-5 shrink-0" style={{ background: 'linear-gradient(135deg, #FF5C3A 0%, #e04e30 100%)' }}>
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-colors"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-colors z-10"
               style={{ background: 'rgba(255,255,255,0.2)' }}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.3)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.2)')}
@@ -95,35 +95,35 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
               <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.2)' }}>
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <h2 className="text-lg font-bold text-white">Activa tu plan</h2>
-                <p className="text-white/75 text-sm">Elige el plan que mejor se adapte a tu marca</p>
+              <div className="pr-8">
+                <h2 className="text-lg font-bold text-white leading-tight">Activa tu plan</h2>
+                <p className="text-white/75 text-[11px] md:text-sm uppercase font-black tracking-widest opacity-80">Elige tu potencia para Lookitry</p>
               </div>
             </div>
           </div>
 
           {/* Body */}
-          <div className="px-5 py-5">
-            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-              Tu período de prueba está activo. Selecciona un plan para continuar usando todas las funciones.
+          <div className="px-5 py-6 overflow-y-auto custom-scrollbar">
+            <p className="text-xs md:text-sm mb-6 font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              Tu período de prueba está activo. Selecciona un plan profesional para continuar transformando tu e-commerce con IA.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Plan Básico */}
               <div
-                className="rounded-xl border p-4 flex flex-col gap-3"
+                className="rounded-2xl border p-5 flex flex-col gap-4 transition-all hover:border-[#FF5C3A]/30"
                 style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }}
               >
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>Básico</p>
-                  <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: 'var(--text-muted)' }}>Básico</p>
+                  <p className="text-2xl font-[950] tracking-tighter" style={{ color: 'var(--text-primary)' }}>
                     {formatCOP(basicPrice)}
-                    <span className="text-xs font-normal ml-1" style={{ color: 'var(--text-muted)' }}>/mes</span>
+                    <span className="text-xs font-bold opacity-40 ml-1" style={{ color: 'var(--text-muted)' }}>/mes</span>
                   </p>
                 </div>
-                <ul className="space-y-2 flex-1">
+                <ul className="space-y-2.5 flex-1">
                   {BASIC_FEATURES.map(f => (
-                    <li key={f} className="flex items-start gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    <li key={f} className="flex items-start gap-3 text-[11px] font-bold" style={{ color: 'var(--text-secondary)' }}>
                       <span className="flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center mt-0.5" style={{ background: 'rgba(255,92,58,0.1)' }}>
                         <Check className="w-2.5 h-2.5 text-[#FF5C3A]" strokeWidth={3} />
                       </span>
@@ -133,10 +133,8 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
                 </ul>
                 <button
                   onClick={() => handleUpgrade('BASIC')}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-sm font-semibold transition-all cursor-pointer"
-                  style={{ borderColor: '#FF5C3A', color: '#FF5C3A', background: 'rgba(255,92,58,0.06)' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,92,58,0.14)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,92,58,0.06)')}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border text-[11px] font-black uppercase tracking-widest transition-all cursor-pointer shadow-lg"
+                  style={{ borderColor: '#FF5C3A', color: '#FF5C3A', background: 'transparent' }}
                 >
                   Elegir Básico <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -144,25 +142,25 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
 
               {/* Plan Pro */}
               <div
-                className="rounded-xl border-2 p-4 flex flex-col gap-3 relative"
+                className="rounded-2xl border-2 p-5 flex flex-col gap-4 relative transition-all shadow-xl shadow-[#FF5C3A]/5"
                 style={{ borderColor: '#FF5C3A', background: 'rgba(255,92,58,0.04)' }}
               >
                 <span
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold px-3 py-1 rounded-full text-white whitespace-nowrap"
-                  style={{ background: '#FF5C3A' }}
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 text-[9px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full text-white whitespace-nowrap shadow-lg"
+                  style={{ background: 'linear-gradient(90deg, #FF5C3A, #FF8C70)' }}
                 >
-                  Recomendado
+                  Más Popular
                 </span>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: '#FF5C3A' }}>Pro</p>
-                  <p className="text-2xl font-bold" style={{ color: '#FF5C3A' }}>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-1" style={{ color: '#FF5C3A' }}>Pro</p>
+                  <p className="text-2xl font-[950] tracking-tighter" style={{ color: '#FF5C3A' }}>
                     {formatCOP(proPrice)}
-                    <span className="text-xs font-normal ml-1" style={{ color: 'var(--text-muted)' }}>/mes</span>
+                    <span className="text-xs font-bold opacity-40 ml-1" style={{ color: 'var(--text-muted)' }}>/mes</span>
                   </p>
                 </div>
-                <ul className="space-y-2 flex-1">
+                <ul className="space-y-2.5 flex-1">
                   {PRO_FEATURES.map(f => (
-                    <li key={f} className="flex items-start gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    <li key={f} className="flex items-start gap-3 text-[11px] font-bold" style={{ color: 'var(--text-secondary)' }}>
                       <span className="flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center mt-0.5" style={{ background: 'rgba(255,92,58,0.1)' }}>
                         <Check className="w-2.5 h-2.5 text-[#FF5C3A]" strokeWidth={3} />
                       </span>
@@ -172,10 +170,8 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
                 </ul>
                 <button
                   onClick={() => handleUpgrade('PRO')}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-sm font-semibold transition-opacity cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-[11px] font-black uppercase tracking-widest transition-all cursor-pointer shadow-xl shadow-[#FF5C3A]/30"
                   style={{ background: '#FF5C3A' }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                 >
                   <Zap className="w-3.5 h-3.5" /> Elegir Pro
                 </button>
@@ -184,12 +180,10 @@ export function UpgradeModal({ onClose }: UpgradeModalProps) {
 
             <button
               onClick={onClose}
-              className="w-full mt-3 py-2 text-xs transition-colors cursor-pointer"
+              className="w-full mt-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer opacity-40 hover:opacity-100"
               style={{ color: 'var(--text-muted)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
             >
-              Continuar con el período de prueba
+              Cerrar y continuar trial
             </button>
           </div>
         </div>

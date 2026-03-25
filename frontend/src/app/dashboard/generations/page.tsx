@@ -319,36 +319,36 @@ export default function GenerationsPage() {
   return (
     <motion.div
       initial="hidden" animate="visible" variants={containerVariants}
-      className="max-w-7xl mx-auto space-y-12 pb-20 px-4"
+      className="max-width-[1400px] mx-auto space-y-8 md:space-y-12 pb-20 px-4 md:px-0"
     >
       {/* ══ HEADER & CONTROLS ══ */}
       <motion.div variants={itemVariants} className="flex flex-col gap-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-[var(--border-color)] pb-10">
-          <div className="space-y-3">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 border-b border-[var(--border-color)] pb-8 md:pb-10 mt-4 md:mt-0">
+          <div className="space-y-2 md:space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-[#FF5C3A]" />
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center border border-[#FF5C3A]/5">
+                <Clock className="w-5 h-5 md:w-6 md:h-6 text-[#FF5C3A]" />
               </div>
-              <h1 className="text-4xl font-[950] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none">
-                Mis Generaciones
+              <h1 className="text-2xl md:text-4xl font-[950] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none">
+                Mis Pruebas
               </h1>
             </div>
-            <p className="text-sm text-[var(--text-secondary)] font-bold uppercase tracking-tight opacity-60">
-              Archivo de Generaciones / <span className="text-[#FF5C3A]">{generations.length} items</span>
+            <p className="text-[10px] md:text-sm text-[var(--text-secondary)] font-bold uppercase tracking-tight opacity-60">
+              Historial de IA / <span className="text-[#FF5C3A]">{generations.length} items</span>
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex bg-[var(--bg-card)] rounded-2xl p-1.5 border border-[var(--border-color)] shadow-xl">
+          <div className="flex items-center gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-2 md:pb-0">
+            <div className="flex bg-[var(--bg-card)] rounded-2xl p-1 md:p-1.5 border border-[var(--border-color)] shadow-xl shrink-0">
               {([
-                { id: 'grid', icon: <LayoutGrid size={16} /> },
-                { id: 'thumbnails', icon: <Grid3X3 size={16} /> },
-                { id: 'list', icon: <LayoutList size={16} /> },
+                { id: 'grid', icon: <LayoutGrid size={15} /> },
+                { id: 'thumbnails', icon: <Grid3X3 size={15} /> },
+                { id: 'list', icon: <LayoutList size={15} /> },
               ] as const).map(({ id, icon }) => (
                 <button
                   key={id}
                   onClick={() => { setViewMode(id); localStorage.setItem('generations-view-mode', id); }}
-                  className={`p-3 rounded-xl transition-all ${viewMode === id ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}
+                  className={`p-2.5 md:p-3 rounded-xl transition-all ${viewMode === id ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}
                 >
                   {icon}
                 </button>
@@ -357,7 +357,7 @@ export default function GenerationsPage() {
 
             <button
               onClick={() => { setSelecting(!selecting); setSelected(new Set()); }}
-              className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] border transition-all shadow-xl active:scale-95 ${selecting ? 'bg-[#FF5C3A] text-white border-transparent' : 'bg-[var(--bg-card)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[var(--text-muted)]'}`}
+              className={`flex items-center justify-center gap-2 px-6 md:px-8 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.2em] text-[9px] md:text-[10px] border transition-all shadow-xl active:scale-95 shrink-0 ${selecting ? 'bg-[#FF5C3A] text-white border-transparent' : 'bg-[var(--bg-card)] text-[var(--text-primary)] border-[var(--border-color)] hover:border-[var(--text-muted)]'}`}
             >
               {selecting ? <X size={14} /> : <Filter size={14} />}
               {selecting ? 'Cerrar' : 'Gestionar'}
@@ -366,14 +366,14 @@ export default function GenerationsPage() {
         </div>
 
         {/* Search & Bulk Actions Bar */}
-        <div className="flex flex-col sm:flex-row items-center gap-6">
+        <div className="flex flex-col sm:flex-row items-stretch md:items-center gap-4 md:gap-6 px-2 md:px-0">
           <div className="relative flex-1 group">
-            <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-4 border-r border-[var(--border-color)] pr-4">
-              <Search className="w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
+            <div className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 flex items-center gap-2 md:gap-4 border-r border-[var(--border-color)] pr-3 md:pr-4">
+              <Search className="w-3.5 h-3.5 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
             </div>
             <input
-              type="text" placeholder="BUSCAR POR NOMBRE DE PRODUCTO..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-20 pr-6 py-5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl text-sm font-black uppercase tracking-widest text-[var(--text-primary)] outline-none focus:border-[#FF5C3A]/50 transition-all shadow-2xl placeholder:text-[var(--text-muted)]/30"
+              type="text" placeholder="BUSCAR..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-14 md:pl-20 pr-6 py-4 md:py-5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl md:rounded-3xl text-[10px] md:text-sm font-black uppercase tracking-widest text-[var(--text-primary)] outline-none focus:border-[#FF5C3A]/50 transition-all shadow-2xl placeholder:text-[var(--text-muted)]/30"
             />
           </div>
 
@@ -397,14 +397,13 @@ export default function GenerationsPage() {
 
       {/* ══ GRID ══ */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center p-32 gap-6 bg-[var(--bg-card)] rounded-[4rem] border border-[var(--border-color)]">
+        <div className="flex flex-col items-center justify-center py-16 md:py-32 gap-6 bg-[var(--bg-card)] rounded-3xl md:rounded-[4rem] border border-[var(--border-color)]">
           <div className="relative">
             <Spinner size="lg" />
             <div className="absolute inset-0 bg-[#FF5C3A]/10 blur-xl rounded-full"></div>
           </div>
           <div className="text-center space-y-2">
-            <p className="text-[11px] font-black uppercase tracking-[0.4em] text-[var(--text-primary)] animate-pulse">Cargando Historial</p>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Actualizando tu historial...</p>
+            <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] text-[var(--text-primary)] animate-pulse">Cargando Historial</p>
           </div>
         </div>
       ) : filteredGenerations.length === 0 ? (

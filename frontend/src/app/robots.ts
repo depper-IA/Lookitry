@@ -1,6 +1,6 @@
-﻿import { MetadataRoute } from 'next';
+import { MetadataRoute } from 'next';
 
-const BASE_URL = 'https://lookitry.com';
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
 export default function robots(): MetadataRoute.Robots {
   return {

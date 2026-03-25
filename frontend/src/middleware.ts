@@ -21,12 +21,13 @@ export async function middleware(request: NextRequest) {
   // ── Resolución de Dominios Personalizados ─────────────────────────────────────
   // Solo si no estamos en una ruta de sistema (dashboard, admin, login, etc)
   // y el host no es el dominio base.
-  const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'lookitry.com';
+  const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || '';
   const isBaseDomain = host === baseDomain || host.includes('localhost') || host.endsWith('.vercel.app');
 
   if (!isBaseDomain && !pathname.startsWith('/dashboard') && !pathname.startsWith('/admin') && pathname === '/') {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      if (!apiUrl) return NextResponse.next();
       const res = await fetch(`${apiUrl}/api/pruebalo/resolve-domain?host=${host}`);
       if (res.ok) {
         const { slug } = await res.json();
@@ -48,7 +49,8 @@ export async function middleware(request: NextRequest) {
 
   if (!isMaintenancePage && !isAdminPath) {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      if (!apiUrl) return NextResponse.next();
       // Cachear internamente en el edge si es posible o simplemente fetch
       const res = await fetch(`${apiUrl}/api/payment-settings/public`, {
         next: { revalidate: 60 } // Intentar revalidar cada minuto si el runtime lo soporta
