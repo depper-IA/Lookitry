@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Templates de email para el sistema de notificaciones
  * Todos los templates incluyen estilos inline para compatibilidad con clientes de email
  */
@@ -11,8 +11,8 @@ interface BrandInfo {
 /**
  * Template base con estilos comunes — paleta corporativa LOOKITRY (negro y acento naranja)
  */
-const LOGO_URL = 'https://lookitry.com/logo.svg';
-const APP_URL = process.env.FRONTEND_URL || 'https://lookitry.com';
+const LOGO_URL = `${process.env.FRONTEND_URL || ''}/logo.svg`;
+const APP_URL = process.env.FRONTEND_URL || '';
 const ACCENT_COLOR = '#FF5C3A';
 
 const baseTemplate = (content: string) => `

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,7 +22,9 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
     const saved = localStorage.getItem('currency') as 'COP' | 'USD';
     if (saved) setCurrency(saved);
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/trial/status`)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    if (!apiUrl) return;
+    fetch(`${apiUrl}/api/trial/status`)
       .then(r => r.json())
       .then(d => setTrialActive(d.active === true))
       .catch(() => setTrialActive(false));

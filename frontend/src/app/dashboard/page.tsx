@@ -59,46 +59,46 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-10 pb-20">
+    <div className="max-w-[1400px] mx-auto space-y-8 md:space-y-10 pb-20 px-4 md:px-0">
       {/* ── SECCIÓN DE BIENVENIDA ── */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row md:items-center justify-between gap-6"
+        className="flex flex-col md:flex-row md:items-center justify-between gap-6 mt-4 md:mt-0"
       >
-        <div>
-          <h1 className="text-4xl font-[950] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta mb-3">
+        <div className="space-y-1 md:space-y-3">
+          <h1 className="text-2xl md:text-4xl font-[950] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta">
             Bienvenido, <span className="text-[#FF5C3A]">{brand?.name}</span>
           </h1>
-          <p className="text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            Probador virtual activo y optimizado para hoy
+          <p className="text-[10px] md:text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-2">
+            <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-emerald-400" />
+            Probador virtual activo y optimizado
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="grid grid-cols-2 md:flex items-center gap-3">
           <Link 
             href="/dashboard/products" 
-            className="flex items-center gap-2 px-6 py-3 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-[#FF5C3A]/20 hover:scale-[1.02] transition-all"
+            className="flex items-center justify-center gap-2 px-4 md:px-6 py-3.5 md:py-3 bg-[#FF5C3A] text-white rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[9px] md:text-[11px] shadow-lg shadow-[#FF5C3A]/20 hover:scale-[1.02] transition-all"
           >
-            <Plus size={16} /> Añadir Producto
+            <Plus size={14} className="md:size-4" /> Añadir
           </Link>
           <Link 
             href="/dashboard/settings" 
-            className="flex items-center gap-2 px-6 py-3 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-2xl font-black uppercase tracking-widest text-[11px] hover:bg-white/5 transition-all"
+            className="flex items-center justify-center gap-2 px-4 md:px-6 py-3.5 md:py-3 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[9px] md:text-[11px] hover:bg-white/5 transition-all"
           >
-            <Settings size={16} /> Configurar Widget
+            <Settings size={14} className="md:size-4" /> Configurar
           </Link>
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* ── COLUMNA PRINCIPAL (STÁTICAS DE USO) ── */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6 md:space-y-8">
           <section>
-             <div className="flex items-center justify-between mb-6 px-4">
-                <h2 className="text-xs font-black uppercase text-[var(--text-muted)] tracking-[0.3em]">Consumo del Mes</h2>
-                <Link href="/dashboard/usage" className="text-[10px] font-black uppercase text-[#FF5C3A] hover:underline tracking-widest">
+             <div className="flex items-center justify-between mb-4 md:mb-6 px-2 md:px-4">
+                <h2 className="text-[10px] md:text-xs font-black uppercase text-[var(--text-muted)] tracking-[0.3em]">Consumo del Mes</h2>
+                <Link href="/dashboard/usage" className="text-[9px] md:text-[10px] font-black uppercase text-[#FF5C3A] hover:underline tracking-widest">
                   Ver Detalles <ArrowRight size={10} className="inline ml-1" />
                 </Link>
              </div>
@@ -106,19 +106,19 @@ export default function DashboardPage() {
           </section>
 
           {/* TARJETAS DE ANALYTICS RÁPIDAS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-             <div className="p-8 rounded-[2.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl relative overflow-hidden group hover:border-[#FF5C3A]/30 transition-all">
-                <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-700 pointer-events-none">
-                  <Activity size={100} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+             <div className="p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-[var(--bg-card)] border border(--border-color) shadow-xl relative overflow-hidden group hover:border-[#FF5C3A]/30 transition-all">
+                <div className="absolute top-0 right-0 p-6 md:p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-700 pointer-events-none">
+                  <Activity size={80} className="md:size-[100px]" />
                 </div>
-                <p className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest mb-2">Tasa de Éxito</p>
+                <p className="text-[9px] md:text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest mb-2">Tasa de Éxito</p>
                 <div className="flex items-end gap-3 mb-4">
-                  <span className="text-4xl font-[950] italic tracking-tighter text-[var(--text-primary)] leading-none">
+                  <span className="text-3xl md:text-4xl font-[950] italic tracking-tighter text-[var(--text-primary)] leading-none">
                     {analytics?.successRate ? Math.round(analytics.successRate) : 0}%
                   </span>
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 mb-1">
-                    <CheckCircle2 size={12} />
-                    <span className="text-[10px] font-bold">Óptimo</span>
+                    <CheckCircle2 size={10} className="md:size-3" />
+                    <span className="text-[9px] md:text-[10px] font-bold">Óptimo</span>
                   </div>
                 </div>
                 <div className="h-1.5 w-full bg-[var(--bg-input)] rounded-full overflow-hidden">
@@ -128,25 +128,25 @@ export default function DashboardPage() {
                     className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
                   />
                 </div>
-                <p className="mt-4 text-[11px] text-[var(--text-muted)] font-medium leading-relaxed">
-                  Tu probador está funcionando perfectamente. Las marcas exitosas mantienen una tasa superior al 85%.
+                <p className="mt-4 text-[10px] md:text-[11px] text-[var(--text-muted)] font-medium leading-relaxed">
+                  Tu probador está funcionando perfectamente.
                 </p>
              </div>
 
-             <div className="p-8 rounded-[2.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xl relative overflow-hidden group hover:border-[#FF5C3A]/30 transition-all">
-                <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-700 pointer-events-none">
-                  <Zap size={100} />
+             <div className="p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-[var(--bg-card)] border border(--border-color) shadow-xl relative overflow-hidden group hover:border-[#FF5C3A]/30 transition-all">
+                <div className="absolute top-0 right-0 p-6 md:p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-700 pointer-events-none">
+                  <Zap size={80} className="md:size-[100px]" />
                 </div>
-                <p className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest mb-2">Pruebas Totales</p>
+                <p className="text-[9px] md:text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest mb-2">Pruebas Totales</p>
                 <div className="flex items-end gap-3 mb-4">
-                  <span className="text-4xl font-[950] italic tracking-tighter text-[var(--text-primary)] leading-none">
+                  <span className="text-3xl md:text-4xl font-[950] italic tracking-tighter text-[var(--text-primary)] leading-none">
                     {analytics?.totalGenerations || 0}
                   </span>
-                  <span className="text-[11px] font-bold text-[var(--text-muted)] mb-1 uppercase tracking-tighter">Históricas</span>
+                  <span className="text-[9px] md:text-[11px] font-bold text-[var(--text-muted)] mb-1 uppercase tracking-tighter">Históricas</span>
                 </div>
                 <div className="flex items-center gap-2 text-emerald-500">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">IA Procesando ahora</span>
+                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">IA Activa</span>
                 </div>
                 <p className="mt-6 text-[11px] text-[var(--text-muted)] font-medium leading-relaxed">
                   Cada generación es una interacción directa de un cliente con tu marca. ¡Sigue así!

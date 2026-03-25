@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, DM_Sans, Space_Mono, Playfair_Display } from 'next/font/google';
 import './globals.css';
 
@@ -29,7 +29,7 @@ const playfair = Playfair_Display({
   display: 'swap',
 });
 
-const BASE_URL = 'https://lookitry.com';
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

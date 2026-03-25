@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,7 +14,9 @@ export function LandingPricingCard() {
 
   useEffect(() => {
     // 1. Cargar precios y TRM
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/payment-settings/public`)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    if (!apiUrl) return;
+    fetch(`${apiUrl}/api/payment-settings/public`)
       .then(r => r.ok ? r.json() : null)
       .then(d => {
         if (d?.landingPrice) setLandingPrice(d.landingPrice);

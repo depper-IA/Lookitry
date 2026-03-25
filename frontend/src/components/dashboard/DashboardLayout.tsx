@@ -258,45 +258,51 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
         {/* Header */}
         <header
-          className="flex-shrink-0 flex items-center justify-between px-4 sm:px-6 h-16 border-b"
+          className="flex-shrink-0 flex items-center justify-between px-4 md:px-8 h-16 md:h-20 border-b relative z-10"
           style={{
             backgroundColor: 'var(--bg-header)',
             borderColor: 'var(--border-color)',
             boxShadow: 'var(--shadow-header)',
           }}
         >
-          {/* Hamburger móvil */}
-          <button
-            className="lg:hidden p-2 rounded-lg -ml-1 flex-shrink-0"
-            style={{ color: 'var(--text-secondary)' }}
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Abrir menú"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          {/* Hamburger móvil + Logo (Solo visible en mobile) */}
+          <div className="flex lg:hidden items-center gap-3">
+            <button
+              className="p-2 rounded-xl bg-white/5 border border-white/5 text-[var(--text-secondary)] active:scale-95 transition-all"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Abrir menú"
+            >
+              <Menu size={20} />
+            </button>
+            <div className="w-8 h-8 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 shrink-0">
+               <Image src="/logo.svg" alt="L" width={18} height={18} priority />
+            </div>
+          </div>
 
           <h2
-            className="hidden lg:block font-jakarta font-bold text-base flex-shrink-0 tracking-tight"
+            className="hidden lg:block font-jakarta font-[950] text-lg flex-shrink-0 tracking-tight uppercase italic opacity-80"
             style={{ color: 'var(--text-primary)' }}
           >
             {navigation.find(n => n.href === pathname)?.name || 'Dashboard'}
           </h2>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 ml-auto min-w-0">
-            <LiveTryOnButton />
+          <div className="flex items-center gap-2 md:gap-4 ml-auto">
+            <div className="hidden sm:block">
+              <LiveTryOnButton />
+            </div>
             <SubscriptionBadge />
             <ThemeToggle />
           </div>
         </header>
 
         {/* Contenido de página */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-8 md:pt-10 scroll-smooth">
           <OnboardingWizard />
           <DashboardNotifications />
           <TrialBanner />
-          {children}
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {children}
+          </div>
         </main>
       </div>
     </div>
