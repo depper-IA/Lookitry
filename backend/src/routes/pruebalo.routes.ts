@@ -21,11 +21,11 @@ router.get('/synced-products', publicRateLimiter, pruebaloController.getSyncedPr
 // POST /api/pruebalo/sync-woocommerce - Sincronizar productos desde el plugin
 router.post('/sync-woocommerce', publicRateLimiter, pruebaloController.syncWooCommerceProducts);
 
-// GET /api/pruebalo/:brandSlug - Obtener configuración pública de marca y productos
-router.get('/:brandSlug', publicRateLimiter, pruebaloController.getBrandConfig);
-
 // GET /api/pruebalo/img-proxy - Proxy de imágenes
 router.get('/img-proxy', publicRateLimiter, pruebaloController.imgProxy);
+
+// GET /api/pruebalo/:brandSlug - Obtener configuración pública de marca y productos
+router.get('/:brandSlug', publicRateLimiter, pruebaloController.getBrandConfig);
 
 // POST /api/pruebalo/:brandSlug/generate - Generar imagen de try-on
 router.post(
