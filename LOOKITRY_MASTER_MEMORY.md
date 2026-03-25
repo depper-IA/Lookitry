@@ -12,6 +12,8 @@
 - **Diseño UI/UX (Pro Max)**: Aplicar SIEMPRE (`.agent/skills/ui-ux-pro-max/SKILL.md`) a cualquier componente frontend. Lookitry debe sentirse premium.
 - **Testing & QA**: Referir a (`.gemini/skills/testing/SKILL.md`) al tocar lógicas de pago (Wompi) o Try-On (n8n).
 - **Optimización de Desarrollo**: Referir a (`.agent/skills/dev-optimization/SKILL.md`) para flujos ultra rápidos.
+- **DESPLIEGUE (REGLA DE ORO HOSTINGER)**: **PROHIBIDO** el uso de SSH directo desde la terminal para despliegues. Se debe usar el flujo de **GitHub Actions** (`.github/workflows/deploy.yml`) mediante `git push origin main`. El script `scripts/_deploy_now.py` es solo para gestión de contenedores en casos de emergencia autorizados, pero la IA debe priorizar siempre el push de Git.
+- **HOSTINGER API**: Para gestión de VPS (reinicio, backups), usar el `HOSTINGER_API_TOKEN` en `.env` vía peticiones HTTP directas, NUNCA vía SSH.
 - **SEO & Metadata**: Referir a (`.kiro/skills/seo/SKILL.md`) al crear o editar páginas públicas (gestión de sitemap, robots, OG tags, JSON-LD estructurado).
 - **Database**: Usar `supabaseAdmin` solo en backend para bypass RLS. El frontend NUNCA debe exponer `SERVICE_KEY`.
 
