@@ -91,16 +91,41 @@ function lookitry_settings_page() {
                             data: { key: key },
                             success: function(response) {
                                 if (response.valid) {
-                                    var brandInfo = '<div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 15px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">';
+                                    var usage = response.usage || { current: 0, max: 0, remaining: 0 };
+                                    var brandInfo = '<div style="background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 15px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); overflow: hidden;">';
+                                    
+                                    // Header con Logo y Nombre
+                                    brandInfo += '<div style="display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid #f1f5f9;">';
                                     if (response.logo) {
-                                        brandInfo += '<img src="' + response.logo + '" style="height: 48px; width: 48px; object-fit: contain; border-radius: 8px; background: #f8fafc; padding: 4px; border: 1px solid #f1f5f9;">';
+                                        brandInfo += '<img src="' + response.logo + '" style="height: 40px; width: 40px; object-fit: contain; border-radius: 6px; background: #f8fafc; padding: 4px; border: 1px solid #f1f5f9;">';
                                     }
                                     brandInfo += '<div style="flex-grow: 1;">';
-                                    brandInfo += '<div style="color: #059669; font-weight: 600; display: flex; align-items: center; gap: 5px;"><span style="font-size: 1.2em;">✔</span> Conexión Establecida</div>';
-                                    brandInfo += '<div style="font-size: 14px; color: #475569; margin-top: 2px;">Marca: <strong>' + response.brandName + '</strong></div>';
-                                    brandInfo += '<div style="font-size: 12px; color: #64748b;">Plan Actual: <span style="text-transform: uppercase; font-weight: 500;">' + response.plan + '</span></div>';
+                                    brandInfo += '<div style="color: #059669; font-weight: 600; display: flex; align-items: center; gap: 5px; font-size: 14px;"><span style="font-size: 1.2em;">✔</span> Conexión Establecida</div>';
+                                    brandInfo += '<div style="font-size: 13px; color: #475569;">Marca: <strong>' + response.brandName + '</strong></div>';
                                     brandInfo += '</div>';
-                                    brandInfo += '<div><button type="button" id="lookitry-sync-btn" class="button" style="background: #FF5C3A; color: white; border: none; padding: 5px 15px; border-radius: 6px; cursor: pointer; font-weight: 500;">Sincronizar Catálogo</button></div>';
+                                    brandInfo += '<div style="text-align: right;">';
+                                    brandInfo += '<div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Plan ' + response.plan + '</div>';
+                                    brandInfo += '<div style="font-size: 12px; color: #1e293b; font-weight: 500;">' + usage.current + ' / ' + usage.max + ' productos</div>';
+                                    brandInfo += '</div>';
+                                    brandInfo += '</div>';
+
+                                    // Botón de Acción
+                                    brandInfo += '<div style="padding: 15px; background: #f8fafc; display: flex; justify-content: space-between; align-items: center;">';
+                                    brandInfo += '<div style="font-size: 12px; color: #64748b;">Selecciona qué productos habilitar en el probador.</div>';
+                                    brandInfo += '<button type="button" id="lookitry-load-catalog" class="button button-primary" style="background: #FF5C3A; color: white; border: none; padding: 5px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">Cargar Catálogo de WP</button>';
+                                    brandInfo += '</div>';
+
+                                    // Área de Selección (Oculta inicialmente)
+                                    brandInfo += '<div id="lookitry-sync-area" style="display: none; padding: 15px; border-top: 1px solid #f1f5f9; max-height: 400px; overflow-y: auto;">';
+                                    brandInfo += '<table class="wp-list-table widefat fixed striped" style="border: none; box-shadow: none;">';
+                                    brandInfo += '<thead><tr><td class="manage-column column-cb check-column" style="padding: 8px 10px;"><input type="checkbox" id="lookitry-select-all"></td><th>Producto</th><th>Categoría</th></tr></thead>';
+                                    brandInfo += '<tbody id="lookitry-product-list"></tbody>';
+                                    brandInfo += '</table>';
+                                    brandInfo += '<div style="margin-top: 15px; text-align: right; position: sticky; bottom: 0; background: white; padding-top: 10px; border-top: 1px solid #eee;">';
+                                    brandInfo += '<button type="button" id="lookitry-sync-selected" class="button" style="background: #0f172a; color: white; border: none; padding: 8px 20px; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">Sincronizar Seleccionados</button>';
+                                    brandInfo += '</div>';
+                                    brandInfo += '</div>';
+
                                     brandInfo += '</div>';
                                     $status.html(brandInfo).show();
                                 } else {
@@ -189,19 +214,17 @@ add_action( 'admin_footer', function() {
     ?>
     <script>
     jQuery(document).ready(function($) {
-        $(document).on('click', '#lookitry-sync-btn', function(e) {
+        var catalogData = [];
+
+        // 1. Cargar Catálogo de WP
+        $(document).on('click', '#lookitry-load-catalog', function(e) {
             e.preventDefault();
             var $btn = $(this);
-            var $status = $('#lookitry-connection-status');
-            var apiKey = $('#lookitry_api_key').val();
+            var $area = $('#lookitry-sync-area');
+            var $list = $('#lookitry-product-list');
 
-            if (!confirm('¿Seguro que quieres sincronizar tu catálogo con Lookitry? Esto actualizará tus productos existentes.')) {
-                return;
-            }
+            $btn.prop('disabled', true).text('Cargando...');
 
-            $btn.prop('disabled', true).text('Obteniendo catálogo...');
-
-            // 1. Obtener catálogo de WP
             $.ajax({
                 url: ajaxurl,
                 method: 'POST',
@@ -211,40 +234,84 @@ add_action( 'admin_footer', function() {
                 },
                 success: function(response) {
                     if (response.success) {
-                        var products = response.data;
-                        $btn.text('Enviando a Lookitry (' + products.length + ')...');
-
-                        // 2. Enviar a Lookitry API
-                        $.ajax({
-                            url: 'https://api.lookitry.com/api/pruebalo/sync-woocommerce',
-                            method: 'POST',
-                            headers: { 'x-api-key': apiKey },
-                            contentType: 'application/json',
-                            data: JSON.stringify({ products: products }),
-                            success: function(res) {
-                                if (res.success) {
-                                    alert('✓ Sincronización exitosa:\n- Creados: ' + res.result.created + '\n- Actualizados: ' + res.result.updated);
-                                    location.reload();
-                                } else {
-                                    alert('Error: ' + res.message);
-                                }
-                            },
-                            error: function(xhr) {
-                                var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error de red';
-                                alert('Error al enviar a Lookitry: ' + msg);
-                            },
-                            complete: function() {
-                                $btn.prop('disabled', false).text('Sincronizar Catálogo');
+                        catalogData = response.data;
+                        var html = '';
+                        catalogData.forEach(function(p, i) {
+                            html += '<tr>';
+                            html += '<td class="check-column" style="padding: 8px 10px;"><input type="checkbox" class="lookitry-prod-check" value="' + i + '"></td>';
+                            html += '<td style="display: flex; align-items: center; gap: 10px;">';
+                            if (p.image_url) {
+                                html += '<img src="' + p.image_url + '" style="height: 32px; width: 32px; object-fit: cover; border-radius: 4px;">';
                             }
+                            html += '<strong>' + p.name + '</strong>';
+                            html += '</td>';
+                            html += '<td>' + p.category + '</td>';
+                            html += '</tr>';
                         });
+                        $list.html(html);
+                        $area.slideDown();
+                        $btn.hide();
                     } else {
-                        alert('Error al obtener catálogo: ' + response.data);
-                        $btn.prop('disabled', false).text('Sincronizar Catálogo');
+                        alert('Error: ' + response.data);
                     }
                 },
-                error: function() {
-                    alert('Error en el servidor de WordPress.');
-                    $btn.prop('disabled', false).text('Sincronizar Catálogo');
+                complete: function() {
+                    $btn.prop('disabled', false).text('Cargar Catálogo');
+                }
+            });
+        });
+
+        // 2. Seleccionar Todo
+        $(document).on('change', '#lookitry-select-all', function() {
+            $('.lookitry-prod-check').prop('checked', $(this).is(':checked'));
+        });
+
+        // 3. Sincronizar Seleccionados
+        $(document).on('click', '#lookitry-sync-selected', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var apiKey = $('#lookitry_api_key').val();
+            var selectedIndices = [];
+            
+            $('.lookitry-prod-check:checked').each(function() {
+                selectedIndices.push($(this).val());
+            });
+
+            if (selectedIndices.length === 0) {
+                alert('Por favor selecciona al menos un producto.');
+                return;
+            }
+
+            var productsToSync = selectedIndices.map(function(idx) {
+                return catalogData[idx];
+            });
+
+            if (!confirm('¿Sincronizar ' + productsToSync.length + ' productos seleccionados?')) {
+                return;
+            }
+
+            $btn.prop('disabled', true).text('Sincronizando...');
+
+            $.ajax({
+                url: 'https://api.lookitry.com/api/pruebalo/sync-woocommerce',
+                method: 'POST',
+                headers: { 'x-api-key': apiKey },
+                contentType: 'application/json',
+                data: JSON.stringify({ products: productsToSync }),
+                success: function(res) {
+                    if (res.success) {
+                        alert('✓ Sincronización exitosa:\n- Creados: ' + res.result.created + '\n- Actualizados: ' + res.result.updated);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + res.message);
+                    }
+                },
+                error: function(xhr) {
+                    var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error de red';
+                    alert('Error: ' + msg);
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).text('Sincronizar Seleccionados');
                 }
             });
         });
