@@ -83,6 +83,22 @@
                 $close.trigger('click');
             }
         });
+
+        // Dynamic Resize listener from Next.js widget
+        window.addEventListener('message', function(e) {
+            if (e.data && e.data.type === 'TRYON_RESIZE') {
+                const newHeight = e.data.data.height;
+                if (newHeight && window.innerWidth > 600) {
+                    // Limitar a máximo 90vh en desktop
+                    const maxH = window.innerHeight * 0.9;
+                    const finalHeight = Math.min(newHeight, maxH);
+                    $('.lookitry-modal-container').css({
+                        'height': finalHeight + 'px',
+                        'transition': 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    });
+                }
+            }
+        });
     });
 
 })(jQuery);
