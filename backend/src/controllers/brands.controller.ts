@@ -50,6 +50,12 @@ export class BrandsController {
         });
       }
 
+      // Fetch current brand to merge JSONB objects like social_links safely
+      const currentBrand = await brandsService.getBrandById(req.brand.id);
+      if (!currentBrand) {
+        return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+      }
+
       const updates: UpdateBrandDto = {};
 
       // Solo permitir actualizar ciertos campos
@@ -89,7 +95,7 @@ export class BrandsController {
 
       // Campos de contacto / perfil
       const contactFields: (keyof UpdateBrandDto)[] = [
-        'phone', 'contact_name', 'address', 'city', 'country', 'nit', 'website',
+        'phone', 'contact_name', 'address', 'city', 'country', 'nit',
         'state_province', 'postal_code', 'billing_email',
       ];
       for (const field of contactFields) {
@@ -112,6 +118,16 @@ export class BrandsController {
           (updates as any)[field] = req.body[field];
         }
       }
+
+      // Merge website property safely into social_links JSONB
+      if (req.body.website !== undefined) {
+        const currentSocialLinks = updates.social_links || (currentBrand as any).social_links || {};
+        updates.social_links = {
+          ...currentSocialLinks,
+          website: req.body.website
+        };
+      }
+
       // Slug personalizado — solo Plan PRO
       if (req.body.slug !== undefined) {
         if (req.brand.plan !== 'PRO') {
