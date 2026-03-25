@@ -56,6 +56,8 @@ export interface PaymentSettings {
   // Pruebas y desarrollo
   bypass_ip_protection: boolean;
   ip_whitelist: string; // IPs separadas por coma que siempre pasan el check
+  maintenance_mode: boolean;
+  maintenance_message: string;
   updated_at?: string;
 }
 
@@ -103,6 +105,8 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   mini_landing_preview_seconds: 15,
   bypass_ip_protection: false,
   ip_whitelist: '',
+  maintenance_mode: false,
+  maintenance_message: 'Estamos realizando mejoras en nuestra plataforma. Volveremos pronto.',
 };
 
 export class PaymentSettingsService {
@@ -189,6 +193,8 @@ export class PaymentSettingsService {
     modalDescription: string;
     modalImageUrl: string;
     miniLandingPreviewSeconds: number;
+    maintenanceMode: boolean;
+    maintenanceMessage: string;
   }> {
     const s = await this.getSettings();
     // En modo producción usar la llave pública de producción
@@ -219,6 +225,8 @@ export class PaymentSettingsService {
       modalDescription: s.modal_description,
       modalImageUrl: s.modal_image_url,
       miniLandingPreviewSeconds: s.mini_landing_preview_seconds,
+      maintenanceMode: s.maintenance_mode,
+      maintenanceMessage: s.maintenance_message,
     };
   }
 }
