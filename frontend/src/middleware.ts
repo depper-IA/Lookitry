@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
@@ -37,6 +37,31 @@ export async function middleware(request: NextRequest) {
       }
     } catch (error) {
       console.error('[Middleware] Error resolviendo dominio:', error);
+    }
+  }
+
+  // ── Modo Mantenimiento ──────────────────────────────────────────────────────
+  // Solo verificar si no estamos en una ruta exceptuada (ya filtradas por matcher)
+  // y si no estamos ya en la página de mantenimiento o en el panel admin.
+  const isMaintenancePage = pathname === '/mantenimiento';
+  const isAdminPath = pathname.startsWith('/admin') || !!adminToken;
+
+  if (!isMaintenancePage && !isAdminPath) {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+      // Cachear internamente en el edge si es posible o simplemente fetch
+      const res = await fetch(`${apiUrl}/api/payment-settings/public`, {
+        next: { revalidate: 60 } // Intentar revalidar cada minuto si el runtime lo soporta
+      } as any);
+      
+      if (res.ok) {
+        const settings = await res.json();
+        if (settings.maintenanceMode) {
+          return NextResponse.redirect(new URL('/mantenimiento', request.url));
+        }
+      }
+    } catch (error) {
+      console.error('[Middleware] Error verificando mantenimiento:', error);
     }
   }
 
