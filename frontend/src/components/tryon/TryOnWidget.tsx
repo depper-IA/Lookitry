@@ -267,31 +267,43 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
       if (prev) URL.revokeObjectURL(prev);
       return preview;
     });
-    setSelfieFile(file); setStep('select');
+    setSelfieFile(file); 
+    
+    if (selectedProduct) {
+      // Si el usuario ya viene con un producto seleccionado (ej. plugin WooCommerce),
+      // saltamos la pantalla de selección y empezamos a generar inmediatamente.
+      handleGenerate(file, selectedProduct);
+    } else {
+      setStep('select');
+    }
   };
 
   const handleProductSelect = (product: Product) => setSelectedProduct(product);
 
-  const handleGenerate = async () => {
-    if (!selfieFile || !selectedProduct) return;
+  const handleGenerate = async (fileOverride?: File, productOverride?: Product) => {
+    const activeFile = fileOverride || selfieFile;
+    const activeProduct = productOverride || selectedProduct;
+    if (!activeFile || !activeProduct) return;
+    
     // Si ya fue generado, mostrar resultado guardado directamente
-    const cached = generatedProducts.get(selectedProduct.id);
+    const cached = generatedProducts.get(activeProduct.id);
     if (cached) {
       setResultImageUrl(cached);
       setStep('result');
       return;
     }
+    
     try {
       setStep('generating');
       setError(null);
       setErrorIsService(false);
-      const result = await tryonService.generate(brandSlug, { productId: selectedProduct.id, selfieFile });
+      const result = await tryonService.generate(brandSlug, { productId: activeProduct.id, selfieFile: activeFile });
       setResultImageUrl(result.imageUrl);
       setGenerationId(result.generationId ?? null);
       // Guardar en el mapa de generados
-      setGeneratedProducts(prev => new Map(prev).set(selectedProduct.id, result.imageUrl));
+      setGeneratedProducts(prev => new Map(prev).set(activeProduct.id, result.imageUrl));
       setStep('result');
-      if (isEmbed) window.parent?.postMessage({ type: 'TRYON_COMPLETE', data: { imageUrl: result.imageUrl, productId: selectedProduct.id, productName: selectedProduct.name, generationId: result.generationId, processingTime: result.processingTime } }, EMBED_ORIGIN);
+      if (isEmbed) window.parent?.postMessage({ type: 'TRYON_COMPLETE', data: { imageUrl: result.imageUrl, productId: activeProduct.id, productName: activeProduct.name, generationId: result.generationId, processingTime: result.processingTime } }, EMBED_ORIGIN);
     } catch (err: any) {
       const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
       setErrorIsService(isService);
@@ -469,7 +481,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
                         <p className="text-xs text-gray-400">Producto seleccionado</p>
                       </div>
                     </div>
-                    <button onClick={handleGenerate}
+                    <button onClick={() => handleGenerate()}
                       className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2"
                       style={{ backgroundColor: primaryColor }}>
                       {buttonText}
@@ -548,7 +560,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
               </div>
               {selectedProduct && (
                 <div>
-                  <button onClick={handleGenerate}
+                  <button onClick={() => handleGenerate()}
                     className="w-full py-4 rounded-2xl font-bold text-base shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2"
                     style={{ backgroundColor: primaryColor, color: secondaryColor }}>
                     {buttonText}
@@ -597,7 +609,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
                 {selectedProduct && (
                   <div className="sticky bottom-4 pt-2">
                     <button
-                      onClick={handleGenerate}
+                      onClick={() => handleGenerate()}
                       className="w-full py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
                       style={{ backgroundColor: primaryColor }}
                     >
@@ -647,7 +659,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
             <FriendlyProductSelector products={config.products} selected={selectedProduct} onSelect={handleProductSelect} primaryColor={primaryColor} generatedProducts={generatedProducts} />
             {selectedProduct && (
               <div className="sticky bottom-4 pt-2">
-                <button onClick={handleGenerate}
+                <button onClick={() => handleGenerate()}
                   className="w-full py-3.5 md:py-4 rounded-2xl font-bold text-white text-sm md:text-base shadow-[0_8px_20px_rgb(0,0,0,0.15)] hover:shadow-[0_12px_25px_rgb(0,0,0,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2"
                   style={{ backgroundColor: primaryColor }}>
                   {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
