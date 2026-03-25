@@ -95,11 +95,13 @@ function lookitry_settings_page() {
                                     if (response.logo) {
                                         brandInfo += '<img src="' + response.logo + '" style="height: 48px; width: 48px; object-fit: contain; border-radius: 8px; background: #f8fafc; padding: 4px; border: 1px solid #f1f5f9;">';
                                     }
-                                    brandInfo += '<div>';
+                                    brandInfo += '<div style="flex-grow: 1;">';
                                     brandInfo += '<div style="color: #059669; font-weight: 600; display: flex; align-items: center; gap: 5px;"><span style="font-size: 1.2em;">✔</span> Conexión Establecida</div>';
                                     brandInfo += '<div style="font-size: 14px; color: #475569; margin-top: 2px;">Marca: <strong>' + response.brandName + '</strong></div>';
                                     brandInfo += '<div style="font-size: 12px; color: #64748b;">Plan Actual: <span style="text-transform: uppercase; font-weight: 500;">' + response.plan + '</span></div>';
-                                    brandInfo += '</div></div>';
+                                    brandInfo += '</div>';
+                                    brandInfo += '<div><button type="button" id="lookitry-sync-btn" class="button" style="background: #FF5C3A; color: white; border: none; padding: 5px 15px; border-radius: 6px; cursor: pointer; font-weight: 500;">Sincronizar Catálogo</button></div>';
+                                    brandInfo += '</div>';
                                     $status.html(brandInfo).show();
                                 } else {
                                     $status.html('<div style="color: #d63638; padding: 12px; background: #fef2f2; border-radius: 8px; border: 1px solid #fee2e2; margin-top: 15px;">✘ Error: ' + response.message + '</div>').show();
@@ -137,3 +139,116 @@ function lookitry_settings_page() {
     </div>
     <?php
 }
+
+/**
+ * AJAX Handler: Get Product Catalog
+ */
+add_action( 'wp_ajax_lookitry_get_catalog', 'lookitry_ajax_get_catalog' );
+function lookitry_ajax_get_catalog() {
+    check_ajax_referer( 'lookitry_settings_nonce', 'nonce' );
+
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( 'No tienes permisos suficientes.' );
+    }
+
+    if ( ! class_exists( 'WooCommerce' ) ) {
+        wp_send_json_error( 'WooCommerce no está activo.' );
+    }
+
+    $products = wc_get_products( array(
+        'status' => 'publish',
+        'limit'  => 100, // Límite razonable por lote
+    ) );
+
+    $payload = array();
+    foreach ( $products as $product ) {
+        $image_id  = $product->get_image_id();
+        $image_url = $image_id ? wp_get_attachment_url( $image_id ) : '';
+        
+        // Obtener categorías
+        $categories = wp_get_post_terms( $product->get_id(), 'product_cat', array( 'fields' => 'names' ) );
+        $category = ! empty( $categories ) ? $categories[0] : 'General';
+
+        $payload[] = array(
+            'external_id' => (string) $product->get_id(),
+            'name'        => $product->get_name(),
+            'description' => $product->get_short_description() ?: $product->get_description(),
+            'image_url'   => $image_url,
+            'price'       => $product->get_price(),
+            'category'    => $category
+        );
+    }
+
+    wp_send_json_success( $payload );
+}
+
+/**
+ * Script for Sync
+ */
+add_action( 'admin_footer', function() {
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        $(document).on('click', '#lookitry-sync-btn', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var $status = $('#lookitry-connection-status');
+            var apiKey = $('#lookitry_api_key').val();
+
+            if (!confirm('¿Seguro que quieres sincronizar tu catálogo con Lookitry? Esto actualizará tus productos existentes.')) {
+                return;
+            }
+
+            $btn.prop('disabled', true).text('Obteniendo catálogo...');
+
+            // 1. Obtener catálogo de WP
+            $.ajax({
+                url: ajaxurl,
+                method: 'POST',
+                data: {
+                    action: 'lookitry_get_catalog',
+                    nonce: '<?php echo wp_create_nonce( "lookitry_settings_nonce" ); ?>'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var products = response.data;
+                        $btn.text('Enviando a Lookitry (' + products.length + ')...');
+
+                        // 2. Enviar a Lookitry API
+                        $.ajax({
+                            url: 'https://api.lookitry.com/api/pruebalo/sync-woocommerce',
+                            method: 'POST',
+                            headers: { 'x-api-key': apiKey },
+                            contentType: 'application/json',
+                            data: JSON.stringify({ products: products }),
+                            success: function(res) {
+                                if (res.success) {
+                                    alert('✓ Sincronización exitosa:\n- Creados: ' + res.result.created + '\n- Actualizados: ' + res.result.updated);
+                                    location.reload();
+                                } else {
+                                    alert('Error: ' + res.message);
+                                }
+                            },
+                            error: function(xhr) {
+                                var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error de red';
+                                alert('Error al enviar a Lookitry: ' + msg);
+                            },
+                            complete: function() {
+                                $btn.prop('disabled', false).text('Sincronizar Catálogo');
+                            }
+                        });
+                    } else {
+                        alert('Error al obtener catálogo: ' + response.data);
+                        $btn.prop('disabled', false).text('Sincronizar Catálogo');
+                    }
+                },
+                error: function() {
+                    alert('Error en el servidor de WordPress.');
+                    $btn.prop('disabled', false).text('Sincronizar Catálogo');
+                }
+            });
+        });
+    });
+    </script>
+    <?php
+});

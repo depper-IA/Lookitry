@@ -434,6 +434,39 @@ export class PruebaloController {
       plan: brand.plan 
     });
   });
+
+  /**
+   * POST /api/pruebalo/sync-woocommerce
+   * Sincroniza productos desde el plugin de WooCommerce
+   */
+  syncWooCommerceProducts = asyncHandler(async (req: Request, res: Response) => {
+    const apiKey = req.headers['x-api-key'] as string;
+    const { products } = req.body;
+
+    if (!apiKey) {
+      throw new ValidationError('Clave de API requerida');
+    }
+
+    if (!Array.isArray(products)) {
+      throw new ValidationError('Lista de productos inválida');
+    }
+
+    const brand = await brandsService.getBrandByApiKey(apiKey);
+    if (!brand) {
+      throw new ValidationError('Clave de API inválida');
+    }
+
+    const result = await productsService.bulkSyncProducts(brand.id, products);
+
+    // Invalidar caché tras sincronización
+    invalidateBrandConfigCache(brand.slug);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Sincronización completada',
+      result
+    });
+  });
 }
 
 /**
