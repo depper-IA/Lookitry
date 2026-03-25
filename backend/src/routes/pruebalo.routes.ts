@@ -12,6 +12,9 @@ router.get('/resolve-domain', publicRateLimiter, pruebaloController.resolveDomai
 // GET /api/pruebalo/validate-api-key - Validar clave de API desde el plugin
 router.get('/validate-api-key', publicRateLimiter, pruebaloController.validateApiKey);
 
+// POST /api/pruebalo/sync-woocommerce - Sincronizar productos desde el plugin
+router.post('/sync-woocommerce', publicRateLimiter, pruebaloController.syncWooCommerceProducts);
+
 // GET /api/pruebalo/:brandSlug - Obtener configuración pública de marca y productos
 router.get('/:brandSlug', publicRateLimiter, pruebaloController.getBrandConfig);
 

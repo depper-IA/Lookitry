@@ -300,4 +300,85 @@ export class ProductsService {
       throw new Error('Error al eliminar el producto: ' + error.message);
     }
   }
+
+  /**
+   * Sincronización masiva de productos (WooCommerce -> Lookitry)
+   */
+  async bulkSyncProducts(brandId: string, syncData: any[]): Promise<{ updated: number; created: number; skipped: number }> {
+    if (!Array.isArray(syncData) || syncData.length === 0) {
+      return { updated: 0, created: 0, skipped: 0 };
+    }
+
+    // 1. Obtener límites del plan
+    const { currentCount, limit } = await this.canCreateProduct(brandId);
+    let remainingSlots = Math.max(0, limit - currentCount);
+
+    // 2. Obtener productos existentes con external_id
+    const { data: existingProducts } = await supabaseAdmin
+      .from('products')
+      .select('external_id, id, is_active')
+      .eq('brand_id', brandId)
+      .not('external_id', 'is', null);
+
+    const existingMap = new Map();
+    (existingProducts || []).forEach(p => {
+      existingMap.set(String(p.external_id), { id: p.id, isActive: p.is_active });
+    });
+
+    let createdCount = 0;
+    let updatedCount = 0;
+
+    // 3. Preparar datos para upsert
+    const upsertData = syncData.map(item => {
+      const extId = String(item.external_id);
+      const exists = existingMap.get(extId);
+      
+      let isActive = true;
+      if (exists) {
+        updatedCount++;
+        isActive = exists.isActive; // Mantener estado actual
+      } else {
+        if (remainingSlots > 0) {
+          isActive = true;
+          remainingSlots--;
+        } else {
+          isActive = false;
+        }
+        createdCount++;
+      }
+
+      return {
+        brand_id: brandId,
+        external_id: extId,
+        name: item.name?.trim() || 'Producto sin nombre',
+        description: item.description?.trim() || null,
+        image_url: item.image_url?.trim() || '',
+        category: item.category?.trim() || 'General',
+        price: item.price ? parseInt(String(item.price)) : null,
+        is_active: isActive,
+        updated_at: new Date().toISOString()
+      };
+    }).filter(p => p.image_url !== '');
+
+    if (upsertData.length === 0) {
+      return { created: 0, updated: 0, skipped: syncData.length };
+    }
+
+    // 4. Upsert masivo
+    const { error } = await supabaseAdmin
+      .from('products')
+      .upsert(upsertData, { 
+        onConflict: 'brand_id,external_id'
+      });
+
+    if (error) {
+      throw new Error('Error en sincronización masiva: ' + error.message);
+    }
+
+    return {
+      created: createdCount,
+      updated: updatedCount,
+      skipped: syncData.length - upsertData.length
+    };
+  }
 }
