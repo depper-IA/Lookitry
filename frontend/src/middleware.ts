@@ -111,14 +111,9 @@ export async function middleware(request: NextRequest) {
 
     const baseCsp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob: 'self'; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co; font-src 'self' https://fonts.gstatic.com; media-src 'self';";
 
-    if (isAllowed) {
-      // Si el origen está en la lista blanca de la BD (sitio web de algún cliente)
-      response.headers.set('Content-Security-Policy', `frame-ancestors 'self' ${originUrl}; ${baseCsp}`);
-    } else {
-      // Bloquear si intenta embeber desde un dominio no listado
-      // Permitimos 'self' por si nosotros mismos lo cargamos
-      response.headers.set('Content-Security-Policy', `frame-ancestors 'self'; ${baseCsp}`);
-    }
+    // ✅ FIX: Permitir siempre que el widget sea embebido (frame-ancestors *)
+    // Esto resuelve el problema de "frame-ancestors 'self'" que bloqueaba el plugin de WordPress
+    response.headers.set('Content-Security-Policy', `frame-ancestors *; ${baseCsp}`);
 
     // Configurar permisos de HW/SO con la sintaxis moderna
     response.headers.set('Permissions-Policy', 'camera=*, clipboard-write=*');

@@ -57,8 +57,7 @@
     position: relative;
     width: 90%;
     max-width: 480px;
-    height: auto;
-    min-height: 480px;
+    height: 650px; /* Altura inicial estable para evitar estiramiento antes del resize */
     max-height: 90vh;
     background: #000;
     border-radius: 20px;
