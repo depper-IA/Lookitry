@@ -138,6 +138,46 @@ export class PruebaloController {
   });
 
   /**
+   * GET /api/pruebalo/allowed-origins
+   * Devuelve una lista de todos los dominios registrados en "Sitio Web" (social_links.website).
+   * Usado por el Edge Middleware para la Lista Blanca Dinámica de iframes.
+   */
+  getAllowedOrigins = asyncHandler(async (req: Request, res: Response) => {
+    const { data, error } = await supabaseAdmin
+      .from('brands')
+      .select('social_links');
+
+    if (error) {
+      console.error('[getAllowedOrigins] Error fetch:', error);
+      return res.status(500).json({ origins: [] });
+    }
+
+    const origins = new Set<string>();
+    
+    // Siempre permitimos locahost para pruebas y los dominios de la misma plataforma
+    origins.add('http://localhost:3000');
+    origins.add('https://lookitry.com');
+    origins.add('https://www.lookitry.com');
+
+    data?.forEach(brand => {
+      const website = brand.social_links?.website;
+      if (website && typeof website === 'string') {
+        let cleanSite = website.trim().toLowerCase();
+        // Asegurar que tenga protocolo para que URL() no falle
+        if (!cleanSite.startsWith('http')) {
+          cleanSite = 'https://' + cleanSite;
+        }
+        try {
+          const url = new URL(cleanSite);
+          origins.add(url.origin);
+        } catch(e) {}
+      }
+    });
+
+    return res.status(200).json({ origins: Array.from(origins) });
+  });
+
+  /**
    * POST /api/pruebalo/:brandSlug/generate
    * Endpoint público para generar una imagen de try-on
    * No requiere autenticación
