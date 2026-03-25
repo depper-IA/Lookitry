@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -112,15 +112,26 @@ export default function ProfilePage() {
       setPhone(brand.phone || '');
       setAddress(brand.address || '');
       setCity(brand.city || '');
-      setStateProvince(brand.stateProvince || '');
       setPostalCode(brand.postalCode || '');
       setNit(brand.nit || '');
       setBillingEmail(brand.billingEmail || brand.email || '');
 
       // Try to find country code by name
       if (brand.country) {
-        const found = countries.find(c => c.name === brand.country);
-        if (found) setCountryCode(found.isoCode);
+        const foundCountry = countries.find(c => c.name === brand.country);
+        if (foundCountry) {
+          setCountryCode(foundCountry.isoCode);
+          
+          // Try to find state code by name once country is set
+          if (brand.stateProvince) {
+            const stateName = brand.stateProvince;
+            setStateProvince(stateName);
+            const foundState = State.getStatesOfCountry(foundCountry.isoCode).find(s => s.name === stateName);
+            if (foundState) {
+              setStateCode(foundState.isoCode);
+            }
+          }
+        }
       }
     }
   }, [brand, countries]);
@@ -264,7 +275,7 @@ export default function ProfilePage() {
           {/* PLAN CARD PREMIUM (METALLIC) */}
           <motion.div
             variants={itemVariants}
-            className="bg-black text-white rounded-[3rem] p-10 space-y-6 relative overflow-hidden shadow-3xl shadow-black/80 ring-1 ring-white/10"
+            className="bg-zinc-900 text-white rounded-[3rem] p-10 space-y-6 relative overflow-hidden shadow-3xl ring-1 ring-white/10"
           >
              <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-[#FF5C3A] blur-[80px] opacity-20" />
              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-500 blur-[80px] opacity-20" />
@@ -333,7 +344,7 @@ export default function ProfilePage() {
                         <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
                         <input
                           type="text" value={name} onChange={e => setName(e.target.value)} required
-                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
                           placeholder="Ej: Wilkiedevs Couture"
                         />
                       </div>
@@ -344,7 +355,18 @@ export default function ProfilePage() {
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
                         <input
                           type="email" value={email} disabled
-                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-base)] border-2 border-transparent rounded-2xl font-bold text-sm tracking-tight outline-none text-[var(--text-primary)] cursor-not-allowed"
+                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-base)] border-2 border-transparent rounded-2xl font-medium text-sm tracking-tight outline-none text-[var(--text-primary)] cursor-not-allowed"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Teléfono de Contacto</label>
+                      <div className="relative group">
+                        <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
+                        <input
+                          type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                          placeholder="Ej: +57 300 123 4567"
                         />
                       </div>
                     </div>
@@ -358,7 +380,7 @@ export default function ProfilePage() {
                       <select 
                         value={countryCode} 
                         onChange={e => { setCountryCode(e.target.value); setStateCode(''); setCity(''); }}
-                        className="w-full px-5 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)] appearance-none"
+                        className="w-full px-5 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)] appearance-none"
                       >
                          <option value="">Seleccionar...</option>
                          {countries.map(c => <option key={c.isoCode} value={c.isoCode}>{c.name}</option>)}
@@ -370,7 +392,7 @@ export default function ProfilePage() {
                         value={stateCode} 
                         onChange={e => { setStateCode(e.target.value); setCity(''); setStateProvince(states.find(s => s.isoCode === e.target.value)?.name || ''); }}
                         disabled={!countryCode}
-                        className="w-full px-5 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)] appearance-none disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="w-full px-5 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)] appearance-none disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                          <option value="">Seleccionar...</option>
                          {states.map(s => <option key={s.isoCode} value={s.isoCode}>{s.name}</option>)}
@@ -382,7 +404,7 @@ export default function ProfilePage() {
                         value={city} 
                         onChange={e => setCity(e.target.value)}
                         disabled={!stateCode}
-                        className="w-full px-5 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)] appearance-none disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="w-full px-5 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)] appearance-none disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                          <option value="">Seleccionar...</option>
                          {cities.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
@@ -398,7 +420,7 @@ export default function ProfilePage() {
                       <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
                       <input
                         type="text" value={address} onChange={e => setAddress(e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                        className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
                         placeholder="Calle, Número, Oficina/Local"
                       />
                     </div>
@@ -437,7 +459,7 @@ export default function ProfilePage() {
                         <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
                         <input
                           type="text" value={nit} onChange={e => setNit(e.target.value)}
-                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
                           placeholder="Número de identificación tributaria"
                         />
                       </div>
@@ -448,7 +470,7 @@ export default function ProfilePage() {
                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
                         <input
                           type="email" value={billingEmail} onChange={e => setBillingEmail(e.target.value)}
-                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
                           placeholder="Donde lleguen los recibos..."
                         />
                       </div>
@@ -457,9 +479,9 @@ export default function ProfilePage() {
 
                   <div className="space-y-3 text-center pt-20 pb-10">
                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-4">Plan Activo</p>
-                    <div className="inline-block px-10 py-6 bg-gradient-to-br from-zinc-900 to-black rounded-[2.5rem] border border-white/5 shadow-2xl">
-                      <span className="text-3xl font-[950] tracking-tighter italic uppercase text-white">Lookitry <span className="text-[#FF5C3A]">{brand?.plan}</span></span>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-2">Próximo vencimiento: {formatDate(brand?.subscriptionEndDate)}</p>
+                    <div className="inline-block px-12 py-8 bg-zinc-50 rounded-[3rem] border border-zinc-200/60 shadow-deep">
+                      <span className="text-4xl font-[950] tracking-tighter italic uppercase text-zinc-800">Lookitry <span className="text-[#FF5C3A]">{brand?.plan}</span></span>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mt-3">Próximo vencimiento: {formatDate(brand?.subscriptionEndDate)}</p>
                     </div>
                   </div>
 
@@ -496,7 +518,7 @@ export default function ProfilePage() {
                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
                            <input
                               type={showCurrent ? 'text' : 'password'} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required
-                              className="w-full pl-12 pr-12 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                              className="w-full pl-12 pr-12 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
                            />
                            <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[#FF5C3A] transition-colors">
                               {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -511,7 +533,7 @@ export default function ProfilePage() {
                               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
                               <input
                                  type={showNew ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} required
-                                 className="w-full pl-12 pr-12 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                                 className="w-full pl-12 pr-12 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
                               />
                               <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[#FF5C3A] transition-colors">
                                  {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -524,7 +546,7 @@ export default function ProfilePage() {
                               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
                               <input
                                  type={showConfirm ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required
-                                 className="w-full pl-12 pr-12 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-bold text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                                 className="w-full pl-12 pr-12 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
                               />
                               <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[#FF5C3A] transition-colors">
                                  {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}

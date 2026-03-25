@@ -25,17 +25,40 @@ import {
 import { uploadService } from '@/services/upload.service';
 import { EmbedSection } from './EmbedSection';
 
-const Tooltip = ({ text }: { text: string }) => (
-  <div className="group relative inline-block ml-1.5">
-    <div className="w-4 h-4 rounded-full bg-[var(--bg-input)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[#FF5C3A] cursor-help transition-all shadow-sm">
-      <Info className="w-2.5 h-2.5" />
+const Tooltip = ({ text }: { text: string }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative inline-block ml-1.5">
+      <button 
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+        className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all shadow-sm ${
+          isOpen 
+            ? 'bg-[#FF5C3A] border-[#FF5C3A] text-white scale-110 shadow-[#FF5C3A]/20' 
+            : 'bg-[var(--bg-input)] border-[var(--border-color)] text-[var(--text-muted)] hover:text-[#FF5C3A] cursor-help'
+        }`}
+      >
+        {isOpen ? <X className="w-2.5 h-2.5" strokeWidth={4} /> : <Info className="w-2.5 h-2.5" />}
+      </button>
+      
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10, x: '-50%', scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, x: '-50%', scale: 1 }}
+            exit={{ opacity: 0, y: 10, x: '-50%', scale: 0.95 }}
+            className="absolute bottom-full left-1/2 mb-3 w-64 p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-2xl z-50 pointer-events-none border-b-4 border-b-[#FF5C3A]"
+          >
+            <p className="text-[10px] leading-relaxed text-[var(--text-primary)] font-black uppercase tracking-wider italic">{text}</p>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#FF5C3A]"></div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 shadow-2xl z-50 pointer-events-none border-b-4 border-b-[#FF5C3A]">
-      <p className="text-[10px] leading-relaxed text-[var(--text-primary)] font-black uppercase tracking-wider italic">{text}</p>
-      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#FF5C3A]"></div>
-    </div>
-  </div>
-);
+  );
+};
 
 interface SettingsFormProps {
   brand: Brand;
@@ -143,7 +166,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
     logo: brand.logo || '',
     primaryColor: brand.primaryColor || '#FF5C3A',
     secondaryColor: brand.secondaryColor || '#FFFFFF',
-    widgetTemplate: brand.widgetTemplate || 'bare',
+    widgetTemplate: isPro ? (brand.widgetTemplate || 'bare') : 'bare',
     buttonText: brand.buttonText || 'Probarme esto',
     welcomeMessage: brand.welcomeMessage || '',
   });
@@ -184,8 +207,8 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
 
   const tab_items = [
     { id: 'pro', icon: <Sparkles size={18} />, label: 'Lookitry Pro', pro: true },
-    { id: 'general', icon: <Settings size={18} />, label: 'Esencia' },
-    { id: 'appearance', icon: <Palette size={18} />, label: 'Estética' },
+    { id: 'general', icon: <Settings size={18} />, label: 'Información' },
+    { id: 'appearance', icon: <Palette size={18} />, label: 'Apariencia' },
     { id: 'embed', icon: <Code2 size={18} />, label: 'Integración' },
   ];
 
@@ -224,7 +247,6 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
           })}
         </div>
 
-        {/* ── PREVIEW COMPONENT (BELOW TABS) ── */}
         <AnimatePresence>
           {activeTab !== 'embed' && (
             <motion.div 
@@ -234,7 +256,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                className="bg-[var(--bg-card)] p-8 rounded-[3rem] border border-[var(--border-color)] shadow-2xl space-y-8 relative overflow-hidden group/preview"
             >
                <div className="flex justify-between items-center relative z-10">
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] italic">Vista Previa Pro</h4>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] italic">Vista Previa</h4>
                   <div className="flex gap-2">
                     <div className="w-2 h-2 rounded-full bg-[#FF5C3A]/40 animate-pulse" />
                     <div className="w-2 h-2 rounded-full bg-indigo-500/40" />
@@ -264,7 +286,6 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                      </div>
                   </div>
                   
-                  {/* Simulation Overlay */}
                   <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-white/5 to-transparent flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-all duration-700">
                      <div className="px-5 py-2 bg-[var(--bg-card)]/60 backdrop-blur-xl rounded-full text-[8px] text-white font-black uppercase tracking-[0.2em] border border-white/10 shadow-4xl">Modo En Vivo</div>
                   </div>
@@ -282,7 +303,6 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
         </AnimatePresence>
       </div>
 
-      {/* ── CONTENT AREA (RIGHT) ── */}
       <div className="lg:col-span-3">
          <AnimatePresence mode="wait">
            {activeTab === 'general' && (
@@ -364,7 +384,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
                  <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><Palette className="w-6 h-6 text-[#FF5C3A]" /></div>
                  <div>
-                   <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter">Atmósfera Visual</h3>
+                   <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter">Personalización de Diseño</h3>
                    <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-[0.2em] opacity-60">Plantilla, colores y apariencia</p>
                  </div>
                </div>
@@ -397,7 +417,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-10 border-t border-[var(--border-color)]">
                     <div className="space-y-6">
-                       <label className={labelStyle}>Vibración Primaria (Accent)</label>
+                       <label className={labelStyle}>Color Principal (Acento)</label>
                        <div className="flex gap-4 flex-wrap">
                           {COLOR_PRESETS.map(c => (
                             <button key={c} onClick={() => setFormData(p => ({ ...p, primaryColor: c }))} className={`w-12 h-12 rounded-2xl border-4 transition-all hover:scale-110 active:scale-95 ${formData.primaryColor === c ? 'border-white ring-8 ring-[#FF5C3A]/20 scale-110 z-10 shadow-4xl' : 'border-transparent opacity-60'}`} style={{ background: c }} />
@@ -409,7 +429,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                        </div>
                     </div>
                     <div className="space-y-6">
-                       <label className={labelStyle}>Atmósfera de Fondo (Canvas)</label>
+                       <label className={labelStyle}>Color de Fondo (Canvas)</label>
                        <div className="flex gap-4 flex-wrap">
                           {BG_PRESETS.map(c => (
                             <button key={c} onClick={() => setFormData(p => ({ ...p, secondaryColor: c }))} className={`w-12 h-12 rounded-2xl border-2 transition-all hover:scale-110 active:scale-95 ${formData.secondaryColor === c ? 'border-[#FF5C3A] ring-4 ring-[#FF5C3A]/20 scale-110 z-10 shadow-2xl' : 'border-[var(--border-color)]'}`} style={{ background: c }} />
@@ -422,7 +442,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                <div className="pt-10 flex justify-end relative z-10 border-t border-[var(--border-color)]">
                  <button onClick={handleSubmit} className="px-12 py-5 bg-[#FF5C3A] text-white rounded-[2rem] font-[950] italic uppercase tracking-widest shadow-4xl shadow-[#FF5C3A]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
                    {isSubmitting ? <Zap className="w-5 h-5 animate-pulse" /> : <Sparkles className="w-5 h-5" />}
-                   Sellar Estética
+                   Guardar Diseño
                  </button>
                </div>
              </motion.section>
@@ -441,32 +461,63 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
 
                {!isPro ? (
                  <div className="pt-8 space-y-10 relative z-10">
-                    <div className="p-12 rounded-[4rem] bg-gradient-to-br from-zinc-900 to-black text-white relative overflow-hidden shadow-4xl border border-white/5 group">
-                       <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-1000"><Zap size={250} strokeWidth={4} className="text-[#FF5C3A]" /></div>
-                       <div className="relative z-10 space-y-10">
-                          <div className="space-y-4">
-                            <h4 className="text-4xl font-[950] italic uppercase tracking-tighter leading-none">Domina cada <br /><span className="text-[#FF5C3A]">Píxel de tu Marca.</span></h4>
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Evolución genética para marcas de alto impacto</p>
-                          </div>
-                          <ul className="space-y-5">
-                             {[
-                               'Slug de URL personalizado (/marca/tu-nombre)',
-                               'Mensajes de bienvenida editoriales custom',
-                               'Llamadas a la acción (CTA) 100% dinámicos',
-                               'Templates Side Panel y Bold Impact desbloqueados',
-                               'Prioridad máxima en el motor de IA (Zero Wait)',
-                               'Hasta 15 productos activos en catálogo'
-                             ].map((f, i) => (
-                               <li key={i} className="flex items-center gap-4 text-[10px] font-black uppercase tracking-tight opacity-80 leading-relaxed">
-                                  <div className="w-6 h-6 rounded-full bg-[#FF5C3A]/20 flex items-center justify-center shrink-0 border border-[#FF5C3A]/30">
-                                     <Check className="w-3 h-3 text-[#FF5C3A]" strokeWidth={5} />
-                                  </div>
-                                  {f}
-                               </li>
-                             ))}
-                          </ul>
-                          <button onClick={() => window.location.href='/dashboard/subscription'} className="w-full py-7 bg-[#FF5C3A] text-white rounded-[2.5rem] font-[950] uppercase tracking-[0.2em] text-[11px] shadow-[0_25px_50px_rgba(255,92,58,0.4)] hover:scale-[1.02] transition-all active:scale-95 border-t border-white/20">Activar Potencial Pro</button>
-                       </div>
+                    <div className="relative overflow-hidden rounded-[4rem] border border-zinc-100 bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] group">
+                        {/* Mesh Gradient Decorativo de Lujo */}
+                        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-[#FF5C3A]/10 via-transparent to-transparent rounded-full -mr-48 -mt-48 blur-3xl transition-transform duration-1000 group-hover:scale-110" />
+                        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-[#6366F1]/5 via-transparent to-transparent rounded-full -ml-32 -mb-32 blur-3xl transition-transform duration-1000 group-hover:scale-110" />
+                        
+                        <div className="relative z-10 p-16 flex flex-col lg:flex-row gap-16 items-center">
+                           <div className="flex-1 space-y-12">
+                              <div className="space-y-6">
+                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF5C3A]/10 rounded-full border border-[#FF5C3A]/20">
+                                    <Sparkles className="w-3 h-3 text-[#FF5C3A]" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF5C3A]">Membresía Exclusive</span>
+                                 </div>
+                                 <h4 className="text-6xl font-[1000] text-zinc-900 italic uppercase tracking-tighter leading-[0.85]">
+                                    Lookitry <br />
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF5C3A] to-[#FF8C70]">Pro Experience</span>
+                                 </h4>
+                                 <p className="max-w-md text-sm font-medium text-zinc-500 leading-relaxed uppercase tracking-wider">
+                                    Desbloquea el potencial total de tu marca con herramientas de personalización de alto impacto y procesamiento prioritario.
+                                 </p>
+                              </div>
+
+                              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                                 {[
+                                   'Slug de URL personalizado',
+                                   'Mensajes editoriales custom',
+                                   'CTA 100% dinámicos',
+                                   'Templates Side Panel y Bold',
+                                   'Prioridad máxima IA (Zero Wait)',
+                                   'Hasta 15 productos activos'
+                                 ].map((f, i) => (
+                                   <li key={i} className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-zinc-400 group/item hover:text-[#FF5C3A] transition-colors">
+                                      <div className="w-5 h-5 rounded-lg bg-zinc-50 flex items-center justify-center border border-zinc-100 group-hover/item:border-[#FF5C3A]/30 group-hover/item:bg-[#FF5C3A]/5 transition-all">
+                                         <Check className="w-2.5 h-2.5" strokeWidth={5} />
+                                      </div>
+                                      {f}
+                                   </li>
+                                 ))}
+                              </ul>
+                           </div>
+
+                           <div className="w-full lg:w-[320px] shrink-0 space-y-8">
+                              <div className="p-8 rounded-[3rem] bg-zinc-50 border border-zinc-100 space-y-6 shadow-inner">
+                                 <div className="space-y-2">
+                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest text-center">Inversión Mensual</p>
+                                    <div className="flex items-end justify-center gap-2">
+                                       <span className="text-4xl font-[1000] text-zinc-900">$250k</span>
+                                       <span className="text-[10px] font-black text-zinc-400 uppercase mb-2">COP / Mes</span>
+                                    </div>
+                                 </div>
+                                 <button onClick={() => window.location.href='/dashboard/subscription'} className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl hover:bg-[#FF5C3A] hover:scale-[1.02] transition-all active:scale-95 group/btn flex items-center justify-center gap-3">
+                                    Suscribirme Ahora
+                                    <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                                 </button>
+                              </div>
+                              <p className="text-center text-[9px] font-bold text-zinc-300 uppercase tracking-tight">Sin compromisos • Cancela cuando quieras</p>
+                           </div>
+                        </div>
                     </div>
                  </div>
                ) : (
@@ -489,8 +540,8 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                        <div className="flex items-center gap-5">
                           <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A] flex items-center justify-center text-white shadow-lg"><Check size={20} strokeWidth={4} /></div>
                           <div>
-                            <p className="text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)] leading-none italic">Sincronización Pro Activa</p>
-                            <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase mt-1 opacity-50 tracking-tighter">Tu marca está operando a máxima potencia</p>
+                            <p className="text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)] leading-none italic">Plan Pro Activado</p>
+                            <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase mt-1 opacity-50 tracking-tighter">Disfrutas de todas las ventajas exclusivas</p>
                           </div>
                        </div>
                        <button onClick={handleSubmit} className="px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-card)] rounded-2xl text-[10px] font-950 uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl">Guardar</button>

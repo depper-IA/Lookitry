@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -6,6 +6,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { AdminNotifications } from '@/components/admin/AdminNotifications';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Building2, CreditCard, TrendingUp, History, Settings2, Tag, PieChart, MousePointer2, Layout, Megaphone, Bell, Clock, ShieldCheck, User } from 'lucide-react';
 
 const adminNav = [
   {
@@ -60,6 +62,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [adminUser, setAdminUser]         = useState<any>(null);
   const [loading, setLoading]             = useState(true);
   const [sidebarOpen, setSidebarOpen]     = useState(false);
+  const [isCollapsed, setIsCollapsed]     = useState(false);
   const [feedbackCount, setFeedbackCount] = useState(0);
   const [notifCount, setNotifCount]       = useState(0);
 
@@ -154,47 +157,66 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const sidebarContent = (
-    <div className="flex flex-col h-full" style={{ backgroundColor: '#0a0a0a', borderRight: '1px solid #1a1a1a' }}>
-      {/* Logo */}
-      <div className="flex items-center justify-between px-5 h-[60px] flex-shrink-0" style={{ borderBottom: '1px solid #1a1a1a' }}>
-        <Link href="/admin/dashboard" className="flex items-center gap-2.5">
-          <Image src="/logo.svg" alt="Lookitry" width={26} height={26} className="object-contain flex-shrink-0" priority />
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-jakarta font-extrabold text-[15px] leading-none text-white tracking-tight">
-              Look<span style={{ color: '#FF5C3A' }}>itry</span>
-            </span>
-            <span
-              className="text-[9px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded"
-              style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.2)' }}
-            >
-              Admin
-            </span>
+    <div className="flex flex-col h-full bg-[#0a0a0a] transition-all duration-300">
+      {/* Logo Area */}
+      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-6 h-[80px] flex-shrink-0 bg-[#0a0a0a]`}>
+        <Link href="/admin/dashboard" className="flex items-center gap-3 group">
+          <div className="relative w-10 h-10 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 group-hover:border-[#FF5C3A]/50 transition-all duration-500 shadow-lg shrink-0">
+            <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain group-hover:rotate-12 transition-transform duration-500" priority />
           </div>
+          {!isCollapsed && (
+            <motion.div 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-baseline gap-1.5"
+            >
+              <span className="font-jakarta font-[950] text-lg leading-none text-white tracking-tighter uppercase italic">
+                Look<span style={{ color: '#FF5C3A' }}>itry</span>
+              </span>
+              <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20">
+                Admin
+              </span>
+            </motion.div>
+          )}
         </Link>
+        
+        {/* Toggle Collapse Desktop */}
+        {!isCollapsed && (
+          <button
+            onClick={() => setIsCollapsed(true)}
+            className="hidden lg:flex p-1.5 rounded-lg text-gray-600 hover:text-white hover:bg-white/5 transition-all"
+            title="Colapsar menú"
+          >
+            <ChevronLeft size={18} />
+          </button>
+        )}
+        
+        {/* Botón cerrar en móvil */}
         <button
-          className="lg:hidden p-1.5 rounded-lg transition-colors cursor-pointer"
-          style={{ color: '#555' }}
+          className="lg:hidden p-2 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all"
           onClick={() => setSidebarOpen(false)}
           aria-label="Cerrar menú"
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#fff'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#555'; }}
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
+      <nav className={`flex-1 ${isCollapsed ? 'px-3' : 'px-4'} py-6 space-y-7 overflow-y-auto no-scrollbar`}>
         {adminNav.map((group, gi) => (
-          <div key={gi}>
-            {group.label && (
-              <p className="px-3 mb-1.5 text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: '#3a3a3a' }}>
+          <div key={gi} className="space-y-2">
+            {!isCollapsed && group.label && (
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="px-4 text-[9px] font-black uppercase tracking-[0.25em] text-zinc-600"
+              >
                 {group.label}
-              </p>
+              </motion.p>
             )}
-            <div className="space-y-0.5">
+            <div className="space-y-1.5">
               {group.items.map(item => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                 const isNotifications = item.href === '/admin/notifications';
@@ -204,31 +226,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     key={item.href}
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 cursor-pointer"
-                    style={{
-                      backgroundColor: isActive ? '#FF5C3A' : 'transparent',
-                      color: isActive ? '#ffffff' : '#666',
-                    }}
-                    onMouseEnter={e => {
-                      if (!isActive) {
-                        (e.currentTarget as HTMLElement).style.backgroundColor = '#161616';
-                        (e.currentTarget as HTMLElement).style.color = '#ccc';
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (!isActive) {
-                        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-                        (e.currentTarget as HTMLElement).style.color = '#666';
-                      }
-                    }}
+                    title={isCollapsed ? item.label : ''}
+                    className={`flex items-center ${isCollapsed ? 'justify-center py-4' : 'gap-3 px-5 py-3.5'} rounded-2xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 group
+                      ${isActive 
+                        ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' 
+                        : 'text-gray-500 hover:text-white hover:bg-white/5'
+                      }`}
                   >
-                    <item.icon className="w-[15px] h-[15px] flex-shrink-0" />
-                    <span className="flex-1 leading-none">{item.label}</span>
-                    {badge > 0 && (
-                      <span
-                        className="text-[9px] font-bold px-1.5 py-0.5 rounded-full text-white flex-shrink-0 leading-none"
-                        style={{ backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : '#ef4444' }}
+                    <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-700 group-hover:text-[#FF5C3A]'}`} />
+                    {!isCollapsed && (
+                      <motion.span 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex-1 leading-none"
                       >
+                        {item.label}
+                      </motion.span>
+                    )}
+                    {badge > 0 && (
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0 leading-none ${isActive ? 'bg-white/20 text-white' : 'bg-red-500 text-white shadow-lg shadow-red-500/20'}`}>
                         {badge > 99 ? '99+' : badge}
                       </span>
                     )}
@@ -241,42 +257,54 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </nav>
 
       {/* User footer */}
-      <div className="px-3 py-3 flex-shrink-0" style={{ borderTop: '1px solid #1a1a1a' }}>
-        <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg" style={{ backgroundColor: '#111' }}>
+      <div className={`p-4 flex-shrink-0 transition-all duration-300`}>
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 p-3 rounded-[2.5rem] bg-white/5 border border-white/5'} shadow-inner group/profile transition-all duration-300`}>
           <Link
             href="/admin/profile"
             onClick={() => setSidebarOpen(false)}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0 cursor-pointer transition-opacity hover:opacity-80"
-            style={{ backgroundColor: '#FF5C3A' }}
+            className="w-11 h-11 rounded-2xl overflow-hidden flex items-center justify-center text-[13px] font-black text-white flex-shrink-0 bg-[#FF5C3A] shadow-lg group-hover/profile:scale-105 transition-transform duration-500"
             title="Mi perfil"
           >
             {adminUser?.name?.charAt(0)?.toUpperCase() ?? 'A'}
           </Link>
-          <div className="flex-1 min-w-0">
-            <Link
-              href="/admin/profile"
-              onClick={() => setSidebarOpen(false)}
-              className="block text-[12px] font-semibold text-white truncate hover:opacity-80 transition-opacity cursor-pointer leading-tight"
-            >
-              {adminUser?.name || 'Admin'}
-            </Link>
-            <p className="text-[10px] truncate leading-tight mt-0.5" style={{ color: '#444' }}>
-              {adminUser?.email || ''}
-            </p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="p-1.5 rounded-md transition-colors flex-shrink-0 cursor-pointer"
-            style={{ color: '#444' }}
-            title="Cerrar sesión"
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#ef4444'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = '#444'; }}
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
+          {!isCollapsed && (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex-1 min-w-0"
+              >
+                <Link
+                  href="/admin/profile"
+                  onClick={() => setSidebarOpen(false)}
+                  className="block text-[12px] font-black text-white truncate leading-tight uppercase tracking-tight italic hover:text-[#FF5C3A] transition-colors"
+                >
+                  {adminUser?.name || 'Admin'}
+                </Link>
+                <p className="text-[10px] truncate leading-none text-zinc-600 font-bold uppercase tracking-tighter mt-1">
+                  {adminUser?.email || ''}
+                </p>
+              </motion.div>
+              <button
+                onClick={handleLogout}
+                className="w-10 h-10 rounded-2xl transition-all flex items-center justify-center text-gray-700 hover:text-white hover:bg-white/10 group/logout shrink-0"
+                title="Cerrar sesión"
+              >
+                <LogOut size={18} className="transition-transform group-hover/logout:translate-x-0.5" />
+              </button>
+            </>
+          )}
         </div>
+        
+        {isCollapsed && (
+           <button
+             onClick={() => setIsCollapsed(false)}
+             className="w-11 h-11 mt-3 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-500 hover:text-white hover:bg-[#FF5C3A]/20 transition-all mx-auto"
+             title="Expandir menú"
+           >
+             <ChevronRight size={20} />
+           </button>
+        )}
       </div>
     </div>
   );
@@ -287,15 +315,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="fixed inset-0 z-30 bg-black/70 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <div className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-[220px] lg:z-20">
+      <div className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 z-20 transition-all duration-300 ${isCollapsed ? 'lg:w-[90px]' : 'lg:w-[280px]'}`}>
         {sidebarContent}
       </div>
 
-      <div className={`fixed inset-y-0 left-0 w-[220px] z-40 transform transition-transform duration-200 ease-in-out lg:hidden ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 w-[280px] z-40 transform transition-transform duration-300 ease-in-out lg:hidden ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {sidebarContent}
       </div>
 
-      <div className="lg:pl-[220px] flex flex-col min-h-screen">
+      <div className={`transition-all duration-300 ${isCollapsed ? 'lg:pl-[90px]' : 'lg:pl-[280px]'} flex flex-col min-h-screen`}>
         <header
           className="sticky top-0 z-10 flex items-center justify-between px-5 sm:px-7 h-[60px]"
           style={{

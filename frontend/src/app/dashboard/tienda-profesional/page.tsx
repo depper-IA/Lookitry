@@ -96,28 +96,34 @@ export default function TiendaProfesionalPage() {
         </div>
       </section>
 
-      {/* Offer Banner */}
+      {/* Offer Banner - Luxury Editorial Style */}
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        whileInView={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="rounded-[3rem] bg-gradient-to-r from-[#FF5C3A] to-[#ff7d61] p-0.5 shadow-xl"
+        className="rounded-[3rem] bg-zinc-900 border border-white/5 p-1 relative overflow-hidden shadow-3xl group"
       >
-        <div className="bg-[var(--bg-card)] rounded-[2.9rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
-          <div className="space-y-4">
-            <h2 className="text-3xl font-jakarta font-black uppercase italic leading-none text-[var(--text-primary)]">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#FF5C3A]/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
+        
+        <div className="bg-zinc-900 rounded-[2.9rem] p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left relative z-10">
+          <div className="space-y-6 max-w-xl">
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#FF5C3A]/10 border border-[#FF5C3A]/20">
+              <span className="w-2 h-2 rounded-full bg-[#FF5C3A] animate-pulse" />
+              <span className="text-[#FF5C3A] text-[10px] font-black uppercase tracking-[0.2em]">Benefit for Partners</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-jakarta font-[950] uppercase italic leading-[0.9] text-white tracking-tighter">
               Oferta exclusiva <br />
-              <span className="text-[#FF5C3A]">para clientes Lookitry</span>
+              <span className="text-[#FF5C3A]">Partners Lookitry</span>
             </h2>
-            <p className="text-[var(--text-secondary)] max-w-md">
-              Si creas tu web profesional con Wilkiedevs, incluimos <span className="text-[var(--text-primary)] font-bold">2 meses del Plan PRO</span> de Lookitry totalmente gratis.
+            <p className="text-zinc-400 text-base font-medium leading-relaxed">
+              Al escalar tu marca con Wilkiedevs, incluimos <span className="text-white font-bold">2 meses del Plan PRO</span> de Lookitry. Un impulso total para tu conversión.
             </p>
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <div className="text-5xl font-jakarta font-black italic text-[#FF5C3A]">
+          <div className="flex flex-col items-center justify-center p-8 bg-white/5 rounded-[2.5rem] border border-white/10 min-w-[200px] group-hover:bg-[#FF5C3A]/10 transition-colors duration-500">
+            <div className="text-6xl font-jakarta font-[950] italic text-white leading-none">
               FREE
             </div>
-            <div className="text-[10px] uppercase tracking-[0.3em] font-black text-[#FF5C3A]/40">
+            <div className="mt-3 text-[10px] uppercase tracking-[0.4em] font-black text-[#FF5C3A]">
               PLAN PRO · 2 MESES
             </div>
           </div>
