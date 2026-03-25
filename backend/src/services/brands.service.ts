@@ -136,6 +136,17 @@ export class BrandsService {
     return /^#[0-9A-Fa-f]{6}$/.test(color);
   }
 
+  async getBrandByApiKey(apiKey: string): Promise<Brand | null> {
+    const { data, error } = await supabaseAdmin
+      .from('brands')
+      .select('*')
+      .eq('api_key', apiKey)
+      .single();
+
+    if (error || !data) return null;
+    return data as Brand;
+  }
+
   isValidDomain(domain: string): boolean {
     return /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,10}$/i.test(domain);
   }

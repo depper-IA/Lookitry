@@ -57,12 +57,55 @@ function lookitry_settings_page() {
                             <label for="lookitry_api_key">API Key</label>
                         </th>
                         <td>
-                            <input name="lookitry_api_key" type="password" id="lookitry_api_key" value="<?php echo esc_attr( $api_key ); ?>" class="regular-text" style="width: 100%;">
-                            <p class="description">Puedes encontrar tu API Key en tu <a href="https://lookitry.com/dashboard/integrations" target="_blank">Dashboard de Lookitry</a>.</p>
-
+                            <div style="display: flex; gap: 10px; align-items: start;">
+                                <div style="flex-grow: 1;">
+                                    <input name="lookitry_api_key" type="password" id="lookitry_api_key" value="<?php echo esc_attr( $api_key ); ?>" class="regular-text" style="width: 100%;">
+                                    <p class="description">Puedes encontrar tu API Key en tu <a href="https://lookitry.com/dashboard/integrations" target="_blank">Dashboard de Lookitry</a>.</p>
+                                </div>
+                                <button type="button" id="lookitry-test-connection" class="button" style="height: 30px; background: #f6f7f7;">Probar Conexión</button>
+                            </div>
+                            <div id="lookitry-connection-status" style="margin-top: 10px; font-weight: 500; font-size: 13px; display: none;"></div>
                         </td>
                     </tr>
                 </table>
+
+                <script>
+                jQuery(document).ready(function($) {
+                    $('#lookitry-test-connection').on('click', function() {
+                        var key = $('#lookitry_api_key').val();
+                        var $status = $('#lookitry-connection-status');
+                        var $button = $(this);
+
+                        if (!key) {
+                            $status.html('<span style="color: #d63638;">Debes ingresar una clave de API primero.</span>').show();
+                            return;
+                        }
+
+                        $button.prop('disabled', true).text('Probando...');
+                        $status.hide();
+
+                        $.ajax({
+                            url: 'https://api.lookitry.com/api/pruebalo/validate-api-key',
+                            method: 'GET',
+                            contentType: 'application/json',
+                            data: { key: key },
+                            success: function(response) {
+                                if (response.valid) {
+                                    $status.html('<span style="color: #008a20; padding: 6px 12px; background: #e7f6ed; border-radius: 6px; display: inline-block;">✔ Conexión exitosa: <strong>' + response.brandName + '</strong> (' + response.plan + ')</span>').show();
+                                } else {
+                                    $status.html('<span style="color: #d63638; padding: 6px 12px; background: #fcf0f1; border-radius: 6px; display: inline-block;">✘ Error: ' + response.message + '</span>').show();
+                                }
+                            },
+                            error: function() {
+                                $status.html('<span style="color: #d63638; padding: 6px 12px; background: #fcf0f1; border-radius: 6px; display: inline-block;">✘ Error de conexión con el servidor. Revisa tu internet o la URL de la API.</span>').show();
+                            },
+                            complete: function() {
+                                $button.prop('disabled', false).text('Probar Conexión');
+                            }
+                        });
+                    });
+                });
+                </script>
 
                 <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
                     <p><strong>Guía rápida:</strong></p>
