@@ -415,7 +415,7 @@ export class ProductsService {
     }
 
     // 5. Generar descripciones con IA para nuevos productos o sin descripción
-    const webhookUrl = process.env.N8N_DESCRIPTION_WEBHOOK_URL;
+    const webhookUrl = process.env.N8N_DESCRIPTOR_URL || 'https://n8n.wilkiedevs.com/webhook/descriptor';
     if (webhookUrl && (data || []).length > 0) {
       (data || []).forEach(p => {
         // Solo si no tiene descripción o es muy corta
