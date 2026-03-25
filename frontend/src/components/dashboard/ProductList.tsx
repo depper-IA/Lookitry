@@ -19,6 +19,8 @@ import {
   Grid
 } from 'lucide-react';
 
+import { getProxiedUrl } from '@/utils/imageProxy';
+
 export type ViewMode = 'grid' | 'thumbnails' | 'list';
 
 interface ProductListProps {
@@ -90,7 +92,7 @@ function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
           >
             {/* Image Section */}
             <div className="aspect-[4/5] overflow-hidden relative">
-              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-1000 lg:group-hover:scale-110" />
+              <img src={getProxiedUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover transition-transform duration-1000 lg:group-hover:scale-110" />
               
               {/* Overlay Gradient - Persistent on mobile, hover on desktop */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-500" />
@@ -161,7 +163,7 @@ function ThumbnailsView({ products, onEdit, onDelete }: Omit<ProductListProps, '
             className="group relative bg-[var(--bg-card)] rounded-2xl md:rounded-3xl border border-[var(--border-color)] overflow-hidden shadow-lg hover:border-[#FF5C3A]/40 transition-all"
           >
             <div className="aspect-square relative overflow-hidden">
-               <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-all duration-700" />
+               <img src={getProxiedUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover transition-all duration-700" />
                
                {/* Overlay - Persistent on mobile */}
                <div className="absolute inset-0 bg-black/40 lg:bg-[#FF5C3A]/10 lg:opacity-0 lg:group-hover:opacity-100 transition-all" />
@@ -218,7 +220,7 @@ function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-6">
                        <div className="w-16 h-16 rounded-2xl overflow-hidden border border-[var(--border-color)] shrink-0 shadow-lg">
-                         <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                         <img src={getProxiedUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover" />
                        </div>
                        <div className="min-w-0 flex-1">
                          <h4 className="text-sm font-black italic uppercase italic tracking-tighter text-[var(--text-primary)] leading-tight">{product.name}</h4>
@@ -267,7 +269,7 @@ function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
               className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-4 flex items-center gap-4 shadow-lg shadow-black/5"
             >
               <div className="w-20 h-24 rounded-2xl overflow-hidden border border-[var(--border-color)] shrink-0 shadow-md">
-                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                <img src={getProxiedUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 min-w-0 flex flex-col justify-between h-24 py-1">
                 <div>

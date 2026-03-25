@@ -13,7 +13,8 @@ import { TrialBanner } from './TrialBanner';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { LookitryLogoText } from '@/components/mini-landing/shared';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { Menu, ChevronLeft, ChevronRight, LogOut, Building2 } from 'lucide-react';
+import { getProxiedUrl } from '@/utils/imageProxy';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -151,8 +152,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Brand info + logout section */}
       <div className={`p-4 flex-shrink-0 transition-all duration-300`}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 p-3 rounded-[2.5rem] bg-white/5 border border-white/5'} shadow-inner group/profile transition-all duration-300`}>
-          <div className="w-11 h-11 rounded-2xl overflow-hidden flex items-center justify-center text-[13px] font-black text-white flex-shrink-0 bg-[#FF5C3A] shadow-lg group-hover/profile:scale-105 transition-transform duration-500">
-            {brand?.name?.charAt(0)?.toUpperCase() ?? 'M'}
+          <div className="w-11 h-11 rounded-2xl overflow-hidden flex items-center justify-center text-[13px] font-black text-white flex-shrink-0 bg-[#FF5C3A] shadow-lg group-hover/profile:scale-105 transition-all duration-500 border border-white/10">
+            {brand?.logo ? (
+              <img 
+                src={getProxiedUrl(brand.logo)} 
+                alt={brand.name} 
+                className="w-full h-full object-contain bg-white/5 p-1"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  (e.target as HTMLImageElement).parentElement!.innerHTML = brand?.name?.charAt(0)?.toUpperCase() ?? 'M';
+                }}
+              />
+            ) : (
+              brand?.name?.charAt(0)?.toUpperCase() ?? 'M'
+            )}
           </div>
           {!isCollapsed && (
             <>

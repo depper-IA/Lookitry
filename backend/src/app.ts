@@ -89,6 +89,8 @@ const allowedOrigins = [
   ...new Set([
     process.env.FRONTEND_URL || '',
     process.env.API_URL || '',
+    'https://api.lookitry.com',
+    'https://pruebalo.wilkiedevs.com',
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002',
