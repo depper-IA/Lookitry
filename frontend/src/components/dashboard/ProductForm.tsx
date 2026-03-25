@@ -22,8 +22,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   pants: 'Pantalones', shoes: 'Zapatos', accessories: 'Accesorios', other: 'Otros',
 };
 
-const N8N_DESCRIPTOR_URL = process.env.NEXT_PUBLIC_N8N_DESCRIPTOR_URL || '';
-
 // Mapa de categorías devueltas por n8n → valores del select
 const AI_CATEGORY_MAP: Record<string, string> = {
   // Camisetas / tops
@@ -389,32 +387,31 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                     Editar manualmente
                   </button>
                 )}
-                {N8N_DESCRIPTOR_URL && (
-                  <button                    type="button"
-                    onClick={handleDescribeWithAI}
-                    disabled={!canDescribeWithAI || describingWithAI}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{ background: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.25)' }}
-                    title={!formData.imageUrl || !formData.name.trim() ? 'Agrega nombre e imagen primero' : 'Generar descripción con IA'}
-                  >
-                    {describingWithAI ? (
-                      <>
-                        <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                        </svg>
-                        Analizando...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                        </svg>
-                        Describir con IA
-                      </>
-                    )}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={handleDescribeWithAI}
+                  disabled={!canDescribeWithAI || describingWithAI}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ background: 'rgba(255,92,58,0.1)', color: '#FF5C3A', border: '1px solid rgba(255,92,58,0.25)' }}
+                  title={!formData.imageUrl || !formData.name.trim() ? 'Agrega nombre e imagen primero' : 'Generar descripción con IA'}
+                >
+                  {describingWithAI ? (
+                    <>
+                      <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      Analizando...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      Describir con IA
+                    </>
+                  )}
+                </button>
               </div>
             </div>
             {aiGenerated ? (
