@@ -43,7 +43,6 @@ REPO         = "/root/virtual-tryon"
 
 # URL con token para autenticación sin prompt
 REPO_URL = GITHUB_REPO.replace("https://", f"https://{GITHUB_TOKEN}@") if GITHUB_TOKEN else GITHUB_REPO
-
 if not PASS:
     print("Error: La variable VPS_PASS no está definida en el archivo .env del backend.")
     sys.exit(1)
@@ -89,7 +88,7 @@ if restart_only:
 
 # 1. Git pull -- detectar que archivos cambiaron
 out, err = "", ""
-out, err = run(ssh, f"cd {REPO} && git remote set-url origin {REPO_URL} && git pull origin main")
+out, err = run(ssh, f"cd {REPO} && git remote set-url origin {REPO_URL} && git reset --hard HEAD && git clean -fd && git pull origin main")
 
 # Inferir qué reconstruir si no se especificó flag
 backend_changed = False
