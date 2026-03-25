@@ -50,7 +50,7 @@ inclusion: always
 | VPS pass | `Travis18456916#` |
 | Docker project | `virtual-tryon` |
 | Supabase project ID | `vkdooutklowctuudjnkl` |
-| GitHub repo | `https://github.com/depper-IA/virtual-tryon.git` |
+| GitHub repo | `https://github.com/depper-IA/lookitry.git` |
 | Hostinger VPS ID | `1004711` |
 
 ---
@@ -730,7 +730,7 @@ SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=465
 SMTP_SECURE=true
 SMTP_USER=info@lookitry.com
-SMTP_FROM=Virtual LOOKITRY <info@lookitry.com>
+SMTP_FROM=LOOKITRY <info@lookitry.com>
 ```
 
 ---
@@ -880,7 +880,7 @@ var(--shadow-header)    /* Sombra del header */
 | VPS ID (Hostinger)   | `1004711`                                       |
 | VPS IP               | `31.220.18.39`                                  |
 | Docker project       | `virtual-tryon`                                 |
-| GitHub repo          | `https://github.com/depper-IA/virtual-tryon.git`|
+| GitHub repo          | `https://github.com/depper-IA/lookitry.git`|
 
 ## Workflows n8n (IDs — no cargar archivos para consultarlos)
 
