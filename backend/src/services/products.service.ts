@@ -302,6 +302,23 @@ export class ProductsService {
   }
 
   /**
+   * Obtener todos los IDs externos sincronizados de una marca (activos e inactivos)
+   */
+  async getAllSyncedExternalIds(brandId: string): Promise<string[]> {
+    const { data, error } = await supabaseAdmin
+      .from('products')
+      .select('external_id')
+      .eq('brand_id', brandId)
+      .not('external_id', 'is', null);
+
+    if (error) {
+      throw new Error('Error al obtener IDs sincronizados: ' + error.message);
+    }
+
+    return (data || []).map(p => String(p.external_id));
+  }
+
+  /**
    * Sincronización masiva de productos (WooCommerce -> Lookitry)
    */
   async bulkSyncProducts(brandId: string, syncData: any[]): Promise<{ updated: number; created: number; skipped: number }> {
