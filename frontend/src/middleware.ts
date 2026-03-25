@@ -76,6 +76,53 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // ── Proteger rutas públicas del Widget (Iframe Whitelist Dinámica) ────────────
+  if (pathname.startsWith('/embed') || pathname.startsWith('/pruebalo')) {
+    const response = NextResponse.next();
+    const origin = request.headers.get('origin') || request.headers.get('referer') || '';
+    
+    let isAllowed = false;
+    let originUrl = '';
+
+    try {
+      if (origin) {
+        const url = new URL(origin);
+        originUrl = url.origin;
+        
+        // Obtener lista blanca dinámica con caché de 60 segundos
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        if (apiUrl) {
+          const res = await fetch(`${apiUrl}/api/pruebalo/allowed-origins`, {
+            next: { revalidate: 60 }
+          } as any);
+          
+          if (res.ok) {
+            const { origins } = await res.json();
+            isAllowed = origins.includes(originUrl);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[Middleware] Error validando origen del iframe:', e);
+    }
+
+    // Limpiar siempre X-Frame-Options para que nuestro CSP no tenga conflictos
+    response.headers.delete('X-Frame-Options');
+
+    const baseCsp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://minio.wilkiedevs.com https://vkdooutklowctuudjnkl.supabase.co; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co; font-src 'self' https://fonts.gstatic.com; media-src 'self'; camera 'self' *; clipboard-write 'self' *;";
+
+    if (isAllowed) {
+      // Si el origen está en la lista blanca de la BD (sitio web de algún cliente)
+      response.headers.set('Content-Security-Policy', `frame-ancestors 'self' ${originUrl}; ${baseCsp}`);
+    } else {
+      // Bloquear si intenta embeber desde un dominio no listado
+      // Permitimos 'self' por si nosotros mismos lo cargamos
+      response.headers.set('Content-Security-Policy', `frame-ancestors 'self'; ${baseCsp}`);
+    }
+
+    return response;
+  }
+
   return NextResponse.next();
 }
 
