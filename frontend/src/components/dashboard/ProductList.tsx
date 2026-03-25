@@ -72,9 +72,11 @@ function EmptyState() {
 
 // ── GRID VIEW ─────────────────────────────────────────────────────────────
 
+// ── GRID VIEW ─────────────────────────────────────────────────────────────
+
 function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
       <AnimatePresence mode='popLayout'>
         {products.map((product, idx) => (
           <motion.div
@@ -84,57 +86,56 @@ function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
             transition={{ delay: idx * 0.05 }}
-            className="group relative bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] overflow-hidden hover:border-[#FF5C3A]/40 transition-all duration-500 shadow-xl shadow-black/5"
+            className="group relative bg-[var(--bg-card)] rounded-[2rem] md:rounded-[2.5rem] border border-[var(--border-color)] overflow-hidden hover:border-[#FF5C3A]/40 transition-all duration-500 shadow-xl shadow-black/5"
           >
             {/* Image Section */}
             <div className="aspect-[4/5] overflow-hidden relative">
-              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-1000 lg:group-hover:scale-110" />
               
-              {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              {/* Overlay Gradient - Persistent on mobile, hover on desktop */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-500" />
               
               {/* Floating Badges */}
-              <div className="absolute top-6 left-6 flex flex-col gap-2">
+              <div className="absolute top-4 left-4 md:top-6 md:left-6 flex flex-col gap-2 scale-90 md:scale-100 origin-top-left">
                 <ProductBadge badge={product.badge || 'Nuevo'} />
                 <CategoryBadge category={product.category} />
               </div>
 
-              {/* Action Buttons Overlay */}
-              <div className="absolute bottom-8 left-0 right-0 px-8 flex justify-center gap-3 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-100">
+              {/* Action Buttons Overlay - Persistent on mobile < lg */}
+              <div className="absolute bottom-6 md:bottom-8 left-0 right-0 px-4 md:px-8 flex justify-center gap-3 lg:translate-y-10 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 transition-all duration-500 delay-100">
                 <button 
                   onClick={() => onEdit(product)}
-                  className="p-4 rounded-2xl bg-white text-black hover:bg-black hover:text-white transition-all shadow-2xl active:scale-95"
+                  className="p-3.5 md:p-4 rounded-xl md:rounded-2xl bg-white text-black hover:bg-black hover:text-white transition-all shadow-2xl active:scale-95 flex items-center gap-2"
                 >
-                  <Edit3 size={18} />
+                  <Edit3 size={16} /><span className="text-[10px] font-black uppercase md:hidden">Editar</span>
                 </button>
                 <button 
                   onClick={() => onDelete(product.id)}
-                  className="p-4 rounded-2xl bg-rose-500 text-white hover:bg-rose-600 transition-all shadow-2xl active:scale-95"
+                  className="p-3.5 md:p-4 rounded-xl md:rounded-2xl bg-rose-500 text-white hover:bg-rose-600 transition-all shadow-2xl active:scale-95 flex items-center gap-2"
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={16} /><span className="text-[10px] font-black uppercase md:hidden">Eliminar</span>
                 </button>
               </div>
             </div>
 
             {/* Content Section */}
-            <div className="p-8 space-y-4">
+            <div className="p-5 md:p-8 space-y-4">
               <div className="flex justify-between items-start gap-4">
                 <div className="min-w-0 flex-1">
-                   <h3 className="text-base font-[950] italic uppercase tracking-tighter text-[var(--text-primary)] leading-[1.1] transition-all">{product.name}</h3>
+                   <h3 className="text-sm md:text-base font-[950] italic uppercase tracking-tighter text-[var(--text-primary)] leading-[1.1] transition-all">{product.name}</h3>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest">{product.category}</span>
+                    <span className="text-[9px] md:text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest leading-none">{product.category}</span>
                     <span className="w-1 h-1 rounded-full bg-[var(--border-color)]" />
-                    <span className="text-[10px] font-black uppercase text-[#FF5C3A] tracking-widest">Activo</span>
+                    <span className="text-[9px] md:text-[10px] font-black uppercase text-[#FF5C3A] tracking-widest leading-none">Activo</span>
                   </div>
                 </div>
                 {product.price != null && (
                   <div className="text-right shrink-0">
-                    <p className="text-xs font-black uppercase text-[var(--text-muted)] tracking-widest mb-0.5">Precio</p>
-                    <p className="text-xl font-black italic text-[#FF5C3A]">${product.price.toLocaleString('es-CO')}</p>
+                    <p className="text-[9px] md:text-xs font-black uppercase text-[var(--text-muted)] tracking-widest mb-0.5">Precio</p>
+                    <p className="text-lg md:text-xl font-black italic text-[#FF5C3A]">${product.price.toLocaleString('es-CO')}</p>
                   </div>
                 )}
               </div>
-              
             </div>
           </motion.div>
         ))}
@@ -147,7 +148,7 @@ function GridView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
 
 function ThumbnailsView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
       <AnimatePresence mode='popLayout'>
         {products.map((product, idx) => (
           <motion.div
@@ -157,24 +158,26 @@ function ThumbnailsView({ products, onEdit, onDelete }: Omit<ProductListProps, '
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ delay: idx * 0.03 }}
-            className="group relative bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] overflow-hidden shadow-lg hover:border-[#FF5C3A]/40 transition-all"
+            className="group relative bg-[var(--bg-card)] rounded-2xl md:rounded-3xl border border-[var(--border-color)] overflow-hidden shadow-lg hover:border-[#FF5C3A]/40 transition-all"
           >
             <div className="aspect-square relative overflow-hidden">
                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-all duration-700" />
-               <div className="absolute inset-0 bg-[#FF5C3A]/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                
-               {/* Quick Actions Overlay */}
-               <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-4 group-hover:translate-y-0">
-                  <button onClick={() => onEdit(product)} className="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center shadow-2xl hover:bg-black hover:text-white transition-colors">
-                    <Edit3 size={16} />
+               {/* Overlay - Persistent on mobile */}
+               <div className="absolute inset-0 bg-black/40 lg:bg-[#FF5C3A]/10 lg:opacity-0 lg:group-hover:opacity-100 transition-all" />
+               
+               {/* Quick Actions Overlay - Persistent on mobile < lg */}
+               <div className="absolute inset-0 flex items-center justify-center gap-2 lg:opacity-0 lg:group-hover:opacity-100 transition-all lg:translate-y-4 lg:group-hover:translate-y-0">
+                  <button onClick={() => onEdit(product)} className="w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-white text-black flex items-center justify-center shadow-2xl hover:bg-black hover:text-white transition-colors">
+                    <Edit3 size={14} />
                   </button>
-                  <button onClick={() => onDelete(product.id)} className="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-2xl hover:bg-rose-600 transition-colors">
-                    <Trash2 size={16} />
+                  <button onClick={() => onDelete(product.id)} className="w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-2xl hover:bg-rose-600 transition-colors">
+                    <Trash2 size={14} />
                   </button>
                </div>
             </div>
-            <div className="p-4 text-center">
-               <p className="text-[10px] font-black uppercase tracking-tighter text-[var(--text-primary)] leading-tight">{product.name}</p>
+            <div className="p-3 md:p-4 text-center">
+               <p className="text-[9px] md:text-[10px] font-black uppercase tracking-tighter text-[var(--text-primary)] leading-tight line-clamp-1">{product.name}</p>
                {product.price && <p className="text-[9px] font-black text-[#FF5C3A] italic mt-1">${product.price.toLocaleString('es-CO')}</p>}
             </div>
           </motion.div>
@@ -188,14 +191,15 @@ function ThumbnailsView({ products, onEdit, onDelete }: Omit<ProductListProps, '
 
 function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMode'>) {
   return (
-    <div className="bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] overflow-hidden shadow-2xl">
-      <div className="overflow-x-auto">
+    <div className="bg-[var(--bg-card)] lg:rounded-[2.5rem] lg:border border-[var(--border-color)] overflow-hidden lg:shadow-2xl">
+      {/* Desktop Table */}
+      <div className="hidden lg:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-[var(--bg-base)] border-b border-[var(--border-color)]">
               <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic">Prenda</th>
-              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic hidden lg:table-cell">Categoría</th>
-              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic hidden md:table-cell">Precio</th>
+              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic">Categoría</th>
+              <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic">Precio</th>
               <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)] italic text-right">Acciones</th>
             </tr>
           </thead>
@@ -222,29 +226,23 @@ function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
                        </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6 hidden lg:table-cell">
+                  <td className="px-8 py-6">
                     <div className="flex gap-2">
                        <CategoryBadge category={product.category} />
                        {product.badge && <ProductBadge badge={product.badge} />}
                     </div>
                   </td>
-                  <td className="px-8 py-6 hidden md:table-cell">
+                  <td className="px-8 py-6">
                      <span className="text-sm font-black italic text-[#FF5C3A]">
                        {product.price ? `$${product.price.toLocaleString('es-CO')}` : 'N/A'}
                      </span>
                   </td>
                   <td className="px-8 py-6 text-right">
                      <div className="flex justify-end gap-3 translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
-                        <button 
-                          onClick={() => onEdit(product)}
-                          className="p-3 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] hover:bg-black hover:text-white transition-all shadow-sm"
-                        >
+                        <button onClick={() => onEdit(product)} className="p-3 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] hover:bg-black hover:text-white transition-all shadow-sm">
                           <Edit3 size={14} />
                         </button>
-                        <button 
-                          onClick={() => onDelete(product.id)}
-                          className="p-3 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-                        >
+                        <button onClick={() => onDelete(product.id)} className="p-3 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm">
                           <Trash2 size={14} />
                         </button>
                      </div>
@@ -254,6 +252,45 @@ function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
             </AnimatePresence>
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Stack Layout */}
+      <div className="lg:hidden space-y-4 p-4">
+        <AnimatePresence mode='popLayout'>
+          {products.map((product) => (
+            <motion.div
+              key={product.id}
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-4 flex items-center gap-4 shadow-lg shadow-black/5"
+            >
+              <div className="w-20 h-24 rounded-2xl overflow-hidden border border-[var(--border-color)] shrink-0 shadow-md">
+                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col justify-between h-24 py-1">
+                <div>
+                  <h4 className="text-[13px] font-black italic uppercase tracking-tighter text-[var(--text-primary)] leading-none line-clamp-1 mb-1">{product.name}</h4>
+                  <p className="text-[9px] text-[var(--text-muted)] font-black uppercase tracking-widest leading-none">{product.category}</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-base font-black italic text-[#FF5C3A]">
+                    {product.price ? `$${product.price.toLocaleString('es-CO')}` : 'N/A'}
+                  </span>
+                  <div className="flex gap-2">
+                    <button onClick={() => onEdit(product)} className="w-9 h-9 rounded-xl bg-[var(--bg-input)] text-[var(--text-primary)] flex items-center justify-center">
+                      <Edit3 size={14} />
+                    </button>
+                    <button onClick={() => onDelete(product.id)} className="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </div>
   );

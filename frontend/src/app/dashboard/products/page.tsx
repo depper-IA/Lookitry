@@ -146,30 +146,30 @@ export default function ProductsPage() {
   return (
     <motion.div 
       initial="hidden" animate="visible" variants={containerVariants}
-      className="max-w-[1400px] mx-auto space-y-16 pb-32 px-4 relative"
+      className="max-w-[1400px] mx-auto space-y-10 md:space-y-16 pb-32 px-4 relative"
     >
       {/* 🔮 ORBES DE FONDO 🔮 */}
       <div className="absolute top-0 -left-20 w-[400px] h-[400px] bg-[#FF5C3A]/5 blur-[150px] rounded-full -z-10" />
       <div className="absolute top-1/2 -right-40 w-[500px] h-[500px] bg-indigo-500/5 blur-[180px] rounded-full -z-10" />
 
       {/* ══ HEADER ══ */}
-      <motion.header variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-10 border-b border-[var(--border-color)] pb-12">
+      <motion.header variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-8 md:gap-10 border-b border-[var(--border-color)] pb-10 md:pb-12 mt-4 md:mt-0">
         <div className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-[2rem] bg-indigo-500/10 flex items-center justify-center border border-indigo-500/10 shadow-inner group transition-all">
-              <Package className="w-7 h-7 text-indigo-500" />
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl md:rounded-[2rem] bg-indigo-500/10 flex items-center justify-center border border-indigo-500/10 shadow-inner group transition-all">
+              <Package className="w-6 h-6 md:w-7 md:h-7 text-indigo-500" />
             </div>
-            <h1 className="text-5xl font-[950] tracking-tighter text-[var(--text-primary)] uppercase leading-none font-jakarta">Catálogo de Productos</h1>
+            <h1 className="text-3xl md:text-5xl font-[950] tracking-tighter text-[var(--text-primary)] uppercase leading-none font-jakarta">Catálogo</h1>
             </div>
-            <p className="text-[11px] font-black tracking-[0.3em] text-[var(--text-muted)] uppercase opacity-60">
+            <p className="text-[10px] md:text-[11px] font-black tracking-[0.3em] text-[var(--text-muted)] uppercase opacity-60">
             Productos Activos: <span className="text-[#FF5C3A] font-[950]">{products.length}</span> / <span className="text-indigo-400 font-[950] font-mono">{productsLimit}</span>
             </p>
 
         </div>
 
-        <div className="flex flex-col-reverse md:flex-row items-center justify-center md:justify-end gap-6">
+        <div className="flex flex-col-reverse md:flex-row items-stretch md:items-center justify-center md:justify-end gap-4 md:gap-6">
           {!showForm && (
-            <div className="flex items-center bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2.5rem] p-1.5 shadow-2xl">
+            <div className="flex items-center justify-center bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[2rem] md:rounded-[2.5rem] p-1 shadow-xl md:shadow-2xl">
               {( [
                 { id: 'grid',       icon: <LayoutGrid size={16} /> },
                 { id: 'thumbnails', icon: <Grid3X3 size={16} /> },
@@ -177,7 +177,7 @@ export default function ProductsPage() {
               ] as const).map(({ id, icon }) => (
                 <button
                   key={id} onClick={() => handleViewMode(id)}
-                  className={`p-3 rounded-full transition-all duration-500 ${viewMode === id ? 'bg-[#FF5C3A] text-white shadow-2xl shadow-[#FF5C3A]/30 scale-[1.1]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                  className={`p-2.5 md:p-3 rounded-full transition-all duration-500 ${viewMode === id ? 'bg-[#FF5C3A] text-white shadow-2xl shadow-[#FF5C3A]/30 scale-[1.1]' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
                 >
                   {icon}
                 </button>
@@ -188,16 +188,16 @@ export default function ProductsPage() {
           {!showForm ? (
             <button 
               onClick={handleNewProduct}
-              className="flex items-center gap-4 px-10 py-5 bg-[#FF5C3A] text-white rounded-[2rem] font-[950] uppercase tracking-widest text-[11px] shadow-[0_20px_40px_rgba(255,92,58,0.3)] hover:scale-[1.02] active:scale-95 transition-all group"
+              className="flex items-center justify-center gap-3 px-6 md:px-10 py-4 md:py-5 bg-[#FF5C3A] text-white rounded-2xl md:rounded-[2rem] font-[950] uppercase tracking-widest text-[10px] md:text-[11px] shadow-[0_20px_40px_rgba(255,92,58,0.3)] hover:scale-[1.02] active:scale-95 transition-all group"
             >
               <Plus size={18} className="group-hover:rotate-90 transition-transform" /> Añadir Producto
             </button>
           ) : (
              <button 
               onClick={() => { setShowForm(false); setEditingProduct(null); }}
-              className="flex items-center gap-4 px-10 py-5 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-[2rem] font-[950] uppercase tracking-widest text-[11px] hover:bg-white/5 active:scale-95 transition-all shadow-xl"
+              className="flex items-center justify-center gap-3 px-6 md:px-10 py-4 md:py-5 bg-[var(--bg-card)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-2xl md:rounded-[2rem] font-[950] uppercase tracking-widest text-[10px] md:text-[11px] hover:bg-white/5 active:scale-95 transition-all shadow-xl"
             >
-              <ChevronLeft size={18} /> Volver al Catálogo
+              <ChevronLeft size={18} /> Volver
             </button>
           )}
         </div>
@@ -208,13 +208,13 @@ export default function ProductsPage() {
         {error && (
           <motion.div 
             initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 10 }}
-            className="p-8 bg-rose-500/5 border border-rose-500/20 rounded-[3rem] text-rose-500 text-[11px] font-black uppercase tracking-widest flex items-center justify-between shadow-4xl shadow-rose-500/5"
+            className="p-5 md:p-8 bg-rose-500/5 border border-rose-500/20 rounded-3xl md:rounded-[3rem] text-rose-500 text-[10px] md:text-[11px] font-black uppercase tracking-widest flex items-center justify-between shadow-4xl shadow-rose-500/5"
           >
             <div className="flex items-center gap-4">
-              <AlertCircle size={22} />
-              {error}
+              <AlertCircle size={20} />
+              <span className="line-clamp-2 md:line-clamp-none">{error}</span>
             </div>
-            <button onClick={() => setError(null)} className="p-2 hover:bg-rose-500/10 rounded-full transition-all">
+            <button onClick={() => setError(null)} className="p-2 hover:bg-rose-500/10 rounded-full transition-all shrink-0">
               <X size={18} />
             </button>
           </motion.div>
@@ -227,7 +227,7 @@ export default function ProductsPage() {
           {showForm ? (
             <motion.div 
               key="form" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}
-              className="bg-[var(--bg-card)] rounded-[4rem] border border-[var(--border-color)] p-12 shadow-4xl relative overflow-hidden group"
+              className="bg-[var(--bg-card)] rounded-[2.5rem] md:rounded-[4rem] border border-[var(--border-color)] p-6 md:p-12 shadow-4xl relative overflow-hidden group"
             >
                <div className="absolute top-0 right-0 p-12 opacity-5 translate-x-10 translate-y-[-10px] group-hover:scale-105 transition-transform duration-1000">
                   <Sparkles size={200} strokeWidth={1} />

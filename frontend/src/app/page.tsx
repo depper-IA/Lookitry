@@ -1,9 +1,9 @@
-﻿import LandingClient from '@/components/landing/LandingClient';
+import LandingClient from '@/components/landing/LandingClient';
 import { PromoBanner } from '@/components/landing/PromoBanner';
 import { PromoModal } from '@/components/landing/PromoModal';
 import { getPricingConfig } from '@/lib/pricing';
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
-const BASE_URL = 'https://lookitry.com';
 
 export default async function HomePage() {
   const pricing = await getPricingConfig();

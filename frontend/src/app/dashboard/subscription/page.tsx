@@ -143,7 +143,7 @@ export default function SubscriptionPage() {
         const [subResult, paymentsResult, settingsResult, pricingResult] = await Promise.allSettled([
           subscriptionService.getSubscriptionInfo(),
           subscriptionService.getPayments(),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.pruebalo.wilkiedevs.com'}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
           fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?id=in.(basic,pro)&select=id,data`, {
             headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}` },
           }).then(r => r.ok ? r.json() : null),
