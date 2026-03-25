@@ -427,11 +427,20 @@ export class PruebaloController {
       return res.status(200).json({ valid: false, message: 'Clave de API inválida' });
     }
 
+    const currentCount = await productsService.countActiveProducts(brand.id);
+    const { PLANS } = await import('../config/plans');
+    const planInfo = PLANS[brand.plan as keyof typeof PLANS] || PLANS['BASIC'];
+
     return res.status(200).json({ 
       valid: true, 
       brandName: brand.name,
       logo: brand.logo,
-      plan: brand.plan 
+      plan: brand.plan,
+      usage: {
+        current: currentCount,
+        max: planInfo.maxProducts,
+        remaining: Math.max(0, planInfo.maxProducts - currentCount)
+      }
     });
   });
 
