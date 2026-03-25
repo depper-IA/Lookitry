@@ -154,7 +154,7 @@ inclusion: always
 | VPS pass | `Travis18456916#` |
 | Docker project | `virtual-tryon` |
 | Supabase project ID | `vkdooutklowctuudjnkl` |
-| GitHub repo | `https://github.com/depper-IA/virtual-tryon.git` |
+| GitHub repo | `https://github.com/depper-IA/Lookitry.git` |
 | Hostinger VPS ID | `1004711` |
 
 ---
@@ -1189,3 +1189,64 @@ python scripts/_deploy_now.py --frontend   # solo frontend
 - Frontend: https://lookitry.com
 - Backend API: https://api.lookitry.com
 - Health check: https://api.lookitry.com/health
+
+---
+
+## PLUGIN WOOCOMMERCE — Lookitry for WooCommerce
+
+### Ubicación en el repo
+```
+lookitry-woocommerce/
+├── lookitry-woocommerce.php          # Archivo principal del plugin
+├── includes/
+│   ├── admin-settings.php            # Panel de configuración + sincronizador de catálogo
+│   └── frontend-hooks.php            # Botón "Probar Virtualmente" + modal iframe
+└── assets/
+    ├── css/lookitry-public.css
+    └── js/lookitry-public.js
+```
+
+### Deploy automático al WordPress
+Cualquier cambio en `lookitry-woocommerce/**` pusheado a `main` se despliega automáticamente al WordPress vía GitHub Actions (`.github/workflows/sync-plugin.yml`).
+
+- Servidor WordPress: `92.112.189.47` puerto `65002`
+- Usuario SSH: `u639440667`
+- Ruta destino: `/home/u639440667/domains/wilkiedevs.com/public_html/wp-content/plugins/lookitry-woocommerce/`
+- Secret requerido en GitHub: `FTP_PASS` = `Travis2305*` (ya configurado en repo `depper-IA/Lookitry`)
+
+Para disparar el deploy manualmente sin hacer un commit:
+```bash
+# Via GitHub API (PowerShell)
+$headers = @{ Authorization = "Bearer <GITHUB_TOKEN>"; "X-GitHub-Api-Version" = "2022-11-28"; "Content-Type" = "application/json" }
+Invoke-RestMethod "https://api.github.com/repos/depper-IA/Lookitry/actions/workflows/sync-plugin.yml/dispatches" -Method POST -Headers $headers -Body '{"ref":"main"}'
+```
+
+### Endpoints del backend que usa el plugin
+Todos apuntan a `https://api.lookitry.com`:
+
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/api/pruebalo/validate-api-key?key=...&domain=...` | GET | Valida la API key y registra el dominio |
+| `/api/pruebalo/synced-products?key=...` | GET | Devuelve IDs externos ya sincronizados |
+| `/api/pruebalo/sync-woocommerce` | POST | Sincroniza productos (header `x-api-key`) |
+| `/api/pruebalo/img-proxy?url=...` | GET | Proxy de imágenes para evitar CORS/hotlinking |
+
+### Autenticación del plugin
+El plugin usa una `api_key` almacenada en la tabla `brands` (campo `api_key`). El usuario la obtiene en `/dashboard/integrations`.
+
+### Problemas conocidos y soluciones aplicadas
+
+| Problema | Causa | Solución aplicada |
+|----------|-------|-------------------|
+| Miniaturas negras en la tabla del plugin | WordPress bloquea hotlinking desde otros orígenes | `getProxiedUrl()` ahora usa `https://api.lookitry.com/api/pruebalo/img-proxy?url=...` |
+| "Failed to fetch" en Describir con IA | El frontend llamaba directo a n8n (`n8n.wilkiedevs.com`) desde el navegador — CORS bloqueado | `handleDescribeWithAI` y `triggerDescribeWithAI` en `ProductForm.tsx` ahora usan el proxy `/api/products/describe-ai` del backend |
+| Secret `FTP_PASS` perdido tras renombrar repo | GitHub no migra secrets al renombrar un repo | Secret recreado manualmente via API con `PyNaCl` para encriptar con la public key del repo |
+
+### Cómo modificar el plugin
+1. Editar los archivos en `lookitry-woocommerce/`
+2. `git add lookitry-woocommerce/ && git commit -m "fix/feat: descripción" && git push origin main`
+3. El GitHub Action `Sync Plugin to WordPress` se dispara automáticamente y sube los archivos al WordPress en ~30 segundos
+4. Verificar en el panel de WordPress que el plugin esté activo y sin errores
+
+### Versión actual
+`1.2.5` — definida en `lookitry-woocommerce.php` (`LOOKITRY_PLUGIN_VERSION`)
