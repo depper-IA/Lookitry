@@ -435,8 +435,8 @@ export class PruebaloController {
       valid: true, 
       brandName: brand.name,
       logo: brand.logo,
-      logo_light: (brand as any).logo_light,
-      logo_dark: (brand as any).logo_dark,
+      logo_light: (brand as any).logo_light || brand.logo,
+      logo_dark: (brand as any).logo_dark || brand.logo,
       plan: brand.plan,
       usage: {
         current: currentCount,
@@ -444,6 +444,29 @@ export class PruebaloController {
         remaining: Math.max(0, planInfo.maxProducts - currentCount)
       }
     });
+  });
+
+  /**
+   * GET /api/pruebalo/synced-products
+   * Devuelve los IDs externos de los productos ya sincronizados para esta marca
+   */
+  getSyncedProducts = asyncHandler(async (req: Request, res: Response) => {
+    const key = (req.query.key as string) || (req.headers['x-api-key'] as string);
+    if (!key) {
+      return res.status(400).json({ success: false, message: 'Clave de API requerida' });
+    }
+
+    const brand = await brandsService.getBrandByApiKey(key);
+    if (!brand) {
+      return res.status(401).json({ success: false, message: 'Clave de API inválida' });
+    }
+
+    const products = await productsService.getProductsByBrand(brand.id);
+    const syncedIds = products
+      .filter(p => p.external_id)
+      .map(p => p.external_id);
+
+    return res.status(200).json({ success: true, syncedIds });
   });
 
   /**
