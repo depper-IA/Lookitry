@@ -61,12 +61,22 @@ app.use(helmet({
 // ── Cookie Parser (necesario para leer cookies HTTP-Only del JWT) ──────────────
 app.use(cookieParser());
 
+// ── Rutas Públicas (Widgets y Plugins SaaS) ──────────────────────────────────
+// Estas rutas deben ir ANTES del CORS restrictivo/global para permitir origin: *
+const publicCors = cors({ 
+  origin: '*', 
+  methods: ['GET', 'POST', 'OPTIONS'], 
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'] 
+});
+
+app.use('/api/pruebalo', publicCors, pruebaloRoutes);
+app.use('/api/embed', publicCors, embedRoutes);
+
+// ── CORS Global (Dashboard y App Lookitry) ───────────────────────────────────
 // Rate limiting global (debe ir antes de otros middlewares)
 app.use(globalRateLimiter);
 
 // CORS — solo orígenes permitidos
-// CORS_ORIGIN puede ser un dominio único o una lista separada por comas
-// Ejemplo producción: CORS_ORIGIN=https://lookitry.com,https://www.lookitry.com
 const corsOriginEnv = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
   : [];
@@ -75,7 +85,6 @@ const allowedOrigins = [
   ...new Set([
     process.env.FRONTEND_URL || '',
     process.env.API_URL || '',
-    // Desarrollo local (cualquier puerto de Next.js)
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002',
@@ -87,7 +96,6 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir requests sin origin (mobile apps, curl, Postman en dev)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error(`CORS: origen no permitido: ${origin}`));
@@ -104,16 +112,12 @@ app.use('/api/payments/wompi/webhook', express.raw({ type: 'application/json' })
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Rutas
+// Rutas protegidas por CORS restrictivo
 app.use('/api/auth', authRoutes);
 app.use('/api/brands', brandsRoutes);
 app.use('/api/usage', usageRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/generations', generationsRoutes);
-// Rutas que permiten CORS desde cualquier origen (Widgets y Plugins SaaS)
-const publicCors = cors({ origin: '*', methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'] });
-
-app.use('/api/pruebalo', publicCors, pruebaloRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api', subscriptionRoutes);
