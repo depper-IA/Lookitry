@@ -181,11 +181,12 @@ export default function AnalyticsPage() {
                        {monthData.count} <span className="text-[9px] text-[var(--text-muted)] font-bold">GEN</span>
                      </span>
                    </div>
-                   <div className="h-2 w-full bg-[var(--bg-input)] rounded-full overflow-hidden shadow-inner p-[1px]">
+                   <div className="h-2 w-full bg-[var(--text-primary)]/5 rounded-full overflow-hidden shadow-inner p-[1px] border border-[var(--border-color)]">
                      <motion.div
                        initial={{ width: 0 }}
                        animate={{ width: `${(monthData.count / maxGenerations) * 100}%` }}
-                       className="h-full bg-gradient-to-r from-[#FF5C3A] to-indigo-500 rounded-full shadow-[0_0_15px_rgba(255,92,58,0.2)]"
+                       transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+                       className="h-full bg-[#FF5C3A] rounded-full shadow-[0_0_12px_rgba(255,92,58,0.25)]"
                      />
                    </div>
                  </div>

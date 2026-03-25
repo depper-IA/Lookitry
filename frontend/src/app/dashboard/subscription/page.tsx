@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -49,17 +49,17 @@ const DESIGN_SYSTEM = {
     name: 'Lookitry Basic',
     color: '#FF5C3A',
     secondaryColor: '#FF5C3A',
-    glow: 'rgba(255, 92, 58, 0.3)',
-    bg: 'bg-[var(--bg-card)]',
+    glow: 'rgba(255, 92, 58, 0.1)',
+    bg: 'bg-zinc-50/50',
     icon: <Globe className="w-8 h-8" />,
     label: 'Plan Básico'
   },
   PRO: {
     name: 'Lookitry Pro',
     color: '#FF5C3A',
-    secondaryColor: '#D13C1C',
-    glow: 'rgba(255, 92, 58, 0.4)',
-    bg: 'bg-gradient-to-br from-[var(--bg-card)] via-[var(--bg-card)] to-[#FF5C3A]/5',
+    secondaryColor: '#FF5C3A',
+    glow: 'rgba(255, 92, 58, 0.15)',
+    bg: 'bg-zinc-50/80',
     icon: <Rocket className="w-8 h-8" />,
     label: 'Plan Pro'
   },
@@ -67,8 +67,8 @@ const DESIGN_SYSTEM = {
      name: 'Período Trial',
      color: '#FF5C3A',
      secondaryColor: '#FF5C3A',
-     glow: 'rgba(255, 92, 58, 0.3)',
-     bg: 'bg-[var(--bg-card)]',
+     glow: 'rgba(255, 92, 58, 0.1)',
+     bg: 'bg-zinc-100/50',
      icon: <Zap className="w-8 h-8" />,
      label: 'Acceso Trial'
   }
@@ -247,16 +247,16 @@ export default function SubscriptionPage() {
 
                <div className="space-y-3 max-w-sm">
                   <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]">
-                     <span className="text-white/40">Días restantes</span>
-                     <span className="text-[#FF5C3A]">{info?.daysRemaining ?? 0} DÍAS</span>
+                     <span className="text-[var(--text-muted)] opacity-80">Días restantes</span>
+                     <span className="text-[#FF5C3A] font-[900]">{info?.daysRemaining ?? 0} DÍAS</span>
                   </div>
-                  <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                  <div className="h-2.5 bg-[var(--text-primary)]/10 rounded-full overflow-hidden border border-[var(--border-color)] shadow-inner">
                      <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${progressPercent}%` }}
                         transition={{ duration: 1.5, ease: "circOut" }}
-                        className="h-full rounded-full"
-                        style={{ background: `linear-gradient(90deg, ${currentDesign.color}44, ${currentDesign.color})`, boxShadow: `0 0 20px ${currentDesign.color}55` }}
+                        className="h-full rounded-full bg-[#FF5C3A]"
+                        style={{ boxShadow: `0 0 15px ${currentDesign.color}33` }}
                      />
                   </div>
                </div>
@@ -457,8 +457,8 @@ export default function SubscriptionPage() {
                </div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#FF5C3A]/10 to-indigo-500/10 p-10 rounded-[3rem] border border-[var(--border-color)] shadow-2xl relative overflow-hidden group">
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#FF5C3A]/10 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000" />
+            <div className="bg-zinc-50 p-10 rounded-[3rem] border border-zinc-200/60 shadow-deep relative overflow-hidden group">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#FF5C3A]/5 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000" />
                 <div className="flex items-center gap-3 mb-6 relative z-10">
                    <div className="w-8 h-8 rounded-xl bg-[#FF5C3A] flex items-center justify-center shadow-lg shadow-[#FF5C3A]/30">
                       <Zap className="w-4 h-4 text-white" />

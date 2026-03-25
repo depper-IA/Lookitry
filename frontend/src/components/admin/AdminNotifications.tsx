@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
@@ -475,6 +475,21 @@ export function AdminNotifications() {
                   <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Mensaje del cliente:</p>
                   <div className="border rounded-lg px-4 py-3" style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}>
                     <p className="text-sm leading-relaxed italic" style={{ color: 'var(--text-secondary)' }}>&quot;{selected.metadata.clientMessage}&quot;</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Fallback para otros metadatos */}
+              {![ 'plan_change_request', 'multi_month_purchase', 'high_usage', 'credits_exhausted', 'service_down', 'service_recovered' ].includes(selected.type) && !selected.metadata?.clientMessage && selected.metadata && Object.keys(selected.metadata).length > 0 && (
+                <div className="p-3 rounded-lg border bg-gray-50/50 space-y-2">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Información adicional</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {Object.entries(selected.metadata).map(([key, value]) => (
+                      <div key={key} className="min-w-0">
+                        <p className="text-[8px] font-bold text-gray-400 uppercase truncate">{key}</p>
+                        <p className="text-xs font-medium text-gray-700 truncate">{typeof value === 'object' ? JSON.stringify(value) : String(value ?? '—')}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

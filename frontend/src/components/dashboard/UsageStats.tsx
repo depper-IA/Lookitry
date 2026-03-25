@@ -139,23 +139,30 @@ export function UsageStats({ stats }: UsageStatsProps) {
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="p-10 rounded-[3.5rem] bg-[var(--bg-card)] border border-[var(--border-color)] relative overflow-hidden shadow-2xl"
+          className="p-12 rounded-[3.5rem] bg-zinc-900 border border-white/5 relative overflow-hidden shadow-2xl group"
         >
-          <div className="absolute top-0 right-0 p-10 opacity-5">
-             <TrendingUp size={150} strokeWidth={2.5} />
+          <div className="absolute top-0 right-0 p-12 opacity-[0.03] rotate-12 transition-transform duration-1000 group-hover:rotate-45">
+             <TrendingUp size={280} strokeWidth={1} />
           </div>
-          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-            <div className="space-y-3 text-center lg:text-left">
-              <h3 className="text-3xl font-extrabold uppercase tracking-tighter leading-none text-[var(--text-primary)]">¿Demasiado tráfico?</h3>
-              <p className="text-[var(--text-muted)] text-sm font-bold max-w-lg leading-relaxed uppercase tracking-tighter">
-                Has usado casi el <span className="text-[#FF5C3A]">{genPct.toFixed(0)}%</span> de tus créditos. El Plan PRO te ofrece 1,200 generaciones y mayor velocidad.
+          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
+            <div className="space-y-4 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF5C3A]/20 border border-[#FF5C3A]/30">
+                <Zap className="w-3 h-3 text-[#FF5C3A] fill-[#FF5C3A]" />
+                <span className="text-[#FF5C3A] text-[9px] font-black uppercase tracking-widest">Optimización de Rendimiento</span>
+              </div>
+              <h3 className="text-4xl md:text-5xl font-jakarta font-[950] uppercase italic tracking-tighter leading-none text-white">
+                ¿Buscas <span className="text-[#FF5C3A]">máxima</span> potencia?
+              </h3>
+              <p className="text-zinc-400 text-sm font-medium max-w-xl leading-relaxed uppercase tracking-tighter">
+                Has alcanzado el <span className="text-white font-black">{genPct.toFixed(0)}%</span> de tus créditos mensuales. <br className="hidden md:block" />
+                El Plan PRO desbloquea <span className="text-white font-black">1,200 generaciones</span> y soporte prioritario VIP.
               </p>
             </div>
             <button 
               onClick={() => window.location.href='/dashboard/subscription'}
-              className="px-10 py-5 bg-[#FF5C3A] text-white rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-[11px] shadow-2xl shadow-[#FF5C3A]/40 hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+              className="px-12 py-6 bg-white text-black rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] hover:scale-105 active:scale-95 transition-all whitespace-nowrap shadow-xl"
             >
-              Mejorar Mi Potencia
+              Mejorar Mi Plan
             </button>
           </div>
         </motion.div>
