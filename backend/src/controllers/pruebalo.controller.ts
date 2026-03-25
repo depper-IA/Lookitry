@@ -501,6 +501,51 @@ export class PruebaloController {
       result
     });
   });
+
+  /**
+   * GET /api/pruebalo/img-proxy?url=...
+   * Proxy para saltar bloqueos de CORS/Hotlinking de imágenes de productos
+   */
+  imgProxy = asyncHandler(async (req: Request, res: Response) => {
+    const imageUrl = req.query.url as string;
+
+    if (!imageUrl) {
+      throw new ValidationError('URL de imagen requerida');
+    }
+
+    try {
+      // Validar si es una URL absoluta
+      if (!imageUrl.startsWith('http')) {
+        throw new ValidationError('URL de imagen inválida');
+      }
+
+      const response = await fetch(imageUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+          'Referer': new URL(imageUrl).origin,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching image: ${response.statusText}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (contentType) {
+        res.setHeader('Content-Type', contentType);
+      }
+
+      // Cache por 24 horas
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+
+      const buffer = await response.arrayBuffer();
+      return res.send(Buffer.from(buffer));
+    } catch (error: any) {
+      console.error('[imgProxy] Error:', error.message);
+      return res.status(500).json({ error: 'FAILED_TO_PROXY_IMAGE', message: error.message });
+    }
+  });
 }
 
 /**
