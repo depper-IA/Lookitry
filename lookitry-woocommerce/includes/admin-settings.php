@@ -117,10 +117,14 @@ function lookitry_settings_page() {
     <div class="lookitry-wrap">
         <div class="lookitry-header">
             <div class="lookitry-header-left">
-                <!-- Logo Principal Solicitado -->
-                <img id="lookitry-main-logo" src="<?php echo LOOKITRY_PLUGIN_URL; ?>assets/logo.svg" alt="Lookitry">
-                <h1>Lookitry <span>SaaS</span></h1>
-                <span class="lookitry-version">v<?php echo $version; ?></span>
+                <div class="lookitry-logo-wrapper" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px;">
+                    <img id="lookitry-main-logo" src="<?php echo LOOKITRY_PLUGIN_URL; ?>assets/logo.svg" alt="Lookitry" style="height: 42px; width: auto; filter: none;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="color: #fff; font-weight: 800; font-size: 18px; line-height: 1.1; letter-spacing: -0.5px;">Lookitry</span>
+                        <span style="color: #FF5C3A; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Virtual Try-On</span>
+                    </div>
+                </div>
+                <span class="lookitry-version" style="margin-left: 10px;">v<?php echo $version; ?></span>
             </div>
             <div id="connection-status-dot" style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: #64748b; background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1);">
                 <span style="width: 10px; height: 10px; background: #94a3b8; border-radius: 50%;"></span> Desconectado
@@ -272,9 +276,9 @@ function lookitry_settings_page() {
                         $('#status-connected').show();
                         $('#lookitry-sync-section').show();
                         
-                        // Header branding
+                        // Actualizar solo el logo del resumen de marca, NO el del header de Lookitry
                         if (res.logo_light || res.logo) {
-                          $('#lookitry-main-logo, #lookitry-stat-logo').attr('src', res.logo_light || res.logo);
+                          $('#lookitry-stat-logo').attr('src', res.logo_light || res.logo);
                         }
                         
                         $('#connection-status-dot').css('color', '#059669').html('<span style="width: 8px; height: 8px; background: #059669; border-radius: 50%;"></span> Conectado: ' + res.brandName);
@@ -343,11 +347,7 @@ function lookitry_settings_page() {
         }
 
         function getProxiedUrl(url) {
-            if (!url) return '';
-            // Solo flashear si es de minio
-            if (url.indexOf('minio.wilkiedevs.com') !== -1) return url;
-            // Usar el backend proxy oficial en api.lookitry.com
-            return 'https://api.lookitry.com/api/pruebalo/img-proxy?url=' + encodeURIComponent(url);
+            return url; // Ya no usamos proxy para miniaturas
         }
 
         $('#lookitry-test-connection').on('click', function() { validateConnection(false); });

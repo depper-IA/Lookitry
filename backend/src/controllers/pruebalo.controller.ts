@@ -461,10 +461,7 @@ export class PruebaloController {
       return res.status(401).json({ success: false, message: 'Clave de API inválida' });
     }
 
-    const products = await productsService.getProductsByBrand(brand.id);
-    const syncedIds = products
-      .filter(p => p.external_id)
-      .map(p => p.external_id);
+    const syncedIds = await productsService.getAllSyncedExternalIds(brand.id);
 
     return res.status(200).json({ success: true, syncedIds });
   });
