@@ -430,6 +430,7 @@ export class PruebaloController {
     return res.status(200).json({ 
       valid: true, 
       brandName: brand.name,
+      logo: brand.logo,
       plan: brand.plan 
     });
   });
