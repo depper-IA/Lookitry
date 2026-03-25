@@ -1,0 +1,25 @@
+name: Sync Plugin to WordPress
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lookitry-woocommerce/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: 92.112.189.47
+          username: u639440667
+          password: ${{ secrets.FTP_PASS }}
+          local-dir: ./lookitry-woocommerce/
+          server-dir: public_html/wp-content/plugins/lookitry-woocommerce/
+          exclude: |
+            **/.git*
+            **/node_modules/**
