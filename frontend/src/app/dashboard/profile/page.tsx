@@ -75,6 +75,7 @@ export default function ProfilePage() {
   const [email, setEmail] = useState(brand?.email || '');
   const [phone, setPhone] = useState(brand?.phone || '');
   const [address, setAddress] = useState(brand?.address || '');
+  const [website, setWebsite] = useState((brand as any)?.social_links?.website || '');
 
   // Location states
   const [countryCode, setCountryCode] = useState(brand?.country === 'Colombia' ? 'CO' : '');
@@ -111,6 +112,7 @@ export default function ProfilePage() {
       setEmail(brand.email);
       setPhone(brand.phone || '');
       setAddress(brand.address || '');
+      setWebsite((brand as any).social_links?.website || '');
       setCity(brand.city || '');
       setPostalCode(brand.postalCode || '');
       setNit(brand.nit || '');
@@ -153,7 +155,8 @@ export default function ProfilePage() {
         state_province: stateProvince,
         postal_code: postalCode,
         nit,
-        billing_email: billingEmail
+        billing_email: billingEmail,
+        website
       });
       setSuccessMsg('Perfil actualizado con éxito');
       refreshBrand();
@@ -367,6 +370,17 @@ export default function ProfilePage() {
                           type="tel" value={phone} onChange={e => setPhone(e.target.value)}
                           className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
                           placeholder="Ej: +57 300 123 4567"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Sitio Web (Para embeber widget)</label>
+                      <div className="relative group">
+                        <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
+                        <input
+                          type="url" value={website} onChange={e => setWebsite(e.target.value)}
+                          className="w-full pl-12 pr-4 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                          placeholder="Ej: https://tumarca.com"
                         />
                       </div>
                     </div>
