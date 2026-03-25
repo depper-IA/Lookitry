@@ -53,7 +53,7 @@ async function getFingerprint(): Promise<string | null> {
 
 export default function RegisterForm() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', email: '', password: '', slug: '' });
+  const [form, setForm] = useState({ name: '', contact_name: '', email: '', password: '', slug: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
@@ -252,6 +252,21 @@ export default function RegisterForm() {
                 onChange={handleChange}
                 required
                 placeholder="Mi Marca"
+                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+              />
+            </div>
+
+            {/* Nombre Completo */}
+            <div>
+              <label className="block text-[13px] font-medium text-[#888] mb-1.5">
+                Nombre completo (Responsable)
+              </label>
+              <input
+                name="contact_name"
+                value={form.contact_name}
+                onChange={handleChange}
+                required
+                placeholder="Juan Pérez"
                 className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
               />
             </div>
