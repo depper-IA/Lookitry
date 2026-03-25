@@ -269,6 +269,11 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     });
     setSelfieFile(file); 
     
+    // Invalida el caché cuando se sube una COMPLETAMENTE NUEVA selfie
+    const key = `tryon_gen_${brandSlug}`;
+    localStorage.removeItem(key);
+    setGeneratedProducts(new Map());
+    
     if (selectedProduct) {
       // Si el usuario ya viene con un producto seleccionado (ej. plugin WooCommerce),
       // saltamos la pantalla de selección y empezamos a generar inmediatamente.
