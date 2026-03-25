@@ -107,11 +107,11 @@ export default function IntegrationsPage() {
                 <img src="/logo.svg" alt="Lookitry" className="w-full h-full object-contain" />
              </div>
              <div>
-                <h1 className="text-[1.75rem] sm:text-3xl md:text-5xl lg:text-6xl font-[1000] tracking-tighter text-zinc-900 italic uppercase leading-[0.95] md:leading-[0.85] break-words">
-                   Integraciones <br />
-                   <span className="text-zinc-400">Ecosistema Pro</span>
-                </h1>
-                <p className="text-[8px] md:text-[10px] font-black tracking-[0.2em] md:tracking-[0.4em] text-zinc-400 uppercase mt-2 md:mt-4 italic">Conexión Global • Tiempo Real</p>
+                 <h1 className="text-2xl md:text-4xl font-[1000] tracking-tighter text-zinc-900 dark:text-white uppercase leading-none">
+                    Integraciones <br />
+                    <span className="text-[#FF5C3A]">Ecosistema Pro</span>
+                 </h1>
+                 <p className="text-[8px] md:text-[10px] font-black tracking-[0.2em] md:tracking-[0.3em] text-zinc-400 dark:text-zinc-500 uppercase mt-2 md:mt-3 mb-1 italic">Conexión Global • Tiempo Real</p>
              </div>
           </div>
         </div>
@@ -134,16 +134,22 @@ export default function IntegrationsPage() {
         <div className="lg:col-span-8 space-y-12 md:space-y-16">
            
            {/* WOOCOMMERCE CARD - NEW LUXURY DESIGN */}
-           <motion.div variants={itemVariants} className="bg-white rounded-3xl md:rounded-[4.5rem] border border-zinc-100 p-6 md:p-16 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] space-y-10 md:space-y-16 relative overflow-hidden group">
+           <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900/50 rounded-3xl md:rounded-[4.5rem] border border-zinc-100 dark:border-zinc-800 p-6 md:p-16 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] space-y-10 md:space-y-16 relative overflow-hidden group">
               
-              <div className="flex flex-col md:flex-row items-center md:items-center gap-6 md:gap-10 border-b border-zinc-50 pb-10 md:pb-16 text-center md:text-left">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2.5rem] md:rounded-[3rem] bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-inner group-hover:rotate-6 transition-transform shrink-0 overflow-hidden p-4">
+              <div className="flex flex-col md:flex-row items-center md:items-center gap-6 md:gap-10 border-b border-zinc-50 dark:border-zinc-800/50 pb-10 md:pb-16 text-center md:text-left">
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2.5rem] md:rounded-[3rem] bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center border border-zinc-100 dark:border-zinc-700 shadow-inner group-hover:rotate-6 transition-transform shrink-0 overflow-hidden p-4">
                    <img src="/integrations/Woo_logo_color.png" alt="WooCommerce" className="w-full h-full object-contain" />
                 </div>
                 <div>
-                   <h2 className="text-2xl md:text-4xl font-[1000] text-zinc-900 uppercase tracking-tighter italic leading-none">WooCommerce</h2>
-                   <p className="text-[9px] md:text-[11px] font-black text-[#FF5C3A] uppercase tracking-[0.2em] md:tracking-[0.3em] mt-3 md:mt-4 flex items-center justify-center md:justify-start gap-2 md:gap-3 italic">
-                      <Check className="w-3 md:w-3.5 h-3 md:h-3.5" strokeWidth={4} /> Integración Certificada
+                   <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-4 mb-3">
+                      <h2 className="text-2xl md:text-4xl font-[1000] text-zinc-900 dark:text-white uppercase tracking-tighter italic leading-none">WooCommerce</h2>
+                      <div className="px-3 py-1 bg-emerald-500 dark:bg-emerald-600 rounded-full border border-emerald-400/20 shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                         <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                         <span className="text-[8px] md:text-[9px] font-black text-white uppercase tracking-widest">PLUGIN ACTIVO</span>
+                      </div>
+                   </div>
+                   <p className="text-[9px] md:text-[11px] font-black text-[#FF5C3A] uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center justify-center md:justify-start gap-2 md:gap-3 italic opacity-80">
+                      <Check className="w-3 md:w-3.5 h-3 md:h-3.5" strokeWidth={4} /> Conectado a wilkiedevs.com
                    </p>
                 </div>
               </div>
@@ -167,18 +173,18 @@ export default function IntegrationsPage() {
                           type={showKey ? 'text' : 'password'}
                           readOnly
                           value={apiKey}
-                          className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl md:rounded-[3rem] py-5 md:py-8 px-6 md:pl-20 md:pr-44 text-[12px] md:text-base font-mono font-black text-zinc-900 outline-none focus:border-zinc-200 transition-all shadow-inner truncate"
+                          className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-2xl md:rounded-[3rem] py-5 md:py-8 px-6 md:pl-20 md:pr-44 text-[12px] md:text-base font-mono font-black text-zinc-900 dark:text-white outline-none focus:border-zinc-200 transition-all shadow-inner truncate"
                        />
-                       <div className="relative md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 flex flex-row gap-2 md:gap-4 p-1.5 md:p-2 bg-white rounded-xl md:rounded-[2.5rem] md:shadow-xl md:border md:border-zinc-50">
+                       <div className="relative md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 flex flex-row gap-2 md:gap-4 p-1.5 md:p-2 bg-white dark:bg-zinc-900 rounded-xl md:rounded-[2.5rem] md:shadow-xl md:border md:border-zinc-50/5">
                           <button 
                             onMouseDown={() => setShowKey(true)} onTouchStart={() => setShowKey(true)} onMouseUp={() => setShowKey(false)} onTouchEnd={() => setShowKey(false)} onMouseLeave={() => setShowKey(false)}
-                            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-zinc-50 rounded-lg md:rounded-2xl text-zinc-400 hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/5 transition-all shrink-0"
+                            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-zinc-50 dark:bg-zinc-800 rounded-lg md:rounded-2xl text-zinc-400 hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/5 transition-all shrink-0"
                           >
                              {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
                           <button 
                              onClick={copyToClipboard}
-                             className={`flex-1 md:flex-none px-6 md:px-10 py-3 md:py-4 ${copied ? 'bg-emerald-500' : 'bg-zinc-900'} text-white rounded-lg md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-2 md:gap-3`}
+                             className={`flex-1 md:flex-none px-6 md:px-10 py-3 md:py-4 ${copied ? 'bg-emerald-500' : 'bg-zinc-900 dark:bg-zinc-700'} text-white rounded-lg md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-2 md:gap-3`}
                           >
                              {copied ? <Check size={14} /> : <Copy size={14} />}
                              {copied ? 'Listo' : 'Copiar Clave'}
@@ -196,16 +202,16 @@ export default function IntegrationsPage() {
               {/* PASOS - CLEAN CARDS */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 pt-4 md:pt-6">
                  {steps.map((step) => (
-                    <div key={step.id} className="group/step p-6 md:p-10 rounded-2xl md:rounded-[3.5rem] bg-zinc-50/50 border border-zinc-100 hover:bg-white hover:border-zinc-200 transition-all relative overflow-hidden">
-                       <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white border border-zinc-100 flex items-center justify-center mb-6 md:mb-8 shadow-sm group-hover:scale-110 transition-transform">
+                    <div key={step.id} className="group/step p-6 md:p-10 rounded-2xl md:rounded-[3.5rem] bg-zinc-50/50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 transition-all relative overflow-hidden">
+                       <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 flex items-center justify-center mb-6 md:mb-8 shadow-sm group-hover:scale-110 transition-transform">
                           {step.icon}
                        </div>
-                       <h3 className="text-[10px] md:text-[11px] font-black text-zinc-900 uppercase tracking-widest mb-3 md:mb-4">
+                       <h3 className="text-[10px] md:text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-widest mb-3 md:mb-4">
                           {step.title}
-                       </h3>
-                       <p className="text-[9px] md:text-[10px] font-bold text-zinc-400 uppercase leading-[1.6] md:leading-[1.6] tracking-tight group-hover:text-zinc-500 transition-colors">
-                          {step.description}
-                       </p>
+                        </h3>
+                        <p className="text-[9px] md:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase leading-[1.6] md:leading-[1.6] tracking-tight group-hover:text-zinc-500 transition-colors">
+                           {step.description}
+                        </p>
                        
                        {step.action && (
                            <button className="mt-6 md:mt-8 flex items-center gap-3 text-[8px] md:text-[9px] font-black text-[#FF5C3A] uppercase tracking-[0.2em] group-hover:gap-5 transition-all">
@@ -255,14 +261,14 @@ const { image } = await lookitry.render({
             </motion.div>
 
             {/* PAYMENTS SECTION */}
-            <motion.div variants={itemVariants} className="bg-white rounded-3xl md:rounded-[4.5rem] border border-zinc-100 p-8 md:p-16 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] space-y-8">
+            <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900/50 rounded-3xl md:rounded-[4.5rem] border border-zinc-100 dark:border-zinc-800 p-8 md:p-16 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] space-y-8">
                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-10 h-10 rounded-2xl bg-zinc-900 flex items-center justify-center text-white">
+                  <div className="w-10 h-10 rounded-2xl bg-zinc-900 dark:bg-zinc-800 flex items-center justify-center text-white">
                      <Cpu size={20} />
                   </div>
                   <div>
-                     <h3 className="text-xl font-[1000] text-zinc-900 uppercase tracking-tighter italic leading-none">Pagos & Gateways</h3>
-                     <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mt-1">Soporte nativo para pasarelas</p>
+                     <h3 className="text-xl font-[1000] text-zinc-900 dark:text-white uppercase tracking-tighter italic leading-none">Pagos & Gateways</h3>
+                     <p className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mt-1">Soporte nativo para pasarelas</p>
                   </div>
                </div>
                
@@ -273,8 +279,8 @@ const { image } = await lookitry.render({
                     { name: 'PSE', img: '/integrations/logo-pse.svg' },
                     { name: 'Visa', img: '/integrations/visa.svg' }
                   ].map(p => (
-                    <div key={p.name} className="p-6 md:p-8 rounded-[2rem] bg-zinc-50/50 border border-zinc-50 flex items-center justify-center grayscale hover:grayscale-0 hover:bg-white hover:border-zinc-200 transition-all group">
-                       <img src={p.img} alt={p.name} className="h-6 md:h-8 w-auto object-contain group-hover:scale-110 transition-transform" />
+                    <div key={p.name} className="p-6 md:p-8 rounded-[2rem] bg-zinc-50/50 dark:bg-zinc-800/30 border border-zinc-50 dark:border-zinc-800 flex items-center justify-center grayscale hover:grayscale-0 hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 transition-all group">
+                       <img src={p.img} alt={p.name} className="h-6 md:h-8 w-auto object-contain group-hover:scale-110 transition-transform dark:invert dark:opacity-80 dark:group-hover:opacity-100" />
                     </div>
                   ))}
                </div>
@@ -285,10 +291,10 @@ const { image } = await lookitry.render({
          <div className="lg:col-span-4 space-y-8 md:space-y-12">
             
             {/* PLATAFORMAS */}
-            <motion.div variants={itemVariants} className="bg-white rounded-3xl md:rounded-[4rem] border border-zinc-100 p-8 md:p-12 shadow-[0_30px_80px_rgba(0,0,0,0.02)] space-y-8 md:space-y-12">
+            <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900/50 rounded-3xl md:rounded-[4rem] border border-zinc-100 dark:border-zinc-800 p-8 md:p-12 shadow-[0_30px_80px_rgba(0,0,0,0.02)] space-y-8 md:space-y-12">
                <div className="space-y-2 md:space-y-3">
-                  <h3 className="text-[10px] md:text-[11px] font-black text-zinc-900 uppercase tracking-[0.2em] md:tracking-[0.3em] italic leading-none">Connectors</h3>
-                  <p className="text-[8px] md:text-[9px] font-black text-zinc-300 uppercase tracking-[0.15em] md:tracking-[0.2em]">Framework Availability</p>
+                  <h3 className="text-[10px] md:text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.2em] md:tracking-[0.3em] italic leading-none">Connectors</h3>
+                  <p className="text-[8px] md:text-[9px] font-black text-zinc-300 dark:text-zinc-600 uppercase tracking-[0.15em] md:tracking-[0.2em]">Framework Availability</p>
                </div>
                <div className="space-y-4 md:space-y-6">
                   {[
@@ -297,14 +303,14 @@ const { image } = await lookitry.render({
                     { name: 'Wix Global', icon: '/integrations/Wix.svg', color: '#f5f5f5', status: 'Q4 2026' },
                     { name: 'Cloud SDK', icon: '/logo.svg', color: '#f5f5f5', status: 'Available' }
                   ].map((plat) => (
-                     <div key={plat.name} className="flex items-center justify-between p-5 md:p-7 bg-zinc-50 border border-zinc-50 rounded-2xl md:rounded-[2.5rem] hover:bg-white hover:border-zinc-200 group/plat transition-all shadow-sm">
+                     <div key={plat.name} className="flex items-center justify-between p-5 md:p-7 bg-zinc-50 dark:bg-zinc-800/30 border border-zinc-50 dark:border-zinc-800 rounded-2xl md:rounded-[2.5rem] hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 group/plat transition-all shadow-sm">
                         <div className="flex items-center gap-4 md:gap-6">
-                           <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-all bg-white border border-zinc-100 shrink-0 overflow-hidden p-2.5">
+                           <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-all bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 shrink-0 overflow-hidden p-2.5">
                               <img src={plat.icon} alt={plat.name} className="w-full h-full object-contain" />
                            </div>
                            <div>
-                              <p className="text-[11px] md:text-[12px] font-black text-zinc-900 uppercase tracking-tight italic">{plat.name}</p>
-                              <p className={`text-[7px] md:text-[8px] font-black uppercase tracking-widest mt-1 ${plat.status === 'Live' ? 'text-emerald-500' : 'text-zinc-400 opacity-60'}`}>{plat.status}</p>
+                              <p className="text-[11px] md:text-[12px] font-black text-zinc-900 dark:text-white uppercase tracking-tight italic">{plat.name}</p>
+                              <p className={`text-[7px] md:text-[8px] font-black uppercase tracking-widest mt-1 ${plat.status === 'Live' ? 'text-emerald-500' : 'text-zinc-400 dark:text-zinc-600 opacity-60'}`}>{plat.status}</p>
                            </div>
                         </div>
                      </div>
