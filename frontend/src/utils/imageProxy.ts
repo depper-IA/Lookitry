@@ -5,8 +5,12 @@
 export function getProxiedImageUrl(src: string, plan?: string, download?: boolean): string {
   if (!src) return '';
   
-  // Si no hay plan o es PRO, devolvemos la URL original (sin proxy de marca de agua)
-  if (!plan || plan === 'PRO') return src;
+  // Si no hay plan, devolvemos la URL original
+  if (!plan) return src;
+
+  // Si el plan es PRO, solo usamos el proxy si el usuario quiere descargar la imagen.
+  // De lo contrario, usamos la URL directa de MinIO para mayor rendimiento.
+  if (plan === 'PRO' && !download) return src;
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
   const encodedSrc = encodeURIComponent(src);

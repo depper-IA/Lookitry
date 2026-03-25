@@ -72,7 +72,7 @@ const publicCors = cors({
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
-  credentials: true
+  credentials: false
 });
 
 app.use('/api/pruebalo', publicCors, pruebaloRoutes);
