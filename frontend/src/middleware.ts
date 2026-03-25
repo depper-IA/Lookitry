@@ -3,13 +3,6 @@ import type { NextRequest } from 'next/server';
 
 /**
  * middleware.ts — Protección de rutas en el Edge Runtime de Next.js
- *
- * Lee la cookie HTTP-Only `token` que el backend emite en login/register.
- * Si no existe, redirige a /login (para /dashboard) o a /admin/login (para /admin).
- *
- * NOTA: El Edge Runtime no puede ejecutar `jsonwebtoken` (Node.js puro),
- * por lo que solo se verifica la *presencia* de la cookie aquí.
- * La validación criptográfica completa ocurre en el backend al primer request autenticado.
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -19,8 +12,6 @@ export async function middleware(request: NextRequest) {
   const isDev = process.env.NODE_ENV === 'development';
 
   // ── Resolución de Dominios Personalizados ─────────────────────────────────────
-  // Solo si no estamos en una ruta de sistema (dashboard, admin, login, etc)
-  // y el host no es el dominio base.
   const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || '';
   const isBaseDomain = host === baseDomain || host.includes('localhost') || host.endsWith('.vercel.app');
 
@@ -32,7 +23,6 @@ export async function middleware(request: NextRequest) {
       if (res.ok) {
         const { slug } = await res.json();
         if (slug) {
-          // Rewrite interno a la mini-landing de la marca
           return NextResponse.rewrite(new URL(`/sitio/${slug}`, request.url));
         }
       }
@@ -42,8 +32,6 @@ export async function middleware(request: NextRequest) {
   }
 
   // ── Modo Mantenimiento ──────────────────────────────────────────────────────
-  // Solo verificar si no estamos en una ruta exceptuada (ya filtradas por matcher)
-  // y si no estamos ya en la página de mantenimiento o en el panel admin.
   const isMaintenancePage = pathname === '/mantenimiento';
   const isAdminPath = pathname.startsWith('/admin') || !!adminToken;
 
@@ -51,9 +39,8 @@ export async function middleware(request: NextRequest) {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
       if (!apiUrl) return NextResponse.next();
-      // Cachear internamente en el edge si es posible o simplemente fetch
       const res = await fetch(`${apiUrl}/api/payment-settings/public`, {
-        next: { revalidate: 60 } // Intentar revalidar cada minuto si el runtime lo soporta
+        next: { revalidate: 60 }
       } as any);
       
       if (res.ok) {
@@ -94,14 +81,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - logo.svg, etc (root assets)
-     */
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.svg|.*\\.png|.*\\.jpg).*)',
   ],
 };
