@@ -39,7 +39,6 @@ interface OpenRouterCredits {
   low_balance_alert: boolean;
   critical_balance_alert: boolean;
 }
-
 interface PaymentSettings {
   bypass_ip_protection: boolean;
   ip_whitelist: string;
@@ -49,6 +48,8 @@ interface PaymentSettings {
   currency: string;
   ai_prompt_master: string;
   ai_prompt_negative: string;
+  maintenance_mode: boolean;
+  maintenance_message: string;
 }
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
@@ -247,6 +248,11 @@ export default function SystemConfigPage() {
   const [aiPromptNegative, setAiPromptNegative] = useState<string>('');
   const [savingAIConfig, setSavingAIConfig] = useState(false);
 
+  // Mantenimiento
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
+  const [savingMaintenance, setSavingMaintenance] = useState(false);
+
   // Créditos OpenRouter
   const [credits, setCredits] = useState<OpenRouterCredits | null>(null);
   const [loadingCredits, setLoadingCredits] = useState(true);
@@ -313,6 +319,8 @@ export default function SystemConfigPage() {
         if (data.currency) setCurrency(data.currency);
         if (data.ai_prompt_master) setAiPromptMaster(data.ai_prompt_master);
         if (data.ai_prompt_negative) setAiPromptNegative(data.ai_prompt_negative);
+        setMaintenanceMode(data.maintenance_mode ?? false);
+        setMaintenanceMessage(data.maintenance_message ?? 'Estamos realizando mejoras en nuestra plataforma. Volveremos pronto.');
       }
     } catch { /* silencioso */ }
   }, []);
@@ -385,6 +393,7 @@ export default function SystemConfigPage() {
     setSavingLandingConfig(true);
     setSavingCurrency(true);
     setSavingWhitelist(true);
+    setSavingMaintenance(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
         method: 'PUT', credentials: 'include', headers,
@@ -397,6 +406,8 @@ export default function SystemConfigPage() {
           currency: currency,
           ai_prompt_master: aiPromptMaster,
           ai_prompt_negative: aiPromptNegative,
+          maintenance_mode: maintenanceMode,
+          maintenance_message: maintenanceMessage,
         }),
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Error');
@@ -407,6 +418,7 @@ export default function SystemConfigPage() {
       setSavingLandingConfig(false);
       setSavingCurrency(false);
       setSavingWhitelist(false);
+      setSavingMaintenance(false);
     }
   }
 
@@ -714,6 +726,33 @@ export default function SystemConfigPage() {
                   : <IconCheck className="w-4 h-4" />}
                 Guardar
               </button>
+            </div>
+          </div>
+
+          {/* Modo Mantenimiento */}
+          <div className="pt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+            <div className="flex items-start justify-between gap-4 py-3">
+              <div className="flex-1">
+                <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">Modo Mantenimiento (Global)</p>
+                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
+                  {maintenanceMode
+                    ? 'ACTIVO — Los usuarios verán la página de mantenimiento. Los administradores aún pueden acceder.'
+                    : 'Inactivo — El sitio web funciona con normalidad.'}
+                </p>
+              </div>
+              <Toggle value={maintenanceMode} onChange={() => setMaintenanceMode(!maintenanceMode)} disabled={savingMaintenance} />
+            </div>
+            
+            <div className="mt-2">
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Mensaje de Mantenimiento</label>
+              <textarea
+                value={maintenanceMessage}
+                onChange={e => setMaintenanceMessage(e.target.value)}
+                rows={3}
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                placeholder="Explica qué está sucediendo a los usuarios..."
+              />
             </div>
           </div>
 
