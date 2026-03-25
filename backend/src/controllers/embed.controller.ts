@@ -34,7 +34,7 @@ export class EmbedController {
 
     // Construir la URL del widget preseleccionando el producto
     const baseUrl = process.env.FRONTEND_URL || '';
-    const embedUrl = `${baseUrl}/pruebalo/${brand.slug}?product=${product.id}`;
+    const embedUrl = `${baseUrl}/embed/${brand.slug}?product_id=${product.id}`;
 
     return res.status(200).json({
       success: true,
