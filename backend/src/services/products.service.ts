@@ -1,6 +1,10 @@
 import { supabaseAdmin } from '../config/supabase';
+import { N8nClient } from './n8n.client';
+import { invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { Product } from '../types';
 import { PLANS } from '../config/plans';
+
+const n8nClient = new N8nClient();
 
 export interface CreateProductDto {
   name: string;
@@ -169,6 +173,22 @@ export class ProductsService {
       throw new Error('La categoría es requerida');
     }
 
+    // Si existe, lo actualizamos y nos aseguramos que esté activo
+    const { error: updateError } = await supabaseAdmin
+      .from('products')
+      .update({
+        name: productData.name.trim(),
+        description: productData.description?.trim() || null,
+        image_url: productData.image_url.trim(),
+        category: productData.category.trim(),
+        price: productData.price ?? null,
+        badge: productData.badge ?? null,
+        is_active: true, // Por si acaso hubiera quedado alguno inactivo de antes
+        updated_at: new Date().toISOString()
+      })
+      .eq('brand_id', brandId)
+      .eq('external_id', String(productData.external_id));
+
     // Crear el producto
     const { data, error } = await supabaseAdmin
       .from('products')
@@ -290,10 +310,10 @@ export class ProductsService {
       throw new Error('No tienes permiso para eliminar este producto');
     }
 
-    // Soft delete: marcar como inactivo
+    // Hard delete: eliminar el registro físicamente
     const { error } = await supabaseAdmin
       .from('products')
-      .update({ is_active: false })
+      .delete()
       .eq('id', productId);
 
     if (error) {
@@ -353,7 +373,8 @@ export class ProductsService {
       let isActive = true;
       if (exists) {
         updatedCount++;
-        isActive = exists.isActive; // Mantener estado actual
+        // Si el producto ya existía, lo reactivamos (por si estaba inactivo)
+        isActive = true; 
       } else {
         if (remainingSlots > 0) {
           isActive = true;
@@ -382,14 +403,37 @@ export class ProductsService {
     }
 
     // 4. Upsert masivo
-    const { error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('products')
       .upsert(upsertData, { 
         onConflict: 'brand_id,external_id'
-      });
+      })
+      .select('id, image_url, description');
 
     if (error) {
       throw new Error('Error en sincronización masiva: ' + error.message);
+    }
+
+    // 5. Generar descripciones con IA para nuevos productos o sin descripción
+    const webhookUrl = process.env.N8N_DESCRIPTION_WEBHOOK_URL;
+    if (webhookUrl && (data || []).length > 0) {
+      (data || []).forEach(p => {
+        // Solo si no tiene descripción o es muy corta
+        if (!p.description || p.description.length < 5) {
+          n8nClient.callDescriptionWebhook({
+            brand_id: brandId,
+            product_id: p.id,
+            product_image_url: p.image_url
+          }).then(async (res) => {
+            if (res.success && res.description) {
+              await supabaseAdmin
+                .from('products')
+                .update({ description: res.description })
+                .eq('id', p.id);
+            }
+          }).catch(err => console.error(`❌ Error descripción IA para ${p.id}:`, err.message));
+        }
+      });
     }
 
     return {

@@ -57,7 +57,8 @@ export class ProductsController {
       };
 
       const product = await productsService.createProduct(req.brand.id, productData);
-
+ 
+      // Invalidar caché para que el cambio se vea en el plugin y widget inmediatamente
       invalidateBrandConfigCache(req.brand.slug);
       return res.status(201).json(product);
     } catch (error: any) {
@@ -138,7 +139,8 @@ export class ProductsController {
       }
 
       const product = await productsService.updateProduct(productId, req.brand.id, updates);
-
+ 
+      // Invalidar caché tras actualización
       invalidateBrandConfigCache(req.brand.slug);
       return res.status(200).json(product);
     } catch (error: any) {
@@ -195,8 +197,10 @@ export class ProductsController {
       }
 
       await productsService.deleteProduct(productId, req.brand.id);
-
+ 
+      // CRITICAL: Invalidar caché para que el plugin de WooCommerce sepa que el producto ya no existe/está inactivo
       invalidateBrandConfigCache(req.brand.slug);
+      
       return res.status(200).json({
         success: true,
         message: 'Producto eliminado correctamente',

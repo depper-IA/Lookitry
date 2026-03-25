@@ -37,7 +37,7 @@ function lookitry_settings_page() {
     }
 
     $api_key = get_option( 'lookitry_api_key', '' );
-    $version = defined('LOOKITRY_PLUGIN_VERSION') ? LOOKITRY_PLUGIN_VERSION : '1.2.4';
+    $version = defined('LOOKITRY_PLUGIN_VERSION') ? LOOKITRY_PLUGIN_VERSION : '1.2.5';
     ?>
     <style>
         .lookitry-wrap { max-width: 900px; margin: 30px auto 0 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; }
@@ -387,7 +387,7 @@ function lookitry_settings_page() {
                             }
                             html += '</td>';
                             html += '<td>';
-                            html += '<div style="font-weight: 700; color: #1e293b;">' + p.name + '</div>';
+                            html += '<div style="font-weight: 700; color: #1e293b;"><a href="' + p.permalink + '" target="_blank" style="text-decoration: none; color: inherit; transition: color 0.2s;" onmouseover="this.style.color=\'#FF5C3A\'" onmouseout="this.style.color=\'inherit\'">' + p.name + ' <span style="font-size: 10px; opacity: 0.6; margin-left: 4px;">↗</span></a></div>';
                             html += '<div style="font-size: 11px; color: #64748b;">ID: ' + p.external_id + ' | COP ' + p.price + '</div>';
                             html += '</td>';
                             html += '<td id="status-' + i + '"><span style="color: #94a3b8; font-style: italic;">...</span></td>';
@@ -482,7 +482,8 @@ function lookitry_ajax_get_catalog() {
     $payload = array();
     foreach ( $products as $product ) {
         $image_id  = $product->get_image_id();
-        $image_url = $image_id ? wp_get_attachment_url( $image_id ) : '';
+        // Forzamos el tamaño 'full' para obtener la imagen original sin procesar por las miniaturas de WP
+        $image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'full' ) : '';
         $categories = wp_get_post_terms( $product->get_id(), 'product_cat', array( 'fields' => 'names' ) );
         $category = ! empty( $categories ) ? $categories[0] : 'General';
 
@@ -492,7 +493,8 @@ function lookitry_ajax_get_catalog() {
             'description' => substr(strip_tags($product->get_short_description() ?: $product->get_description()), 0, 150),
             'image_url'   => $image_url,
             'price'       => (float) $product->get_price(),
-            'category'    => $category
+            'category'    => $category,
+            'permalink'   => $product->get_permalink()
         );
     }
 

@@ -27,6 +27,32 @@ export class N8nClient {
   }
 
   /**
+   * Llamar al webhook de n8n para generar descripción del producto
+   */
+  async callDescriptionWebhook(payload: { brand_id: string; product_id: string; product_image_url: string }): Promise<{ success: boolean; description?: string; error?: string }> {
+    const webhookUrl = process.env.N8N_DESCRIPTION_WEBHOOK_URL;
+    if (!webhookUrl) throw new Error('N8N_DESCRIPTION_WEBHOOK_URL no configurado');
+
+    try {
+      const response = await axios.post<{ success: boolean; description?: string; error?: string }>(
+        webhookUrl,
+        payload,
+        {
+          timeout: this.timeout,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.apiKey}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error('❌ Error al llamar a n8n para descripción:', error.message);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
    * Llamar al webhook de n8n para generar imagen de try-on
    * @param payload Datos necesarios para la generación
    * @returns Respuesta con URL de imagen generada o error
