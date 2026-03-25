@@ -34,23 +34,10 @@ dotenv.config();
 
 const app = express();
 
-// ── Rutas Públicas (Widgets y Plugins SaaS) ──────────────────────────────────
-// DEBEN IR AL PRINCIPIO para evitar interferencia de Helmet o CORS Global
-const publicCors = cors({ 
-  origin: '*', 
-  methods: ['GET', 'POST', 'OPTIONS'], 
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range']
-});
-
-// Registrar rutas públicas con su propio CORS permissive
-app.use('/api/pruebalo', publicCors, pruebaloRoutes);
-app.use('/api/embed', publicCors, embedRoutes);
-
 // Necesario para que express-rate-limit funcione correctamente detrás de Traefik/Nginx
 app.set('trust proxy', 1);
 
-// ── Seguridad: Helmet ────────────────────────────────────────────────────────
+// ── Seguridad: Helmet (Original del usuario) ──────────────────────────────────
 app.use(helmet({
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -72,7 +59,26 @@ app.use(helmet({
 // ── Cookie Parser ────────────────────────────────────────────────────────────
 app.use(cookieParser());
 
-// ── CORS Global (Dashboard y App Lookitry) ───────────────────────────────────
+// ── Parsers (DEBEN IR ANTES DE LAS RUTAS) ───────────────────────────────────
+// Webhook de Wompi necesita raw body para verificar firma HMAC
+app.use('/api/payments/wompi/webhook', express.raw({ type: 'application/json' }));
+
+// Aumentar límite de tamaño de payload para imágenes base64
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ── Rutas Públicas (CORS Permisivo) ──────────────────────────────────────────
+const publicCors = cors({ 
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+  credentials: true
+});
+
+app.use('/api/pruebalo', publicCors, pruebaloRoutes);
+app.use('/api/embed', publicCors, embedRoutes);
+
+// ── CORS Global ──────────────────────────────────────────────────────────────
 app.use(globalRateLimiter);
 
 const corsOriginEnv = process.env.CORS_ORIGIN
@@ -103,14 +109,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Webhook de Wompi
-app.use('/api/payments/wompi/webhook', express.raw({ type: 'application/json' }));
-
-// Payload limits
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Rutas protegidas por CORS restrictivo
+// Rutas protegidas
 app.use('/api/auth', authRoutes);
 app.use('/api/brands', brandsRoutes);
 app.use('/api/usage', usageRoutes);
@@ -123,10 +122,8 @@ app.use('/api/cleanup', cleanupRoutes);
 app.use('/api/admin/revenue', revenueRoutes);
 app.use('/api/payments/wompi', wompiRoutes);
 app.use('/api/payments/paypal', paypalRoutes);
-
 app.use('/api/images', imageRoutes);
 
-// Public status/settings
 app.get('/api/payment-settings/public', getPublicPaymentSettings);
 app.post('/api/upload', authMiddleware, (req, res) => uploadImage(req as any, res));
 app.post('/api/upload/selfie', multerMemory.single('file'), (req, res) => uploadSelfie(req, res));
