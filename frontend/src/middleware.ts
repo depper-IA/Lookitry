@@ -109,7 +109,7 @@ export async function middleware(request: NextRequest) {
     // Limpiar siempre X-Frame-Options para que nuestro CSP no tenga conflictos
     response.headers.delete('X-Frame-Options');
 
-    const baseCsp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://minio.wilkiedevs.com https://vkdooutklowctuudjnkl.supabase.co; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co; font-src 'self' https://fonts.gstatic.com; media-src 'self'; camera 'self' *; clipboard-write 'self' *;";
+    const baseCsp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob: 'self'; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co; font-src 'self' https://fonts.gstatic.com; media-src 'self';";
 
     if (isAllowed) {
       // Si el origen está en la lista blanca de la BD (sitio web de algún cliente)
@@ -119,6 +119,9 @@ export async function middleware(request: NextRequest) {
       // Permitimos 'self' por si nosotros mismos lo cargamos
       response.headers.set('Content-Security-Policy', `frame-ancestors 'self'; ${baseCsp}`);
     }
+
+    // Configurar permisos de HW/SO con la sintaxis moderna
+    response.headers.set('Permissions-Policy', 'camera=*, clipboard-write=*');
 
     return response;
   }

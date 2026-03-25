@@ -458,6 +458,8 @@ export class PruebaloController {
    */
   validateApiKey = asyncHandler(async (req: Request, res: Response) => {
     const key = req.query.key as string;
+    const incomingDomain = req.query.domain as string;
+    
     if (!key) {
       return res.status(400).json({ valid: false, message: 'Clave de API requerida' });
     }
@@ -465,6 +467,21 @@ export class PruebaloController {
     const brand = await brandsService.getBrandByApiKey(key);
     if (!brand) {
       return res.status(200).json({ valid: false, message: 'Clave de API inválida' });
+    }
+
+    // Auto-registrar o actualizar el dominio del plugin en la base de datos
+    if (incomingDomain) {
+      const currentSocialLinks = (brand as any).social_links || {};
+      const currentWebsite = currentSocialLinks.website;
+
+      if (!currentWebsite || currentWebsite !== incomingDomain) {
+        await brandsService.updateBrand(brand.id, {
+          social_links: {
+            ...currentSocialLinks,
+            website: incomingDomain
+          }
+        });
+      }
     }
 
     const currentCount = await productsService.countActiveProducts(brand.id);

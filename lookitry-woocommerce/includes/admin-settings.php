@@ -274,7 +274,7 @@ function lookitry_settings_page() {
             $.ajax({
                 url: 'https://api.lookitry.com/api/pruebalo/validate-api-key',
                 method: 'GET',
-                data: { key: key },
+                data: { key: key, domain: window.location.origin },
                 success: function(res) {
                     if (res.valid) {
                         $('#status-unconnected').hide();
