@@ -32,7 +32,7 @@
     // 3. Crear el Iframe dinámico
     const iframe = document.createElement('iframe');
     const embedUrl = new URL(`${BASE_URL}/embed/${slug}`);
-    if (productId) embedUrl.searchParams.set('product', productId);
+    if (productId) embedUrl.searchParams.set('product_id', productId);
     
     // Identificador para postMessage
     embedUrl.searchParams.set('parent_url', window.location.href);
