@@ -277,7 +277,8 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     if (selectedProduct) {
       // Si el usuario ya viene con un producto seleccionado (ej. plugin WooCommerce),
       // saltamos la pantalla de selección y empezamos a generar inmediatamente.
-      handleGenerate(file, selectedProduct);
+      // IMPORTANTE: Pasamos force=true para evitar que use el mapa de generados actual (que es capturado por closure)
+      handleGenerate(file, selectedProduct, true);
     } else {
       setStep('select');
     }
@@ -285,14 +286,15 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
 
   const handleProductSelect = (product: Product) => setSelectedProduct(product);
 
-  const handleGenerate = async (fileOverride?: File, productOverride?: Product) => {
+  const handleGenerate = async (fileOverride?: File, productOverride?: Product, force = false) => {
     const activeFile = fileOverride || selfieFile;
     const activeProduct = productOverride || selectedProduct;
     if (!activeFile || !activeProduct) return;
     
     // Si ya fue generado, mostrar resultado guardado directamente
+    // Excepto si forzamos una nueva generación (ej. cambio de selfie)
     const cached = generatedProducts.get(activeProduct.id);
-    if (cached) {
+    if (cached && !force) {
       setResultImageUrl(cached);
       setStep('result');
       return;
