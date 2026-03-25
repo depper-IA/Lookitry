@@ -19,7 +19,7 @@ jobs:
           username: u639440667
           password: ${{ secrets.FTP_PASS }}
           local-dir: ./lookitry-woocommerce/
-          server-dir: public_html/wp-content/plugins/lookitry-woocommerce/
+          server-dir: domains/wilkiedevs.com/public_html/wp-content/plugins/lookitry-woocommerce/
           exclude: |
             **/.git*
             **/node_modules/**
