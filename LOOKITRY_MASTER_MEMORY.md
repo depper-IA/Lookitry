@@ -80,6 +80,13 @@ Tablas principales:
 
 - **Checkout Landing Activo**: Para clientes con un plan PRO o BASIC, comprar la mini-landing individual NO procesa una mensualidad doble, logrando esto enviando `plan=NONE` a las APIs de Wompi / Paypal.
 - **Trial Landing Preview**: La vista previa gratuita es de 3 minutos guiados enteramente por el frontend local-storage (`MiniLanding.tsx`). No uses verificaciones basadas en `brand.created_at` ya que eso expira el tiempo sin que el usuario haya siquiera tocado la ruta pública.
+- **Auditoría de Seguridad (Marzo 2026)**:
+    - Autenticación: ✅ JWT seguro mediante cookies HTTP-Only.
+    - Rate Limiting: ✅ Robusto (global, auth, gen).
+    - Webhooks: ✅ Verificación de firma Wompi robusta.
+    - Hardening Aplicado: 🛡️ Helmet CSP configurado en backend, CSP estricta en frontend, `webhook_logs.txt` eliminado y lógica de logging saneada.
+    - Próximos Pasos: Considerar RLS en backend para defensa en profundidad.
+
 
 Si surge un bug visual en el Panel Admin (ej. fondos desfasados en modo oscuro `bg-white`), se debe siempre usar `var(--bg-card)` y variables CSS del sistema en lugar de clases Tailwind estáticas.
 

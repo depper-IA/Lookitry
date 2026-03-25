@@ -41,8 +41,22 @@ app.set('trust proxy', 1);
 app.use(helmet({
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Útiles para algunas herramientas de diagnóstico si se usan
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "blob:", "https://minio.wilkiedevs.com", "https://vkdooutklowctuudjnkl.supabase.co"],
+      connectSrc: ["'self'", "https://api.lookitry.com", "https://n8n.wilkiedevs.com"],
+
+      fontSrc: ["'self'", "https:", "data:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'self'"], // Para permitir iframes propios si fuera necesario
+    },
+  },
 }));
+
 
 // ── Cookie Parser (necesario para leer cookies HTTP-Only del JWT) ──────────────
 app.use(cookieParser());
@@ -96,7 +110,10 @@ app.use('/api/brands', brandsRoutes);
 app.use('/api/usage', usageRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/generations', generationsRoutes);
-app.use('/api/pruebalo', pruebaloRoutes);
+// Rutas que permiten CORS desde cualquier origen (Widgets y Plugins SaaS)
+const publicCors = cors({ origin: '*', methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'] });
+
+app.use('/api/pruebalo', publicCors, pruebaloRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api', subscriptionRoutes);
@@ -104,8 +121,10 @@ app.use('/api/cleanup', cleanupRoutes);
 app.use('/api/admin/revenue', revenueRoutes);
 app.use('/api/payments/wompi', wompiRoutes);
 app.use('/api/payments/paypal', paypalRoutes);
-app.use('/api/embed', embedRoutes);
+app.use('/api/embed', publicCors, embedRoutes);
+
 app.use('/api/images', imageRoutes);
+
 
 // Configuración pública de medios de pago (sin auth, para el frontend de marcas)
 app.get('/api/payment-settings/public', getPublicPaymentSettings);
