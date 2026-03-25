@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -260,6 +260,7 @@ function CheckoutContent() {
     newPlanTotal: number;
     daysRemaining: number;
     isFree: boolean;
+    newEndDate: string;
   } | null>(null);
   const [loadingProration, setLoadingProration] = useState(false);
   const [applyingFreeUpgrade, setApplyingFreeUpgrade] = useState(false);

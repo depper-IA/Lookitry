@@ -496,12 +496,13 @@ export default function SystemConfigPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  type SysTab = 'trial' | 'debug' | 'credits' | 'ai' | 'health';
+  type SysTab = 'trial' | 'debug' | 'credits' | 'ai' | 'health' | 'landing';
   const [activeTab, setActiveTab] = useState<SysTab>('trial');
 
   const TABS: { id: SysTab; label: string; icon: React.ReactNode }[] = [
     { id: 'trial',   label: 'Trial',        icon: <IconClock className="w-4 h-4" /> },
     { id: 'debug',   label: 'Debugging',    icon: <IconShield className="w-4 h-4" /> },
+    { id: 'landing', label: 'Landing/URLs', icon: <IconLink className="w-4 h-4" /> },
     { id: 'credits', label: 'Créditos IA',  icon: <IconCreditCard className="w-4 h-4" /> },
     { id: 'ai',      label: 'Motor de IA',  icon: <IconBrain className="w-4 h-4" /> },
     { id: 'health',  label: 'Servicios',    icon: <IconServer className="w-4 h-4" /> },
