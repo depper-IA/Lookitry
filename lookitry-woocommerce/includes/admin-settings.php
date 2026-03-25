@@ -71,17 +71,18 @@ function lookitry_settings_page() {
 
                 <script>
                 jQuery(document).ready(function($) {
-                    $('#lookitry-test-connection').on('click', function() {
+                    $('#lookitry-test-connection').on('click', function(e) {
+                        e.preventDefault();
                         var key = $('#lookitry_api_key').val();
                         var $status = $('#lookitry-connection-status');
                         var $button = $(this);
 
                         if (!key) {
-                            $status.html('<span style="color: #d63638;">Debes ingresar una clave de API primero.</span>').show();
+                            $status.html('<div style="color: #d63638; padding: 10px; background: #fef2f2; border-radius: 8px; border: 1px solid #fee2e2; margin-top: 10px;">✘ Por favor ingresa una API Key.</div>').show();
                             return;
                         }
 
-                        $button.prop('disabled', true).text('Probando...');
+                        $button.prop('disabled', true).text('Conectando...');
                         $status.hide();
 
                         $.ajax({
@@ -90,18 +91,22 @@ function lookitry_settings_page() {
                             data: { key: key },
                             success: function(response) {
                                 if (response.valid) {
-                                    var brandInfo = '<div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #e7f6ed; border-radius: 8px; border: 1px solid #c3e6cb;">';
+                                    var brandInfo = '<div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 15px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">';
                                     if (response.logo) {
-                                        brandInfo += '<img src="' + response.logo + '" style="height: 30px; width: 30px; object-contain; border-radius: 4px; background: white; padding: 2px; border: 1px solid #eee;">';
+                                        brandInfo += '<img src="' + response.logo + '" style="height: 48px; width: 48px; object-fit: contain; border-radius: 8px; background: #f8fafc; padding: 4px; border: 1px solid #f1f5f9;">';
                                     }
-                                    brandInfo += '<span style="color: #008a20;">✔ Conexión exitosa: <strong>' + response.brandName + '</strong> (' + response.plan + ')</span></div>';
+                                    brandInfo += '<div>';
+                                    brandInfo += '<div style="color: #059669; font-weight: 600; display: flex; align-items: center; gap: 5px;"><span style="font-size: 1.2em;">✔</span> Conexión Establecida</div>';
+                                    brandInfo += '<div style="font-size: 14px; color: #475569; margin-top: 2px;">Marca: <strong>' + response.brandName + '</strong></div>';
+                                    brandInfo += '<div style="font-size: 12px; color: #64748b;">Plan Actual: <span style="text-transform: uppercase; font-weight: 500;">' + response.plan + '</span></div>';
+                                    brandInfo += '</div></div>';
                                     $status.html(brandInfo).show();
                                 } else {
-                                    $status.html('<span style="color: #d63638; padding: 6px 12px; background: #fcf0f1; border-radius: 6px; display: inline-block; border: 1px solid #facccc;">✘ Error: ' + response.message + '</span>').show();
+                                    $status.html('<div style="color: #d63638; padding: 12px; background: #fef2f2; border-radius: 8px; border: 1px solid #fee2e2; margin-top: 15px;">✘ Error: ' + response.message + '</div>').show();
                                 }
                             },
                             error: function() {
-                                $status.html('<span style="color: #d63638; padding: 6px 12px; background: #fcf0f1; border-radius: 6px; display: inline-block; border: 1px solid #facccc;">✘ Error de conexión con el servidor. Revisa tu internet o la URL de la API.</span>').show();
+                                $status.html('<div style="color: #d63638; padding: 12px; background: #fef2f2; border-radius: 8px; border: 1px solid #fee2e2; margin-top: 15px;">✘ Error de conexión. Revisa que tu servidor permita peticiones a api.lookitry.com</div>').show();
                             },
                             complete: function() {
                                 $button.prop('disabled', false).text('Probar Conexión');

@@ -22,7 +22,7 @@ import { getPublicPaymentSettings } from './controllers/paymentSettings.controll
 import { getHealthStatus } from './controllers/health.controller';
 import { getTrialStatus } from './controllers/trialCampaign.controller';
 import { uploadImage, uploadSelfie, multerMemory } from './controllers/upload.controller';
-import { listCoupons, createCoupon, updateCoupon, deleteCoupon, redeemCoupon, validateCoupon } from './controllers/coupons.controller';
+import { redeemCoupon, validateCoupon } from './controllers/coupons.controller';
 import { authMiddleware } from './middleware/auth';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { globalRateLimiter } from './middleware/rateLimiter';
@@ -34,49 +34,47 @@ dotenv.config();
 
 const app = express();
 
+// ── Rutas Públicas (Widgets y Plugins SaaS) ──────────────────────────────────
+// DEBEN IR AL PRINCIPIO para evitar interferencia de Helmet o CORS Global
+const publicCors = cors({ 
+  origin: '*', 
+  methods: ['GET', 'POST', 'OPTIONS'], 
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
+});
+
+// Registrar rutas públicas con su propio CORS permissive
+app.use('/api/pruebalo', publicCors, pruebaloRoutes);
+app.use('/api/embed', publicCors, embedRoutes);
+
 // Necesario para que express-rate-limit funcione correctamente detrás de Traefik/Nginx
 app.set('trust proxy', 1);
 
-// ── Seguridad: Helmet (reemplaza los headers manuales y añade muchos más) ──────
+// ── Seguridad: Helmet ────────────────────────────────────────────────────────
 app.use(helmet({
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"], // Útiles para algunas herramientas de diagnóstico si se usan
+      scriptSrc: ["'self'", "'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:", "https://minio.wilkiedevs.com", "https://vkdooutklowctuudjnkl.supabase.co"],
       connectSrc: ["'self'", "https://api.lookitry.com", "https://n8n.wilkiedevs.com"],
-
       fontSrc: ["'self'", "https:", "data:"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
-      frameSrc: ["'self'"], // Para permitir iframes propios si fuera necesario
+      frameSrc: ["'self'"],
     },
   },
 }));
 
-
-// ── Cookie Parser (necesario para leer cookies HTTP-Only del JWT) ──────────────
+// ── Cookie Parser ────────────────────────────────────────────────────────────
 app.use(cookieParser());
 
-// ── Rutas Públicas (Widgets y Plugins SaaS) ──────────────────────────────────
-// Estas rutas deben ir ANTES del CORS restrictivo/global para permitir origin: *
-const publicCors = cors({ 
-  origin: '*', 
-  methods: ['GET', 'POST', 'OPTIONS'], 
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'] 
-});
-
-app.use('/api/pruebalo', publicCors, pruebaloRoutes);
-app.use('/api/embed', publicCors, embedRoutes);
-
 // ── CORS Global (Dashboard y App Lookitry) ───────────────────────────────────
-// Rate limiting global (debe ir antes de otros middlewares)
 app.use(globalRateLimiter);
 
-// CORS — solo orígenes permitidos
 const corsOriginEnv = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
   : [];
@@ -105,10 +103,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Webhook de Wompi necesita raw body para verificar firma HMAC
+// Webhook de Wompi
 app.use('/api/payments/wompi/webhook', express.raw({ type: 'application/json' }));
 
-// Aumentar límite de tamaño de payload para imágenes base64
+// Payload limits
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -125,32 +123,20 @@ app.use('/api/cleanup', cleanupRoutes);
 app.use('/api/admin/revenue', revenueRoutes);
 app.use('/api/payments/wompi', wompiRoutes);
 app.use('/api/payments/paypal', paypalRoutes);
-app.use('/api/embed', publicCors, embedRoutes);
 
 app.use('/api/images', imageRoutes);
 
-
-// Configuración pública de medios de pago (sin auth, para el frontend de marcas)
+// Public status/settings
 app.get('/api/payment-settings/public', getPublicPaymentSettings);
-
-// Ruta de upload de imágenes (alias directo, requiere auth de marca)
 app.post('/api/upload', authMiddleware, (req, res) => uploadImage(req as any, res));
-
-// Ruta de upload de selfies para n8n — acepta JSON base64 o multipart/form-data
 app.post('/api/upload/selfie', multerMemory.single('file'), (req, res) => uploadSelfie(req, res));
-
-// Estado público del trial (sin auth — el frontend lo consulta para mostrar/ocultar el botón)
 app.get('/api/trial/status', getTrialStatus);
 app.use('/api/trial', trialRoutes);
 app.use('/api/admin/coupons', couponsRoutes);
-
-// Redimir cupón — ruta pública (llamada desde el frontend de marca al confirmar pago)
 app.post('/api/coupons/redeem', redeemCoupon);
-
-// Validar cupón — ruta pública (llamada desde el checkout)
 app.post('/api/coupons/validate', validateCoupon);
 
-// Sitemap — slugs de mini-landings activas (sin auth, para Next.js sitemap.ts)
+// Sitemap
 app.get('/api/sitemap/landings', async (_req, res) => {
   try {
     const { supabase } = await import('./config/supabase');
@@ -165,13 +151,9 @@ app.get('/api/sitemap/landings', async (_req, res) => {
   }
 });
 
-// Ruta de health check
 app.get('/health', getHealthStatus);
 
-// Manejo de rutas no encontradas (404) - debe ir antes del errorHandler
 app.use(notFoundHandler);
-
-// Manejo de errores global - debe ser el último middleware
 app.use(errorHandler);
 
 export default app;
