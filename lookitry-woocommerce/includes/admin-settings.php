@@ -353,8 +353,10 @@ function lookitry_settings_page() {
 
         function getProxiedUrl(url) {
             if (!url) return '';
-            // Usar el proxy del backend para evitar bloqueos de CORS/hotlinking
-            return 'https://api.lookitry.com/api/pruebalo/img-proxy?url=' + encodeURIComponent(url);
+            // Usar el proxy del frontend de Lookitry para evitar bloqueos de CORS/hotlinking.
+            // El frontend proxy tiene múltiples User-Agents y fallback redirect al navegador,
+            // lo que garantiza que las imágenes de WordPress carguen correctamente.
+            return 'https://lookitry.com/api/img-proxy?url=' + encodeURIComponent(url);
         }
 
         $('#lookitry-test-connection').on('click', function() { validateConnection(false); });
