@@ -237,8 +237,22 @@ export class ProductsController {
    */
   async describeProductWithAI(req: AuthRequest, res: Response) {
     try {
-      const { image_url, product_name, category } = req.body;
+      let { image_url, product_name, category } = req.body;
       const descriptorUrl = process.env.N8N_DESCRIPTOR_URL || 'https://n8n.wilkiedevs.com/webhook/descriptor';
+
+      // Si la imagen viene del proxy (WooCommerce sync), extraemos la URL real para n8n
+      if (image_url && image_url.includes('img-proxy?url=')) {
+        try {
+          const urlObj = new URL(image_url);
+          const realUrl = urlObj.searchParams.get('url');
+          if (realUrl) {
+            image_url = realUrl;
+            console.log(`[AI-Descriptor] URL de imagen desenmascarada: ${image_url}`);
+          }
+        } catch (e) {
+          // Ignorar si hay error parseando
+        }
+      }
 
       if (!image_url || !product_name) {
         return res.status(400).json({
