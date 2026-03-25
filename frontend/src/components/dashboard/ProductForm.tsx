@@ -115,67 +115,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
 
   const handleDescribeWithAI = async () => {
     if (!canDescribeWithAI) return;
-    setDescribingWithAI(true);
-    setAiError(null);
-    try {
-      const res = await fetch(N8N_DESCRIPTOR_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image_url: formData.imageUrl,
-          product_name: formData.name.trim(),
-          category: formData.category === 'other' ? customCategory : formData.category,
-        }),
-      });
-      if (!res.ok) throw new Error('Error al conectar con el servicio de IA');
-      const raw = await res.text();
-      if (!raw || !raw.trim()) throw new Error('El servicio de IA no devolvió respuesta');
-      let description = '';
-      let aiCategory: string | undefined;
-      try {
-        const data = JSON.parse(raw);
-        description = data.description || data.text || '';
-        aiCategory = data.category;
-      } catch {
-        description = raw.trim();
-      }
-      if (!description) throw new Error('La IA no devolvió una descripción');
-      const clean = description
-        .replace(/#{1,6}\s*/g, '')
-        .replace(/\*\*(.+?)\*\*/g, '$1')
-        .replace(/\*(.+?)\*/g, '$1')
-        .replace(/\n{3,}/g, '\n\n')
-        .trim();
-
-      // Mapear categoría de n8n al valor del select
-      let mappedCategory = formData.category;
-      let mappedCustom = customCategory;
-      if (aiCategory) {
-        const mapped = mapAICategory(aiCategory);
-        if (mapped) {
-          mappedCategory = mapped;
-          if (mapped === 'other') {
-            mappedCustom = aiCategory.charAt(0).toUpperCase() + aiCategory.slice(1).toLowerCase();
-          } else {
-            mappedCustom = '';
-          }
-        }
-      }
-      // Fallback: inferir desde el nombre del producto si n8n no devolvió categoría o no hizo match
-      if (mappedCategory === formData.category && formData.name.trim()) {
-        const inferredFromName = inferCategoryFromName(formData.name.trim());
-        if (inferredFromName) mappedCategory = inferredFromName;
-      }
-
-      setFormData(p => ({ ...p, description: clean, category: mappedCategory }));
-      setShowCustomCategory(mappedCategory === 'other');
-      setCustomCategory(mappedCustom);
-      setAiGenerated(true);
-    } catch (err: any) {
-      setAiError(err.message || 'Error al generar descripción');
-    } finally {
-      setDescribingWithAI(false);
-    }
+    const category = formData.category === 'other' ? customCategory : formData.category;
+    triggerDescribeWithAI(formData.imageUrl, formData.name.trim(), category);
   };
 
   useEffect(() => {

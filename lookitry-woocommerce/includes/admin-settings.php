@@ -352,7 +352,9 @@ function lookitry_settings_page() {
         }
 
         function getProxiedUrl(url) {
-            return url; // Ya no usamos proxy para miniaturas
+            if (!url) return '';
+            // Usar el proxy del backend para evitar bloqueos de CORS/hotlinking
+            return 'https://api.lookitry.com/api/pruebalo/img-proxy?url=' + encodeURIComponent(url);
         }
 
         $('#lookitry-test-connection').on('click', function() { validateConnection(false); });
