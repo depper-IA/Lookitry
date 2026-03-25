@@ -137,8 +137,8 @@ export default function IntegrationsPage() {
            <motion.div variants={itemVariants} className="bg-white rounded-3xl md:rounded-[4.5rem] border border-zinc-100 p-6 md:p-16 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] space-y-10 md:space-y-16 relative overflow-hidden group">
               
               <div className="flex flex-col md:flex-row items-center md:items-center gap-6 md:gap-10 border-b border-zinc-50 pb-10 md:pb-16 text-center md:text-left">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2.5rem] md:rounded-[3rem] bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-inner group-hover:rotate-6 transition-transform shrink-0">
-                   <Store className="w-10 h-10 md:w-12 md:h-12 text-zinc-900" />
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2.5rem] md:rounded-[3rem] bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-inner group-hover:rotate-6 transition-transform shrink-0 overflow-hidden p-4">
+                   <img src="/integrations/Woo_logo_color.png" alt="WooCommerce" className="w-full h-full object-contain" />
                 </div>
                 <div>
                    <h2 className="text-2xl md:text-4xl font-[1000] text-zinc-900 uppercase tracking-tighter italic leading-none">WooCommerce</h2>
@@ -250,10 +250,36 @@ const { image } = await lookitry.render({
   enhancement: 0.95
 });`}
                     </pre>
-                 </div>
-              </div>
-           </motion.div>
-        </div>
+                  </div>
+               </div>
+            </motion.div>
+
+            {/* PAYMENTS SECTION */}
+            <motion.div variants={itemVariants} className="bg-white rounded-3xl md:rounded-[4.5rem] border border-zinc-100 p-8 md:p-16 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] space-y-8">
+               <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-2xl bg-zinc-900 flex items-center justify-center text-white">
+                     <Cpu size={20} />
+                  </div>
+                  <div>
+                     <h3 className="text-xl font-[1000] text-zinc-900 uppercase tracking-tighter italic leading-none">Pagos & Gateways</h3>
+                     <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mt-1">Soporte nativo para pasarelas</p>
+                  </div>
+               </div>
+               
+               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6">
+                  {[
+                    { name: 'Bancolombia', img: '/integrations/bancolombia.svg' },
+                    { name: 'Nequi', img: '/integrations/logo-nequi.svg' },
+                    { name: 'PSE', img: '/integrations/logo-pse.svg' },
+                    { name: 'Visa', img: '/integrations/visa.svg' }
+                  ].map(p => (
+                    <div key={p.name} className="p-6 md:p-8 rounded-[2rem] bg-zinc-50/50 border border-zinc-50 flex items-center justify-center grayscale hover:grayscale-0 hover:bg-white hover:border-zinc-200 transition-all group">
+                       <img src={p.img} alt={p.name} className="h-6 md:h-8 w-auto object-contain group-hover:scale-110 transition-transform" />
+                    </div>
+                  ))}
+               </div>
+            </motion.div>
+         </div>
 
         {/* ══ SIDEBAR ══ */}
          <div className="lg:col-span-4 space-y-8 md:space-y-12">
@@ -266,15 +292,15 @@ const { image } = await lookitry.render({
                </div>
                <div className="space-y-4 md:space-y-6">
                   {[
-                    { name: 'WooCommerce', icon: 'WC', color: '#f5f5f5', textColor: '#000', status: 'Live', iconClass: <Store size={14} /> },
-                    { name: 'Shopify Core', icon: 'SH', color: '#f5f5f5', textColor: '#000', status: 'Beta', iconClass: <Package size={14} /> },
-                    { name: 'Wix Global', icon: 'WX', color: '#f5f5f5', textColor: '#000', status: 'Q4 2026', iconClass: <Globe size={14} /> },
-                    { name: 'Cloud SDK', icon: 'TS', color: '#f5f5f5', textColor: '#000', status: 'Available', iconClass: <Command size={14} /> }
+                    { name: 'WooCommerce', icon: '/integrations/Woo_logo_color.png', color: '#f5f5f5', status: 'Live' },
+                    { name: 'Shopify Core', icon: '/integrations/shopify.svg', color: '#f5f5f5', status: 'Beta' },
+                    { name: 'Wix Global', icon: '/integrations/Wix.svg', color: '#f5f5f5', status: 'Q4 2026' },
+                    { name: 'Cloud SDK', icon: '/logo.svg', color: '#f5f5f5', status: 'Available' }
                   ].map((plat) => (
                      <div key={plat.name} className="flex items-center justify-between p-5 md:p-7 bg-zinc-50 border border-zinc-50 rounded-2xl md:rounded-[2.5rem] hover:bg-white hover:border-zinc-200 group/plat transition-all shadow-sm">
                         <div className="flex items-center gap-4 md:gap-6">
-                           <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-all font-black text-[10px] md:text-[11px] bg-zinc-900 text-white shrink-0">
-                              {plat.icon}
+                           <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-all bg-white border border-zinc-100 shrink-0 overflow-hidden p-2.5">
+                              <img src={plat.icon} alt={plat.name} className="w-full h-full object-contain" />
                            </div>
                            <div>
                               <p className="text-[11px] md:text-[12px] font-black text-zinc-900 uppercase tracking-tight italic">{plat.name}</p>
