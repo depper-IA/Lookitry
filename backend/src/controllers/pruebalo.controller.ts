@@ -435,6 +435,8 @@ export class PruebaloController {
       valid: true, 
       brandName: brand.name,
       logo: brand.logo,
+      logo_light: (brand as any).logo_light,
+      logo_dark: (brand as any).logo_dark,
       plan: brand.plan,
       usage: {
         current: currentCount,

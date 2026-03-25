@@ -16,3 +16,13 @@ export function getProxiedImageUrl(src: string, plan?: string, download?: boolea
   }
   return url;
 }
+
+/**
+ * Proxy regular para evitar bloqueos de CORS o Hotlinking.
+ */
+export function getProxiedUrl(url: string): string {
+  if (!url) return '';
+  if (url.includes('minio.wilkiedevs.com')) return url;
+  if (!url.startsWith('http')) return url;
+  return `/api/img-proxy?url=${encodeURIComponent(url)}`;
+}
