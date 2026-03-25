@@ -137,12 +137,8 @@ export default function IntegrationsPage() {
            <motion.div variants={itemVariants} className="bg-white rounded-3xl md:rounded-[4.5rem] border border-zinc-100 p-6 md:p-16 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] space-y-10 md:space-y-16 relative overflow-hidden group">
               
               <div className="flex flex-col md:flex-row items-center md:items-center gap-6 md:gap-10 border-b border-zinc-50 pb-10 md:pb-16 text-center md:text-left">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2.5rem] md:rounded-[3rem] bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-inner group-hover:rotate-6 transition-transform shrink-0 overflow-hidden p-4">
-                   {brand?.logo ? (
-                     <img src={brand.logo} alt={brand.name} className="w-full h-full object-contain" />
-                   ) : (
-                     <img src="/logo.svg" alt="Lookitry" className="w-full h-full object-contain" />
-                   )}
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2.5rem] md:rounded-[3rem] bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-inner group-hover:rotate-6 transition-transform shrink-0">
+                   <Store className="w-10 h-10 md:w-12 md:h-12 text-zinc-900" />
                 </div>
                 <div>
                    <h2 className="text-2xl md:text-4xl font-[1000] text-zinc-900 uppercase tracking-tighter italic leading-none">WooCommerce</h2>

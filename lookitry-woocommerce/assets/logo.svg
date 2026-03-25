@@ -3,8 +3,9 @@
   <defs>
     <style>
       .st0 {
-        fill: #000000;
+        fill: #ffffff;
       }
+
       .st1 {
         fill: #ff5c35;
       }
