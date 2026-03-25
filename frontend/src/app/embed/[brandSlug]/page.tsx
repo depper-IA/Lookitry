@@ -16,7 +16,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
   const productId = searchParams.get('product_id'); // ID interno como fallback
 
   return (
-    <div className="w-full min-h-screen bg-transparent overflow-hidden">
+    <div id="tryon-embed-root" className="w-full bg-transparent overflow-hidden h-max">
       <TryOnWidget 
         brandSlug={params.brandSlug} 
         isEmbed={isEmbed} 
