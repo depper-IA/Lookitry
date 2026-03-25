@@ -284,13 +284,27 @@ export class ProductsController {
         }),
       });
 
+      const rawText = await response.text();
+      console.log(`[AI-Descriptor] n8n status: ${response.status} | body length: ${rawText.length}`);
+
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[AI-Descriptor] Error de n8n:', errorText);
+        console.error('[AI-Descriptor] Error de n8n:', rawText);
         throw new Error('Error al conectar con el servicio de IA');
       }
 
-      const data = await response.json();
+      if (!rawText || !rawText.trim()) {
+        console.error('[AI-Descriptor] n8n devolvio cuerpo vacio');
+        throw new Error('El servicio de IA no devolvio respuesta');
+      }
+
+      let data: any;
+      try {
+        data = JSON.parse(rawText);
+      } catch (parseErr) {
+        console.error('[AI-Descriptor] n8n no devolvio JSON valido:', rawText.slice(0, 200));
+        throw new Error('Respuesta invalida del servicio de IA');
+      }
+
       return res.status(200).json(data);
     } catch (error: any) {
       console.error('[AI-Descriptor] Error general:', error);
