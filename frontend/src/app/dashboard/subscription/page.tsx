@@ -275,24 +275,26 @@ export default function SubscriptionPage() {
                   </div>
                </div>
 
-               <div className="space-y-2 mb-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Opciones</p>
-                  {inTrial ? (
-                     <div className="grid grid-cols-1 gap-3">
-                        <button onClick={() => router.push('/dashboard/checkout?plan=BASIC')} className="w-full py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl hover:brightness-110 transition-all active:scale-95">Activar BASIC</button>
-                        <button onClick={() => router.push('/dashboard/checkout?plan=PRO')} className="w-full py-5 border-2 border-[var(--border-color)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95">Cambiar a PRO</button>
-                     </div>
-                  ) : (
-                     <div className="grid grid-cols-1 gap-3">
-                        <button onClick={() => router.push(`/dashboard/checkout?plan=${nextPlan}`)} className="w-full py-5 border-2 border-[#FF5C3A]/40 hover:bg-[#FF5C3A]/5 text-[#FF5C3A] rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95">
-                           Cambiar a {nextPlan}
-                        </button>
-                        {(info?.status !== 'active') && (
-                           <button onClick={() => router.push(`/dashboard/checkout?plan=${planKey}`)} className="w-full py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-[#FF5C3A]/30 active:scale-95 transition-all">Renovar Plan</button>
-                        )}
-                     </div>
-                  )}
-               </div>
+                <div className="space-y-2 mb-6">
+                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)]">Opciones</p>
+                   {inTrial ? (
+                      <div className="grid grid-cols-1 gap-3">
+                         <button onClick={() => router.push('/dashboard/checkout?plan=BASIC')} className="w-full py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl hover:brightness-110 transition-all active:scale-95">Activar BASIC</button>
+                         <button onClick={() => router.push('/dashboard/checkout?plan=PRO')} className="w-full py-5 border-2 border-[var(--border-color)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95">Cambiar a PRO</button>
+                      </div>
+                   ) : (
+                      <div className="grid grid-cols-1 gap-3">
+                         {planKey === 'BASIC' && (
+                            <button onClick={() => router.push(`/dashboard/checkout?plan=PRO`)} className="w-full py-5 border-2 border-[#FF5C3A]/40 hover:bg-[#FF5C3A]/5 text-[#FF5C3A] rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95">
+                               Upgrade a PRO
+                            </button>
+                         )}
+                         <button onClick={() => router.push(`/dashboard/checkout?plan=${planKey}`)} className="w-full py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] shadow-2xl shadow-[#FF5C3A]/30 active:scale-95 transition-all">
+                            {info?.status === 'active' ? 'Extender Plan' : 'Renovar Plan'}
+                         </button>
+                      </div>
+                   )}
+                </div>
             </div>
          </div>
       </motion.div>
@@ -339,10 +341,9 @@ export default function SubscriptionPage() {
                      </ul>
                      <button 
                         onClick={() => router.push(`/dashboard/checkout?plan=${pk}`)}
-                        className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95 ${isCurrent ? 'bg-[var(--bg-hover)] text-[var(--text-primary)] cursor-not-allowed opacity-50' : 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20 hover:brightness-110'}`}
-                        disabled={isCurrent}
+                        className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] transition-all active:scale-95 ${isCurrent ? 'bg-white/10 text-white border border-white/20 hover:bg-white/20' : 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20 hover:brightness-110'}`}
                      >
-                        {isCurrent ? 'PLAN ACTIVO' : `SELECCIONAR ${pk}`}
+                        {isCurrent ? 'EXTENDER PLAN' : `SELECCIONAR ${pk}`}
                      </button>
                   </motion.div>
                );
@@ -457,19 +458,21 @@ export default function SubscriptionPage() {
                </div>
             </div>
 
-            <div className="bg-zinc-50 p-10 rounded-[3rem] border border-zinc-200/60 shadow-deep relative overflow-hidden group">
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#FF5C3A]/5 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000" />
-                <div className="flex items-center gap-3 mb-6 relative z-10">
-                   <div className="w-8 h-8 rounded-xl bg-[#FF5C3A] flex items-center justify-center shadow-lg shadow-[#FF5C3A]/30">
-                      <Zap className="w-4 h-4 text-white" />
-                   </div>
-                   <h4 className="text-lg font-black uppercase italic tracking-tighter text-[var(--text-primary)]">Actualiza tu Plan</h4>
+            {planKey !== 'PRO' && (
+              <div className="bg-zinc-50 p-10 rounded-[3rem] border border-zinc-200/60 shadow-deep relative overflow-hidden group">
+                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#FF5C3A]/5 blur-3xl rounded-full group-hover:scale-150 transition-transform duration-1000" />
+                  <div className="flex items-center gap-3 mb-6 relative z-10">
+                    <div className="w-8 h-8 rounded-xl bg-[#FF5C3A] flex items-center justify-center shadow-lg shadow-[#FF5C3A]/30">
+                        <Zap className="w-4 h-4 text-white" />
+                    </div>
+                    <h4 className="text-lg font-black uppercase italic tracking-tighter text-[var(--text-primary)]">Actualiza tu Plan</h4>
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-10 leading-relaxed italic relative z-10">Accede a más productos, generaciones y personalización total con el Plan PRO.</p>
+                  <button onClick={() => router.push('/dashboard/checkout?plan=PRO')} className="w-full flex items-center justify-center gap-3 py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all relative z-10">
+                    ACTUALIZAR A PRO <ChevronRight size={14} />
+                  </button>
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] mb-10 leading-relaxed italic relative z-10">Accede a más productos, generaciones y personalización total con el Plan PRO.</p>
-                <button onClick={() => router.push('/dashboard/checkout?plan=PRO')} className="w-full flex items-center justify-center gap-3 py-5 bg-[#FF5C3A] text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[10px] hover:scale-[1.02] active:scale-95 transition-all relative z-10">
-                   ACTUALIZAR A PRO <ChevronRight size={14} />
-                </button>
-             </div>
+            )}
          </div>
       </motion.div>
     </motion.div>

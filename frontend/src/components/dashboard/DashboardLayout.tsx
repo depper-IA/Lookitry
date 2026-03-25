@@ -151,10 +151,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className={`p-4 flex-shrink-0 transition-all duration-300`}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 p-3 rounded-[2.5rem] bg-white/5 border border-white/5'} shadow-inner group/profile transition-all duration-300`}>
           <div className="w-11 h-11 rounded-2xl overflow-hidden flex items-center justify-center text-[13px] font-black text-white flex-shrink-0 bg-[#FF5C3A] shadow-lg group-hover/profile:scale-105 transition-transform duration-500">
-            {(brand as any)?.logo
-              ? <img src={(brand as any).logo} alt={brand?.name} className="w-full h-full object-cover" />
-              : brand?.name?.charAt(0)?.toUpperCase() ?? 'M'
-            }
+            {brand?.name?.charAt(0)?.toUpperCase() ?? 'M'}
           </div>
           {!isCollapsed && (
             <>
