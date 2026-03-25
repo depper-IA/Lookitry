@@ -12,12 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function lookitry_add_admin_menu() {
     add_submenu_page(
-        'woocommerce', // Parent slug
-        'Lookitry Web App Settings', // Page title
-        'Lookitry Web App', // Menu title
-        'manage_options', // Capability
-        'lookitry-settings', // Menu slug
-        'lookitry_settings_page' // Callback
+        'woocommerce',
+        'Lookitry Settings',
+        'Lookitry',
+        'manage_options',
+        'lookitry-settings',
+        'lookitry_settings_page'
     );
 }
 add_action( 'admin_menu', 'lookitry_add_admin_menu' );
@@ -117,17 +117,22 @@ function lookitry_settings_page() {
     <div class="lookitry-wrap">
         <div class="lookitry-header">
             <div class="lookitry-header-left">
-                <div class="lookitry-logo-wrapper" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px;">
-                    <img id="lookitry-main-logo" src="<?php echo LOOKITRY_PLUGIN_URL; ?>assets/logo.svg" alt="Lookitry" style="height: 42px; width: auto; filter: none;">
-                    <div style="display: flex; flex-direction: column;">
-                        <span style="color: #fff; font-weight: 800; font-size: 18px; line-height: 1.1; letter-spacing: -0.5px;">Lookitry</span>
-                        <span style="color: #FF5C3A; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Virtual Try-On</span>
+                <div class="lookitry-logo-wrapper" style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 15px;">
+                    <!-- Logo Incrustado Directamente -->
+                    <div style="height: 38px; width: 40px;">
+                        <svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 255.95 238.82" style="width: 100%; height: 100%;">
+                            <polygon fill="#FF5C3A" points="64.86 4.53 65.09 180.12 140.66 180.12 173.77 234.34 5.78 234.34 5.78 4.53 64.86 4.53"/>
+                            <polygon fill="#FFFFFF" points="79.22 164.66 79.22 131.32 185.31 4.64 247.29 4.48 170.77 102.47 253.38 234.34 192.8 234.34 135.92 144.81 121.73 164.66 79.22 164.66"/>
+                        </svg>
+                    </div>
+                    <div style="display: flex; align-items: baseline; font-weight: 800; font-size: 24px; letter-spacing: -1px;">
+                        <span style="color: #FFFFFF;">Look</span><span style="color: #FF5C3A;">itry</span>
                     </div>
                 </div>
                 <span class="lookitry-version" style="margin-left: 10px;">v<?php echo $version; ?></span>
             </div>
             <div id="connection-status-dot" style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: #64748b; background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1);">
-                <span style="width: 10px; height: 10px; background: #94a3b8; border-radius: 50%;"></span> Desconectado
+                <span style="width: 10px; height: 10px; background: #94a3b8; border-radius: 50%;"></span>
             </div>
         </div>
 
@@ -149,7 +154,7 @@ function lookitry_settings_page() {
                 </div>
                 
                 <div id="status-connected" style="display: none;">
-                    <div class="lookitry-card-title"><span>Resumen de tu Probador</span></div>
+                    <div class="lookitry-card-title"><span>Estado de tu Probador</span></div>
                     <div class="lookitry-usage-grid">
                         <div class="lookitry-stat-box">
                             <div class="lookitry-stat-label">Comercio Conectado</div>
