@@ -11,6 +11,8 @@ import { LiveTryOnButton } from './LiveTryOnButton';
 import { DashboardNotifications } from './DashboardNotifications';
 import { TrialBanner } from './TrialBanner';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -33,6 +35,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { brand, logout } = useAuth();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [verificationBannerDismissed, setVerificationBannerDismissed] = useState(false);
   const [resendSending, setResendSending] = useState(false);
   const [resendSent, setResendSent] = useState(false);
@@ -72,17 +75,35 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-[var(--bg-sidebar)] border-r border-[var(--border-color)]">
-      {/* Logo */}
-      <div className="flex items-center justify-between h-[64px] px-6 border-b border-[var(--border-color)] flex-shrink-0 bg-[var(--bg-sidebar)]">
+    <div className="flex flex-col h-full bg-[var(--bg-sidebar)] transition-all duration-300">
+      {/* Logo Area */}
+      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} h-[80px] px-6 flex-shrink-0 bg-[var(--bg-sidebar)]`}>
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="relative w-8 h-8 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 group-hover:border-[#FF5C3A]/50 transition-all duration-500 shadow-lg">
-            <Image src="/logo.svg" alt="Lookitry" width={22} height={22} className="object-contain group-hover:rotate-12 transition-transform duration-500" priority />
+          <div className="relative w-10 h-10 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 group-hover:border-[#FF5C3A]/50 transition-all duration-500 shadow-lg shrink-0">
+            <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain group-hover:rotate-12 transition-transform duration-500" priority />
           </div>
-          <span className="font-jakarta font-[950] text-sm leading-none text-white tracking-tighter uppercase italic">
-            Look<span className="text-[#FF5C3A]">itry</span>
-          </span>
+          {!isCollapsed && (
+            <motion.span 
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="font-jakarta font-[950] text-lg leading-none text-white tracking-tighter uppercase italic"
+            >
+              Look<span className="text-[#FF5C3A]">itry</span>
+            </motion.span>
+          )}
         </Link>
+        
+        {/* Toggle Collapse Desktop */}
+        {!isCollapsed && (
+          <button
+            onClick={() => setIsCollapsed(true)}
+            className="hidden lg:flex p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-all"
+            title="Colapsar menú"
+          >
+            <ChevronLeft size={18} />
+          </button>
+        )}
+        
         {/* Botón cerrar en móvil */}
         <button
           className="lg:hidden p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all"
@@ -96,7 +117,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto no-scrollbar">
+      <nav className={`flex-1 ${isCollapsed ? 'px-3' : 'px-4'} py-6 space-y-1.5 overflow-y-auto no-scrollbar`}>
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -104,48 +125,72 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               key={item.name}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 group
+              title={isCollapsed ? item.name : ''}
+              className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-5'} py-3.5 rounded-2xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 group
                 ${isActive 
-                  ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' 
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                   ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' 
+                   : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
             >
-              <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-600 group-hover:text-[#FF5C3A]'}`} />
-              <span className="leading-none">{item.name}</span>
+              <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-600 group-hover:text-[#FF5C3A]'}`} />
+              {!isCollapsed && (
+                <motion.span 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="leading-none"
+                >
+                  {item.name}
+                </motion.span>
+              )}
             </Link>
           );
         })}
       </nav>
 
       {/* Brand info + logout section */}
-      <div className="p-4 border-t border-[var(--border-color)] flex-shrink-0">
-        <div className="flex items-center gap-3 p-3 rounded-[2rem] bg-white/5 border border-white/5 shadow-inner group/profile">
-          <div className="w-10 h-10 rounded-2xl overflow-hidden flex items-center justify-center text-[12px] font-black text-white flex-shrink-0 bg-[#FF5C3A] shadow-lg group-hover/profile:scale-105 transition-transform duration-500">
+      <div className={`p-4 flex-shrink-0 transition-all duration-300`}>
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 p-3 rounded-[2.5rem] bg-white/5 border border-white/5'} shadow-inner group/profile transition-all duration-300`}>
+          <div className="w-11 h-11 rounded-2xl overflow-hidden flex items-center justify-center text-[13px] font-black text-white flex-shrink-0 bg-[#FF5C3A] shadow-lg group-hover/profile:scale-105 transition-transform duration-500">
             {(brand as any)?.logo
               ? <img src={(brand as any).logo} alt={brand?.name} className="w-full h-full object-cover" />
               : brand?.name?.charAt(0)?.toUpperCase() ?? 'M'
             }
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-black text-white truncate leading-tight uppercase tracking-tight italic">{brand?.name}</p>
-            <div className="flex items-center gap-1.5 mt-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <p className="text-[10px] truncate leading-none text-gray-500 font-bold uppercase tracking-tighter">
-                Plan {brand?.plan}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="w-8 h-8 rounded-xl transition-all flex items-center justify-center text-gray-600 hover:text-white hover:bg-white/10 group/logout"
-            title="Cerrar sesión"
-          >
-            <svg className="w-4 h-4 transition-transform group-hover/logout:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
+          {!isCollapsed && (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex-1 min-w-0"
+              >
+                <p className="text-[12px] font-black text-white truncate leading-tight uppercase tracking-tight italic">{brand?.name}</p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <p className="text-[10px] truncate leading-none text-gray-500 font-bold uppercase tracking-tighter">
+                    Plan {brand?.plan}
+                  </p>
+                </div>
+              </motion.div>
+              <button
+                onClick={logout}
+                className="w-10 h-10 rounded-2xl transition-all flex items-center justify-center text-gray-600 hover:text-white hover:bg-white/10 group/logout shrink-0"
+                title="Cerrar sesión"
+              >
+                <LogOut size={18} className="transition-transform group-hover/logout:translate-x-0.5" />
+              </button>
+            </>
+          )}
         </div>
+        
+        {isCollapsed && (
+           <button
+             onClick={() => setIsCollapsed(false)}
+             className="w-11 h-11 mt-3 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-500 hover:text-white hover:bg-[#FF5C3A]/20 transition-all mx-auto"
+             title="Expandir menú"
+           >
+             <ChevronRight size={20} />
+           </button>
+        )}
       </div>
     </div>
   );
@@ -161,13 +206,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       )}
 
       {/* Sidebar desktop (fijo) */}
-      <div className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-[220px] lg:z-20">
+      <div className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 z-20 transition-all duration-300 ${isCollapsed ? 'lg:w-[90px]' : 'lg:w-[280px]'}`}>
         {sidebarContent}
       </div>
 
       {/* Sidebar móvil (drawer) */}
       <div
-        className={`fixed inset-y-0 left-0 w-[220px] z-40 transform transition-transform duration-200 ease-in-out lg:hidden ${
+        className={`fixed inset-y-0 left-0 w-[280px] z-40 transform transition-transform duration-300 ease-in-out lg:hidden ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -175,7 +220,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Contenido principal */}
-      <div className="lg:pl-[220px] flex flex-col h-screen overflow-hidden">
+      <div className={`flex flex-col h-screen overflow-hidden transition-all duration-300 ${sidebarOpen ? 'blur-[2px]' : ''} ${isCollapsed ? 'lg:pl-[90px]' : 'lg:pl-[280px]'}`}>
         {/* Banner de verificación de email — elegante y minimalista */}
         {showVerificationBanner && (
           <div className="w-full border-b px-6 py-3 flex items-center justify-between gap-4 flex-shrink-0 animate-in fade-in slide-in-from-top duration-500" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>

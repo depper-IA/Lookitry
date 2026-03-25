@@ -582,11 +582,75 @@ export default function NotificationsPage() {
             {selected.brandName && (
               <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>Marca: <span style={{ color: 'var(--text-secondary)' }}>{selected.brandName}</span></p>
             )}
-            {selected.metadata && Object.keys(selected.metadata).length > 0 && (
-              <pre className="text-xs rounded-xl p-3 overflow-auto" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-muted)' }}>
-                {JSON.stringify(selected.metadata, null, 2)}
-              </pre>
-            )}
+            {/* Metadatos detallados */}
+            {selected.metadata && (() => {
+              const meta = selected.metadata as Record<string, any>;
+              return (
+                <div className="space-y-3">
+                  {/* Solicitud de cambio de plan */}
+                  {selected.type === 'plan_change_request' && meta.toPlan && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl border border-[#FF5C3A]/20 bg-[#FF5C3A]/5">
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400 capitalize">{String(meta.fromPlan || 'Basic')}</span>
+                      <svg className="w-4 h-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#FF5C3A] text-white capitalize">{String(meta.toPlan)}</span>
+                    </div>
+                  )}
+
+                  {/* Compra multi-mes */}
+                  {selected.type === 'multi_month_purchase' && meta.months && (
+                    <div className="flex items-center gap-3 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 flex-shrink-0">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      </div>
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-widest text-emerald-500">{String(meta.months)} meses pagados</p>
+                        {meta.discountPct && (
+                          <p className="text-[10px] font-bold text-emerald-600/70 mt-0.5">{String(meta.discountPct)}% de descuento aplicado</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Uso alto */}
+                  {(selected.type === 'high_usage' || selected.type === 'credits_exhausted') && meta.used != null && (
+                    <div className="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5 space-y-2.5">
+                      <div className="flex justify-between items-center">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-amber-600">Consumo de créditos</p>
+                        <p className="text-xs font-bold text-amber-700">{String(meta.used)} / {String(meta.limit)}</p>
+                      </div>
+                      <div className="h-2 bg-amber-500/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-500 rounded-full" style={{ width: `${Math.min(100, Number(meta.pct || 0))}%` }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mensaje del cliente */}
+                  {meta.clientMessage && (
+                    <div className="p-4 rounded-xl border border-zinc-500/10 bg-zinc-500/5">
+                      <p className="text-[10px] font-black uppercase tracking-wider text-zinc-500 mb-2">Mensaje del cliente:</p>
+                      <p className="text-xs italic leading-relaxed text-zinc-400">&quot;{String(meta.clientMessage)}&quot;</p>
+                    </div>
+                  )}
+
+                  {/* Fallback para metadatos desconocidos */}
+                  {![ 'plan_change_request', 'multi_month_purchase', 'high_usage', 'credits_exhausted' ].includes(selected.type) && !meta.clientMessage && Object.keys(meta).length > 0 && (
+                    <div className="p-4 rounded-xl border border-zinc-500/10 bg-zinc-500/5">
+                      <p className="text-[10px] font-black uppercase tracking-wider text-zinc-500 mb-2">Información técnica:</p>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                        {Object.entries(meta).map(([key, value]) => (
+                          <div key={key} className="flex flex-col min-w-0">
+                            <span className="text-[9px] font-bold text-zinc-500 uppercase truncate">{key}</span>
+                            <span className="text-[11px] font-medium text-zinc-400 truncate">
+                              {typeof value === 'object' ? JSON.stringify(value) : String(value ?? '—')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             <p className="text-xs mt-4" style={{ color: 'var(--text-muted)' }}>{new Date(selected.createdAt).toLocaleString('es-CO')}</p>
           </div>
         </div>
