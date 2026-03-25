@@ -21,11 +21,12 @@ const nextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { 
-            key: 'Content-Security-Policy', 
-            value: "frame-ancestors *; camera 'self' *; clipboard-write 'self' *;" 
+          {
+            key: 'Content-Security-Policy',
+            // Frame-ancestors * es necesario para el widget. 
+            // Añadimos directivas básicas de seguridad para el contenido del iframe.
+            value: "frame-ancestors *; default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://minio.wilkiedevs.com https://vkdooutklowctuudjnkl.supabase.co; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co; font-src 'self' https://fonts.gstatic.com; media-src 'self'; camera 'self' *; clipboard-write 'self' *;"
           },
-          // Eliminamos X-Frame-Options para estas rutas específicas para permitir el embed
         ],
       },
       // Script del Widget: Permitir acceso CORS desde cualquier origen
@@ -36,7 +37,7 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=86400' },
         ],
       },
-      // Resto de rutas: Seguridad estándar (bloquear iframe)
+      // Resto de rutas: Seguridad estándar estricta
       {
         source: '/((?!embed/|marca/|widget.js).*)',
         headers: [
@@ -44,10 +45,17 @@ const nextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          {
+            key: 'Content-Security-Policy',
+            // CSP estricta para el dashboard y la web principal
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://minio.wilkiedevs.com https://vkdooutklowctuudjnkl.supabase.co; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co; object-src 'none';"
+
+          }
         ],
       },
     ];
   },
+
 };
 
 module.exports = nextConfig;

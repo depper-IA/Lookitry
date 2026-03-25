@@ -23,19 +23,10 @@ export class WompiController {
         ? req.body.toString('utf8')
         : (typeof req.body === 'object' ? JSON.stringify(req.body) : String(req.body));
 
-      // --- LOG DE EMERGENCIA ---
-      try {
-        const fs = require('fs');
-        const path = require('path');
-        const logPath = path.join(process.cwd(), 'webhook_logs.txt');
-        const logEntry = `[${new Date().toISOString()}] CHECKSUM: ${checksum}\nBODY: ${rawBody}\n\n`;
-        fs.appendFileSync(logPath, logEntry);
-      } catch (logErr) {
-        // Silenciar error de log
-      }
+      // --- LOG DE SEGURIDAD (Redactado) ---
+      console.log(`[Wompi Webhook] Recibido. Checksum: ${checksum || 'NINGUNO'}. Body length: ${rawBody.length}`);
       // -------------------------
 
-      console.log(`[Wompi Webhook] Recibido. Checksum: ${checksum || 'NINGUNO'}. Body length: ${rawBody.length}`);
 
       const firmaValida = await wompiService.verifyWebhookSignature(rawBody, checksum);
 
@@ -337,7 +328,20 @@ export class WompiController {
       let successPath = brand?.id ? `/pago-exitoso?plan=${planStr}&months=${monthsNum}` : `/registro-pro?plan=${planStr}&months=${monthsNum}`;
 
       if (!brand?.id && email) {
-        await supabaseAdmin.from('pending_registrations').insert({ email, reference, plan: planStr, months: monthsNum, includes_landing: isLandingPurchase });
+        const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({ 
+          email, 
+          reference, 
+          plan: planStr, 
+          months: monthsNum, 
+          includes_landing: isLandingPurchase 
+        });
+        
+        if (insertError) {
+          console.error('[Wompi] Error al insertar registro pendiente:', insertError);
+          res.status(500).json({ error: 'Error al iniciar el registro' });
+          return;
+        }
+        
         successPath = `/registro-pro?ref=${reference}`;
       }
 
