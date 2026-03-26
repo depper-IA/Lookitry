@@ -90,7 +90,8 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
     
     const trm = await TrmService.getCurrentTrm();
     // Reutilizamos el checkout de suscripción de paypalService pero con nuestra referencia TRIAL-
-    const checkoutUrl = await paypalService.createOrder(price, trm, reference);
+    const returnUrl = `${frontendUrl}/pago-exitoso?method=paypal&ref=${reference}&isTrial=true`;
+    const checkoutUrl = await paypalService.createOrder(price, trm, reference, returnUrl);
     return res.json({ checkoutUrl, reference });
   } else {
     // Wompi
