@@ -56,7 +56,7 @@ export const getTrialCampaign = async (_req: any, res: Response) => {
  */
 export const createTrialCampaign = async (req: any, res: Response) => {
   try {
-    const { name, trial_days = 7, trial_generations_limit = 50, ends_at, require_card_verification = true } = req.body;
+    const { name, trial_days = 7, trial_generations_limit = 15, price_cop = 20000, ends_at, require_card_verification = true } = req.body;
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El nombre de la campaña es requerido' });
@@ -76,6 +76,7 @@ export const createTrialCampaign = async (req: any, res: Response) => {
         active: true,
         trial_days: trialDays,
         trial_generations_limit: trialGenerations,
+        price_cop: Number(price_cop) || 0,
         ends_at: ends_at || null,
         require_card_verification: require_card_verification !== false,
         created_by: req.admin?.email ?? 'admin',
@@ -99,7 +100,7 @@ export const createTrialCampaign = async (req: any, res: Response) => {
 export const updateTrialCampaign = async (req: any, res: Response) => {
   try {
     const { id } = req.params;
-    const { active, name, trial_days, ends_at } = req.body;
+    const { active, name, trial_days, ends_at, price_cop } = req.body;
 
     const updates: Record<string, any> = {};
 
@@ -113,6 +114,7 @@ export const updateTrialCampaign = async (req: any, res: Response) => {
     if (name !== undefined) updates.name = name;
     if (trial_days !== undefined) updates.trial_days = Math.min(90, Math.max(1, Number(trial_days)));
     if (ends_at !== undefined) updates.ends_at = ends_at || null;
+    if (price_cop !== undefined) updates.price_cop = Number(price_cop) || 0;
     if (typeof req.body.require_card_verification === 'boolean') {
       updates.require_card_verification = req.body.require_card_verification;
     }
@@ -154,6 +156,7 @@ export const getTrialStatus = async (_req: Request, res: Response) => {
     return res.json({
       trialAvailable: !!campaign,
       trialDays: campaign?.trial_days ?? 0,
+      priceCOP: campaign?.price_cop ?? 0,
       campaignName: campaign?.name ?? null,
       endsAt: campaign?.ends_at ?? null,
     });

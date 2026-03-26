@@ -72,7 +72,7 @@ export class WompiController {
 
       const { months, plan, includesLanding } = wompiService.extractMetaFromReference(reference);
 
-      if (amountInCents === 100) {
+      if (reference.startsWith('TRIAL-')) {
         const { data: updatedBrand } = await supabaseAdmin
           .from('brands')
           .update({ trial_payment_status: 'active' })

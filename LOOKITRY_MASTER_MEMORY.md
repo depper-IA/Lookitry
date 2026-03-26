@@ -9,12 +9,13 @@
 4. **Idioma de Comunicación:** TODO lo que aparezca en el chat y la documentación generada por la IA debe ser ESTRICTAMENTE en ESPAÑOL. Esta es una regla obligatoria para la IA.
 
 ## 1. SKILLS & PROCEDIMIENTOS OBLIGATORIOS
-- **Diseño UI/UX (Pro Max)**: Aplicar SIEMPRE (`.agent/skills/ui-ux-pro-max/SKILL.md`) a cualquier componente frontend. Lookitry debe sentirse premium.
+- **Diseño UI/UX (Lookitry Brand Guardian)**: Aplicar SIEMPRE (`.agent/skills/lookitry-brand-guardian/SKILL.md`) para mantener la estética Premium Dark (#030303 background, #FF5C3A accent, compact glassmorphism alerts).
+- **Diseño UI/UX (Pro Max)**: Legado. Preferir el Brand Guardian.
 - **Testing & QA**: Referir a (`.gemini/skills/testing/SKILL.md`) al tocar lógicas de pago (Wompi) o Try-On (n8n).
 - **Optimización de Desarrollo**: Referir a (`.agent/skills/dev-optimization/SKILL.md`) para flujos ultra rápidos.
-- **DESPLIEGUE (REGLA DE ORO HOSTINGER)**: **PROHIBIDO** el uso de SSH directo desde la terminal para despliegues. Se debe usar el flujo de **GitHub Actions** (`.github/workflows/deploy.yml`) mediante `git push origin main`. El script `scripts/_deploy_now.py` es solo para gestión de contenedores en casos de emergencia autorizados, pero la IA debe priorizar siempre el push de Git.
-- **HOSTINGER API**: Para gestión de VPS (reinicio, backups), usar el `HOSTINGER_API_TOKEN` en `.env` vía peticiones HTTP directas, NUNCA vía SSH.
-- **SEO & Metadata**: Referir a (`.kiro/skills/seo/SKILL.md`) al crear o editar páginas públicas (gestión de sitemap, robots, OG tags, JSON-LD estructurado).
+- **DESPLIEGUE (REGLA DE ORO HOSTINGER)**: **PROHIBIDO** el uso de SSH directo desde la terminal para despliegues. Se debe usar el flujo de **GitHub Actions** (`.github/workflows/deploy.yml`) mediante `git push origin main`.
+- **HOSTINGER API**: Para gestión de VPS, usar el `HOSTINGER_API_TOKEN` en `.env` vía peticiones HTTP directas.
+- **SEO & Metadata**: Referir a (`.kiro/skills/seo/SKILL.md`) al crear o editar páginas públicas.
 - **Database**: Usar `supabaseAdmin` solo en backend para bypass RLS. El frontend NUNCA debe exponer `SERVICE_KEY`.
 
 ## 2. STACK TÉCNICO & INFRAESTRUCTURA
@@ -36,7 +37,7 @@ URLs de Producción:
 
 ## 3. LÓGICAS DE NEGOCIO Y PAGOS
 - **Planes**: 
-  - `TRIAL`: Prueba temporal.
+  - `TRIAL` (Pago: $20.000 COP): Prueba de 7 días, límite de 1 producto activo y 15 generaciones. Activación mediante referencia con prefijo `TRIAL-`.
   - `BASIC` ($150.000 COP/mes): 5 productos activos, 400 gen/mes.
   - `PRO` ($250.000 COP/mes): 15 productos activos, 1200 gen/mes.
   - `LANDING`: Pago único $650.000 COP (requiere plan BASIC o PRO).
@@ -73,9 +74,10 @@ Tablas principales:
     └── `_deploy_now.py` (Script Ultra Rápido Deploy)
 
 ## 6. FLUJOS PRINCIPALES
-- **Registro**: Formulario `/register` -> POST `/api/auth/register` (crea en `brands`) -> SMTP Verificación.
-- **Try-On**: `/pruebalo/[brandSlug]` -> Validación -> POST `/api/generations` -> n8n -> OpenRouter (IA) -> MinIO -> Resultado.
-- **Pago (Config Dinámica)**: `/checkout?plan=BASIC` lee `pricing_config`. Checkout genera URL Wompi -> Pago -> Webhook activa sub en `brands`.
+- **Registro**: Formulario `/register` -> POST `/api/auth/register` (crea cuenta `pending_payment`) -> Redirige a `/trial-checkout`.
+- **Trial Checkout**: `/trial-checkout` -> Pago (Wompi/PayPal) con referencia `TRIAL-{brandId}-{ts}` -> Webhook activa cuenta en `brands` -> SMTP Bienvenida.
+- **Try-On**: `/sitio/[brandSlug]` -> Validación -> POST `/api/generations` -> n8n -> OpenRouter (IA) -> MinIO -> Resultado.
+- **Pago (Config Dinámica)**: `/checkout?plan=BASIC` lee `pricing_config`. Checkout genera URL Wompi/PayPal -> Pago -> Webhook activa sub en `brands`.
 
 ## 7. RESOLUCIÓN DE PROBLEMAS PREVIOS (Histórico)
 *Nota: Tareas antiguas como la falta de páginas en admin (`analytics`, `conversion`) ya fueron resueltas y el código existe correctamente. Menciones previas a "Mostrador" o "Virtual Try On" han sido erradicadas para la marca unificada **LOOKITRY**.*
@@ -416,7 +418,6 @@ El usuario luego completa el registro en `/registro-pro?ref=REFERENCIA`.
 | `plan` | text | Plan a activar |
 | `months` | int | Meses a activar |
 | `includes_landing` | bool | Si incluye landing page |
-| `amount` | numeric | Monto pagado |
 | `status` | text | `pending` → `paid` |
 | `payment_id` | text | ID de transacción (Wompi ID o PayPal orderId) |
 

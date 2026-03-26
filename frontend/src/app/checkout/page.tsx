@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -45,7 +45,7 @@ const PLAN_FEATURES: Record<PlanKey, string[]> = {
     'Branding básico (logo y colores)',
     'URL propia del probador',
     'Soporte por WhatsApp/email',
-    '7 días de prueba gratis incluidos',
+    '7 días de prueba por $20.000 COP incluidos',
   ],
   PRO: [
     'Hasta 15 productos en el probador',

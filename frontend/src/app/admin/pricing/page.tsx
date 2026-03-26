@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { formatCurrency } from '@/utils/currency';
@@ -301,6 +301,7 @@ export default function PricingAdminPage() {
 
   const [basic, setBasic]               = useState<PlanConfig | null>(null);
   const [pro, setPro]                   = useState<PlanConfig | null>(null);
+  const [trialPlan, setTrialPlan]       = useState<PlanConfig | null>(null);
   const [miniLanding, setMiniLanding]   = useState<MiniLandingConfig | null>(null);
   const [descuentos, setDescuentos]     = useState<DescuentosConfig | null>(null);
   const [meta, setMeta]                 = useState<MetaConfig | null>(null);
@@ -322,6 +323,7 @@ export default function PricingAdminPage() {
       for (const row of json.data as ConfigRow[]) {
         if (row.id === 'basic')               setBasic(row.data as unknown as PlanConfig);
         if (row.id === 'pro')                 setPro(row.data as unknown as PlanConfig);
+        if (row.id === 'trial')               setTrialPlan(row.data as unknown as PlanConfig);
         if (row.id === 'mini_landing')        setMiniLanding(row.data as unknown as MiniLandingConfig);
         if (row.id === 'descuentos_duracion') setDescuentos(row.data as unknown as DescuentosConfig);
         if (row.id === 'meta') {
@@ -447,6 +449,14 @@ export default function PricingAdminPage() {
         {/* ── TAB: Suscripciones ── */}
         {activeTab === 'plans' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            {trialPlan && (
+              <div className="space-y-3">
+                <PlanSection title="Plan Trial (Prueba)" plan={trialPlan} trm={trm} meta={metaCop} costs={costsObj} onChange={setTrialPlan} />
+                <div className="flex justify-end">
+                  <SaveBtn id="trial" data={trialPlan as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                </div>
+              </div>
+            )}
             {basic && (
               <div className="space-y-3">
                 <PlanSection title="Plan Básico" plan={basic} trm={trm} meta={metaCop} costs={costsObj} onChange={setBasic} />
@@ -534,30 +544,27 @@ export default function PricingAdminPage() {
         {/* ── TAB: Configuración & ROI ── */}
         {activeTab === 'config' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            {/* Plan Trial */}
+            {/* Configuración Adicional Trial (Días) */}
             {meta && (
               <div className="rounded-2xl border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
                 <div>
-                  <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Plan Trial (Periodo de prueba)</h3>
+                  <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Configuración de Trial</h3>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    Configura los límites para las marcas que se registran gratis.
+                    Parámetros temporales del periodo de prueba.
                   </p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field
                     label="Días de duración" type="number" suffix="días"
                     value={meta.trial_days ?? 7}
                     onChange={v => setMeta({ ...meta, trial_days: Number(v) })}
                   />
                   <Field
-                    label="Máx. productos activos" type="number"
+                    label="Límite productos (Sync)" type="number"
                     value={meta.trial_products_max ?? 1}
-                    onChange={v => setMeta({ ...meta, trial_products_max: Number(v) })}
-                  />
-                  <Field
-                    label="Límite generaciones" type="number" suffix="gen"
-                    value={meta.trial_generations_limit ?? 30}
-                    onChange={v => setMeta({ ...meta, trial_generations_limit: Number(v) })}
+                    disabled={true}
+                    onChange={() => {}}
+                    hint="Este valor ahora se edita desde la pestaña de Suscripciones."
                   />
                 </div>
                 <div className="flex justify-end">

@@ -68,7 +68,7 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
   }
 
   const resolvedCtaHref = ctaHref ?? (trialActive ? '/register' : '/planes');
-  const resolvedCtaLabel = ctaLabel ?? (trialActive ? 'Empezar gratis' : 'Contratar ahora');
+  const resolvedCtaLabel = ctaLabel ?? (trialActive ? 'Prueba $20.000' : 'Contratar ahora');
 
   const initials = session?.name
     ? session.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()

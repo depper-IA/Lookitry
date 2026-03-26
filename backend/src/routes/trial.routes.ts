@@ -1,4 +1,4 @@
-﻿import { Router } from 'express';
+import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { authMiddleware } from '../middleware/auth';
 import { supabaseAdmin } from '../config/supabase';
@@ -36,50 +36,65 @@ router.get('/status', asyncHandler(async (req, res) => {
 
 /**
  * POST /api/trial/initiate
- * Genera la URL de Wompi para tokenizar la tarjeta del trial.
+ * Genera la URL de pago (Wompi o PayPal) para activar el trial.
  * Requiere auth (la cuenta ya fue creada en /register).
- * Monto: 100 COP (el mínimo aceptado por Wompi — se usa solo para tokenizar).
- * Si la campaña activa tiene require_card_verification=false, activa el trial directamente.
  */
 router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
   const brand = (req as any).brand;
+  const { method = 'wompi' } = req.body;
+
   if (!brand?.id) {
     return res.status(401).json({ error: 'No autenticado' });
   }
 
-  // Obtener campaña activa y verificar si requiere tarjeta
+  // 1. Obtener campaña activa y su precio
   const now = new Date().toISOString();
   const { data: campaign } = await supabaseAdmin
     .from('trial_campaigns')
-    .select('id, trial_days, require_card_verification')
+    .select('*')
     .eq('active', true)
     .or(`ends_at.is.null,ends_at.gt.${now}`)
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
 
-  // Modo test: sin verificación de tarjeta → activar trial directamente
-  if (!campaign || campaign.require_card_verification === false) {
+  const price = campaign?.price_cop ?? 20000;
+
+  // 2. Si el costo es 0 (o require_card_verification=false), activar trial directamente
+  if (price === 0 || campaign?.require_card_verification === false) {
     await supabaseAdmin
       .from('brands')
       .update({ trial_payment_status: 'active' })
       .eq('id', brand.id);
-    return res.json({ skipPayment: true, message: 'Trial activado en modo test' });
+    return res.json({ skipPayment: true, message: 'Trial activado directamente' });
   }
 
-  // Marcar trial como pendiente de pago
+  // 3. Generar referencia única de Trial
+  const reference = wompiService.generateTrialReference(brand.id);
+
+  // 4. Marcar trial como pendiente de pago
   await supabaseAdmin
     .from('brands')
     .update({ trial_payment_status: 'pending_payment' })
     .eq('id', brand.id);
 
   const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
-  const redirectUrl = `${frontendUrl}/trial-activado`;
+  const successUrl = `${frontendUrl}/trial-activado`;
 
-  // Monto mínimo de Wompi: 100 COP — cardOnly=true restringe a solo tarjeta débito/crédito
-  const checkoutUrl = await wompiService.getCheckoutUrl(brand.id, 100, redirectUrl, true);
-
-  return res.json({ checkoutUrl });
+  // 5. Generar URL según el método
+  if (method === 'paypal') {
+    const { paypalService } = require('../services/paypal.service');
+    const { TrmService } = require('../utils/trm');
+    
+    const trm = await TrmService.getCurrentTrm();
+    // Reutilizamos el checkout de suscripción de paypalService pero con nuestra referencia TRIAL-
+    const checkoutUrl = await paypalService.createOrder(price, trm, reference);
+    return res.json({ checkoutUrl, reference });
+  } else {
+    // Wompi
+    const checkoutUrl = await wompiService.getCheckoutUrl(brand.id, price, successUrl, false, 1, 'TRIAL', reference);
+    return res.json({ checkoutUrl, reference });
+  }
 }));
 
 export default router;
