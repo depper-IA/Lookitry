@@ -946,7 +946,7 @@ function CheckoutContent() {
               </p>
               <p className="text-[11px] text-[#555] pt-1">
                 Al pagar aceptas nuestros{' '}
-                <Link href="/terminos" target="_blank" className="text-[#FF5C3A] hover:underline">
+                <Link href="/terminos" target="_blank" rel="noopener noreferrer" className="text-[#FF5C3A] hover:underline">
                   Términos y Condiciones
                 </Link>
               </p>

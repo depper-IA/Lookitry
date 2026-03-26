@@ -35,23 +35,93 @@ const itemVariants = {
 
 export default function StatusPage() {
   const [uptime, setUptime] = useState(99.98);
-  const [latency, setLatency] = useState(240);
+  const [latency, setLatency] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [healthData, setHealthData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchHealth = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${apiUrl}/health`);
+      if (res.ok) {
+        const data = await res.json();
+        setHealthData(data);
+        
+        // Calcular latencia promedio de los servicios
+        if (data.services) {
+          const latencies = Object.values(data.services).map((s: any) => s.latency);
+          const avg = latencies.reduce((a, b) => a + b, 0) / latencies.length;
+          setLatency(Math.round(avg));
+        }
+
+        // Simular uptime basado en el timestamp (esto es visual)
+        setUptime(99.98);
+      }
+    } catch (error) {
+      console.error('Error fetching health status:', error);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHealth();
+    const interval = setInterval(fetchHealth, 30000); // Actualizar cada 30s
+    return () => clearInterval(interval);
+  }, []);
 
   const refreshStatus = () => {
     setIsRefreshing(true);
-    setTimeout(() => {
-      setLatency(Math.floor(Math.random() * (450 - 180) + 180));
-      setIsRefreshing(false);
-    }, 1500);
+    fetchHealth();
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'ok': return 'Operational';
+      case 'degraded': return 'Degraded';
+      case 'down': return 'Outage';
+      default: return 'Unknown';
+    }
   };
 
   const services = [
-    { name: 'Motor de IA (Generation Engine)', status: 'Operational', latency: '4.2s', load: '12%', icon: <Cpu className="w-5 h-5" /> },
-    { name: 'Infraestructura de API', status: 'Operational', latency: '120ms', load: '4%', icon: <Zap className="w-5 h-5" /> },
-    { name: 'Almacenamiento (MinIO Clusters)', status: 'Operational', latency: '85ms', load: '65%', icon: <Database className="w-5 h-5" /> },
-    { name: 'Red de Distribución (CDN)', status: 'Operational', latency: '12ms', load: '1%', icon: <Globe className="w-5 h-5" /> },
-    { name: 'Sistema de Autenticación', status: 'Operational', latency: '45ms', load: '2%', icon: <ShieldCheck className="w-5 h-5" /> }
+    { 
+      name: 'Base de Datos (Supabase)', 
+      status: getStatusLabel(healthData?.services?.supabase?.status), 
+      latency: `${healthData?.services?.supabase?.latency || 0}ms`, 
+      load: '4%', 
+      icon: <Database className="w-5 h-5" /> 
+    },
+    { 
+      name: 'Automatizaciones (n8n Engine)', 
+      status: getStatusLabel(healthData?.services?.n8n?.status), 
+      latency: `${healthData?.services?.n8n?.latency || 0}ms`, 
+      load: '12%', 
+      icon: <Cpu className="w-5 h-5" /> 
+    },
+    { 
+      name: 'Almacenamiento (MinIO Clusters)', 
+      status: getStatusLabel(healthData?.services?.minio?.status), 
+      latency: `${healthData?.services?.minio?.latency || 0}ms`, 
+      load: '65%', 
+      icon: <Globe className="w-5 h-5" /> 
+    },
+    { 
+      name: 'Servicio de Email (SMTP)', 
+      status: getStatusLabel(healthData?.services?.email?.status), 
+      latency: `${healthData?.services?.email?.latency || 0}ms`, 
+      load: '2%', 
+      icon: <Zap className="w-5 h-5" /> 
+    },
+    { 
+      name: 'Infraestructura de API', 
+      status: 'Operational', 
+      latency: '45ms', 
+      load: '1%', 
+      icon: <ShieldCheck className="w-5 h-5" /> 
+    }
   ];
 
   const incidents = [
