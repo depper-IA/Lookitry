@@ -6,9 +6,7 @@ import { useState, useEffect } from 'react';
 import { 
   Mail, 
   Phone, 
-  Instagram, 
-  Youtube, 
-  Twitter
+  Instagram
 } from 'lucide-react';
 import { LookitryLogoText } from '@/components/mini-landing/shared';
 
@@ -23,9 +21,12 @@ const NAV_PRODUCTO = [
 const NAV_EMPRESA = [
   { label: 'Sobre nosotros', href: '/sobre-nosotros' },
   { label: 'Contacto', href: '/contacto' },
-  { label: 'Casos de éxito', href: '/casos-de-exito' },
+  { label: 'Aplicaciones reales', href: '/aplicaciones' },
   { label: 'Centro de ayuda', href: '/ayuda' },
   { label: 'Estado del servicio', href: '/estado' },
+];
+
+const NAV_CONFIANZA = [
   { label: 'Términos y Condiciones', href: '/terminos' },
   { label: 'Política de Privacidad', href: '/politicas-privacidad' },
   { label: 'Política de uso', href: '/politica-de-uso' },
@@ -77,7 +78,7 @@ export function LandingFooter() {
     <footer className="bg-[#080808] border-t border-[#161616]">
 
       {/* Cuerpo principal */}
-      <div className="max-w-6xl mx-auto px-6 md:px-8 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr] gap-10 lg:gap-16">
+      <div className="max-w-6xl mx-auto px-6 md:px-8 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-10 lg:gap-12">
 
         {/* Columna 1 — Marca + contacto */}
         <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
@@ -93,83 +94,73 @@ export function LandingFooter() {
             <LookitryLogoText className="text-[15px] text-white" />
           </Link>
 
-          <p className="text-[13px] text-[#777] leading-relaxed mb-6 max-w-[280px] mx-auto sm:mx-0">
+          <p className="text-[13px] text-[#9a9a9a] leading-relaxed mb-6 max-w-[300px] mx-auto sm:mx-0">
             Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica.
           </p>
           <div className="flex flex-wrap gap-2 mb-6 justify-center sm:justify-start">
-            <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#111] border border-[#1e1e1e] text-[#8a8a8a]">
+            <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#1a120f] border border-[#FF5C3A]/30 text-[#ffb7a8]">
               Activación en minutos
             </span>
-            <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#111] border border-[#1e1e1e] text-[#8a8a8a]">
+            <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#1a120f] border border-[#FF5C3A]/30 text-[#ffb7a8]">
               Soporte por WhatsApp
             </span>
-            <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#111] border border-[#1e1e1e] text-[#8a8a8a]">
+            <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#1a120f] border border-[#FF5C3A]/30 text-[#ffb7a8]">
               Pago seguro
             </span>
           </div>
 
-          {/* RRSS */}
+          {/* Accesos rápidos redondos */}
           <div className="flex items-center justify-center sm:justify-start gap-3 mb-8">
             {socials.instagram && (
-              <a href={socials.instagram} target="_blank" rel="noopener noreferrer" 
-                className="w-8 h-8 rounded-full bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all">
+              <a
+                href={socials.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="w-10 h-10 rounded-full bg-[#1a120f] border border-[#FF5C3A]/35 flex items-center justify-center text-[#ffb7a8] hover:text-white hover:bg-[#FF5C3A] transition-all"
+              >
                 <Instagram size={14} />
               </a>
             )}
             {socials.tiktok && (
-              <a href={socials.tiktok} target="_blank" rel="noopener noreferrer" 
-                className="w-8 h-8 rounded-full bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all">
+              <a
+                href={socials.tiktok}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="TikTok"
+                className="w-10 h-10 rounded-full bg-[#1a120f] border border-[#FF5C3A]/35 flex items-center justify-center text-[#ffb7a8] hover:text-white hover:bg-[#FF5C3A] transition-all"
+              >
                 <IconTikTok />
               </a>
             )}
-            {socials.youtube && socials.youtube !== '#' && (
-              <a href={socials.youtube} target="_blank" rel="noopener noreferrer" 
-                className="w-8 h-8 rounded-full bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all">
-                <Youtube size={14} />
-              </a>
-            )}
-            {socials.x && socials.x !== '#' && (
-              <a href={socials.x} target="_blank" rel="noopener noreferrer" 
-                className="w-8 h-8 rounded-full bg-[#111] border border-[#1e1e1e] flex items-center justify-center text-[#555] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all">
-                <Twitter size={14} />
-              </a>
-            )}
-          </div>
-
-          {/* Contacto */}
-          <div className="flex flex-col gap-3">
             <a
               href="mailto:info@lookitry.com"
-              className="inline-flex items-center gap-2.5 text-[12px] text-[#666] hover:text-[#FF5C3A] transition-colors group"
+              aria-label="Email"
+              className="w-10 h-10 rounded-full bg-[#1a120f] border border-[#FF5C3A]/35 flex items-center justify-center text-[#ffb7a8] hover:text-white hover:bg-[#FF5C3A] transition-all"
             >
-              <span className="w-7 h-7 rounded-lg bg-[#111] border border-[#1e1e1e] flex items-center justify-center flex-shrink-0 group-hover:border-[#FF5C3A]/30 transition-colors">
-                <Mail size={13} />
-              </span>
-              info@lookitry.com
+              <Mail size={14} />
             </a>
             <a
               href="https://wa.me/573105436281"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2.5 text-[12px] text-[#666] hover:text-[#FF5C3A] transition-colors group"
+              aria-label="Teléfono"
+              className="w-10 h-10 rounded-full bg-[#1a120f] border border-[#FF5C3A]/35 flex items-center justify-center text-[#ffb7a8] hover:text-white hover:bg-[#FF5C3A] transition-all"
             >
-              <span className="w-7 h-7 rounded-lg bg-[#111] border border-[#1e1e1e] flex items-center justify-center flex-shrink-0 group-hover:border-[#FF5C3A]/30 transition-colors">
-                <Phone size={13} />
-              </span>
-              +57 310 543 6281
+              <Phone size={14} />
             </a>
           </div>
         </div>
 
         {/* Columna 2 — Producto */}
         <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-          <p className="text-[10px] font-semibold uppercase tracking-[.12em] text-[#444] mb-5">Producto</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[.12em] text-[#FF5C3A] mb-5">Producto</p>
           <ul className="flex flex-col gap-3">
             {NAV_PRODUCTO.map(l => (
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="text-[13px] text-[#777] hover:text-white transition-colors"
+                  className="text-[13px] text-[#a1a1a1] hover:text-white transition-colors"
                 >
                   {l.label}
                 </Link>
@@ -180,13 +171,30 @@ export function LandingFooter() {
 
         {/* Columna 3 — Empresa */}
         <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-          <p className="text-[10px] font-semibold uppercase tracking-[.12em] text-[#444] mb-5">Empresa</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[.12em] text-[#FF5C3A] mb-5">Empresa</p>
           <ul className="flex flex-col gap-3">
             {NAV_EMPRESA.map(l => (
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="text-[13px] text-[#777] hover:text-white transition-colors"
+                  className="text-[13px] text-[#a1a1a1] hover:text-white transition-colors"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Columna 4 — Confianza legal */}
+        <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+          <p className="text-[10px] font-semibold uppercase tracking-[.12em] text-[#FF5C3A] mb-5">Confianza legal</p>
+          <ul className="flex flex-col gap-3">
+            {NAV_CONFIANZA.map(l => (
+              <li key={l.href}>
+                <Link
+                  href={l.href}
+                  className="text-[13px] text-[#a1a1a1] hover:text-white transition-colors"
                 >
                   {l.label}
                 </Link>
