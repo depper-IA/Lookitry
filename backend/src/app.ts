@@ -71,7 +71,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 const publicCors = cors({ 
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'x-store-domain'],
   credentials: false
 });
 
@@ -108,7 +108,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-store-domain'],
 }));
 
 // Rutas protegidas
