@@ -115,13 +115,13 @@ if do_backend and "package.json" in out and not no_cache:
 # 2. Rebuild backend
 if do_backend:
     print("\n=== Rebuild BACKEND ===")
-    run(ssh, f"cd {REPO} && docker compose -f docker-compose.backend.yml build {build_flag} 2>&1 | tail -15", timeout=300)
+    run(ssh, f"cd {REPO} && docker compose -f docker-compose.backend.yml down && docker compose -f docker-compose.backend.yml build {build_flag} 2>&1 | tail -15", timeout=300)
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.backend.yml up -d")
 
 # 3. Rebuild frontend
 if do_frontend:
     print("\n=== Rebuild FRONTEND ===")
-    run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml build {build_flag} 2>&1 | tail -20", timeout=600)
+    run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml down && docker compose -f docker-compose.frontend.yml build {build_flag} 2>&1 | tail -20", timeout=600)
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml up -d")
 
 # 4. Estado de contenedores
