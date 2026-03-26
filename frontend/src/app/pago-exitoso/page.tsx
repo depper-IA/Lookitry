@@ -65,10 +65,13 @@ function PagoExitosoContent() {
           if (!res.ok) throw new Error(data.message || 'Error al capturar el pago');
           
           const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-          const isTrial = currentRef?.startsWith('TRIAL-');
-          const isVisitor = (currentRef?.includes('visitor_') || !token) && !isTrial;
+          const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-');
+          const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
+          const isStandardVisitor = (currentRef?.includes('visitor_') || !token) && !isTrialRef;
 
-          if (isVisitor && currentRef) {
+          if (isGuestTrial && currentRef) {
+            setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
+          } else if (isStandardVisitor && currentRef) {
             setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${months}&method=paypal&orderId=${paypalToken}`);
           } else if (token) {
             setDashboardHref('/dashboard');
@@ -82,10 +85,14 @@ function PagoExitosoContent() {
         }
       } else {
           const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-          const isTrial = currentRef?.startsWith('TRIAL-');
-          const isVisitor = (currentRef?.includes('visitor_') || !token) && !isTrial;
+          const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-');
+          const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
+          // Un visitante estándar es alguien sin token que NO es de trial, o alguien con referencia visitor_ que no es trial
+          const isStandardVisitor = (currentRef?.includes('visitor_') || !token) && !isTrialRef;
 
-        if (isVisitor && currentRef) {
+        if (isGuestTrial && currentRef) {
+          setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
+        } else if (isStandardVisitor && currentRef) {
           setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${months}`);
         } else if (token) {
           setDashboardHref('/dashboard');
@@ -99,51 +106,59 @@ function PagoExitosoContent() {
     validatePayment();
   }, [ref, months, method, paypalToken, wompiId]);
 
-  const dashboardLabel = dashboardHref.startsWith('/registro-pro')
+  const dashboardLabel = dashboardHref.startsWith('/registro-pro') || dashboardHref.startsWith('/register')
     ? 'Crear mi cuenta'
     : 'Ir al dashboard';
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4 bg-[#030303]">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-t-transparent border-[#FF5C3A] rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-white font-syne text-xl">Validando tu pago con PayPal...</h2>
-          <p className="text-[#666] text-sm mt-2">Esto tomará solo unos segundos.</p>
-        </div>
-      </main>
+      <div className="dark">
+        <main className="min-h-screen flex items-center justify-center px-4 bg-[#030303]">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-t-transparent border-[#FF5C3A] rounded-full animate-spin mx-auto mb-4"></div>
+            <h2 className="text-white font-syne text-xl">Confirmando tu pago...</h2>
+            <p className="text-[#666] text-sm mt-2">Por favor no cierres esta ventana.</p>
+          </div>
+        </main>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4 bg-[#030303]">
-        <div className="w-full max-w-md">
-           <div className="flex justify-center mb-8">
-            <Link href="/" className="flex items-center gap-2.5">
-              <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-              <span className="font-syne font-extrabold text-xl text-white tracking-tight">
-                Look<span className="text-[#FF5C3A]">itry</span>
-              </span>
-            </Link>
+      <div className="dark">
+        <main className="min-h-screen flex items-center justify-center px-4 bg-[#030303]">
+          <div className="w-full max-w-md">
+             <div className="flex justify-center mb-8">
+              <Link href="/" className="flex items-center gap-2.5">
+                <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
+                <span className="font-syne font-extrabold text-xl text-white tracking-tight">
+                  Look<span className="text-[#FF5C3A]">itry</span>
+                </span>
+              </Link>
+            </div>
+            <Alert 
+              type="error"
+              title="¡Pago por verificar!"
+              message={error}
+              className="mb-8"
+            />
+            <div className="text-center flex flex-col gap-4">
+              <Link href={dashboardHref} className="inline-block px-8 py-3 bg-[#FF5C3A] text-white text-[13px] font-bold rounded-xl transition-all shadow-lg hover:bg-opacity-90">
+                Ir al Dashboard
+              </Link>
+              <p className="text-[#444] text-[11px]">
+                Incluso si ves este error, tu pago está siendo procesado. El acceso se activará en pocos minutos.
+              </p>
+            </div>
           </div>
-          <Alert 
-            type="error"
-            title="¡Ups! Algo salió mal"
-            message={error}
-            className="mb-8"
-          />
-          <div className="text-center">
-            <Link href="/checkout" className="inline-block px-8 py-3 bg-[#111] hover:bg-[#1a1a1a] text-white text-[13px] font-bold rounded-xl transition-all border border-[#222]">
-              Volver al checkout
-            </Link>
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
     );
   }
 
   return (
+    <div className="dark">
     <main className="min-h-screen flex items-center justify-center px-4 bg-[#030303] selection:bg-[#FF5C3A]/30">
       <div className="w-full max-w-md animate-in fade-in duration-700">
 
@@ -181,7 +196,7 @@ function PagoExitosoContent() {
             ¡Pago confirmado!
           </h1>
           <p className="text-[15px] leading-relaxed mb-8 text-[#a0a0a0]">
-            {dashboardHref.startsWith('/registro-pro')
+            {(dashboardHref.startsWith('/registro-pro') || dashboardHref.startsWith('/register'))
               ? 'Todo está listo. Ahora crea tu cuenta para activar tu suscripción y empezar a usar Lookitry.'
               : isTrial
                 ? '¡Tu prueba profesional ha sido activada! Ya puedes empezar a usar todas las herramientas de Lookitry.'
@@ -233,6 +248,7 @@ function PagoExitosoContent() {
         </div>
       </div>
     </main>
+    </div>
   );
 }
 

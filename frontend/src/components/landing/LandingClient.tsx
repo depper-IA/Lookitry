@@ -167,7 +167,7 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
             </p>
             <div className="flex gap-3 justify-center flex-wrap mb-3">
               <Link
-                href="/register"
+                href="/trial-checkout"
                 className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-sm font-medium px-7 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
               >
                 Prueba $20.000 — 7 días

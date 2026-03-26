@@ -62,19 +62,65 @@ export default function RegisterForm() {
   const [trialDays, setTrialDays] = useState(7);
   const [fingerprint, setFingerprint] = useState<string | null>(null);
 
+  const [isPaidFlow, setIsPaidFlow] = useState(false);
+  const [paymentRef, setPaymentRef] = useState<string | null>(null);
+
   useEffect(() => {
+    // 1. Verificar si viene de un pago exitoso (funnel invertido)
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    const isTrialParam = params.get('isTrial') === 'true';
+
+    if (ref) {
+      setPaymentRef(ref);
+      setIsPaidFlow(true);
+      setLoadingStep('Verificando tu pago...');
+      
+      // Cargar email desde el registro pendiente
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/pending-registration/${ref}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.email) {
+            setForm(prev => ({ ...prev, email: data.email }));
+          }
+          setLoadingStep('');
+        })
+        .catch(err => {
+          console.error('Error fetching pending registration:', err);
+          setLoadingStep('');
+        });
+    }
+
+    // 2. Fingerprint
     getFingerprint().then(setFingerprint);
+
+    // 3. Status del trial (solo si no es flow pagado)
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`)
       .then((r) => r.json())
       .then((d) => {
         const isActive = d.trialAvailable === true || d.active === true;
-        setTrialActive(isActive);
-        if (isActive) {
+        
+        // MARKETING OPTIMIZATION: Si no hay trial gratuito y no viene de un pago,
+        // redirigimos al checkout de pago para que el usuario no se detenga.
+        if (!isActive && !ref) {
+          router.push('/trial-checkout');
+          return;
+        }
+
+        // Si es flujo pagado, forzamos trialActive a true para que no muestre el bloqueo
+        setTrialActive(ref ? true : isActive);
+        if (isActive || ref) {
           setTrialDays(d.trialDays ?? d.trial_days ?? 7);
         }
       })
-      .catch(() => setTrialActive(false));
-  }, []);
+      .catch(() => {
+        if (!ref) {
+          router.push('/trial-checkout');
+        } else {
+          setTrialActive(true);
+        }
+      });
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -98,12 +144,16 @@ export default function RegisterForm() {
     setLoading(true);
 
     try {
-      // Paso 1: Crear cuenta
       setLoadingStep('Creando tu cuenta...');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
+      
+      // Si es flujo pagado, usamos el endpoint post-pago que no tiene Turnstile ni validaciones de abuso
+      const endpoint = isPaidFlow ? '/api/auth/register-post-payment' : '/api/auth/register';
+      const body = isPaidFlow ? { ...form, reference: paymentRef } : { ...form, fingerprint };
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, fingerprint }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
 
@@ -111,7 +161,7 @@ export default function RegisterForm() {
         if (data.error === 'TRIAL_ABUSE') {
           setError('Ya existe una cuenta de prueba registrada desde este dispositivo o red. Puedes contratar un plan directamente.');
         } else {
-          setError(data.message || 'Error al registrar');
+          setError(data.message || data.error || 'Error al registrar');
         }
         return;
       }
@@ -120,9 +170,14 @@ export default function RegisterForm() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('brandToken', data.token);
 
-      // Redirigir al nuevo checkout de prueba
-      setLoadingStep('Redirigiendo al checkout...');
-      router.push('/trial-checkout');
+      // Si ya pagó, va directo al dashboard. Si no, va al checkout.
+      if (isPaidFlow) {
+        setLoadingStep('¡Listo! Entrando al sistema...');
+        router.push('/dashboard');
+      } else {
+        setLoadingStep('Redirigiendo al checkout...');
+        router.push('/trial-checkout');
+      }
     } catch (err: any) {
       setError(err.message || 'Error de conexión. Intenta de nuevo.');
     } finally {
