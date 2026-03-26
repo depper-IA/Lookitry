@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { api } from '@/services/api';
 import { authService } from '@/services/auth.service';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+
 // --- Icons ---
 const IconCheck = () => (
   <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,6 +28,12 @@ const IconArrowLeft = () => (
   </svg>
 );
 
+const IconInfo = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
 export default function TrialCheckoutPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -33,6 +41,8 @@ export default function TrialCheckoutPage() {
   const [campaign, setCampaign] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
   const [hasSession, setHasSession] = useState(false);
+  const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
+  const [trm, setTrm] = useState(3900);
 
   useEffect(() => {
     // Verificar sesión
@@ -43,16 +53,45 @@ export default function TrialCheckoutPage() {
     }
     setHasSession(true);
 
-    // Cargar info de campaña
-    api.get<any>('/trial/status')
-      .then(res => setCampaign(res.data))
-      .catch(err => console.error('Error loading campaign:', err));
+    // Cargar info de campaña y TRM
+    Promise.all([
+      api.get<any>('/trial/status'),
+      fetch(`${API_URL}/api/payment-settings/public`).then(r => r.ok ? r.json() : null)
+    ]).then(([trialRes, paySettings]) => {
+      setCampaign(trialRes.data);
+      if (paySettings?.trm) setTrm(paySettings.trm);
+    }).catch(err => console.error('Error loading checkout data:', err));
+
+    // Cargar moneda desde localStorage
+    const savedCurrency = localStorage.getItem('currency') as 'COP' | 'USD';
+    if (savedCurrency) {
+      setCurrency(savedCurrency);
+      if (savedCurrency === 'USD') setPaymentMethod('paypal');
+    }
+
+    const handleCurrencyChange = () => {
+      const current = localStorage.getItem('currency') as 'COP' | 'USD';
+      if (current) {
+        setCurrency(current);
+        if (current === 'USD') setPaymentMethod('paypal');
+      }
+    };
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
   }, [router]);
 
-  const price = campaign?.priceCOP ?? 20000;
+  const priceCOP = campaign?.priceCOP ?? 20000;
   const trialDays = campaign?.trialDays ?? 7;
+  const priceUSD = Math.ceil(priceCOP / trm);
 
-  const formatCOP = (val: number) => {
+  const formatPrice = (val: number) => {
+    if (currency === 'USD') {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0
+      }).format(val);
+    }
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
       currency: 'COP',
@@ -65,7 +104,11 @@ export default function TrialCheckoutPage() {
     setError('');
 
     try {
-      const res = await api.post<any>('/trial/initiate', { method: paymentMethod });
+      // Para PayPal enviamos la TRM actual
+      const body: any = { method: paymentMethod };
+      if (paymentMethod === 'paypal') body.trm = trm;
+
+      const res = await api.post<any>('/trial/initiate', body);
       
       if (res.data.skipPayment) {
         router.push('/dashboard');
@@ -83,52 +126,71 @@ export default function TrialCheckoutPage() {
     }
   };
 
+  const toggleCurrency = () => {
+    const newCurrency = currency === 'COP' ? 'USD' : 'COP';
+    setCurrency(newCurrency);
+    localStorage.setItem('currency', newCurrency);
+    window.dispatchEvent(new Event('currencyChange'));
+    if (newCurrency === 'USD') setPaymentMethod('paypal');
+    else setPaymentMethod('wompi');
+  };
+
   if (!hasSession) return null;
 
   return (
     <main className="min-h-screen bg-[#030303] text-white selection:bg-[#FF5C3A]/30">
       {/* Nav */}
-      <nav className="border-b border-white/5 bg-black/50 backdrop-blur-xl px-6 h-16 flex items-center justify-between sticky top-0 z-50">
+      <nav className="border-b border-white/5 bg-black/50 backdrop-blur-xl px-4 md:px-8 h-16 flex items-center justify-between sticky top-0 z-50">
         <Link href="/" className="flex items-center gap-2.5">
           <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
           <span className="font-syne font-extrabold text-base tracking-tight">
             Look<span className="text-[#FF5C3A]">itry</span>
           </span>
         </Link>
-        <div className="flex items-center gap-1.5 text-[12px] text-white/50">
-          <IconLock />
-          Pago 100% seguro
+        <div className="flex items-center gap-4">
+          {/* Currency Switcher */}
+          <button
+            onClick={toggleCurrency}
+            className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-3 py-1.5 transition-all text-[11px] font-bold"
+          >
+            <span className={currency === 'COP' ? 'text-[#FF5C3A]' : 'text-white/40'}>COP</span>
+            <div className="w-px h-3 bg-white/10" />
+            <span className={currency === 'USD' ? 'text-[#FF5C3A]' : 'text-white/40'}>USD</span>
+          </button>
+          <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-white/50">
+            <IconLock />
+            Pago 100% seguro
+          </div>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-6 py-12 md:py-20">
+      <div className="max-w-4xl mx-auto px-6 py-8 md:py-16">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-[13px] text-white/40 hover:text-white transition-colors mb-10 group"
+          className="flex items-center gap-2 text-[13px] text-white/40 hover:text-white transition-colors mb-8 group"
         >
           <IconArrowLeft />
           Volver
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           
           {/* Columna Info Plan */}
-          <div className="space-y-8">
+          <div className="space-y-6">
             <div>
               <h1 className="font-syne font-bold text-3xl md:text-4xl leading-tight mb-4">
                 Activa tu <span className="text-[#FF5C3A]">Prueba Profesional</span>
               </h1>
-              <p className="text-white/60 text-base leading-relaxed max-w-md">
+              <p className="text-white/60 text-[15px] leading-relaxed max-w-md">
                 Estás a un paso de revolucionar la experiencia de compra de tus clientes con Probador Virtual.
               </p>
             </div>
 
-            <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-8 backdrop-blur-sm relative overflow-hidden group">
-              {/* Glow effect */}
+            <div className="bg-white/[0.03] border border-white/10 rounded-[2rem] p-8 backdrop-blur-sm relative overflow-hidden group">
               <div className="absolute -top-12 -right-12 w-24 h-24 bg-[#FF5C3A]/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               <div className="flex items-center justify-between mb-8">
-                <span className="text-[12px] font-bold uppercase tracking-widest text-[#FF5C3A]">Plan de Prueba</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest text-[#FF5C3A]">Acceso Ilimitado</span>
                 <span className="bg-white/5 border border-white/10 text-[11px] px-3 py-1 rounded-full text-white/80 font-medium">
                   {trialDays} días
                 </span>
@@ -150,28 +212,39 @@ export default function TrialCheckoutPage() {
 
               <div className="pt-8 border-t border-white/10 flex items-center justify-between">
                 <div className="flex flex-col">
-                  <span className="text-[12px] text-white/40 uppercase font-bold tracking-tight">Total a pagar</span>
-                  <span className="text-3xl font-syne font-extrabold text-[#FF5C3A]">
-                    {formatCOP(price)}
+                  <span className="text-[11px] text-white/40 uppercase font-bold tracking-tight">Total a pagar</span>
+                  <span className="text-3xl font-syne font-extrabold text-white">
+                    {formatPrice(currency === 'USD' ? priceUSD : priceCOP)}
                   </span>
                 </div>
-                <div className="text-right">
-                  <span className="block text-[11px] text-white/30 leading-tight">Incluye todos<br/>los beneficios</span>
-                </div>
+                {currency === 'USD' && (
+                  <div className="text-right">
+                    <span className="block text-[10px] text-white/30 leading-tight italic">TRM: {trm.toLocaleString('es-CO')}</span>
+                  </div>
+                )}
               </div>
+            </div>
+
+            <div className="bg-[#FF5C3A]/5 border border-[#FF5C3A]/20 rounded-2xl p-4 flex items-start gap-4">
+              <div className="w-8 h-8 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <IconInfo />
+              </div>
+              <p className="text-[12px] text-white/60 leading-relaxed">
+                <strong className="text-white">Dato:</strong> Puedes cancelar en cualquier momento. Si decides seguir, tu inversión en la prueba se descontará de tu primer mes de suscripción.
+              </p>
             </div>
           </div>
 
           {/* Columna Pago */}
           <div className="bg-white/[0.02] border border-white/10 rounded-[2.5rem] p-8 md:p-10 sticky top-28">
-            <h2 className="font-syne font-bold text-xl mb-6 flex items-center gap-2">
+            <h2 className="font-syne font-bold text-xl mb-6 flex items-center gap-2 text-white">
               <span className="w-1.5 h-6 bg-[#FF5C3A] rounded-full inline-block" />
               Método de Pago
             </h2>
 
             <div className="space-y-4 mb-8">
               <button
-                onClick={() => setPaymentMethod('wompi')}
+                onClick={() => { setPaymentMethod('wompi'); if (currency === 'USD') setCurrency('COP'); }}
                 className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
                   paymentMethod === 'wompi' 
                     ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-[0_0_20px_rgba(255,92,58,0.1)]' 
@@ -183,11 +256,11 @@ export default function TrialCheckoutPage() {
                     {paymentMethod === 'wompi' && <div className="w-2.5 h-2.5 rounded-full bg-[#FF5C3A]" />}
                   </div>
                   <div>
-                    <span className="block font-bold text-[15px] text-white">Wompi (Colombia)</span>
-                    <span className="text-[11px] text-white/40">Tarjetas, PSE, Nequi, Bancolombia</span>
+                    <span className="block font-bold text-[15px] text-white">Wompi</span>
+                    <span className="text-[11px] text-white/40">Tarjetas, PSE, Nequi (Solo COP)</span>
                   </div>
                 </div>
-                <Image src="/img/wompi-logo.png" alt="Wompi" width={60} height={20} className="opacity-70 grayscale brightness-200" />
+                <Image src="/wompi-logo.svg" alt="Wompi" width={60} height={20} className="object-contain opacity-70" />
               </button>
 
               <button
@@ -204,10 +277,10 @@ export default function TrialCheckoutPage() {
                   </div>
                   <div>
                     <span className="block font-bold text-[15px] text-white">PayPal</span>
-                    <span className="text-[11px] text-white/40">Tarjeta de crédito o saldo PayPal</span>
+                    <span className="text-[11px] text-white/40">Tarjetas globales o Saldo PHP</span>
                   </div>
                 </div>
-                <Image src="/img/paypal-logo.png" alt="PayPal" width={60} height={20} className="opacity-70 grayscale brightness-200" />
+                <Image src="/payment-paypal.svg" alt="PayPal" width={60} height={20} className="object-contain opacity-70" />
               </button>
             </div>
 
@@ -234,7 +307,7 @@ export default function TrialCheckoutPage() {
                   Procesando...
                 </div>
               ) : (
-                `Pagar ${formatCOP(price)}`
+                `Pagar ${formatPrice(currency === 'USD' ? priceUSD : priceCOP)}`
               )}
             </button>
 
@@ -256,3 +329,4 @@ export default function TrialCheckoutPage() {
     </main>
   );
 }
+
