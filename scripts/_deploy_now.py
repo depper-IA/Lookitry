@@ -1,24 +1,27 @@
 """
 Deploy script -- Lookitry
 Uso:
-  python _deploy_now.py              -> rebuild solo lo que cambio (rapido, usa cache Docker)
-  python _deploy_now.py --no-cache   -> rebuild completo sin cache (lento, para cambios en deps)
+  python _deploy_now.py              -> deploy solo si origin/main trae cambios
+  python _deploy_now.py --no-cache   -> rebuild completo sin cache
   python _deploy_now.py --backend    -> solo backend
   python _deploy_now.py --frontend   -> solo frontend
-  python _deploy_now.py --restart    -> solo reinicia contenedores SIN rebuild (~5s, instantaneo)
+  python _deploy_now.py --restart    -> solo reinicia contenedores SIN rebuild
+  python _deploy_now.py --force      -> rebuild aunque origin/main no tenga cambios nuevos
 
 Tiempos aproximados:
-  --restart   : ~5s   (solo reinicia, sin rebuild -- util para cambios de config/env)
-  normal      : ~2min frontend, ~1min backend (con cache Docker)
-  --no-cache  : ~5min (rebuild completo, solo cuando cambian package.json/deps)
+  --restart   : ~5s
+  normal      : ~0s si no hay cambios, ~2min frontend, ~1min backend
+  --no-cache  : ~5min
 
-Dependencias requeridas (instalar una sola vez):
+Dependencias requeridas:
   pip install paramiko python-dotenv
 """
+import os
 import subprocess
 import sys
+import time
 
-# Auto-instalar dependencias si no están disponibles
+
 for pkg, import_name in [("paramiko", "paramiko"), ("python-dotenv", "dotenv")]:
     try:
         __import__(import_name)
@@ -27,53 +30,63 @@ for pkg, import_name in [("paramiko", "paramiko"), ("python-dotenv", "dotenv")]:
         subprocess.check_call([sys.executable, "-m", "pip", "install", pkg, "-q"])
 
 import paramiko
-import time
-import os
 from dotenv import load_dotenv
 
-# Cargar variables de entorno desde el .env del backend
-load_dotenv(os.path.join(os.path.dirname(__file__), '../backend/.env'))
+
+load_dotenv(os.path.join(os.path.dirname(__file__), "../backend/.env"))
 
 HOST = os.getenv("VPS_HOST", "31.220.18.39")
 USER = os.getenv("VPS_USER", "root")
 PASS = os.getenv("VPS_PASS")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
-GITHUB_REPO  = os.getenv("GITHUB_REPO", "https://github.com/depper-IA/Lookitry.git")
-REPO         = "/root/virtual-tryon"
+GITHUB_REPO = os.getenv("GITHUB_REPO", "https://github.com/depper-IA/Lookitry.git")
+REPO = "/root/virtual-tryon"
 
-# URL con token para autenticación sin prompt
 REPO_URL = GITHUB_REPO.replace("https://", f"https://{GITHUB_TOKEN}@") if GITHUB_TOKEN else GITHUB_REPO
+
 if not PASS:
-    print("Error: La variable VPS_PASS no está definida en el archivo .env del backend.")
+    print("Error: La variable VPS_PASS no esta definida en backend/.env.")
     sys.exit(1)
 
 args = sys.argv[1:]
-no_cache     = "--no-cache" in args
-only_back    = "--backend"  in args
-only_front   = "--frontend" in args
-restart_only = "--restart"  in args
-do_backend   = only_back  or (not only_front)
-do_frontend  = only_front or (not only_back)
-
+no_cache = "--no-cache" in args
+only_back = "--backend" in args
+only_front = "--frontend" in args
+restart_only = "--restart" in args
+force_deploy = "--force" in args
+do_backend = only_back or (not only_front)
+do_frontend = only_front or (not only_back)
 build_flag = "--no-cache" if no_cache else ""
 
-def run(ssh, cmd, timeout=300):
+
+def run(ssh, cmd, timeout=300, check=True):
     print(f"\n$ {cmd}")
     _, stdout, stderr = ssh.exec_command(cmd, timeout=timeout)
     out = stdout.read().decode(errors="replace")
     err = stderr.read().decode(errors="replace")
+    code = stdout.channel.recv_exit_status()
     if out.strip():
         print(out.strip())
     if err.strip():
         print("[stderr]", err.strip())
-    return out, err
+    if check and code != 0:
+        raise RuntimeError(f"Comando fallo con exit code {code}: {cmd}")
+    return out, err, code
+
+
+def contains_path(changed_files, prefix):
+    return any(line.startswith(prefix) for line in changed_files.splitlines())
+
 
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect(HOST, username=USER, password=PASS, timeout=30)
-print(f"Conectado al VPS  [no-cache={no_cache}  backend={do_backend}  frontend={do_frontend}  restart={restart_only}]")
 
-# Modo --restart: solo reinicia contenedores, sin rebuild ni git pull (~5s)
+print(
+    f"Conectado al VPS  [no-cache={no_cache}  backend={do_backend}  frontend={do_frontend}  "
+    f"restart={restart_only}  force={force_deploy}]"
+)
+
 if restart_only:
     print("\n=== Restart rapido (sin rebuild) ===")
     if do_backend:
@@ -81,54 +94,79 @@ if restart_only:
     if do_frontend:
         run(ssh, f"docker compose -f {REPO}/docker-compose.frontend.yml restart")
     time.sleep(3)
-    run(ssh, "docker ps --format 'table {{.Names}}\t{{.Status}}'")
+    run(ssh, "docker ps --format 'table {{.Names}}\\t{{.Status}}'")
     ssh.close()
     print("\nRestart completado.")
     sys.exit(0)
 
-# 1. Git pull -- detectar que archivos cambiaron
-out, err = "", ""
-out, err = run(ssh, f"cd {REPO} && git remote set-url origin {REPO_URL} && git reset --hard HEAD && git clean -fd && git pull origin main")
+run(ssh, f"cd {REPO} && git remote set-url origin {REPO_URL} && git fetch origin main")
+current_sha, _, _ = run(ssh, f"cd {REPO} && git rev-parse HEAD")
+remote_sha, _, _ = run(ssh, f"cd {REPO} && git rev-parse origin/main")
+current_sha = current_sha.strip()
+remote_sha = remote_sha.strip()
 
-# Inferir qué reconstruir si no se especificó flag
+changed_files = ""
+if current_sha != remote_sha:
+    changed_files, _, _ = run(ssh, f"cd {REPO} && git diff --name-only HEAD..origin/main")
+    run(ssh, f"cd {REPO} && git reset --hard origin/main && git clean -fd")
+else:
+    print("\nSin commits nuevos en origin/main.")
+
 backend_changed = False
 frontend_changed = False
 
 if not only_back and not only_front:
-    backend_changed  = "backend/"  in out
-    frontend_changed = "frontend/" in out
-    # Si git pull no reportó cambios, reconstruir todo de todas formas
+    if current_sha != remote_sha:
+        backend_changed = contains_path(changed_files, "backend/")
+        frontend_changed = contains_path(changed_files, "frontend/")
+        if contains_path(changed_files, "lookitry-woocommerce/"):
+            print(
+                "\n[INFO] Cambios del plugin WooCommerce detectados. "
+                "WordPress se sincroniza automaticamente al hacer push a main."
+            )
+    if force_deploy:
+        backend_changed = True
+        frontend_changed = True
     if not backend_changed and not frontend_changed:
-        backend_changed = frontend_changed = True
-    do_backend  = backend_changed
+        print("\nNo hay cambios nuevos en backend/frontend. Deploy omitido.")
+        ssh.close()
+        sys.exit(0)
+    do_backend = backend_changed
     do_frontend = frontend_changed
-    if do_backend  and not do_frontend: print("\n-> Solo cambió backend")
-    if do_frontend and not do_backend:  print("\n-> Solo cambió frontend")
-    if do_backend  and do_frontend:     print("\n-> Cambiaron backend y frontend")
+    if do_backend and not do_frontend:
+        print("\n-> Solo cambio backend")
+    if do_frontend and not do_backend:
+        print("\n-> Solo cambio frontend")
+    if do_backend and do_frontend:
+        print("\n-> Cambiaron backend y frontend")
 
-# Avisar si cambiaron dependencias
-if do_frontend and "package.json" in out and not no_cache:
-    print("\n[AVISO] package.json cambio en frontend -- considera usar --no-cache")
-if do_backend and "package.json" in out and not no_cache:
-    print("\n[AVISO] package.json cambio en backend -- considera usar --no-cache")
+if do_frontend and "frontend/package.json" in changed_files and not no_cache:
+    print("\n[AVISO] frontend/package.json cambio. Considera usar --no-cache")
+if do_backend and "backend/package.json" in changed_files and not no_cache:
+    print("\n[AVISO] backend/package.json cambio. Considera usar --no-cache")
 
-# 2. Rebuild backend
 if do_backend:
     print("\n=== Rebuild BACKEND ===")
-    run(ssh, f"cd {REPO} && docker compose -f docker-compose.backend.yml down && docker compose -f docker-compose.backend.yml build {build_flag} 2>&1 | tail -15", timeout=300)
+    run(
+        ssh,
+        f"cd {REPO} && docker compose -f docker-compose.backend.yml down && "
+        f"docker compose -f docker-compose.backend.yml build {build_flag} 2>&1 | tail -15",
+        timeout=300,
+    )
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.backend.yml up -d")
 
-# 3. Rebuild frontend
 if do_frontend:
     print("\n=== Rebuild FRONTEND ===")
-    run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml down && docker compose -f docker-compose.frontend.yml build {build_flag} 2>&1 | tail -20", timeout=600)
+    run(
+        ssh,
+        f"cd {REPO} && docker compose -f docker-compose.frontend.yml down && "
+        f"docker compose -f docker-compose.frontend.yml build {build_flag} 2>&1 | tail -20",
+        timeout=600,
+    )
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml up -d")
 
-# 4. Estado de contenedores
-# time.sleep(4)
-run(ssh, "docker ps --format 'table {{.Names}}\t{{.Status}}'")
+run(ssh, "docker ps --format 'table {{.Names}}\\t{{.Status}}'")
 
-# 5. Health check
 print("\n=== Health check ===")
 run(ssh, "curl -s -w '\\nHTTP: %{http_code}' https://api.lookitry.com/health")
 
