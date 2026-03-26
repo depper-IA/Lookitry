@@ -71,21 +71,21 @@ export default function IntegrationsPage() {
   const steps = [
     {
       id: '01',
-      title: 'Instalar Plugin',
+      title: 'Instalar plugin',
       description: 'Descarga el plugin oficial para WooCommerce e instálalo en tu tienda.',
       icon: <Download className="w-5 h-5 text-indigo-500" />,
-      action: 'Descargar Plugin (.zip)'
+      action: 'Descargar plugin (.zip)'
     },
     {
       id: '02',
-      title: 'Configurar Credenciales',
-      description: 'Navega a WooCommerce > Ajustes > Lookitry y pega tu Clave de API.',
+      title: 'Configurar credenciales',
+      description: 'Navega a WooCommerce > Ajustes > Lookitry y pega tu clave de api.',
       icon: <Key className="w-5 h-5 text-amber-500" />,
       action: null
     },
     {
       id: '03',
-      title: 'Sincronización Automática',
+      title: 'Sincronización automática',
       description: 'Lookitry detectará tus productos automáticamente mediante el ID de WordPress.',
       icon: <Sparkles className="w-5 h-5 text-emerald-500" />,
       action: null
@@ -97,9 +97,7 @@ export default function IntegrationsPage() {
       initial="hidden" animate="visible" variants={containerVariants}
       className="max-w-[1400px] mx-auto space-y-8 md:space-y-16 pb-20 px-4 xl:px-0 relative"
     >
-      {/* 🔮 Background Decorator - Removed for Flat Aesthetics */}
-
-      {/* ══ HEADER LUXURY EDITORIAL ══ */}
+      {/* ══ HEADER ══ */}
       <motion.header variants={itemVariants} className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 md:gap-10 border-b border-[var(--border-color)] pb-10 md:pb-16 pt-4 md:pt-8 w-full overflow-hidden">
         <div className="space-y-4 md:space-y-6">
           <div className="flex items-center gap-4 md:gap-5">
@@ -107,23 +105,23 @@ export default function IntegrationsPage() {
                 <img src="/logo.svg" alt="Lookitry" className="w-full h-full object-contain" />
              </div>
              <div>
-                 <h1 className="text-2xl md:text-4xl font-[1000] tracking-tighter text-zinc-900 dark:text-white uppercase leading-none">
-                    Integraciones <br />
+                 <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white leading-none font-jakarta">
+                    Integraciones de <br />
                     <span className="text-[#FF5C3A]">Ecosistema Pro</span>
                  </h1>
-                 <p className="text-[8px] md:text-[10px] font-black tracking-[0.2em] md:tracking-[0.3em] text-zinc-400 dark:text-zinc-500 uppercase mt-2 md:mt-3 mb-1 italic">Conexión Global • Tiempo Real</p>
+                 <p className="text-[10px] md:text-[11px] font-bold tracking-wider text-zinc-400 dark:text-zinc-500 uppercase mt-2 md:mt-3 mb-1">Conexión global • Tiempo real</p>
              </div>
           </div>
         </div>
 
         <div className="flex flex-row overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 gap-3 md:gap-4 lg:self-end no-scrollbar scroll-smooth">
-           <Link href="/dashboard/integrations/docs" className="flex-none flex items-center justify-center gap-2 md:gap-3 px-5 md:px-10 py-4 md:py-5 bg-white border border-zinc-200 text-zinc-900 text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] rounded-2xl md:rounded-[2rem] hover:bg-zinc-50 transition-all shadow-sm group whitespace-nowrap">
+           <Link href="/dashboard/integrations/docs" className="flex-none flex items-center justify-center gap-2 md:gap-3 px-5 md:px-10 py-4 md:py-5 bg-white border border-zinc-200 text-zinc-900 text-[10px] font-bold uppercase tracking-wider rounded-2xl md:rounded-3xl hover:bg-zinc-50 transition-all shadow-sm group whitespace-nowrap">
               <HelpCircle className="w-4 h-4 text-[#FF5C3A] group-hover:rotate-12 transition-transform" />
               Documentación
            </Link>
-           <Link href="/dashboard/integrations/status" className="flex-none flex items-center justify-center gap-2 md:gap-3 px-5 md:px-10 py-4 md:py-5 bg-zinc-900 text-white text-[9px] md:text-[10px] font-black uppercase tracking-[0.15em] md:tracking-[0.2em] rounded-2xl md:rounded-[2rem] hover:bg-[#FF5C3A] transition-all shadow-xl group whitespace-nowrap">
+           <Link href="/dashboard/integrations/status" className="flex-none flex items-center justify-center gap-2 md:gap-3 px-5 md:px-10 py-4 md:py-5 bg-zinc-900 text-white text-[10px] font-bold uppercase tracking-wider rounded-2xl md:rounded-3xl hover:bg-[#FF5C3A] transition-all shadow-xl group whitespace-nowrap">
               <Activity className="w-4 h-4 text-emerald-400 group-hover:scale-125 transition-transform" />
-              Ver Estado
+              Estado del sistema
            </Link>
         </div>
       </motion.header>
@@ -133,35 +131,35 @@ export default function IntegrationsPage() {
         {/* ══ PANEL CENTRAL ══ */}
         <div className="lg:col-span-8 space-y-12 md:space-y-16">
            
-           {/* WOOCOMMERCE CARD - NEW LUXURY DESIGN */}
-           <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900/50 rounded-3xl md:rounded-[4.5rem] border border-zinc-100 dark:border-zinc-800 p-6 md:p-16 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] space-y-10 md:space-y-16 relative overflow-hidden group">
+           {/* WOOCOMMERCE CARD */}
+           <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900/50 rounded-3xl md:rounded-[3rem] border border-zinc-100 dark:border-zinc-800 p-6 md:p-16 shadow-xl shadow-black/5 space-y-10 md:space-y-16 relative overflow-hidden group">
               
-              <div className="flex flex-col md:flex-row items-center md:items-center gap-6 md:gap-10 border-b border-zinc-50 dark:border-zinc-800/50 pb-10 md:pb-16 text-center md:text-left">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2.5rem] md:rounded-[3rem] bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center border border-zinc-100 dark:border-zinc-700 shadow-inner group-hover:rotate-6 transition-transform shrink-0 overflow-hidden p-4">
-                   <img src="/integrations/Woo_logo_color.png" alt="WooCommerce" className="w-full h-full object-contain" />
+              <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 border-b border-zinc-50 dark:border-zinc-800/50 pb-10 md:pb-16 text-center md:text-left">
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center border border-zinc-100 dark:border-zinc-700 shadow-inner group-hover:rotate-6 transition-transform shrink-0 overflow-hidden p-4">
+                   <img src="/integrations/Woo_logo_color.svg" alt="WooCommerce" className="w-full h-full object-contain" />
                 </div>
                 <div>
                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-4 mb-3">
-                      <h2 className="text-2xl md:text-4xl font-[1000] text-zinc-900 dark:text-white uppercase tracking-tighter italic leading-none">WooCommerce</h2>
+                      <h2 className="text-2xl md:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight leading-none">WooCommerce</h2>
                       <div className="px-3 py-1 bg-emerald-500 dark:bg-emerald-600 rounded-full border border-emerald-400/20 shadow-lg shadow-emerald-500/20 flex items-center gap-2">
                          <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                         <span className="text-[8px] md:text-[9px] font-black text-white uppercase tracking-widest">PLUGIN ACTIVO</span>
+                         <span className="text-[9px] font-bold text-white uppercase tracking-widest">Plugin activo</span>
                       </div>
                    </div>
-                   <p className="text-[9px] md:text-[11px] font-black text-[#FF5C3A] uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center justify-center md:justify-start gap-2 md:gap-3 italic opacity-80">
-                      <Check className="w-3 md:w-3.5 h-3 md:h-3.5" strokeWidth={4} /> Conectado a wilkiedevs.com
+                   <p className="text-[10px] md:text-[12px] font-bold text-[#FF5C3A] uppercase tracking-wider flex items-center justify-center md:justify-start gap-2 md:gap-3 opacity-80">
+                      <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} /> Conectado correctamente
                    </p>
                 </div>
               </div>
 
-              {/* API KEY SECTION - REFINED */}
+              {/* API KEY SECTION */}
               <div className="space-y-8 md:space-y-10">
                  <div className="space-y-4 md:space-y-6">
                     <div className="flex justify-between items-center px-2 md:px-4">
-                       <label className="text-[9px] md:text-[11px] font-[950] uppercase tracking-[0.15em] md:tracking-[0.25em] text-zinc-400 italic">Clave de API de Producción</label>
-                       <div className="flex items-center gap-2 px-2 md:px-3 py-0.5 md:py-1 bg-emerald-50 rounded-full border border-emerald-100 shrink-0">
-                          <div className="w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-emerald-500" />
-                          <span className="text-[7px] md:text-[8px] font-black text-emerald-600 uppercase">Activa</span>
+                       <label className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-zinc-400">Clave de api de producción</label>
+                       <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100 shrink-0">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="text-[8px] font-bold text-emerald-600 uppercase">Activa</span>
                        </div>
                     </div>
                     
@@ -173,49 +171,49 @@ export default function IntegrationsPage() {
                           type={showKey ? 'text' : 'password'}
                           readOnly
                           value={apiKey}
-                          className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-2xl md:rounded-[3rem] py-5 md:py-8 px-6 md:pl-20 md:pr-44 text-[12px] md:text-base font-mono font-black text-zinc-900 dark:text-white outline-none focus:border-zinc-200 transition-all shadow-inner truncate"
+                          className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-2xl md:rounded-[2rem] py-5 md:py-8 px-6 md:pl-20 md:pr-44 text-[12px] md:text-base font-mono font-bold text-zinc-900 dark:text-white outline-none focus:border-[#FF5C3A]/30 transition-all shadow-inner truncate"
                        />
-                       <div className="relative md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 flex flex-row gap-2 md:gap-4 p-1.5 md:p-2 bg-white dark:bg-zinc-900 rounded-xl md:rounded-[2.5rem] md:shadow-xl md:border md:border-zinc-50/5">
+                       <div className="relative md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 flex flex-row gap-2 md:gap-4 p-1.5 md:p-2 bg-white dark:bg-zinc-900 rounded-xl md:rounded-[1.5rem] md:shadow-xl md:border md:border-zinc-50/5">
                           <button 
                             onMouseDown={() => setShowKey(true)} onTouchStart={() => setShowKey(true)} onMouseUp={() => setShowKey(false)} onTouchEnd={() => setShowKey(false)} onMouseLeave={() => setShowKey(false)}
-                            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-zinc-50 dark:bg-zinc-800 rounded-lg md:rounded-2xl text-zinc-400 hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/5 transition-all shrink-0"
+                            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-zinc-50 dark:bg-zinc-800 rounded-lg md:rounded-xl text-zinc-400 hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/5 transition-all shrink-0"
                           >
                              {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
                           <button 
                              onClick={copyToClipboard}
-                             className={`flex-1 md:flex-none px-6 md:px-10 py-3 md:py-4 ${copied ? 'bg-emerald-500' : 'bg-zinc-900 dark:bg-zinc-700'} text-white rounded-lg md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-2 md:gap-3`}
+                             className={`flex-1 md:flex-none px-6 md:px-10 py-3 md:py-4 ${copied ? 'bg-emerald-500' : 'bg-zinc-900 dark:bg-zinc-700'} text-white rounded-lg md:rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-2 md:gap-3`}
                           >
                              {copied ? <Check size={14} /> : <Copy size={14} />}
-                             {copied ? 'Listo' : 'Copiar Clave'}
+                             {copied ? 'Listo' : 'Copiar clave'}
                           </button>
                        </div>
                     </div>
                     
-                    <div className="flex items-start gap-3 md:gap-4 px-4 md:px-6 py-3 md:py-4 bg-zinc-50 rounded-2xl md:rounded-3xl border border-zinc-100">
-                       <ShieldAlert className="w-3.5 h-3.5 md:w-4 md:h-4 text-zinc-400 mt-0.5 shrink-0" />
-                       <p className="text-[8px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-relaxed italic">Seguridad Crítica: No expongas esta clave en el cliente de tu tienda.</p>
+                    <div className="flex items-start gap-3 md:gap-4 px-4 md:px-6 py-3 md:py-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                       <ShieldAlert className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                       <p className="text-[10px] font-medium text-zinc-400 tracking-tight leading-relaxed uppercase">Seguridad crítica: No expongas esta clave en el cliente de tu tienda.</p>
                     </div>
                  </div>
               </div>
 
-              {/* PASOS - CLEAN CARDS */}
+              {/* PASOS */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 pt-4 md:pt-6">
                  {steps.map((step) => (
-                    <div key={step.id} className="group/step p-6 md:p-10 rounded-2xl md:rounded-[3.5rem] bg-zinc-50/50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 transition-all relative overflow-hidden">
-                       <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 flex items-center justify-center mb-6 md:mb-8 shadow-sm group-hover:scale-110 transition-transform">
+                    <div key={step.id} className="group/step p-6 md:p-10 rounded-3xl bg-zinc-50/50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 transition-all relative overflow-hidden">
+                       <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 flex items-center justify-center mb-6 md:mb-8 shadow-sm group-hover:scale-110 transition-transform">
                           {step.icon}
                        </div>
-                       <h3 className="text-[10px] md:text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-widest mb-3 md:mb-4">
+                       <h3 className="text-[11px] font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-3 md:mb-4">
                           {step.title}
                         </h3>
-                        <p className="text-[9px] md:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase leading-[1.6] md:leading-[1.6] tracking-tight group-hover:text-zinc-500 transition-colors">
+                        <p className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 leading-relaxed tracking-tight group-hover:text-zinc-500 transition-colors">
                            {step.description}
                         </p>
                        
                        {step.action && (
-                           <button className="mt-6 md:mt-8 flex items-center gap-3 text-[8px] md:text-[9px] font-black text-[#FF5C3A] uppercase tracking-[0.2em] group-hover:gap-5 transition-all">
-                              {step.action} <ChevronRight className="w-3 h-3 md:w-3.5 md:h-3.5" />
+                           <button className="mt-6 md:mt-8 flex items-center gap-3 text-[10px] font-bold text-[#FF5C3A] uppercase tracking-wider group-hover:gap-5 transition-all">
+                              {step.action} <ChevronRight className="w-3.5 h-3.5" />
                            </button>
                        )}
                     </div>
@@ -223,26 +221,26 @@ export default function IntegrationsPage() {
               </div>
            </motion.div>
 
-           {/* SDK SECTION - MODERN TECH */}
-           <motion.div variants={itemVariants} className="bg-zinc-900 rounded-3xl md:rounded-[4.5rem] p-8 md:p-20 relative overflow-hidden group shadow-4xl border border-white/5">
+           {/* SDK SECTION */}
+           <motion.div variants={itemVariants} className="bg-zinc-900 rounded-3xl md:rounded-[3rem] p-8 md:p-20 relative overflow-hidden group shadow-2xl border border-white/5">
               <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
                  <div className="space-y-6 md:space-y-10">
                     <div className="w-fit px-4 md:px-6 py-1.5 md:py-2 bg-white/5 rounded-full border border-white/10 flex items-center gap-3">
                        <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-[#FF5C3A]" />
-                       <p className="text-[8px] md:text-[10px] font-black text-zinc-300 uppercase tracking-[0.2em] md:tracking-[0.35em] italic">Lookitry SDK v1.50</p>
+                       <p className="text-[10px] font-bold text-zinc-300 uppercase tracking-widest">Lookitry SDK v1.50</p>
                     </div>
-                    <h2 className="text-3xl md:text-5xl font-[1000] text-white italic uppercase tracking-tighter leading-none">
+                    <h2 className="text-3xl md:text-5xl font-bold text-white uppercase tracking-tighter leading-none font-jakarta">
                        Engine <br />
                        <span className="text-zinc-400">Headless</span>
                     </h2>
-                    <p className="text-xs md:text-sm font-medium text-zinc-400 uppercase tracking-widest leading-relaxed italic opacity-80">
-                       Construye experiencias personalizadas sobre nuestra infraestructura de IA.
+                    <p className="text-sm font-medium text-zinc-400 leading-relaxed opacity-80">
+                       Construye experiencias personalizadas sobre nuestra infraestructura de inteligencia artificial.
                     </p>
-                     <button className="w-full md:w-auto px-8 md:px-12 py-4 md:py-6 bg-white text-zinc-900 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.25em] rounded-xl md:rounded-[2rem] hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 md:gap-5">
-                       SDK Documentation <ExternalLink className="w-4 h-4 md:w-[18px] md:h-[18px]" />
+                     <button className="w-full md:w-auto px-8 md:px-12 py-4 md:py-6 bg-white text-zinc-900 text-[10px] font-bold uppercase tracking-wider rounded-xl md:rounded-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 md:gap-5">
+                       Documentación SDK <ExternalLink className="w-[18px] h-[18px]" />
                     </button>
                  </div>
-                 <div className="bg-zinc-800/50 backdrop-blur-3xl rounded-[3rem] border border-white/5 p-8 md:p-12 font-mono text-[11px] md:text-[12px] text-zinc-400 leading-relaxed shadow-deep ring-1 ring-white/10 relative group/code overflow-hidden">
+                 <div className="bg-zinc-800/50 backdrop-blur-3xl rounded-3xl border border-white/5 p-8 md:p-12 font-mono text-[12px] text-zinc-400 leading-relaxed shadow-deep ring-1 ring-white/10 relative group/code overflow-hidden">
                     <div className="absolute top-4 right-6 flex gap-2.5">
                        <X className="w-3 h-3 text-zinc-600" />
                     </div>
@@ -259,81 +257,55 @@ const { image } = await lookitry.render({
                   </div>
                </div>
             </motion.div>
-
-            {/* PAYMENTS SECTION */}
-            <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900/50 rounded-3xl md:rounded-[4.5rem] border border-zinc-100 dark:border-zinc-800 p-8 md:p-16 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] space-y-8">
-               <div className="flex items-center gap-4 mb-6">
-                  <div className="w-10 h-10 rounded-2xl bg-zinc-900 dark:bg-zinc-800 flex items-center justify-center text-white">
-                     <Cpu size={20} />
-                  </div>
-                  <div>
-                     <h3 className="text-xl font-[1000] text-zinc-900 dark:text-white uppercase tracking-tighter italic leading-none">Pagos & Gateways</h3>
-                     <p className="text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mt-1">Soporte nativo para pasarelas</p>
-                  </div>
-               </div>
-               
-               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6">
-                  {[
-                    { name: 'Bancolombia', img: '/integrations/bancolombia.svg' },
-                    { name: 'Nequi', img: '/integrations/logo-nequi.svg' },
-                    { name: 'PSE', img: '/integrations/logo-pse.svg' },
-                    { name: 'Visa', img: '/integrations/visa.svg' }
-                  ].map(p => (
-                    <div key={p.name} className="p-6 md:p-8 rounded-[2rem] bg-zinc-50/50 dark:bg-zinc-800/30 border border-zinc-50 dark:border-zinc-800 flex items-center justify-center grayscale hover:grayscale-0 hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 transition-all group">
-                       <img src={p.img} alt={p.name} className="h-6 md:h-8 w-auto object-contain group-hover:scale-110 transition-transform dark:invert dark:opacity-80 dark:group-hover:opacity-100" />
-                    </div>
-                  ))}
-               </div>
-            </motion.div>
          </div>
 
         {/* ══ SIDEBAR ══ */}
          <div className="lg:col-span-4 space-y-8 md:space-y-12">
             
             {/* PLATAFORMAS */}
-            <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900/50 rounded-3xl md:rounded-[4rem] border border-zinc-100 dark:border-zinc-800 p-8 md:p-12 shadow-[0_30px_80px_rgba(0,0,0,0.02)] space-y-8 md:space-y-12">
+            <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900/50 rounded-3xl md:rounded-[3rem] border border-zinc-100 dark:border-zinc-800 p-8 md:p-12 shadow-xl shadow-black/5 space-y-8 md:space-y-12">
                <div className="space-y-2 md:space-y-3">
-                  <h3 className="text-[10px] md:text-[11px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.2em] md:tracking-[0.3em] italic leading-none">Connectors</h3>
-                  <p className="text-[8px] md:text-[9px] font-black text-zinc-300 dark:text-zinc-600 uppercase tracking-[0.15em] md:tracking-[0.2em]">Framework Availability</p>
+                  <h3 className="text-[11px] font-bold text-zinc-900 dark:text-white uppercase tracking-widest leading-none">Connectors</h3>
+                  <p className="text-[9px] font-bold text-zinc-300 dark:text-zinc-600 uppercase tracking-wider">Framework availability</p>
                </div>
                <div className="space-y-4 md:space-y-6">
                   {[
-                    { name: 'WooCommerce', icon: '/integrations/Woo_logo_color.png', color: '#f5f5f5', status: 'Live' },
+                    { name: 'WooCommerce', icon: '/integrations/Woo_logo_color.svg', color: '#f5f5f5', status: 'Live' },
                     { name: 'Shopify Core', icon: '/integrations/shopify.svg', color: '#f5f5f5', status: 'Beta' },
                     { name: 'Wix Global', icon: '/integrations/Wix.svg', color: '#f5f5f5', status: 'Q4 2026' },
                     { name: 'Cloud SDK', icon: '/logo.svg', color: '#f5f5f5', status: 'Available' }
                   ].map((plat) => (
-                     <div key={plat.name} className="flex items-center justify-between p-5 md:p-7 bg-zinc-50 dark:bg-zinc-800/30 border border-zinc-50 dark:border-zinc-800 rounded-2xl md:rounded-[2.5rem] hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 group/plat transition-all shadow-sm">
+                     <div key={plat.name} className="flex items-center justify-between p-5 md:p-7 bg-zinc-50 dark:bg-zinc-800/30 border border-zinc-50 dark:border-zinc-800 rounded-2xl md:rounded-3xl hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 group/plat transition-all shadow-sm">
                         <div className="flex items-center gap-4 md:gap-6">
                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-all bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 shrink-0 overflow-hidden p-2.5">
                               <img src={plat.icon} alt={plat.name} className="w-full h-full object-contain" />
                            </div>
                            <div>
-                              <p className="text-[11px] md:text-[12px] font-black text-zinc-900 dark:text-white uppercase tracking-tight italic">{plat.name}</p>
-                              <p className={`text-[7px] md:text-[8px] font-black uppercase tracking-widest mt-1 ${plat.status === 'Live' ? 'text-emerald-500' : 'text-zinc-400 dark:text-zinc-600 opacity-60'}`}>{plat.status}</p>
+                              <p className="text-[12px] font-bold text-zinc-900 dark:text-white uppercase tracking-tight">{plat.name}</p>
+                              <p className={`text-[8px] font-bold uppercase tracking-widest mt-1 ${plat.status === 'Live' ? 'text-emerald-500' : 'text-zinc-400 dark:text-zinc-600 opacity-60'}`}>{plat.status}</p>
                            </div>
                         </div>
                      </div>
                   ))}
                </div>
             </motion.div>
-             {/* SOPORTE REFINED */}
+             {/* SOPORTE */}
             <motion.div 
               variants={itemVariants} 
-              className="bg-zinc-900 rounded-3xl md:rounded-[4.5rem] p-8 md:p-12 space-y-6 md:space-y-8 relative overflow-hidden group shadow-4xl"
+              className="bg-zinc-900 rounded-3xl md:rounded-[3rem] p-8 md:p-12 space-y-6 md:space-y-8 relative overflow-hidden group shadow-2xl"
             >
                <div className="relative z-10 space-y-8 md:space-y-10">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-white rounded-xl md:rounded-[2rem] flex items-center justify-center shadow-xl">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-white rounded-2xl flex items-center justify-center shadow-xl">
                      <HelpCircle className="w-6 h-6 md:w-8 md:h-8 text-zinc-900" />
                   </div>
                   <div className="space-y-4 md:space-y-6">
-                     <h3 className="text-2xl md:text-4xl font-[1000] text-white uppercase tracking-tighter italic leading-[0.95] md:leading-[0.9]">Concierge <br />Technic</h3>
-                     <p className="text-[10px] md:text-[11px] font-bold text-zinc-400 uppercase tracking-widest leading-relaxed italic">
-                        Configuración personalizada sin costo para miembros Pro.
+                     <h3 className="text-2xl md:text-4xl font-bold text-white uppercase tracking-tighter leading-none font-jakarta">Asistencia <br />técnica</h3>
+                     <p className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider leading-relaxed">
+                        Configuración personalizada sin costo para miembros pro.
                      </p>
                   </div>
-                  <button className="w-full py-4 md:py-6 bg-white text-zinc-900 rounded-xl md:rounded-[2rem] text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.25em] hover:bg-[#FF5C3A] hover:text-white transition-all shadow-4xl">
-                     Solicitar Asistencia
+                  <button className="w-full py-4 md:py-6 bg-white text-zinc-900 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-[#FF5C3A] hover:text-white transition-all shadow-4xl">
+                     Solicitar asistencia
                   </button>
                </div>
             </motion.div>

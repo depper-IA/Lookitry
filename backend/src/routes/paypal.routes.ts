@@ -14,4 +14,9 @@ router.get('/checkout-url', optionalAuth, controller.getCheckoutUrl);
 // Captura el pago después de la aprobación del usuario
 router.post('/capture', controller.capturePayment);
 
+// POST /api/payments/paypal/webhook
+// Recibe notificaciones asíncronas de PayPal
+router.post('/webhook', controller.handleWebhook);
+
+
 export default router;
