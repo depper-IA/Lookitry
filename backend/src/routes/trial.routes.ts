@@ -5,6 +5,7 @@ import { supabaseAdmin } from '../config/supabase';
 import { wompiService } from '../services/wompi.service';
 
 const router = Router();
+// Force rebuild to ensure最新的 trial routes are active
 
 /**
  * GET /api/trial/status
