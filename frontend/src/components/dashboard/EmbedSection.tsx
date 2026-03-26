@@ -138,7 +138,7 @@ export function EmbedSection() {
         </p>
 
         <div className="flex flex-wrap gap-3 md:gap-4 relative z-10">
-           <a href={embedUrl} target="_blank" className="w-full md:w-auto px-6 py-3 bg-[#FF5C3A] text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-[#FF5C3A]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+           <a href={embedUrl} target="_blank" rel="noopener noreferrer" className="w-full md:w-auto px-6 py-3 bg-[#FF5C3A] text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-[#FF5C3A]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
              <ExternalLink size={14} /> Ver probador público
            </a>
            <button onClick={() => setShowPreview(!showPreview)} className="px-6 py-3 bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-xl font-bold uppercase tracking-widest text-[10px] hover:border-[#FF5C3A]/40 transition-all flex items-center justify-center gap-2">
@@ -266,7 +266,7 @@ export function EmbedSection() {
                <p className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-widest max-w-sm opacity-60">Nuestro equipo de arquitectura está listo para ayudarte con la integración directa sin costo adicional.</p>
             </div>
             <div className="flex gap-4">
-               <a href="https://wa.me/573105436281" className="p-5 bg-emerald-500/10 text-emerald-500 rounded-2xl border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all shadow-xl shadow-emerald-500/5 group/wa">
+               <a href="https://wa.me/573105436281" target="_blank" rel="noopener noreferrer" className="p-5 bg-emerald-500/10 text-emerald-500 rounded-2xl border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all shadow-xl shadow-emerald-500/5 group/wa">
                   <MessageCircle className="w-6 h-6 group-hover/wa:scale-110 transition-transform" />
                </a>
                <a href="mailto:info@lookitry.com" className="p-5 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-2xl border border-[#FF5C3A]/20 hover:bg-[#FF5C3A] hover:text-white transition-all shadow-xl shadow-[#FF5C3A]/5 group/mail">

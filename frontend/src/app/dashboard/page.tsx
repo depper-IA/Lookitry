@@ -107,7 +107,7 @@ export default function DashboardPage() {
 
           {/* TARJETAS DE ANALYTICS RÁPIDAS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-             <div className="p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-[var(--bg-card)] border border(--border-color) shadow-xl relative overflow-hidden group hover:border-[#FF5C3A]/30 transition-all">
+             <div className="p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-[var(--bg-card)] border-[var(--border-color)] shadow-xl relative overflow-hidden group hover:border-[#FF5C3A]/30 transition-all">
                 <div className="absolute top-0 right-0 p-6 md:p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-700 pointer-events-none">
                   <Activity size={80} className="md:size-[100px]" />
                 </div>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
                 </p>
              </div>
 
-             <div className="p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-[var(--bg-card)] border border(--border-color) shadow-xl relative overflow-hidden group hover:border-[#FF5C3A]/30 transition-all">
+             <div className="p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] bg-[var(--bg-card)] border-[var(--border-color)] shadow-xl relative overflow-hidden group hover:border-[#FF5C3A]/30 transition-all">
                 <div className="absolute top-0 right-0 p-6 md:p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-700 pointer-events-none">
                   <Zap size={80} className="md:size-[100px]" />
                 </div>
@@ -262,7 +262,7 @@ export default function DashboardPage() {
                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-dot" />
                        <span className="text-[11px] font-black text-[var(--text-primary)] uppercase tracking-tighter">Probador Online</span>
                     </div>
-                    <Link href={`/marca/${brand?.slug}`} target="_blank" className="text-[10px] font-black text-[#FF5C3A] uppercase hover:underline">Ver Demo</Link>
+                    <Link href={`/marca/${brand?.slug}`} target="_blank" rel="noopener noreferrer" className="text-[10px] font-black text-[#FF5C3A] uppercase hover:underline">Ver Demo</Link>
                  </div>
 
                  <div className="p-5 rounded-2xl bg-[var(--bg-input)] border border-[var(--border-color)] space-y-3">

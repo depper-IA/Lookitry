@@ -227,9 +227,9 @@ await engine.render({
       <motion.footer variants={itemVariants} className="text-center space-y-6 pt-12 border-t border-zinc-100">
          <p className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.4em] italic leading-none">¿Necesitas ayuda con la implementación?</p>
          <div className="flex justify-center gap-10">
-            <a href="#" className="text-[11px] font-black text-zinc-900 uppercase tracking-widest hover:text-[#FF5C3A] transition-colors">API Reference</a>
-            <a href="#" className="text-[11px] font-black text-zinc-900 uppercase tracking-widest hover:text-[#FF5C3A] transition-colors">Stack Overflow</a>
-            <a href="#" className="text-[11px] font-black text-zinc-900 uppercase tracking-widest hover:text-[#FF5C3A] transition-colors">Discord Devs</a>
+            <span className="text-[11px] font-black text-zinc-300 uppercase tracking-widest cursor-default">API Reference</span>
+            <span className="text-[11px] font-black text-zinc-300 uppercase tracking-widest cursor-default">Stack Overflow</span>
+            <span className="text-[11px] font-black text-zinc-300 uppercase tracking-widest cursor-default">Discord Devs</span>
          </div>
       </motion.footer>
 

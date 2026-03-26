@@ -121,7 +121,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Nav */}
       <nav className={`flex-1 ${isCollapsed ? 'px-3' : 'px-4'} py-6 space-y-1.5 overflow-y-auto no-scrollbar`}>
         {navigation.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
           return (
             <Link
               key={item.name}
