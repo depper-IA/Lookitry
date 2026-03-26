@@ -129,7 +129,6 @@ app.use('/api/images', imageRoutes);
 app.get('/api/payment-settings/public', getPublicPaymentSettings);
 app.post('/api/upload', authMiddleware, (req, res) => uploadImage(req as any, res));
 app.post('/api/upload/selfie', multerMemory.single('file'), (req, res) => uploadSelfie(req, res));
-app.get('/api/trial/status', getTrialStatus);
 app.use('/api/trial', trialRoutes);
 app.use('/api/admin/coupons', couponsRoutes);
 app.post('/api/coupons/redeem', redeemCoupon);
