@@ -15,10 +15,23 @@ function lookitry_enqueue_scripts() {
         wp_enqueue_style( 'lookitry-public', LOOKITRY_PLUGIN_URL . 'assets/css/lookitry-public.css', array(), '1.0.0' );
         wp_enqueue_script( 'lookitry-public', LOOKITRY_PLUGIN_URL . 'assets/js/lookitry-public.js', array( 'jquery' ), '1.0.0', true );
 
+        $button_bg_color = get_option( 'lookitry_button_bg_color', '#FF5C3A' );
+        $button_text_color = get_option( 'lookitry_button_text_color', '#FFFFFF' );
+
+        wp_add_inline_style(
+            'lookitry-public',
+            sprintf(
+                ':root { --lookitry-button-bg: %1$s; --lookitry-button-text: %2$s; }',
+                esc_attr( $button_bg_color ?: '#FF5C3A' ),
+                esc_attr( $button_text_color ?: '#FFFFFF' )
+            )
+        );
+
         // Pass variables to JS
         wp_localize_script( 'lookitry-public', 'lookitry_vars', array(
             'api_url' => LOOKITRY_API_BASE_URL,
-            'api_key' => get_option( 'lookitry_api_key', '' )
+            'api_key' => get_option( 'lookitry_api_key', '' ),
+            'store_domain' => home_url(),
         ));
     }
 }
@@ -35,6 +48,7 @@ function lookitry_inject_button() {
     // Get WooCommerce product ID
     $product_id = $product->get_id();
     $api_key = get_option( 'lookitry_api_key', '' );
+    $button_text = get_option( 'lookitry_button_text', 'Probar Virtualmente' );
 
     if ( empty( $api_key ) ) {
         return; // Don't show if not configured
@@ -43,7 +57,7 @@ function lookitry_inject_button() {
     echo '<div class="lookitry-tryon-container">';
     echo '<button type="button" class="lookitry-tryon-button" data-product-id="' . esc_attr( $product_id ) . '">';
     echo '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"></path></svg>';
-    echo '<span>Probar Virtualmente</span>';
+    echo '<span>' . esc_html( $button_text ) . '</span>';
     echo '</button>';
     echo '</div>';
 }
