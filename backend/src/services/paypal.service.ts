@@ -58,8 +58,10 @@ export class PaypalService {
    * @param amountCOP Monto en COP
    * @param trm Tasa representativa del mercado (COP -> USD)
    * @param reference Referencia de pago interna
+   * @param returnUrl URL de retorno exitoso (opcional)
+   * @param cancelUrl URL de cancelación (opcional)
    */
-  async createOrder(amountCOP: number, trm: number, reference: string): Promise<string> {
+  async createOrder(amountCOP: number, trm: number, reference: string, returnUrl?: string, cancelUrl?: string): Promise<string> {
     const accessToken = await this.getAccessToken();
     const { sandbox } = await this.getActiveKeys();
     const baseUrl = sandbox ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
@@ -85,10 +87,11 @@ export class PaypalService {
           brand_name: 'Lookitry',
           landing_page: 'BILLING',
           user_action: 'PAY_NOW',
-          return_url: `${process.env.FRONTEND_URL}/pago-exitoso?method=paypal&ref=${reference}`,
-          cancel_url: `${process.env.FRONTEND_URL}/checkout`
+          return_url: returnUrl || `${process.env.FRONTEND_URL}/pago-exitoso?method=paypal&ref=${reference}`,
+          cancel_url: cancelUrl || `${process.env.FRONTEND_URL}/checkout`
         }
       },
+
       {
         headers: {
           'Content-Type': 'application/json',

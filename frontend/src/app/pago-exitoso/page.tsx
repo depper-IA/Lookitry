@@ -28,6 +28,8 @@ function PagoExitosoContent() {
   const [loading, setLoading] = useState<boolean>(method === 'paypal' || (!ref && !!wompiId));
   const [error, setError] = useState<string | null>(null);
   const [resolvedRef, setResolvedRef] = useState<string | null>(ref);
+  const isTrialParam = searchParams.get('isTrial') === 'true';
+  const isTrial = resolvedRef?.startsWith('TRIAL-') || ref?.startsWith('TRIAL-') || isTrialParam;
 
   useEffect(() => {
     async function validatePayment() {
@@ -63,7 +65,8 @@ function PagoExitosoContent() {
           if (!res.ok) throw new Error(data.message || 'Error al capturar el pago');
           
           const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-          const isVisitor = currentRef?.includes('visitor_') || !token;
+          const isTrial = currentRef?.startsWith('TRIAL-');
+          const isVisitor = (currentRef?.includes('visitor_') || !token) && !isTrial;
 
           if (isVisitor && currentRef) {
             setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${months}&method=paypal&orderId=${paypalToken}`);
@@ -78,8 +81,9 @@ function PagoExitosoContent() {
           setLoading(false);
         }
       } else {
-        const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-        const isVisitor = currentRef?.includes('visitor_') || !token;
+          const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
+          const isTrial = currentRef?.startsWith('TRIAL-');
+          const isVisitor = (currentRef?.includes('visitor_') || !token) && !isTrial;
 
         if (isVisitor && currentRef) {
           setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${months}`);
@@ -179,8 +183,11 @@ function PagoExitosoContent() {
           <p className="text-[15px] leading-relaxed mb-8 text-[#a0a0a0]">
             {dashboardHref.startsWith('/registro-pro')
               ? 'Todo está listo. Ahora crea tu cuenta para activar tu suscripción y empezar a usar Lookitry.'
-              : `Tu plan ya se encuentra activo. Hemos procesado correctamente tu suscripción al Plan ${plan} por ${months} ${months === 1 ? 'mes' : 'meses'}.`}
+              : isTrial
+                ? '¡Tu prueba profesional ha sido activada! Ya puedes empezar a usar todas las herramientas de Lookitry.'
+                : `Tu plan ya se encuentra activo. Hemos procesado correctamente tu suscripción al Plan ${plan} por ${months} ${months === 1 ? 'mes' : 'meses'}.`}
           </p>
+
 
           {(resolvedRef || ref) && (
             <div className="rounded-xl px-5 py-4 mb-6 text-left border bg-[#050505] border-[#1a1a1a]">
