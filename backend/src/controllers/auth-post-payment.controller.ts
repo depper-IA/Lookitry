@@ -63,7 +63,8 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
     }
 
     // 4. Verificar estado de la transacción según el método
-    let paymentConfirmed = pending.status === 'paid';
+    const pendingStatus = String(pending.status || '').toLowerCase();
+    let paymentConfirmed = pendingStatus === 'paid' || pendingStatus === 'confirmed';
     let finalMethod = method || 'wompi';
     let transactionDetails = pending.payment_id ? `ID guardado: ${pending.payment_id}` : '';
     let paymentAmount = 0; // Guardará el monto total de la pasarela
@@ -95,8 +96,8 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
         try {
           const transaction = await wompiService.getTransactionByReference(ref);
           paymentConfirmed = transaction?.status === 'APPROVED';
-          if (transaction && 'amount_in_cents' in transaction) {
-            paymentAmount = ((transaction as any).amount_in_cents || 0) / 100;
+          if (transaction?.amount_in_cents) {
+            paymentAmount = (transaction.amount_in_cents || 0) / 100;
           }
           transactionDetails = `Wompi Ref: ${ref}`;
         } catch {
@@ -131,9 +132,10 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
       const months = pending.months || 1;
       // Si el pending fue creado solo para landing (plan=NONE), conservar el plan actual del usuario
       const pendingPlanIsNone = !pending.plan || pending.plan.toUpperCase() === 'NONE';
-      const plan = pendingPlanIsNone
+      const isTrial = (pending.plan || '').toUpperCase() === 'TRIAL';
+      const plan = isTrial ? 'BASIC' : (pendingPlanIsNone
         ? ((req.brand as any).plan || 'BASIC').toUpperCase()
-        : pending.plan.toUpperCase();
+        : pending.plan.toUpperCase());
       const now = new Date();
       const endDate = new Date(now);
       endDate.setMonth(endDate.getMonth() + months);
@@ -201,6 +203,7 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
           months_paid: pending.months,
           payment_date: new Date().toISOString(),
           notes: `Activación post-registro. Plan: ${pending.plan}. Meses: ${pending.months}.${pending.includes_landing ? ' Incluye Landing Page.' : ''} ${transactionDetails}`,
+          reference: ref,
         },
         pending.months,
         pending.plan
@@ -268,7 +271,13 @@ export async function getPendingRegistration(req: Request, res: Response) {
       return res.status(404).json({ error: 'NOT_FOUND', message: 'Referencia de pago no encontrada' });
     }
 
-    return res.status(200).json(pending);
+    // Compat: normalizar estado legacy "confirmed" a "paid" para el frontend
+    const normalized = { ...pending } as any;
+    if (String(normalized.status || '').toLowerCase() === 'confirmed') {
+      normalized.status = 'paid';
+    }
+
+    return res.status(200).json(normalized);
   } catch (err: any) {
     console.error('[PostPayment] Error obteniendo referencia:', err);
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error interno del servidor' });

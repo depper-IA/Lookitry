@@ -101,7 +101,7 @@ export function EmbedSection() {
   const baseUrl = 'https://lookitry.com';
   const embedUrl = brand ? `${baseUrl}/marca/${brand.slug}` : '';
   
-  const iframeCode = `<iframe src="${baseUrl}/embed/${brand?.slug}" width="100%" height="750" frameborder="0" style="border-radius:2rem; box-shadow:0 10px 50px rgba(0,0,0,0.10); overflow: hidden;"></iframe>`;
+  const iframeCode = `<iframe src="${baseUrl}/embed/${brand?.slug}" width="100%" height="750" frameborder="0" scrolling="no" allow="camera; clipboard-write" style="border-radius:2rem; box-shadow:0 10px 50px rgba(0,0,0,0.10); overflow: hidden;"></iframe>`;
   
   const widgetCode = `<div id="lookitry-tester-container" data-slug="${brand?.slug}"></div>\n<script src="${baseUrl}/widget.js" async defer></script>`;
 

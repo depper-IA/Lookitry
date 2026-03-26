@@ -2,6 +2,10 @@ import axios from 'axios';
 import { supabaseAdmin } from '../config/supabase';
 
 export class PaypalService {
+  private isProd(): boolean {
+    return process.env.NODE_ENV === 'production';
+  }
+
   private async getActiveKeys() {
     // Prioridad 1: Variables de entorno (seguridad y facilidad de despliegue)
     if (process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET) {
@@ -15,7 +19,7 @@ export class PaypalService {
     // Prioridad 2: Base de datos (configuración dinámica desde el panel admin)
     const { data: settings, error } = await supabaseAdmin
       .from('payment_settings')
-      .select('paypal_enabled, paypal_client_id, paypal_client_secret, paypal_sandbox')
+      .select('paypal_enabled, paypal_client_id, paypal_client_secret, paypal_prod_client_id, paypal_prod_client_secret, paypal_sandbox')
       .eq('id', 1)
       .single();
 
@@ -27,11 +31,19 @@ export class PaypalService {
       throw new Error('PayPal no está habilitado en este momento');
     }
 
-    return {
-      clientId: settings.paypal_client_id,
-      clientSecret: settings.paypal_client_secret,
-      sandbox: settings.paypal_sandbox
-    };
+    const sandbox = !!settings.paypal_sandbox;
+
+    return sandbox
+      ? {
+          clientId: settings.paypal_client_id,
+          clientSecret: settings.paypal_client_secret,
+          sandbox: true
+        }
+      : {
+          clientId: settings.paypal_prod_client_id || settings.paypal_client_id,
+          clientSecret: settings.paypal_prod_client_secret || settings.paypal_client_secret,
+          sandbox: false
+        };
   }
 
   private async getAccessToken(): Promise<string> {
@@ -76,6 +88,8 @@ export class PaypalService {
         purchase_units: [
           {
             reference_id: reference,
+            custom_id: reference,
+            invoice_id: reference,
             amount: {
               currency_code: 'USD',
               value: amountUSD.toString()
@@ -155,9 +169,57 @@ export class PaypalService {
    * Nota: Idealmente se usa el endpoint de validación de PayPal o una librería
    */
   async verifyWebhookSignature(req: any): Promise<boolean> {
-    // Por ahora aceptamos el webhook si viene de PayPal. 
-    // En producción se debe usar el SDK de PayPal o validar con su API
-    return true; 
+    // PayPal Webhook verification:
+    // https://developer.paypal.com/docs/api/webhooks/v1/#verify-webhook-signature
+    //
+    // En producción, rechazamos si no se puede verificar.
+    const strict = this.isProd();
+
+    const webhookId =
+      process.env.PAYPAL_WEBHOOK_ID ||
+      process.env.PAYPAL_WEBHOOK_ID_SANDBOX ||
+      '';
+
+    if (!webhookId) {
+      if (strict) return false;
+      return true;
+    }
+
+    const transmissionId = req.headers['paypal-transmission-id'];
+    const transmissionTime = req.headers['paypal-transmission-time'];
+    const certUrl = req.headers['paypal-cert-url'];
+    const authAlgo = req.headers['paypal-auth-algo'];
+    const transmissionSig = req.headers['paypal-transmission-sig'];
+
+    if (!transmissionId || !transmissionTime || !certUrl || !authAlgo || !transmissionSig) {
+      if (strict) return false;
+      return true;
+    }
+
+    try {
+      const accessToken = await this.getAccessToken();
+      const { sandbox } = await this.getActiveKeys();
+      const baseUrl = sandbox ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
+
+      const resp = await axios.post(
+        `${baseUrl}/v1/notifications/verify-webhook-signature`,
+        {
+          auth_algo: authAlgo,
+          cert_url: certUrl,
+          transmission_id: transmissionId,
+          transmission_sig: transmissionSig,
+          transmission_time: transmissionTime,
+          webhook_id: webhookId,
+          webhook_event: req.body,
+        },
+        { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` } }
+      );
+
+      return resp.data?.verification_status === 'SUCCESS';
+    } catch (e) {
+      if (strict) return false;
+      return true;
+    }
   }
 }
 
