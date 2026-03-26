@@ -153,6 +153,13 @@ export class WompiService {
     try {
       if (!reference) return null;
       const parts = reference.split('-');
+
+      // Solo soportamos prefijos conocidos del sistema.
+      // Esto evita falsos positivos en referencias ajenas.
+      const prefix = parts[0];
+      if (!['TRYON', 'TRIAL', 'GUEST'].includes(prefix)) {
+        return null;
+      }
       
       // Soporte para referencias de TRIAL
       if (parts[0] === 'TRIAL' || parts[0] === 'GUEST') {
@@ -224,7 +231,7 @@ export class WompiService {
    * Retorna el primer elemento del array data[], o null si está vacío.
    * Lanza error si la llamada de red falla.
    */
-  async getTransactionByReference(reference: string): Promise<{ status: string } | null> {
+  async getTransactionByReference(reference: string): Promise<{ id: string; reference: string; status: string; amount_in_cents: number; currency: string } | null> {
     try {
       const { privateKey, testMode } = await this.getActiveKeys();
       const baseUrl = testMode ? 'https://sandbox.wompi.co' : 'https://production.wompi.co';
@@ -237,7 +244,7 @@ export class WompiService {
           Authorization: `Bearer ${privateKey}`,
         },
       });
-      const json = await response.json() as { data: { status: string }[] };
+      const json = await response.json() as { data: { id: string; reference: string; status: string; amount_in_cents: number; currency: string }[] };
       if (!json.data || json.data.length === 0) return null;
       return json.data[0];
     } catch (error) {

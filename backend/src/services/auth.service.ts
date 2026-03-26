@@ -126,10 +126,26 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
     
     // Actualizar plan y fechas en la marca existente
     const months = pending.months || 1;
-    const plan = (pending.plan || 'BASIC').toUpperCase();
+    const isTrial = (pending.plan || '').toUpperCase() === 'TRIAL';
+    const plan = isTrial ? 'BASIC' : (pending.plan || 'BASIC').toUpperCase();
+
     const now = new Date();
-    const endDate = new Date(now);
-    endDate.setMonth(endDate.getMonth() + months);
+    let endDate = new Date(now);
+    let trialEndDate: string | null = null;
+    let trialLimit = 0;
+
+    if (isTrial) {
+      const campaign = await getActiveCampaign();
+      const trialDays = campaign?.trial_days || 7;
+      trialLimit = campaign?.trial_generations_limit || 15;
+      const tDate = new Date(now);
+      tDate.setDate(tDate.getDate() + trialDays);
+      trialEndDate = tDate.toISOString();
+      // El endDate de la suscripcion en si puede ser el mismo que trial o null
+      endDate = tDate; 
+    } else {
+      endDate.setMonth(endDate.getMonth() + months);
+    }
 
     await supabaseAdmin
       .from('brands')
@@ -138,6 +154,8 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
         subscription_status: 'active',
         subscription_start_date: now.toISOString(),
         subscription_end_date: endDate.toISOString(),
+        trial_end_date: trialEndDate,
+        trial_generations_limit: trialLimit,
         has_landing_page: pending.includes_landing || existingBrand.has_landing_page || false,
         last_payment_date: now.toISOString(),
       })
@@ -151,9 +169,25 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const months = pending.months || 1;
-    const plan = (pending.plan || 'BASIC').toUpperCase();
-    const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + months);
+    const isTrial = (pending.plan || '').toUpperCase() === 'TRIAL';
+    const plan = isTrial ? 'BASIC' : (pending.plan || 'BASIC').toUpperCase();
+
+    const now = new Date();
+    let endDate = new Date(now);
+    let trialEndDate: string | null = null;
+    let trialLimit = 0;
+
+    if (isTrial) {
+      const campaign = await getActiveCampaign();
+      const trialDays = campaign?.trial_days || 7;
+      trialLimit = campaign?.trial_generations_limit || 15;
+      const tDate = new Date(now);
+      tDate.setDate(tDate.getDate() + trialDays);
+      trialEndDate = tDate.toISOString();
+      endDate = tDate;
+    } else {
+      endDate.setMonth(endDate.getMonth() + months);
+    }
 
     const { data: newBrand, error: createError } = await supabaseAdmin
       .from('brands')
@@ -167,6 +201,8 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
         subscription_status: 'active',
         subscription_start_date: new Date().toISOString(),
         subscription_end_date: endDate.toISOString(),
+        trial_end_date: trialEndDate,
+        trial_generations_limit: trialLimit,
         has_landing_page: pending.includes_landing || false,
         email_verified: true,
       })

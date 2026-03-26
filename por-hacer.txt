@@ -1,0 +1,52 @@
+consideras que la estructura actual del proyecto podria considerarse en fase beta? y podriamos colocar en algun sitio el identificador de version y en que pase se encuentra y asi mismo crear un roadmap a corto, mediano y largo plazo, para mantener el enfoque siempre correcto, el plugin esta destinado a estar implementado a corto mediano plazo.
+
+Sí: con la estructura actual, tu SaaS ya puede considerarse “beta cerrada/comercial inicial”, no “v1 estable”.
+Tienes pilares clave para beta: registro, planes, checkout, activación de suscripción y panel admin. Lo correcto ahora es tratarla como:
+
+Fase: Beta Comercial
+Versión sugerida: v0.9.x (ej. v0.9.0-beta.1)
+Objetivo: validar conversión real y soporte con clientes pagos (no seguir ampliando features sin tracción)
+Dónde poner identificador de versión y fase
+Te recomiendo 3 niveles:
+
+Producto (visible para usuarios/admin)
+Mostrar en footer del dashboard/admin: Lookitry v0.9.0-beta.1 · Beta Comercial.
+Repositorio (fuente oficial)
+Un archivo único tipo VERSION.md o docs/ROADMAP.md con:
+versión actual
+fase actual
+fecha de corte
+próximos hitos
+Backend/API (telemetría/soporte)
+Exponer en /health o /api/meta campos:
+appVersion
+releaseChannel (beta)
+releasePhase (beta_comercial)
+Así soporte, equipo y clientes ven el mismo estado.
+
+Roadmap recomendado (enfoque por horizonte)
+Corto plazo (0-6 semanas) — monetizar y estabilizar
+Cerrar checkout 100% confiable (Wompi + PayPal) con pruebas E2E semanales.
+Reducir fricción en onboarding (registro post-pago + mensajes claros).
+Definir KPIs mínimos: conversión checkout, activación exitosa, churn inicial, tickets de soporte.
+Publicar v0.9.x y congelar features no críticas.
+Preparar base del plugin (scope y arquitectura), sin expandir demasiado.
+Mediano plazo (6-16 semanas) — plugin MVP + crecimiento controlado
+Entregar plugin MVP (tu prioridad) con:
+instalación simple
+auth con API key
+sincronización básica de catálogo
+embed del widget y tracking mínimo
+Mejorar observabilidad y soporte (errores por tienda, trazabilidad por referencia de pago).
+Campañas de adquisición ligeras con feedback real de clientes beta.
+Pasar a v0.10.x cuando plugin esté operando en clientes piloto.
+Largo plazo (4-9 meses) — escalar
+Plugin más robusto (sync incremental, manejo de errores, autoupdates).
+Automatización comercial (emails lifecycle, dunning, upgrade paths).
+Optimización de costos IA y performance.
+Preparación para v1.0 con criterios estrictos de estabilidad y retención.
+Regla de enfoque (muy importante)
+Para no desviarte: toda tarea nueva debe responder “¿esto mejora ingresos o retención en los próximos 30-60 días?”.
+Si no, va a backlog de mediano/largo plazo.
+
+Si quieres, en el siguiente paso te preparo una plantilla exacta para VERSION.md + ROADMAP.md + formato de changelog (lista para copiar/pegar en tu repo).

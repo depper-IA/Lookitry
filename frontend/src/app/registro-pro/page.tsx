@@ -99,6 +99,7 @@ function RegistroProContent() {
   const [altEmailError, setAltEmailError] = useState('');
   const [pendingData, setPendingData] = useState<{ plan: string; months: number; includes_landing: boolean; status: string } | null>(null);
   const [fetchingPending, setFetchingPending] = useState(true);
+  const [recheckingPending, setRecheckingPending] = useState(false);
   const { brand, isAuthenticated } = useAuth();
   const [autoLinking, setAutoLinking] = useState(false);
 
@@ -124,23 +125,28 @@ function RegistroProContent() {
     }
   }, [ref, wompiId, months, router]);
 
+  async function fetchPending() {
+    if (!ref) return;
+    try {
+      const res = await fetch(`${API_URL}/api/auth/pending-registration/${ref}`);
+      const data = await res.json();
+      if (data && !data.error) {
+        setPendingData(data);
+      }
+    } catch {
+      // noop
+    }
+  }
+
   useEffect(() => {
     if (ref) {
       setFetchingPending(true);
-      fetch(`${API_URL}/api/auth/pending-registration/${ref}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data && !data.error) {
-            setPendingData(data);
-          }
-          setFetchingPending(false);
-        })
-        .catch(() => {
-          setFetchingPending(false);
-        });
+      fetchPending()
+        .finally(() => setFetchingPending(false));
     } else {
       setFetchingPending(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ref]);
 
   // Efecto de auto-vinculación si ya hay sesión
@@ -333,6 +339,15 @@ function RegistroProContent() {
           className="mb-6"
         />
 
+        {pendingData?.status && pendingData.status !== 'paid' && pendingData.status !== 'used' && (
+          <Alert
+            type="info"
+            title="Verificando confirmación del pago"
+            message="Tu pago puede tardar unos minutos en reflejarse. Si ya pagaste, espera 1–2 minutos y vuelve a verificar."
+            className="mb-6"
+          />
+        )}
+
         <div className="bg-[#111] border border-[#222] rounded-2xl p-8 shadow-2xl relative overflow-hidden">
           {/* Subtle background glow */}
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF5C3A] rounded-full blur-[100px] opacity-10 pointer-events-none" />
@@ -343,6 +358,27 @@ function RegistroProContent() {
           {apiError && (
             <Alert type="error" message={apiError} className="mb-6" />
           )}
+
+          <div className="mb-6 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={async () => {
+                if (!ref) return;
+                setRecheckingPending(true);
+                await fetchPending();
+                setRecheckingPending(false);
+              }}
+              className="px-4 py-2 rounded-xl border border-[#222] bg-[#0d0d0d] hover:bg-[#141414] text-[12px] text-white/80 font-bold transition-all disabled:opacity-50"
+              disabled={recheckingPending}
+            >
+              {recheckingPending ? 'Verificando...' : 'Volver a verificar pago'}
+            </button>
+            {pendingData?.status && (
+              <span className="text-[10px] text-white/30 font-mono uppercase tracking-widest">
+                Estado: {String(pendingData.status)}
+              </span>
+            )}
+          </div>
 
           {showAltEmail && (
             <div className="mb-6 bg-[#1a1a1a] rounded-xl p-4 border border-[#222]">

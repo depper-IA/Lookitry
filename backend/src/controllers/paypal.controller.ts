@@ -112,7 +112,7 @@ export class PaypalController {
         .update({ trial_payment_status: 'active' })
         .eq('id', brandId);
         
-      // Registrar pago
+      // Registrar pago (idempotente por reference interna)
       await supabaseAdmin.from('subscription_payments').insert({
         brand_id: brandId,
         amount: amountUSD,
@@ -120,8 +120,8 @@ export class PaypalController {
         payment_method: 'paypal',
         status: 'completed',
         months_paid: 0,
-        reference: orderId,
-        notes: 'Pago de Plan Trial'
+        reference,
+        notes: `Pago de Plan Trial. PayPal orderId=${orderId}`,
       });
     } else if (isNewRegistration) {
       // Marcar registro pendiente como pagado
@@ -136,6 +136,18 @@ export class PaypalController {
       if (plan === 'NONE') {
         // Solo compra de Landing Page, no renovar suscripción
         await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
+
+        // Registrar pago (landing-only)
+        await supabaseAdmin.from('subscription_payments').insert({
+          brand_id: brandId,
+          amount: amountUSD,
+          currency: 'USD',
+          payment_method: 'paypal',
+          status: 'completed',
+          months_paid: 0,
+          reference,
+          notes: `SOLO Landing Page. PayPal orderId=${orderId}`,
+        });
       } else {
         // Renovación/Upgrade de marca existente
         await subscriptionService.renewSubscription(brandId, {
@@ -146,25 +158,14 @@ export class PaypalController {
           status: 'completed',
           months_paid: months,
           payment_date: new Date().toISOString(),
-          notes: `PayPal Order: ${orderId}. Plan: ${plan}. Meses: ${months}.`,
+          notes: `PayPal orderId=${orderId}. Ref=${reference}. Plan=${plan}. Meses=${months}.`,
+          reference,
         }, months, plan as string);
         
         if (includesLanding) {
           await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
         }
       }
-      
-      // Registrar pago
-      await supabaseAdmin.from('subscription_payments').insert({
-        brand_id: brandId,
-        amount: amountUSD,
-        currency: 'USD',
-        payment_method: 'paypal',
-        status: 'completed',
-        months_paid: plan === 'NONE' ? 0 : months,
-        reference: orderId,
-        notes: plan === 'NONE' ? 'SOLO Landing Page' : undefined
-      });
     }
 
     return res.status(200).json({ 
@@ -183,7 +184,7 @@ export class PaypalController {
     const event = req.body;
     console.log(`[PayPal Webhook] Evento recibido: ${event.event_type}`);
 
-    // 1. Verificar firma (Opcional por ahora, implementado stub en service)
+    // 1. Verificar firma (obligatorio en prod; flexible en dev)
     const isValid = await paypalService.verifyWebhookSignature(req);
     if (!isValid) {
       return res.status(401).json({ error: 'Firma inválida' });
@@ -196,7 +197,7 @@ export class PaypalController {
       const amountUSD = parseFloat(resource.amount.value);
       
       // Intentar obtener la referencia de custom_id (si se envió) o de las notas
-      const reference = resource.custom_id || (resource.supplementary_data?.related_ids?.order_id);
+      const reference = resource.custom_id || resource.invoice_id || (resource.supplementary_data?.related_ids?.order_id);
       
       console.log(`[PayPal Webhook] Pago completado. CaptureId: ${captureId}, Monto: ${amountUSD}, Ref: ${reference}`);
 
@@ -247,7 +248,8 @@ export class PaypalController {
               status: 'completed',
               months_paid: months,
               payment_date: new Date().toISOString(),
-              notes: `PayPal Webhook: ${captureId}. Ref: ${reference}`,
+              notes: `PayPal webhook captureId=${captureId}. Ref=${reference}`,
+              reference,
             }, months, plan as string);
 
             if (includesLanding) {

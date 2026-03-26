@@ -334,6 +334,11 @@ function CheckoutContent() {
         if (typeof paySettings.paypalEnabled === 'boolean') setPaypalEnabled(paySettings.paypalEnabled);
         // Si Wompi está habilitado globalmente, lo habilitamos por defecto en el estado local
         if (typeof paySettings.wompiEnabled === 'boolean')  setWompiEnabled(paySettings.wompiEnabled);
+
+        // UX/Conversión: si Wompi no está disponible, forzar PayPal (si está disponible)
+        if (paySettings.wompiEnabled === false && paySettings.paypalEnabled === true) {
+          setPaymentMethod('paypal');
+        }
       }
       if (Array.isArray(pricingRows)) {
         const basicData = pricingRows.find((r: any) => r.id === 'basic')?.data;
@@ -376,6 +381,13 @@ function CheckoutContent() {
       .then(() => setWompiEnabled(true))
       .catch(() => setWompiEnabled(false));
   }, [selectedPlan]);
+
+  // Si Wompi queda deshabilitado y PayPal está habilitado, mover método para evitar bloqueo
+  useEffect(() => {
+    if (wompiEnabled === false && paypalEnabled) {
+      setPaymentMethod('paypal');
+    }
+  }, [wompiEnabled, paypalEnabled]);
 
   // Moneda desde localStorage
   useEffect(() => {
