@@ -1,4 +1,4 @@
-﻿import { emailService } from './email.service';
+import { emailService } from './email.service';
 import { SubscriptionService } from './subscription.service';
 import { notificationPreferencesService } from './notificationPreferences.service';
 import { supabaseAdmin } from '../config/supabase';
@@ -60,7 +60,13 @@ export class NotificationService {
         .single();
 
       if (data?.data?.precio_mensual_cop) {
-        return data.data.precio_mensual_cop;
+        const value = data.data.precio_mensual_cop;
+        // Sanity check: si por error `pro` quedó con precio de `basic` (o viceversa),
+        // usamos fallback para no enviar correos con monto incorrecto.
+        const planUpper = plan.toUpperCase();
+        if (planUpper === 'PRO' && value < 200000) return 250000;
+        if (planUpper === 'BASIC' && value > 200000) return 150000;
+        return value;
       }
     } catch (e) {
       console.error('[NotificationService] Error consultando pricing_config:', e);

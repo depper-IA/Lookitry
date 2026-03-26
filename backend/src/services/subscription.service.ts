@@ -657,6 +657,24 @@ export class SubscriptionService {
   private async createPaymentRecord(
     paymentData: CreatePaymentDto
   ): Promise<SubscriptionPayment> {
+    // Idempotencia: si ya existe un pago con la misma reference, no lo duplicamos.
+    // Nota: la columna `reference` existe en el esquema real usado por el backend (CreatePaymentDto la incluye).
+    if (paymentData.reference) {
+      try {
+        const { data: existing } = await supabaseAdmin
+          .from('subscription_payments')
+          .select('*')
+          .eq('reference', paymentData.reference)
+          .limit(1)
+          .maybeSingle();
+        if (existing) {
+          return existing as SubscriptionPayment;
+        }
+      } catch {
+        // Si el esquema no tiene `reference` en algún entorno legacy, seguimos sin idempotencia por reference.
+      }
+    }
+
     const { data, error } = await supabaseAdmin
       .from('subscription_payments')
       .insert({
@@ -668,6 +686,7 @@ export class SubscriptionService {
         status: paymentData.status || 'completed',
         notes: paymentData.notes || null,
         months_paid: paymentData.months_paid || 1,
+        reference: paymentData.reference || null,
       })
       .select()
       .single();

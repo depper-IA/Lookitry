@@ -188,7 +188,7 @@ await engine.render({
                            <div className="space-y-4">
                               <h4 className="text-xl font-black text-zinc-900 uppercase tracking-tighter italic">Esquema de Instalación</h4>
                               <p className="max-w-[280px] text-[10px] font-bold text-zinc-400 lg:mx-auto uppercase leading-relaxed tracking-widest">
-                                El plugin sincroniza SKUs automáticamente y habilita el botón "Prueba Virtual" en tiempo real.
+                                El plugin sincroniza SKUs automáticamente y habilita el botón &quot;Prueba Virtual&quot; en tiempo real.
                               </p>
                            </div>
                            <button className="px-10 py-5 bg-zinc-900 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-[#FF5C3A] transition-all">

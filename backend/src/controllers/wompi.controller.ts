@@ -340,7 +340,8 @@ export class WompiController {
           reference, 
           plan: planStr, 
           months: monthsNum, 
-          includes_landing: isLandingPurchase 
+          includes_landing: isLandingPurchase,
+          status: 'pending',
         });
         
         if (insertError) {

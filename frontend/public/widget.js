@@ -2,6 +2,7 @@
   // Configuración base
   const BASE_URL = 'https://lookitry.com';
   const CONTAINER_ID = 'lookitry-tester-container';
+  const ALLOWED_ORIGINS = new Set([BASE_URL, 'https://www.lookitry.com']);
 
   function initLookitry() {
     const container = document.getElementById(CONTAINER_ID);
@@ -60,14 +61,20 @@
 
     // 6. Listener para redimensionamiento dinámico (postMessage)
     window.addEventListener('message', function(event) {
-      if (event.origin !== BASE_URL) return;
-      
-      if (event.data && event.data.type === 'LOOKITRY_RESIZE') {
-        const newHeight = event.data.height;
-        if (newHeight && newHeight > 100) {
-          iframe.style.height = newHeight + 'px';
-        }
+      if (!event || !ALLOWED_ORIGINS.has(event.origin)) return;
+
+      // Compat: versiones antiguas (LOOKITRY_RESIZE) y actuales (TRYON_RESIZE)
+      const msg = event.data || {};
+      const type = msg.type;
+
+      let newHeight = null;
+      if (type === 'TRYON_RESIZE') {
+        newHeight = msg?.data?.height;
+      } else if (type === 'LOOKITRY_RESIZE') {
+        newHeight = msg?.height;
       }
+
+      if (newHeight && newHeight > 100) iframe.style.height = newHeight + 'px';
     }, false);
   }
 

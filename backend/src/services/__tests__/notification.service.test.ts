@@ -224,10 +224,10 @@ describe('NotificationService', () => {
   });
 
   describe('error handling', () => {
-    it('should throw error if email service fails', async () => {
+    it('should NOT throw if email service fails (email nunca debe bloquear el flujo)', async () => {
       (emailService.sendEmail as jest.Mock).mockRejectedValueOnce(new Error('Email service error'));
 
-      await expect(notificationService.sendWelcomeEmail(mockBrand)).rejects.toThrow('Email service error');
+      await expect(notificationService.sendWelcomeEmail(mockBrand)).resolves.toBeUndefined();
     });
 
     it('should log error when sending welcome email fails', async () => {

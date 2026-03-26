@@ -61,6 +61,7 @@ export default function RegisterForm() {
   const [trialActive, setTrialActive] = useState<boolean | null>(null);
   const [trialDays, setTrialDays] = useState(7);
   const [fingerprint, setFingerprint] = useState<string | null>(null);
+  const [prefilledFields, setPrefilledFields] = useState<Record<string, boolean>>({});
 
   const [isPaidFlow, setIsPaidFlow] = useState(false);
   const [paymentRef, setPaymentRef] = useState<string | null>(null);
@@ -75,29 +76,36 @@ export default function RegisterForm() {
       setPaymentRef(ref);
       setIsPaidFlow(true);
       setLoadingStep('Verificando tu pago...');
-      
+
       // Cargar datos desde el registro pendiente
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/pending-registration/${ref}`)
         .then(r => r.json())
         .then(data => {
           if (data.email) {
             const brandName = data.brand_name || '';
-            const slug = brandName
+            const slug = (data as any).slug || (brandName
               ? brandName
-                  .toLowerCase()
-                  .normalize('NFD')
-                  .replace(/[\u0300-\u036f]/g, '')
-                  .replace(/[^a-z0-9\s-]/g, '')
-                  .trim()
-                  .replace(/\s+/g, '-')
-              : '';
-              
-            setForm(prev => ({ 
-              ...prev, 
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9\s-]/g, '')
+                .trim()
+                .replace(/\s+/g, '-')
+              : '');
+
+            setForm(prev => ({
+              ...prev,
               email: data.email,
               name: brandName,
               slug: slug || prev.slug
             }));
+
+            // Marcar campos como pre-rellenados si traen datos
+            setPrefilledFields({
+              email: !!data.email,
+              name: !!brandName,
+              slug: !!(data as any).slug || !!slug
+            });
           }
           setLoadingStep('');
         })
@@ -115,7 +123,7 @@ export default function RegisterForm() {
       .then((r) => r.json())
       .then((d) => {
         const isActive = d.trialAvailable === true || d.active === true;
-        
+
         // MARKETING OPTIMIZATION: Si no hay trial gratuito y no viene de un pago,
         // redirigimos al checkout de pago para que el usuario no se detenga.
         if (!isActive && !ref) {
@@ -161,7 +169,7 @@ export default function RegisterForm() {
 
     try {
       setLoadingStep('Creando tu cuenta...');
-      
+
       // Si es flujo pagado, usamos el endpoint post-pago que no tiene Turnstile ni validaciones de abuso
       const endpoint = isPaidFlow ? '/api/auth/register-post-payment' : '/api/auth/register';
       const body = isPaidFlow ? { ...form, ref: paymentRef } : { ...form, fingerprint };
@@ -278,8 +286,8 @@ export default function RegisterForm() {
             {isPaidFlow ? '¡Pago confirmado!' : 'Crear cuenta'}
           </h1>
           <p className="text-[13px] text-[#FF5C3A] mb-6">
-            {isPaidFlow 
-              ? 'Completa estos últimos datos para entrar a tu dashboard' 
+            {isPaidFlow
+              ? 'Completa estos últimos datos para entrar a tu dashboard'
               : `Prueba por $20.000 COP — ${trialDays} días`}
           </p>
 
@@ -292,11 +300,11 @@ export default function RegisterForm() {
               <input
                 name="name"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={handleChange}
                 required
-                readOnly={isPaidFlow && !!form.name}
+                readOnly={isPaidFlow && prefilledFields.name}
                 placeholder="Mi Marca"
-                className={`w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors ${isPaidFlow ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors ${isPaidFlow && prefilledFields.name ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
               {isPaidFlow && (
                 <p className="text-[11px] text-[#555] mt-1 italic">Dato confirmado desde tu pago</p>
@@ -331,9 +339,9 @@ export default function RegisterForm() {
                   name="slug"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  readOnly={isPaidFlow && !!form.slug}
+                  readOnly={isPaidFlow && prefilledFields.slug}
                   placeholder="mi-marca"
-                  className={`flex-1 px-3 py-2.5 text-[13px] text-white bg-transparent focus:outline-none placeholder-[#333] ${isPaidFlow && !!form.slug ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  className={`flex-1 px-3 py-2.5 text-[13px] text-white bg-transparent focus:outline-none placeholder-[#333] ${isPaidFlow && prefilledFields.slug ? 'opacity-60 cursor-not-allowed' : ''}`}
                 />
               </div>
             </div>
@@ -347,9 +355,9 @@ export default function RegisterForm() {
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
-                readOnly={isPaidFlow && !!form.email}
+                readOnly={isPaidFlow && prefilledFields.email}
                 placeholder="hola@mimarca.com"
-                className={`w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors ${isPaidFlow ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors ${isPaidFlow && prefilledFields.email ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 
