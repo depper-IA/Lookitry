@@ -12,7 +12,14 @@ import { PromptRagService } from '../services/prompt-rag.service';
 import { UploadService } from '../services/upload.service';
 import { buildCategoryRulesBlock, getPromptRules } from '../config/prompt-rules';
 import { createAdminNotification } from '../utils/adminNotifications';
-import { getExpectedStoreHost, getIncomingStoreHost, isAllowedStoreHost } from '../utils/storeDomain';
+import {
+  getBrandAllowedOrigins,
+  getExpectedStoreHost,
+  getIncomingStoreHost,
+  isAllowedStoreHost,
+  normalizeOrigin,
+  sanitizeDomainList,
+} from '../utils/storeDomain';
 import {
   NotFoundError,
   ValidationError,
@@ -147,7 +154,7 @@ export class PruebaloController {
   getAllowedOrigins = asyncHandler(async (req: Request, res: Response) => {
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .select('social_links');
+      .select('social_links, custom_domain');
 
     if (error) {
       console.error('[getAllowedOrigins] Error fetch:', error);
@@ -162,18 +169,7 @@ export class PruebaloController {
     origins.add('https://www.lookitry.com');
 
     data?.forEach(brand => {
-      const website = brand.social_links?.website;
-      if (website && typeof website === 'string') {
-        let cleanSite = website.trim().toLowerCase();
-        // Asegurar que tenga protocolo para que URL() no falle
-        if (!cleanSite.startsWith('http')) {
-          cleanSite = 'https://' + cleanSite;
-        }
-        try {
-          const url = new URL(cleanSite);
-          origins.add(url.origin);
-        } catch(e) {}
-      }
+      getBrandAllowedOrigins(brand).forEach((origin) => origins.add(origin));
     });
 
     return res.status(200).json({ origins: Array.from(origins) });
@@ -476,16 +472,25 @@ export class PruebaloController {
     // Auto-registrar o actualizar el dominio del plugin en la base de datos
     if (incomingDomain) {
       const currentSocialLinks = (brand as any).social_links || {};
-      const currentWebsite = currentSocialLinks.website;
+      const normalizedIncomingOrigin = normalizeOrigin(incomingDomain);
+      const mergedOrigins = sanitizeDomainList([
+        ...(Array.isArray(currentSocialLinks.allowed_origins) ? currentSocialLinks.allowed_origins : []),
+        currentSocialLinks.website,
+        normalizedIncomingOrigin,
+      ]);
 
-      if (!currentWebsite || currentWebsite !== incomingDomain) {
-        await brandsService.updateBrand(brand.id, {
-          social_links: {
-            ...currentSocialLinks,
-            website: incomingDomain
-          }
-        });
+      const updates: any = {
+        social_links: {
+          ...currentSocialLinks,
+          allowed_origins: mergedOrigins,
+        }
+      };
+
+      if (!currentSocialLinks.website && normalizedIncomingOrigin) {
+        updates.social_links.website = normalizedIncomingOrigin;
       }
+
+      await brandsService.updateBrand(brand.id, updates);
     }
 
     const currentCount = await productsService.countActiveProducts(brand.id);
