@@ -63,8 +63,8 @@ export default function SettingsPage() {
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 px-4 py-3 rounded-lg border border-[#ef4444]/30 bg-[#ef4444]/10 text-[#ef4444] text-sm">
-          <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="flex items-start gap-3 px-6 py-4 rounded-2xl border border-[#ef4444]/20 bg-[#ef4444]/5 text-[#ef4444] text-sm font-medium shadow-sm">
+          <svg className="w-5 h-5 flex-shrink-0 mt-0.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
           </svg>
           {error}
@@ -72,8 +72,8 @@ export default function SettingsPage() {
       )}
 
       {success && (
-        <div className="flex items-start gap-2 px-4 py-3 rounded-lg border border-[#10b981]/30 bg-[#10b981]/10 text-[#10b981] text-sm">
-          <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="flex items-start gap-3 px-6 py-4 rounded-2xl border border-[#10b981]/20 bg-[#10b981]/5 text-[#10b981] text-sm font-medium shadow-sm">
+          <svg className="w-5 h-5 flex-shrink-0 mt-0.5 opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
           {success}

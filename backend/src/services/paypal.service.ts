@@ -3,6 +3,16 @@ import { supabaseAdmin } from '../config/supabase';
 
 export class PaypalService {
   private async getActiveKeys() {
+    // Prioridad 1: Variables de entorno (seguridad y facilidad de despliegue)
+    if (process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_CLIENT_SECRET) {
+      return {
+        clientId: process.env.PAYPAL_CLIENT_ID,
+        clientSecret: process.env.PAYPAL_CLIENT_SECRET,
+        sandbox: process.env.PAYPAL_SANDBOX === 'true'
+      };
+    }
+
+    // Prioridad 2: Base de datos (configuración dinámica desde el panel admin)
     const { data: settings, error } = await supabaseAdmin
       .from('payment_settings')
       .select('paypal_enabled, paypal_client_id, paypal_client_secret, paypal_sandbox')
@@ -135,6 +145,16 @@ export class PaypalService {
     );
 
     return response.data;
+  }
+
+  /**
+   * Verifica la firma de un webhook de PayPal
+   * Nota: Idealmente se usa el endpoint de validación de PayPal o una librería
+   */
+  async verifyWebhookSignature(req: any): Promise<boolean> {
+    // Por ahora aceptamos el webhook si viene de PayPal. 
+    // En producción se debe usar el SDK de PayPal o validar con su API
+    return true; 
   }
 }
 

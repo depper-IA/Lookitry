@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === 'production';
+
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
@@ -13,6 +15,19 @@ const nextConfig = {
     ],
   },
   async headers() {
+    // Definimos la política de seguridad de forma dinámica
+    // Se ha actualizado para permitir img-src * para imágenes externas (WooCommerce)
+    const csp = [
+      "default-src 'self'",
+      `script-src 'self' 'unsafe-inline' ${isProd ? '' : "'unsafe-eval'"} https://challenges.cloudflare.com`,
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "img-src * data: blob:",
+      `connect-src 'self' ${isProd ? '' : 'http://localhost:3001'} https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co`,
+      "font-src 'self' https://fonts.gstatic.com",
+      "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co",
+      "object-src 'none'",
+    ].join('; ');
+
     return [
       {
         source: '/(embed|marca|pruebalo)/:slug*',
@@ -31,7 +46,7 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=86400' },
         ],
       },
-      // Resto de rutas: Seguridad estándar estricta
+      // Resto de rutas: Seguridad estándar
       {
         source: '/((?!embed|marca|pruebalo|widget.js|api).*)',
         headers: [
@@ -39,10 +54,7 @@ const nextConfig = {
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob:; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co; object-src 'none';"
-          }
+          { key: 'Content-Security-Policy', value: csp }
         ],
       },
     ];
