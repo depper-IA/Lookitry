@@ -179,7 +179,7 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
                 Ver planes <IconArrow />
               </Link>
             </div>
-            <p className="text-[12px] text-[#666]">Requiere verificación de tarjeta · Cancela cuando quieras</p>
+            <p className="text-[12px] text-[#666]">Activa hoy tu prueba paga · Configuración en minutos</p>
           </div>
         </section>
 

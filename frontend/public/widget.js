@@ -58,6 +58,16 @@
     // 5. Inyectar en el contenedor
     container.innerHTML = '';
     container.appendChild(iframe);
+    // Aviso legal mínimo para embeds de terceros (reduce riesgo jurídico)
+    const legalWrap = document.createElement('div');
+    legalWrap.style.marginTop = '8px';
+    legalWrap.style.textAlign = 'right';
+    legalWrap.style.fontSize = '11px';
+    legalWrap.style.fontFamily = 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+    legalWrap.style.color = '#888';
+    legalWrap.innerHTML =
+      'Al usar este probador aceptas la <a href="' + BASE_URL + '/politica-de-uso" target="_blank" rel="noopener noreferrer" style="color:#FF5C3A;text-decoration:none;">política de uso</a>';
+    container.appendChild(legalWrap);
 
     // 6. Listener para redimensionamiento dinámico (postMessage)
     window.addEventListener('message', function(event) {
