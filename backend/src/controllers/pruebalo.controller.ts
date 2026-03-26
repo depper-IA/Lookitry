@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { createHash } from 'crypto';
 import { supabaseAdmin } from '../config/supabase';
 import { getCachedBrandConfig, setCachedBrandConfig, invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { BrandsService } from '../services/brands.service';
@@ -183,7 +184,7 @@ export class PruebaloController {
   generateTryOn = asyncHandler(async (req: Request, res: Response) => {
     const { brandSlug } = req.params;
     const { productId } = req.body;
-    const selfieFile = req.file; // Multer manejará el archivo
+    const imageFile = req.file; // Multer manejará el archivo
 
     // 1. Validar marca existe por slug
     const brand = await brandsService.getBrandBySlug(brandSlug);
@@ -201,7 +202,45 @@ export class PruebaloController {
       throw new NotFoundError('Producto no encontrado para esta marca');
     }
 
-    // 3. Verificar límites de plan
+    // 3. Validar archivo
+    if (!imageFile) {
+      throw new ValidationError('Debes subir una foto o imagen');
+    }
+
+    // Validar tipo de archivo
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(imageFile.mimetype)) {
+      throw new ValidationError('Solo se permiten archivos JPG, PNG o WEBP');
+    }
+
+    // Validar tamaño máximo (5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (imageFile.size > maxSize) {
+      throw new ValidationError('El archivo no debe superar 5MB');
+    }
+
+    const inputFingerprint = createHash('sha256')
+      .update(imageFile.buffer)
+      .digest('hex');
+
+    const existingGeneration = await generationsService.getSuccessfulGenerationByFingerprint(
+      brand.id,
+      product.id,
+      inputFingerprint
+    );
+
+    if (existingGeneration?.result_image_url) {
+      return res.status(200).json({
+        success: true,
+        generationId: existingGeneration.id,
+        imageUrl: existingGeneration.result_image_url,
+        processingTime: existingGeneration.processing_time ?? 0,
+        reused: true,
+        message: 'Ya habías generado este producto con esta misma imagen. Te mostramos el resultado guardado sin costo adicional.',
+      });
+    }
+
+    // 4. Verificar límites de plan solo si realmente hay una generación nueva
     const canGenerate = await usageService.checkGenerationLimit(brand.id);
     if (!canGenerate) {
       const usage = await usageService.getUsageStats(brand.id);
@@ -214,27 +253,10 @@ export class PruebaloController {
       );
     }
 
-    // 4. Validar archivo
-    if (!selfieFile) {
-      throw new ValidationError('Debes subir una selfie');
-    }
-
-    // Validar tipo de archivo
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(selfieFile.mimetype)) {
-      throw new ValidationError('Solo se permiten archivos JPG, PNG o WEBP');
-    }
-
-    // Validar tamaño máximo (5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (selfieFile.size > maxSize) {
-      throw new ValidationError('El archivo no debe superar 5MB');
-    }
-
     // 5. Subir imagen a MinIO en carpeta temporal
     const uploadResult = await uploadService.uploadImageBuffer({
-      buffer: selfieFile.buffer,
-      filename: selfieFile.originalname || 'selfie.jpg',
+      buffer: imageFile.buffer,
+      filename: imageFile.originalname || 'foto.jpg',
       temporary: true,
     });
 
@@ -242,7 +264,8 @@ export class PruebaloController {
     const generation = await generationsService.createGeneration({
       brand_id: brand.id,
       product_id: product.id,
-      selfie_url: 'pending', // Se actualizará después
+      selfie_url: uploadResult.url,
+      input_fingerprint: inputFingerprint,
       status: 'PENDING',
     });
 
@@ -285,11 +308,12 @@ export class PruebaloController {
       }
 
       const processingTime = Date.now() - startTime;
+
+
       // 8. Actualizar registro con resultado (SUCCESS/FAILED) — guardar prompt para trazabilidad RAG
       await generationsService.updateGeneration(generation.id, {
         status: 'SUCCESS',
         result_image_url: n8nResult.imageUrl,
-        selfie_url: n8nResult.imageUrl,
         processing_time: processingTime,
         prompt_used: prompt,
       });
@@ -300,10 +324,33 @@ export class PruebaloController {
         generationId: generation.id,
         imageUrl: n8nResult.imageUrl,
         processingTime,
+        reused: false,
       });
 
     } catch (n8nError: any) {
       const processingTime = Date.now() - startTime;
+      const constraintViolation =
+        n8nError?.code === '23505' ||
+        (n8nError?.message || '').includes('generations_brand_product_input_success_idx');
+
+      if (constraintViolation) {
+        const dedupedGeneration = await generationsService.getSuccessfulGenerationByFingerprint(
+          brand.id,
+          product.id,
+          inputFingerprint
+        );
+
+        if (dedupedGeneration?.result_image_url) {
+          return res.status(200).json({
+            success: true,
+            generationId: dedupedGeneration.id,
+            imageUrl: dedupedGeneration.result_image_url,
+            processingTime: dedupedGeneration.processing_time ?? 0,
+            reused: true,
+            message: 'Ya existía un resultado para esta imagen y este producto. Te mostramos el guardado para evitar un costo duplicado.',
+          });
+        }
+      }
 
       // ── Debugging detallado para trazabilidad ──────────────────────────────
       const isCreditsError =

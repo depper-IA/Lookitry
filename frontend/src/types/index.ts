@@ -173,6 +173,8 @@ export interface GenerateTryOnResponse {
   generationId: string;
   imageUrl: string;
   processingTime: number;
+  reused?: boolean;
+  message?: string;
 }
 
 // Subscription Payments

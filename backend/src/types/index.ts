@@ -47,6 +47,7 @@ export interface Generation {
   brand_id: string;
   product_id: string;
   selfie_url: string;
+  input_fingerprint: string | null;
   result_image_url: string | null;
   status: 'PENDING' | 'SUCCESS' | 'FAILED';
   error_message: string | null;

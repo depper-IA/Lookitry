@@ -4,7 +4,7 @@ import type { Product, Step } from './types';
 /** Texto de tiempo estimado mostrado debajo del botón de generación */
 export const GENERATION_TIME_HINT = 'Puede tardar unos 30 segundos';
 /** Texto mostrado cuando el resultado ya fue generado antes */
-export const GENERATION_CACHED_HINT = 'Ya generado — sin costo adicional';
+export const GENERATION_CACHED_HINT = 'Si ya lo probaste con esta foto, verás el resultado guardado sin costo adicional';
 
 // ── Barra de progreso de pasos ────────────────────────────────────────────────
 export function StepBar({ step, primaryColor }: { step: Step; primaryColor: string }) {
@@ -160,7 +160,7 @@ export function SelfieThumb({ preview, onReset }: { preview: string | null; onRe
   if (!preview) return null;
   return (
     <div className="flex items-center gap-2 md:gap-3 bg-white rounded-xl md:rounded-2xl p-2 md:p-3 shadow-sm border border-gray-100">
-      <img src={preview} alt="Tu selfie" className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl object-cover flex-shrink-0" />
+      <img src={preview} alt="Tu foto" className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl object-cover flex-shrink-0" />
       <div className="flex-1">
         <p className="text-[11px] md:text-sm font-black text-gray-900 uppercase italic leading-none">Foto lista</p>
         <p className="text-[9px] md:text-xs text-gray-400 mt-0.5 font-medium uppercase tracking-widest leading-none">Elige un producto</p>
@@ -197,6 +197,22 @@ export function ErrorBanner({ error, isService = false }: { error: string | null
       <div>
         <p className="text-sm font-semibold text-red-700">Algo salió mal</p>
         <p className="text-xs text-red-600 mt-0.5">{error}</p>
+      </div>
+    </div>
+  );
+}
+
+export function NoticeBanner({ notice }: { notice: string | null }) {
+  if (!notice) return null;
+
+  return (
+    <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-start gap-3">
+      <svg className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <p className="text-sm font-semibold text-emerald-800">Resultado reutilizado</p>
+        <p className="text-xs text-emerald-700 mt-0.5">{notice}</p>
       </div>
     </div>
   );
