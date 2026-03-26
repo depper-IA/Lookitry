@@ -1,5 +1,50 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 26 de Marzo, 2026 — Footer de confianza + páginas públicas legales/comerciales
+
+**Objetivo:**
+- Reforzar credibilidad de marca en landing pública y cubrir vacíos legales/soporte para salida beta.
+
+**Cambios de copy (landing):**
+- `frontend/src/components/landing/LandingClient.tsx`
+  - Se reemplazó el mensaje antiguo de trial:
+    - De: `Requiere verificación de tarjeta · Cancela cuando quieras`
+    - A: `Activa hoy tu prueba paga · Configuración en minutos`
+
+**Mejoras del footer:**
+- `frontend/src/components/landing/LandingFooter.tsx`
+  - Cambio CTA en navegación de producto:
+    - De: `Probar por $20.000`
+    - A: `Activar prueba ahora` (`/trial-checkout`)
+  - Se agregó link adicional `Crear cuenta de marca` (`/register`).
+  - Se añadieron badges de confianza visual:
+    - `Activación en minutos`
+    - `Soporte por WhatsApp`
+    - `Pago seguro`
+  - Se amplió navegación de empresa con nuevas rutas públicas:
+    - `/contacto`, `/casos-de-exito`, `/ayuda`, `/estado`, `/politica-de-uso`, `/cookies`, `/aviso-legal`
+
+**Nuevas páginas públicas creadas:**
+- `frontend/src/app/contacto/page.tsx`
+- `frontend/src/app/casos-de-exito/page.tsx`
+- `frontend/src/app/ayuda/page.tsx`
+- `frontend/src/app/cookies/page.tsx`
+- `frontend/src/app/estado/page.tsx`
+- `frontend/src/app/aviso-legal/page.tsx`
+- `frontend/src/app/politica-de-uso/page.tsx`
+
+**SEO / indexación:**
+- `frontend/src/app/sitemap.ts`
+  - Se añadieron las nuevas URLs públicas al sitemap.
+
+**Widget embebible (riesgo legal):**
+- `frontend/public/widget.js`
+  - Se agregó aviso legal mínimo bajo el iframe con enlace directo a:
+    - `/politica-de-uso`
+  - Motivo: reducir riesgo jurídico en embeds de terceros e informar condiciones de uso.
+
+---
+
 ## 26 de Marzo, 2026 — Auditoría Dashboard Beta y Corrección de PayPal Landing
 
 **Archivo leído obligatoriamente:**

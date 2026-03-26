@@ -16,13 +16,21 @@ const NAV_PRODUCTO = [
   { label: 'Inicio', href: '/' },
   { label: 'Planes y precios', href: '/planes' },
   { label: 'Iniciar sesión', href: '/login' },
-  { label: 'Probar por $20.000', href: '/register' },
+  { label: 'Activar prueba ahora', href: '/trial-checkout' },
+  { label: 'Crear cuenta de marca', href: '/register' },
 ];
 
 const NAV_EMPRESA = [
   { label: 'Sobre nosotros', href: '/sobre-nosotros' },
+  { label: 'Contacto', href: '/contacto' },
+  { label: 'Casos de éxito', href: '/casos-de-exito' },
+  { label: 'Centro de ayuda', href: '/ayuda' },
+  { label: 'Estado del servicio', href: '/estado' },
   { label: 'Términos y Condiciones', href: '/terminos' },
   { label: 'Política de Privacidad', href: '/politicas-privacidad' },
+  { label: 'Política de uso', href: '/politica-de-uso' },
+  { label: 'Política de cookies', href: '/cookies' },
+  { label: 'Aviso legal', href: '/aviso-legal' },
 ];
 
 // Icono personalizado para TikTok (Lucide no lo tiene por defecto en versiones antiguas o es diferente)
@@ -88,6 +96,17 @@ export function LandingFooter() {
           <p className="text-[13px] text-[#777] leading-relaxed mb-6 max-w-[280px] mx-auto sm:mx-0">
             Probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica.
           </p>
+          <div className="flex flex-wrap gap-2 mb-6 justify-center sm:justify-start">
+            <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#111] border border-[#1e1e1e] text-[#8a8a8a]">
+              Activación en minutos
+            </span>
+            <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#111] border border-[#1e1e1e] text-[#8a8a8a]">
+              Soporte por WhatsApp
+            </span>
+            <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#111] border border-[#1e1e1e] text-[#8a8a8a]">
+              Pago seguro
+            </span>
+          </div>
 
           {/* RRSS */}
           <div className="flex items-center justify-center sm:justify-start gap-3 mb-8">
