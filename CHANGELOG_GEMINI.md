@@ -1,5 +1,60 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 26 de Marzo, 2026 — Fix de registro post-pago cuando el slug ya existe
+
+**Problema reportado:**
+- En el flujo de registro post-pago (`/register?ref=...`), el nombre/slug venían prellenados y bloqueados.
+- Si el slug ya existía en la base de datos, el usuario quedaba atascado sin opción de corrección.
+
+**Solución aplicada:**
+- `frontend/src/components/auth/RegisterForm.tsx`
+  - Se habilitó edición del **nombre de marca** en flujo pagado (ya no queda bloqueado por prefill).
+  - Se habilitó edición del **slug** en flujo pagado y se normaliza automáticamente al escribir.
+  - Se añadió botón **“Sugerir otro”** para generar un slug alternativo con sufijo numérico.
+  - Si backend responde `El slug ya está en uso`, ahora aparece CTA **“Generar slug alternativo”** dentro del error.
+  - Se mejoró microcopy para orientar al usuario en conflictos de slug.
+
+**Resultado:**
+- El usuario puede completar el registro incluso cuando intenta usar un nombre/slug previamente ocupado.
+
+---
+
+## 26 de Marzo, 2026 — Rediseño estético premium de páginas de confianza + ejemplos reales
+
+**Skills aplicadas:**
+- `.agent/skills/lookitry-brand-guardian/SKILL.md`
+- `.agent/skills/ui-ux-pro-max/SKILL.md`
+- Se ejecutó diseño base con `--design-system` para aterrizar lineamientos visuales.
+
+**Mejoras de UI/UX (premium dark, mayor densidad de valor):**
+- Rediseño visual y de contenido en:
+  - `frontend/src/app/contacto/page.tsx`
+  - `frontend/src/app/ayuda/page.tsx`
+  - `frontend/src/app/estado/page.tsx`
+  - `frontend/src/app/politica-de-uso/page.tsx`
+  - `frontend/src/app/cookies/page.tsx`
+  - `frontend/src/app/aviso-legal/page.tsx`
+
+**Cambio solicitado por naming:**
+- Se creó página de enfoque práctico:
+  - `frontend/src/app/aplicaciones/page.tsx`
+- Footer actualizado para usar:
+  - `Aplicaciones reales` → `/aplicaciones`
+
+**Verificación de base de datos (generaciones exitosas):**
+- Se consultó `generations` (status `SUCCESS`) con relación de `products` usando credenciales locales del backend.
+- Se identificaron ejemplos reales para categorías:
+  - Accesorios/cascos
+  - Calzado
+  - Vestidos
+  - Franelas/camisas
+- Esos casos se incorporaron en `/aplicaciones` con imágenes reales de MinIO.
+
+**SEO / navegación:**
+- `frontend/src/app/sitemap.ts` actualizado para incluir `/aplicaciones` además de páginas públicas de confianza ya creadas.
+
+---
+
 ## 26 de Marzo, 2026 — Footer de confianza + páginas públicas legales/comerciales
 
 **Objetivo:**
