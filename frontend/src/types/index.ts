@@ -34,6 +34,8 @@ export interface Brand {
   // Trial fields (Requirement 11 - Opción C)
   trialEndDate?: string | null;
   trialGenerationsLimit?: number;
+  trialPaymentStatus?: 'pending_payment' | 'completed' | 'failed' | null;
+  trialPaymentMethod?: string | null;
   // Email verification
   emailVerified?: boolean;
   customDomain?: string | null;

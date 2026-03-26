@@ -100,4 +100,65 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
   }
 }));
 
+/**
+ * POST /api/trial/initiate-guest
+ * Genera URL de pago para trial sin tener cuenta aún.
+ * El usuario se registrará DESPUÉS del pago exitoso.
+ */
+router.post('/initiate-guest', asyncHandler(async (req, res) => {
+  const { email, method = 'wompi' } = req.body;
+
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'Email válido es requerido' });
+  }
+
+  // 1. Obtener campaña activa
+  const now = new Date().toISOString();
+  const { data: campaign } = await supabaseAdmin
+    .from('trial_campaigns')
+    .select('*')
+    .eq('active', true)
+    .or(`ends_at.is.null,ends_at.gt.${now}`)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  const price = campaign?.price_cop ?? 20000;
+  const trialDays = campaign?.trial_days ?? 7;
+
+  // 2. Generar referencia de invitado
+  const guestId = `visitor_${Date.now()}`;
+  const reference = `GUEST-TRIAL-${guestId}`;
+
+  // 3. Crear registro pendiente
+  const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({
+    email,
+    reference,
+    plan: 'TRIAL',
+    months: 0,
+    status: 'pending',
+  });
+
+  if (insertError) {
+    console.error('[Trial] Error insertando registro invitado:', insertError);
+    return res.status(500).json({ error: 'Error al iniciar el pago' });
+  }
+
+  const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
+  // Redirigir al registro con la referencia después del pago
+  const successUrl = `${frontendUrl}/pago-exitoso?ref=${reference}&isGuestTrial=true`;
+
+  if (method === 'paypal') {
+    const { paypalService } = require('../services/paypal.service');
+    const { TrmService } = require('../utils/trm');
+    const trm = await TrmService.getCurrentTrm();
+    const checkoutUrl = await paypalService.createOrder(price, trm, reference, successUrl);
+    return res.json({ checkoutUrl, reference });
+  } else {
+    // Wompi
+    const checkoutUrl = await wompiService.getCheckoutUrl(guestId, price, successUrl, false, 0, 'TRIAL', reference);
+    return res.json({ checkoutUrl, reference });
+  }
+}));
+
 export default router;

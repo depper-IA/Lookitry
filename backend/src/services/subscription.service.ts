@@ -176,10 +176,36 @@ export class SubscriptionService {
     };
 
     // Actualizar plan si se especificó uno válido
-    if (plan && ['BASIC', 'PRO'].includes(plan.toUpperCase())) {
-      updateData.plan = plan.toUpperCase();
-      // Limpiar trial al activar plan pagado
-      updateData.trial_end_date = null;
+    if (plan && ['BASIC', 'PRO', 'TRIAL'].includes(plan.toUpperCase())) {
+      const planUpper = plan.toUpperCase();
+      updateData.plan = planUpper === 'TRIAL' ? 'BASIC' : planUpper; // El plan base es BASIC
+      
+      if (planUpper === 'TRIAL') {
+        // Buscar duración del trial en la campaña actual
+        const now = new Date().toISOString();
+        const { data: campaign } = await supabaseAdmin
+          .from('trial_campaigns')
+          .select('trial_days')
+          .eq('active', true)
+          .or(`ends_at.is.null,ends_at.gt.${now}`)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        const trialDays = campaign?.trial_days ?? 7;
+        const trialEndDate = new Date();
+        trialEndDate.setDate(trialEndDate.getDate() + trialDays);
+        
+        updateData.trial_end_date = trialEndDate.toISOString();
+        updateData.trial_payment_status = 'active';
+        // En trial, la suscripción pagada no empieza aún
+        updateData.subscription_status = 'active'; // Permitir acceso
+        updateData.subscription_end_date = trialEndDate.toISOString();
+      } else {
+        // Limpiar trial al activar plan pagado
+        updateData.trial_end_date = null;
+        updateData.trial_payment_status = null;
+      }
     }
 
     // Si la marca tenía mini-landing suspendida hace menos de 90 días, restaurarla
