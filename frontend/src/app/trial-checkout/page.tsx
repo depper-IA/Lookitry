@@ -34,24 +34,25 @@ const IconInfo = () => (
   </svg>
 );
 
+const IconUser = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  </svg>
+);
+
 export default function TrialCheckoutPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [campaign, setCampaign] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
-  const [hasSession, setHasSession] = useState(false);
   const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
   const [trm, setTrm] = useState(3900);
 
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestName, setGuestName] = useState('');
+
   useEffect(() => {
-    // Verificar sesión
-    const token = authService.getToken();
-    if (!token) {
-      router.push('/login?redirect=/trial-checkout');
-      return;
-    }
-    setHasSession(true);
 
     // Cargar info de campaña y TRM
     Promise.all([
@@ -78,7 +79,7 @@ export default function TrialCheckoutPage() {
     };
     window.addEventListener('currencyChange', handleCurrencyChange);
     return () => window.removeEventListener('currencyChange', handleCurrencyChange);
-  }, [router]);
+  }, []); // Sin router dependency para evitar redirecciones
 
   const priceCOP = campaign?.priceCOP ?? 20000;
   const trialDays = campaign?.trialDays ?? 7;
@@ -104,17 +105,23 @@ export default function TrialCheckoutPage() {
     setError('');
 
     try {
-      // Para PayPal enviamos la TRM actual
-      const body: any = { method: paymentMethod };
-      if (paymentMethod === 'paypal') body.trm = trm;
-
-      const res = await api.post<any>('/trial/initiate', body);
-      
-      if (res.data.skipPayment) {
-        router.push('/dashboard');
-        return;
+      if (!guestEmail || !guestEmail.includes('@')) {
+        throw new Error('Por favor ingresa un correo electrónico válido');
+      }
+      if (!guestName || guestName.trim().length === 0) {
+        throw new Error('Por favor ingresa el nombre de tu marca');
       }
 
+      const body: any = { 
+        method: paymentMethod,
+        email: guestEmail,
+        name: guestName
+      };
+      if (paymentMethod === 'paypal') body.trm = trm;
+
+      // MARKETING: Siempre usamos el endpoint de invitado para este trial
+      const res = await api.post<any>('/trial/initiate-guest', body);
+      
       if (res.data.checkoutUrl) {
         window.location.href = res.data.checkoutUrl;
       } else {
@@ -135,7 +142,6 @@ export default function TrialCheckoutPage() {
     else setPaymentMethod('wompi');
   };
 
-  if (!hasSession) return null;
 
   return (
     <main className="min-h-screen bg-[#030303] text-white selection:bg-[#FF5C3A]/30">
@@ -237,6 +243,36 @@ export default function TrialCheckoutPage() {
 
           {/* Columna Pago */}
           <div className="bg-white/[0.02] border border-white/10 rounded-[2.5rem] p-8 md:p-10 sticky top-28">
+            <h2 className="font-syne font-bold text-xl mb-6 flex items-center gap-2 text-white">
+              <span className="w-1.5 h-6 bg-[#FF5C3A] rounded-full inline-block" />
+              Tus Datos de Contacto
+            </h2>
+
+            <div className="space-y-4 mb-8">
+              <div>
+                <label className="block text-[12px] font-bold text-white/50 uppercase tracking-tight mb-2">Tu Email (donde recibirás el acceso)</label>
+                <input
+                  type="email"
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  placeholder="ejemplo@correo.com"
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-3.5 text-[14px] text-white focus:outline-none focus:border-[#FF5C3A] transition-colors"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-[12px] font-bold text-white/50 uppercase tracking-tight mb-2">Nombre de tu Marca</label>
+                <input
+                  type="text"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  placeholder="Mi Marca Increíble"
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-3.5 text-[14px] text-white focus:outline-none focus:border-[#FF5C3A] transition-colors"
+                  required
+                />
+              </div>
+            </div>
+
             <h2 className="font-syne font-bold text-xl mb-6 flex items-center gap-2 text-white">
               <span className="w-1.5 h-6 bg-[#FF5C3A] rounded-full inline-block" />
               Método de Pago

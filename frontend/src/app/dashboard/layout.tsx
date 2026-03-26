@@ -85,19 +85,21 @@ export default function DashboardLayoutWrapper({
   }
 
   // Mostrar modal de trial vencido si no tiene suscripción activa y el trial expiró
-  const trialExpired =
+  const trialExpired = !!(
     brandData?.trialEndDate &&
     new Date(brandData.trialEndDate) <= new Date() &&
     brandData?.subscriptionStatus !== 'active' &&
-    brandData?.subscriptionStatus !== 'expiring_soon';
+    brandData?.subscriptionStatus !== 'expiring_soon'
+  );
 
-  if (trialExpired) {
+  if (trialExpired || brandData?.trialPaymentStatus === 'pending_payment') {
     return (
       <SuspensionModal
         brandName={brandData!.name}
         brandEmail={brandData!.email}
         plan={brandData!.plan}
-        isTrialExpired
+        isTrialExpired={trialExpired && brandData?.trialPaymentStatus !== 'pending_payment'}
+        isTrialPending={brandData?.trialPaymentStatus === 'pending_payment'}
       />
     );
   }

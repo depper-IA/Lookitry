@@ -80,14 +80,21 @@ export class WompiController {
           .select('id, email, name, email_verification_token, email_verified')
           .single();
 
-        if (updatedBrand && !updatedBrand.email_verified && updatedBrand.email_verification_token) {
-          const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-          const verifyUrl = `${frontendUrl}/auth/verify?token=${updatedBrand.email_verification_token}`;
-          emailService.sendEmail({
-            to: updatedBrand.email,
-            subject: 'Confirma tu correo — Lookitry',
-            html: verifyEmailTemplate({ name: updatedBrand.name, email: updatedBrand.email }, verifyUrl),
-          }).catch(err => console.error('[Wompi] Error email trial:', err));
+        if (updatedBrand) {
+          // 1. Siempre enviar confirmación/bienvenida de trial
+          notificationService.sendWelcomeEmail(updatedBrand as any, true)
+            .catch(err => console.error('[Wompi] Error email bienvenida trial:', err));
+
+          // 2. Si no está verificado, enviar también el link de verificación
+          if (!updatedBrand.email_verified && updatedBrand.email_verification_token) {
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+            const verifyUrl = `${frontendUrl}/auth/verify?token=${updatedBrand.email_verification_token}`;
+            emailService.sendEmail({
+              to: updatedBrand.email,
+              subject: 'Confirma tu correo — Lookitry',
+              html: verifyEmailTemplate({ name: updatedBrand.name, email: updatedBrand.email }, verifyUrl),
+            }).catch(err => console.error('[Wompi] Error email verificacion trial:', err));
+          }
         }
       } else {
         const effectivePlan = (plan === 'LANDING' ? 'BASIC' : plan).toUpperCase();

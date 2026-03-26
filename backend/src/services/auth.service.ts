@@ -212,7 +212,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       plan: finalBrand.plan,
       api_key: finalBrand.api_key,
     },
-    isTrial: false,
+    isTrial: (pending.plan || '').toUpperCase() === 'TRIAL',
   };
   }  async register(data: RegisterBrandDto & { ip?: string; fingerprint?: string }): Promise<AuthResponse> {
     // Validar que el email no exista — supabaseAdmin para bypassear RLS

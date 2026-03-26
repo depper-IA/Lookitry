@@ -46,13 +46,8 @@ export function useAuth() {
 
       // Si la marca tiene trial pendiente de verificación de tarjeta → redirigir
       const brandData = response.brand as any;
-      if (
-        brandData.trialEndDate &&
-        brandData.trialPaymentStatus === 'pending_payment'
-      ) {
-        router.push('/trial-payment');
-        return response;
-      }
+      // Ya no redirigimos forzosamente desde aquí para evitar bucles.
+      // El DashboardLayout se encargará de mostrar el SuspensionModal si el pago está pendiente.
 
       router.push('/dashboard');
       return response;

@@ -154,8 +154,16 @@ export class WompiService {
       if (!reference) return null;
       const parts = reference.split('-');
       
-      // Si no empieza con TRYON o WOMPI, no es nuestra
-      if (parts[0] !== 'TRYON' && parts[0] !== 'WOMPI') return null;
+      // Soporte para referencias de TRIAL
+      if (parts[0] === 'TRIAL' || parts[0] === 'GUEST') {
+        // En TRIAL-{brandId}-timestamp o GUEST-TRIAL-{brandId}-timestamp
+        // El brandId es la parte central.
+        if (parts[0] === 'GUEST' && parts[1] === 'TRIAL') {
+           // GUEST-TRIAL-visitor_XXX-... -> El visitor_XXX es partes[2]
+           return parts[2];
+        }
+        return parts[1];
+      }
 
       // Un UUID tiene 5 partes unidas por guiones (ej: 550e8400-e29b-41d4-a716-446655440000)
       // Buscamos dónde empieza la parte de metadatos (M seguido de números)
