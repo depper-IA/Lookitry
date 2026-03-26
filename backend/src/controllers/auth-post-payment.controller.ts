@@ -1,4 +1,4 @@
-﻿import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
 import { EmailService } from '../services/email.service';
 import { SubscriptionService } from '../services/subscription.service';
@@ -259,7 +259,7 @@ export async function getPendingRegistration(req: Request, res: Response) {
 
     const { data: pending, error } = await supabaseAdmin
       .from('pending_registrations')
-      .select('email, plan, months, includes_landing, status')
+      .select('email, brand_name, plan, months, includes_landing, status')
       .eq('reference', ref)
       .maybeSingle();
 

@@ -76,12 +76,28 @@ export default function RegisterForm() {
       setIsPaidFlow(true);
       setLoadingStep('Verificando tu pago...');
       
-      // Cargar email desde el registro pendiente
+      // Cargar datos desde el registro pendiente
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/pending-registration/${ref}`)
         .then(r => r.json())
         .then(data => {
           if (data.email) {
-            setForm(prev => ({ ...prev, email: data.email }));
+            const brandName = data.brand_name || '';
+            const slug = brandName
+              ? brandName
+                  .toLowerCase()
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .replace(/[^a-z0-9\s-]/g, '')
+                  .trim()
+                  .replace(/\s+/g, '-')
+              : '';
+              
+            setForm(prev => ({ 
+              ...prev, 
+              email: data.email,
+              name: brandName,
+              slug: slug || prev.slug
+            }));
           }
           setLoadingStep('');
         })
@@ -259,10 +275,12 @@ export default function RegisterForm() {
 
         <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8">
           <h1 className="font-syne font-bold text-[22px] text-white mb-1">
-            Crear cuenta
+            {isPaidFlow ? '¡Pago confirmado!' : 'Crear cuenta'}
           </h1>
           <p className="text-[13px] text-[#FF5C3A] mb-6">
-            Prueba por $20.000 COP — {trialDays} días
+            {isPaidFlow 
+              ? 'Completa estos últimos datos para entrar a tu dashboard' 
+              : `Prueba por $20.000 COP — ${trialDays} días`}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -276,9 +294,13 @@ export default function RegisterForm() {
                 value={form.name}
                 onChange={handleChange}
                 required
+                readOnly={isPaidFlow}
                 placeholder="Mi Marca"
-                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+                className={`w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors ${isPaidFlow ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
+              {isPaidFlow && (
+                <p className="text-[11px] text-[#555] mt-1 italic">Dato confirmado desde tu pago</p>
+              )}
             </div>
 
             {/* Nombre Completo */}
@@ -301,7 +323,7 @@ export default function RegisterForm() {
               <label className="block text-[13px] font-medium text-[#888] mb-1.5">
                 Slug (URL del probador)
               </label>
-              <div className="flex items-center bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg overflow-hidden focus-within:border-[#FF5C3A] transition-colors">
+              <div className={`flex items-center bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg overflow-hidden transition-colors ${isPaidFlow ? 'border-[#333]' : 'focus-within:border-[#FF5C3A]'}`}>
                 <span className="px-3 py-2.5 text-[#333] text-[13px] border-r border-[#2a2a2a] whitespace-nowrap">
                   /sitio/
                 </span>
@@ -310,8 +332,9 @@ export default function RegisterForm() {
                   value={form.slug}
                   onChange={handleChange}
                   required
+                  readOnly={isPaidFlow}
                   placeholder="mi-marca"
-                  className="flex-1 px-3 py-2.5 text-[13px] text-white bg-transparent focus:outline-none placeholder-[#333]"
+                  className={`flex-1 px-3 py-2.5 text-[13px] text-white bg-transparent focus:outline-none placeholder-[#333] ${isPaidFlow ? 'opacity-60 cursor-not-allowed' : ''}`}
                 />
               </div>
             </div>
@@ -325,8 +348,9 @@ export default function RegisterForm() {
                 value={form.email}
                 onChange={handleChange}
                 required
+                readOnly={isPaidFlow}
                 placeholder="hola@mimarca.com"
-                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+                className={`w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors ${isPaidFlow ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             </div>
 

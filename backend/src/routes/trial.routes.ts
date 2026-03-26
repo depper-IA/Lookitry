@@ -106,7 +106,7 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
  * El usuario se registrará DESPUÉS del pago exitoso.
  */
 router.post('/initiate-guest', asyncHandler(async (req, res) => {
-  const { email, method = 'wompi' } = req.body;
+  const { email, brandName, method = 'wompi' } = req.body;
 
   if (!email || !email.includes('@')) {
     return res.status(400).json({ error: 'Email válido es requerido' });
@@ -133,6 +133,7 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
   // 3. Crear registro pendiente
   const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({
     email,
+    brand_name: brandName,
     reference,
     plan: 'TRIAL',
     months: 0,
