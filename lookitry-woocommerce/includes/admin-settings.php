@@ -274,7 +274,8 @@ function lookitry_settings_page() {
             $.ajax({
                 url: 'https://api.lookitry.com/api/pruebalo/validate-api-key',
                 method: 'GET',
-                data: { key: key, domain: window.location.origin },
+                data: { domain: window.location.origin },
+                headers: { 'x-api-key': key },
                 success: function(res) {
                     if (res.valid) {
                         $('#status-unconnected').hide();
@@ -323,7 +324,7 @@ function lookitry_settings_page() {
             $.ajax({
                 url: 'https://api.lookitry.com/api/pruebalo/synced-products',
                 method: 'GET',
-                data: { key: key },
+                headers: { 'x-api-key': key },
                 success: function(res) {
                     if (res.success) {
                         syncedIds = res.syncedIds || [];
