@@ -12,6 +12,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'api.lookitry.com' },
       { protocol: 'https', hostname: 'minio.wilkiedevs.com' },
       { protocol: 'https', hostname: 'lookitry.com' },
+      { protocol: 'https', hostname: 'wilkiedevs.com' },
     ],
   },
   async headers() {
