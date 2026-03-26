@@ -87,7 +87,7 @@ Si en el futuro se reactiva algun esquema freemium, debe abrirse como experiment
 - [x] Inyeccion de boton try-on en `woocommerce_after_add_to_cart_button`.
 - [x] Modal + iframe con init seguro (`/api/embed/wordpress/init`).
 - [x] Control de activacion/desactivacion por producto habilitado desde panel Admin de Lookitry.
-- [ ] Telemetria tecnica del plugin (errores de red, retries, tiempos de respuesta).
+- [x] Telemetria tecnica del plugin (errores de red, retries, tiempos de respuesta).
 
 ### Backend (`backend`)
 
@@ -107,8 +107,8 @@ Si en el futuro se reactiva algun esquema freemium, debe abrirse como experiment
 - [x] Flujo guiado de instalacion WooCommerce documentado en UI.
 - [x] Vista de estado conectada a `/health`.
 - [x] Nueva opcion en panel admin para control WooCommerce centralizado por marca/producto.
-- [ ] Eliminar datos mock/estaticos en status (carga %, incidentes hardcodeados).
-- [ ] Mostrar metricas reales por tienda/plugin (syncs, errores, latencia, productos activos).
+- [x] Eliminar datos mock/estaticos en status (carga %, incidentes hardcodeados).
+- [x] Mostrar metricas reales por tienda/plugin (syncs, errores, latencia, productos activos).
 
 ---
 
@@ -240,9 +240,9 @@ El Plugin MVP se considera listo cuando:
 
 ## Prioridad P1 (operacion piloto robusta)
 
-- [ ] **Status real por tienda:** reemplazar bloques mock en dashboard de estado por datos reales.
-- [ ] **Observabilidad plugin:** logging minimo de errores de sync/init y tiempos de respuesta por tienda.
-- [ ] **QA E2E Woo:** pruebas guiadas (instalar plugin -> validar key -> sync -> abrir modal -> generar).
+- [x] **Status real por tienda:** reemplazar bloques mock en dashboard de estado por datos reales.
+- [x] **Observabilidad plugin:** logging minimo de errores de sync/init y tiempos de respuesta por tienda.
+- [x] **QA E2E Woo:** pruebas guiadas (instalar plugin -> validar key -> sync -> abrir modal -> generar).
 
 ## Prioridad P2 (post-piloto, crecimiento)
 

@@ -15,6 +15,9 @@ router.use(authMiddleware);
 // No requiere verificación de suscripción para que marcas suspendidas puedan ver su estado
 router.get('/me', (req, res) => brandsController.getMe(req, res));
 
+// GET /api/brands/me/woocommerce-metrics - Metricas reales del plugin para la marca autenticada
+router.get('/me/woocommerce-metrics', (req, res) => brandsController.getWooCommerceMetrics(req, res));
+
 // PATCH /api/brands/me - Actualizar configuración de la marca
 // Permitimos actualización para TRIAL para que puedan configurar su landing
 router.patch('/me', (req, res) => brandsController.updateMe(req, res));

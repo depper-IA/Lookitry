@@ -14,7 +14,8 @@ export type AdminNotificationType =
   | 'multi_month_purchase'
   | 'subscription_expiring'
   | 'service_down'
-  | 'service_recovered';
+  | 'service_recovered'
+  | 'plugin_error_spike';
 
 export interface CreateAdminNotificationDto {
   type: AdminNotificationType;
