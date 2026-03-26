@@ -51,6 +51,11 @@ export interface Brand {
   nit?: string | null;
   website?: string | null;
   apiKey?: string | null;
+  socialLinks?: {
+    website?: string;
+    allowed_origins?: string[];
+    [key: string]: unknown;
+  } | null;
 }
 
 export interface Product {
@@ -145,7 +150,7 @@ export interface TryOnConfigResponse {
     brandDescription?: string | null;
     whatsappContact?: string | null;
     coverImageUrl?: string | null;
-    socialLinks?: Record<string, string>;
+      socialLinks?: Record<string, unknown>;
     hasLandingPage?: boolean;
     customDomain?: string | null;
   };

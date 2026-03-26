@@ -26,7 +26,7 @@ export interface UpdateBrandDto {
   brand_description?: string;
   whatsapp_contact?: string;
   cover_image_url?: string;
-  social_links?: Record<string, string>;
+  social_links?: Record<string, any>;
   has_landing_page?: boolean;
   city_display?: string;
   national_shipping?: boolean;

@@ -76,6 +76,7 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState(brand?.phone || '');
   const [address, setAddress] = useState(brand?.address || '');
   const [website, setWebsite] = useState((brand as any)?.social_links?.website || '');
+  const [allowedOriginsText, setAllowedOriginsText] = useState('');
 
   // Location states
   const [countryCode, setCountryCode] = useState(brand?.country === 'Colombia' ? 'CO' : '');
@@ -113,6 +114,11 @@ export default function ProfilePage() {
       setPhone(brand.phone || '');
       setAddress(brand.address || '');
       setWebsite((brand as any).social_links?.website || '');
+      setAllowedOriginsText(
+        Array.isArray((brand as any).social_links?.allowed_origins)
+          ? (brand as any).social_links.allowed_origins.join('\n')
+          : ''
+      );
       setCity(brand.city || '');
       setPostalCode(brand.postalCode || '');
       setNit(brand.nit || '');
@@ -156,7 +162,11 @@ export default function ProfilePage() {
         postal_code: postalCode,
         nit,
         billing_email: billingEmail,
-        website
+        website,
+        allowed_origins: allowedOriginsText
+          .split('\n')
+          .map((value) => value.trim())
+          .filter(Boolean),
       });
       setSuccessMsg('Perfil actualizado con éxito');
       refreshBrand();
@@ -384,6 +394,23 @@ export default function ProfilePage() {
                         />
                       </div>
                     </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">
+                      Dominios autorizados adicionales
+                    </label>
+                    <textarea
+                      value={allowedOriginsText}
+                      onChange={e => setAllowedOriginsText(e.target.value)}
+                      rows={4}
+                      className="w-full px-5 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)] resize-y"
+                      placeholder={'https://landing.tumarca.com\nhttps://shop.tumarca.com\nhttps://micrositio.partner.com'}
+                    />
+                    <p className="text-[11px] font-medium text-[var(--text-muted)] opacity-70 leading-relaxed px-2">
+                      Un dominio por línea. Úsalo para permitir embeds manuales en varios sitios. Instagram y TikTok no ejecutan tu widget dentro de la app:
+                      ahí la estrategia correcta es enviar tráfico a tu mini-landing o dominio personalizado.
+                    </p>
                   </div>
 
                   <div className="h-px bg-[var(--border-color)] w-full opacity-30" />

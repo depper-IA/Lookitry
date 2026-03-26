@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-function normalizeHost(raw?: string | null): string | null {
+function toUrl(raw?: string | null): URL | null {
   if (!raw) return null;
 
   let value = String(raw).trim().toLowerCase();
@@ -11,15 +11,62 @@ function normalizeHost(raw?: string | null): string | null {
   }
 
   try {
-    const url = new URL(value);
-    return url.hostname.replace(/^www\./, '');
+    return new URL(value);
   } catch {
     return null;
   }
 }
 
+export function normalizeHost(raw?: string | null): string | null {
+  const url = toUrl(raw);
+  return url ? url.hostname.replace(/^www\./, '') : null;
+}
+
+export function normalizeOrigin(raw?: string | null): string | null {
+  const url = toUrl(raw);
+  if (!url) return null;
+  return `${url.protocol}//${url.hostname}`;
+}
+
+export function sanitizeDomainList(values: unknown): string[] {
+  const source = Array.isArray(values)
+    ? values
+    : typeof values === 'string'
+      ? values.split(',')
+      : [];
+
+  const deduped = new Set<string>();
+  source.forEach((value) => {
+    const normalized = normalizeOrigin(String(value || ''));
+    if (normalized) deduped.add(normalized);
+  });
+
+  return Array.from(deduped);
+}
+
+export function getBrandAllowedOrigins(brand: any): string[] {
+  const socialLinks = brand?.social_links || {};
+  const configured = sanitizeDomainList(socialLinks.allowed_origins);
+  const websiteOrigin = normalizeOrigin(socialLinks.website || brand?.website || null);
+  const customDomainOrigin = normalizeOrigin(brand?.custom_domain || null);
+
+  const origins = new Set<string>();
+  configured.forEach((origin) => origins.add(origin));
+  if (websiteOrigin) origins.add(websiteOrigin);
+  if (customDomainOrigin) origins.add(customDomainOrigin);
+
+  return Array.from(origins);
+}
+
+export function getBrandAllowedHosts(brand: any): string[] {
+  return getBrandAllowedOrigins(brand)
+    .map((origin) => normalizeHost(origin))
+    .filter((host): host is string => Boolean(host));
+}
+
 export function getExpectedStoreHost(brand: any): string | null {
-  return normalizeHost(brand?.social_links?.website || brand?.website || null);
+  const [firstHost] = getBrandAllowedHosts(brand);
+  return firstHost || null;
 }
 
 export function getIncomingStoreHost(req: Request): string | null {
@@ -31,10 +78,11 @@ export function getIncomingStoreHost(req: Request): string | null {
 }
 
 export function isAllowedStoreHost(brand: any, req: Request): boolean {
-  const expectedHost = getExpectedStoreHost(brand);
+  const allowedHosts = getBrandAllowedHosts(brand);
   const incomingHost = getIncomingStoreHost(req);
 
-  if (!expectedHost || !incomingHost) return true;
+  if (allowedHosts.length === 0) return true;
+  if (!incomingHost) return false;
 
-  return expectedHost === incomingHost;
+  return allowedHosts.includes(incomingHost);
 }
