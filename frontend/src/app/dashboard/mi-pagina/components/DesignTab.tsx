@@ -87,9 +87,9 @@ export function DesignTab(props: DesignTabProps) {
     schedule, setSchedule,
   } = props;
 
-  const sectionStyle = "bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] p-6 md:p-8 space-y-6 shadow-3xl hover:border-[#FF5C3A]/30 transition-all duration-700 relative overflow-hidden group";
-  const labelStyle = "text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] mb-4 block italic leading-none";
-  const inputStyle = "w-full px-6 py-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] text-sm font-bold text-[var(--text-primary)] focus:border-[#FF5C3A] hover:bg-[var(--bg-hover)] focus:ring-4 focus:ring-[#FF5C3A]/5 outline-none transition-all placeholder:text-[var(--text-muted)] placeholder:font-medium shadow-inner";
+  const sectionStyle = "bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-6 md:p-8 space-y-6 shadow-xl shadow-black/5 hover:border-[#FF5C3A]/30 transition-all duration-700 relative overflow-hidden group";
+  const labelStyle = "text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] mb-4 block leading-none opacity-80";
+  const inputStyle = "w-full px-6 py-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] text-sm font-semibold text-[var(--text-primary)] focus:border-[#FF5C3A] hover:bg-[var(--bg-hover)] focus:ring-4 focus:ring-[#FF5C3A]/5 outline-none transition-all placeholder:text-[var(--text-muted)] shadow-sm";
 
   return (
     <div className="space-y-12 pb-10">

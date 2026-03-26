@@ -1,0 +1,22 @@
+name: Sam Wilkie - Dev Setup
+version: 0.0.1
+schema: v1
+
+models:
+  # 1. Qwen2.5‑Coder‑32B (mejor chino para código / refactor)
+  - name: Qwen2.5 Coder
+    provider: openrouter
+    model: qwen/qwen2.5-coder-32b-instruct
+    apiKey: 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
+
+  # 2. DeepSeek‑V3.2 (muy fuerte en razonamiento y código general)
+  - name: DeepSeek V3.2
+    provider: openrouter
+    model: deepseek/deepseek-v3.2
+    apiKey: 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
+
+  # 3. MiniMax M2.5 (muy barata, buena para chat / SaaS / documentación)
+  - name: MiniMax M2.5
+    provider: openrouter
+    model: minimax/m2.5
+    apiKey: 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

@@ -51,7 +51,7 @@ const Tooltip = ({ text }: { text: string }) => {
             exit={{ opacity: 0, y: 10, x: '-50%', scale: 0.95 }}
             className="absolute bottom-full left-1/2 mb-3 w-64 p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-2xl z-50 pointer-events-none border-b-4 border-b-[#FF5C3A]"
           >
-            <p className="text-[10px] leading-relaxed text-[var(--text-primary)] font-black uppercase tracking-wider italic">{text}</p>
+            <p className="text-[10px] leading-relaxed text-[var(--text-primary)] font-bold uppercase tracking-wider">{text}</p>
             <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#FF5C3A]"></div>
           </motion.div>
         )}
@@ -153,6 +153,82 @@ function LayoutPreview({ layout, primary, secondary }: { layout: string; primary
   );
 }
 
+// Main dynamic preview component based on selected template
+function LiveWidgetPreview({ template, primary, secondary, logo, welcome, buttonText, brandName }: { 
+  template: WidgetTemplate; 
+  primary: string; 
+  secondary: string;
+  logo?: string;
+  welcome?: string;
+  buttonText: string;
+  brandName: string;
+}) {
+  const dot = <div className="w-2 h-2 rounded-full" style={{ background: primary }} />;
+  
+  return (
+    <div className="w-full h-full flex flex-col relative overflow-hidden" style={{ background: secondary }}>
+      {/* Bare / Minimal Canvas */}
+      {(template === 'bare' || !template) && (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6">
+          <div className="space-y-3 text-center">
+            {logo ? <img src={logo} className="h-8 mx-auto object-contain" alt="Logo" /> : <div className="font-bold text-lg" style={{ color: primary }}>{brandName}</div>}
+            <p className="text-[10px] font-medium opacity-60 uppercase tracking-widest" style={{ color: primary }}>{welcome || 'Pruébalo ahora'}</p>
+          </div>
+          <div className="w-24 h-24 rounded-full border-2 border-dashed flex items-center justify-center" style={{ borderColor: `${primary}40` }}>
+            <Sparkles size={32} style={{ color: primary, opacity: 0.3 }} />
+          </div>
+          <button className="w-full max-w-[180px] py-3 rounded-xl text-white text-[10px] font-bold uppercase tracking-widest shadow-lg" style={{ background: primary }}>{buttonText}</button>
+        </div>
+      )}
+
+      {/* Minimal / Top Stream */}
+      {template === 'minimal' && (
+        <div className="flex-1 flex flex-col">
+          <div className="h-12 w-full flex items-center justify-between px-4 border-b border-black/5" style={{ background: primary }}>
+            {logo ? <img src={logo} className="h-5 brightness-0 invert object-contain" alt="Logo" /> : <div className="text-white font-bold text-xs">{brandName}</div>}
+            <div className="w-6 h-6 rounded-full bg-white/20" />
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center p-6 gap-4">
+            <div className="w-32 h-40 bg-white/50 rounded-2xl border border-black/5 shadow-sm flex items-center justify-center">{dot}</div>
+            <button className="w-full py-3 rounded-xl text-white text-[10px] font-bold uppercase" style={{ background: primary }}>{buttonText}</button>
+          </div>
+        </div>
+      )}
+
+      {/* Modern / Side Panel */}
+      {template === 'modern' && (
+        <div className="flex-1 flex">
+          <div className="w-16 h-full flex flex-col items-center py-6 gap-4 border-r border-black/5" style={{ background: primary }}>
+            <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center"><Layout size={14} className="text-white" /></div>
+            <div className="flex-1 flex flex-col gap-2">
+              {[1,2,3].map(i => <div key={i} className="w-8 h-8 rounded-lg bg-white/10" />)}
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6">
+            {logo && <img src={logo} className="h-6 object-contain" alt="Logo" />}
+            <div className="w-28 h-28 rounded-full border-4 border-white shadow-2xl flex items-center justify-center bg-white">{dot}</div>
+            <button className="w-full py-3 rounded-xl text-white text-[10px] font-bold uppercase" style={{ background: primary }}>{buttonText}</button>
+          </div>
+        </div>
+      )}
+
+      {/* Bold / Hero Impact */}
+      {template === 'bold' && (
+        <div className="flex-1 flex flex-col items-center justify-center p-8 gap-8">
+          <div className="absolute top-6 left-6">
+            {logo ? <img src={logo} className="h-6 object-contain" alt="Logo" /> : <div className="font-bold text-xs" style={{ color: primary }}>{brandName}</div>}
+          </div>
+          <div className="w-full aspect-square bg-white rounded-[2.5rem] shadow-2xl flex items-center justify-center border-8 border-black/5 relative overflow-hidden">
+             <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle, ${primary} 0%, transparent 70%)` }} />
+             <Sparkles size={48} style={{ color: primary, opacity: 0.4 }} />
+          </div>
+          <button className="w-full py-4 rounded-2xl text-white text-[11px] font-bold uppercase tracking-[0.2em] shadow-2xl hover:scale-[1.02] transition-transform" style={{ background: primary }}>{buttonText}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
   const isPro = brand.plan === 'PRO';
   const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'embed' | 'pro'>(isPro ? 'general' : 'pro');
@@ -207,38 +283,38 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
 
   const tab_items = [
     { id: 'pro', icon: <Sparkles size={18} />, label: 'Lookitry Pro', pro: true },
-    { id: 'general', icon: <Settings size={18} />, label: 'Información' },
+    { id: 'general', icon: <Settings size={18} />, label: 'Identidad' },
     { id: 'appearance', icon: <Palette size={18} />, label: 'Apariencia' },
     { id: 'embed', icon: <Code2 size={18} />, label: 'Integración' },
   ];
 
-  const sectionStyle = "bg-[var(--bg-card)] rounded-[3rem] border border-[var(--border-color)] p-10 space-y-8 shadow-xl shadow-black/5 relative overflow-hidden group";
-  const labelStyle = "text-[10px] font-black uppercase tracking-[0.25em] text-[var(--text-secondary)] mb-3 block italic opacity-70";
-  const inputStyle = "w-full px-6 py-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] text-sm font-bold text-[var(--text-primary)] focus:border-[#FF5C3A] outline-none transition-all placeholder:text-[var(--text-muted)] placeholder:font-medium shadow-inner";
+  const sectionStyle = "bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-5 md:p-8 space-y-6 md:space-y-8 shadow-xl shadow-black/5 relative overflow-hidden group";
+  const labelStyle = "text-xs font-bold tracking-tight text-[var(--text-secondary)] mb-2 block opacity-80";
+  const inputStyle = "w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] text-sm font-semibold text-[var(--text-primary)] focus:border-[#FF5C3A] focus:ring-2 focus:ring-[#FF5C3A]/10 outline-none transition-all placeholder:text-[var(--text-muted)] shadow-sm";
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
+    <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6 md:gap-8">
       
       {/* ── SIDEBAR NAVIGATION (LEFT) ── */}
-      <div className="lg:col-span-1 space-y-8">
-        <div className="bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] p-3 shadow-xl shadow-black/5">
+      <div className="lg:col-span-1 space-y-6">
+        <div className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-2 shadow-xl shadow-black/5 overflow-x-auto flex lg:flex-col no-scrollbar">
           {tab_items.map((tab) => {
             const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full flex items-center gap-4 px-6 py-4 rounded-[1.8rem] transition-all duration-300 group/tab relative ${active ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
+                className={`flex-shrink-0 flex items-center gap-3 px-5 py-3 rounded-2xl transition-all duration-300 group/tab relative ${active ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]'}`}
               >
-                <div className={`transition-transform duration-300 ${active ? 'scale-110' : 'opacity-40'}`}>
+                <div className={`transition-transform duration-300 ${active ? 'scale-110' : 'opacity-50'}`}>
                   {tab.icon}
                 </div>
                 <div className="text-left leading-none">
-                  <span className="text-[10px] uppercase font-black tracking-widest block mb-0.5">{tab.label}</span>
-                  {tab.id === 'pro' && !isPro && <span className="text-[8px] font-black uppercase text-[#FF5C3A] bg-white px-1.5 py-0.5 rounded italic">Bloqueado</span>}
+                  <span className="text-[11px] font-bold tracking-tight block mb-0.5">{tab.label}</span>
+                  {tab.id === 'pro' && !isPro && <span className="text-[8px] font-black uppercase text-[#FF5C3A] bg-white px-1.5 py-0.5 rounded">Bloqueado</span>}
                 </div>
                 {active && (
-                   <motion.div layoutId="tab-active" className="absolute right-4" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+                   <motion.div layoutId="tab-active" className="hidden lg:block absolute right-4" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
                     <ChevronRight size={14} className="opacity-40" />
                   </motion.div>
                 )}
@@ -253,49 +329,46 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                initial={{ opacity: 0, y: 30 }}
                animate={{ opacity: 1, y: 0 }}
                exit={{ opacity: 0, y: 30 }}
-               className="bg-[var(--bg-card)] p-8 rounded-[3rem] border border-[var(--border-color)] shadow-2xl space-y-8 relative overflow-hidden group/preview"
+               className="hidden lg:block space-y-6"
             >
-               <div className="flex justify-between items-center relative z-10">
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[var(--text-secondary)] italic">Vista Previa</h4>
-                  <div className="flex gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#FF5C3A]/40 animate-pulse" />
-                    <div className="w-2 h-2 rounded-full bg-indigo-500/40" />
-                  </div>
-               </div>
-               
-               <div className="aspect-[4/5] rounded-[2.5rem] border border-[var(--border-color)] overflow-hidden shadow-4xl relative" style={{ background: formData.secondaryColor }}>
-                  <div className="p-8 h-full flex flex-col justify-between">
-                     <div className="space-y-3">
-                        {formData.logo ? (
-                          <img src={formData.logo} className="mx-auto h-8 object-contain" />
-                        ) : (
-                          <div className="text-xs font-black uppercase italic tracking-tighter text-center" style={{ color: formData.primaryColor }}>{brand.name}</div>
-                        )}
-                        <p className="text-[9px] font-black text-center opacity-40 leading-tight uppercase tracking-widest" style={{ color: formData.primaryColor }}>{formData.welcomeMessage || '¡Bienvenido!'}</p>
-                     </div>
-                     
-                     <div className="w-24 h-24 rounded-full border-2 border-dashed mx-auto flex items-center justify-center transition-all group-hover/preview:scale-110" style={{ borderColor: formData.primaryColor }}>
-                        <Sparkles size={28} style={{ color: formData.primaryColor, opacity: 0.3 }} />
-                     </div>
-
-                     <div className="space-y-4">
-                        <div className="grid grid-cols-4 gap-2">
-                          {[1,2,3,4].map(i => <div key={i} className="aspect-square bg-[var(--bg-input)] rounded-lg shadow-inner group-hover/preview:scale-[1.05] transition-all" />)}
-                        </div>
-                        <button className="w-full py-4 rounded-2xl text-white text-[10px] font-black uppercase tracking-widest shadow-2xl transition-all hover:brightness-110 active:scale-95" style={{ background: formData.primaryColor }}>{formData.buttonText}</button>
-                     </div>
+               <div className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] shadow-2xl overflow-hidden group/preview">
+                  {/* Browser Header */}
+                  <div className="h-10 bg-zinc-100 border-b border-[var(--border-color)] flex items-center px-4 justify-between">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#FF5C3A]/30" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-zinc-300" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-zinc-300" />
+                    </div>
+                    <div className="flex-1 max-w-[120px] h-5 bg-white rounded-md border border-black/5 mx-auto" />
                   </div>
                   
-                  <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-white/5 to-transparent flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-all duration-700">
-                     <div className="px-5 py-2 bg-[var(--bg-card)]/60 backdrop-blur-xl rounded-full text-[8px] text-white font-black uppercase tracking-[0.2em] border border-white/10 shadow-4xl">Modo En Vivo</div>
+                  {/* Live Preview Container */}
+                  <div className="aspect-[4/5] relative">
+                    <LiveWidgetPreview 
+                      template={formData.widgetTemplate as WidgetTemplate}
+                      primary={formData.primaryColor || '#FF5C3A'}
+                      secondary={formData.secondaryColor || '#FFFFFF'}
+                      logo={formData.logo}
+                      welcome={formData.welcomeMessage}
+                      buttonText={formData.buttonText || 'Probar'}
+                      brandName={brand.name}
+                    />
+                    
+                    {/* Live Badge Overlay */}
+                    <div className="absolute top-4 right-4 z-20 pointer-events-none">
+                      <div className="px-3 py-1 bg-white/80 backdrop-blur-md rounded-full border border-black/5 shadow-sm flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A] animate-pulse" />
+                        <span className="text-[8px] font-bold uppercase tracking-wider text-zinc-500">Vista previa</span>
+                      </div>
+                    </div>
                   </div>
                </div>
 
-               <div className="p-5 rounded-[2rem] bg-[var(--bg-base)] border border-[var(--border-color)] space-y-3 shadow-inner">
-                  <p className="text-[8px] font-black uppercase text-[var(--text-muted)] tracking-widest leading-none">Acceso Directo</p>
-                  <div className="flex items-center justify-between gap-3 overflow-hidden">
-                    <p className="text-[10px] font-black font-mono text-[var(--text-primary)] truncate opacity-50">lookitry.com/pruebalo/{formData.slug || brand.slug}</p>
-                    <a href={`/pruebalo/${formData.slug || brand.slug}`} target="_blank" className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all shrink-0 shadow-lg"><ExternalLink size={14} /></a>
+               <div className="p-4 rounded-2xl bg-[var(--bg-base)] border border-[var(--border-color)] space-y-2 shadow-inner">
+                  <p className="text-[8px] font-bold uppercase text-[var(--text-muted)] tracking-widest leading-none opacity-60">Enlace de tu marca</p>
+                  <div className="flex items-center justify-between gap-2 overflow-hidden">
+                    <p className="text-[10px] font-bold font-mono text-[var(--text-primary)] truncate opacity-50">lookitry.com/marca/{formData.slug || brand.slug}</p>
+                    <a href={`/marca/${formData.slug || brand.slug}`} target="_blank" className="p-2 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] hover:text-[#FF5C3A] hover:border-[#FF5C3A]/30 transition-all shrink-0 shadow-sm"><ExternalLink size={12} /></a>
                   </div>
                </div>
             </motion.div>
@@ -306,93 +379,98 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
       <div className="lg:col-span-3">
          <AnimatePresence mode="wait">
            {activeTab === 'general' && (
-             <motion.section key="general" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className={sectionStyle}>
-               <div className="absolute top-0 right-0 p-8 opacity-5"><Settings size={120} /></div>
+             <motion.section key="general" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className={sectionStyle}>
+               <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none"><Settings size={180} /></div>
                <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
-                 <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><Settings className="w-6 h-6 text-[#FF5C3A]" /></div>
+                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><Settings className="w-5 h-5 md:w-6 md:h-6 text-[#FF5C3A]" /></div>
                  <div>
-                   <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter">Identidad de Marca</h3>
-                   <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-[0.2em] opacity-60">Nombre, slug y logotipo</p>
+                   <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] tracking-tight">Identidad de marca</h3>
+                   <p className="text-[10px] text-[var(--text-secondary)] font-bold tracking-[0.1em] opacity-60">Nombre, slug y logotipo</p>
                  </div>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-6 relative z-10">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 pt-4 relative z-10">
                  <div className="space-y-6">
                    <div>
-                     <label className={labelStyle}>Nombre de la Marca</label>
+                     <label className={labelStyle}>Nombre de la marca</label>
                      <input type="text" name="name" value={formData.name || ''} onChange={handleChange} className={inputStyle} placeholder="Ej: Lookitry Fashion" />
                    </div>
                    <div>
-                      <div className="flex items-center mb-3">
-                        <label className={labelStyle}>Identificador único (Slug)</label>
+                      <div className="flex items-center mb-1">
+                        <label className={labelStyle}>Identificador único (slug)</label>
                         <Tooltip text="Esta será la URL de tu probador público. Solo disponible en planes PRO." />
                       </div>
-                      <div className={`relative ${!isPro ? 'opacity-40 cursor-not-allowed' : ''}`}>
-                         <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                      <div className={`relative ${!isPro ? 'group/locked' : ''}`}>
+                         <Globe className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${!isPro ? 'text-[var(--text-muted)]' : 'text-[#FF5C3A]'}`} />
                          <input 
                            type="text" 
                            name="slug" 
                            value={formData.slug || ''} 
                            onChange={handleChange} 
                            disabled={!isPro}
-                           className={`${inputStyle} pl-14 font-mono lowercase tracking-tight`} 
+                           className={`${inputStyle} pl-12 font-mono lowercase tracking-tight ${!isPro ? 'bg-zinc-100/50 cursor-not-allowed opacity-60' : ''}`} 
                            placeholder="mi-marca-oficial" 
                          />
+                         {!isPro && (
+                           <div className="absolute inset-0 flex items-center justify-end pr-4 pointer-events-none opacity-0 group-hover/locked:opacity-100 transition-opacity">
+                             <span className="bg-zinc-900 text-white text-[8px] font-black uppercase px-2 py-1 rounded shadow-xl">Solo Pro</span>
+                           </div>
+                         )}
                       </div>
                    </div>
                  </div>
 
-                 <div className="space-y-6">
-                    <label className={labelStyle}>Emblema (Logo)</label>
-                    <div className="flex items-center gap-6 p-6 bg-[var(--bg-input)] rounded-[2.5rem] border border-[var(--border-color)] shadow-inner group/logo">
-                       <div className="w-24 h-24 rounded-3xl bg-white flex items-center justify-center p-3 border border-black/5 shadow-2xl relative overflow-hidden shrink-0">
+                 <div className="space-y-4">
+                    <label className={labelStyle}>Emblema de marca (logo)</label>
+                    <div className="flex items-center gap-5 p-4 md:p-5 bg-[var(--bg-input)] rounded-2xl border border-[var(--border-color)] shadow-inner">
+                       <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl bg-white flex items-center justify-center p-2 md:p-3 border border-black/5 shadow-lg relative overflow-hidden shrink-0">
                          {formData.logo ? (
                            <img src={formData.logo} alt="Logo" className="w-full h-full object-contain" />
                          ) : (
-                           <ImageIcon className="w-8 h-8 opacity-10" />
+                           <ImageIcon className="w-6 h-6 opacity-10" />
                          )}
-                         {logoUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Zap className="w-6 h-6 text-white animate-spin" /></div>}
+                         {logoUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Zap className="w-5 h-5 text-white animate-spin" /></div>}
                        </div>
-                       <div className="flex-1 space-y-3">
-                         <label className="flex items-center justify-center gap-2 px-6 py-3 bg-[var(--text-primary)] text-[var(--bg-card)] rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-pointer hover:scale-105 active:scale-95 transition-all">
-                            <Plus size={14} /> Subir Nuevo
+                       <div className="flex-1 space-y-2">
+                         <label className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--text-primary)] text-[var(--bg-card)] rounded-xl text-[10px] font-bold tracking-tight cursor-pointer hover:brightness-110 active:scale-95 transition-all">
+                            <Plus size={12} /> Cambiar logo
                             <input type="file" className="hidden" onChange={handleLogoUpload} accept="image/*" />
                          </label>
                          {formData.logo && (
-                           <button onClick={() => setFormData(p => ({ ...p, logo: '' }))} className="w-full py-2 text-[8px] font-black uppercase text-rose-500 tracking-widest hover:bg-rose-500/5 transition-colors rounded-xl">Eliminar Emblema</button>
+                           <button onClick={() => setFormData(p => ({ ...p, logo: '' }))} className="w-full py-1.5 text-[9px] font-bold text-rose-500 tracking-tight hover:bg-rose-500/5 transition-colors rounded-lg">Eliminar</button>
                          )}
                        </div>
                     </div>
                  </div>
                </div>
 
-               <div className="pt-10 flex justify-end relative z-10 border-t border-[var(--border-color)]">
+               <div className="pt-6 md:pt-8 flex justify-end relative z-10 border-t border-[var(--border-color)]">
                  <button 
                    onClick={handleSubmit} disabled={isSubmitting}
-                   className="px-12 py-5 bg-[#FF5C3A] text-white rounded-[2rem] font-[950] italic uppercase tracking-widest shadow-4xl shadow-[#FF5C3A]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+                   className="w-full md:w-auto px-10 py-3.5 bg-[#FF5C3A] text-white rounded-2xl font-bold uppercase tracking-widest shadow-lg shadow-[#FF5C3A]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
                  >
-                   {isSubmitting ? <Zap className="w-5 h-5 animate-pulse" /> : <Check className="w-5 h-5" strokeWidth={4} />}
-                   Guardar Cambios
+                   {isSubmitting ? <Zap className="w-5 h-5 animate-pulse" /> : <Check className="w-5 h-5" strokeWidth={3} />}
+                   Guardar identidad
                  </button>
                </div>
              </motion.section>
            )}
 
            {activeTab === 'appearance' && (
-             <motion.section key="appearance" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className={sectionStyle}>
-               <div className="absolute top-0 right-0 p-8 opacity-5"><Palette size={120} /></div>
+             <motion.section key="appearance" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className={sectionStyle}>
+               <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none"><Palette size={180} /></div>
                <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
-                 <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><Palette className="w-6 h-6 text-[#FF5C3A]" /></div>
+                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center"><Palette className="w-5 h-5 md:w-6 md:h-6 text-[#FF5C3A]" /></div>
                  <div>
-                   <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter">Personalización de Diseño</h3>
-                   <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-[0.2em] opacity-60">Plantilla, colores y apariencia</p>
+                   <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] tracking-tight">Personalización de diseño</h3>
+                   <p className="text-[10px] text-[var(--text-secondary)] font-bold tracking-[0.1em] opacity-60">Plantilla, colores y apariencia</p>
                  </div>
                </div>
 
-               <div className="space-y-12 pt-6 relative z-10">
-                 <div className="space-y-6">
-                    <label className={labelStyle}>Plantilla de Interfaz</label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+               <div className="space-y-8 md:space-y-10 pt-4 relative z-10">
+                 <div className="space-y-4">
+                    <label className={labelStyle}>Plantilla de interfaz</label>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                        {TEMPLATES.map((tpl) => {
                          const locked = tpl.proOnly && !isPro;
                          const active = formData.widgetTemplate === tpl.id;
@@ -400,100 +478,101 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                            <button 
                              key={tpl.id}
                              onClick={() => !locked && setFormData(p => ({ ...p, widgetTemplate: tpl.id }))}
-                             className={`p-4 rounded-[2.5rem] border transition-all relative group/tpl ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-4xl scale-105' : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[#FF5C3A]/30'} ${locked ? 'opacity-40 cursor-not-allowed' : ''}`}
+                             className={`p-2 md:p-3 rounded-2xl border transition-all relative group/tpl ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-lg scale-105 z-10' : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[#FF5C3A]/30'} ${locked ? 'opacity-50 cursor-not-allowed' : ''}`}
                            >
-                             <div className="aspect-[4/3] mb-4"><LayoutPreview layout={tpl.layout} primary={tpl.defaultPrimary} secondary={tpl.defaultSecondary} /></div>
-                             <div className="text-left px-2">
-                                <p className={`text-[10px] font-black uppercase tracking-tighter truncate ${active ? 'text-[#FF5C3A]' : 'text-[var(--text-primary)]'}`}>{tpl.name}</p>
-                                <p className="text-[8px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-50 mt-1 truncate">{tpl.layout}</p>
+                             <div className="aspect-[4/3] mb-3"><LayoutPreview layout={tpl.layout} primary={tpl.defaultPrimary} secondary={tpl.defaultSecondary} /></div>
+                             <div className="text-left px-1">
+                                <p className={`text-[10px] font-bold tracking-tight truncate ${active ? 'text-[#FF5C3A]' : 'text-[var(--text-primary)]'}`}>{tpl.name}</p>
+                                <p className="text-[8px] font-bold tracking-wide text-[var(--text-muted)] opacity-50 mt-0.5 truncate">{tpl.layout}</p>
                              </div>
-                             {locked && <div className="absolute top-5 right-5 bg-black/80 backdrop-blur text-white p-2 rounded-xl"><Lock size={12} /></div>}
-                             {active && !locked && <div className="absolute top-5 right-5 bg-[#FF5C3A] text-white p-2 rounded-xl shadow-lg border border-white/20"><Check size={12} strokeWidth={4} /></div>}
+                             {locked && <div className="absolute top-2 right-2 bg-zinc-900/90 backdrop-blur text-white p-1 rounded-lg"><Lock size={10} /></div>}
+                             {active && !locked && <div className="absolute top-2 right-2 bg-[#FF5C3A] text-white p-1 rounded-lg shadow-lg border border-white/20"><Check size={10} strokeWidth={4} /></div>}
                            </button>
                          );
                        })}
                     </div>
                  </div>
 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-10 border-t border-[var(--border-color)]">
-                    <div className="space-y-6">
-                       <label className={labelStyle}>Color Principal (Acento)</label>
-                       <div className="flex gap-4 flex-wrap">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 pt-8 border-t border-[var(--border-color)]">
+                    <div className="space-y-5">
+                       <label className={labelStyle}>Color principal (acento)</label>
+                       <div className="flex gap-2.5 flex-wrap">
                           {COLOR_PRESETS.map(c => (
-                            <button key={c} onClick={() => setFormData(p => ({ ...p, primaryColor: c }))} className={`w-12 h-12 rounded-2xl border-4 transition-all hover:scale-110 active:scale-95 ${formData.primaryColor === c ? 'border-white ring-8 ring-[#FF5C3A]/20 scale-110 z-10 shadow-4xl' : 'border-transparent opacity-60'}`} style={{ background: c }} />
+                            <button key={c} onClick={() => setFormData(p => ({ ...p, primaryColor: c }))} className={`w-8 h-8 md:w-10 md:h-10 rounded-xl border-2 transition-all hover:scale-110 active:scale-95 ${formData.primaryColor === c ? 'border-white ring-4 ring-[#FF5C3A]/20 scale-110 z-10 shadow-lg' : 'border-transparent opacity-70'}`} style={{ background: c }} />
                           ))}
-                          <div className="relative w-12 h-12 rounded-2xl border-2 border-dashed border-[var(--border-color)] overflow-hidden group/cust flex items-center justify-center">
+                          <div className="relative w-8 h-8 md:w-10 md:h-10 rounded-xl border-2 border-dashed border-[var(--border-color)] overflow-hidden group/cust flex items-center justify-center hover:border-[#FF5C3A] transition-colors">
                              <input type="color" value={formData.primaryColor || '#FF5C3A'} onChange={e => setFormData(p => ({ ...p, primaryColor: e.target.value }))} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
-                             <Plus className="text-[var(--text-muted)] group-hover/cust:text-[#FF5C3A] transition-colors" size={20} />
+                             <Palette className="text-[var(--text-muted)] group-hover/cust:text-[#FF5C3A] transition-colors" size={14} />
                           </div>
                        </div>
+                       <div className="flex items-center gap-2 mt-2">
+                          <span className="text-[9px] font-mono font-bold text-[var(--text-muted)] bg-[var(--bg-input)] px-2.5 py-1 rounded-lg border border-[var(--border-color)]">{formData.primaryColor}</span>
+                       </div>
                     </div>
-                    <div className="space-y-6">
-                       <label className={labelStyle}>Color de Fondo (Canvas)</label>
-                       <div className="flex gap-4 flex-wrap">
+                    <div className="space-y-5">
+                       <label className={labelStyle}>Color de fondo (canvas)</label>
+                       <div className="flex gap-2.5 flex-wrap">
                           {BG_PRESETS.map(c => (
-                            <button key={c} onClick={() => setFormData(p => ({ ...p, secondaryColor: c }))} className={`w-12 h-12 rounded-2xl border-2 transition-all hover:scale-110 active:scale-95 ${formData.secondaryColor === c ? 'border-[#FF5C3A] ring-4 ring-[#FF5C3A]/20 scale-110 z-10 shadow-2xl' : 'border-[var(--border-color)]'}`} style={{ background: c }} />
+                            <button key={c} onClick={() => setFormData(p => ({ ...p, secondaryColor: c }))} className={`w-8 h-8 md:w-10 md:h-10 rounded-xl border-2 transition-all hover:scale-110 active:scale-95 ${formData.secondaryColor === c ? 'border-[#FF5C3A] ring-4 ring-[#FF5C3A]/20 scale-110 z-10 shadow-md' : 'border-[var(--border-color)]'}`} style={{ background: c }} />
                           ))}
+                       </div>
+                       <div className="flex items-center gap-2 mt-2">
+                          <span className="text-[9px] font-mono font-bold text-[var(--text-muted)] bg-[var(--bg-input)] px-2.5 py-1 rounded-lg border border-[var(--border-color)]">{formData.secondaryColor}</span>
                        </div>
                     </div>
                  </div>
                </div>
 
-               <div className="pt-10 flex justify-end relative z-10 border-t border-[var(--border-color)]">
-                 <button onClick={handleSubmit} className="px-12 py-5 bg-[#FF5C3A] text-white rounded-[2rem] font-[950] italic uppercase tracking-widest shadow-4xl shadow-[#FF5C3A]/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-3">
+               <div className="pt-8 flex justify-end relative z-10 border-t border-[var(--border-color)]">
+                 <button onClick={handleSubmit} className="w-full md:w-auto px-10 py-3.5 bg-[#FF5C3A] text-white rounded-2xl font-bold uppercase tracking-widest shadow-lg shadow-[#FF5C3A]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3">
                    {isSubmitting ? <Zap className="w-5 h-5 animate-pulse" /> : <Sparkles className="w-5 h-5" />}
-                   Guardar Diseño
+                   Guardar diseño
                  </button>
                </div>
              </motion.section>
            )}
 
            {activeTab === 'pro' && (
-             <motion.section key="pro" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className={sectionStyle}>
-               <div className="absolute top-0 right-0 p-8 opacity-5"><Sparkles size={120} /></div>
+             <motion.section key="pro" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className={sectionStyle}>
+               <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none"><Sparkles size={180} /></div>
                <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
                  <div className="w-12 h-12 rounded-2xl bg-[var(--bg-base)] flex items-center justify-center border border-[var(--border-color)] shadow-inner"><Sparkles className="w-6 h-6 text-[#FF5C3A]" /></div>
                  <div>
-                   <h3 className="text-xl font-black italic uppercase text-[var(--text-primary)] tracking-tighter">Lookitry Pro</h3>
-                   <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-[0.2em] opacity-60">Control Total y Personalización</p>
+                   <h3 className="text-xl font-bold uppercase text-[var(--text-primary)] tracking-tight">Lookitry Pro</h3>
+                   <p className="text-[10px] text-[var(--text-secondary)] font-bold tracking-[0.2em] opacity-60">Control total y personalización</p>
                  </div>
                </div>
 
                {!isPro ? (
-                 <div className="pt-8 space-y-10 relative z-10">
-                    <div className="relative overflow-hidden rounded-[4rem] border border-zinc-100 bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] group">
-                        {/* Mesh Gradient Decorativo de Lujo */}
-                        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-[#FF5C3A]/10 via-transparent to-transparent rounded-full -mr-48 -mt-48 blur-3xl transition-transform duration-1000 group-hover:scale-110" />
-                        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-[#6366F1]/5 via-transparent to-transparent rounded-full -ml-32 -mb-32 blur-3xl transition-transform duration-1000 group-hover:scale-110" />
+                 <div className="pt-6 space-y-8 relative z-10">
+                    <div className="relative overflow-hidden rounded-[2.5rem] border border-zinc-100 bg-white shadow-2xl group">
+                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-[#FF5C3A]/10 via-transparent to-transparent rounded-full -mr-32 -mt-32 blur-3xl" />
                         
-                        <div className="relative z-10 p-16 flex flex-col lg:flex-row gap-16 items-center">
-                           <div className="flex-1 space-y-12">
-                              <div className="space-y-6">
-                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF5C3A]/10 rounded-full border border-[#FF5C3A]/20">
+                        <div className="relative z-10 p-10 flex flex-col lg:flex-row gap-12 items-center">
+                           <div className="flex-1 space-y-8">
+                              <div className="space-y-4">
+                                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FF5C3A]/10 rounded-full border border-[#FF5C3A]/20">
                                     <Sparkles className="w-3 h-3 text-[#FF5C3A]" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF5C3A]">Membresía Exclusive</span>
+                                    <span className="text-[9px] font-black uppercase tracking-wider text-[#FF5C3A]">Membresía Exclusive</span>
                                  </div>
-                                 <h4 className="text-6xl font-[1000] text-zinc-900 italic uppercase tracking-tighter leading-[0.85]">
+                                 <h4 className="text-5xl font-[1000] text-zinc-900 uppercase tracking-tighter leading-[0.9]">
                                     Lookitry <br />
                                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF5C3A] to-[#FF8C70]">Pro Experience</span>
                                  </h4>
-                                 <p className="max-w-md text-sm font-medium text-zinc-500 leading-relaxed uppercase tracking-wider">
-                                    Desbloquea el potencial total de tu marca con herramientas de personalización de alto impacto y procesamiento prioritario.
-                                 </p>
                               </div>
 
-                              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                                  {[
                                    'Slug de URL personalizado',
                                    'Mensajes editoriales custom',
                                    'CTA 100% dinámicos',
                                    'Templates Side Panel y Bold',
-                                   'Prioridad máxima IA (Zero Wait)',
+                                   'Prioridad IA (Zero Wait)',
                                    'Hasta 15 productos activos'
                                  ].map((f, i) => (
-                                   <li key={i} className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-zinc-400 group/item hover:text-[#FF5C3A] transition-colors">
-                                      <div className="w-5 h-5 rounded-lg bg-zinc-50 flex items-center justify-center border border-zinc-100 group-hover/item:border-[#FF5C3A]/30 group-hover/item:bg-[#FF5C3A]/5 transition-all">
-                                         <Check className="w-2.5 h-2.5" strokeWidth={5} />
+                                   <li key={i} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wide text-zinc-500">
+                                      <div className="w-5 h-5 rounded-lg bg-zinc-50 flex items-center justify-center border border-zinc-100 text-[#FF5C3A]">
+                                         <Check className="w-2.5 h-2.5" strokeWidth={4} />
                                       </div>
                                       {f}
                                    </li>
@@ -501,50 +580,49 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                               </ul>
                            </div>
 
-                           <div className="w-full lg:w-[320px] shrink-0 space-y-8">
-                              <div className="p-8 rounded-[3rem] bg-zinc-50 border border-zinc-100 space-y-6 shadow-inner">
-                                 <div className="space-y-2">
-                                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest text-center">Inversión Mensual</p>
-                                    <div className="flex items-end justify-center gap-2">
-                                       <span className="text-4xl font-[1000] text-zinc-900">$250k</span>
-                                       <span className="text-[10px] font-black text-zinc-400 uppercase mb-2">COP / Mes</span>
+                           <div className="w-full lg:w-[280px] shrink-0 space-y-6">
+                              <div className="p-6 rounded-3xl bg-zinc-50 border border-zinc-100 space-y-4 shadow-inner">
+                                 <div className="space-y-1">
+                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center">Inversión mensual</p>
+                                    <div className="flex items-end justify-center gap-1.5">
+                                       <span className="text-3xl font-[1000] text-zinc-900">$250k</span>
+                                       <span className="text-[9px] font-bold text-zinc-400 uppercase mb-1.5">COP / Mes</span>
                                     </div>
                                  </div>
-                                 <button onClick={() => window.location.href='/dashboard/subscription'} className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] text-[10px] shadow-2xl hover:bg-[#FF5C3A] hover:scale-[1.02] transition-all active:scale-95 group/btn flex items-center justify-center gap-3">
-                                    Suscribirme Ahora
+                                 <button onClick={() => window.location.href='/dashboard/subscription'} className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-xl hover:bg-[#FF5C3A] transition-all active:scale-95 group/btn flex items-center justify-center gap-3">
+                                    Suscribirme
                                     <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                                  </button>
                               </div>
-                              <p className="text-center text-[9px] font-bold text-zinc-300 uppercase tracking-tight">Sin compromisos • Cancela cuando quieras</p>
                            </div>
                         </div>
                     </div>
                  </div>
                ) : (
-                 <div className="pt-10 space-y-10 relative z-10">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                      <div className="space-y-3">
-                         <label className={labelStyle}>Texto del Botón (CTA)</label>
+                 <div className="pt-8 space-y-8 relative z-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2.5">
+                         <label className={labelStyle}>Texto del botón (CTA)</label>
                          <div className="relative">
-                            <Smartphone className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
-                            <input type="text" name="buttonText" value={formData.buttonText || ''} onChange={handleChange} className={`${inputStyle} pl-14 font-black italic uppercase tracking-widest`} placeholder="Probarme esto" />
+                            <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" />
+                            <input type="text" name="buttonText" value={formData.buttonText || ''} onChange={handleChange} className={`${inputStyle} pl-12 font-bold uppercase tracking-widest`} placeholder="Probarme esto" />
                          </div>
                       </div>
-                      <div className="space-y-3">
-                         <label className={labelStyle}>Mensaje de Entrada (Welcome)</label>
+                      <div className="space-y-2.5">
+                         <label className={labelStyle}>Mensaje de entrada (welcome)</label>
                          <input type="text" name="welcomeMessage" value={formData.welcomeMessage || ''} onChange={handleChange} className={inputStyle} placeholder="¡Bienvenido a nuestro probador!" />
                       </div>
                     </div>
                     
-                    <div className="p-8 rounded-[3rem] bg-[#FF5C3A]/5 border border-[#FF5C3A]/10 flex items-center justify-between shadow-xl">
-                       <div className="flex items-center gap-5">
-                          <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A] flex items-center justify-center text-white shadow-lg"><Check size={20} strokeWidth={4} /></div>
+                    <div className="p-6 rounded-3xl bg-[#FF5C3A]/5 border border-[#FF5C3A]/10 flex items-center justify-between shadow-sm">
+                       <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-[#FF5C3A] text-white flex items-center justify-center shadow-lg shadow-[#FF5C3A]/20"><Check size={18} strokeWidth={4} /></div>
                           <div>
-                            <p className="text-[11px] font-black uppercase tracking-widest text-[var(--text-primary)] leading-none italic">Plan Pro Activado</p>
-                            <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase mt-1 opacity-50 tracking-tighter">Disfrutas de todas las ventajas exclusivas</p>
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--text-primary)] leading-none">Plan pro activado</p>
+                            <p className="text-[9px] font-semibold text-[var(--text-muted)] uppercase mt-1 opacity-60 tracking-tight">Disfrutas de todas las ventajas exclusivas</p>
                           </div>
                        </div>
-                       <button onClick={handleSubmit} className="px-8 py-4 bg-[var(--text-primary)] text-[var(--bg-card)] rounded-2xl text-[10px] font-950 uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-xl">Guardar</button>
+                       <button onClick={handleSubmit} className="px-8 py-3 bg-[var(--text-primary)] text-[var(--bg-card)] rounded-xl text-[10px] font-bold uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-md">Guardar</button>
                     </div>
                  </div>
                )}

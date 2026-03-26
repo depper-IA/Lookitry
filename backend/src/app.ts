@@ -37,21 +37,21 @@ const app = express();
 // Necesario para que express-rate-limit funcione correctamente detrás de Traefik/Nginx
 app.set('trust proxy', 1);
 
-// ── Seguridad: Helmet (Original del usuario) ──────────────────────────────────
+// ── Seguridad: Helmet ────────────────────────────────────────────────────────
 app.use(helmet({
   crossOriginEmbedderPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://challenges.cloudflare.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "blob:", "https://minio.wilkiedevs.com", "https://vkdooutklowctuudjnkl.supabase.co"],
-      connectSrc: ["'self'", "https://api.lookitry.com", "https://n8n.wilkiedevs.com"],
+      connectSrc: ["'self'", "https://api.lookitry.com", "https://n8n.wilkiedevs.com", "http://localhost:3001"],
       fontSrc: ["'self'", "https:", "data:"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
-      frameSrc: ["'self'"],
+      frameSrc: ["'self'", "https://challenges.cloudflare.com"],
     },
   },
 }));

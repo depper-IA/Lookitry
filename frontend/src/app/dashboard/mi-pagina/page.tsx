@@ -289,34 +289,35 @@ export default function MiPaginaPage() {
         <div className="lg:col-span-6 space-y-12">
           <motion.header variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="space-y-1">
-              <h1 className="text-4xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Editor de Página</h1>
-              <p className="text-sm text-[var(--text-secondary)] uppercase font-black tracking-widest opacity-60">Personaliza tu mini-landing premium</p>
+              <h1 className="text-4xl font-bold text-[var(--text-primary)] tracking-tight font-jakarta">Editor de página</h1>
+              <p className="text-sm text-[var(--text-secondary)] font-bold tracking-wider opacity-60 uppercase">Personaliza tu mini-landing premium</p>
             </div>
             
             <div className="flex items-center gap-4">
-               <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl text-xs font-black uppercase tracking-widest text-[var(--text-primary)] hover:border-[#FF5C3A] hover:text-[#FF5C3A] transition-all shadow-xl group/link">
-                 Ver mi Sitio <ExternalLink size={14} className="group-hover:rotate-12 transition-transform" />
+               <a href={pageUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl text-xs font-bold uppercase tracking-widest text-[var(--text-primary)] hover:border-[#FF5C3A] hover:text-[#FF5C3A] transition-all shadow-xl group/link">
+                 Ver mi sitio <ExternalLink size={14} className="group-hover:rotate-12 transition-transform" />
                </a>
             </div>
           </motion.header>
 
           {/* ══ BONUS MARKETING ══ */}
-          <motion.div variants={itemVariants} className="p-10 rounded-[3rem] bg-gradient-to-br from-[var(--bg-card)] to-[#FF5C3A]/5 border border-[#FF5C3A]/20 shadow-2xl relative overflow-hidden group/bonus">
+          <motion.div variants={itemVariants} className="p-10 rounded-[3rem] bg-gradient-to-br from-[var(--bg-card)] to-[#FF5C3A]/5 border border-[#FF5C3A]/20 shadow-xl shadow-black/5 relative overflow-hidden group/bonus">
              <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-1000">
                 <Sparkles size={150} />
              </div>
              <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
                 <div className="space-y-3 text-center md:text-left">
-                   <h3 className="text-2xl font-black italic uppercase tracking-tighter text-[var(--text-primary)]">¿Buscas algo más potente?</h3>
+                   <h3 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight font-jakarta">¿Buscas algo más potente?</h3>
                    <p className="text-sm text-[var(--text-secondary)] font-medium max-w-md">
-                      Escala tu negocio a una <span className="text-[#FF5C3A] font-bold">Tienda Profesional</span> con WooCommerce y domina el mercado.
+                      Escala tu negocio a una <span className="text-[#FF5C3A] font-bold">tienda profesional</span> con WooCommerce y domina el mercado.
                    </p>
                 </div>
+
                 <Link 
                   href="/dashboard/tienda-profesional"
-                  className="px-8 py-4 bg-white text-black rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
+                  className="px-8 py-4 bg-white text-black rounded-2xl font-bold uppercase tracking-widest text-[10px] shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
                 >
-                  Conocer Beneficios <ArrowRight size={14} className="inline ml-2" />
+                  Conocer beneficios <ArrowRight size={14} className="inline ml-2" />
                 </Link>
              </div>
           </motion.div>
@@ -325,19 +326,19 @@ export default function MiPaginaPage() {
             {!brand?.has_landing_page && (
               <motion.div 
                 variants={itemVariants} 
-                className="p-8 rounded-[2.5rem] border-2 border-dashed border-[#FF5C3A]/20 bg-[#FF5C3A]/5 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group/unlock"
+                className="p-8 rounded-3xl border-2 border-dashed border-[#FF5C3A]/20 bg-[#FF5C3A]/5 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group/unlock"
               >
                 <div className="flex items-center gap-6 relative z-10 text-center md:text-left">
-                  <div className="w-16 h-16 rounded-[2rem] bg-[#FF5C3A] text-white flex items-center justify-center shadow-2xl shadow-[#FF5C3A]/20 transform group-hover/unlock:rotate-12 transition-transform duration-500">
+                  <div className="w-16 h-16 rounded-2xl bg-[#FF5C3A] text-white flex items-center justify-center shadow-lg shadow-[#FF5C3A]/20 transform group-hover/unlock:rotate-12 transition-transform duration-500">
                     <Zap className="w-8 h-8 fill-current" />
                   </div>
                   <div>
-                    <p className="text-lg font-black text-[var(--text-primary)] uppercase italic leading-none">Módulo de Sitio Desactivado</p>
-                    <p className="text-[11px] text-[var(--text-secondary)] font-bold uppercase tracking-widest mt-2 opacity-60 italic">Adquiere tu mini-landing hoy mismo</p>
+                    <p className="text-lg font-bold text-[var(--text-primary)] leading-none">Módulo de sitio desactivado</p>
+                    <p className="text-[11px] text-[var(--text-secondary)] font-bold uppercase tracking-widest mt-2 opacity-60">Adquiere tu mini-landing hoy mismo</p>
                   </div>
                 </div>
-                <Link href="/dashboard/checkout-landing" className="px-10 py-5 bg-[#FF5C3A] text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-[#FF5C3A]/20 relative z-10 italic">
-                  Desbloquear Ahora
+                <Link href="/dashboard/checkout-landing" className="px-10 py-5 bg-[#FF5C3A] text-white text-xs font-bold uppercase tracking-[0.2em] rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-[#FF5C3A]/20 relative z-10">
+                  Desbloquear ahora
                 </Link>
                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover/unlock:scale-150 transition-transform duration-1000">
                   <ShieldCheck size={120} />
@@ -346,15 +347,15 @@ export default function MiPaginaPage() {
             )}
           </AnimatePresence>
 
-          <motion.div variants={itemVariants} className="flex gap-3 p-1.5 bg-[var(--bg-card)] rounded-[2rem] border border-[var(--border-color)] w-fit shadow-2xl">
+          <motion.div variants={itemVariants} className="flex gap-3 p-1.5 bg-[var(--bg-card)] rounded-[2rem] border border-[var(--border-color)] w-fit shadow-xl">
             {( [
-              { id: 'design', label: 'Diseño y Estilo', icon: <Layout size={18} /> },
-              { id: 'domain', label: 'Dominio y Enlace', icon: <Globe size={18} /> },
+              { id: 'design', label: 'Diseño y estilo', icon: <Layout size={18} /> },
+              { id: 'domain', label: 'Dominio y enlace', icon: <Globe size={18} /> },
             ] as const).map(tab => (
               <button 
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)} 
-                className={`flex items-center gap-3 px-8 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all rounded-[1.5rem] relative overflow-hidden group/tab ${activeTab === tab.id ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/10 italic' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}
+                className={`flex items-center gap-3 px-8 py-3.5 text-[11px] font-bold uppercase tracking-widest transition-all rounded-[1.5rem] relative overflow-hidden group/tab ${activeTab === tab.id ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/10' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'}`}
               >
                 <span className="relative z-10 flex items-center gap-3">
                    {tab.icon}
@@ -372,14 +373,14 @@ export default function MiPaginaPage() {
               <motion.div key="design" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-12">
                 
                 {/* 1. SELECCIÓN DE PLANTILLA */}
-                <section className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-7 md:p-10 shadow-3xl relative overflow-hidden group/templates">
+                <section className="bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-7 md:p-10 shadow-xl shadow-black/5 relative overflow-hidden group/templates">
                   <div className="flex items-center gap-4 border-b border-[var(--border-color)] pb-8 mb-10">
                     <div className="w-12 h-12 rounded-2xl bg-black flex items-center justify-center">
                        <Monitor className="text-white" size={20} />
                     </div>
                     <div>
-                       <h3 className="text-xl font-black text-[var(--text-primary)] italic uppercase tracking-tighter">Plantillas Disponibles</h3>
-                       <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60">Selecciona el estilo de tu página</p>
+                       <h3 className="text-xl font-bold text-[var(--text-primary)] tracking-tight font-jakarta">Plantillas disponibles</h3>
+                       <p className="text-[10px] text-[var(--text-secondary)] font-bold uppercase tracking-widest mt-1 opacity-60">Selecciona el estilo de tu página</p>
                     </div>
                   </div>
 
@@ -392,13 +393,13 @@ export default function MiPaginaPage() {
                       <button
                         key={t.id}
                         onClick={() => setLandingTemplate(t.id as any)}
-                        className={`relative p-2 rounded-[2.5rem] border-2 transition-all group/card active:scale-[0.97] ${landingTemplate === t.id ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-2xl scale-[1.03]' : 'border-transparent bg-[var(--bg-input)] hover:border-[#FF5C3A]/30 hover:scale-[1.01]'}`}
+                        className={`relative p-2 rounded-[2.5rem] border-2 transition-all group/card active:scale-[0.97] ${landingTemplate === t.id ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-xl scale-[1.03]' : 'border-transparent bg-[var(--bg-input)] hover:border-[#FF5C3A]/30 hover:scale-[1.01]'}`}
                       >
                          <div className="aspect-[3/4] rounded-[2rem] mb-4 overflow-hidden border border-[var(--border-color)] bg-black shadow-inner">
                             <TemplateWireframe type={t.id} active={landingTemplate === t.id} />
                          </div>
                          <div className="pb-4 px-2 text-center">
-                            <p className={`text-xs font-black uppercase tracking-[0.2em] italic ${landingTemplate === t.id ? 'text-[#FF5C3A]' : 'text-[var(--text-muted)] group-hover/card:text-[var(--text-primary)]'}`}>{t.name}</p>
+                            <p className={`text-xs font-bold uppercase tracking-[0.2em] ${landingTemplate === t.id ? 'text-[#FF5C3A]' : 'text-[var(--text-muted)] group-hover/card:text-[var(--text-primary)]'}`}>{t.name}</p>
                             <div className={`h-1 w-8 mx-auto mt-2 rounded-full transition-all duration-500 ${landingTemplate === t.id ? 'bg-[#FF5C3A] w-12' : 'bg-transparent'}`} />
                          </div>
                       </button>
@@ -437,16 +438,16 @@ export default function MiPaginaPage() {
           <footer className="pt-16 pb-20 border-t-2 border-[var(--border-color)] border-dashed">
             <button
                onClick={handleSave} disabled={saving}
-               className="w-full flex items-center justify-center gap-4 py-5 bg-[#FF5C3A] text-white rounded-2xl text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-[#FF5C3A]/20 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 italic group/save"
+               className="w-full md:w-auto px-10 py-4 bg-[#FF5C3A] text-white rounded-2xl text-sm font-bold uppercase tracking-[0.2em] shadow-xl shadow-[#FF5C3A]/20 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 group/save mx-auto flex items-center justify-center gap-4"
             >
                {saving ? <Spinner size="sm" /> : <Save size={20} className="group-hover:scale-125 transition-transform" />}
-               {saving ? 'Guardando...' : 'Guardar Cambios'}
+               {saving ? 'Guardando...' : 'Guardar cambios'}
             </button>
             <AnimatePresence>
                {success && (
-                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl mt-6 flex items-center justify-center gap-3 italic">
+                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl mt-6 flex items-center justify-center gap-3">
                    <Check className="text-emerald-500 font-bold" size={16} /> 
-                   <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest leading-none">Cambios guardados correctamente</span>
+                   <span className="text-emerald-500 text-[10px] font-bold uppercase tracking-widest leading-none">Cambios guardados correctamente</span>
                  </motion.div>
                )}
             </AnimatePresence>
@@ -455,7 +456,7 @@ export default function MiPaginaPage() {
 
         {/* PREVIEW STICKY (Visualización Full-Width v2) */}
         <div className="hidden lg:block lg:col-span-6 sticky top-10 z-40 h-[620px]">
-           <div className="h-full bg-white rounded-2xl border border-[var(--border-color)] overflow-hidden shadow-4xl flex flex-col group/preview relative">
+           <div className="h-full bg-white rounded-3xl border border-[var(--border-color)] overflow-hidden shadow-2xl shadow-black/5 flex flex-col group/preview relative">
               
               {/* Browser Bar (Full Width) */}
               <div className="h-16 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center px-8 gap-6">
@@ -479,7 +480,7 @@ export default function MiPaginaPage() {
               <div className="p-6 bg-[var(--bg-card)] border-t border-[var(--border-color)] flex items-center justify-center">
                  <div className="flex items-center gap-3">
                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                   <span className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest leading-none">Vista Previa en Vivo</span>
+                   <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest leading-none">Vista previa en vivo</span>
                  </div>
               </div>
            </div>
