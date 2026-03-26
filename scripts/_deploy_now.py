@@ -125,7 +125,7 @@ if do_frontend:
     run(ssh, f"cd {REPO} && docker compose -f docker-compose.frontend.yml up -d")
 
 # 4. Estado de contenedores
-time.sleep(4)
+# time.sleep(4)
 run(ssh, "docker ps --format 'table {{.Names}}\t{{.Status}}'")
 
 # 5. Health check
