@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -125,65 +125,88 @@ function PagoExitosoContent() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg-base)' }}>
-      <div className="w-full max-w-md">
+  return (
+    <main className="min-h-screen flex items-center justify-center px-4 bg-[#030303] selection:bg-[#FF5C3A]/30">
+      <div className="w-full max-w-md animate-in fade-in duration-700">
 
         {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-            <span className="font-syne font-extrabold text-xl text-white tracking-tight">
+        <div className="flex justify-center mb-10">
+          <Link href="/" className="flex items-center gap-3 group transition-transform hover:scale-105 active:scale-95">
+            <div className="relative">
+              <Image 
+                src="/logo.svg" 
+                alt="Lookitry" 
+                width={32} 
+                height={32} 
+                className="object-contain h-8 w-auto brightness-110" 
+                priority 
+              />
+              <div className="absolute inset-0 bg-[#FF5C3A]/20 blur-xl rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </div>
+            <span className="font-syne font-extrabold text-2xl text-white tracking-tight">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
         </div>
 
-        <div className="rounded-xl p-7 md:p-8 text-center border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+        <div className="rounded-2xl p-8 md:p-10 text-center border bg-[#0a0a0a] border-[#1a1a1a] shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
+          
+          {/* Subtle decoration */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF5C3A]/5 blur-[80px] rounded-full"></div>
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#FF5C3A]/5 blur-[80px] rounded-full"></div>
 
-          <div className="w-16 h-16 bg-[rgba(255,92,58,0.1)] border border-[rgba(255,92,58,0.2)] rounded-full flex items-center justify-center mx-auto mb-5">
+          <div className="w-20 h-20 bg-[#FF5C3A]/10 border border-[#FF5C3A]/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(255,92,58,0.1)]">
             <IconCheck />
           </div>
 
-          <h1 className="font-syne font-bold text-[24px] text-white mb-2">
-            Pago recibido
+          <h1 className="font-syne font-bold text-[28px] text-white mb-3 tracking-tight">
+            ¡Pago confirmado!
           </h1>
-          <p className="text-[14px] mb-6" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-[15px] leading-relaxed mb-8 text-[#a0a0a0]">
             {dashboardHref.startsWith('/registro-pro')
-              ? 'Tu pago fue confirmado. Ahora crea tu cuenta para activar el plan.'
-              : `Tu pago fue procesado correctamente. Tu Plan ${plan} por ${months} ${months === 1 ? 'mes' : 'meses'} ya está activo.`}
+              ? 'Todo está listo. Ahora crea tu cuenta para activar tu suscripción y empezar a usar Lookitry.'
+              : `Tu plan ya se encuentra activo. Hemos procesado correctamente tu suscripción al Plan ${plan} por ${months} ${months === 1 ? 'mes' : 'meses'}.`}
           </p>
 
           {ref && (
-            <div className="rounded-lg px-4 py-3 mb-6 text-left border" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)' }}>
-              <p className="text-[11px] mb-1 uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Referencia de pago</p>
-              <p className="text-[13px] font-mono break-all" style={{ color: 'var(--text-secondary)' }}>{ref}</p>
+            <div className="rounded-xl px-5 py-4 mb-8 text-left border bg-[#111111] border-[#1a1a1a]">
+              <p className="text-[10px] mb-2 uppercase tracking-[0.1em] font-bold text-[#666]">Referencia de pago</p>
+              <p className="text-[12px] font-mono break-all text-[#d1d1d1] leading-relaxed">{ref}</p>
             </div>
           )}
 
-          <div className="bg-[rgba(255,92,58,0.06)] border border-[rgba(255,92,58,0.15)] rounded-lg px-4 py-3 mb-6 text-[13px] text-left" style={{ color: 'var(--text-secondary)' }}>
-            Recibirás un correo de confirmación con los detalles de tu suscripción.
-            Si tienes dudas escríbenos a{' '}
-            <a href="mailto:info@lookitry.com" className="text-[#FF5C3A] hover:underline">
-              info@lookitry.com
-            </a>
+          <div className="bg-[#FF5C3A]/5 border border-[#FF5C3A]/10 rounded-xl px-5 py-4 mb-10 text-[14px] text-left leading-relaxed text-[#a0a0a0]">
+            <p>
+              Recibirás un correo de confirmación con los detalles. 
+              Si tienes dudas, nuestro equipo está listo para ayudarte en{' '}
+              <a href="mailto:info@lookitry.com" className="text-[#FF5C3A] font-medium hover:text-[#ff785c] transition-colors decoration-slice">
+                info@lookitry.com
+              </a>
+            </p>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4 relative z-10">
             <Link
               href={dashboardHref}
-              className="block w-full py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white font-medium rounded-lg transition-colors text-[13px] cursor-pointer"
+              className="block w-full py-4 bg-[#FF5C3A] hover:bg-[#ff785c] active:scale-[0.98] text-white font-bold rounded-xl transition-all shadow-[0_10px_20px_rgba(255,92,58,0.2)] hover:shadow-[0_15px_30px_rgba(255,92,58,0.3)] text-[15px] cursor-pointer"
             >
               {dashboardLabel}
             </Link>
             <Link
               href="/"
-              className="block w-full py-2.5 rounded-lg transition-colors text-[13px] font-medium border cursor-pointer"
-              style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+              className="block w-full py-4 rounded-xl transition-all text-[15px] font-semibold border border-[#1a1a1a] text-[#a0a0a0] hover:bg-white/5 hover:text-white cursor-pointer"
             >
               Volver al inicio
             </Link>
           </div>
 
+        </div>
+
+        {/* Trust badge/support */}
+        <div className="mt-10 text-center">
+          <p className="text-[#444] text-[12px] font-medium tracking-wide">
+            LOOKITRY SECURE PAYMENTS © 2026
+          </p>
         </div>
       </div>
     </main>
