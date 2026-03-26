@@ -78,6 +78,21 @@ def contains_path(changed_files, prefix):
     return any(line.startswith(prefix) for line in changed_files.splitlines())
 
 
+def wait_for_health(ssh, attempts=8, delay=5):
+    for attempt in range(1, attempts + 1):
+        print(f"\n=== Health check ({attempt}/{attempts}) ===")
+        out, _, code = run(
+            ssh,
+            "curl -s -w '\\nHTTP: %{http_code}' https://api.lookitry.com/health",
+            check=False,
+        )
+        if code == 0 and "HTTP: 200" in out:
+            return
+        if attempt < attempts:
+            time.sleep(delay)
+    raise RuntimeError("Health check no respondio 200 despues de varios intentos.")
+
+
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 ssh.connect(HOST, username=USER, password=PASS, timeout=30)
@@ -167,8 +182,7 @@ if do_frontend:
 
 run(ssh, "docker ps --format 'table {{.Names}}\\t{{.Status}}'")
 
-print("\n=== Health check ===")
-run(ssh, "curl -s -w '\\nHTTP: %{http_code}' https://api.lookitry.com/health")
+wait_for_health(ssh)
 
 ssh.close()
 print("\nDeploy completado.")
