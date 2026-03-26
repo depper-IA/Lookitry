@@ -37,6 +37,9 @@ import {
   deletePromotion,
   getPricingConfig,
   updatePricingConfig,
+  getWooBrandsSummary,
+  getWooBrandProducts,
+  setWooProductActive,
 } from '../controllers/admin.controller';
 import {
   getPaymentSettings,
@@ -127,5 +130,10 @@ router.delete('/promotions/:id', requirePermission('settings'), deletePromotion)
 // Gestión de precios (pricing_config)
 router.get('/pricing', requirePermission('settings'), getPricingConfig);
 router.put('/pricing', requirePermission('settings'), updatePricingConfig);
+
+// Control WooCommerce desde panel admin
+router.get('/woocommerce/brands-summary', requirePermission('brands'), getWooBrandsSummary);
+router.get('/woocommerce/brands/:id/products', requirePermission('brands'), getWooBrandProducts);
+router.patch('/woocommerce/brands/:id/products/:productId/active', requirePermission('brands'), setWooProductActive);
 
 export default router;
