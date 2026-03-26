@@ -1,165 +1,251 @@
-# 🚀 Lookitry for WooCommerce — Technical & Business Blueprint
-**Versión:** 1.1 (Revisado Q2 2026)  
-**Estado:** Planning & Architecture  
-**Objetivo:** Transformar Lookitry en el Estándar de Probador Virtual para WooCommerce.
+# Lookitry for WooCommerce - Spec Operativo
+
+**Version:** 2.0  
+**Estado:** Beta comercial en ejecucion  
+**Ultima actualizacion:** Marzo 2026  
+**Objetivo del documento:** seguimiento semanal de lo implementado, pendientes, riesgos y decisiones para lanzar el Plugin MVP de WooCommerce con impacto en ingresos y retencion.
 
 ---
 
-## 💎 1. Propuesta de Valor y "Estrategia de Enamoramiento" (The Hook)
-Para que un cliente de WooCommerce decida pagar mensualmente por Lookitry, el plugin debe demostrar su valor **antes** de pedir la tarjeta de crédito. 
+## Estado de auditoria tecnica (plugin + backend)
 
-### El "Showroom" de 7 Días (Trial Gratuito):
-- **Acceso Inmediato:** El plugin es gratis de descargar e instalar.
-- **Hook Period (7 Días):** El cliente puede activar el probador en **1 producto estrella** de su tienda durante 1 semana.
-- **Cuota de Prueba:** 10 a 15 generaciones gratuitas (suficiente para que el dueño vea el impacto visual).
-- **Branding "Powered by Lookitry":** El widget gratuito muestra tu marca, generando publicidad orgánica en cada tienda que lo instale.
+**Corte de auditoria:** Marzo 2026  
+**Alcance auditado:** `lookitry-woocommerce`, `backend`, `frontend/dashboard/integrations`
 
-### Gatillos de Conversión (Upsell Triggers):
-- **Notificaciones Dinámicas (WP Admin):** "¡Gran trabajo! Tus clientes han usado el probador 10 veces hoy. ¿Quieres activarlo para toda tu colección? Sube a PRO ahora."
-- **Prueba de Valor (ROI):** Un pequeño dashboard dentro de WordPress que muestra: *"Lookitry incrementó tu retención en página un 40% este mes"*.
-- **Límite de Slots:** El usuario ve su catálogo de 100 productos, pero solo puede activar el probador en los que su plan permita (Slots).
+### Resultado ejecutivo
+
+- Integracion base plugin-backend: **funcionando**.
+- Modelo comercial (plugin no gratuito): **alineado a nivel tecnico** (API key + limites por plan).
+- Riesgo principal detectado: **conflicto potencial de upsert** en sync por falta de constraint unico compuesto en DB.
+- Estado general: **operable para piloto**, con deuda tecnica puntual antes de escalar.
 
 ---
 
-## 🛠️ 2. Especificaciones Técnicas (Plugin High-End)
+## 1) Contexto y estado actual
 
-### A. Autenticación y Seguridad
-- **LOOKITRY_API_KEY:** Cada tienda genera una llave única en su Dashboard de Lookitry.
-- **Safe-Link:** El plugin firma las peticiones para evitar que otra persona use los créditos de IA del cliente.
+Este documento reemplaza la version estrategica/conversacional anterior y se enfoca en ejecucion.
 
-### B. Gestión de "Slots" de Productos
-En lugar de cobrar por "instalación", cobramos por **"Slots Activos"** en el catálogo:
-- **Product Mapping:** El plugin añade una columna en la lista de productos de WooCommerce indicando si el probador está [Activo / Inactivo / Slot Agotado].
-- **Slot Rotation:** El cliente puede desactivar el probador en un producto y activarlo en otro (Flexibilidad).
-
-### C. Inyección de UI Inteligente
-- **WooCommerce Hooks:** El plugin se inyecta automáticamente en `woocommerce_after_add_to_cart_button`.
-- **Customization:** Opción para cambiar el estilo del botón (Premium vs Minimalist) desde los ajustes de WordPress.
+- **Fuente de verdad funcional:** `CHANGELOG_GEMINI.md` (implementaciones reales).
+- **Fuente de verdad de prioridad:** `docs/ROADMAP.md` (beta comercial).
+- **Alcance actual del plugin:** integracion WooCommerce en fase MVP, acoplada al backend principal de Lookitry (misma cuenta, misma bolsa de uso, misma suscripcion).
 
 ---
 
-## 💰 3. Estructura de Planes y Rentabilidad (Plugin Optimized)
+## 2) Modelo comercial vigente (sin ambiguedad)
 
-| Plan | Slots (Productos) | Generaciones/mes | Precio (COP) | Valor Agregado |
-|------|-------------------|------------------|--------------|----------------|
-| **Trial (7d)** | 1 Slot | 10 | $0 | Marca de agua Lookitry. |
-| **BASIC** | 5 Slots | 400 | $150.000 | Sin marca de agua + Personalización. |
-| **PRO** | 20 Slots | 1200 | $250.000 | Sincronización Automática de Catálogo. |
-| **ENTERPRISE** | +50 Slots | +3000 | $350.000+ | Soporte prioritario + Analytics Avanzados. |
+### Decision activa
+
+El plugin **no se maneja como producto gratuito con uso libre**.  
+El acceso al valor (generaciones IA y operacion real) requiere:
+
+- trial pagado, o
+- plan activo (BASIC/PRO o superior), segun configuracion comercial vigente.
+
+### Decision descartada
+
+Queda descartada para seguimiento operativo la narrativa de:
+
+- plugin gratis + generaciones gratis como estrategia principal de adquisicion.
+
+Si en el futuro se reactiva algun esquema freemium, debe abrirse como experimento nuevo con metricas y fecha de inicio/cierre.
 
 ---
 
-## 📈 4. ROI y Beneficios para el Dueño de la Tienda
-1. **Reducción de Devoluciones:** Menos gastos de logística inversa al asegurar que la talla queda bien.
-2. **Stickiness:** Una vez que el cliente ve aumentar sus ventas por el probador, el plugin se vuelve **vital**. Es un ingreso recurrente (MRR) de alta retención.
-3. **Escalabilidad:** Cada tienda instalando el plugin es un nodo publicitario de Lookitry en internet.
+## 3) Capacidades implementadas (checklist)
+
+> Estado basado en cambios documentados en marzo 2026.
+
+### Base de integracion y plataforma
+
+- [x] Dashboard de integraciones activo y sin terminologia tecnica confusa para el usuario final.
+- [x] Flujo comercial movido a enfoque beta cobrable (copys y CTAs de prueba paga).
+- [x] Endpoints de embed preparados para interoperar con sitios externos (incluyendo escenario WooCommerce).
+- [x] Correccion backend en actualizacion de productos para mapear `externalId -> external_id`.
+- [x] Dominio/plataforma consolidado en `lookitry.com` y coherencia de entornos productivos.
+
+### Cobros y operacion comercial (dependencia critica para plugin)
+
+- [x] Checkout PayPal real habilitado en dashboard (sin flujo manual por WhatsApp).
+- [x] Flujo de registro post-pago reforzado para evitar bloqueos por slug y mejorar conversion.
+- [x] Varias correcciones de prorrateo, autenticacion y consistencia de checkout ya aplicadas.
+
+### Seguridad y confiabilidad transversal
+
+- [x] Endurecimiento de seguridad y CSP aplicado en backend/frontend/widget.
+- [x] Ajustes de CORS y politicas para soportar integraciones externas controladas.
 
 ---
-**Desarrollado por:** Wilkie devs 
-**Proyecto:** Lookitry Expansion Strategy 2026
 
+## 3.1) Auditoria ejecutable por componente (estado real)
 
-## conversion para profundizar en el tema
+### Plugin WooCommerce (`lookitry-woocommerce`)
 
-1. Plugin Gratis, pero "IA de Pago" (No Trial)
-Olvidamos las 15 generaciones gratis. El plugin se puede descargar gratis, pero para que el botón de "Probar Virtualmente" funcione en la tienda del cliente, deben tener un plan activo (BASIC o PRO).
+- [x] Settings admin para API key (`lookitry_api_key`) operativo.
+- [x] Validacion de API key contra backend (`/api/pruebalo/validate-api-key`).
+- [x] Carga de catalogo Woo local por AJAX.
+- [x] Sync de productos al backend (`/api/pruebalo/sync-woocommerce`).
+- [x] Inyeccion de boton try-on en `woocommerce_after_add_to_cart_button`.
+- [x] Modal + iframe con init seguro (`/api/embed/wordpress/init`).
+- [x] Control de activacion/desactivacion por producto habilitado desde panel Admin de Lookitry.
+- [ ] Telemetria tecnica del plugin (errores de red, retries, tiempos de respuesta).
 
-Tu Gasto: $0. Solo gastas en IA cuando un cliente ya te pagó su mensualidad.
-Cómo "Enamoramos" sin regalar IA: Dentro del plugin en WordPress, ponemos un Video Demo de 30 segundos donde se vea cómo funciona Lookitry en otra tienda. "Así se verá tu tienda en 5 minutos con el Plan Basic".
-2. El Plan "Mini-Start" (Mucho más barato)
-Si el Plan Basic de $150k te parece difícil de vender sin prueba, podrías crear un plan pequeño:
+### Backend (`backend`)
 
-Plan Prueba: $20.000 COP (Pago único).
-Le da 30 generaciones para que pruebe Lookitry en su tienda una semana.
-Si le gusta, los $20.000 se le descuentan del Plan Basic si sube de nivel ese mismo mes.
-Tu Beneficio: Los $20.000 cubren de sobra el costo de la IA de esas 30 pruebas y hasta te dejan una pequeña ganancia.
+- [x] Migracion `brands.api_key` aplicada.
+- [x] Migracion `products.external_id` aplicada.
+- [x] Endpoint de validacion de API key operativo.
+- [x] Endpoint de consulta de productos sincronizados operativo.
+- [x] Endpoint de sync WooCommerce operativo.
+- [x] Endpoint de inicializacion embed WordPress operativo.
+- [x] Resolucion de producto por `external_id` operativa.
+- [x] Normalizacion de uso de API key por header implementada en plugin y backend (con compatibilidad legacy temporal).
+- [ ] Constraint unico `(brand_id, external_id)` pendiente de aplicar/validar en base de datos productiva.
 
-3. Foco en la Mini-Landing (Pago Único)
-Como ya tienes el sistema de Mini-Landing de $650k, enfócate en vender eso. Es un ingreso de caja fuerte e inmediato que puede financiar el desarrollo del plugin más adelante.
+### Dashboard / Frontend integraciones (`frontend`)
 
-Mi recomendación para este momento exacto:
-No lances el plugin con generaciones gratis si no tienes el presupuesto para "quemar" dinero en marketing.
+- [x] Vista de integraciones con API key expuesta al owner.
+- [x] Flujo guiado de instalacion WooCommerce documentado en UI.
+- [x] Vista de estado conectada a `/health`.
+- [x] Nueva opcion en panel admin para control WooCommerce centralizado por marca/producto.
+- [ ] Eliminar datos mock/estaticos en status (carga %, incidentes hardcodeados).
+- [ ] Mostrar metricas reales por tienda/plugin (syncs, errores, latencia, productos activos).
 
+---
 
+## 4) Capacidades pendientes priorizadas (MVP plugin)
 
-con la hoja de ruta tengo para iniciar ese proyecto, otra duda que tengo es que si un cliente compra membresia en el plugin y quiere usar la interfaz dirtecta de lookirtry le funcionaria?
+## Corto plazo (0-6 semanas)
 
+- [ ] Definir y cerrar contrato tecnico del plugin (versionado de API, errores estandar, limites, timeouts).
+- [ ] Publicar flujo completo de autenticacion por API key para WordPress (emision, rotacion, revocacion, auditoria).
+- [ ] Cerrar sincronizacion minima de catalogo WooCommerce con mapeo estable por `external_id`.
+- [ ] Definir reglas de activacion por producto (slots) en backend y su reflejo en plugin.
+- [ ] Telemetria minima por tienda: activaciones, uso del boton, generaciones, fallos de integracion.
 
-¡Absolutamente SÍ! De hecho, esa es la ventaja más potente de tu arquitectura actual. Como todo vive en una sola base de datos de Lookitry (Supabase), el cliente no tiene una cuenta "para el plugin" y otra "para Lookitry". Tiene una sola identidad digital de marca.
+## Mediano plazo (6-16 semanas)
 
-Aquí te explico por qué esto es una mina de oro para ti:
+- [ ] Sincronizacion incremental de catalogo y reintentos robustos.
+- [ ] Observabilidad por merchant (health por tienda, errores frecuentes, latencia por endpoint).
+- [ ] Experiencia de soporte dentro del dashboard para merchants con plugin.
 
-1. El Ecosistema "Omnicanal" (Omnichannel)
-Imagina que le vendes al cliente este escenario:
+---
 
-En su tienda de WordPress: Sus clientes usan el probador a través del plugin.
-En su Instagram (Bio): Tiene el enlace a su Mini-landing de Lookitry (la que te pagan $650k).
-En su Dashboard (Lookitry.com): El cliente entra a ver sus estadísticas totales, a subir nuevos productos o a cambiar sus colores.
-Una sola suscripción (BASIC o PRO) paga todo. Para el cliente, siente que está comprando una "infraestructura de probador" que le sirve para todos sus canales de venta.
+## 5) Arquitectura funcional objetivo (MVP)
 
-2. Ventajas Técnicas (Cero duplicidad)
-Como el cliente se loguea con el mismo email en ambas partes, sus créditos de generación (400 o 1,200) se consumen de la misma bolsa.
-Si usa 10 créditos en WordPress y 5 en su Mini-landing, tu sistema de 
+### 5.1 Autenticacion y seguridad
 
-UsageService
- simplemente resta 15 créditos de su cuenta total.
-3. Venta Cruzada (Cross-selling)
-Si un cliente instala el plugin gratis (en el futuro) o paga el plan más bajo por el plugin, cuando entre al Dashboard de lookitry.com, verá un aviso:
+- Credencial de integracion por marca (`api_key`) gestionada desde dashboard.
+- Firma/validacion de peticiones para evitar uso indebido de creditos por terceros.
+- Logs de uso por tienda para detectar abuso y facilitar soporte.
 
-"¡Atención! Tienes derecho a una Mini-landing premium por un pago único de $650.000 COP. ¿Quieres activarla?"
+### 5.2 Mapeo de productos externos
 
-Conclusión: Tu sistema de Lookitry es el "Cerebro". El plugin de WordPress es solo un "Brazo". El cliente siempre tendrá acceso al cerebro (lookitry.com) sin importar por dónde nos haya conocido.
+- El plugin usa ID de WooCommerce y lo vincula con producto interno via `external_id`.
+- Toda operacion del probador debe resolver esa correspondencia antes de generar.
 
-Este modelo es el que usan los grandes como HubSpot o Mailchimp, y es lo que hace que tu negocio sea escalable y profesional. ¿Te gustaría que en el futuro el login del dashboard tenga un botón que diga "Descargar plugin para mi tienda"? Sería el flujo perfecto.
+### 5.3 Inyeccion UI en WooCommerce
 
-El Gran Embudo "Wilkiedevs" (Tu Hoja de Ruta):
-Nivel Social (Instagram/WhatsApp): Vendes el Embed Code (con tu slug personalizado). Es la solución para quien vende por redes y no tiene web. Es barato, rápido y les da profesionalismo.
+- Inyeccion del boton del probador en hooks de producto (ejemplo: `woocommerce_after_add_to_cart_button`).
+- Configuracion de estilo basica desde plugin para no requerir cambios de codigo en la tienda.
 
-Nivel Crecimiento (Mini-landing): Cuando el vendedor de Instagram crece y quiere un "sitio propio" sin los costos de una web robusta, le vendes la Mini-landing por $650k. Es su primera "tienda online" simplificada.
+### 5.4 Integracion con ecosistema Lookitry
 
-Nivel Profesional (Wilkiedevs): Cuando la Mini-landing ya se queda corta por inventario o pasarelas de pago complejas, el cliente te busca en Wilkiedevs.com para que le hagas su tienda completa en WordPress/WooCommerce.
+- Una sola identidad de marca entre dashboard, mini-landing e integraciones.
+- El consumo se descuenta de la misma suscripcion activa.
 
-Nivel Ecosistema (Plugin de WooCommerce): Una vez que ya son clientes de Wilkiedevs (o ya tienen su propia web robusta), les instalas el Plugin Oficial de Lookitry para que su probador brille dentro de su tienda profesional.
-Por qué esta visión es GÁNAR-GÁNAR:
+---
 
-Lookitry es tu "Caballo de Troya": Es la herramienta que te permite "capturar" a los clientes pequeños (SaaS) y acompañarlos en su crecimiento hasta que se vuelven clientes de tu agencia de desarrollo (High-ticket).
+## 6) KPIs de seguimiento del plugin
 
-Retención total: El cliente no se sale de tu ecosistema. Empieza con un slug y termina con una web completa creada por ti, usando tu misma tecnología de probador.
+## Activacion e implementacion
 
-Conclusión: El Plugin de Lookitry no es para vender Mini-landings, sino la herramienta final de fidelización y valor agregado para tus clientes más grandes y para las tiendas que ya están establecidas en el mercado.
+- **Tiendas con plugin instalado** (semanal).
+- **Tiendas activas** (al menos 1 producto mapeado y boton activo).
+- **Tiempo a primera activacion** (desde instalacion a primer uso real).
 
-Es una estrategia de "Ecosistema de Marca" brutal. ¿Te parece que enfoquemos el Social Login como la puerta de entrada más rápida a ese primer nivel?
+## Uso y valor
 
-ahora como aplico esos paso 3 y 4 para q se cumplan ya que tengo implementado practicamente los pasos 1 y 2
+- **Uso del boton de probador** por tienda y por producto.
+- **Generaciones exitosas** por tienda.
+- **Tasa de error de generacion** y causas principales.
 
+## Negocio
 
-Para que los pasos 3 y 4 se vuelvan realidad técnica y comercialmente, aquí tienes las piezas que debemos instalar en tu plataforma actual de Lookitry (el "puente"):
+- **Conversion a plan pago** desde trial pagado.
+- **Expansion de slots/productos activos** por tienda.
+- **Retencion 30/60 dias** de tiendas con plugin activo.
 
-Paso 3: Marketing del Salto a Wilkiedevs (El Puente al High-Ticket)
-Para incentivar que el cliente de Lookitry te busque para una web completa:
+---
 
-Sección en el Dashboard ("Expandir mi negocio"): Añadiremos un ítem de menú en el Dashboard (debajo de Mini-landing) que diga "Tienda Profesional".
+## 7) Riesgos y decisiones abiertas
 
-Contenido: Un landing-view corto que diga: "¿Tu Mini-landing se quedó pequeña? Escala tu marca a WordPress + WooCommerce con nosotros. Mira lo que hacemos en Wilkiedevs.com".
+### Riesgos actuales
 
-Oferta de Gancho: "Si creas tu web profesional con Wilkiedevs, tienes 2 año de Plan PRO de Lookitry incluido". Esto hace que la decisión sea fácil para el cliente.
+- Dependencia de estabilidad de checkout/onboarding para no romper activacion comercial.
+- Falta de contrato formal de API del plugin puede generar deuda tecnica temprana.
+- Sin observabilidad por tienda se eleva costo de soporte y diagnostico.
+- Riesgo de inconsistencia en sincronizacion masiva si no existe constraint unico compuesto en DB.
+- Riesgo de exposicion accidental de credenciales al usar API key en query params heredados.
 
-Paso 4: Infraestructura para el Plugin (La Tarea Técnica)
-Para que el plugin de WooCommerce funcione, necesitamos que tu backend esté listo para recibir peticiones de "terceros" (WordPress).
+### Decisiones abiertas (resolver en este ciclo)
 
-Tareas Técnicas Inmediatas:
+- Definir politica final de slots (limites, rotacion, UX en dashboard/plugin).
+- Definir forma de mostrar ROI al merchant (dashboard Lookitry, plugin, o ambos).
+- Definir estrategia de lanzamiento inicial (piloto cerrado vs salida abierta controlada).
 
-API Keys (Tabla brands): Debemos crear un campo api_key en la tabla de cada marca. El cliente la copiará de Lookitry y la pegará en su WordPress.
+---
 
-Siguiente Paso: Crear en el Dashboard una pestaña de "Integraciones" donde el usuario vea su Key.
-Identificadores Externos (Tabla products): Actualizaremos la tabla de productos para que acepte un external_id.
-Por qué: Cuando el plugin de WordPress pida un probador para la "Camiseta Roja (ID 55)", Lookitry debe saber que el ID 55 de WooCommerce corresponde a tu ID interno en Supabase.
-Endpoint del Widget Universal: Crear una ruta limpia (podemos usar la de /embed/:slug que ya tienes) que sepa leer esos IDs externos.
-https://lookitry.com/embed/mi-marca?wc_id=55
+## 8) Hitos 30-60 dias
 
+## Hito 1 - Base tecnica y comercial cerrada (Semanas 1-2)
 
-¿Por dónde empezamos hoy?
-Si quieres avanzar hoy mismo en la implementación de estos pasos, mi recomendación es:
+- Contrato de API plugin definido.
+- Flujo API key completo (crear/rotar/revocar).
+- Checklist QA de checkout + onboarding sin bloqueantes.
+- Constraint unico `(brand_id, external_id)` aplicado y validado en ambiente productivo.
 
-Crear el ítem de navegación "Tienda Profesional" en el Dashboard de Lookitry con el enlace a Wilkiedevs. (Es el paso más rápido y ya te puede traer cotizaciones de webs).
-Modificar la tabla brands en Supabase para soportar la api_key (el cimiento del plugin).
+## Hito 2 - MVP funcional en tiendas piloto (Semanas 3-4)
+
+- Sync basico de catalogo activo.
+- Activacion de probador en producto WooCommerce funcionando end-to-end.
+- Telemetria minima disponible por merchant.
+
+## Hito 3 - Validacion de conversion y retencion (Semanas 5-8)
+
+- Reporte semanal de KPIs del plugin.
+- Ajustes de UX/comercial basados en datos reales.
+- Decision go/no-go para ampliar rollout.
+
+---
+
+## 9) Definicion de "MVP listo"
+
+El Plugin MVP se considera listo cuando:
+
+- permite autenticar tienda con API key valida;
+- mapea y activa productos con `external_id` sin errores criticos;
+- genera imagenes de forma estable en tiendas piloto;
+- reporta metricas minimas de uso/error por tienda;
+- opera bajo modelo comercial pago sin contradicciones de mensaje en producto/documentacion.
+
+---
+
+## 10) Plan de fixes tecnicos priorizados (accionable)
+
+## Prioridad P0 (antes de escalar tiendas)
+
+- [ ] **DB hardening sync Woo:** migracion creada para unique constraint/index `(brand_id, external_id)`; falta aplicar y validar en entorno productivo.
+- [x] **Compatibilidad de API key:** backend y plugin unificados para flujo principal por header.
+- [x] **Seguridad de transporte de key:** endpoints plugin migrados a `x-api-key` con compatibilidad temporal de query param.
+
+## Prioridad P1 (operacion piloto robusta)
+
+- [ ] **Status real por tienda:** reemplazar bloques mock en dashboard de estado por datos reales.
+- [ ] **Observabilidad plugin:** logging minimo de errores de sync/init y tiempos de respuesta por tienda.
+- [ ] **QA E2E Woo:** pruebas guiadas (instalar plugin -> validar key -> sync -> abrir modal -> generar).
+
+## Prioridad P2 (post-piloto, crecimiento)
+
+- [ ] **Gestion de slots en plugin:** UX de activacion/desactivacion por producto y rotacion.
+- [ ] **Retry inteligente de sync:** reintentos con backoff para fallos transitorios.
+- [ ] **Reporte semanal automatico:** activacion, uso, errores, retencion 30/60 dias.

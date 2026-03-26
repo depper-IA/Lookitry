@@ -1,4 +1,4 @@
-﻿import { Response } from 'express';
+import { Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { AdminService } from '../services/admin.service';
 import { notificationService } from '../services/notification.service';
@@ -1009,6 +1009,123 @@ export const getPayments = async (req: any, res: Response) => {
       error: 'INTERNAL_ERROR',
       message: 'Error al obtener pagos',
     });
+  }
+};
+
+/**
+ * GET /api/admin/woocommerce/brands-summary
+ * Resumen de marcas con estado de integración WooCommerce.
+ */
+export const getWooBrandsSummary = async (_req: any, res: Response) => {
+  try {
+    const { data: brands, error } = await supabaseAdmin
+      .from('brands')
+      .select('id, name, slug, email, api_key, plan, subscription_status, updated_at')
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+
+    const brandIds = (brands || []).map((b: any) => b.id);
+    let productCounts = new Map<string, { total: number; active: number; mapped: number }>();
+
+    if (brandIds.length) {
+      const { data: products, error: prodErr } = await supabaseAdmin
+        .from('products')
+        .select('brand_id, is_active, external_id')
+        .in('brand_id', brandIds);
+
+      if (prodErr) throw prodErr;
+
+      for (const p of products || []) {
+        const current = productCounts.get(p.brand_id) || { total: 0, active: 0, mapped: 0 };
+        current.total += 1;
+        if (p.is_active) current.active += 1;
+        if (p.external_id) current.mapped += 1;
+        productCounts.set(p.brand_id, current);
+      }
+    }
+
+    const rows = (brands || []).map((b: any) => {
+      const counts = productCounts.get(b.id) || { total: 0, active: 0, mapped: 0 };
+      return {
+        ...b,
+        has_api_key: !!b.api_key,
+        product_counts: counts,
+      };
+    });
+
+    return res.status(200).json({ brands: rows, count: rows.length });
+  } catch (error: any) {
+    console.error('Error in getWooBrandsSummary:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener resumen WooCommerce' });
+  }
+};
+
+/**
+ * GET /api/admin/woocommerce/brands/:id/products
+ * Productos de una marca para control de activación.
+ */
+export const getWooBrandProducts = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { data: products, error } = await supabaseAdmin
+      .from('products')
+      .select('id, name, category, external_id, is_active, updated_at')
+      .eq('brand_id', id)
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+
+    return res.status(200).json({
+      products: products || [],
+      count: (products || []).length,
+    });
+  } catch (error: any) {
+    console.error('Error in getWooBrandProducts:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener productos WooCommerce de la marca' });
+  }
+};
+
+/**
+ * PATCH /api/admin/woocommerce/brands/:id/products/:productId/active
+ * Activar o desactivar un producto mapeado para control de slots.
+ */
+export const setWooProductActive = async (req: any, res: Response) => {
+  try {
+    const { id, productId } = req.params;
+    const { is_active } = req.body;
+
+    if (typeof is_active !== 'boolean') {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'is_active debe ser boolean' });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('products')
+      .update({ is_active, updated_at: new Date().toISOString() })
+      .eq('id', productId)
+      .eq('brand_id', id)
+      .select('id, name, is_active, external_id')
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: 'Producto no encontrado para esta marca' });
+    }
+
+    auditService.log({
+      admin_id: req.admin?.id ?? 'unknown',
+      admin_email: req.admin?.email ?? 'unknown',
+      action: 'brand.woo_product_toggle' as any,
+      target_brand_id: id,
+      details: { product_id: productId, is_active },
+    });
+
+    return res.status(200).json({
+      message: `Producto ${is_active ? 'activado' : 'desactivado'} exitosamente`,
+      product: data,
+    });
+  } catch (error: any) {
+    console.error('Error in setWooProductActive:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al actualizar estado de producto' });
   }
 };
 

@@ -457,7 +457,9 @@ export class PruebaloController {
    * Endpoint público para validar una clave de API desde el plugin
    */
   validateApiKey = asyncHandler(async (req: Request, res: Response) => {
-    const key = req.query.key as string;
+    const keyFromHeader = req.headers['x-api-key'] as string;
+    const keyFromQuery = req.query.key as string;
+    const key = keyFromHeader || keyFromQuery;
     const incomingDomain = req.query.domain as string;
     
     if (!key) {
@@ -488,13 +490,14 @@ export class PruebaloController {
     const { PLANS } = await import('../config/plans');
     const planInfo = PLANS[brand.plan as keyof typeof PLANS] || PLANS['BASIC'];
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       valid: true, 
       brandName: brand.name,
       logo: brand.logo,
       logo_light: (brand as any).logo_light || brand.logo,
       logo_dark: (brand as any).logo_dark || brand.logo,
       plan: brand.plan,
+      deprecatedQueryKey: !keyFromHeader && !!keyFromQuery,
       usage: {
         current: currentCount,
         max: planInfo.maxProducts,
