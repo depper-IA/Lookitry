@@ -38,7 +38,8 @@ function setCookieToken(res: Response, token: string): void {
  */
 export async function registerPostPayment(req: AuthRequest, res: Response) {
   try {
-    const { contact_name, name, slug, password, ref, fingerprint, method, orderId } = req.body;
+    const { contact_name, name, slug, password, ref: bodyRef, reference, fingerprint, method, orderId } = req.body;
+    const ref = bodyRef || reference;
 
     // 1. Validar que ref esté presente
     if (!ref) {
