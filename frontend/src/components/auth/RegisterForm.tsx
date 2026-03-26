@@ -66,6 +66,22 @@ export default function RegisterForm() {
   const [isPaidFlow, setIsPaidFlow] = useState(false);
   const [paymentRef, setPaymentRef] = useState<string | null>(null);
 
+  const slugify = (value: string) =>
+    value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-');
+
+  const suggestAlternativeSlug = () => {
+    const base = (form.slug || slugify(form.name) || 'mi-marca').replace(/-+$/g, '');
+    const suffix = Math.floor(100 + Math.random() * 900); // 3 dígitos
+    setForm(prev => ({ ...prev, slug: `${base}-${suffix}` }));
+    setError('');
+  };
+
   useEffect(() => {
     // 1. Verificar si viene de un pago exitoso (funnel invertido)
     const params = new URLSearchParams(window.location.search);
@@ -149,14 +165,8 @@ export default function RegisterForm() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === 'name') {
-      const slug = value
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9\s-]/g, '')
-        .trim()
-        .replace(/\s+/g, '-');
-      setForm((prev) => ({ ...prev, name: value, slug }));
+      const newSlug = slugify(value);
+      setForm((prev) => ({ ...prev, name: value, slug: prev.slug ? prev.slug : newSlug }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
@@ -302,12 +312,11 @@ export default function RegisterForm() {
                 value={form.name}
                 onChange={handleChange}
                 required
-                readOnly={isPaidFlow && prefilledFields.name}
                 placeholder="Mi Marca"
-                className={`w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors ${isPaidFlow && prefilledFields.name ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
               />
               {isPaidFlow && (
-                <p className="text-[11px] text-[#555] mt-1 italic">Dato confirmado desde tu pago</p>
+                <p className="text-[11px] text-[#555] mt-1 italic">Puedes ajustar el nombre de marca si ya existe una similar.</p>
               )}
             </div>
 
@@ -338,11 +347,20 @@ export default function RegisterForm() {
                 <input
                   name="slug"
                   value={form.slug}
-                  onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                  readOnly={isPaidFlow && prefilledFields.slug}
+                  onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })}
                   placeholder="mi-marca"
-                  className={`flex-1 px-3 py-2.5 text-[13px] text-white bg-transparent focus:outline-none placeholder-[#333] ${isPaidFlow && prefilledFields.slug ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  className="flex-1 px-3 py-2.5 text-[13px] text-white bg-transparent focus:outline-none placeholder-[#333]"
                 />
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-[11px] text-[#555]">Si está ocupado, prueba con una variación.</p>
+                <button
+                  type="button"
+                  onClick={suggestAlternativeSlug}
+                  className="text-[11px] text-[#FF5C3A] hover:text-[#e84d2c] transition-colors"
+                >
+                  Sugerir otro
+                </button>
               </div>
             </div>
 
@@ -390,6 +408,17 @@ export default function RegisterForm() {
             {error && (
               <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[13px] px-4 py-3 rounded-lg">
                 {error}
+                {error.toLowerCase().includes('slug ya está en uso') && (
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={suggestAlternativeSlug}
+                      className="text-[#FF5C3A] underline font-medium"
+                    >
+                      Generar slug alternativo
+                    </button>
+                  </div>
+                )}
                 {error.includes('dispositivo') && (
                   <div className="mt-2">
                     <Link href="/planes" className="text-[#FF5C3A] underline font-medium">

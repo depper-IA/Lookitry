@@ -12,25 +12,44 @@ export default function PoliticaUsoPage() {
   return (
     <>
       <LandingNav />
-      <main className="min-h-screen bg-[#f5f2ee]">
-        <section className="bg-[#0a0a0a] px-6 md:px-8 py-14 md:py-20">
-          <div className="max-w-3xl mx-auto">
-            <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Legal</p>
-            <h1 className="font-syne font-extrabold text-3xl md:text-4xl text-white tracking-tight">
+      <main className="min-h-screen bg-[#030303]">
+        <section className="px-6 md:px-8 py-16 md:py-24 border-b border-[#1a1a1a]">
+          <div className="max-w-5xl mx-auto">
+            <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#FF5C3A] mb-3">Legal</p>
+            <h1 className="font-jakarta font-bold text-3xl md:text-5xl text-white tracking-tight">
               Política de uso
             </h1>
+            <p className="text-[#999] text-sm md:text-base mt-3 max-w-3xl">
+              Lineamientos para uso responsable del probador virtual en web, campañas y canales de venta.
+            </p>
           </div>
         </section>
+
         <section className="px-6 md:px-8 py-12 md:py-16">
-          <div className="max-w-3xl mx-auto bg-white border border-[#e8e4df] rounded-2xl p-6 md:p-8 space-y-4 text-sm text-[#555]">
-            <p>Lookitry debe usarse solo para fines comerciales legítimos y conforme a la ley.</p>
-            <p>Está prohibido subir contenido ilícito, suplantar identidad o vulnerar derechos de terceros.</p>
-            <p>Las imágenes subidas por usuarios finales deben contar con autorización de uso por parte del titular.</p>
-            <p>Lookitry puede suspender cuentas con uso abusivo, fraude o intentos de explotación técnica de la plataforma.</p>
-            <p className="pt-2">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 text-sm text-[#bbb]">
+              <p className="text-[#FF5C3A] text-[11px] uppercase tracking-wider font-semibold mb-3">Permitido</p>
+              <ul className="space-y-2 list-disc pl-4">
+                <li>Uso comercial legítimo en tiendas o marcas autorizadas.</li>
+                <li>Uso de imágenes con consentimiento del titular.</li>
+                <li>Integración del widget respetando esta política y términos.</li>
+              </ul>
+            </div>
+            <div className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 text-sm text-[#bbb]">
+              <p className="text-[#FF5C3A] text-[11px] uppercase tracking-wider font-semibold mb-3">No permitido</p>
+              <ul className="space-y-2 list-disc pl-4">
+                <li>Suplantación de identidad o contenido ilícito.</li>
+                <li>Uso fraudulento de pagos, API o automatizaciones abusivas.</li>
+                <li>Intentos de vulneración técnica o extracción no autorizada.</li>
+              </ul>
+            </div>
+            <div className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 md:col-span-2 text-sm text-[#bbb]">
+              <p>Lookitry puede suspender cuentas ante incumplimientos graves o reiterados para proteger a usuarios y marcas.</p>
+              <p className="pt-3">
               Para términos completos, consulta{' '}
               <Link href="/terminos" className="text-[#FF5C3A] hover:underline">Términos y Condiciones</Link>.
             </p>
+            </div>
           </div>
         </section>
       </main>
