@@ -106,7 +106,8 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
  * El usuario se registrará DESPUÉS del pago exitoso.
  */
 router.post('/initiate-guest', asyncHandler(async (req, res) => {
-  const { email, brandName, method = 'wompi' } = req.body;
+  const { email, brandName: rawBrandName, name, method = 'wompi' } = req.body;
+  const brandName = rawBrandName || name;
 
   if (!email || !email.includes('@')) {
     return res.status(400).json({ error: 'Email válido es requerido' });
