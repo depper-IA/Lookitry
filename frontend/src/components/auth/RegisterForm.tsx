@@ -162,7 +162,7 @@ export default function RegisterForm() {
               </svg>
             </div>
             <h1 className="font-syne font-bold text-[20px] text-white mb-2">
-              No hay prueba gratuita activa
+              No hay prueba activa
             </h1>
             <p className="text-[13px] text-[#555] mb-7 leading-relaxed">
               En este momento no hay campañas de prueba disponibles.<br />
