@@ -298,7 +298,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                       >
                         <X size={12} />
                       </button>
-                      <p className="mb-2 leading-relaxed pr-4">Sube una foto de tu prenda en alta calidad, centrada y sin perchas. Para mejores resultados, usa formato vertical (3:4) o <a href="#" target="_blank" className="text-[#FF5C3A] font-semibold hover:underline">revisa las medidas</a>.</p>
+                      <p className="mb-2 leading-relaxed pr-4">Sube una foto de tu prenda en alta calidad, centrada y sin perchas. Para mejores resultados, usa formato vertical (3:4).</p>
                       <p className="text-[10px] text-[#888] pb-0.5 border-t border-[#333] pt-2">Una buena iluminación garantiza una prueba virtual perfecta.</p>
                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-[#333]"></div>
                     </motion.div>

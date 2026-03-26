@@ -89,7 +89,7 @@ const STEPS: Step[] = [
     title: 'Comparte o embebe el probador',
     description: 'Copia el link de tu probador o el código iframe para tu sitio web.',
     action: 'Ver código embed',
-    href: '/dashboard/embed',
+    href: '/dashboard/integrations',
     icon: <IconCode />,
   },
 ];
