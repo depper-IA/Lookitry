@@ -149,11 +149,18 @@ export default function CheckoutLandingPage() {
         else if (data.url) window.location.href = data.url;
         else throw new Error(data.error || 'Error al generar link de pago');
       } else {
-        // PayPal Flow (Simulado por ahora o redirigir a whatsapp para manual)
-        const usdAmount = Math.ceil(totalPrice / pricing.trm);
-        const mdText = includePlan ? `Activar Mini-landing + Plan ${planToSend} x ${monthsToSend} meses` : `Activar Mini-landing (Pago Único)`;
-        const msg = `Hola, quiero ${mdText} mediante PayPal por un total de USD $${usdAmount}. Mi marca es ${brand?.name} (${brand?.slug})`;
-        window.open(`https://wa.me/573001234567?text=${encodeURIComponent(msg)}`, '_blank');
+        // PayPal real: backend convierte COP -> USD con TRM y devuelve checkout URL
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/payments/paypal/checkout-url?plan=${planToSend}&months=${monthsToSend}&includes_landing=true&amount=${totalPrice}&trm=${pricing.trm}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        );
+        const data = await res.json();
+        if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+        else throw new Error(data.error || 'Error al generar link de PayPal');
       }
     } catch (err: any) {
       setError(err.message || 'Error al procesar el pago');
