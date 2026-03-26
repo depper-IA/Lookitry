@@ -31,12 +31,21 @@ function lookitry_settings_page() {
         check_admin_referer( 'lookitry_settings_nonce' );
         
         $api_key = sanitize_text_field( $_POST['lookitry_api_key'] ?? '' );
+        $button_text = sanitize_text_field( $_POST['lookitry_button_text'] ?? 'Probar Virtualmente' );
+        $button_bg_color = sanitize_hex_color( $_POST['lookitry_button_bg_color'] ?? '#FF5C3A' ) ?: '#FF5C3A';
+        $button_text_color = sanitize_hex_color( $_POST['lookitry_button_text_color'] ?? '#FFFFFF' ) ?: '#FFFFFF';
         update_option( 'lookitry_api_key', $api_key );
+        update_option( 'lookitry_button_text', $button_text );
+        update_option( 'lookitry_button_bg_color', $button_bg_color );
+        update_option( 'lookitry_button_text_color', $button_text_color );
         
         echo '<div class="notice notice-success is-dismissible"><p>Ajustes guardados correctamente.</p></div>';
     }
 
     $api_key = get_option( 'lookitry_api_key', '' );
+    $button_text = get_option( 'lookitry_button_text', 'Probar Virtualmente' );
+    $button_bg_color = get_option( 'lookitry_button_bg_color', '#FF5C3A' );
+    $button_text_color = get_option( 'lookitry_button_text_color', '#FFFFFF' );
     $version = defined('LOOKITRY_PLUGIN_VERSION') ? LOOKITRY_PLUGIN_VERSION : '1.2.5';
     ?>
     <style>
@@ -234,6 +243,23 @@ function lookitry_settings_page() {
                         </div>
                         <p class="description" style="margin-top: 15px;">Obtén tu clave en el <a href="https://lookitry.com/dashboard/integrations" target="_blank" style="color: #FF5C3A; font-weight: 600; text-decoration: none;">Panel de Lookitry &rarr;</a></p>
                     </div>
+                    <div class="lookitry-field-group">
+                        <label for="lookitry_button_text">Texto del boton del probador</label>
+                        <input name="lookitry_button_text" type="text" id="lookitry_button_text" value="<?php echo esc_attr( $button_text ); ?>" placeholder="Probar Virtualmente" style="width: 100%; height: 48px; border-radius: 10px; border: 1px solid #cbd5e1; padding: 0 18px; font-size: 15px; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05);">
+                    </div>
+                    <div class="lookitry-field-group">
+                        <label>Estilo del boton</label>
+                        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+                            <div>
+                                <label for="lookitry_button_bg_color" style="font-size: 12px; color: #475569;">Color de fondo</label>
+                                <input name="lookitry_button_bg_color" type="color" id="lookitry_button_bg_color" value="<?php echo esc_attr( $button_bg_color ); ?>" style="width: 100%; height: 48px; border-radius: 10px; border: 1px solid #cbd5e1; padding: 6px;">
+                            </div>
+                            <div>
+                                <label for="lookitry_button_text_color" style="font-size: 12px; color: #475569;">Color del texto</label>
+                                <input name="lookitry_button_text_color" type="color" id="lookitry_button_text_color" value="<?php echo esc_attr( $button_text_color ); ?>" style="width: 100%; height: 48px; border-radius: 10px; border: 1px solid #cbd5e1; padding: 6px;">
+                            </div>
+                        </div>
+                    </div>
                     <div style="display: flex; gap: 10px;">
                         <input type="submit" name="lookitry_save_settings" class="button lookitry-btn-primary" value="Guardar Cambios" style="height: 48px; padding: 0 35px;">
                     </div>
@@ -247,6 +273,7 @@ function lookitry_settings_page() {
         var catalogData = [];
         var syncedIds = [];
         var currentKey = '<?php echo esc_js($api_key); ?>';
+        var telemetryUrl = 'https://api.lookitry.com/api/pruebalo/plugin-telemetry';
 
         function showNotice(msg, type = 'success') {
             var $n = $('#lookitry-notice');
@@ -254,6 +281,74 @@ function lookitry_settings_page() {
                .addClass('lookitry-notice-' + type)
                .text(msg).fadeIn();
             setTimeout(() => $n.fadeOut(), 5000);
+        }
+
+        function sendTelemetry(payload, apiKey) {
+            if (!apiKey) return;
+
+            $.ajax({
+                url: telemetryUrl,
+                method: 'POST',
+                headers: { 'x-api-key': apiKey, 'x-store-domain': window.location.origin },
+                contentType: 'application/json',
+                data: JSON.stringify(payload)
+            });
+        }
+
+        function requestWithTelemetry(options) {
+            var attempt = 0;
+            var maxRetries = typeof options.maxRetries === 'number' ? options.maxRetries : 1;
+
+            function run() {
+                var startedAt = Date.now();
+
+                $.ajax({
+                    url: options.url,
+                    method: options.method || 'GET',
+                    data: options.data,
+                    headers: Object.assign({ 'x-store-domain': window.location.origin }, options.headers || {}),
+                    contentType: options.contentType
+                }).done(function(res, textStatus, xhr) {
+                    sendTelemetry({
+                        event_name: 'request_completed',
+                        endpoint: options.endpointLabel,
+                        success: true,
+                        status_code: xhr.status,
+                        duration_ms: Date.now() - startedAt,
+                        retry_count: attempt,
+                        store_domain: window.location.origin,
+                        metadata: options.telemetryMetadata || {}
+                    }, options.telemetryApiKey ? options.telemetryApiKey() : '');
+
+                    if (options.success) options.success(res, textStatus, xhr);
+                    if (options.complete) options.complete(xhr, 'success');
+                }).fail(function(xhr, textStatus, errorThrown) {
+                    var retryable = attempt < maxRetries && (xhr.status === 0 || xhr.status >= 500);
+
+                    if (retryable) {
+                        attempt += 1;
+                        setTimeout(run, Math.min(1500, attempt * 400));
+                        return;
+                    }
+
+                    sendTelemetry({
+                        event_name: 'request_failed',
+                        endpoint: options.endpointLabel,
+                        success: false,
+                        status_code: xhr.status || null,
+                        duration_ms: Date.now() - startedAt,
+                        retry_count: attempt,
+                        error_message: errorThrown || textStatus || 'request_failed',
+                        store_domain: window.location.origin,
+                        metadata: options.telemetryMetadata || {}
+                    }, options.telemetryApiKey ? options.telemetryApiKey() : '');
+
+                    if (options.error) options.error(xhr, textStatus, errorThrown);
+                    if (options.complete) options.complete(xhr, textStatus || 'error');
+                });
+            }
+
+            run();
         }
 
         // Tabs Logic
@@ -271,9 +366,12 @@ function lookitry_settings_page() {
 
             if (!silent) $('#lookitry-test-connection').text('Validando...');
 
-            $.ajax({
+            requestWithTelemetry({
                 url: 'https://api.lookitry.com/api/pruebalo/validate-api-key',
                 method: 'GET',
+                endpointLabel: '/api/pruebalo/validate-api-key',
+                telemetryApiKey: function() { return key; },
+                maxRetries: 1,
                 data: { domain: window.location.origin },
                 headers: { 'x-api-key': key },
                 success: function(res) {
@@ -321,9 +419,12 @@ function lookitry_settings_page() {
         }
 
         function loadSyncedList(key) {
-            $.ajax({
+            requestWithTelemetry({
                 url: 'https://api.lookitry.com/api/pruebalo/synced-products',
                 method: 'GET',
+                endpointLabel: '/api/pruebalo/synced-products',
+                telemetryApiKey: function() { return key; },
+                maxRetries: 1,
                 headers: { 'x-api-key': key },
                 success: function(res) {
                     if (res.success) {
@@ -437,9 +538,12 @@ function lookitry_settings_page() {
 
             $btn.prop('disabled', true).text('Sincronizando ' + selectedIdx.length + ' productos...');
 
-            $.ajax({
+            requestWithTelemetry({
                 url: 'https://api.lookitry.com/api/pruebalo/sync-woocommerce',
                 method: 'POST',
+                endpointLabel: '/api/pruebalo/sync-woocommerce',
+                telemetryApiKey: function() { return apiKey; },
+                maxRetries: 2,
                 headers: { 'x-api-key': apiKey },
                 contentType: 'application/json',
                 data: JSON.stringify({ products: productsToSync }),

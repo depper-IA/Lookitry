@@ -30,6 +30,7 @@ import {
   X
 } from 'lucide-react';
 import { Spinner } from '@/components/ui/Spinner';
+import { api } from '@/services/api';
 
 // ── Animaciones ──────────────────────────────────────────────────────────────
 const containerVariants = {
@@ -52,10 +53,27 @@ export default function IntegrationsPage() {
   const { brand, refreshBrand } = useAuth();
   const [showKey, setShowKey] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [metricsLoading, setMetricsLoading] = useState(true);
+  const [wooMetrics, setWooMetrics] = useState<null | {
+    products: {
+      totalMappedProducts: number;
+      activeMappedProducts: number;
+    };
+    telemetry: {
+      totalRequests: number;
+      failedRequests: number;
+      avgLatencyMs: number;
+      lastSyncAt: string | null;
+    };
+  }>(null);
   
   // Refrescar datos al montar para obtener la API Key
   useEffect(() => {
     refreshBrand();
+    api.get('/brands/me/woocommerce-metrics')
+      .then((res) => setWooMetrics(res.data))
+      .catch((error) => console.error('Error loading WooCommerce metrics:', error))
+      .finally(() => setMetricsLoading(false));
   }, []);
 
   const apiKey = (brand as any)?.apiKey || (brand as any)?.api_key || '•••••••••••••••••••••••••••••';
@@ -196,6 +214,46 @@ export default function IntegrationsPage() {
                     </div>
                  </div>
               </div>
+
+              <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+                 {metricsLoading ? (
+                    <div className="col-span-2 xl:col-span-4 flex items-center justify-center py-10">
+                       <Spinner />
+                    </div>
+                 ) : (
+                    <>
+                       <div className="p-5 md:p-7 rounded-3xl bg-zinc-50 border border-zinc-100">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Productos activos</p>
+                          <p className="text-2xl md:text-3xl font-black tracking-tight text-zinc-900">{wooMetrics?.products.activeMappedProducts || 0}</p>
+                       </div>
+                       <div className="p-5 md:p-7 rounded-3xl bg-zinc-50 border border-zinc-100">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Mapeados</p>
+                          <p className="text-2xl md:text-3xl font-black tracking-tight text-zinc-900">{wooMetrics?.products.totalMappedProducts || 0}</p>
+                       </div>
+                       <div className="p-5 md:p-7 rounded-3xl bg-zinc-50 border border-zinc-100">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Errores plugin (30d)</p>
+                          <p className="text-2xl md:text-3xl font-black tracking-tight text-zinc-900">{wooMetrics?.telemetry.failedRequests || 0}</p>
+                       </div>
+                       <div className="p-5 md:p-7 rounded-3xl bg-zinc-50 border border-zinc-100">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Latencia promedio</p>
+                          <p className="text-2xl md:text-3xl font-black tracking-tight text-zinc-900">{wooMetrics?.telemetry.avgLatencyMs || 0}ms</p>
+                       </div>
+                    </>
+                 )}
+              </div>
+
+              {!metricsLoading && (
+                 <div className="rounded-3xl border border-zinc-100 bg-zinc-50 px-6 py-5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                      Ultima sincronizacion exitosa
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-zinc-900">
+                      {wooMetrics?.telemetry.lastSyncAt
+                        ? new Date(wooMetrics.telemetry.lastSyncAt).toLocaleString('es-CO')
+                        : 'Aun no registrada'}
+                    </p>
+                 </div>
+              )}
 
               {/* PASOS */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 pt-4 md:pt-6">

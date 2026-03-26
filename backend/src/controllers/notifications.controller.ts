@@ -17,7 +17,8 @@ export type NotificationType =
   | 'service_down'
   | 'service_recovered'
   | 'smtp_down'
-  | 'smtp_recovered';
+  | 'smtp_recovered'
+  | 'plugin_error_spike';
 
 export interface AdminNotification {
   id: string;

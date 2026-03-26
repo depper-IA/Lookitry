@@ -6,6 +6,7 @@ import { UpdateNotificationPreferencesDto } from '../types';
 import { emailService } from '../services/email.service';
 import { invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { createAdminNotification } from '../utils/adminNotifications';
+import { getWooProductSummary, getWooTelemetrySummary } from '../utils/wooTelemetry';
 
 const brandsService = new BrandsService();
 
@@ -37,6 +38,33 @@ export class BrandsController {
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
         message: 'Error al obtener datos de la marca',
+      });
+    }
+  }
+
+  async getWooCommerceMetrics(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand) {
+        return res.status(401).json({
+          error: 'UNAUTHORIZED',
+          message: 'No autenticado',
+        });
+      }
+
+      const [productSummary, telemetrySummary] = await Promise.all([
+        getWooProductSummary(req.brand.id),
+        getWooTelemetrySummary(req.brand.id, 30),
+      ]);
+
+      return res.status(200).json({
+        products: productSummary,
+        telemetry: telemetrySummary,
+      });
+    } catch (error: any) {
+      console.error('Error en getWooCommerceMetrics:', error);
+      return res.status(500).json({
+        error: 'INTERNAL_ERROR',
+        message: 'Error al obtener metricas de WooCommerce',
       });
     }
   }

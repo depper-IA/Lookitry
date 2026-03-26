@@ -11,6 +11,8 @@ import { FeedbackService, GenerationErrorType } from '../services/feedback.servi
 import { PromptRagService } from '../services/prompt-rag.service';
 import { UploadService } from '../services/upload.service';
 import { buildCategoryRulesBlock, getPromptRules } from '../config/prompt-rules';
+import { createAdminNotification } from '../utils/adminNotifications';
+import { getExpectedStoreHost, getIncomingStoreHost, isAllowedStoreHost } from '../utils/storeDomain';
 import {
   NotFoundError,
   ValidationError,
@@ -521,6 +523,13 @@ export class PruebaloController {
       return res.status(401).json({ success: false, message: 'Clave de API inválida' });
     }
 
+    if (!isAllowedStoreHost(brand, req)) {
+      return res.status(403).json({
+        success: false,
+        message: `Dominio no autorizado para esta API Key. Esperado: ${getExpectedStoreHost(brand)}. Recibido: ${getIncomingStoreHost(req)}`,
+      });
+    }
+
     const syncedIds = await productsService.getAllSyncedExternalIds(brand.id);
 
     return res.status(200).json({ success: true, syncedIds });
@@ -547,6 +556,12 @@ export class PruebaloController {
       throw new ValidationError('Clave de API inválida');
     }
 
+    if (!isAllowedStoreHost(brand, req)) {
+      throw new ValidationError(
+        `Dominio no autorizado para esta API Key. Esperado: ${getExpectedStoreHost(brand)}. Recibido: ${getIncomingStoreHost(req)}`
+      );
+    }
+
     const result = await productsService.bulkSyncProducts(brand.id, products);
 
     // Invalidar caché tras sincronización
@@ -557,6 +572,100 @@ export class PruebaloController {
       message: 'Sincronización completada',
       result
     });
+  });
+
+  /**
+   * POST /api/pruebalo/plugin-telemetry
+   * Telemetria minima del plugin WooCommerce: errores, retries y latencia.
+   */
+  recordPluginTelemetry = asyncHandler(async (req: Request, res: Response) => {
+    const apiKey = req.headers['x-api-key'] as string;
+
+    if (!apiKey) {
+      throw new ValidationError('Clave de API requerida');
+    }
+
+    const brand = await brandsService.getBrandByApiKey(apiKey);
+    if (!brand) {
+      throw new ValidationError('Clave de API inválida');
+    }
+
+    if (!isAllowedStoreHost(brand, req)) {
+      throw new ValidationError(
+        `Dominio no autorizado para esta API Key. Esperado: ${getExpectedStoreHost(brand)}. Recibido: ${getIncomingStoreHost(req)}`
+      );
+    }
+
+    const endpoint = String(req.body.endpoint || '').trim();
+    const eventName = String(req.body.event_name || 'request_completed').trim();
+    const success = Boolean(req.body.success);
+    const durationMs = Number.isFinite(Number(req.body.duration_ms))
+      ? Math.max(0, Math.round(Number(req.body.duration_ms)))
+      : 0;
+    const retryCount = Number.isFinite(Number(req.body.retry_count))
+      ? Math.max(0, Math.round(Number(req.body.retry_count)))
+      : 0;
+    const statusCode = Number.isFinite(Number(req.body.status_code))
+      ? Math.round(Number(req.body.status_code))
+      : null;
+    const errorMessage = req.body.error_message
+      ? String(req.body.error_message).slice(0, 500)
+      : null;
+    const storeDomain = req.body.store_domain
+      ? String(req.body.store_domain).slice(0, 255)
+      : null;
+    const productExternalId = req.body.product_external_id
+      ? String(req.body.product_external_id).slice(0, 255)
+      : null;
+    const metadata = req.body.metadata && typeof req.body.metadata === 'object'
+      ? req.body.metadata
+      : {};
+
+    if (!endpoint) {
+      throw new ValidationError('endpoint es requerido');
+    }
+
+    const { error } = await supabaseAdmin
+      .from('plugin_telemetry_events')
+      .insert({
+        brand_id: brand.id,
+        source: 'woocommerce-plugin',
+        event_name: eventName,
+        endpoint,
+        success,
+        status_code: statusCode,
+        duration_ms: durationMs,
+        retry_count: retryCount,
+        error_message: errorMessage,
+        store_domain: storeDomain,
+        product_external_id: productExternalId,
+        metadata,
+      });
+
+    if (error) {
+      throw new Error(`Error guardando telemetria del plugin: ${error.message}`);
+    }
+
+    if (!success && endpoint === '/api/pruebalo/sync-woocommerce') {
+      createAdminNotification({
+        type: 'plugin_error_spike',
+        title: 'Error de sincronizacion WooCommerce',
+        message: `${brand.name} reporto un fallo en la sincronizacion del plugin.`,
+        severity: 'warning',
+        brandId: brand.id,
+        brandName: brand.name,
+        metadata: {
+          endpoint,
+          statusCode,
+          retryCount,
+          durationMs,
+          errorMessage,
+          storeDomain,
+        },
+      }).catch(() => {});
+    }
+
+    return res.status(201).json({ success: true });
   });
 
   /**
