@@ -2,7 +2,7 @@ import { GenerationLoader } from '../GenerationLoader';
 import { ResultDisplay } from '../ResultDisplay';
 import { SelfieUploader } from '../SelfieUploader';
 import type { TryOnTemplateProps } from './types';
-import { ErrorBanner, SelfieThumb } from './shared';
+import { ErrorBanner, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner, SelfieThumb } from './shared';
 
 export function TemplateModernSidebar(props: TryOnTemplateProps) {
   const {
@@ -19,6 +19,8 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
     generationId,
     error,
     errorIsService,
+    notice,
+    generatedProducts,
     onReset,
     onSelfieUpload,
     onProductSelect,
@@ -123,6 +125,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
 
         <div className="flex-1 p-6">
           <ErrorBanner error={error} isService={errorIsService} />
+          <NoticeBanner notice={notice} />
           {step === 'upload' && <SelfieUploader onUpload={onSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} />}
           {step === 'select' && (
             <div>
@@ -141,9 +144,11 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                     className="w-full py-4 rounded-2xl font-bold text-white text-base shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2"
                     style={{ backgroundColor: primaryColor }}
                   >
-                    {buttonText}
+                    {generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText}
                   </button>
-                  <p className="text-center text-xs text-gray-400 mt-2">Tarda unos 30 segundos</p>
+                  <p className="text-center text-xs text-gray-400 mt-2">
+                    {generatedProducts.has(selectedProduct.id) ? GENERATION_CACHED_HINT : GENERATION_TIME_HINT}
+                  </p>
                 </div>
               ) : (
                 <div className="mt-4 p-8 bg-white/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-gray-200 transition-all duration-300 hover:border-gray-300 text-center">

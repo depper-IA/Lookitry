@@ -42,6 +42,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
   const [generationId, setGenerationId]     = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorIsService, setErrorIsService] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   // Productos ya generados en esta sesión: productId → imageUrl
   const [generatedProducts, setGeneratedProducts] = useState<Map<string, string>>(new Map());
@@ -128,6 +129,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
 
     setSelfieFile(null); setSelectedProduct(null);
     setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false);
+    setNotice(null);
     setGeneratedProducts(new Map());
     setStep('upload');
   }, [brandSlug]);
@@ -138,6 +140,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
       return preview;
     });
     setSelfieFile(file); 
+    setNotice(null);
     
     // Invalida el caché cuando se sube una COMPLETAMENTE NUEVA selfie
     const key = `tryon_gen_${brandSlug}`;
@@ -165,6 +168,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     // Excepto si forzamos una nueva generación (ej. cambio de selfie)
     const cached = generatedProducts.get(activeProduct.id);
     if (cached && !force) {
+      setNotice('Ya habías probado este producto con tu foto actual. Te mostramos el resultado guardado para que sigas sin costo adicional.');
       setResultImageUrl(cached);
       setStep('result');
       return;
@@ -174,9 +178,13 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
       setStep('generating');
       setError(null);
       setErrorIsService(false);
+      setNotice(null);
       const result = await tryonService.generate(brandSlug, { productId: activeProduct.id, selfieFile: activeFile });
       setResultImageUrl(result.imageUrl);
       setGenerationId(result.generationId ?? null);
+      if (result.reused) {
+        setNotice(result.message || 'Ya existía un resultado para esta foto y este producto. Te mostramos el guardado sin costo adicional.');
+      }
       // Guardar en el mapa de generados
       setGeneratedProducts(prev => new Map(prev).set(activeProduct.id, result.imageUrl));
       setStep('result');
@@ -184,6 +192,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     } catch (err: any) {
       const isService = err.isServiceError === true || err.message === 'SERVICE_CREDITS_EXHAUSTED';
       setErrorIsService(isService);
+      setNotice(null);
       setError(isService ? 'SERVICE_CREDITS_EXHAUSTED' : (err.message || 'Algo salió mal. Intenta de nuevo.'));
       setStep('select');
       if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, EMBED_ORIGIN);
@@ -270,6 +279,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     generationId,
     error,
     errorIsService,
+    notice,
     generatedProducts,
     onReset: handleReset,
     onSelfieUpload: handleSelfieUpload,

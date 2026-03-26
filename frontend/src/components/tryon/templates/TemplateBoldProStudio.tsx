@@ -1,7 +1,7 @@
 import { ResultDisplay } from '../ResultDisplay';
 import { SelfieUploader } from '../SelfieUploader';
 import type { TryOnTemplateProps } from './types';
-import { ErrorBanner, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, SelfieThumb } from './shared';
+import { ErrorBanner, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner, SelfieThumb } from './shared';
 
 export function TemplateBoldProStudio(props: TryOnTemplateProps) {
   const {
@@ -17,6 +17,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
     generationId,
     error,
     errorIsService,
+    notice,
     generatedProducts,
     onReset,
     onSelfieUpload,
@@ -112,6 +113,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
 
               <div className="p-4 md:p-6">
                 <ErrorBanner error={error} isService={errorIsService} />
+                <NoticeBanner notice={notice} />
 
                 {step === 'upload' && (
                   <SelfieUploader
@@ -221,7 +223,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="mt-1 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
-                  Reinicia para cambiar selfie y limpiar el caché de esta sesión.
+                  Reinicia para cambiar tu foto y limpiar el caché de esta sesión.
                 </li>
               </ul>
 
