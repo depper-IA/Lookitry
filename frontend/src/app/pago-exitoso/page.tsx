@@ -29,7 +29,7 @@ function PagoExitosoContent() {
   const [error, setError] = useState<string | null>(null);
   const [resolvedRef, setResolvedRef] = useState<string | null>(ref);
   const isTrialParam = searchParams.get('isTrial') === 'true';
-  const isTrial = resolvedRef?.startsWith('TRIAL-') || ref?.startsWith('TRIAL-') || isTrialParam;
+  const isTrial = resolvedRef?.startsWith('TRIAL-') || resolvedRef?.startsWith('GUEST-TRIAL-') || ref?.startsWith('TRIAL-') || ref?.startsWith('GUEST-TRIAL-') || isTrialParam;
 
   useEffect(() => {
     async function validatePayment() {
@@ -200,7 +200,7 @@ function PagoExitosoContent() {
               ? 'Todo está listo. Ahora crea tu cuenta para activar tu suscripción y empezar a usar Lookitry.'
               : isTrial
                 ? '¡Tu prueba profesional ha sido activada! Ya puedes empezar a usar todas las herramientas de Lookitry.'
-                : `Tu plan ya se encuentra activo. Hemos procesado correctamente tu suscripción al Plan ${plan} por ${months} ${months === 1 ? 'mes' : 'meses'}.`}
+                : `Tu plan ya se encuentra activo. Hemos procesado correctamente tu suscripción al Plan ${plan} ${months > 0 ? `por ${months} ${months === 1 ? 'mes' : 'meses'}` : ''}.`}
           </p>
 
 
