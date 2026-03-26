@@ -1,4 +1,4 @@
-﻿import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
 import { EmailService } from '../services/email.service';
 import { verifyEmailTemplate, passwordResetTemplate } from '../templates/email-templates';
@@ -44,7 +44,7 @@ export class AuthController {
 
       // Verificar Turnstile si está habilitado
       // Se omite en el flujo post-pago (cuando viene con referencia de pago Wompi)
-      const turnstileEnabled = process.env.TURNSTILE_ENABLED === 'true';
+      const turnstileEnabled = process.env.TURNSTILE_ENABLED === 'true' && false; // Desactivado temporalmente
       const isPostPayment = !!req.body.ref;
       if (turnstileEnabled && !isPostPayment) {
         const token = req.body.turnstileToken;
