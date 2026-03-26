@@ -1,33 +1,5 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans, DM_Sans, Space_Mono, Playfair_Display } from 'next/font/google';
 import './globals.css';
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-jakarta',
-  display: 'swap',
-});
-
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  weight: ['300', '400', '500'],
-  variable: '--font-dm-sans',
-  display: 'swap',
-});
-
-const spaceMono = Space_Mono({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-tech',
-  display: 'swap',
-});
-
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  variable: '--font-playfair',
-  display: 'swap',
-});
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
@@ -113,7 +85,18 @@ import { CookieConsent } from '@/components/ui/CookieConsent';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${plusJakarta.variable} ${dmSans.variable} ${spaceMono.variable} ${playfair.variable}`} suppressHydrationWarning>
+    <html
+      lang="es"
+      suppressHydrationWarning
+      style={
+        {
+          '--font-jakarta': '"Segoe UI", "Helvetica Neue", Arial, sans-serif',
+          '--font-dm-sans': '"Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif',
+          '--font-tech': '"Consolas", "SFMono-Regular", "Courier New", monospace',
+          '--font-playfair': '"Georgia", "Times New Roman", serif',
+        } as React.CSSProperties
+      }
+    >
       <head>
         {/* fb:app_id requerido por Facebook/WhatsApp scraper */}
         <meta property="fb:app_id" content="966242223397117" />
