@@ -79,27 +79,18 @@ export async function middleware(request: NextRequest) {
   // ── Proteger rutas públicas del Widget (Iframe Whitelist Dinámica) ────────────
   if (pathname.startsWith('/embed') || pathname.startsWith('/pruebalo')) {
     const response = NextResponse.next();
-    const origin = request.headers.get('origin') || request.headers.get('referer') || '';
-    
-    let isAllowed = false;
-    let originUrl = '';
+    let allowedOrigins: string[] = [];
 
     try {
-      if (origin) {
-        const url = new URL(origin);
-        originUrl = url.origin;
-        
-        // Obtener lista blanca dinámica con caché de 60 segundos
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-        if (apiUrl) {
-          const res = await fetch(`${apiUrl}/api/pruebalo/allowed-origins`, {
-            next: { revalidate: 60 }
-          } as any);
-          
-          if (res.ok) {
-            const { origins } = await res.json();
-            isAllowed = origins.includes(originUrl);
-          }
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      if (apiUrl) {
+        const res = await fetch(`${apiUrl}/api/pruebalo/allowed-origins`, {
+          next: { revalidate: 60 }
+        } as any);
+
+        if (res.ok) {
+          const payload = await res.json();
+          allowedOrigins = Array.isArray(payload.origins) ? payload.origins : [];
         }
       }
     } catch (e) {
@@ -111,9 +102,11 @@ export async function middleware(request: NextRequest) {
 
     const baseCsp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob: 'self'; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co; font-src 'self' https://fonts.gstatic.com; media-src 'self';";
 
-    // ✅ FIX: Permitir siempre que el widget sea embebido (frame-ancestors *)
-    // Esto resuelve el problema de "frame-ancestors 'self'" que bloqueaba el plugin de WordPress
-    response.headers.set('Content-Security-Policy', `frame-ancestors *; ${baseCsp}`);
+    const frameAncestors = ["'self'", ...allowedOrigins]
+      .filter(Boolean)
+      .join(' ');
+
+    response.headers.set('Content-Security-Policy', `frame-ancestors ${frameAncestors}; ${baseCsp}`);
 
     // Configurar permisos de HW/SO con la sintaxis moderna
     response.headers.set('Permissions-Policy', 'camera=*, clipboard-write=*');

@@ -7,6 +7,7 @@ import { emailService } from '../services/email.service';
 import { invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { createAdminNotification } from '../utils/adminNotifications';
 import { getWooProductSummary, getWooTelemetrySummary } from '../utils/wooTelemetry';
+import { sanitizeDomainList } from '../utils/storeDomain';
 
 const brandsService = new BrandsService();
 
@@ -147,12 +148,20 @@ export class BrandsController {
         }
       }
 
-      // Merge website property safely into social_links JSONB
+      // Merge website / dominios permitidos safely into social_links JSONB
       if (req.body.website !== undefined) {
         const currentSocialLinks = updates.social_links || (currentBrand as any).social_links || {};
         updates.social_links = {
           ...currentSocialLinks,
           website: req.body.website
+        };
+      }
+
+      if (req.body.allowed_origins !== undefined) {
+        const currentSocialLinks = updates.social_links || (currentBrand as any).social_links || {};
+        updates.social_links = {
+          ...currentSocialLinks,
+          allowed_origins: sanitizeDomainList(req.body.allowed_origins),
         };
       }
 

@@ -38,6 +38,7 @@ class BrandsService {
       postalCode: response.data.postal_code,
       billingEmail: response.data.billing_email,
       apiKey: response.data.api_key,
+      socialLinks: response.data.social_links,
     };
     
     return brandData;
@@ -55,6 +56,7 @@ class BrandsService {
     nit?: string;
     billing_email?: string;
     website?: string;
+    allowed_origins?: string[];
     logo?: string;
     primary_color?: string;
     secondary_color?: string;
@@ -105,6 +107,7 @@ class BrandsService {
       postalCode: response.data.postal_code,
       billingEmail: response.data.billing_email,
       apiKey: response.data.api_key,
+      socialLinks: response.data.social_links,
     };
     
     return brandData;
