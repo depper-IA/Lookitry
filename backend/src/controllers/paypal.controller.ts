@@ -76,30 +76,60 @@ export class PaypalController {
       throw new Error(`El pago no se completó (Status: ${captureData.status})`);
     }
 
-    // 2. Procesar activación según la referencia robustamente (soporta UUIDs con guiones)
-    const match = reference.match(/PAYPAL-(.+)-M(\d+)-P([^-]+)/);
-    if (!match) {
-      throw new Error(`Referencia inválida o malformada: ${reference}`);
-    }
+    // 2. Procesar activación según la referencia (Trial o Suscripción)
+    let brandId: string | null = null;
+    let months = 1;
+    let plan = 'BASIC';
+    let isNewRegistration = false;
+    let isTrial = reference.startsWith('TRIAL-');
 
-    const brandIdOrVisitor = match[1];
-    const isNewRegistration = brandIdOrVisitor.startsWith('visitor_');
-    const brandId = isNewRegistration ? null : brandIdOrVisitor;
-    const months = parseInt(match[2], 10);
-    const plan = match[3];
+    if (isTrial) {
+      const parts = reference.split('-');
+      // TRIAL-{brandId}-{timestamp}
+      brandId = parts.slice(1, -1).join('-');
+      plan = 'TRIAL';
+    } else {
+      const match = reference.match(/PAYPAL-(.+)-M(\d+)-P([^-]+)/);
+      if (!match) {
+        throw new Error(`Referencia inválida o malformada: ${reference}`);
+      }
+      const brandIdOrVisitor = match[1];
+      isNewRegistration = brandIdOrVisitor.startsWith('visitor_');
+      brandId = isNewRegistration ? null : brandIdOrVisitor;
+      months = parseInt(match[2], 10);
+      plan = match[3];
+    }
+    
     const includesLanding = reference.includes('LANDING');
     
     // El monto capturado por la pasarela
     const amountUSD = parseFloat(captureData.purchase_units[0].payments.captures[0].amount.value);
 
-    if (isNewRegistration) {
+    if (isTrial && brandId) {
+      // Activar Trial
+      await supabaseAdmin
+        .from('brands')
+        .update({ trial_payment_status: 'active' })
+        .eq('id', brandId);
+        
+      // Registrar pago
+      await supabaseAdmin.from('subscription_payments').insert({
+        brand_id: brandId,
+        amount: amountUSD,
+        currency: 'USD',
+        payment_method: 'paypal',
+        status: 'completed',
+        months_paid: 0,
+        reference: orderId,
+        notes: 'Pago de Plan Trial'
+      });
+    } else if (isNewRegistration) {
       // Marcar registro pendiente como pagado
       await supabaseAdmin
         .from('pending_registrations')
         .update({ 
           status: 'paid', 
-          payment_id: orderId,
-          amount: amountUSD // Guardamos el valor en USD capturado
+          payment_id: orderId
         })
         .eq('reference', reference);
     } else if (brandId) {
@@ -171,23 +201,38 @@ export class PaypalController {
       console.log(`[PayPal Webhook] Pago completado. CaptureId: ${captureId}, Monto: ${amountUSD}, Ref: ${reference}`);
 
       // Si tenemos referencia, podemos activar la suscripción si no se hizo ya
-      if (reference && reference.startsWith('PAYPAL-')) {
-        const match = reference.match(/PAYPAL-(.+)-M(\d+)-P([^-]+)/);
-        if (match) {
-          const brandIdOrVisitor = match[1];
-          const isNewRegistration = brandIdOrVisitor.startsWith('visitor_');
-          const brandId = isNewRegistration ? null : brandIdOrVisitor;
-          const months = parseInt(match[2], 10);
-          const plan = match[3];
-          const includesLanding = reference.includes('LANDING');
+      if (reference && (reference.startsWith('PAYPAL-') || reference.startsWith('TRIAL-'))) {
+        let brandId: string | null = null;
+        let months = 1;
+        let plan = 'BASIC';
+        let isNewRegistration = false;
+        let isTrial = reference.startsWith('TRIAL-');
 
-        if (isNewRegistration) {
+        if (isTrial) {
+          const parts = reference.split('-');
+          brandId = parts.slice(1, -1).join('-');
+          plan = 'TRIAL';
+        } else {
+          const match = reference.match(/PAYPAL-(.+)-M(\d+)-P([^-]+)/);
+          if (match) {
+            const brandIdOrVisitor = match[1];
+            isNewRegistration = brandIdOrVisitor.startsWith('visitor_');
+            brandId = isNewRegistration ? null : brandIdOrVisitor;
+            months = parseInt(match[2], 10);
+            plan = match[3];
+          }
+        }
+
+        const includesLanding = reference.includes('LANDING');
+
+        if (isTrial && brandId) {
+          await supabaseAdmin.from('brands').update({ trial_payment_status: 'active' }).eq('id', brandId);
+        } else if (isNewRegistration) {
           await supabaseAdmin
             .from('pending_registrations')
             .update({ 
               status: 'paid', 
-              payment_id: captureId,
-              amount: amountUSD 
+              payment_id: captureId
             })
             .eq('reference', reference);
         } else if (brandId) {
@@ -209,12 +254,8 @@ export class PaypalController {
               await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
             }
           }
-
-          // Evitar duplicados en subscription_payments (la DB tiene un check o podemos hacerlo aquí)
-          // Por simplicidad, el servicio suele manejar la idempotencia o la referencia es única
         }
       }
-    }
   }
 
     return res.status(200).json({ received: true });

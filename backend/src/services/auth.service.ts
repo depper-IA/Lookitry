@@ -10,13 +10,13 @@ async function getActiveCampaign() {
   const now = new Date().toISOString();
   const { data } = await supabaseAdmin
     .from('trial_campaigns')
-    .select('id, trial_days, trial_generations_limit')
+    .select('id, trial_days, trial_generations_limit, price_cop, require_card_verification')
     .eq('active', true)
     .or(`ends_at.is.null,ends_at.gt.${now}`)
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
-  return data as { id: string; trial_days: number; trial_generations_limit: number } | null;
+  return data as { id: string; trial_days: number; trial_generations_limit: number; price_cop: number; require_card_verification: boolean } | null;
 }
 
 async function isTrialAbuse(ip: string, fingerprint: string | null): Promise<boolean> {
@@ -245,10 +245,13 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
     let trialEndDate: Date | null = null;
 
     if (campaign) {
-      // Verificar abuso de IP/fingerprint solo si hay campaña activa
+      // Verificar abuso de IP/fingerprint solo si es trial gratuito
       const ip = data.ip || 'unknown';
       const fingerprint = data.fingerprint || null;
-      const isAbuse = await isTrialAbuse(ip, fingerprint);
+      
+      // Si el trial es de pago (price_cop > 0), el pago ya es validación suficiente
+      const isPaidTrial = (campaign as any).price_cop > 0;
+      const isAbuse = !isPaidTrial && await isTrialAbuse(ip, fingerprint);
 
       if (isAbuse) {
         throw new Error('TRIAL_ABUSE');
@@ -270,7 +273,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
         phone: data.phone?.trim() || null,
         plan: 'BASIC',
         trial_end_date: trialEndDate ? trialEndDate.toISOString() : null,
-        trial_generations_limit: trialEndDate ? (campaign?.trial_generations_limit ?? 50) : 0,
+        trial_generations_limit: trialEndDate ? (campaign?.trial_generations_limit ?? 15) : 0,
         email_verified: false,
         email_verification_token: crypto.randomBytes(32).toString('hex'),
       })
@@ -294,16 +297,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       email: newBrand.email,
     });
 
-    // Verificar si la campaña activa requiere verificación de tarjeta
-    const { data: campaignFull } = campaign
-      ? await supabaseAdmin
-          .from('trial_campaigns')
-          .select('require_card_verification')
-          .eq('id', campaign.id)
-          .single()
-      : { data: null };
-
-    const requireCardVerification = campaignFull?.require_card_verification === true;
+    const requireCardVerification = !!(campaign && campaign.price_cop > 0) || !!(campaign?.require_card_verification === true);
 
     return {
       token,

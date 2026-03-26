@@ -9,6 +9,9 @@ export default function TrialPaymentPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [trialDays, setTrialDays] = useState(7);
+  const [priceCOP, setPriceCOP] = useState(20000);
+  const [genLimit, setGenLimit] = useState(15);
+  const [prodLimit, setProdLimit] = useState(1);
 
   useEffect(() => {
     // Verificar que hay sesión activa
@@ -20,7 +23,10 @@ export default function TrialPaymentPage() {
     // Obtener días del trial
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`)
       .then(r => r.json())
-      .then(d => { if (d.trial_days) setTrialDays(d.trial_days); })
+      .then(d => { 
+        if (d.trialDays) setTrialDays(d.trialDays); 
+        if (d.priceCOP !== undefined) setPriceCOP(d.priceCOP);
+      })
       .catch(() => {});
   }, [router]);
 
@@ -70,20 +76,21 @@ export default function TrialPaymentPage() {
           </div>
 
           <h1 className="font-syne font-bold text-[22px] text-white mb-2 text-center">
-            Verifica tu tarjeta
+            Activa tu prueba
           </h1>
           <p className="text-[13px] text-[#555] mb-6 text-center leading-relaxed">
-            Para activar tu prueba de {trialDays} días necesitamos verificar tu tarjeta. Solo se realizará un cobro de{' '}
-            <span className="text-white font-medium">$100 COP</span> que será reembolsado automáticamente.
+            Para activar tu prueba de {trialDays} días, el costo es de{' '}
+            <span className="text-white font-medium">${priceCOP.toLocaleString()} COP</span>.
+            {priceCOP === 0 && " Se realizará una verificación mínima de tarjeta."}
           </p>
 
           {/* Beneficios */}
           <div className="space-y-2.5 mb-6">
             {[
-              `${trialDays} días de acceso completo`,
-              'Sin cobros adicionales durante el trial',
-              'Cancela antes de que termine sin cargos',
-              'Reembolso automático del cobro de verificación',
+              `${trialDays} días de acceso`,
+              `${genLimit} generaciones incluidas`,
+              `${prodLimit} producto activo en el probador`,
+              priceCOP > 0 ? 'Acceso inmediato tras el pago' : 'Reembolso automático del cobro de verificación',
             ].map(item => (
               <div key={item} className="flex items-center gap-2.5">
                 <div className="w-4 h-4 rounded-full bg-[rgba(255,92,58,0.13)] flex items-center justify-center flex-shrink-0">
@@ -118,9 +125,9 @@ export default function TrialPaymentPage() {
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h10m4-11a2 2 0 012 2v12a2 2 0 01-2 2H3a2 2 0 01-2-2V6a2 2 0 012-2h18z" />
                 </svg>
-                Verificar tarjeta con Wompi
+                {priceCOP > 0 ? `Pagar $${priceCOP.toLocaleString()} COP` : 'Verificar tarjeta con Wompi'}
               </>
             )}
           </button>
