@@ -54,21 +54,21 @@ export const Alert: React.FC<AlertProps> = ({ type = 'info', title, message, cla
   const config = configs[type];
 
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${config.border} ${config.bg} backdrop-blur-md p-5 ${className}`}>
+    <div className={`relative overflow-hidden rounded-xl border ${config.border} ${config.bg} backdrop-blur-md p-4 md:p-5 ${className}`}>
       {/* Accent line */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${config.accent} opacity-40`} />
       
-      <div className="flex gap-4">
+      <div className="flex gap-3 md:gap-4">
         <div className="flex-shrink-0 mt-0.5">
           {config.icon}
         </div>
-        <div className="flex-1 space-y-1">
+        <div className="flex-1 space-y-0.5">
           {title && (
-            <h3 className="font-syne font-bold text-[15px] text-white tracking-tight">
+            <h3 className="font-syne font-bold text-[14px] md:text-[15px] text-white tracking-tight">
               {title}
             </h3>
           )}
-          <div className="text-[13px] text-[#888] leading-relaxed">
+          <div className="text-[12.5px] md:text-[13px] text-[#888] leading-relaxed">
             {message}
           </div>
         </div>

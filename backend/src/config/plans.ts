@@ -9,8 +9,8 @@ export const PLANS: Record<string, Plan> = {
   TRIAL: {
     type: 'TRIAL',
     maxProducts: 1,
-    maxGenerationsPerMonth: 50,
-    price: 0,
+    maxGenerationsPerMonth: 15,
+    price: 20000,
   },
   BASIC: {
     type: 'BASIC',

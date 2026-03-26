@@ -70,7 +70,7 @@ const DEFAULTS: PricingConfig = {
     productos_max: 5,
     generaciones_mensuales: 400,
     subtitulo: 'Para marcas pequeñas en Instagram y WhatsApp',
-    boton_texto: 'Empezar gratis — 7 días',
+    boton_texto: 'Prueba $20.000 — 7 días',
     boton_texto_sin_trial: 'Contratar Básico',
     features: [
       '5 productos en el probador',

@@ -90,6 +90,13 @@ export class WompiService {
   }
 
   /**
+   * Genera una referencia específica para el pago del Trial.
+   */
+  generateTrialReference(brandId: string): string {
+    return `TRIAL-${brandId}-${Date.now()}`;
+  }
+
+  /**
    * Verifica la firma del webhook de Wompi.
    * Wompi docs: https://docs.wompi.co/en/docs/colombia/eventos/
    */

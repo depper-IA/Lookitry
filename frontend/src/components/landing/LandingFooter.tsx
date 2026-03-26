@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -16,7 +16,7 @@ const NAV_PRODUCTO = [
   { label: 'Inicio', href: '/' },
   { label: 'Planes y precios', href: '/planes' },
   { label: 'Iniciar sesión', href: '/login' },
-  { label: 'Crear cuenta gratis', href: '/register' },
+  { label: 'Probar por $20.000', href: '/register' },
 ];
 
 const NAV_EMPRESA = [

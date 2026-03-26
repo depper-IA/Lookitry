@@ -60,7 +60,6 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [trialActive, setTrialActive] = useState<boolean | null>(null);
   const [trialDays, setTrialDays] = useState(7);
-  const [requireCard, setRequireCard] = useState(false);
   const [fingerprint, setFingerprint] = useState<string | null>(null);
 
   useEffect(() => {
@@ -72,7 +71,6 @@ export default function RegisterForm() {
         setTrialActive(isActive);
         if (isActive) {
           setTrialDays(d.trialDays ?? d.trial_days ?? 7);
-          setRequireCard(d.requireCardVerification === true);
         }
       })
       .catch(() => setTrialActive(false));
@@ -122,39 +120,11 @@ export default function RegisterForm() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('brandToken', data.token);
 
-      // Paso 2: Si requiere tarjeta → llamar a /trial/initiate y redirigir a Wompi
-      if (data.requireCardVerification) {
-        setLoadingStep('Preparando verificación de tarjeta...');
-        const initiateRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/initiate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${data.token}`,
-          },
-        });
-        const initiateData = await initiateRes.json();
-
-        if (!initiateRes.ok) {
-          setError(initiateData.message || 'Error al iniciar verificación de tarjeta');
-          return;
-        }
-
-        if (initiateData.skipPayment) {
-          // Modo test sin tarjeta (admin desactivó require_card_verification)
-          router.push('/dashboard');
-          return;
-        }
-
-        // Redirigir a Wompi para verificar tarjeta
-        setLoadingStep('Redirigiendo a pasarela de pago...');
-        window.location.href = initiateData.checkoutUrl;
-        return;
-      }
-
-      // Sin verificación de tarjeta → ir al dashboard directamente
-      router.push('/dashboard');
-    } catch {
-      setError('Error de conexión. Intenta de nuevo.');
+      // Redirigir al nuevo checkout de prueba
+      setLoadingStep('Redirigiendo al checkout...');
+      router.push('/trial-checkout');
+    } catch (err: any) {
+      setError(err.message || 'Error de conexión. Intenta de nuevo.');
     } finally {
       setLoading(false);
       setLoadingStep('');
@@ -237,7 +207,7 @@ export default function RegisterForm() {
             Crear cuenta
           </h1>
           <p className="text-[13px] text-[#FF5C3A] mb-6">
-            Prueba gratis por {trialDays} días
+            Prueba por $20.000 COP — {trialDays} días
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -330,20 +300,6 @@ export default function RegisterForm() {
               </div>
             </div>
 
-            {/* Aviso de verificación de tarjeta */}
-            {requireCard && (
-              <div className="bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-4 py-3 flex items-start gap-3">
-                <svg className="w-4 h-4 text-[#FF5C3A] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-                </svg>
-                <div>
-                  <p className="text-[12px] text-[#888] leading-relaxed">
-                    Se realizará un cobro de verificación de{' '}
-                    <span className="text-white font-medium">$100 COP</span> que será reembolsado automáticamente. Solo necesitamos confirmar que la tarjeta es válida.
-                  </p>
-                </div>
-              </div>
-            )}
 
             {error && (
               <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[13px] px-4 py-3 rounded-lg">
@@ -370,13 +326,6 @@ export default function RegisterForm() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
                   {loadingStep || 'Procesando...'}
-                </>
-              ) : requireCard ? (
-                <>
-                  <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  Crear cuenta y verificar tarjeta
                 </>
               ) : (
                 `Empezar prueba de ${trialDays} días`

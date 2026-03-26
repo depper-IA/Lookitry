@@ -170,7 +170,7 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
                 href="/register"
                 className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-sm font-medium px-7 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
               >
-                Empezar gratis — 7 días
+                Prueba $20.000 — 7 días
               </Link>
               <Link
                 href="/planes"

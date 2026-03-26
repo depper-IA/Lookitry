@@ -66,7 +66,7 @@ export default async function HomePage() {
             price: String(pricing.basic.precio_mensual_cop),
             priceCurrency: 'COP',
             priceValidUntil: '2026-12-31',
-            description: '5 productos, 400 generaciones/mes, widget embebible, 7 dias gratis',
+            description: '5 productos, 400 generaciones/mes, widget embebible, prueba 7 dias por $20.000',
             eligibleRegion: ['CO', 'MX', 'AR', 'CL', 'PE', 'VE'],
             availability: 'https://schema.org/InStock',
             url: `${BASE_URL}/planes`,
@@ -108,7 +108,7 @@ export default async function HomePage() {
             name: 'Cuanto cuesta el probador virtual?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: `El Plan Basico cuesta $${pricing.basic.precio_mensual_cop.toLocaleString('es-CO')} COP/mes con 7 dias de prueba gratis. El Plan Pro cuesta $${pricing.pro.precio_mensual_cop.toLocaleString('es-CO')} COP/mes con activacion inmediata.`,
+              text: `El Plan Basico cuesta $${pricing.basic.precio_mensual_cop.toLocaleString('es-CO')} COP/mes con 7 dias de prueba por solo $20.000. El Plan Pro cuesta $${pricing.pro.precio_mensual_cop.toLocaleString('es-CO')} COP/mes con activacion inmediata.`,
             },
           },
         ],
