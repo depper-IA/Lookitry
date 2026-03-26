@@ -292,9 +292,9 @@ export default function RegisterForm() {
               <input
                 name="name"
                 value={form.name}
-                onChange={handleChange}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
                 required
-                readOnly={isPaidFlow}
+                readOnly={isPaidFlow && !!form.name}
                 placeholder="Mi Marca"
                 className={`w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors ${isPaidFlow ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
@@ -330,11 +330,10 @@ export default function RegisterForm() {
                 <input
                   name="slug"
                   value={form.slug}
-                  onChange={handleChange}
-                  required
-                  readOnly={isPaidFlow}
+                  onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                  readOnly={isPaidFlow && !!form.slug}
                   placeholder="mi-marca"
-                  className={`flex-1 px-3 py-2.5 text-[13px] text-white bg-transparent focus:outline-none placeholder-[#333] ${isPaidFlow ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  className={`flex-1 px-3 py-2.5 text-[13px] text-white bg-transparent focus:outline-none placeholder-[#333] ${isPaidFlow && !!form.slug ? 'opacity-60 cursor-not-allowed' : ''}`}
                 />
               </div>
             </div>
@@ -346,9 +345,9 @@ export default function RegisterForm() {
                 name="email"
                 type="email"
                 value={form.email}
-                onChange={handleChange}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
-                readOnly={isPaidFlow}
+                readOnly={isPaidFlow && !!form.email}
                 placeholder="hola@mimarca.com"
                 className={`w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors ${isPaidFlow ? 'opacity-60 cursor-not-allowed' : ''}`}
               />

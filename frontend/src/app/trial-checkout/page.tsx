@@ -115,7 +115,7 @@ export default function TrialCheckoutPage() {
       const body: any = { 
         method: paymentMethod,
         email: guestEmail,
-        name: guestName
+        brandName: guestName
       };
       if (paymentMethod === 'paypal') body.trm = trm;
 
