@@ -59,8 +59,14 @@ do_frontend = only_front or (not only_back)
 build_flag = "--no-cache" if no_cache else ""
 
 
+def redact_command(cmd):
+    if not GITHUB_TOKEN:
+        return cmd
+    return cmd.replace(GITHUB_TOKEN, "***")
+
+
 def run(ssh, cmd, timeout=300, check=True):
-    print(f"\n$ {cmd}")
+    print(f"\n$ {redact_command(cmd)}")
     _, stdout, stderr = ssh.exec_command(cmd, timeout=timeout)
     out = stdout.read().decode(errors="replace")
     err = stderr.read().decode(errors="replace")
@@ -114,7 +120,7 @@ if restart_only:
     print("\nRestart completado.")
     sys.exit(0)
 
-run(ssh, f"cd {REPO} && git remote set-url origin {REPO_URL} && git fetch origin main")
+run(ssh, f"cd {REPO} && git fetch {REPO_URL} main:refs/remotes/origin/main")
 current_sha, _, _ = run(ssh, f"cd {REPO} && git rev-parse HEAD")
 remote_sha, _, _ = run(ssh, f"cd {REPO} && git rev-parse origin/main")
 current_sha = current_sha.strip()

@@ -2,7 +2,7 @@ import { GenerationLoader } from '../GenerationLoader';
 import { ResultDisplay } from '../ResultDisplay';
 import { SelfieUploader } from '../SelfieUploader';
 import type { TryOnTemplateProps } from './types';
-import { BrandHeader, ErrorBanner, FriendlyProductSelector, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, SelfieThumb, StepBar } from './shared';
+import { BrandHeader, ErrorBanner, FriendlyProductSelector, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner, SelfieThumb, StepBar } from './shared';
 
 export function TemplateMinimalTopBar(props: TryOnTemplateProps) {
   const {
@@ -19,6 +19,7 @@ export function TemplateMinimalTopBar(props: TryOnTemplateProps) {
     generationId,
     error,
     errorIsService,
+    notice,
     generatedProducts,
     onReset,
     onSelfieUpload,
@@ -55,6 +56,7 @@ export function TemplateMinimalTopBar(props: TryOnTemplateProps) {
 
       <div className="max-w-lg mx-auto px-4 py-4 md:py-5">
         <ErrorBanner error={error} isService={errorIsService} />
+        <NoticeBanner notice={notice} />
 
         {step === 'upload' && (
           <SelfieUploader onUpload={onSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} />

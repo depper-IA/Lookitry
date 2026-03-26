@@ -2,7 +2,7 @@ import { GenerationLoader } from '../GenerationLoader';
 import { ResultDisplay } from '../ResultDisplay';
 import { SelfieUploader } from '../SelfieUploader';
 import type { TryOnTemplateProps } from './types';
-import { ErrorBanner, FriendlyProductSelector, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, SelfieThumb } from './shared';
+import { ErrorBanner, FriendlyProductSelector, GENERATION_CACHED_HINT, GENERATION_TIME_HINT, NoticeBanner, SelfieThumb } from './shared';
 
 export function TemplateBare(props: TryOnTemplateProps) {
   const {
@@ -19,6 +19,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
     generationId,
     error,
     errorIsService,
+    notice,
     generatedProducts,
     onReset,
     onSelfieUpload,
@@ -36,6 +37,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
       {step !== 'generating' && (
         <div className="flex-1 max-w-lg mx-auto w-full px-4 py-4 md:py-6">
           <ErrorBanner error={error} isService={errorIsService} />
+          <NoticeBanner notice={notice} />
           {step === 'upload' && (
             <SelfieUploader onUpload={onSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} />
           )}
