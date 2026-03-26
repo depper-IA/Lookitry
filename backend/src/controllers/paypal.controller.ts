@@ -37,15 +37,19 @@ export class PaypalController {
 
     // 1. Si es un registro nuevo (viene email), crear registro pendiente
     if (email) {
-      await supabaseAdmin.from('pending_registrations').insert({
+      const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({
         email: email as string,
         reference,
-        plan: plan as string,
+        plan: planStr, // Usar la variable sanitizada planStr
         months: selectedMonths,
         includes_landing: landing,
-        amount: amountCOP,
         status: 'pending'
       });
+
+      if (insertError) {
+        console.error('[Paypal] Error al insertar registro pendiente:', insertError.message);
+        return res.status(500).json({ error: 'Error al iniciar el registro' });
+      }
     }
 
     // 2. Generar link en PayPal
