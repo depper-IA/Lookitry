@@ -49,28 +49,30 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 }
 };
 
+type WooMetrics = {
+  products: {
+    totalMappedProducts: number;
+    activeMappedProducts: number;
+  };
+  telemetry: {
+    totalRequests: number;
+    failedRequests: number;
+    avgLatencyMs: number;
+    lastSyncAt: string | null;
+  };
+};
+
 export default function IntegrationsPage() {
   const { brand, refreshBrand } = useAuth();
   const [showKey, setShowKey] = useState(false);
   const [copied, setCopied] = useState(false);
   const [metricsLoading, setMetricsLoading] = useState(true);
-  const [wooMetrics, setWooMetrics] = useState<null | {
-    products: {
-      totalMappedProducts: number;
-      activeMappedProducts: number;
-    };
-    telemetry: {
-      totalRequests: number;
-      failedRequests: number;
-      avgLatencyMs: number;
-      lastSyncAt: string | null;
-    };
-  }>(null);
+  const [wooMetrics, setWooMetrics] = useState<null | WooMetrics>(null);
   
   // Refrescar datos al montar para obtener la API Key
   useEffect(() => {
     refreshBrand();
-    api.get('/brands/me/woocommerce-metrics')
+    api.get<WooMetrics>('/brands/me/woocommerce-metrics')
       .then((res) => setWooMetrics(res.data))
       .catch((error) => console.error('Error loading WooCommerce metrics:', error))
       .finally(() => setMetricsLoading(false));
