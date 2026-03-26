@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import Image from 'next/image';
 
+import { Alert } from '@/components/ui/Alert';
+
 function IconCheck() {
   return (
     <svg className="w-8 h-8" fill="none" stroke="#FF5C3A" viewBox="0 0 24 24">
@@ -99,11 +101,11 @@ function PagoExitosoContent() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg-base)' }}>
+      <main className="min-h-screen flex items-center justify-center px-4 bg-[#030303]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-t-transparent border-[#FF5C3A] rounded-full animate-spin mx-auto mb-4"></div>
           <h2 className="text-white font-syne text-xl">Validando tu pago con PayPal...</h2>
-          <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>Esto tomará solo unos segundos.</p>
+          <p className="text-[#666] text-sm mt-2">Esto tomará solo unos segundos.</p>
         </div>
       </main>
     );
@@ -111,20 +113,32 @@ function PagoExitosoContent() {
 
   if (error) {
     return (
-      <main className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg-base)' }}>
-        <div className="w-full max-w-md rounded-xl p-8 text-center border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-5 text-red-500">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
+      <main className="min-h-screen flex items-center justify-center px-4 bg-[#030303]">
+        <div className="w-full max-w-md">
+           <div className="flex justify-center mb-8">
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
+              <span className="font-syne font-extrabold text-xl text-white tracking-tight">
+                Look<span className="text-[#FF5C3A]">itry</span>
+              </span>
+            </Link>
           </div>
-          <h1 className="text-white font-syne text-xl mb-4">¡Ups! Algo salió mal</h1>
-          <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)' }}>{error}</p>
-          <Link href="/checkout" className="block w-full py-2.5 bg-[#FF5C3A] text-white font-medium rounded-lg cursor-pointer">Volver al checkout</Link>
+          <Alert 
+            type="error"
+            title="¡Ups! Algo salió mal"
+            message={error}
+            className="mb-8"
+          />
+          <div className="text-center">
+            <Link href="/checkout" className="inline-block px-8 py-3 bg-[#111] hover:bg-[#1a1a1a] text-white text-[13px] font-bold rounded-xl transition-all border border-[#222]">
+              Volver al checkout
+            </Link>
+          </div>
         </div>
       </main>
     );
   }
 
-  return (
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-[#030303] selection:bg-[#FF5C3A]/30">
       <div className="w-full max-w-md animate-in fade-in duration-700">
@@ -149,7 +163,7 @@ function PagoExitosoContent() {
           </Link>
         </div>
 
-        <div className="rounded-2xl p-8 md:p-10 text-center border bg-[#0a0a0a] border-[#1a1a1a] shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
+        <div className="rounded-3xl p-8 md:p-10 text-center border bg-[#0a0a0a] border-[#1a1a1a] shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
           
           {/* Subtle decoration */}
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF5C3A]/5 blur-[80px] rounded-full"></div>
@@ -168,22 +182,25 @@ function PagoExitosoContent() {
               : `Tu plan ya se encuentra activo. Hemos procesado correctamente tu suscripción al Plan ${plan} por ${months} ${months === 1 ? 'mes' : 'meses'}.`}
           </p>
 
-          {ref && (
-            <div className="rounded-xl px-5 py-4 mb-8 text-left border bg-[#111111] border-[#1a1a1a]">
-              <p className="text-[10px] mb-2 uppercase tracking-[0.1em] font-bold text-[#666]">Referencia de pago</p>
-              <p className="text-[12px] font-mono break-all text-[#d1d1d1] leading-relaxed">{ref}</p>
+          {(resolvedRef || ref) && (
+            <div className="rounded-xl px-5 py-4 mb-6 text-left border bg-[#050505] border-[#1a1a1a]">
+              <p className="text-[10px] mb-2 uppercase tracking-[0.1em] font-bold text-[#444]">Referencia de pago</p>
+              <p className="text-[12px] font-mono break-all text-[#888] leading-relaxed">{resolvedRef || ref}</p>
             </div>
           )}
 
-          <div className="bg-[#FF5C3A]/5 border border-[#FF5C3A]/10 rounded-xl px-5 py-4 mb-10 text-[14px] text-left leading-relaxed text-[#a0a0a0]">
-            <p>
-              Recibirás un correo de confirmación con los detalles. 
-              Si tienes dudas, nuestro equipo está listo para ayudarte en{' '}
-              <a href="mailto:info@lookitry.com" className="text-[#FF5C3A] font-medium hover:text-[#ff785c] transition-colors decoration-slice">
-                info@lookitry.com
-              </a>
-            </p>
-          </div>
+          <Alert 
+            type="info"
+            message={
+              <>
+                Recibirás un correo de confirmación con los detalles. Si tienes dudas, escríbenos a {' '}
+                <a href="mailto:info@lookitry.com" className="text-white font-bold hover:text-[#FF5C3A] transition-colors">
+                  info@lookitry.com
+                </a>
+              </>
+            }
+            className="mb-8"
+          />
 
           <div className="flex flex-col gap-4 relative z-10">
             <Link
@@ -194,7 +211,7 @@ function PagoExitosoContent() {
             </Link>
             <Link
               href="/"
-              className="block w-full py-4 rounded-xl transition-all text-[15px] font-semibold border border-[#1a1a1a] text-[#a0a0a0] hover:bg-white/5 hover:text-white cursor-pointer"
+              className="block w-full py-4 rounded-xl transition-all text-[15px] font-semibold border border-[#1a1a1a] text-[#444] hover:bg-white/5 hover:text-white cursor-pointer"
             >
               Volver al inicio
             </Link>
@@ -202,9 +219,8 @@ function PagoExitosoContent() {
 
         </div>
 
-        {/* Trust badge/support */}
         <div className="mt-10 text-center">
-          <p className="text-[#444] text-[12px] font-medium tracking-wide">
+          <p className="text-[#333] text-[12px] font-medium tracking-wide uppercase">
             LOOKITRY SECURE PAYMENTS © 2026
           </p>
         </div>

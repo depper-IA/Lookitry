@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -70,6 +70,8 @@ function EyeOffIcon() {
     </svg>
   );
 }
+
+import { Alert } from '@/components/ui/Alert';
 
 function RegistroProContent() {
   const searchParams = useSearchParams();
@@ -145,19 +147,13 @@ function RegistroProContent() {
   useEffect(() => {
     if (isAuthenticated && ref && pendingData && !loading && !autoLinking && !apiError) {
       if (pendingData.status === 'paid' || pendingData.status === 'confirmed') {
-        // Si el pending es solo landing (plan=NONE) y el usuario ya tiene plan activo,
-        // igual vinculamos — el backend ya protege el plan existente.
-        // Pero si el email del pending no coincide con el usuario logueado y el plan no es NONE,
-        // mostramos el formulario normal en lugar de auto-vincular para evitar sobreescribir planes.
         const brandPlanUpper = brand?.plan?.toUpperCase() || '';
         const hasActivePlan = brandPlanUpper === 'BASIC' || brandPlanUpper === 'PRO';
         const pendingPlanIsNone = !pendingData.plan || pendingData.plan.toUpperCase() === 'NONE';
 
-        // Auto-vincular si: es solo landing (NONE) con plan activo, o si el plan del pending coincide
         if (pendingPlanIsNone || !hasActivePlan) {
           handleAutoLink();
         }
-        // Si tiene plan activo y el pending quiere cambiar el plan, mostrar formulario normal
       }
     }
   }, [isAuthenticated, ref, pendingData]);
@@ -177,7 +173,6 @@ function RegistroProContent() {
       });
       const data = await res.json();
       if (res.ok) {
-        // Actualizar datos locales y redirigir
         localStorage.setItem('brand', JSON.stringify(data.brand));
         router.push('/dashboard');
       } else {
@@ -208,12 +203,14 @@ function RegistroProContent() {
     );
   }
 
-  // Si no hay ref, mostrar error en lugar del formulario
-  if (!ref) {
+  // Si no hay ref o no se encuentra (Error corregido para que no se muera la página si falla el fetch inicial)
+  const noRefFound = (ref && !pendingData && !fetchingPending);
+
+  if (!ref || noRefFound) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
-        <div className="w-full max-w-md text-center">
-          <div className="flex justify-center mb-6">
+        <div className="w-full max-w-md">
+          <div className="flex justify-center mb-8">
             <Link href="/" className="flex items-center gap-2.5">
               <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
               <span className="font-syne font-extrabold text-xl text-white tracking-tight">
@@ -221,12 +218,19 @@ function RegistroProContent() {
               </span>
             </Link>
           </div>
-          <div className="bg-[#1f0f0f] border border-[#5a1a1a] rounded-xl p-8">
-            <p className="text-[#ff6b6b] font-semibold text-[15px] mb-2">Referencia de pago requerida</p>
-            <p className="text-[#666] text-[13px] mb-6">Accede desde el enlace de confirmación de tu pago.</p>
+          <Alert 
+            type="error"
+            title={noRefFound ? "Referencia no encontrada" : "Referencia de pago requerida"}
+            message={noRefFound 
+              ? "No pudimos encontrar la información de tu compra. Si completaste el pago, contacta a soporte."
+              : "Accede desde el enlace de confirmación de tu pago para terminar el registro."
+            }
+            className="mb-8"
+          />
+          <div className="text-center">
             <Link
               href="/"
-              className="inline-block px-6 py-2 bg-[#2a2a2a] hover:bg-[#333] text-white text-[13px] font-medium rounded-lg transition-colors border border-[#444]"
+              className="inline-block px-8 py-3 bg-[#111] hover:bg-[#1a1a1a] text-white text-[13px] font-bold rounded-xl transition-all border border-[#222] hover:border-[#333]"
             >
               Volver al inicio
             </Link>
@@ -259,7 +263,6 @@ function RegistroProContent() {
     if (!form.name.trim() || form.name.trim().length < 2) e.name = 'Mínimo 2 caracteres';
     if (!/^[a-z0-9-]{3,}$/.test(form.slug)) e.slug = 'Solo minúsculas, números y guiones (mín. 3 caracteres)';
     if (form.password.length < 6) e.password = 'Mínimo 6 caracteres';
-    // Validar email alternativo solo si está visible
     if (showAltEmail) {
       if (!altEmail.trim()) { setAltEmailError('Ingresa el correo electrónico'); return false; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(altEmail.trim())) { setAltEmailError('Formato de correo inválido'); return false; }
@@ -276,7 +279,6 @@ function RegistroProContent() {
     setAltEmailError('');
     try {
       const body: Record<string, unknown> = { ...form, fingerprint, ref: ref || undefined };
-      // Si el usuario ingresó un email alternativo, enviarlo para sobreescribir el del pago
       if (showAltEmail && altEmail.trim()) {
         body.override_email = altEmail.trim();
       }
@@ -291,11 +293,10 @@ function RegistroProContent() {
       });
       const data = await res.json();
       if (!res.ok) {
-        // Si el error es email duplicado, mostrar campo alternativo
         const msg: string = data.message || data.error || '';
         if (msg.toLowerCase().includes('email') || msg.toLowerCase().includes('correo') || msg.toLowerCase().includes('ya está')) {
           setShowAltEmail(true);
-          setApiError('El correo del pago ya está registrado. Ingresa un correo diferente para crear tu cuenta:');
+          setApiError('El correo del pago ya está registrado. Ingresa uno nuevo:');
         } else {
           setApiError(msg || 'Error al crear la cuenta');
         }
@@ -316,7 +317,7 @@ function RegistroProContent() {
     <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
       <div className="w-full max-w-md">
 
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
             <span className="font-syne font-extrabold text-xl text-white tracking-tight">
@@ -325,123 +326,118 @@ function RegistroProContent() {
           </Link>
         </div>
 
-        <div className="bg-[rgba(255,92,58,0.06)] border border-[rgba(255,92,58,0.2)] rounded-xl px-5 py-4 mb-5 flex items-start gap-3">
-          <IconCheck />
-          <div>
-            <p className="text-[13px] font-semibold text-[#FF5C3A]">Pago recibido correctamente</p>
-            <p className="text-[12px] text-[#666] mt-0.5">
-              Crea tu cuenta para activar tu Plan {pendingData ? pendingData.plan : 'Pro'} por {pendingData ? pendingData.months : months} {(!pendingData && months === 1) || pendingData?.months === 1 ? 'mes' : 'meses'}
-              {pendingData?.includes_landing && ' + Mini-landing'}.
-            </p>
-          </div>
-        </div>
+        <Alert 
+          type="success"
+          title="Pago recibido correctamente"
+          message={`Crea tu cuenta para activar tu Plan ${pendingData ? pendingData.plan : 'Pro'} por ${pendingData ? pendingData.months : months} ${(!pendingData && months === 1) || pendingData?.months === 1 ? 'mes' : 'meses'}${pendingData?.includes_landing ? ' + Mini-landing' : ''}.`}
+          className="mb-6"
+        />
 
-        <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8">
-          <h1 className="font-syne font-bold text-[22px] text-white mb-1">Crea tu cuenta</h1>
-          <p className="text-[13px] text-[#555] mb-6">Un paso más para activar tu probador virtual.</p>
+        <div className="bg-[#111] border border-[#222] rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF5C3A] rounded-full blur-[100px] opacity-10 pointer-events-none" />
+          
+          <h1 className="font-syne font-bold text-[24px] text-white mb-1 tracking-tight">Crea tu cuenta</h1>
+          <p className="text-[13px] text-[#666] mb-8">Estás a un paso de activar tu probador virtual.</p>
 
           {apiError && (
-            <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[13px] px-4 py-3 rounded-lg mb-3">
-              {apiError}
-            </div>
+            <Alert type="error" message={apiError} className="mb-6" />
           )}
 
-          {/* Campo de email alternativo — solo aparece cuando el email del pago ya existe */}
           {showAltEmail && (
-            <div className="mb-5 border border-[#FF5C3A]/30 bg-[#FF5C3A]/5 rounded-lg px-4 py-3">
-              <label className="block text-[12px] font-semibold text-[#FF5C3A] mb-1.5">
-                Nuevo correo electrónico
+            <div className="mb-6 bg-[#1a1a1a] rounded-xl p-4 border border-[#222]">
+              <label className="block text-[12px] font-bold text-[#FF5C3A] uppercase tracking-wider mb-2">
+                Nuevo correo de acceso
               </label>
               <input
                 type="email"
                 value={altEmail}
                 onChange={e => { setAltEmail(e.target.value); setAltEmailError(''); }}
-                placeholder="otro@correo.com"
-                className={`w-full bg-[#0f0f0f] border ${altEmailError ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'} rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
+                placeholder="ejemplo@correo.com"
+                className={`w-full bg-[#050505] border ${altEmailError ? 'border-red-500/50' : 'border-[#333]'} rounded-xl px-4 py-3 text-[14px] text-white placeholder-[#444] focus:outline-none focus:border-[#FF5C3A] transition-all`}
               />
-              {altEmailError && <p className="text-[11px] text-[#ff6b6b] mt-1">{altEmailError}</p>}
-              <p className="text-[11px] text-[#555] mt-1.5">
-                Este correo se usará para iniciar sesión. El plan quedará activo en tu nueva cuenta.
+              {altEmailError && <p className="text-[11px] text-red-500 mt-1.5">{altEmailError}</p>}
+              <p className="text-[11px] text-[#555] mt-2 leading-relaxed">
+                Este correo se usará para iniciar sesión. El plan se activará en esta nueva cuenta.
               </p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-
-            {/* Nombre y apellido */}
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">Nombre y apellido</label>
+              <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">Nombre del responsable</label>
               <input
                 name="contact_name" type="text" value={form.contact_name} onChange={handleChange}
-                placeholder="Juan Pérez" required minLength={3}
-                className={`w-full bg-[#0f0f0f] border ${errors.contact_name ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'} rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
+                placeholder="Nombre y Apellido" required minLength={3}
+                className={`w-full bg-[#0d0d0d] border ${errors.contact_name ? 'border-red-500/50' : 'border-[#222]'} rounded-xl px-4 py-3 text-[14px] text-white placeholder-[#2a2a2a] focus:outline-none focus:border-[#FF5C3A] transition-all`}
               />
-              {errors.contact_name && <p className="text-[11px] text-[#ff6b6b] mt-1">{errors.contact_name}</p>}
+              {errors.contact_name && <p className="text-[11px] text-red-500 mt-1.5">{errors.contact_name}</p>}
             </div>
 
-            {/* Nombre de la marca */}
             <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">Nombre de la marca</label>
+              <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">Nombre de tu marca</label>
               <input
                 name="name" type="text" value={form.name} onChange={handleChange}
-                placeholder="Mi Tienda" required
-                className={`w-full bg-[#0f0f0f] border ${errors.name ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'} rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
+                placeholder="Ej. Glow Fashion" required
+                className={`w-full bg-[#0d0d0d] border ${errors.name ? 'border-red-500/50' : 'border-[#222]'} rounded-xl px-4 py-3 text-[14px] text-white placeholder-[#2a2a2a] focus:outline-none focus:border-[#FF5C3A] transition-all`}
               />
-              {errors.name && <p className="text-[11px] text-[#ff6b6b] mt-1">{errors.name}</p>}
+              {errors.name && <p className="text-[11px] text-red-500 mt-1.5">{errors.name}</p>}
             </div>
 
-            {/* Slug */}
             <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">URL del probador</label>
-              <div className={`flex bg-[#0f0f0f] border ${errors.slug ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'} rounded-lg overflow-hidden focus-within:border-[#FF5C3A] transition-colors`}>
-                <span className="inline-flex items-center px-3 text-[#333] text-[13px] border-r border-[#2a2a2a]">/sitio/</span>
+              <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">URL de tu sitio</label>
+              <div className={`flex bg-[#0d0d0d] border ${errors.slug ? 'border-red-500/50' : 'border-[#222]'} rounded-xl overflow-hidden focus-within:border-[#FF5C3A] transition-all`}>
+                <span className="inline-flex items-center px-4 text-[#444] text-[13px] border-r border-[#222] font-mono">/sitio/</span>
                 <input
                   name="slug" type="text" value={form.slug} onChange={handleChange}
                   placeholder="mi-tienda" required
-                  className="flex-1 px-3 py-2.5 text-[13px] text-white bg-transparent focus:outline-none placeholder-[#333]"
+                  className="flex-1 px-4 py-3 text-[14px] text-white bg-transparent focus:outline-none placeholder-[#2a2a2a]"
                 />
               </div>
-              {errors.slug && <p className="text-[11px] text-[#ff6b6b] mt-1">{errors.slug}</p>}
-              <p className="text-[11px] text-[#333] mt-1">Con planes activos puedes cambiarlo después desde tu dashboard.</p>
+              {errors.slug && <p className="text-[11px] text-red-500 mt-1.5">{errors.slug}</p>}
+              <p className="text-[10px] text-[#444] mt-2 italic">Podrás cambiarlo después desde tu panel.</p>
             </div>
 
-            {/* Contraseña */}
             <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">Contraseña</label>
+              <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">Contraseña</label>
               <div className="relative">
                 <input
                   name="password" type={showPassword ? 'text' : 'password'} value={form.password}
                   onChange={handleChange} placeholder="Mínimo 6 caracteres" required minLength={6}
-                  className={`w-full bg-[#0f0f0f] border ${errors.password ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'} rounded-lg px-3 py-2.5 pr-10 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
+                  className={`w-full bg-[#0d0d0d] border ${errors.password ? 'border-red-500/50' : 'border-[#222]'} rounded-xl px-4 py-3 pr-12 text-[14px] text-white placeholder-[#2a2a2a] focus:outline-none focus:border-[#FF5C3A] transition-all`}
                 />
                 <button
                   type="button" onClick={() => setShowPassword(v => !v)} tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#888] focus:outline-none transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#FF5C3A] transition-colors"
                 >
                   {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
               </div>
-              {errors.password && <p className="text-[11px] text-[#ff6b6b] mt-1">{errors.password}</p>}
+              {errors.password && <p className="text-[11px] text-red-500 mt-1.5">{errors.password}</p>}
             </div>
 
             <button
               type="submit" disabled={loading}
-              className="w-full py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] disabled:opacity-60 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 text-[13px] mt-2"
+              className="w-full py-4 bg-[#FF5C3A] hover:bg-[#ff6c4d] disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-[#FF5C3A]/20 flex items-center justify-center gap-3 text-[14px] mt-6"
             >
-              {loading ? <><IconSpinner /> Creando cuenta...</> : 'Activar Cuenta'}
+              {loading ? <><IconSpinner /> Validando datos...</> : 'Confirmar y Activar Probador'}
             </button>
           </form>
 
-          <p className="text-center text-[12px] text-[#444] mt-5">
-            ¿Ya tienes cuenta?{' '}
-            <Link href="/login" className="text-[#FF5C3A] hover:underline">Inicia sesión</Link>
-          </p>
+          <div className="mt-8 border-t border-[#222] pt-6 text-center">
+            <p className="text-[12px] text-[#555]">
+              ¿Ya tienes cuenta activa?{' '}
+              <Link href="/login" className="text-white hover:text-[#FF5C3A] transition-colors font-bold underline underline-offset-4 decoration-[#FF5C3A]/30">Ingresa aquí</Link>
+            </p>
+          </div>
         </div>
 
         {ref && (
-          <p className="text-center text-[11px] text-[#333] mt-4">
-            Referencia de pago: <span className="font-mono">{ref}</span>
-          </p>
+          <div className="mt-8 text-center">
+            <span className="inline-block px-3 py-1 bg-[#111] rounded-full border border-[#222] text-[10px] text-[#444] font-mono tracking-widest uppercase">
+              Ref: {ref}
+            </span>
+          </div>
         )}
       </div>
     </main>
@@ -450,7 +446,11 @@ function RegistroProContent() {
 
 export default function RegistroProPage() {
   return (
-    <Suspense>
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#FF5C3A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
       <RegistroProContent />
     </Suspense>
   );
