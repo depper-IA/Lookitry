@@ -72,13 +72,20 @@ export class PaypalController {
       throw new Error(`El pago no se completó (Status: ${captureData.status})`);
     }
 
-    // 2. Procesar activación según la referencia
-    const isNewRegistration = reference.includes('visitor_');
-    const parts = reference.split('-');
-    const brandId = isNewRegistration ? null : parts[1];
-    const months = parseInt(parts[2].slice(1), 10);
-    const plan = parts[3].slice(1);
+    // 2. Procesar activación según la referencia robustamente (soporta UUIDs con guiones)
+    const match = reference.match(/PAYPAL-(.+)-M(\d+)-P([^-]+)/);
+    if (!match) {
+      throw new Error(`Referencia inválida o malformada: ${reference}`);
+    }
+
+    const brandIdOrVisitor = match[1];
+    const isNewRegistration = brandIdOrVisitor.startsWith('visitor_');
+    const brandId = isNewRegistration ? null : brandIdOrVisitor;
+    const months = parseInt(match[2], 10);
+    const plan = match[3];
     const includesLanding = reference.includes('LANDING');
+    
+    // El monto capturado por la pasarela
     const amountUSD = parseFloat(captureData.purchase_units[0].payments.captures[0].amount.value);
 
     if (isNewRegistration) {
@@ -161,13 +168,14 @@ export class PaypalController {
 
       // Si tenemos referencia, podemos activar la suscripción si no se hizo ya
       if (reference && reference.startsWith('PAYPAL-')) {
-        // Lógica similar a capturePayment pero asíncrona
-        const isNewRegistration = reference.includes('visitor_');
-        const parts = reference.split('-');
-        const brandId = isNewRegistration ? null : parts[1];
-        const months = parseInt(parts[2].slice(1), 10);
-        const plan = parts[3].slice(1);
-        const includesLanding = reference.includes('LANDING');
+        const match = reference.match(/PAYPAL-(.+)-M(\d+)-P([^-]+)/);
+        if (match) {
+          const brandIdOrVisitor = match[1];
+          const isNewRegistration = brandIdOrVisitor.startsWith('visitor_');
+          const brandId = isNewRegistration ? null : brandIdOrVisitor;
+          const months = parseInt(match[2], 10);
+          const plan = match[3];
+          const includesLanding = reference.includes('LANDING');
 
         if (isNewRegistration) {
           await supabaseAdmin
@@ -203,6 +211,7 @@ export class PaypalController {
         }
       }
     }
+  }
 
     return res.status(200).json({ received: true });
   });
