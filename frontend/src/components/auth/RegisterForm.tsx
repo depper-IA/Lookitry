@@ -164,7 +164,7 @@ export default function RegisterForm() {
       
       // Si es flujo pagado, usamos el endpoint post-pago que no tiene Turnstile ni validaciones de abuso
       const endpoint = isPaidFlow ? '/api/auth/register-post-payment' : '/api/auth/register';
-      const body = isPaidFlow ? { ...form, reference: paymentRef } : { ...form, fingerprint };
+      const body = isPaidFlow ? { ...form, ref: paymentRef } : { ...form, fingerprint };
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: 'POST',
