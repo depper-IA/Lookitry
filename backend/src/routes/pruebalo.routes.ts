@@ -21,6 +21,9 @@ router.get('/synced-products', publicRateLimiter, pruebaloController.getSyncedPr
 // POST /api/pruebalo/sync-woocommerce - Sincronizar productos desde el plugin
 router.post('/sync-woocommerce', publicRateLimiter, pruebaloController.syncWooCommerceProducts);
 
+// POST /api/pruebalo/plugin-telemetry - Registrar telemetria tecnica del plugin
+router.post('/plugin-telemetry', publicRateLimiter, pruebaloController.recordPluginTelemetry);
+
 // GET /api/pruebalo/img-proxy - Proxy de imágenes
 router.get('/img-proxy', publicRateLimiter, pruebaloController.imgProxy);
 

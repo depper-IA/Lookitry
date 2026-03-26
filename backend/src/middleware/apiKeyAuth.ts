@@ -1,12 +1,14 @@
 import { Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
 import { AuthRequest } from './auth';
+import { getExpectedStoreHost, getIncomingStoreHost, isAllowedStoreHost } from '../utils/storeDomain';
 
 const authService = new AuthService();
 
 /**
  * apiKeyAuth
  * Middleware para autenticar peticiones externas usando un API Key en el header x-api-key.
+ * Si la marca ya registro un dominio de tienda, tambien valida que la peticion venga de ese host.
  */
 export const apiKeyAuth = async (
   req: AuthRequest,
@@ -23,17 +25,22 @@ export const apiKeyAuth = async (
       });
     }
 
-    // Verificar que la marca existe con esa API Key
     const brand = await authService.getBrandByApiKey(apiKey);
 
     if (!brand) {
       return res.status(401).json({
         error: 'UNAUTHORIZED',
-        message: 'API Key inválida',
+        message: 'API Key invalida',
       });
     }
 
-    // Agregar información de la marca al request (mismo formato que authMiddleware)
+    if (!isAllowedStoreHost(brand, req)) {
+      return res.status(403).json({
+        error: 'FORBIDDEN',
+        message: `Dominio no autorizado para esta API Key. Esperado: ${getExpectedStoreHost(brand)}. Recibido: ${getIncomingStoreHost(req)}`,
+      });
+    }
+
     req.brand = {
       id: brand.id,
       email: brand.email,

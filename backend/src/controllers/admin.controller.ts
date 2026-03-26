@@ -7,6 +7,7 @@ import { generateToken } from '../utils/jwt';
 import { emailService } from '../services/email.service';
 import { createAdminNotification } from '../utils/adminNotifications';
 import { adminPasswordResetEmail } from '../templates/email-templates';
+import { getWooProductSummary, getWooTelemetrySummary } from '../utils/wooTelemetry';
 
 const adminService = new AdminService();
 
@@ -1045,14 +1046,25 @@ export const getWooBrandsSummary = async (_req: any, res: Response) => {
       }
     }
 
-    const rows = (brands || []).map((b: any) => {
+    const rows = await Promise.all((brands || []).map(async (b: any) => {
       const counts = productCounts.get(b.id) || { total: 0, active: 0, mapped: 0 };
+      const telemetry = await getWooTelemetrySummary(b.id, 30).catch(() => ({
+        totalRequests: 0,
+        successfulRequests: 0,
+        failedRequests: 0,
+        avgLatencyMs: 0,
+        totalRetries: 0,
+        lastSyncAt: null,
+        lastErrorAt: null,
+        lastErrorMessage: null,
+      }));
       return {
         ...b,
         has_api_key: !!b.api_key,
         product_counts: counts,
+        telemetry,
       };
-    });
+    }));
 
     return res.status(200).json({ brands: rows, count: rows.length });
   } catch (error: any) {
@@ -1068,6 +1080,10 @@ export const getWooBrandsSummary = async (_req: any, res: Response) => {
 export const getWooBrandProducts = async (req: any, res: Response) => {
   try {
     const { id } = req.params;
+    const [productSummary, telemetry] = await Promise.all([
+      getWooProductSummary(id),
+      getWooTelemetrySummary(id, 30),
+    ]);
     const { data: products, error } = await supabaseAdmin
       .from('products')
       .select('id, name, category, external_id, is_active, updated_at')
@@ -1079,6 +1095,10 @@ export const getWooBrandProducts = async (req: any, res: Response) => {
     return res.status(200).json({
       products: products || [],
       count: (products || []).length,
+      summary: {
+        products: productSummary,
+        telemetry,
+      },
     });
   } catch (error: any) {
     console.error('Error in getWooBrandProducts:', error);

@@ -10,6 +10,12 @@ type WooBrand = {
   plan: string;
   has_api_key: boolean;
   product_counts: { total: number; active: number; mapped: number };
+  telemetry: {
+    totalRequests: number;
+    failedRequests: number;
+    avgLatencyMs: number;
+    lastSyncAt: string | null;
+  };
 };
 
 type WooProduct = {
@@ -21,11 +27,28 @@ type WooProduct = {
   updated_at: string;
 };
 
+type WooSummary = {
+  products: {
+    totalMappedProducts: number;
+    activeMappedProducts: number;
+  };
+  telemetry: {
+    totalRequests: number;
+    failedRequests: number;
+    avgLatencyMs: number;
+    totalRetries: number;
+    lastSyncAt: string | null;
+    lastErrorAt: string | null;
+    lastErrorMessage: string | null;
+  };
+};
+
 export default function AdminWooCommercePage() {
   const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
   const [brands, setBrands] = useState<WooBrand[]>([]);
   const [selectedBrandId, setSelectedBrandId] = useState<string>('');
   const [products, setProducts] = useState<WooProduct[]>([]);
+  const [summary, setSummary] = useState<WooSummary | null>(null);
   const [loadingBrands, setLoadingBrands] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [savingMap, setSavingMap] = useState<Record<string, boolean>>({});
@@ -75,9 +98,11 @@ export default function AdminWooCommercePage() {
       if (!res.ok) throw new Error('No se pudo cargar productos de la marca');
       const data = await res.json();
       setProducts((data.products || []).filter((p: WooProduct) => !!p.external_id));
+      setSummary(data.summary || null);
     } catch (error) {
       console.error(error);
       setProducts([]);
+      setSummary(null);
     } finally {
       setLoadingProducts(false);
     }
@@ -103,6 +128,7 @@ export default function AdminWooCommercePage() {
         prev.map((p) => (p.id === productId ? { ...p, is_active: nextState } : p))
       );
       fetchBrands();
+      fetchProducts(selectedBrandId);
     } catch (error) {
       console.error(error);
       alert('No se pudo actualizar el producto. Intenta de nuevo.');
@@ -122,9 +148,9 @@ export default function AdminWooCommercePage() {
   return (
     <div className="space-y-8">
       <header className="flex flex-col gap-2">
-        <h1 className="font-jakarta font-black uppercase italic tracking-tight text-2xl">WooCommerce Control</h1>
+        <h1 className="font-jakarta font-black tracking-tight text-2xl text-[var(--text-primary)]">WooCommerce Control</h1>
         <p style={{ color: 'var(--text-muted)' }}>
-          Control centralizado desde Admin: marcas integradas, productos mapeados y activación/desactivación por producto.
+          Control centralizado desde Admin: marcas integradas, productos mapeados y metricas reales del plugin.
         </p>
       </header>
 
@@ -161,6 +187,8 @@ export default function AdminWooCommercePage() {
                   <th className="py-2">API Key</th>
                   <th className="py-2">Mapeados</th>
                   <th className="py-2">Activos</th>
+                  <th className="py-2">Errores 30d</th>
+                  <th className="py-2">Latencia</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,6 +210,8 @@ export default function AdminWooCommercePage() {
                     <td className="py-3">{b.has_api_key ? 'OK' : 'NO'}</td>
                     <td className="py-3">{b.product_counts.mapped}</td>
                     <td className="py-3">{b.product_counts.active}</td>
+                    <td className="py-3">{b.telemetry?.failedRequests || 0}</td>
+                    <td className="py-3">{b.telemetry?.avgLatencyMs || 0}ms</td>
                   </tr>
                 ))}
               </tbody>
@@ -199,6 +229,43 @@ export default function AdminWooCommercePage() {
             {selectedBrand ? `Productos sincronizados - ${selectedBrand.name}` : 'Productos sincronizados'}
           </h2>
         </div>
+
+        {summary && (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+            <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
+              <div style={{ color: 'var(--text-muted)' }} className="text-xs uppercase">Mapeados</div>
+              <div className="text-xl font-bold">{summary.products.totalMappedProducts}</div>
+            </div>
+            <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
+              <div style={{ color: 'var(--text-muted)' }} className="text-xs uppercase">Activos</div>
+              <div className="text-xl font-bold">{summary.products.activeMappedProducts}</div>
+            </div>
+            <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
+              <div style={{ color: 'var(--text-muted)' }} className="text-xs uppercase">Requests 30d</div>
+              <div className="text-xl font-bold">{summary.telemetry.totalRequests}</div>
+            </div>
+            <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
+              <div style={{ color: 'var(--text-muted)' }} className="text-xs uppercase">Errores 30d</div>
+              <div className="text-xl font-bold">{summary.telemetry.failedRequests}</div>
+            </div>
+            <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
+              <div style={{ color: 'var(--text-muted)' }} className="text-xs uppercase">Latencia media</div>
+              <div className="text-xl font-bold">{summary.telemetry.avgLatencyMs}ms</div>
+            </div>
+          </div>
+        )}
+
+        {summary?.telemetry.lastSyncAt && (
+          <div className="mb-5 text-sm" style={{ color: 'var(--text-muted)' }}>
+            Ultima sincronizacion exitosa: {new Date(summary.telemetry.lastSyncAt).toLocaleString('es-CO')}
+          </div>
+        )}
+
+        {summary?.telemetry.lastErrorMessage && (
+          <div className="mb-5 text-sm text-red-400">
+            Ultimo error reportado: {summary.telemetry.lastErrorMessage}
+          </div>
+        )}
 
         {!selectedBrandId ? (
           <p style={{ color: 'var(--text-muted)' }}>Selecciona una marca para ver sus productos mapeados.</p>
