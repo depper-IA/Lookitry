@@ -1,5 +1,30 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 26 de Marzo, 2026 — Auditoría Dashboard Beta y Corrección de PayPal Landing
+
+**Archivo leído obligatoriamente:**
+- `LOOKITRY_MASTER_MEMORY.md`
+
+**Verificación de estado (preexistente):**
+- `frontend/src/components/dashboard/OnboardingWizard.tsx`: CTA del paso 4 corregido a `/dashboard/integrations` (sin ruta rota).
+- `frontend/src/components/dashboard/DashboardLayout.tsx`: navegación activa en subrutas ya implementada (`pathname.startsWith(...)`).
+- `frontend/src/app/dashboard/integrations/docs/page.tsx` y `frontend/src/components/dashboard/ProductForm.tsx`: sin placeholders `href="#"` detectados.
+- `frontend/src/app/dashboard/page.tsx`: sin uso inválido de `border border(--border-color)`.
+
+**Cambio aplicado en esta sesión:**
+- `frontend/src/app/dashboard/checkout-landing/page.tsx`
+  - Se eliminó el flujo simulado de PayPal por WhatsApp.
+  - Se implementó flujo real con endpoint backend:
+    - `GET /api/payments/paypal/checkout-url`
+    - parámetros: `plan`, `months`, `includes_landing`, `amount`, `trm`
+    - autenticación vía `Authorization: Bearer <token>`
+  - Al recibir `checkoutUrl`, se redirige al checkout real de PayPal.
+
+**Motivo:**
+- Dejar el dashboard realmente listo para beta cobrable, manteniendo PayPal activo y funcional en `checkout-landing` en lugar de un canal manual.
+
+---
+
 ## 24 de Marzo, 2026 — Auditoría de Seguridad Completa (Backend & Frontend)
 
 **Archivos examinados:**
