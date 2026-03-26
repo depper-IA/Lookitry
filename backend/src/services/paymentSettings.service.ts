@@ -195,12 +195,18 @@ export class PaymentSettingsService {
     miniLandingPreviewSeconds: number;
     maintenanceMode: boolean;
     maintenanceMessage: string;
+    trm: number;
   }> {
     const s = await this.getSettings();
     // En modo producción usar la llave pública de producción
     const wompiPublicKey = s.wompi_test_mode
       ? s.wompi_public_key
       : (s.wompi_prod_public_key || s.wompi_public_key);
+
+    // Obtener TRM real-time
+    const { TrmService } = require('../utils/trm');
+    const trm = await TrmService.getCurrentTrm();
+
     return {
       landingPrice: s.landing_price ?? 650000,
       landingOriginalPrice: s.landing_original_price ?? 900000,
@@ -227,6 +233,8 @@ export class PaymentSettingsService {
       miniLandingPreviewSeconds: s.mini_landing_preview_seconds,
       maintenanceMode: s.maintenance_mode,
       maintenanceMessage: s.maintenance_message,
+      trm, // Agregado para el frontend
     };
   }
 }
+
