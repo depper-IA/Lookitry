@@ -10,7 +10,7 @@ import { LandingFooter } from '@/components/landing/LandingFooter';
 import { LandingPricingCard } from '@/components/landing/LandingPricingCard';
 import { ProPlanButton, CtaProButton } from '@/components/landing/LandingCtaButtons';
 import { PricingConfig } from '@/lib/pricing';
-import { formatCurrency } from '@/utils/currency';
+import { formatCurrency, formatPrice as formatDynamicPrice } from '@/utils/currency';
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 function IconUser() {
@@ -70,12 +70,24 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
   const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
   const [isMounted, setIsMounted] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const trm = pricing?.meta?.trm_referencia ?? 3700;
+  const [trm, setTrm] = useState(pricing?.meta?.trm_referencia ?? 3700);
 
   useEffect(() => {
     setIsMounted(true);
     const saved = localStorage.getItem('currency') as 'COP' | 'USD';
     if (saved) setCurrency(saved);
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    if (apiUrl) {
+      fetch(`${apiUrl}/api/payment-settings/public`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data?.trm && Number(data.trm) > 0) {
+            setTrm(Number(data.trm));
+          }
+        })
+        .catch(() => {});
+    }
 
     const handleCurrencyChange = () => {
       const current = localStorage.getItem('currency') as 'COP' | 'USD';
@@ -99,16 +111,9 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
   };
 
   const formatPrice = (cop: number) => {
-    if (currency === 'USD') {
-      const usd = Math.ceil(cop / trm);
-      return new Intl.NumberFormat('en-US', { 
-        style: 'currency', 
-        currency: 'USD',
-        maximumFractionDigits: 0,
-        minimumFractionDigits: 0 
-      }).format(usd);
-    }
-    return formatCurrency(cop);
+    return currency === 'USD'
+      ? formatDynamicPrice(cop, 'USD', trm)
+      : formatCurrency(cop);
   };
 
   const basicPrice = pricing?.basic?.precio_mensual_cop ?? 150000;

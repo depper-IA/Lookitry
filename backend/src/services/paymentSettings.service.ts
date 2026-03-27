@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../config/supabase';
+import { pricingService } from './pricing.service';
 
 export interface PaymentSettings {
   id?: string;
@@ -207,9 +208,7 @@ export class PaymentSettingsService {
       ? s.wompi_public_key
       : (s.wompi_prod_public_key || s.wompi_public_key);
 
-    // Obtener TRM real-time
-    const { TrmService } = require('../utils/trm');
-    const trm = await TrmService.getCurrentTrm();
+    const { trm } = await pricingService.getEffectiveTrm();
 
     const { data: metaRow } = await supabaseAdmin
       .from('pricing_config')

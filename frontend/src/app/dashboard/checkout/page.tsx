@@ -52,11 +52,10 @@ const MONTH_DISCOUNTS_FALLBACK = [
 
 function formatPaypalUsd(amountCop: number, trm: number): string {
   const safeTrm = trm > 0 ? trm : 3900;
-  const usd = Math.ceil((amountCop / safeTrm) * 100) / 100;
-  return usd.toFixed(2);
+  return String(Math.ceil(amountCop / safeTrm));
 }
 
-type CheckoutState = 'idle' | 'success' | 'error';
+type CheckoutState = 'idle' | 'verifying' | 'success' | 'error';
 
 // ── Sub-componente: sección de pago ──────────────────────────────────────────
 
@@ -263,12 +262,14 @@ function CheckoutContent() {
 
   // Prorrateo
   const [prorationPreview, setProrationPreview] = useState<{
+    basePlanTotal: number;
     creditAmount: number;
     amountToPay: number;
     newPlanTotal: number;
     daysRemaining: number;
     isFree: boolean;
     newEndDate: string;
+    creditLabel: string;
   } | null>(null);
   const [loadingProration, setLoadingProration] = useState(false);
   const [applyingFreeUpgrade, setApplyingFreeUpgrade] = useState(false);
@@ -418,7 +419,7 @@ function CheckoutContent() {
     const token  = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const currentPlanPriceFallback = planInfo[currentPlan as PlanType].price; // Precio mensual base
     fetch(
-      `${apiUrl}/api/payments/wompi/upgrade-preview?newPlan=${selectedPlan}&newMonths=${selectedMonths}&newPlanPricePerMonth=${planInfo[selectedPlan].price}&currentPlanPriceTotal=${currentPlanPriceFallback}`,
+      `${apiUrl}/api/payments/wompi/upgrade-preview?newPlan=${selectedPlan}&newMonths=${selectedMonths}&newPlanTotal=${planTotal}&currentPlanPriceTotalFallback=${currentPlanPriceFallback}`,
       {
         credentials: 'include',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -428,7 +429,7 @@ function CheckoutContent() {
       .then(data => { if (data) setProrationPreview(data); })
       .catch(() => {})
       .finally(() => setLoadingProration(false));
-  }, [isUpgrade, selectedMonths, loadingInfo, planInfo, selectedPlan, currentPlan]);
+  }, [isUpgrade, selectedMonths, loadingInfo, planInfo, selectedPlan, currentPlan, planTotal]);
 
   const handleFreeUpgrade = async () => {
     if (!prorationPreview?.isFree) return;
@@ -453,9 +454,59 @@ function CheckoutContent() {
 
   const handleSuccess = (result: WompiWidgetResult) => {
     console.log('[Wompi] Pago aprobado:', result.transaction.id);
-    setState('success');
+    setErrorMsg('');
+    setState('verifying');
   };
-  const handleError = (msg: string) => { setErrorMsg(msg); setState('error'); };
+  const handleError = (msg: string) => {
+    const normalized = msg.toLowerCase();
+    if (
+      normalized.includes('verificando tu pago') ||
+      normalized.includes('widget de wompi') ||
+      normalized.includes('wompi no está disponible') ||
+      normalized.includes('wompi no esta disponible')
+    ) {
+      setErrorMsg('Estamos verificando tu pago. Si la transacción ya fue aprobada, tu plan se actualizará automáticamente.');
+      setState('verifying');
+      return;
+    }
+    setErrorMsg(msg);
+    setState('error');
+  };
+
+  useEffect(() => {
+    if (state !== 'verifying') return;
+
+    let cancelled = false;
+    let attempts = 0;
+    const expectedPlan = selectedPlan;
+
+    const verify = async () => {
+      attempts += 1;
+      try {
+        const info = await subscriptionService.getSubscriptionInfo();
+        const hasPlanUpdated = info.plan === expectedPlan && (info.status === 'active' || info.status === 'expiring_soon');
+        if (!cancelled && hasPlanUpdated) {
+          setState('success');
+          return;
+        }
+      } catch (error) {
+        console.error('[Checkout] Error verificando suscripción:', error);
+      }
+
+      if (!cancelled && attempts >= 6) {
+        setErrorMsg('Tu pago quedó en verificación. Si ya fue aprobado, la actualización aparecerá en tu suscripción en pocos minutos.');
+        setState('error');
+      }
+    };
+
+    verify();
+    const interval = window.setInterval(verify, 3500);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [state, selectedPlan]);
 
   // ── Spinner de carga ──────────────────────────────────────────────────────
   if (loadingInfo || !pricingLoaded) {
@@ -493,6 +544,37 @@ function CheckoutContent() {
           style={{ background: '#FF5C3A' }}
         >
           Ver mi suscripción
+        </button>
+      </div>
+    );
+  }
+
+  if (state === 'verifying') {
+    return (
+      <div className="max-w-md mx-auto py-20 text-center space-y-6">
+        <div className="flex justify-center">
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center"
+            style={{ background: 'rgba(99,102,241,0.1)' }}
+          >
+            <div
+              className="w-10 h-10 rounded-full border-4 animate-spin"
+              style={{ borderColor: '#6366f1', borderTopColor: 'transparent' }}
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Verificando tu pago</h2>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            {errorMsg || 'Estamos confirmando la transacción con la pasarela. Si el cobro ya fue aprobado, tu plan se actualizará automáticamente.'}
+          </p>
+        </div>
+        <button
+          onClick={() => router.push('/dashboard/subscription')}
+          className="px-8 py-3 min-h-[44px] rounded-xl text-white text-sm font-semibold hover:opacity-90 cursor-pointer"
+          style={{ background: '#6366f1' }}
+        >
+          Ir a mi suscripción
         </button>
       </div>
     );
@@ -593,7 +675,7 @@ function CheckoutContent() {
             {!hasActiveSub
               ? 'Elige tu plan para continuar después del período de prueba'
               : isUpgrade
-              ? `Tu crédito de ${daysRemaining ?? 0} días restantes se descuenta automáticamente`
+              ? 'Tu crédito se calcula según el valor real restante de tu ciclo actual'
               : isDowngrade
               ? 'El cambio aplica al próximo período de facturación'
               : 'Los nuevos meses se suman a tu fecha de vencimiento actual'}
@@ -916,13 +998,13 @@ function CheckoutContent() {
                       <span>
                         {planInfo[selectedPlan].name} · {selectedMonths} {selectedMonths === 1 ? 'mes' : 'meses'}
                       </span>
-                      <span>{formatPrice(prorationPreview.newPlanTotal, paymentMethod, trm)}</span>
+                      <span>{formatPrice(prorationPreview.basePlanTotal, paymentMethod, trm)}</span>
                     </div>
                     <div
                       className="flex items-center justify-between text-xs font-semibold"
                       style={{ color: '#10b981' }}
                     >
-                      <span>Crédito · {prorationPreview.daysRemaining} días Plan Básico</span>
+                      <span>{prorationPreview.creditLabel}</span>
                       <span>− {formatPrice(prorationPreview.creditAmount, paymentMethod, trm)}</span>
                     </div>
                     <div

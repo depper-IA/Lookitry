@@ -159,8 +159,18 @@ export class WompiController {
         res.status(401).json({ error: 'No autenticado' });
         return;
       }
-      const { newPlan, newMonths, newPlanPricePerMonth, currentPlanPriceTotalFallback } = req.query;
-      if (!newPlan || !newMonths || !newPlanPricePerMonth) {
+      const {
+        newPlan,
+        newMonths,
+        newPlanTotal,
+        newPlanPricePerMonth,
+        currentPlanPriceTotalFallback,
+        currentPlanPriceTotal,
+      } = req.query;
+      const resolvedNewPlanTotal = parseInt((newPlanTotal as string) || (newPlanPricePerMonth as string), 10);
+      const resolvedCurrentPlanFallback = parseInt((currentPlanPriceTotalFallback as string) || (currentPlanPriceTotal as string), 10) || 150000;
+
+      if (!newPlan || !newMonths || !resolvedNewPlanTotal) {
         res.status(400).json({ error: 'Faltan parámetros' });
         return;
       }
@@ -169,8 +179,8 @@ export class WompiController {
         brand.id,
         (newPlan as string).toUpperCase(),
         parseInt(newMonths as string, 10),
-        parseInt(newPlanPricePerMonth as string, 10),
-        parseInt(currentPlanPriceTotalFallback as string, 10) || 150000
+        resolvedNewPlanTotal,
+        resolvedCurrentPlanFallback
       );
       res.json(preview);
     } catch (error) {

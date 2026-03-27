@@ -246,7 +246,8 @@ export function margenPorCliente(
 
 /** Precio en USD usando TRM */
 export function precioEnUSD(precioCop: number, trm: number): number {
-  return Math.ceil(precioCop / trm);
+  const safeTrm = trm > 0 ? trm : 3900;
+  return Math.ceil(precioCop / safeTrm);
 }
 
 /**
