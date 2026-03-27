@@ -91,7 +91,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
             <motion.div 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="hidden xl:block text-lg leading-none shrink-0"
+              className="block lg:hidden xl:block text-lg leading-none shrink-0"
             >
               <LookitryLogoText className="text-white" />
             </motion.div>
@@ -142,7 +142,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
                 <motion.span 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="hidden xl:block leading-none"
+                  className="block lg:hidden xl:block leading-none"
                 >
                   {item.name}
                 </motion.span>
@@ -175,7 +175,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="hidden xl:block flex-1 min-w-0"
+                className="block lg:hidden xl:block flex-1 min-w-0"
               >
                 <p className="text-[12px] font-semibold text-white truncate leading-tight tracking-tight">{currentBrand?.name}</p>
                 <div className="flex items-center gap-1.5 mt-1">
@@ -187,7 +187,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
               </motion.div>
               <button
                 onClick={logout}
-                className="hidden xl:flex w-10 h-10 rounded-2xl transition-all items-center justify-center text-gray-600 hover:text-white hover:bg-white/10 group/logout shrink-0"
+                className="flex lg:hidden xl:flex w-10 h-10 rounded-2xl transition-all items-center justify-center text-gray-600 hover:text-white hover:bg-white/10 group/logout shrink-0"
                 title="Cerrar sesión"
               >
                 <LogOut size={18} className="transition-transform group-hover/logout:translate-x-0.5" />

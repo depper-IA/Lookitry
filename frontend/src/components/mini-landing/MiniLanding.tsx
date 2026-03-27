@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { TemplateClassic } from './TemplateClassic';
@@ -89,6 +89,18 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
 
     return () => clearInterval(timer);
   }, [timeLeft, isBlocked]);
+
+  // Scroll lock cuando está bloqueado
+  useEffect(() => {
+    if (isBlocked) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isBlocked]);
 
   if (loading) {
     return (

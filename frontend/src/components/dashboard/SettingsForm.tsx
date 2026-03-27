@@ -229,7 +229,29 @@ function LiveWidgetPreview({ template, primary, secondary, logo, welcome, button
   );
 }
 
+function useProConfig() {
+  const [proPrice, setProPrice] = useState<number | null>(null);
+  const [proGenerations, setProGenerations] = useState<number | null>(null);
+  
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?id=eq.pro&select=data`, {
+      headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          if (data[0].data?.precio_mensual_cop) setProPrice(data[0].data.precio_mensual_cop);
+          if (data[0].data?.generaciones_mes) setProGenerations(data[0].data.generaciones_mes);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  return { proPrice, proGenerations };
+}
+
 export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
+  const { proPrice, proGenerations } = useProConfig();
   const isPro = brand.plan === 'PRO';
   const [activeTab, setActiveTab] = useState<'general' | 'appearance' | 'embed' | 'pro'>(isPro ? 'general' : 'pro');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -563,11 +585,11 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
 
                               <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                                  {[
-                                   'Slug de URL personalizado',
-                                   'Mensajes editoriales custom',
+                                   'Slug y Mensaje de Bienvenida',
                                    'CTA 100% dinámicos',
-                                   'Templates Side Panel y Bold',
-                                   'Prioridad IA (Zero Wait)',
+                                   'Todas las plantillas incl. Bold',
+                                   'Control total de branding',
+                                   `${proGenerations ? proGenerations.toLocaleString('es-CO') : '1.200'} generaciones mensuales`,
                                    'Hasta 15 productos activos'
                                  ].map((f, i) => (
                                    <li key={i} className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wide text-zinc-500">

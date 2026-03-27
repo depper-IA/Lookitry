@@ -73,7 +73,7 @@ const PLATFORM_CONNECTORS = [
   },
   {
     name: 'Cloud SDK',
-    icon: '/logo.svg',
+    icon: '/Lookitry-logo-dark.svg',
     status: 'Available',
     tileClass: 'bg-[#fff3ef] border-[#ffd3c8]',
     imageClass: 'object-contain scale-[0.92]',
@@ -153,7 +153,7 @@ export default function IntegrationsPage() {
         <div className="space-y-4 md:space-y-6">
           <div className="flex items-center gap-4 md:gap-5">
              <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl md:rounded-3xl bg-[#fff3ef] border border-[#ffd7cd] flex items-center justify-center shadow-sm shrink-0 overflow-hidden p-2.5">
-                <img src="/logo.svg" alt="Lookitry" className="w-full h-full object-contain scale-[0.92]" />
+                <img src="/Lookitry-logo-dark.svg" alt="Lookitry" className="w-full h-full object-contain scale-[0.92]" />
              </div>
              <div>
                  <h1 className="text-2xl md:text-4xl xl:text-[2.7rem] font-bold tracking-tight text-[var(--text-primary)] leading-[0.95] font-jakarta">
