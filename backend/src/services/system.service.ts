@@ -1,4 +1,5 @@
-import os;
+import os from 'os';
+import fs from 'fs';
 import { supabaseAdmin } from '../config/supabase';
 
 export interface SystemStats {
@@ -38,10 +39,13 @@ export class SystemService {
         }
       } catch (error) {
         console.error('[System] Error reading /proc/meminfo:', error);
+        // Fallback en caso de error en Linux
+        const total = os.totalmem();
+        const free = os.freemem();
+        ram = { total, free, used: total - free, percentage: ((total - free) / total) * 100 };
       }
     } else {
       // Fallback para desarrollo (Windows/Mac)
-      const os = require('os');
       const total = os.totalmem();
       const free = os.freemem();
       const used = total - free;
@@ -89,5 +93,4 @@ export class SystemService {
   }
 }
 
-import fs from 'fs';
 export const systemService = new SystemService();
