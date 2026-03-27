@@ -79,7 +79,9 @@ export default function WompiButton({
         setLoading(false);
         if (result.transaction.status === 'APPROVED') {
           onSuccess(result);
-        } else if (result.transaction.status !== 'PENDING') {
+        } else if (result.transaction.status === 'PENDING') {
+          onError?.('Estamos verificando tu pago con Wompi.');
+        } else {
           onError?.(`Pago ${result.transaction.status === 'DECLINED' ? 'rechazado' : 'fallido'}. Intenta de nuevo.`);
         }
       });
@@ -87,7 +89,7 @@ export default function WompiButton({
       setLoading(false);
       onError?.(err.message ?? 'Error al iniciar el pago');
     }
-  }, [scriptReady, loading, plan, onSuccess, onError]);
+  }, [scriptReady, loading, plan, months, amount, includesLanding, onSuccess, onError]);
 
   return (
     <button

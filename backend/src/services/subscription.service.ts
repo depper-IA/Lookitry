@@ -280,23 +280,25 @@ export class SubscriptionService {
    * @param brandId - ID de la marca
    * @param newPlan - Plan destino ('BASIC' | 'PRO')
    * @param newMonths - Meses a contratar del nuevo plan
-   * @param newPlanPricePerMonth - Precio mensual del nuevo plan en COP
+   * @param newPlanTotal - Precio total final del nuevo plan en COP
    * @param currentPlanPriceTotalFallback - Precio total pagado por el plan actual (fallback si no hay registro)
    */
   async calculateUpgradeProration(
     brandId: string,
     newPlan: string,
     newMonths: number,
-    newPlanPricePerMonth: number,
+    newPlanTotal: number,
     currentPlanPriceTotalFallback: number
   ): Promise<{
     daysRemaining: number;
+    basePlanTotal: number;
     creditAmount: number;
     newPlanTotal: number;
     amountToPay: number;
     remainingCredit: number;
     newEndDate: string;
     isFree: boolean;
+    creditLabel: string;
   }> {
     const { data: brand, error } = await supabaseAdmin
       .from('brands')
@@ -308,8 +310,6 @@ export class SubscriptionService {
 
     const now = new Date();
     const endDate = brand.subscription_end_date ? new Date(brand.subscription_end_date) : now;
-    const startDate = brand.subscription_start_date ? new Date(brand.subscription_start_date) : now;
-
     // Días restantes calculados exactamente desde el fin actual.
     const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
@@ -329,6 +329,7 @@ export class SubscriptionService {
 
     const paymentMonths = lastPayment?.months_paid || 1;
     const totalDays = Math.max(1, 30 * paymentMonths); // prorrateo basado en meses pagados
+    const effectiveDaysRemaining = Math.min(daysRemaining, totalDays);
 
     // Usar el monto real del último pago; si no hay registro, usar el fallback del frontend
     let currentPlanPriceTotal = lastPayment?.amount && lastPayment.amount > 0
@@ -351,43 +352,32 @@ export class SubscriptionService {
       }
     }
 
-    console.log(`[Proration] brandId=${brandId} lastPayment=${lastPayment?.amount} fallback=${currentPlanPriceTotalFallback} using=${currentPlanPriceTotal} totalDays=${totalDays} daysRemaining=${daysRemaining}`);
+    console.log(`[Proration] brandId=${brandId} lastPayment=${lastPayment?.amount} fallback=${currentPlanPriceTotalFallback} using=${currentPlanPriceTotal} totalDays=${totalDays} daysRemaining=${daysRemaining} effectiveDaysRemaining=${effectiveDaysRemaining}`);
 
     // Precio por día del plan actual (basado en lo que pagó realmente)
     const pricePerDay = currentPlanPriceTotal / totalDays;
-    const creditAmount = Math.round(pricePerDay * daysRemaining);
-
-    // Precio total del nuevo plan (el frontend ya aplica descuentos por duración)
-    const newPlanTotal = Math.round(newPlanPricePerMonth * newMonths);
+    const remainingPlanValue = Math.max(0, Math.min(currentPlanPriceTotal, Math.round(pricePerDay * effectiveDaysRemaining)));
+    const creditAmount = remainingPlanValue;
+    const basePlanTotal = Math.round(newPlanTotal);
 
     // Monto a cobrar: diferencia, mínimo 0 (hace downgrades gratis si el crédito excede)
-    const amountToPay = Math.max(0, newPlanTotal - creditAmount);
-    const remainingCredit = Math.max(0, creditAmount - newPlanTotal);
+    const amountToPay = Math.max(0, basePlanTotal - creditAmount);
+    const remainingCredit = Math.max(0, creditAmount - basePlanTotal);
 
     // Nueva fecha de fin base: hoy + meses nuevos
-    let newEndDate = this.calculateExpirationDate(now, newMonths);
-
-    // LÓGICA DE CONVERSIÓN DE VALOR (Excedente a Tiempo)
-    // Si el crédito sobra (típico en Downgrade de PRO a BASIC), convertir el restante en días adicionales
-    if (remainingCredit > 0) {
-      // Calculamos el precio diario del NUEVO plan basándonos en el precio mensual pactado
-      const newPlanPricePerDay = newPlanPricePerMonth / 30;
-      const extraDays = Math.floor(remainingCredit / newPlanPricePerDay);
-      
-      if (extraDays > 0) {
-        newEndDate.setDate(newEndDate.getDate() + extraDays);
-        console.log(`[Proration] Crédito excedente ($${remainingCredit}) convertido en ${extraDays} días extra de ${newPlan}`);
-      }
-    }
+    const newEndDate = this.calculateExpirationDate(now, newMonths);
+    const currentPlanLabel = brand.plan === 'PRO' ? 'Plan Pro' : 'Plan Básico';
 
     return {
       daysRemaining,
+      basePlanTotal,
       creditAmount,
-      newPlanTotal,
+      newPlanTotal: basePlanTotal,
       amountToPay,
       remainingCredit,
       newEndDate: newEndDate.toISOString(),
       isFree: amountToPay === 0,
+      creditLabel: `Crédito por ${effectiveDaysRemaining} días restantes de ${currentPlanLabel}`,
     };
   }
 

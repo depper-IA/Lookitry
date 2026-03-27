@@ -4,7 +4,7 @@ import { supabaseAdmin } from '../config/supabase';
 export class PaypalService {
   convertCopToUsd(amountCOP: number, trm: number): number {
     const safeTrm = trm > 0 ? trm : 3900;
-    return Math.ceil((amountCOP / safeTrm) * 100) / 100;
+    return Math.ceil(amountCOP / safeTrm);
   }
 
   private isProd(): boolean {

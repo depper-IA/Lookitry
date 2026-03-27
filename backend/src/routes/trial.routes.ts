@@ -43,7 +43,7 @@ router.get('/status', asyncHandler(async (req, res) => {
  */
 router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
   const brand = (req as any).brand;
-  const { method = 'wompi' } = req.body;
+  const { method = 'wompi', trm: trmOverride } = req.body;
 
   if (!brand?.id) {
     return res.status(401).json({ error: 'No autenticado' });
@@ -86,9 +86,10 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
   // 5. Generar URL según el método
   if (method === 'paypal') {
     const { paypalService } = require('../services/paypal.service');
-    const { TrmService } = require('../utils/trm');
-    
-    const trm = await TrmService.getCurrentTrm();
+    const { pricingService } = require('../services/pricing.service');
+    const { trm } = await pricingService.getEffectiveTrm(
+      trmOverride ? Number(trmOverride) : undefined
+    );
     // Reutilizamos el checkout de suscripción de paypalService pero con nuestra referencia TRIAL-
     const returnUrl = `${frontendUrl}/pago-exitoso?method=paypal&ref=${reference}&isTrial=true`;
     const checkoutUrl = await paypalService.createOrder(price, trm, reference, returnUrl);
@@ -106,7 +107,7 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
  * El usuario se registrará DESPUÉS del pago exitoso.
  */
 router.post('/initiate-guest', asyncHandler(async (req, res) => {
-  const { email, brandName: rawBrandName, name, method = 'wompi' } = req.body;
+  const { email, brandName: rawBrandName, name, method = 'wompi', trm: trmOverride } = req.body;
   const brandName = rawBrandName || name;
 
   if (!email || !email.includes('@')) {
@@ -138,6 +139,7 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
     reference,
     plan: 'TRIAL',
     months: 0,
+    amount: price,
     status: 'pending',
   });
 
@@ -148,12 +150,14 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
 
   const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
   // Redirigir al registro con la referencia después del pago
-  const successUrl = `${frontendUrl}/pago-exitoso?ref=${reference}&isGuestTrial=true`;
+  const successUrl = `${frontendUrl}/pago-exitoso?method=paypal&ref=${reference}&isGuestTrial=true`;
 
   if (method === 'paypal') {
     const { paypalService } = require('../services/paypal.service');
-    const { TrmService } = require('../utils/trm');
-    const trm = await TrmService.getCurrentTrm();
+    const { pricingService } = require('../services/pricing.service');
+    const { trm } = await pricingService.getEffectiveTrm(
+      trmOverride ? Number(trmOverride) : undefined
+    );
     const checkoutUrl = await paypalService.createOrder(price, trm, reference, successUrl);
     return res.json({ checkoutUrl, reference });
   } else {

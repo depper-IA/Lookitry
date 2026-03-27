@@ -9,6 +9,11 @@ import { authService } from '@/services/auth.service';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
+function formatPaypalUsd(amountCop: number, trm: number): number {
+  const safeTrm = trm > 0 ? trm : 3900;
+  return Math.ceil(amountCop / safeTrm);
+}
+
 // --- Icons ---
 const IconCheck = () => (
   <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,14 +88,15 @@ export default function TrialCheckoutPage() {
 
   const priceCOP = campaign?.priceCOP ?? 20000;
   const trialDays = campaign?.trialDays ?? 7;
-  const priceUSD = Math.ceil(priceCOP / trm);
+  const priceUSD = formatPaypalUsd(priceCOP, trm);
 
   const formatPrice = (val: number) => {
     if (currency === 'USD') {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
-        minimumFractionDigits: 0
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
       }).format(val);
     }
     return new Intl.NumberFormat('es-CO', {
@@ -280,7 +286,14 @@ export default function TrialCheckoutPage() {
 
             <div className="space-y-4 mb-8">
               <button
-                onClick={() => { setPaymentMethod('wompi'); if (currency === 'USD') setCurrency('COP'); }}
+                onClick={() => {
+                  setPaymentMethod('wompi');
+                  if (currency === 'USD') {
+                    setCurrency('COP');
+                    localStorage.setItem('currency', 'COP');
+                    window.dispatchEvent(new Event('currencyChange'));
+                  }
+                }}
                 className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
                   paymentMethod === 'wompi' 
                     ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-[0_0_20px_rgba(255,92,58,0.1)]' 
@@ -300,7 +313,14 @@ export default function TrialCheckoutPage() {
               </button>
 
               <button
-                onClick={() => setPaymentMethod('paypal')}
+                onClick={() => {
+                  setPaymentMethod('paypal');
+                  if (currency !== 'USD') {
+                    setCurrency('USD');
+                    localStorage.setItem('currency', 'USD');
+                    window.dispatchEvent(new Event('currencyChange'));
+                  }
+                }}
                 className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
                   paymentMethod === 'paypal' 
                     ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-[0_0_20px_rgba(255,92,58,0.1)]' 
@@ -365,4 +385,3 @@ export default function TrialCheckoutPage() {
     </main>
   );
 }
-
