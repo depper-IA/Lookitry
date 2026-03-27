@@ -790,11 +790,30 @@ export const sendAdminCredentials = async (req: any, res: Response) => {
  */
 export const changeOwnPassword = async (req: any, res: Response) => {
   try {
-    const { currentPassword, newPassword } = req.body;
+    const { currentPassword, newPassword } = req.body || {};
+    if (!req.admin?.id) {
+      return res.status(401).json({ error: 'UNAUTHORIZED', message: 'No autenticado' });
+    }
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'currentPassword y newPassword son requeridos' });
     }
     await adminService.changeOwnPassword(req.admin.id, currentPassword, newPassword);
+
+    const IS_PROD = process.env.NODE_ENV === 'production';
+    const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+    const cookieOptions: any = {
+      httpOnly: true,
+      secure: IS_PROD,
+      sameSite: IS_PROD ? 'none' : 'lax',
+      expires: new Date(0),
+      path: '/',
+    };
+
+    if (COOKIE_DOMAIN && IS_PROD) {
+      cookieOptions.domain = COOKIE_DOMAIN;
+    }
+
+    res.cookie('admin_token', '', cookieOptions);
 
     auditService.log({
       admin_id: req.admin.id,
@@ -802,10 +821,22 @@ export const changeOwnPassword = async (req: any, res: Response) => {
       action: 'admin.change_password',
     });
 
+    return res.status(200).json({
+      message: 'Contraseña actualizada exitosamente. Inicia sesión de nuevo con tu nueva contraseña.',
+      requiresReauth: true,
+    });
+
     return res.status(200).json({ message: 'Contraseña actualizada exitosamente' });
   } catch (error: any) {
     const isValidation = error.message === 'La contraseña actual es incorrecta'
       || error.message === 'La nueva contraseña debe tener al menos 8 caracteres';
+    if (
+      error.message === 'La nueva contraseña debe ser diferente a la actual'
+      || error.message === 'La cuenta de administrador tiene una contraseña inválida en base de datos. Restablécela desde el panel o recrea el admin con el script seguro.'
+    ) {
+      return res.status(400).json({ error: 'BAD_REQUEST', message: error.message });
+    }
+
     return res.status(isValidation ? 400 : 500).json({ error: 'BAD_REQUEST', message: error.message });
   }
 };

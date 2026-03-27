@@ -1,0 +1,169 @@
+{
+  "name": "Lookitry Enterprise Sync — The Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "hours", "hoursInterval": 24 }] }
+      },
+      "name": "⏰ Cron 24h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/enterprise_sync_configs?active=eq.true&select=*",
+        "options": {
+          "response": { "response": { "responseFormat": "json" } }
+        }
+      },
+      "name": "📋 Obtener Configs de Sync",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "name": "🔁 Por cada marca",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.source_url }}",
+        "options": {}
+      },
+      "name": "📦 Fetch CSV / API del cliente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 300],
+      "notes": "Si el sync_type es 'csv', la source_url apunta a un archivo CSV. Si es 'api' (WooCommerce), apunta al endpoint REST del cliente con credenciales en la URL o Authorization header."
+    },
+    {
+      "parameters": {
+        "functionCode": "const items = $input.all();\nconst config = $('Por cada marca').item.json;\nconst fieldMap = config.field_map || {};\n\n// Parsear CSV o transformar respuesta API al formato estándar\nconst rawProducts = Array.isArray(items[0].json) ? items[0].json : [items[0].json];\n\nconst normalized = rawProducts.map(p => ({\n  brand_id: config.brand_id,\n  external_id: String(p.id || p.sku || p[fieldMap.external_id] || ''),\n  name: p.name || p.title || p[fieldMap.name] || 'Producto sin nombre',\n  description: p.description || p.body_html || p[fieldMap.description] || null,\n  category: p.category || p.type || p[fieldMap.category] || null,\n  image_url_original: p.image?.src || p.images?.[0]?.src || p[fieldMap.image] || null,\n  price: p.price ? parseInt(p.price) : null,\n})).filter(p => p.image_url_original);\n\nreturn normalized.map(p => ({ json: p }));"
+      },
+      "name": "🧹 Normalizar productos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.remove.bg/v1.0/removebg",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "image_url", "value": "={{ $json.image_url_original }}" },
+            { "name": "size", "value": "auto" }
+          ]
+        },
+        "options": {
+          "response": { "response": { "responseFormat": "file" } }
+        }
+      },
+      "name": "🖼️ Background Removal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1340, 300],
+      "notes": "Usa tu API key de remove.bg en las credenciales de tipo Header Auth. Key: X-Api-Key, Value: tu-api-key"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $env.MINIO_URL }}/images/enterprise/{{ $json.brand_id }}/{{ $json.external_id }}.png",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "name": "☁️ Subir a MinIO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1560, 300],
+      "notes": "Sube la imagen con fondo removido a MinIO. La URL final será: https://minio.wilkiedevs.com/images/enterprise/{brand_id}/{external_id}.png"
+    },
+    {
+      "parameters": {
+        "functionCode": "const item = $input.item.json;\nconst brandId = item.brand_id;\nconst externalId = item.external_id;\n\nreturn [{\n  json: {\n    ...item,\n    image_url: `{{ $env.MINIO_URL }}/images/enterprise/${brandId}/${externalId}.png`\n  }\n}];"
+      },
+      "name": "🔗 Construir URL final MinIO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.API_URL }}/api/enterprise/sync-product",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ brand_id: $json.brand_id, name: $json.name, description: $json.description, category: $json.category, image_url: $json.image_url, price: $json.price, external_id: $json.external_id }) }}",
+        "options": {}
+      },
+      "name": "📤 Notificar backend Lookitry",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2000, 300],
+      "notes": "Usa las credenciales de Header Auth con el ENTERPRISE_SYNC_TOKEN. Key: Authorization, Value: Bearer {tu-token}"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.API_URL }}/api/admin/enterprise/{{ $('Por cada marca').item.json.brand_id }}/sync-status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"status\": \"success\", \"message\": \"Sync completado\", \"products_synced_count\": {{ $('Por cada marca').item.json.products_count || 0 }}}",
+        "options": {}
+      },
+      "name": "✅ Actualizar estado sync",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2220, 300]
+    }
+  ],
+  "connections": {
+    "⏰ Cron 24h": { "main": [[{ "node": "📋 Obtener Configs de Sync", "type": "main", "index": 0 }]] },
+    "📋 Obtener Configs de Sync": { "main": [[{ "node": "🔁 Por cada marca", "type": "main", "index": 0 }]] },
+    "🔁 Por cada marca": { "main": [[{ "node": "📦 Fetch CSV / API del cliente", "type": "main", "index": 0 }]] },
+    "📦 Fetch CSV / API del cliente": { "main": [[{ "node": "🧹 Normalizar productos", "type": "main", "index": 0 }]] },
+    "🧹 Normalizar productos": { "main": [[{ "node": "🖼️ Background Removal", "type": "main", "index": 0 }]] },
+    "🖼️ Background Removal": { "main": [[{ "node": "☁️ Subir a MinIO", "type": "main", "index": 0 }]] },
+    "☁️ Subir a MinIO": { "main": [[{ "node": "🔗 Construir URL final MinIO", "type": "main", "index": 0 }]] },
+    "🔗 Construir URL final MinIO": { "main": [[{ "node": "📤 Notificar backend Lookitry", "type": "main", "index": 0 }]] },
+    "📤 Notificar backend Lookitry": { "main": [[{ "node": "✅ Actualizar estado sync", "type": "main", "index": 0 }]] }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "_README": {
+    "steps": [
+      "1. Importa este JSON en n8n: Menu → Workflows → Import from File",
+      "2. Configura las credenciales de tipo 'Header Auth' en n8n:",
+      "   - Supabase: apikey = tu SUPABASE_ANON_KEY, Authorization = Bearer tu-service-role-key",
+      "   - Remove.bg: X-Api-Key = tu-api-key-de-remove.bg",
+      "   - Lookitry Backend: Authorization = Bearer {ENTERPRISE_SYNC_TOKEN} (mismo del .env del backend)",
+      "3. Configura las variables de entorno en n8n (Settings → Variables):",
+      "   - SUPABASE_URL = https://vkdooutklowctuudjnkl.supabase.co",
+      "   - API_URL = https://api.lookitry.com",
+      "   - MINIO_URL = https://minio.wilkiedevs.com",
+      "4. Activa el workflow. Se ejecutará cada 24h automáticamente.",
+      "5. Puedes disparar manualmente desde el panel /admin/enterprise → botón 'Ejecutar Sync'."
+    ]
+  }
+}

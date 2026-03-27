@@ -1,5 +1,5 @@
 export interface Plan {
-  type: 'BASIC' | 'PRO' | 'TRIAL';
+  type: 'BASIC' | 'PRO' | 'ENTERPRISE' | 'TRIAL';
   maxProducts: number;
   maxGenerationsPerMonth: number;
   price: number; // Para futuro
@@ -24,8 +24,14 @@ export const PLANS: Record<string, Plan> = {
     maxGenerationsPerMonth: 1200,
     price: 0,
   },
+  ENTERPRISE: {
+    type: 'ENTERPRISE',
+    maxProducts: 1000,
+    maxGenerationsPerMonth: 100000,
+    price: 800000,
+  },
 };
 
-export const getPlanByType = (planType: 'BASIC' | 'PRO'): Plan => {
-  return PLANS[planType];
+export const getPlanByType = (planType: string): Plan => {
+  return PLANS[planType] || PLANS.BASIC;
 };
