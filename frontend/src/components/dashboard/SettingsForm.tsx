@@ -548,7 +548,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                     <div className="relative overflow-hidden rounded-[2.5rem] border border-zinc-100 bg-white shadow-2xl group">
                         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-[#FF5C3A]/10 via-transparent to-transparent rounded-full -mr-32 -mt-32 blur-3xl" />
                         
-                        <div className="relative z-10 p-10 flex flex-col lg:flex-row gap-12 items-center">
+                        <div className="relative z-10 p-8 xl:p-10 flex flex-col lg:flex-row gap-10 xl:gap-12 items-center">
                            <div className="flex-1 space-y-8">
                               <div className="space-y-4">
                                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FF5C3A]/10 rounded-full border border-[#FF5C3A]/20">

@@ -57,6 +57,37 @@ export interface MiniLandingProps {
   footerUrl?: string;
 }
 
+export function getCoverPresentation(brand: Pick<BrandData, 'cover_bg_color' | 'cover_overlay_opacity'>, fallbackColor: string) {
+  const backgroundColor = brand.cover_bg_color || fallbackColor;
+  const rawOpacity = typeof brand.cover_overlay_opacity === 'number' ? brand.cover_overlay_opacity : 0.55;
+  const imageOpacity = Math.max(0, Math.min(1, rawOpacity));
+
+  return {
+    backgroundColor,
+    imageOpacity,
+  };
+}
+
+export function isDarkColor(color?: string | null): boolean {
+  if (!color) return false;
+  const hex = color.replace('#', '').trim();
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) return false;
+
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+
+  return luminance < 0.5;
+}
+
+export function getVisibleSocialEntries(socialLinks?: Record<string, string>) {
+  if (!socialLinks) return [];
+
+  const allowed = new Set(['instagram', 'facebook', 'tiktok', 'youtube', 'x']);
+  return Object.entries(socialLinks).filter(([key, url]) => allowed.has(key.toLowerCase()) && !!String(url || '').trim());
+}
+
 /**
  * Inyecta los estilos de fuente dinámicos para que Tailwind reconozca las variables de Google Fonts.
  * Mapea las clases font-jakarta, font-playfair, etc. a las variables CSS de Next.js.

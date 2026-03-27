@@ -114,6 +114,52 @@ describe('NotificationService', () => {
     });
   });
 
+  describe('sendCompleteRegistrationEmail', () => {
+    it('should send resume email with registro-pro link for paid pending registration', async () => {
+      await notificationService.sendCompleteRegistrationEmail({
+        email: mockBrand.email,
+        reference: 'PAYPAL-visitor_123-M1-PBASIC-123',
+        plan: 'BASIC',
+        amount: 180000,
+      });
+
+      expect(emailService.sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: mockBrand.email,
+          subject: 'Completa tu registro en Lookitry',
+          html: expect.stringContaining('/registro-pro?ref=PAYPAL-visitor_123-M1-PBASIC-123'),
+        })
+      );
+    });
+
+    it('should not send resume email for trial pending registration', async () => {
+      await notificationService.sendCompleteRegistrationEmail({
+        email: mockBrand.email,
+        reference: 'GUEST-TRIAL-visitor_123',
+        plan: 'TRIAL',
+      });
+
+      expect(emailService.sendEmail).not.toHaveBeenCalled();
+    });
+
+    it('should send delayed reminder email with reminder subject', async () => {
+      await notificationService.sendCompleteRegistrationReminderEmail({
+        email: mockBrand.email,
+        reference: 'PAYPAL-visitor_123-M1-PPRO-123',
+        plan: 'PRO',
+        amount: 250000,
+      });
+
+      expect(emailService.sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: mockBrand.email,
+          subject: 'Recordatorio: completa tu registro en Lookitry',
+          html: expect.stringContaining('Recordatorio: termina tu registro'),
+        })
+      );
+    });
+  });
+
   describe('sendExpirationReminder', () => {
     it('should send 7-day reminder with correct subject', async () => {
       await notificationService.sendExpirationReminder(mockBrand, 7);

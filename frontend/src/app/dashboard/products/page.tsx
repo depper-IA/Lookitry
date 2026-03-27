@@ -171,7 +171,7 @@ export default function ProductsPage() {
   return (
     <motion.div 
       initial="hidden" animate="visible" variants={containerVariants}
-      className="max-w-[1400px] mx-auto space-y-10 md:space-y-16 pb-32 px-4 relative"
+      className="max-w-[1400px] mx-auto space-y-10 md:space-y-16 pb-32 px-4 xl:px-0 relative"
     >
       {/* 🔮 ORBES DE FONDO 🔮 */}
       <div className="absolute top-0 -left-20 w-[400px] h-[400px] bg-[#FF5C3A]/5 blur-[150px] rounded-full -z-10" />

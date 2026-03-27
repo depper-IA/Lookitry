@@ -133,6 +133,52 @@ export const welcomeEmail = (brand: BrandInfo, plan: string, amount: string, day
 };
 
 /**
+ * Email para retomar un registro pagado que quedó pendiente.
+ */
+export const completeRegistrationEmail = (
+  brand: BrandInfo,
+  plan: string,
+  amount: string,
+  resumeUrl: string,
+  isReminder = false
+): string => {
+  const content = `
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">${isReminder ? 'Recordatorio: termina tu registro' : 'Tu pago fue confirmado'}</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      ${isReminder
+        ? 'Tu compra ya fue pagada, pero tu registro en LOOKITRY sigue pendiente. Todavía puedes retomarlo desde el mismo enlace.'
+        : 'Ya recibimos correctamente tu pago en LOOKITRY, pero tu registro todavía no ha sido completado.'}
+    </p>
+    <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+      <h3 style="color: #065f46; margin-top: 0; font-size: 15px;">Resumen de la compra:</h3>
+      <p style="color: #065f46; margin: 6px 0;"><strong>Plan:</strong> ${plan}</p>
+      <p style="color: #065f46; margin: 6px 0;"><strong>Email:</strong> ${brand.email}</p>
+      <p style="color: #065f46; margin: 6px 0;"><strong>Monto:</strong> ${amount}</p>
+    </div>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Puedes retomar tu registro en cualquier momento desde el siguiente enlace:
+    </p>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${resumeUrl}"
+         style="background-color: ${ACCENT_COLOR}; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px;">
+        Completar mi registro
+      </a>
+    </div>
+    <p style="color: #888; font-size: 13px; text-align: center;">
+      Si ya terminaste el registro, puedes ignorar este mensaje.
+    </p>
+    <p style="color: #aaa; font-size: 12px; text-align: center; margin-top: 16px; word-break: break-all;">
+      O copia este enlace en tu navegador:<br/>
+      <a href="${resumeUrl}" style="color: ${ACCENT_COLOR};">${resumeUrl}</a>
+    </p>
+  `;
+  return baseTemplate(content);
+};
+
+/**
  * Email de recordatorio 7 días antes del vencimiento
  */
 export const reminder7DaysEmail = (brand: BrandInfo, daysRemaining: number, amount: string): string => {

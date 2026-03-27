@@ -5,6 +5,7 @@ import { supabaseAdmin } from '../config/supabase';
 import { Brand } from '../types';
 import {
   welcomeEmail,
+  completeRegistrationEmail,
   reminder7DaysEmail,
   reminder3DaysEmail,
   expirationTodayEmail,
@@ -75,6 +76,11 @@ export class NotificationService {
     return plan.toUpperCase() === 'PRO' ? 250000 : 150000;
   }
 
+  private buildPendingRegistrationUrl(reference: string): string {
+    const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
+    return `${frontendUrl}/registro-pro?ref=${encodeURIComponent(reference)}`;
+  }
+
   /**
    * Envía email de bienvenida al registrarse una nueva marca
    *
@@ -124,6 +130,87 @@ export class NotificationService {
     } catch (error) {
       // No relanzar — el email de bienvenida nunca debe bloquear el flujo de registro
       console.error(`❌ Error al enviar email de bienvenida a ${brand.email}:`, error);
+    }
+  }
+
+  async sendCompleteRegistrationEmail(pending: {
+    email: string;
+    reference: string;
+    plan: string;
+    name?: string | null;
+    amount?: number | null;
+  }): Promise<void> {
+    try {
+      const plan = pending.plan.toUpperCase();
+      if (!['BASIC', 'PRO'].includes(plan)) {
+        return;
+      }
+
+      const amount = this.formatCOP(
+        typeof pending.amount === 'number' && Number.isFinite(pending.amount)
+          ? pending.amount
+          : await this.getPlanAmount(plan)
+      );
+      const html = completeRegistrationEmail(
+        {
+          name: pending.name?.trim() || pending.email,
+          email: pending.email,
+        },
+        plan,
+        amount,
+        this.buildPendingRegistrationUrl(pending.reference)
+      );
+
+      await emailService.sendEmail({
+        to: pending.email,
+        subject: 'Completa tu registro en Lookitry',
+        html,
+      });
+
+      console.log(`✅ Email para completar registro enviado a ${pending.email}`);
+    } catch (error) {
+      console.error(`❌ Error al enviar email de registro pendiente a ${pending.email}:`, error);
+    }
+  }
+
+  async sendCompleteRegistrationReminderEmail(pending: {
+    email: string;
+    reference: string;
+    plan: string;
+    name?: string | null;
+    amount?: number | null;
+  }): Promise<void> {
+    try {
+      const plan = pending.plan.toUpperCase();
+      if (!['BASIC', 'PRO'].includes(plan)) {
+        return;
+      }
+
+      const amount = this.formatCOP(
+        typeof pending.amount === 'number' && Number.isFinite(pending.amount)
+          ? pending.amount
+          : await this.getPlanAmount(plan)
+      );
+      const html = completeRegistrationEmail(
+        {
+          name: pending.name?.trim() || pending.email,
+          email: pending.email,
+        },
+        plan,
+        amount,
+        this.buildPendingRegistrationUrl(pending.reference),
+        true
+      );
+
+      await emailService.sendEmail({
+        to: pending.email,
+        subject: 'Recordatorio: completa tu registro en Lookitry',
+        html,
+      });
+
+      console.log(`✅ Recordatorio de registro pendiente enviado a ${pending.email}`);
+    } catch (error) {
+      console.error(`❌ Error al enviar recordatorio de registro pendiente a ${pending.email}:`, error);
     }
   }
 

@@ -94,8 +94,11 @@ export class PricingService {
     }
 
     // Fallback: TRM automática desde servicio externo (con caché + fallback interno)
+    const hadFreshCache = TrmService.isCacheFresh();
     const autoTrm = await TrmService.getCurrentTrm();
-    console.log(`[PricingService] TRM automática usada: ${autoTrm}`);
+    if (!hadFreshCache) {
+      console.log(`[PricingService] TRM automática refrescada: ${autoTrm}`);
+    }
     return { trm: autoTrm, source: 'meta_auto' };
   }
 }

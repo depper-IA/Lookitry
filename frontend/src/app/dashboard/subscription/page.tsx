@@ -193,10 +193,10 @@ export default function SubscriptionPage() {
   return (
     <motion.div 
       initial="hidden" animate="visible" variants={containerVariants}
-      className="max-w-6xl mx-auto space-y-12 pb-24 px-4"
+      className="max-w-6xl mx-auto space-y-12 pb-24 px-4 lg:px-0"
     >
       {/* ══ TÍTULO ══ */}
-      <motion.header variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <motion.header variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
@@ -216,7 +216,7 @@ export default function SubscriptionPage() {
          <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.15]" style={{ background: `radial-gradient(circle, ${currentDesign.color} 0%, transparent 70%)` }} />
          <div className="absolute -bottom-20 -left-20 w-[400px] h-[400px] rounded-full blur-[120px] opacity-[0.1]" style={{ background: `radial-gradient(circle, ${currentDesign.secondaryColor || '#FF5C3A'} 0%, transparent 70%)` }} />
          
-         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-12 items-center">
             <div className="space-y-8">
                <div className="space-y-1">
                   <div className="flex items-center gap-2 mb-4">
@@ -229,7 +229,7 @@ export default function SubscriptionPage() {
                   </h2>
                </div>
 
-                <div className="flex items-center gap-10">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
                   <div className="space-y-1">
                      <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Próxima renovación</p>
                      <p className="text-xl font-bold text-[var(--text-primary)]">{formatDate(info?.brand?.subscriptionEndDate)}</p>
@@ -302,7 +302,7 @@ export default function SubscriptionPage() {
             <div className="h-px bg-[var(--border-color)] flex-1" />
          </div>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-10">
             {['BASIC', 'PRO'].map((p) => {
                const pk = p as 'BASIC' | 'PRO';
                const isCurrent = !inTrial && planKey === pk;
@@ -375,9 +375,9 @@ export default function SubscriptionPage() {
       </motion.div>
 
       {/* ══ HISTORIAL & SOPORTE ══ */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-         <div className="lg:col-span-2 bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-8 md:p-12 space-y-8 shadow-xl shadow-black/5">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8 xl:gap-10">
+         <div className="lg:col-span-2 bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-6 md:p-8 xl:p-12 space-y-8 shadow-xl shadow-black/5">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
                      <RefreshCw className="w-5 h-5 text-[#FF5C3A]" />
