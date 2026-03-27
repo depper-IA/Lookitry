@@ -92,8 +92,20 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
     );
     // Reutilizamos el checkout de suscripción de paypalService pero con nuestra referencia TRIAL-
     const returnUrl = `${frontendUrl}/pago-exitoso?method=paypal&ref=${reference}&isTrial=true`;
-    const checkoutUrl = await paypalService.createOrder(price, trm, reference, returnUrl);
-    return res.json({ checkoutUrl, reference });
+    const createdOrder = await paypalService.createOrder(price, trm, reference, returnUrl);
+    await paypalService.recordOrder({
+      reference,
+      brand_id: brand.id,
+      email: brand.email || null,
+      plan: 'TRIAL',
+      months: 1,
+      amount_cop: price,
+      trm,
+      amount_usd_expected: createdOrder.amountUSD,
+      order_id: createdOrder.orderId,
+      status: 'created',
+    });
+    return res.json({ checkoutUrl: createdOrder.checkoutUrl, reference });
   } else {
     // Wompi
     const checkoutUrl = await wompiService.getCheckoutUrl(brand.id, price, successUrl, false, 1, 'TRIAL', reference);
@@ -158,8 +170,20 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
     const { trm } = await pricingService.getEffectiveTrm(
       trmOverride ? Number(trmOverride) : undefined
     );
-    const checkoutUrl = await paypalService.createOrder(price, trm, reference, successUrl);
-    return res.json({ checkoutUrl, reference });
+    const createdOrder = await paypalService.createOrder(price, trm, reference, successUrl);
+    await paypalService.recordOrder({
+      reference,
+      brand_id: null,
+      email,
+      plan: 'TRIAL',
+      months: 0,
+      amount_cop: price,
+      trm,
+      amount_usd_expected: createdOrder.amountUSD,
+      order_id: createdOrder.orderId,
+      status: 'created',
+    });
+    return res.json({ checkoutUrl: createdOrder.checkoutUrl, reference });
   } else {
     // Wompi
     const checkoutUrl = await wompiService.getCheckoutUrl(guestId, price, successUrl, false, 0, 'TRIAL', reference);

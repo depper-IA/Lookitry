@@ -76,16 +76,28 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
         }
         try {
           const order = await paypalService.getOrder(orderId);
+          const resolvedReference = paypalService.extractReference(order);
+          if (!resolvedReference || resolvedReference !== ref) {
+            return res.status(409).json({ error: 'VALIDATION_ERROR', message: 'La orden de PayPal no coincide con la referencia' });
+          }
+
+          const trackedOrder = await paypalService.getTrackedOrder(ref);
+          if (!trackedOrder) {
+            return res.status(404).json({ error: 'NOT_FOUND', message: 'Orden PayPal no encontrada para esta referencia' });
+          }
+
+          const orderAmount = paypalService.extractAmountUsd(order);
+          if (orderAmount == null || Math.abs(Number(trackedOrder.amount_usd_expected) - orderAmount) > 0.01) {
+            return res.status(409).json({ error: 'VALIDATION_ERROR', message: 'El monto de la orden de PayPal no coincide con el esperado' });
+          }
+
           if (order.status === 'APPROVED') {
             const capture = await paypalService.captureOrder(orderId);
             paymentConfirmed = capture.status === 'COMPLETED';
           } else {
             paymentConfirmed = order.status === 'COMPLETED';
           }
-          // Extraemos monto de PayPal
-          if (order.purchase_units && order.purchase_units[0] && order.purchase_units[0].amount) {
-            paymentAmount = parseFloat(order.purchase_units[0].amount.value);
-          }
+          paymentAmount = orderAmount;
           transactionDetails = `PayPal Order: ${orderId}`;
         } catch (err: any) {
           console.error('[PostPayment] PayPal Error:', err.message);
@@ -115,6 +127,17 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
            }
          } catch(err) {
            console.error('[PostPayment] Podría no encontrar Wompi ID:', err);
+         }
+       }
+       if (finalMethod === 'paypal') {
+         try {
+           const trackedOrder = await paypalService.getTrackedOrder(ref);
+           if (trackedOrder) {
+             paymentAmount = Number(trackedOrder.amount_usd_expected || 0);
+             transactionDetails = `PayPal Order: ${trackedOrder.order_id || pending.payment_id || 'N/A'}`;
+           }
+         } catch (err) {
+           console.error('[PostPayment] No se pudo recuperar paypal_orders:', err);
          }
        }
     }
