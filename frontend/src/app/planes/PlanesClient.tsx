@@ -69,7 +69,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
   const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
   const [trm, setTrm] = useState(pricing.meta?.trm_referencia ?? 3700);
 
-  const { basic, pro, descuentos_duracion, meta } = pricing;
+  const { basic, pro, enterprise, descuentos_duracion, meta } = pricing;
 
   useEffect(() => {
     const saved = localStorage.getItem('currency') as 'COP' | 'USD';
@@ -193,8 +193,8 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
 
       {/* Cards de planes */}
       <section className="py-10 px-6 md:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
 
             {/* Plan Básico */}
             <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-6 md:p-7">
@@ -317,6 +317,39 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
               </ul>
             </div>
 
+            {/* Plan Enterprise */}
+            <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-6 md:p-7 relative">
+              <div className="font-syne font-bold text-lg text-white mb-1">Enterprise</div>
+              <p className="text-[13px] text-[#555] mb-5">{enterprise.subtitulo}</p>
+
+              <div className="mb-1 h-5"></div>
+              <div className="font-syne font-extrabold text-[28px] text-white tracking-tight mb-0.5 mt-2">
+                Personalizado
+              </div>
+              <p className="text-[12px] text-[#444] mb-1">Base + Excedentes variables</p>
+              <p className="text-[12px] text-[#444] mb-6">Onboarding consultivo y SLA &lt; 5s</p>
+
+              <a
+                href="https://wa.me/573105436281?text=Hola,%20me%20interesa%20conocer%20m%C3%A1s%20sobre%20el%20Plan%20Enterprise%20de%20Lookitry."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-center py-2.5 bg-white hover:bg-gray-200 text-black text-[13px] font-medium rounded-lg transition-colors mb-6 mt-4"
+              >
+                {enterprise.boton_texto}
+              </a>
+
+              <ul className="flex flex-col gap-2.5">
+                {enterprise.features.map(f => (
+                  <li key={f} className="flex items-center gap-2.5 text-[13px]">
+                    <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(255,255,255,0.13)]">
+                      <IconCheck />
+                    </span>
+                    <span className="text-[#999]">{f}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
           </div>
 
           <p className="text-center text-[12px] text-[#333] mt-5">
@@ -327,7 +360,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
 
       {/* Tabla comparativa */}
       <section className="py-14 px-6 md:px-8 bg-[#0a0a0a] border-t border-[#1a1a1a]">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <h2 className="font-syne font-bold text-[26px] text-white text-center mb-8">
             Comparativa completa
           </h2>
@@ -335,9 +368,10 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
             <table className="w-full text-[13px]">
               <thead>
                 <tr className="border-b border-[#2a2a2a]">
-                  <th className="text-left px-5 py-3.5 font-medium text-[#555] w-1/2">Característica</th>
-                  <th className="text-center px-5 py-3.5 font-medium text-[#555] w-1/4">Básico</th>
-                  <th className="text-center px-5 py-3.5 font-medium text-[#FF5C3A] w-1/4">Pro</th>
+                  <th className="text-left px-5 py-3.5 font-medium text-[#555] w-2/5">Característica</th>
+                  <th className="text-center px-5 py-3.5 font-medium text-[#555] w-1/5">Básico</th>
+                  <th className="text-center px-5 py-3.5 font-medium text-[#FF5C3A] w-1/5">Pro</th>
+                  <th className="text-center px-5 py-3.5 font-medium text-white w-1/5">Enterprise</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1f1f1f]">
@@ -346,21 +380,26 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                   <td className="px-5 py-3 text-[#777]">Productos en el probador</td>
                   <td className="px-5 py-3 text-center"><span className="font-medium text-[#888]">{basic.productos_max}</span></td>
                   <td className="px-5 py-3 text-center"><span className="font-medium text-[#FF5C3A]">{pro.productos_max}</span></td>
+                  <td className="px-5 py-3 text-center"><span className="font-medium text-white">{enterprise.productos_max}+</span></td>
                 </tr>
                 <tr className="hover:bg-[#1a1a1a] transition-colors">
                   <td className="px-5 py-3 text-[#777]">Generaciones por mes</td>
                   <td className="px-5 py-3 text-center"><span className="font-medium text-[#888]">{basic.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
                   <td className="px-5 py-3 text-center"><span className="font-medium text-[#FF5C3A]">{pro.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
+                  <td className="px-5 py-3 text-center"><span className="font-medium text-white">{enterprise.generaciones_mensuales.toLocaleString('es-CO')}+</span></td>
                 </tr>
                 {/* Filas de features */}
                 {allFeatures.map(feature => {
-                  const inBasic = basic.features.includes(feature);
-                  const inPro   = pro.features.includes(feature);
+                  if (feature.includes("productos en el probador") || feature.includes("generaciones por mes") || feature.includes("Volumen a medida") || feature.includes("+50 productos")) return null;
+                  const inBasic = basic.features.includes(feature) || basic.features_excluidas?.includes(feature) === false;
+                  const inPro   = pro.features.includes(feature) || pro.features_excluidas?.includes(feature) === false;
+                  const inEnterprise = enterprise.features.includes(feature) || inPro; // Enterprise inherits Pro features conceptually
                   return (
                     <tr key={feature} className="hover:bg-[#1a1a1a] transition-colors">
                       <td className="px-5 py-3 text-[#777]">{feature}</td>
-                      <td className="px-5 py-3 text-center">{inBasic ? <IconCheckTable /> : <IconXTable />}</td>
-                      <td className="px-5 py-3 text-center">{inPro   ? <IconCheckTable /> : <IconXTable />}</td>
+                      <td className="px-5 py-3 text-center">{basic.features.includes(feature) ? <IconCheckTable /> : <IconXTable />}</td>
+                      <td className="px-5 py-3 text-center">{pro.features.includes(feature) ? <IconCheckTable /> : <IconXTable />}</td>
+                      <td className="px-5 py-3 text-center">{inEnterprise ? <IconCheckTable /> : <IconXTable />}</td>
                     </tr>
                   );
                 })}

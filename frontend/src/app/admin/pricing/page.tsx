@@ -13,8 +13,10 @@ import {
   Instagram,
   Youtube,
   Twitter,
-  Layout
+  Layout,
+  Calculator
 } from 'lucide-react';
+import EnterpriseCalculator from '@/components/admin/EnterpriseCalculator';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -297,10 +299,11 @@ export default function PricingAdminPage() {
   const [trm, setTrm]               = useState(3700);
   const [trmAuto, setTrmAuto]       = useState(true);
   const [trmLive, setTrmLive]       = useState(3700);
-  const [activeTab, setActiveTab]   = useState<'plans' | 'landing' | 'config'>('plans');
+  const [activeTab, setActiveTab]   = useState<'plans' | 'enterprise' | 'landing' | 'config'>('plans');
 
   const [basic, setBasic]               = useState<PlanConfig | null>(null);
   const [pro, setPro]                   = useState<PlanConfig | null>(null);
+  const [enterprise, setEnterprise]     = useState<PlanConfig | null>(null);
   const [trialPlan, setTrialPlan]       = useState<PlanConfig | null>(null);
   const [miniLanding, setMiniLanding]   = useState<MiniLandingConfig | null>(null);
   const [descuentos, setDescuentos]     = useState<DescuentosConfig | null>(null);
@@ -323,6 +326,7 @@ export default function PricingAdminPage() {
       for (const row of json.data as ConfigRow[]) {
         if (row.id === 'basic')               setBasic(row.data as unknown as PlanConfig);
         if (row.id === 'pro')                 setPro(row.data as unknown as PlanConfig);
+        if (row.id === 'enterprise')          setEnterprise(row.data as unknown as PlanConfig);
         if (row.id === 'trial')               setTrialPlan(row.data as unknown as PlanConfig);
         if (row.id === 'mini_landing')        setMiniLanding(row.data as unknown as MiniLandingConfig);
         if (row.id === 'descuentos_duracion') setDescuentos(row.data as unknown as DescuentosConfig);
@@ -374,8 +378,6 @@ export default function PricingAdminPage() {
     }
   }, []);
 
-  // En pricing solo usamos TRM para mostrar precio en USD — sin toggle aquí
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -407,10 +409,7 @@ export default function PricingAdminPage() {
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors flex-shrink-0"
           style={{ background: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
+          <RefreshCw className="w-4 h-4" />
           Recargar
         </button>
       </div>
@@ -427,6 +426,7 @@ export default function PricingAdminPage() {
       <div className="flex items-center gap-1 border-b" style={{ borderColor: 'var(--border-color)' }}>
         {[
           { id: 'plans', label: 'Suscripciones', icon: CreditCard },
+          { id: 'enterprise', label: 'Enterprise / Cotizador', icon: Calculator },
           { id: 'landing', label: 'Mini-Landing', icon: Palette },
           { id: 'config', label: 'Configuración & ROI', icon: Settings },
         ].map(tab => (
@@ -473,6 +473,21 @@ export default function PricingAdminPage() {
                 </div>
               </div>
             )}
+            {enterprise && (
+              <div className="space-y-3">
+                <PlanSection title="Plan Enterprise (Configuración Base)" plan={enterprise} trm={trm} meta={metaCop} costs={costsObj} onChange={setEnterprise} />
+                <div className="flex justify-end">
+                  <SaveBtn id="enterprise" data={enterprise as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── TAB: Enterprise / Cotizador ── */}
+        {activeTab === 'enterprise' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <EnterpriseCalculator />
           </div>
         )}
 
@@ -533,7 +548,9 @@ export default function PricingAdminPage() {
                   onChange={v => setMiniLanding({ ...miniLanding, boton_texto: v })}
                 />
               </div>
+
               <FeaturesList features={miniLanding.features} onChange={f => setMiniLanding({ ...miniLanding, features: f })} />
+              
               <div className="flex justify-end">
                 <SaveBtn id="mini_landing" data={miniLanding as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
               </div>
