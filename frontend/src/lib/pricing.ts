@@ -56,6 +56,7 @@ export interface DescuentosDuracionConfig {
 export interface PricingConfig {
   basic: PlanConfig;
   pro: PlanConfig;
+  enterprise: PlanConfig;
   mini_landing: MiniLandingConfig;
   meta: MetaConfig;
   costs: CostsConfig;
@@ -108,6 +109,22 @@ const DEFAULTS: PricingConfig = {
       'Modificación del slug del probador',
       'Integración con sistemas externos',
       'Soporte prioritario',
+    ],
+    features_excluidas: [],
+  },
+  enterprise: {
+    precio_mensual_cop: 800000,
+    productos_max: 50,
+    generaciones_mensuales: 2000,
+    subtitulo: 'Para grandes retailers y operaciones a escala',
+    boton_texto: 'Hablar con ventas',
+    features: [
+      '+50 productos en el probador',
+      'Volumen a medida (>2000 gens)',
+      'SLA < 5 segundos',
+      'Marca Blanca (Sin logo Lookitry)',
+      'Panel de Analítica Avanzado',
+      'Acceso a API',
     ],
     features_excluidas: [],
   },
