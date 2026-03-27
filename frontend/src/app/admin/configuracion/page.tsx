@@ -1325,61 +1325,129 @@ export default function SystemConfigPage() {
 
       {/* ── TAB: Servicios ── */}
       {activeTab === 'health' && (
-      <Section title="Estado del sistema" icon={<IconServer className="w-4 h-4" />}>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            {health && (
-              <div className="flex items-center gap-2">
-                <HealthDot status={health.status} />
-                <span style={{ color: 'var(--text-secondary)' }} className="text-sm">
-                  {health.status === 'ok' ? 'Todos los servicios operativos' : health.status === 'degraded' ? 'Algunos servicios con problemas' : 'Sistema no disponible'}
-                </span>
-                <span style={{ color: 'var(--text-muted)' }} className="text-xs">· Uptime: {formatUptime(health.uptime)}</span>
+      <div className="space-y-6">
+        <Section title="Estado del servidor (Infraestructura)" icon={<IconServer className="w-4 h-4" />}>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              {systemStats ? (
+                <div className="flex items-center gap-4">
+                   <div className="flex flex-col">
+                    <span style={{ color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase tracking-wider">Servidor</span>
+                    <span style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">{systemStats.platform === 'linux' ? 'Linux VPS (Hostinger)' : systemStats.platform}</span>
+                   </div>
+                   <div className="flex flex-col border-l pl-4" style={{ borderColor: 'var(--border-color)' }}>
+                    <span style={{ color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase tracking-wider">Uptime</span>
+                    <span style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">{formatUptime(systemStats.uptime)}</span>
+                   </div>
+                </div>
+              ) : <div className="h-8 w-32 bg-white/5 animate-pulse rounded-lg" />}
+
+              <button onClick={loadSystemStats} disabled={loadingSystem}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors disabled:opacity-50"
+                style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', background: 'var(--bg-hover)' }}>
+                <IconRefresh className={`w-3.5 h-3.5 ${loadingSystem ? 'animate-spin' : ''}`} />
+                Actualizar sistema
+              </button>
+            </div>
+
+            {/* Monitor de RAM */}
+            {systemStats && (
+              <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-2xl border p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 style={{ color: 'var(--text-primary)' }} className="text-sm font-bold">Uso de Memoria RAM</h3>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Capacidad total detectada: {(systemStats.ram.total / 1024 / 1024 / 1024).toFixed(1)} GB</p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-2xl font-black font-jakarta ${systemStats.ram.percentage > 90 ? 'text-red-500' : systemStats.ram.percentage > 75 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                      {systemStats.ram.percentage.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+
+                {/* Barra de RAM */}
+                <div className="relative w-full h-4 bg-black/20 rounded-full overflow-hidden mb-4">
+                   <div 
+                    className={`h-full transition-all duration-1000 ${systemStats.ram.percentage > 90 ? 'bg-red-500' : systemStats.ram.percentage > 75 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                    style={{ width: `${systemStats.ram.percentage}%` }}
+                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col">
+                    <span style={{ color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase">En uso</span>
+                    <span style={{ color: 'var(--text-primary)' }} className="text-sm font-mono">{(systemStats.ram.used / 1024 / 1024 / 1024).toFixed(2)} GB</span>
+                  </div>
+                  <div className="flex flex-col text-right">
+                    <span style={{ color: 'var(--text-muted)' }} className="text-[10px] font-bold uppercase">Disponible</span>
+                    <span style={{ color: 'var(--text-primary)' }} className="text-sm font-mono">{(systemStats.ram.free / 1024 / 1024 / 1024).toFixed(2)} GB</span>
+                  </div>
+                </div>
+
+                {systemStats.ram.percentage > 90 && (
+                  <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-bold uppercase tracking-wider">
+                    <IconAlertTriangle className="w-3 h-3" />
+                    Uso crítico: El servidor podría experimentar lentitud o cierres inesperados.
+                  </div>
+                )}
               </div>
             )}
-            <button onClick={loadHealth} disabled={loadingHealth}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors disabled:opacity-50"
-              style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', background: 'var(--bg-hover)' }}>
-              <IconRefresh className={`w-3.5 h-3.5 ${loadingHealth ? 'animate-spin' : ''}`} />
-              Verificar
-            </button>
           </div>
+        </Section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {health
-              ? Object.entries(health.services).map(([key, svc]) => {
-                  const info = SERVICE_LABELS[key] || { name: key, desc: '' };
-                  return (
-                    <div key={key} style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <p style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">{info.name}</p>
-                          <p style={{ color: 'var(--text-muted)' }} className="text-xs">{info.desc}</p>
+        <Section title="Estado de los microservicios" icon={<IconShield className="w-4 h-4" />}>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              {health && (
+                <div className="flex items-center gap-2">
+                  <HealthDot status={health.status} />
+                  <span style={{ color: 'var(--text-secondary)' }} className="text-sm">
+                    {health.status === 'ok' ? 'Conectividad verificada' : 'Problemas de enlace detectados'}
+                  </span>
+                </div>
+              )}
+              <button onClick={loadHealth} disabled={loadingHealth}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors disabled:opacity-50"
+                style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', background: 'var(--bg-hover)' }}>
+                <IconRefresh className={`w-3.5 h-3.5 ${loadingHealth ? 'animate-spin' : ''}`} />
+                Test de latencia
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {health
+                ? Object.entries(health.services).map(([key, svc]) => {
+                    const info = SERVICE_LABELS[key] || { name: key, desc: '' };
+                    return (
+                      <div key={key} style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <p style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">{info.name}</p>
+                            <p style={{ color: 'var(--text-muted)' }} className="text-[10px] uppercase font-bold tracking-tight">{info.desc}</p>
+                          </div>
+                          <HealthDot status={svc.status} />
                         </div>
-                        <HealthDot status={svc.status} />
+                        <div className="flex items-center justify-between mt-4">
+                          <span className={`text-[10px] font-black uppercase tracking-widest ${svc.status === 'ok' ? 'text-emerald-500' : svc.status === 'degraded' ? 'text-amber-500' : 'text-red-500'}`}>
+                            {svc.status === 'ok' ? 'Operativo' : svc.status === 'degraded' ? 'Degradado' : 'Sin conexión'}
+                          </span>
+                          {svc.latency > 0 && <span style={{ color: 'var(--text-muted)' }} className="text-[10px] font-mono font-bold">{svc.latency}ms</span>}
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-xs font-semibold ${svc.status === 'ok' ? 'text-emerald-500' : svc.status === 'degraded' ? 'text-amber-500' : 'text-red-500'}`}>
-                          {svc.status === 'ok' ? 'Operativo' : svc.status === 'degraded' ? 'Degradado' : 'Caído'}
-                        </span>
-                        {svc.latency > 0 && <span style={{ color: 'var(--text-muted)' }} className="text-xs font-mono">{svc.latency}ms</span>}
-                      </div>
+                    );
+                  })
+                : [1, 2, 3, 4].map(i => (
+                    <div key={i} style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4 animate-pulse">
+                      <div style={{ background: 'var(--bg-card)' }} className="h-4 rounded w-1/2 mb-2" />
+                      <div style={{ background: 'var(--bg-card)' }} className="h-3 rounded w-3/4" />
                     </div>
-                  );
-                })
-              : [1, 2, 3].map(i => (
-                  <div key={i} style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4 animate-pulse">
-                    <div style={{ background: 'var(--bg-card)' }} className="h-4 rounded w-1/2 mb-2" />
-                    <div style={{ background: 'var(--bg-card)' }} className="h-3 rounded w-3/4" />
-                  </div>
-                ))
-            }
+                  ))
+              }
+            </div>
           </div>
-        </div>
-      </Section>
+        </Section>
+      </div>
       )} {/* fin tab health */}
-
-      </div> {/* fin contenido por tab */}
 
     </div>
   );
