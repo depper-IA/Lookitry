@@ -362,7 +362,7 @@ function TabIngresos({ stats, basicPrecio, proPrecio, landingPrecio }: {
       </div>
 
       <div className="rounded-[2rem] border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <h3 className="text-base font-jakarta font-bold uppercase italic mb-6" style={{ color: 'var(--text-primary)' }}>Ingresos mensuales (últimos 12 meses)</h3>
+        <h3 className="text-base font-jakarta font-bold tracking-tight mb-6" style={{ color: 'var(--text-primary)' }}>Ingresos mensuales (últimos 12 meses)</h3>
         <div className="space-y-4">
           {stats.monthlyRevenue.slice(-12).map(month => {
             const basicPct   = (month.basic   / maxRevenue) * 100;
@@ -459,7 +459,7 @@ function TabROI({
 
       {/* 1. Estado actual vs meta */}
       <div className="rounded-[2rem] border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <h3 className="text-base font-jakarta font-bold uppercase italic mb-5" style={{ color: 'var(--text-primary)' }}>Estado actual vs meta mensual</h3>
+        <h3 className="text-base font-jakarta font-bold tracking-tight mb-5" style={{ color: 'var(--text-primary)' }}>Estado actual vs meta mensual</h3>
         <div className="mb-4">
           <div className="flex justify-between items-end mb-2">
             <div>
@@ -498,7 +498,7 @@ function TabROI({
       {/* 2. Desglose de gastos */}
       <div className="rounded-[2rem] border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-jakarta font-bold uppercase italic" style={{ color: 'var(--text-primary)' }}>Desglose de gastos y punto de equilibrio</h3>
+          <h3 className="text-base font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Desglose de gastos y punto de equilibrio</h3>
           <button
             onClick={onGoToConfig}
             className="text-xs font-medium px-3 py-1 rounded-lg border border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/5 transition-colors"
@@ -578,7 +578,7 @@ function TabROI({
 
       {/* 4. Proyección */}
       <div className="rounded-[2rem] border p-6" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <h3 className="text-base font-jakarta font-bold uppercase italic mb-4" style={{ color: 'var(--text-primary)' }}>
+        <h3 className="text-base font-jakarta font-bold tracking-tight mb-4" style={{ color: 'var(--text-primary)' }}>
           Resumen histórico y Proyecciones
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -633,14 +633,14 @@ export default function RevenuePage() {
     setSaving(id);
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-      const res = await fetch(`${apiBase}/api/admin/revenue/payments`, {
+      const res = await fetch(`${apiBase}/api/admin/pricing`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, data }),
       });
       const json = await res.json();
-      if (!json.ok) throw new Error(json.error);
+      if (!res.ok || !json.ok) throw new Error(json.message || json.error || 'Error al guardar');
       // Actualizar estados del dashboard con los valores guardados
       if (id === 'costs') setCosts(data as unknown as CostsConfig);
       if (id === 'meta') {
@@ -735,7 +735,7 @@ export default function RevenuePage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-jakarta font-black uppercase italic tracking-tight" style={{ color: 'var(--text-primary)' }}>Ingresos y ROI</h1>
+          <h1 className="text-2xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Ingresos y ROI</h1>
           <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>Estadísticas financieras, metas y proyecciones</p>
         </div>
         <button

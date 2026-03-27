@@ -76,8 +76,8 @@ export function UsageStats({ stats }: UsageStatsProps) {
                   {item.icon}
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold text-[var(--text-primary)] uppercase tracking-tight">{item.label}</h4>
-                  <p className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-[0.2em]">{item.description}</p>
+                  <h4 className="text-base md:text-lg font-bold text-[var(--text-primary)] tracking-tight leading-tight max-w-[13rem] md:max-w-none">{item.label}</h4>
+                  <p className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-[0.2em] leading-tight">{item.description}</p>
                 </div>
               </div>
 

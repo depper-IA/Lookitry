@@ -430,7 +430,7 @@ export default function AdminBrandsPage() {
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-jakarta font-black uppercase italic tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Gestión de Marcas</h1>
+          <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Gestión de marcas</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
             Total: {brands.length} | Mostrando: {filteredBrands.length}
             {trialCount > 0 && (
@@ -734,7 +734,7 @@ export default function AdminBrandsPage() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
           <div className="rounded-[2rem] p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-5">
-              <h2 className="font-jakarta font-black uppercase italic tracking-tight text-xl" style={{ color: 'var(--text-primary)' }}>Detalles de {selectedBrand.name}</h2>
+              <h2 className="font-jakarta font-bold tracking-tight text-xl" style={{ color: 'var(--text-primary)' }}>Detalles de {selectedBrand.name}</h2>
               <button onClick={() => setShowDetailsModal(false)} style={{ color: 'var(--text-secondary)' }}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -759,7 +759,7 @@ export default function AdminBrandsPage() {
                 )}
               </div>
               <div className="border-t pt-4">
-                <h3 className="font-jakarta font-black uppercase italic text-sm mb-3" style={{ color: 'var(--text-primary)' }}>Estadísticas</h3>
+                <h3 className="font-jakarta font-bold text-sm mb-3" style={{ color: 'var(--text-primary)' }}>Estadísticas</h3>
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     { label: 'Productos', value: selectedBrand.stats.productsCount, color: '#3b82f6' },
@@ -817,7 +817,7 @@ export default function AdminBrandsPage() {
           <div className="rounded-[2rem] p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-5">
               <div>
-                <h2 className="font-jakarta font-black uppercase italic text-xl" style={{ color: 'var(--text-primary)' }}>Productos de {selectedBrand.name}</h2>
+                <h2 className="font-jakarta font-bold tracking-tight text-xl" style={{ color: 'var(--text-primary)' }}>Productos de {selectedBrand.name}</h2>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Total: {products.length}</p>
               </div>
               <button onClick={() => setShowProductsModal(false)} style={{ color: 'var(--text-secondary)' }}>
@@ -878,7 +878,7 @@ export default function AdminBrandsPage() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 transition-opacity duration-150 animate-in fade-in">
           <div className="rounded-[2rem] p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-4">
-              <h2 className="font-jakarta font-black uppercase italic text-xl" style={{ color: 'var(--text-primary)' }}>Nueva Marca</h2>
+              <h2 className="font-jakarta font-bold tracking-tight text-xl" style={{ color: 'var(--text-primary)' }}>Nueva marca</h2>
               <button onClick={() => setShowCreateModal(false)} style={{ color: 'var(--text-secondary)' }}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -966,7 +966,7 @@ export default function AdminBrandsPage() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
           <div className="rounded-[2rem] p-6 max-w-md w-full transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-4">
-              <h2 className="font-jakarta font-black uppercase italic text-lg" style={{ color: 'var(--text-primary)' }}>Activar Plan — {selectedBrand.name}</h2>
+              <h2 className="font-jakarta font-bold tracking-tight text-lg" style={{ color: 'var(--text-primary)' }}>Activar plan - {selectedBrand.name}</h2>
               <button onClick={() => setShowActivateModal(false)} style={{ color: 'var(--text-secondary)' }}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
@@ -1028,7 +1028,7 @@ export default function AdminBrandsPage() {
       {confirmBulk && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
           <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] shadow-xl w-full max-w-sm p-6 space-y-4 border transition-transform duration-200 animate-in zoom-in-95">
-            <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-black uppercase italic text-lg">
+            <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold tracking-tight text-lg">
               {confirmBulk === 'delete' && `Eliminar ${selected.size} marca${selected.size > 1 ? 's' : ''}`}
               {confirmBulk === 'suspend' && `Suspender ${selected.size} marca${selected.size > 1 ? 's' : ''}`}
               {confirmBulk === 'reactivate' && `Reactivar ${selected.size} marca${selected.size > 1 ? 's' : ''}`}
@@ -1074,7 +1074,7 @@ export default function AdminBrandsPage() {
           <div className="rounded-[2rem] p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h2 className="font-jakarta font-black uppercase italic text-lg" style={{ color: 'var(--text-primary)' }}>Modal de activación</h2>
+                <h2 className="font-jakarta font-bold tracking-tight text-lg" style={{ color: 'var(--text-primary)' }}>Modal de activación</h2>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{modalConfigBrand.name}</p>
               </div>
               <button onClick={() => setShowModalConfigModal(false)} style={{ color: 'var(--text-secondary)' }}>

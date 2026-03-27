@@ -88,7 +88,7 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   manual_account_number: '',
   manual_account_holder: '',
   manual_whatsapp: '',
-  manual_email: '',
+  manual_email: 'info@lookitry.com',
   transfer_enabled: false,
   transfer_bank_name: '',
   transfer_account_number: '',
@@ -182,6 +182,10 @@ export class PaymentSettingsService {
     manualInstructions: string;
     manualWhatsapp: string;
     manualEmail: string;
+    socialInstagram: string;
+    socialTiktok: string;
+    socialFacebook: string;
+    socialYoutube: string;
     transferEnabled: boolean;
     transferBankName: string;
     transferAccountNumber: string;
@@ -207,6 +211,14 @@ export class PaymentSettingsService {
     const { TrmService } = require('../utils/trm');
     const trm = await TrmService.getCurrentTrm();
 
+    const { data: metaRow } = await supabaseAdmin
+      .from('pricing_config')
+      .select('data')
+      .eq('id', 'meta')
+      .maybeSingle();
+
+    const meta = (metaRow?.data ?? {}) as Record<string, unknown>;
+
     return {
       landingPrice: s.landing_price ?? 650000,
       landingOriginalPrice: s.landing_original_price ?? 900000,
@@ -218,8 +230,12 @@ export class PaymentSettingsService {
       paypalSandbox: s.paypal_sandbox,
       manualEnabled: s.manual_enabled,
       manualInstructions: s.manual_instructions,
-      manualWhatsapp: s.manual_whatsapp,
-      manualEmail: s.manual_email,
+      manualWhatsapp: s.manual_whatsapp || '573105436281',
+      manualEmail: s.manual_email || 'info@lookitry.com',
+      socialInstagram: String(meta.social_instagram ?? 'https://instagram.com/looki.try'),
+      socialTiktok: String(meta.social_tiktok ?? 'https://www.tiktok.com/@lookitry'),
+      socialFacebook: String(meta.social_facebook ?? ''),
+      socialYoutube: String(meta.social_youtube ?? ''),
       transferEnabled: s.transfer_enabled,
       transferBankName: s.transfer_bank_name,
       transferAccountNumber: s.transfer_account_number,

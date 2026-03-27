@@ -182,8 +182,8 @@ export function ErrorBanner({ error, isService = false }: { error: string | null
           <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
         </svg>
         <div>
-          <p className="text-sm font-medium text-gray-600">Servicio no disponible en este momento</p>
-          <p className="text-xs text-gray-400 mt-0.5">Estamos trabajando para resolverlo. Por favor intenta más tarde.</p>
+          <p className="text-sm font-medium text-gray-600">La prueba virtual está temporalmente ocupada</p>
+          <p className="text-xs text-gray-400 mt-0.5">Intenta de nuevo en unos minutos. Tu tienda seguirá funcionando con normalidad.</p>
         </div>
       </div>
     );

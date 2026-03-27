@@ -1,8 +1,9 @@
 ﻿'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PricingConfig } from '@/lib/pricing';
 import { formatCurrency } from '@/utils/currency';
+import { fetchPublicPaymentSettings, toWhatsAppUrl } from '@/services/public-config.service';
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 
@@ -254,6 +255,19 @@ function AccordionItem({ item, isOpen, onToggle }: { item: FaqItem; isOpen: bool
 export default function FaqSection({ pricing }: { pricing?: PricingConfig }) {
   const [activeTab, setActiveTab] = useState('mini-landing');
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [contact, setContact] = useState({ whatsapp: 'https://wa.me/573105436281', email: 'info@lookitry.com' });
+
+  useEffect(() => {
+    fetchPublicPaymentSettings()
+      .then(data => {
+        if (!data) return;
+        setContact({
+          whatsapp: toWhatsAppUrl(data.manualWhatsapp) || 'https://wa.me/573105436281',
+          email: data.manualEmail || 'info@lookitry.com',
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   const tabs = getFaqTabs(pricing);
   const currentTab = tabs.find(t => t.id === activeTab) ?? tabs[0];
@@ -327,7 +341,7 @@ export default function FaqSection({ pricing }: { pricing?: PricingConfig }) {
           </div>
           <div className="flex flex-wrap gap-3">
             <a
-              href="https://wa.me/573105436281"
+              href={contact.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-medium text-white transition-all hover:opacity-90"
@@ -337,7 +351,7 @@ export default function FaqSection({ pricing }: { pricing?: PricingConfig }) {
               WhatsApp
             </a>
             <a
-              href="mailto:info@lookitry.com"
+              href={`mailto:${contact.email}`}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-medium border border-[#2a2a2a] text-[#a1a1aa] hover:text-white hover:border-[#444] transition-all"
             >
               <IconMail />

@@ -174,7 +174,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 animate={{ opacity: 1 }}
                 className="flex-1 min-w-0"
               >
-                <p className="text-[12px] font-black text-white truncate leading-tight uppercase tracking-tight italic">{brand?.name}</p>
+                <p className="text-[12px] font-semibold text-white truncate leading-tight tracking-tight">{brand?.name}</p>
                 <div className="flex items-center gap-1.5 mt-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <p className="text-[10px] truncate leading-none text-gray-500 font-bold uppercase tracking-tighter">
@@ -294,14 +294,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <h2
-            className="hidden lg:block font-jakarta font-[950] text-lg flex-shrink-0 tracking-tight uppercase italic opacity-80"
+            className="hidden lg:block font-jakarta font-bold text-lg flex-shrink-0 tracking-tight opacity-80"
             style={{ color: 'var(--text-primary)' }}
           >
             {navigation.find(n => n.href === pathname)?.name || 'Dashboard'}
           </h2>
 
-          <div className="flex items-center gap-2 md:gap-4 ml-auto">
-            <div className="hidden sm:block">
+          <div className="ml-auto flex items-center gap-2 md:gap-4">
+            <div className="hidden md:block">
               <LiveTryOnButton />
             </div>
             <SubscriptionBadge />

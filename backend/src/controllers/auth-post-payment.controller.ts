@@ -125,48 +125,26 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
 
     // 5. Crear la cuenta o Usar la existente si hay sesión
     let result: any;
+    let shouldActivateSubscription = true;
     const existingBrandId = req.brand?.id;
 
     if (existingBrandId) {
-      // 5.1 Si el usuario ya está logueado, actualizamos su plan directamente
-      const months = pending.months || 1;
-      // Si el pending fue creado solo para landing (plan=NONE), conservar el plan actual del usuario
-      const pendingPlanIsNone = !pending.plan || pending.plan.toUpperCase() === 'NONE';
-      const isTrial = (pending.plan || '').toUpperCase() === 'TRIAL';
-      const plan = isTrial ? 'BASIC' : (pendingPlanIsNone
-        ? ((req.brand as any).plan || 'BASIC').toUpperCase()
-        : pending.plan.toUpperCase());
-      const now = new Date();
-      const endDate = new Date(now);
-      endDate.setMonth(endDate.getMonth() + months);
-
-      await supabaseAdmin
-        .from('brands')
-        .update({
-          plan,
-          subscription_status: 'active',
-          subscription_start_date: now.toISOString(),
-          subscription_end_date: endDate.toISOString(),
-          has_landing_page: pending.includes_landing || (req.brand as any).has_landing_page || false,
-          last_payment_date: now.toISOString(),
-        })
-        .eq('id', existingBrandId);
-
-      const { data: updatedBrand } = await supabaseAdmin.from('brands').select('*').eq('id', existingBrandId).single();
+      // 5.1 Si el usuario ya está logueado, la activación se hace una sola vez en renewSubscription
+      const { data: currentBrand } = await supabaseAdmin.from('brands').select('*').eq('id', existingBrandId).single();
       
       result = {
         token: req.headers.authorization?.split(' ')[1] || (req as any).cookies?.token, // Mantener token actual
         brand: {
-          id: updatedBrand.id,
-          email: updatedBrand.email,
-          name: updatedBrand.name,
-          slug: updatedBrand.slug,
-          plan: updatedBrand.plan,
-          has_landing_page: updatedBrand.has_landing_page
+          id: currentBrand.id,
+          email: currentBrand.email,
+          name: currentBrand.name,
+          slug: currentBrand.slug,
+          plan: currentBrand.plan,
+          has_landing_page: currentBrand.has_landing_page
         }
       };
       
-      console.log(`[PostPayment] Pago vinculado a sesión activa: ${updatedBrand.email}`);
+      console.log(`[PostPayment] Pago vinculado a sesión activa: ${currentBrand.email}`);
 
     } else {
       // 5.2 Si no hay sesión, crear la cuenta (vía registerPostPayment del servicio que es más robusto)
@@ -187,11 +165,15 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
       notificationService.sendWelcomeEmail(result.brand as any, true).catch(err => {
         console.error('[PostPayment] Error enviando email de bienvenida:', err);
       });
+
+      // registerPostPayment ya crea la suscripción y registra el pago una vez
+      shouldActivateSubscription = false;
     }
 
     const targetBrandId = result.brand.id;
     // 6. Activar suscripción
-    try {
+    if (shouldActivateSubscription) {
+      try {
       await subscriptionService.renewSubscription(
         targetBrandId,
         {
@@ -209,24 +191,37 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
         pending.plan
       );
 
-      if (pending.includes_landing) {
-        await supabaseAdmin
-          .from('brands')
-          .update({ has_landing_page: true, landing_suspended_at: null })
-          .eq('id', result.brand.id);
-        
-        // Sincronizar el objeto brand retornado para el frontend
-        (result.brand as any).has_landing_page = true;
-        (result.brand as any).landing_suspended_at = null;
+        if (pending.includes_landing) {
+          await supabaseAdmin
+            .from('brands')
+            .update({ has_landing_page: true, landing_suspended_at: null })
+            .eq('id', result.brand.id);
+          
+          // Sincronizar el objeto brand retornado para el frontend
+          (result.brand as any).has_landing_page = true;
+          (result.brand as any).landing_suspended_at = null;
 
-        // Notificar al cliente que su landing está activa
-        notificationService.sendLandingActivatedEmail(result.brand as any).catch(err => {
-          console.error('[PostPayment] Error enviando email de activación de landing:', err);
-        });
+          // Notificar al cliente que su landing está activa
+          notificationService.sendLandingActivatedEmail(result.brand as any).catch(err => {
+            console.error('[PostPayment] Error enviando email de activación de landing:', err);
+          });
+        }
+
+        const { data: updatedBrand } = await supabaseAdmin.from('brands').select('*').eq('id', result.brand.id).single();
+        if (updatedBrand) {
+          result.brand = {
+            ...result.brand,
+            id: updatedBrand.id,
+            email: updatedBrand.email,
+            name: updatedBrand.name,
+            slug: updatedBrand.slug,
+            plan: updatedBrand.plan,
+            has_landing_page: updatedBrand.has_landing_page,
+          };
+        }
+      } catch (subError) {
+        console.error('[PostPayment] Error activando suscripción:', subError);
       }
-
-    } catch (subError) {
-      console.error('[PostPayment] Error activando suscripción:', subError);
     }
 
     // 7. Email de verificación

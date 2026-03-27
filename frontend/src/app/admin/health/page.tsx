@@ -137,7 +137,7 @@ export default function HealthPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-syne font-bold">Estado del Sistema</h1>
+          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-bold tracking-tight">Estado del sistema</h1>
           <p style={{ color: 'var(--text-muted)' }} className="mt-1 text-sm">
             {lastChecked
               ? `Última verificación: ${lastChecked.toLocaleTimeString('es-CO')}`

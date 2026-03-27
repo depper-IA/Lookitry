@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 
 function EyeIcon() {
   return (
@@ -75,8 +74,7 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-            <span className="font-syne font-extrabold text-xl text-white tracking-tight">
+            <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
@@ -93,7 +91,7 @@ export default function AdminLoginPage() {
             Panel de administración
           </div>
 
-          <h2 className="font-syne font-bold text-[22px] text-white mb-1">
+          <h2 className="font-jakarta font-bold text-[22px] text-white mb-1">
             Acceso admin
           </h2>
           <p className="text-[13px] text-[#555] mb-7">

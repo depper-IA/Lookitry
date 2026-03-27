@@ -58,6 +58,15 @@ export default function DashboardPage() {
     );
   }
 
+  const hasLandingPage = Boolean(brand?.hasLandingPage ?? (brand as any)?.has_landing_page);
+  const landingUrl = brand?.customDomain
+    ? (brand.customDomain.startsWith('http://') || brand.customDomain.startsWith('https://')
+        ? brand.customDomain
+        : `https://${brand.customDomain}`)
+    : `/sitio/${brand?.slug}`;
+  const showcaseUrl = hasLandingPage ? landingUrl : `/marca/${brand?.slug}`;
+  const showcaseLabel = hasLandingPage ? 'Ver mini-landing' : 'Ver probador';
+
   return (
     <div className="max-w-[1400px] mx-auto space-y-8 md:space-y-10 pb-20 px-4 md:px-0">
       {/* ── SECCIÓN DE BIENVENIDA ── */}
@@ -67,7 +76,7 @@ export default function DashboardPage() {
         className="flex flex-col md:flex-row md:items-center justify-between gap-6 mt-4 md:mt-0"
       >
         <div className="space-y-1 md:space-y-3">
-          <h1 className="text-2xl md:text-4xl font-[950] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta">
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-[var(--text-primary)] leading-[0.95] font-jakarta break-words">
             Bienvenido, <span className="text-[#FF5C3A]">{brand?.name}</span>
           </h1>
           <p className="text-[10px] md:text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-2">
@@ -113,7 +122,7 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-[9px] md:text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest mb-2">Tasa de Éxito</p>
                 <div className="flex items-end gap-3 mb-4">
-                  <span className="text-3xl md:text-4xl font-[950] italic tracking-tighter text-[var(--text-primary)] leading-none">
+                  <span className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--text-primary)] leading-none">
                     {analytics?.successRate ? Math.round(analytics.successRate) : 0}%
                   </span>
                   <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 mb-1">
@@ -139,7 +148,7 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-[9px] md:text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest mb-2">Pruebas Totales</p>
                 <div className="flex items-end gap-3 mb-4">
-                  <span className="text-3xl md:text-4xl font-[950] italic tracking-tighter text-[var(--text-primary)] leading-none">
+                  <span className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--text-primary)] leading-none">
                     {analytics?.totalGenerations || 0}
                   </span>
                   <span className="text-[9px] md:text-[11px] font-bold text-[var(--text-muted)] mb-1 uppercase tracking-tighter">Históricas</span>
@@ -161,7 +170,7 @@ export default function DashboardPage() {
                    <div className="w-8 h-8 rounded-xl bg-[#FF5C3A]/10 flex items-center justify-center">
                       <Trophy className="w-4 h-4 text-[#FF5C3A]" />
                    </div>
-                   <h2 className="text-xs font-[950] uppercase text-[var(--text-primary)] tracking-[0.3em] italic">Top #3 del Probador</h2>
+                   <h2 className="text-xs font-bold uppercase text-[var(--text-primary)] tracking-[0.3em]">Top #3 del Probador</h2>
                 </div>
                 <Link href="/dashboard/analytics" className="text-[10px] font-black uppercase text-[#FF5C3A] hover:underline tracking-widest">
                   Ver Todo <ArrowRight size={10} className="inline ml-1" />
@@ -175,7 +184,7 @@ export default function DashboardPage() {
                       <TrendingUp size={32} />
                    </div>
                    <div>
-                      <h3 className="text-sm font-black text-[var(--text-primary)] uppercase tracking-tighter italic mb-2">¡Tu probador está listo para brillar!</h3>
+                      <h3 className="text-sm font-bold text-[var(--text-primary)] tracking-tight mb-2">Tu probador está listo para brillar</h3>
                       <p className="text-[11px] text-[var(--text-muted)] font-medium max-w-[300px] leading-relaxed mx-auto">
                          Aún no hay datos de interacción. Una vez tus clientes empiecen a probarse prendas, aquí verás cuáles son sus favoritas para impulsar tus ventas.
                       </p>
@@ -254,7 +263,7 @@ export default function DashboardPage() {
               <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
                  <Settings size={120} />
               </div>
-              <h3 className="text-sm font-black text-[var(--text-primary)] uppercase tracking-[0.2em] italic mb-6">Estado del Sistema</h3>
+              <h3 className="text-sm font-bold text-[var(--text-primary)] tracking-tight mb-6">Estado del sistema</h3>
               
               <div className="space-y-6">
                  <div className="flex items-center justify-between p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
@@ -262,7 +271,9 @@ export default function DashboardPage() {
                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-dot" />
                        <span className="text-[11px] font-black text-[var(--text-primary)] uppercase tracking-tighter">Probador Online</span>
                     </div>
-                    <Link href={`/marca/${brand?.slug}`} target="_blank" rel="noopener noreferrer" className="text-[10px] font-black text-[#FF5C3A] uppercase hover:underline">Ver Demo</Link>
+                    <Link href={showcaseUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] font-black text-[#FF5C3A] uppercase hover:underline">
+                      {showcaseLabel}
+                    </Link>
                  </div>
 
                  <div className="p-5 rounded-2xl bg-[var(--bg-input)] border border-[var(--border-color)] space-y-3">
@@ -295,7 +306,7 @@ export default function DashboardPage() {
                     <AlertCircle size={20} className="text-white" />
                  </div>
                  <div>
-                    <h4 className="text-sm font-black text-[var(--text-primary)] uppercase tracking-tighter italic mb-1">Optimización IA</h4>
+                    <h4 className="text-sm font-bold text-[var(--text-primary)] tracking-tight mb-1">Optimización IA</h4>
                     <p className="text-[11px] text-[var(--text-muted)] font-bold leading-relaxed">
                        Sube fotos de tus prendas con fondo blanco para mejorar la precisión del probador en un 30%.
                     </p>

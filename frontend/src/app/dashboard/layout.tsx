@@ -29,6 +29,11 @@ export default function DashboardLayoutWrapper({
   }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setCheckingSubscription(false);
+      return;
+    }
+
     const checkSubscriptionStatus = async () => {
       if (isAuthenticated && !isLoading) {
         try {

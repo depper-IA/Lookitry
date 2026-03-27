@@ -20,6 +20,8 @@ interface PaymentSettings {
   paypal_email: string;
   paypal_client_id: string;
   paypal_client_secret: string;
+  paypal_prod_client_id: string;
+  paypal_prod_client_secret: string;
   paypal_sandbox: boolean;
   manual_enabled: boolean;
   manual_instructions: string;
@@ -54,11 +56,10 @@ export default function PaymentSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        credentials: 'include',
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al cargar configuración');
+      const settingsRes = await fetch(`${API_URL}/api/admin/payment-settings`, { credentials: 'include' });
+
+      const data = await settingsRes.json();
+      if (!settingsRes.ok) throw new Error(data.message || 'Error al cargar configuración');
       setSettings(data);
     } catch (err: any) {
       setError(err.message || 'Error al cargar configuración');
@@ -72,14 +73,14 @@ export default function PaymentSettingsPage() {
     setSaving(true);
     setError('');
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
+      const settingsRes = await fetch(`${API_URL}/api/admin/payment-settings`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al guardar');
+      const data = await settingsRes.json();
+      if (!settingsRes.ok) throw new Error(data.message || 'Error al guardar');
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err: any) {
@@ -133,7 +134,7 @@ export default function PaymentSettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-black uppercase italic tracking-tight">Medios de Pago</h1>
+          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-bold tracking-tight">Medios de pago</h1>
           <p style={{ color: 'var(--text-muted)' }} className="mt-1 text-sm">Configura los métodos de pago disponibles para tus clientes</p>
         </div>
         <div className="flex items-center gap-3">
@@ -350,6 +351,24 @@ export default function PaymentSettingsPage() {
                     </div>
                   </div>
 
+                  <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border-color)' }}>
+                    <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--border-color)', background: !settings.paypal_sandbox ? 'rgba(34,197,94,0.08)' : 'var(--bg-input)' }}>
+                      <span className={`w-2 h-2 rounded-full ${!settings.paypal_sandbox ? 'bg-green-500' : 'bg-gray-400'}`} />
+                      <span className="text-sm font-medium" style={{ color: !settings.paypal_sandbox ? '#22c55e' : 'var(--text-muted)' }}>
+                        Credenciales Producción (pagos reales)
+                      </span>
+                      {!settings.paypal_sandbox && (
+                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 border border-green-500/20">
+                          Activo
+                        </span>
+                      )}
+                    </div>
+                    <div className="p-4 grid grid-cols-1 gap-4">
+                      <Field label="Client ID Producción" value={settings.paypal_prod_client_id} onChange={v => set('paypal_prod_client_id', v)} placeholder="AXxx..." />
+                      <SecretField label="Client Secret Producción" fieldKey="paypal_prod_secret" value={settings.paypal_prod_client_secret} onChange={v => set('paypal_prod_client_secret', v)} show={showSecrets['paypal_prod_secret']} onToggle={() => toggleSecret('paypal_prod_secret')} placeholder="EXxx..." />
+                    </div>
+                  </div>
+
                   <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm text-blue-400">
                     Obtén tus credenciales en{' '}
                     <a href="https://developer.paypal.com" target="_blank" rel="noopener noreferrer" className="underline font-medium">developer.paypal.com</a>
@@ -382,8 +401,6 @@ export default function PaymentSettingsPage() {
                       placeholder="Realiza el pago y envía el comprobante..."
                     />
                   </div>
-                  <Field label="WhatsApp de contacto" value={settings.manual_whatsapp} onChange={v => set('manual_whatsapp', v)} placeholder="+57 300 123 4567" hint="Número con código de país para enlace directo." />
-                  <Field label="Email de contacto" value={settings.manual_email} onChange={v => set('manual_email', v)} placeholder="pagos@tuempresa.com" type="email" />
                   <Field label="Banco (opcional)" value={settings.manual_bank_name} onChange={v => set('manual_bank_name', v)} placeholder="Bancolombia" />
                   <Field label="Número de cuenta (opcional)" value={settings.manual_account_number} onChange={v => set('manual_account_number', v)} placeholder="123-456789-00" />
                   <Field label="Titular de la cuenta (opcional)" value={settings.manual_account_holder} onChange={v => set('manual_account_holder', v)} placeholder="Nombre del titular" />

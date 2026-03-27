@@ -993,13 +993,16 @@ export const sendBrandResetEmail = async (req: any, res: Response) => {
  */
 export const getPayments = async (req: any, res: Response) => {
   try {
-    const { brand_id, status, payment_method, limit, offset } = req.query;
+    const { brand_id, status, payment_method, limit, offset, from, to, search } = req.query;
     
     const result = await adminService.getPayments({
       brand_id: brand_id as string | undefined,
       status: status as string | undefined,
       payment_method: payment_method as string | undefined,
-      limit: limit ? parseInt(limit as string) : 50,
+      from: from as string | undefined,
+      to: to as string | undefined,
+      search: search as string | undefined,
+      limit: limit ? parseInt(limit as string) : undefined,
       offset: offset ? parseInt(offset as string) : 0,
     });
 

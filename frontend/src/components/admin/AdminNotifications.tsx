@@ -138,12 +138,12 @@ function ApplyPlanChangeButton({ brandId, toPlan, onDone }: { brandId: string; t
   const apply = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('adminToken');
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/admin/brands/${brandId}/plan`,
         {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ plan: toPlan }),
         }
       );
@@ -193,12 +193,10 @@ export function AdminNotifications() {
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('adminToken');
-      const headers = { Authorization: `Bearer ${token}` };
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
       const [notifRes, fbRes] = await Promise.all([
-        fetch(`${apiBase}/api/admin/notifications`, { headers }),
-        fetch(`${apiBase}/api/admin/feedback/count-unresolved`, { headers }),
+        fetch(`${apiBase}/api/admin/notifications`, { credentials: 'include' }),
+        fetch(`${apiBase}/api/admin/feedback/count-unresolved`, { credentials: 'include' }),
       ]);
       if (notifRes.ok) {
         const data = await notifRes.json();
@@ -474,7 +472,7 @@ export function AdminNotifications() {
                 <div>
                   <p className="text-xs font-medium mb-1.5" style={{ color: 'var(--text-muted)' }}>Mensaje del cliente:</p>
                   <div className="border rounded-lg px-4 py-3" style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}>
-                    <p className="text-sm leading-relaxed italic" style={{ color: 'var(--text-secondary)' }}>&quot;{selected.metadata.clientMessage}&quot;</p>
+                    <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>&quot;{selected.metadata.clientMessage}&quot;</p>
                   </div>
                 </div>
               )}

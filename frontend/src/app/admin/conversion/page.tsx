@@ -71,7 +71,7 @@ export default function AdminConversionPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-jakarta font-black uppercase italic tracking-tight" style={{ color: 'var(--text-primary)' }}>Embudo de Conversión</h1>
+        <h1 className="text-2xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Embudo de conversión</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Métricas de adquisición y retención de clientes.</p>
       </div>
 
@@ -129,7 +129,7 @@ export default function AdminConversionPage() {
         
         {/* Conversion KPIs */}
         <div className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <h3 className="text-lg font-jakarta font-bold uppercase italic mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+          <h3 className="text-lg font-jakarta font-bold tracking-tight mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
             <Target className="w-5 h-5 text-[#FF5C3A]" />
             KPIs de Eficiencia
           </h3>
@@ -169,7 +169,7 @@ export default function AdminConversionPage() {
 
         {/* Growth Chart */}
         <div className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <h3 className="text-lg font-jakarta font-bold uppercase italic mb-6" style={{ color: 'var(--text-primary)' }}>Crecimiento Mensual</h3>
+          <h3 className="text-lg font-jakarta font-bold tracking-tight mb-6" style={{ color: 'var(--text-primary)' }}>Crecimiento mensual</h3>
           
           <div className="h-48 flex items-end gap-3 pt-4">
             {stats.conversionsByMonth.map((m) => {
