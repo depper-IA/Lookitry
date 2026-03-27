@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
+import { PaymentSettingsService } from '../services/paymentSettings.service';
+
+const paymentSettingsService = new PaymentSettingsService();
 
 /**
  * RevenueController
@@ -17,6 +20,35 @@ export class RevenueController {
    */
   async getRevenueStats(_req: Request, res: Response): Promise<Response> {
     try {
+      const paymentSettings = await paymentSettingsService.getSettings().catch(() => null);
+      const landingPrice = Number(paymentSettings?.landing_price || 650000);
+
+      const splitPaymentAmounts = (payment: any) => {
+        const amount = parseFloat(payment.amount);
+        const monthsPaid = Number(payment.months_paid ?? 0);
+        const notes = typeof payment.notes === 'string' ? payment.notes.toLowerCase() : '';
+        const hasLandingMention = notes.includes('landing');
+        const isLandingOnly =
+          payment.brands?.plan === 'LANDING' ||
+          monthsPaid === 0 ||
+          notes.includes('solo landing') ||
+          notes.includes('plan: none');
+
+        if (isLandingOnly) {
+          return { landing: amount, subscription: 0 };
+        }
+
+        if (hasLandingMention) {
+          const landingComponent = Math.min(amount, landingPrice);
+          return {
+            landing: landingComponent,
+            subscription: Math.max(0, amount - landingComponent),
+          };
+        }
+
+        return { landing: 0, subscription: amount };
+      };
+
       // Precios por plan en COP (para proyecciones)
       const PLAN_PRICES = {
         BASIC: 150000,
@@ -47,27 +79,24 @@ export class RevenueController {
         }
 
         const amount = parseFloat(payment.amount);
-        
-        // Mejora detección de pago de landing: plan es LANDING o notas contienen 'landing' o 'plan: none' (case insensitive)
-        const isLandingPayment =
-          payment.brands?.plan === 'LANDING' ||
-          Number(payment.months_paid ?? 0) === 0 ||
-          (typeof payment.notes === 'string' && (
-            payment.notes.toLowerCase().includes('landing') ||
-            payment.notes.toLowerCase().includes('plan: none')
-          ));
+        const split = splitPaymentAmounts(payment);
 
         monthlyData[month].total += amount;
         monthlyData[month].count += 1;
 
-        if (isLandingPayment) {
-          monthlyData[month].landing += amount;
-        } else if (payment.brands?.plan === 'BASIC') {
-          monthlyData[month].basic += amount;
-        } else if (payment.brands?.plan === 'PRO') {
-          monthlyData[month].pro += amount;
-        } else {
-          // Si no tiene plan definido o es otro, lo asignamos a basic por defecto si no es landing
+        if (split.landing > 0) {
+          monthlyData[month].landing += split.landing;
+        }
+
+        if (split.subscription > 0) {
+          if (payment.brands?.plan === 'BASIC') {
+            monthlyData[month].basic += split.subscription;
+          } else if (payment.brands?.plan === 'PRO') {
+            monthlyData[month].pro += split.subscription;
+          } else {
+            monthlyData[month].basic += split.subscription;
+          }
+        } else if (split.landing === 0) {
           monthlyData[month].basic += amount;
         }
       });
@@ -135,27 +164,30 @@ export class RevenueController {
       let landingPaymentsCount = 0;
 
       (planBreakdown || []).forEach((payment: any) => {
-        const amount = parseFloat(payment.amount);
-        const isLanding =
-          payment.brands?.plan === 'LANDING' ||
-          Number(payment.months_paid ?? 0) === 0 ||
-          (typeof payment.notes === 'string' && (
-            payment.notes.toLowerCase().includes('landing') ||
-            payment.notes.toLowerCase().includes('plan: none')
-          ));
+        const split = splitPaymentAmounts(payment);
 
-        if (isLanding) {
-          totalLandingRevenue += amount;
+        if (split.landing > 0) {
+          totalLandingRevenue += split.landing;
           landingPaymentsCount += 1;
-        } else if (payment.brands?.plan === 'BASIC') {
-          totalBasicRevenue += amount;
+        }
+
+        if (split.subscription > 0) {
+          if (payment.brands?.plan === 'BASIC') {
+            totalBasicRevenue += split.subscription;
+            basicPaymentsCount += 1;
+          } else if (payment.brands?.plan === 'PRO') {
+            totalProRevenue += split.subscription;
+            proPaymentsCount += 1;
+          } else {
+            totalBasicRevenue += split.subscription;
+            basicPaymentsCount += 1;
+          }
+        } else if (split.landing === 0) {
+          totalBasicRevenue += parseFloat(payment.amount);
           basicPaymentsCount += 1;
-        } else if (payment.brands?.plan === 'PRO') {
-          totalProRevenue += amount;
-          proPaymentsCount += 1;
         } else {
-          totalBasicRevenue += amount;
-          basicPaymentsCount += 1;
+          totalLandingRevenue += parseFloat(payment.amount);
+          landingPaymentsCount += 1;
         }
       });
 

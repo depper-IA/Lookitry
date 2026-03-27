@@ -7,6 +7,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { formatCurrency } from '@/utils/currency';
 import { Spinner } from '@/components/ui/Spinner';
 
+function formatPaypalUsd(amountCop: number, trm: number): string {
+  const safeTrm = trm > 0 ? trm : 3900;
+  const usd = Math.ceil((amountCop / safeTrm) * 100) / 100;
+  return usd.toFixed(2);
+}
+
 function IconCheck() {
   return (
     <svg className="w-4 h-4 text-[#10b981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,6 +146,7 @@ export default function CheckoutLandingPage() {
 
       if (paymentMethod === 'wompi') {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/checkout-url?plan=${planToSend}&months=${monthsToSend}&includes_landing=true&amount=${totalPrice}`, {
+          credentials: 'include',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
@@ -153,6 +160,7 @@ export default function CheckoutLandingPage() {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/payments/paypal/checkout-url?plan=${planToSend}&months=${monthsToSend}&includes_landing=true&amount=${totalPrice}&trm=${pricing.trm}`,
           {
+            credentials: 'include',
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -287,7 +295,7 @@ export default function CheckoutLandingPage() {
             {loading ? <Spinner size="sm" /> : (
               paymentMethod === 'wompi' 
                 ? `Pagar ${formatCurrency(totalPrice)} COP con Wompi`
-                : `Pagar USD $${Math.ceil(totalPrice / pricing.trm)} con PayPal`
+                : `Pagar USD $${formatPaypalUsd(totalPrice, pricing.trm)} con PayPal`
             )}
           </button>
         </div>

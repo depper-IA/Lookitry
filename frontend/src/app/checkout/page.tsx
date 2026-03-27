@@ -72,6 +72,12 @@ function formatCOP(n: number) {
   return '$' + n.toLocaleString('es-CO');
 }
 
+function formatPaypalUsd(amountCop: number, trm: number) {
+  const safeTrm = trm > 0 ? trm : 3900;
+  const usd = Math.ceil((amountCop / safeTrm) * 100) / 100;
+  return usd.toFixed(2);
+}
+
 // calcTotal eliminada — usar planBase (estado dinámico) directamente
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
@@ -379,7 +385,7 @@ function CheckoutContent() {
         const emailParam = !hasSession && email.trim() ? `&email=${encodeURIComponent(email.trim())}` : '';
         const landingParam = isLanding ? '&includes_landing=true' : '';
         const res = await fetch(
-          `${API_URL}/api/payments/paypal/checkout-url?amount=${baseTotalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}${landingParam}&trm=${trm}`,
+          `${API_URL}/api/payments/paypal/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}${landingParam}&trm=${trm}`,
           { 
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' }
@@ -395,7 +401,7 @@ function CheckoutContent() {
       const emailParam = !hasSession && email.trim() ? `&email=${encodeURIComponent(email.trim())}` : '';
       const landingParam = isLanding ? '&includes_landing=true' : '';
       const res = await fetch(
-        `${API_URL}/api/payments/wompi/checkout-url?amount=${baseTotalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}${landingParam}`,
+        `${API_URL}/api/payments/wompi/checkout-url?amount=${totalPrice}&months=${selectedMonths}&plan=${isLanding ? subPlan : selectedPlan}${emailParam}${landingParam}`,
         { 
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
@@ -908,7 +914,7 @@ function CheckoutContent() {
                   ? 'Redirigiendo...'
                   : paymentMethod === 'wompi'
                     ? `Pagar ${formatCOP(totalPrice)} COP`
-                    : `Pagar USD $${Math.ceil(totalPrice / trm)} con PayPal`
+                    : `Pagar USD $${formatPaypalUsd(totalPrice, trm)} con PayPal`
                 }
               </button>
 

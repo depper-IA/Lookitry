@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { supabaseAdmin } from '../config/supabase';
 import { RegisterBrandDto, LoginDto, AuthResponse, Brand } from '../types';
 import { generateToken } from '../utils/jwt';
+import { pricingService } from './pricing.service';
 
 // ── Helpers de campaña de trial ───────────────────────────────────────────────
 
@@ -222,16 +223,37 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
     .eq('reference', ref);
 
   // 6. Registrar el pago oficial en subscription_payments
-  await supabaseAdmin.from('subscription_payments').insert({
+  const recordedAmount = Number(pending.amount || 0) > 0
+    ? Number(pending.amount)
+    : await pricingService.calculateTotal(
+        String(pending.plan || 'BASIC').toUpperCase(),
+        Number(pending.months || 1),
+        Boolean(pending.includes_landing)
+      );
+
+  const paymentPayload = {
     brand_id: targetBrandId,
-    amount: pending.amount || 0,
+    amount: recordedAmount,
     currency: 'COP',
     payment_date: new Date().toISOString(),
     payment_method: ref.includes('PAYPAL') ? 'paypal' : 'wompi',
     status: 'completed',
     months_paid: pending.months || 1,
-    notes: `Activación via registro post-pago. Ref: ${ref}. ID Pago: ${(pending as any).payment_id || 'N/A'}`
-  });
+    reference: ref,
+    notes: `Activación via registro post-pago. Ref: ${ref}. ID Pago: ${(pending as any).payment_id || 'N/A'}.${pending.includes_landing ? ' Incluye Landing Page.' : ''}`
+  };
+
+  let { error: paymentInsertError } = await supabaseAdmin.from('subscription_payments').insert(paymentPayload);
+
+  if (paymentInsertError?.message?.toLowerCase().includes('reference')) {
+    const { reference, ...fallbackPayload } = paymentPayload;
+    const retry = await supabaseAdmin.from('subscription_payments').insert(fallbackPayload);
+    paymentInsertError = retry.error || null;
+  }
+
+  if (paymentInsertError) {
+    throw new Error('Error al registrar el pago: ' + paymentInsertError.message);
+  }
 
   const finalBrand = await this.getBrandById(targetBrandId);
   if (!finalBrand) throw new Error('Error al recuperar datos de la marca');

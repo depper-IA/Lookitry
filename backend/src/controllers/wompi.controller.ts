@@ -128,7 +128,7 @@ export class WompiController {
               payment_method: 'wompi',
               status: 'completed',
               months_paid: months,
-              notes: `Pago automático Wompi. Ref: ${reference}. ID: ${transaction.id}`,
+              notes: `Pago automático Wompi. Ref: ${reference}. ID: ${transaction.id}.${activateLanding ? ' Incluye Landing Page.' : ''}`,
             },
             months,
             effectivePlan,
@@ -221,25 +221,28 @@ export class WompiController {
         return;
       }
       const effectivePlan = (plan === 'LANDING' ? 'BASIC' : plan).toUpperCase();
-      const monthsNum = parseInt(months as string, 10) || 1;
+      const parsedMonths = Number.parseInt(months as string, 10);
+      const monthsNum = Number.isNaN(parsedMonths) ? 1 : parsedMonths;
       const ref = reqRef || `FREE-${brand.id}-${Date.now()}`;
 
-      await subscriptionService.renewSubscription(
-        brand.id,
-        {
-          brand_id: brand.id,
-          amount: 0,
-          currency: 'COP',
-          payment_date: new Date().toISOString(),
-          payment_method: 'free_checkout',
-          status: 'completed',
-          months_paid: monthsNum,
-          notes: `Checkout gratuito. Plan: ${effectivePlan}. Ref: ${ref}`,
-        },
-        monthsNum,
-        effectivePlan,
-        currentBrand.plan === 'BASIC' && effectivePlan === 'PRO'
-      );
+      if (effectivePlan !== 'NONE') {
+        await subscriptionService.renewSubscription(
+          brand.id,
+          {
+            brand_id: brand.id,
+            amount: 0,
+            currency: 'COP',
+            payment_date: new Date().toISOString(),
+            payment_method: 'free_checkout',
+            status: 'completed',
+            months_paid: monthsNum,
+            notes: `Checkout gratuito. Plan: ${effectivePlan}. Ref: ${ref}${includes_landing ? '. Incluye Landing Page.' : ''}`,
+          },
+          monthsNum,
+          effectivePlan,
+          currentBrand.plan === 'BASIC' && effectivePlan === 'PRO'
+        );
+      }
 
       if (includes_landing) {
         await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brand.id);
@@ -340,6 +343,7 @@ export class WompiController {
           reference, 
           plan: planStr, 
           months: monthsNum, 
+          amount: amountCOP,
           includes_landing: isLandingPurchase,
           status: 'pending',
         });
