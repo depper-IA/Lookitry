@@ -154,6 +154,49 @@ export const blogController = {
     }
   },
 
+  /** Admin: Crear post manual */
+  async adminCreatePost(req: Request, res: Response) {
+    try {
+      const { title, content, excerpt, meta_description, featured_image, category_id, tags, status } = req.body;
+
+      if (!title || !content) {
+        return res.status(400).json({ error: 'BAD_REQUEST', message: 'Título y contenido son obligatorios' });
+      }
+
+      const slug = title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '') + '-' + Math.random().toString(36).substring(2, 7);
+
+      const { data, error } = await supabaseAdmin
+        .from('blogs')
+        .insert({
+          title,
+          content,
+          excerpt,
+          meta_description,
+          featured_image,
+          category_id,
+          tags: tags || [],
+          status: status || 'draft',
+          slug,
+          published_at: status === 'published' ? new Date().toISOString() : null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return res.status(201).json({ message: 'Post creado exitosamente', post: data });
+    } catch (error: any) {
+      console.error('[BlogController] Create error:', error);
+      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
+    }
+  },
+
   /** Admin: Listar categorías */
   async adminGetCategories(req: Request, res: Response) {
     try {
