@@ -27,6 +27,17 @@ interface HealthData {
   services: { supabase: ServiceResult; n8n: ServiceResult; email: ServiceResult; minio: ServiceResult; };
 }
 
+interface SystemStats {
+  ram: {
+    total: number;
+    free: number;
+    used: number;
+    percentage: number;
+  };
+  uptime: number;
+  platform: string;
+}
+
 interface OpenRouterCredits {
   label: string | null;
   usage: number;
@@ -240,6 +251,8 @@ export default function SystemConfigPage() {
   // Health
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loadingHealth, setLoadingHealth] = useState(true);
+  const [systemStats, setSystemStats] = useState<SystemStats | null>(null);
+  const [loadingSystem, setLoadingSystem] = useState(true);
 
   // Precio mini-landing
   const [landingPrice, setLandingPrice] = useState<number>(650000);
@@ -323,6 +336,15 @@ export default function SystemConfigPage() {
     } finally { setLoadingHealth(false); }
   }, []);
 
+  const loadSystemStats = useCallback(async () => {
+    setLoadingSystem(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/system/stats`, { credentials: 'include', headers });
+      if (res.ok) setSystemStats(await res.json());
+    } catch { /* silencioso */ }
+    finally { setLoadingSystem(false); }
+  }, []);
+
   const loadCredits = useCallback(async () => {
     setLoadingCredits(true);
     try {
@@ -386,6 +408,7 @@ export default function SystemConfigPage() {
   useEffect(() => {
     loadCampaigns();
     loadHealth();
+    loadSystemStats();
     loadPaymentSettings();
     loadPricingMeta();
     loadCredits();

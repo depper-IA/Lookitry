@@ -28,11 +28,18 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { globalRateLimiter } from './middleware/rateLimiter';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import { systemService } from './services/system.service';
 
 // Cargar variables de entorno
 dotenv.config();
 
 const app = express();
+
+// Iniciar monitoreo de RAM cada 10 minutos (600,000ms)
+// Operación extremadamente ligera, no consume CPU apreciable.
+setInterval(() => {
+  systemService.checkRamThreshold().catch(err => console.error('[System] Error in RAM check interval:', err));
+}, 10 * 60 * 1000);
 
 // Necesario para que express-rate-limit funcione correctamente detrás de Traefik/Nginx
 app.set('trust proxy', 1);
