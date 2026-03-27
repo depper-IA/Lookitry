@@ -75,27 +75,6 @@ const DESIGN_SYSTEM = {
   }
 };
 
-const PLAN_FEATURES = {
-  BASIC: [
-    'Hasta 5 productos activos',
-    '400 generaciones mensuales',
-    'Branding base (logo / colores)',
-    'Plantillas: Minimal & Modern',
-    'Soporte estándar WhatsApp',
-    'Probador en URL propia slug'
-  ],
-  PRO: [
-    'Hasta 15 productos activos',
-    '1.200 generaciones mensuales',
-    'Control total de branding',
-    'Todas las plantillas incl. Bold',
-    'Textos de botón personalizados',
-    'Mensaje de bienvenida único',
-    'Slug personalizado ilimitado',
-    'Soporte prioritario VIP'
-  ]
-};
-
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   active:        { label: 'Sincronizada', color: 'text-emerald-500', bg: 'bg-emerald-500/10 border-emerald-500/20' },
   expiring_soon: { label: 'Por vencer',   color: 'text-amber-500',   bg: 'bg-amber-500/10 border-amber-500/20'   },
@@ -130,6 +109,7 @@ export default function SubscriptionPage() {
   const [payments, setPayments] = useState<SubscriptionPayment[]>([]);
   const [loading, setLoading] = useState(true);
   const [dynamicPrices, setDynamicPrices] = useState<{ BASIC: number; PRO: number; TRIAL: number }>({ BASIC: 150000, PRO: 250000, TRIAL: 0 });
+  const [dynamicGenerations, setDynamicGenerations] = useState<{ BASIC: number; PRO: number }>({ BASIC: 400, PRO: 1200 });
   const [paySettings, setPaySettings] = useState<any>(null);
 
   // Filtros y paginación
@@ -154,11 +134,19 @@ export default function SubscriptionPage() {
         if (settingsResult.status === 'fulfilled') setPaySettings(settingsResult.value);
         if (pricingResult.status === 'fulfilled' && Array.isArray(pricingResult.value)) {
           const prices = { BASIC: 150000, PRO: 250000, TRIAL: 0 };
+          const gens = { BASIC: 400, PRO: 1200 };
           pricingResult.value.forEach((row: any) => {
-            if (row.id === 'basic') prices.BASIC = row.data.precio_mensual_cop;
-            if (row.id === 'pro') prices.PRO = row.data.precio_mensual_cop;
+            if (row.id === 'basic') {
+              prices.BASIC = row.data.precio_mensual_cop;
+              if (row.data.generaciones_mes) gens.BASIC = row.data.generaciones_mes;
+            }
+            if (row.id === 'pro') {
+              prices.PRO = row.data.precio_mensual_cop;
+              if (row.data.generaciones_mes) gens.PRO = row.data.generaciones_mes;
+            }
           });
           setDynamicPrices(prices);
+          setDynamicGenerations(gens);
         }
       } finally {
         setLoading(false);
@@ -171,9 +159,30 @@ export default function SubscriptionPage() {
   const inTrial = info?.isInTrial ?? false;
   const currentDesign = inTrial ? DESIGN_SYSTEM.TRIAL : DESIGN_SYSTEM[planKey];
 
-  const progressPercent = info?.daysRemaining != null
-    ? Math.min(100, Math.max(0, Math.round(((30 - info.daysRemaining) / 30) * 100)))
-    : 100;
+  const displayDaysRemaining = inTrial ? (info?.trialDaysRemaining ?? 0) : (info?.daysRemaining ?? 0);
+  const maxDays = inTrial ? 7 : 30; // Approximation for progress bar
+  const progressPercent = Math.min(100, Math.max(0, Math.round(((maxDays - displayDaysRemaining) / maxDays) * 100)));
+
+  const planFeatures = {
+    BASIC: [
+      'Hasta 5 productos activos',
+      `${dynamicGenerations.BASIC} generaciones mensuales`,
+      'Branding base (logo / colores)',
+      'Plantillas: Minimal & Modern',
+      'Soporte estándar WhatsApp',
+      'Probador en URL propia slug'
+    ],
+    PRO: [
+      'Hasta 15 productos activos',
+      `${dynamicGenerations.PRO} generaciones mensuales`,
+      'Control total de branding',
+      'Todas las plantillas incl. Bold',
+      'Textos de botón personalizados',
+      'Mensaje de bienvenida único',
+      'Slug personalizado ilimitado',
+      'Soporte prioritario VIP'
+    ]
+  };
 
   // Lógica de filtrado y paginación
   const filteredPayments = useMemo(() => {
@@ -243,7 +252,7 @@ export default function SubscriptionPage() {
                <div className="space-y-3 max-w-sm">
                   <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider">
                      <span className="text-[var(--text-muted)] opacity-80">Días restantes</span>
-                     <span className="text-[#FF5C3A] font-bold">{info?.daysRemaining ?? 0} DÍAS</span>
+                     <span className="text-[#FF5C3A] font-bold">{displayDaysRemaining} DÍAS</span>
                   </div>
                   <div className="h-2.5 bg-[var(--text-primary)]/10 rounded-full overflow-hidden border border-[var(--border-color)] shadow-inner">
                      <motion.div 
@@ -325,7 +334,7 @@ export default function SubscriptionPage() {
                         </div>
                      </div>
                      <ul className="space-y-4 mb-12">
-                        {PLAN_FEATURES[pk].map((f, i) => (
+                        {planFeatures[pk as keyof typeof planFeatures].map((f, i) => (
                            <li key={i} className="flex items-start gap-4">
                               <div className={`mt-1 flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${isCurrent ? 'bg-[#FF5C3A]/20' : 'bg-[#FF5C3A]/10'}`}>
                                  <CheckCircle className="w-3 h-3 text-[#FF5C3A]" />
