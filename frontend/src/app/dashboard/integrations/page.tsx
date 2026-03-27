@@ -146,7 +146,7 @@ export default function IntegrationsPage() {
         </div>
       </motion.header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-16">
         
         {/* ══ PANEL CENTRAL ══ */}
         <div className="lg:col-span-8 space-y-12 md:space-y-16">
@@ -258,7 +258,7 @@ export default function IntegrationsPage() {
               )}
 
               {/* PASOS */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 pt-4 md:pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pt-4 md:pt-6">
                  {steps.map((step) => (
                     <div key={step.id} className="group/step p-6 md:p-10 rounded-3xl bg-zinc-50/50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 transition-all relative overflow-hidden">
                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 flex items-center justify-center mb-6 md:mb-8 shadow-sm group-hover:scale-110 transition-transform">
@@ -283,7 +283,7 @@ export default function IntegrationsPage() {
 
            {/* SDK SECTION */}
            <motion.div variants={itemVariants} className="bg-zinc-900 rounded-3xl md:rounded-[3rem] p-8 md:p-20 relative overflow-hidden group shadow-2xl border border-white/5">
-              <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-20 items-center">
                  <div className="space-y-6 md:space-y-10">
                     <div className="w-fit px-4 md:px-6 py-1.5 md:py-2 bg-white/5 rounded-full border border-white/10 flex items-center gap-3">
                        <div className="w-1.5 md:w-2 h-1.5 md:h-2 rounded-full bg-[#FF5C3A]" />
@@ -296,7 +296,7 @@ export default function IntegrationsPage() {
                     <p className="text-sm font-medium text-zinc-400 leading-relaxed opacity-80">
                        Construye experiencias personalizadas sobre nuestra infraestructura de inteligencia artificial.
                     </p>
-                     <button className="w-full md:w-auto px-8 md:px-12 py-4 md:py-6 bg-white text-zinc-900 text-[10px] font-bold uppercase tracking-wider rounded-xl md:rounded-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 md:gap-5">
+                     <button className="w-full lg:w-auto px-8 md:px-12 py-4 md:py-6 bg-white text-zinc-900 text-[10px] font-bold uppercase tracking-wider rounded-xl md:rounded-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 md:gap-5">
                        Documentación SDK <ExternalLink className="w-[18px] h-[18px]" />
                     </button>
                  </div>

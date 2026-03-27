@@ -91,7 +91,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
             <motion.div 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="text-lg leading-none shrink-0"
+              className="hidden xl:block text-lg leading-none shrink-0"
             >
               <LookitryLogoText className="text-white" />
             </motion.div>
@@ -102,7 +102,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         {!isCollapsed && (
           <button
             onClick={() => setIsCollapsed(true)}
-            className="hidden lg:flex p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-all"
+            className="hidden xl:flex p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-all"
             title="Colapsar menú"
           >
             <ChevronLeft size={18} />
@@ -142,7 +142,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
                 <motion.span 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="leading-none"
+                  className="hidden xl:block leading-none"
                 >
                   {item.name}
                 </motion.span>
@@ -175,7 +175,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex-1 min-w-0"
+                className="hidden xl:block flex-1 min-w-0"
               >
                 <p className="text-[12px] font-semibold text-white truncate leading-tight tracking-tight">{currentBrand?.name}</p>
                 <div className="flex items-center gap-1.5 mt-1">
@@ -187,7 +187,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
               </motion.div>
               <button
                 onClick={logout}
-                className="w-10 h-10 rounded-2xl transition-all flex items-center justify-center text-gray-600 hover:text-white hover:bg-white/10 group/logout shrink-0"
+                className="hidden xl:flex w-10 h-10 rounded-2xl transition-all items-center justify-center text-gray-600 hover:text-white hover:bg-white/10 group/logout shrink-0"
                 title="Cerrar sesión"
               >
                 <LogOut size={18} className="transition-transform group-hover/logout:translate-x-0.5" />
@@ -220,7 +220,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
       )}
 
       {/* Sidebar desktop (fijo) */}
-      <div className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 z-20 transition-all duration-300 ${isCollapsed ? 'lg:w-[90px]' : 'lg:w-[280px]'}`}>
+      <div className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 z-20 transition-all duration-300 ${isCollapsed ? 'lg:w-[88px] xl:w-[96px]' : 'lg:w-[96px] xl:w-[240px] 2xl:w-[280px]'}`}>
         {sidebarContent}
       </div>
 
@@ -234,7 +234,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
       </div>
 
       {/* Contenido principal */}
-      <div className={`flex flex-col h-screen overflow-hidden transition-all duration-300 ${sidebarOpen ? 'blur-[2px]' : ''} ${isCollapsed ? 'lg:pl-[90px]' : 'lg:pl-[280px]'}`}>
+      <div className={`flex flex-col h-screen overflow-hidden transition-all duration-300 ${sidebarOpen ? 'blur-[2px]' : ''} ${isCollapsed ? 'lg:pl-[88px] xl:pl-[96px]' : 'lg:pl-[96px] xl:pl-[240px] 2xl:pl-[280px]'}`}>
         {/* Banner de verificación de email — elegante y minimalista */}
         {showVerificationBanner && (
           <div className="w-full border-b px-6 py-3 flex items-center justify-between gap-4 flex-shrink-0 animate-in fade-in slide-in-from-top duration-500" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
@@ -275,7 +275,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         )}
         {/* Header */}
         <header
-          className="flex-shrink-0 flex items-center justify-between px-4 md:px-8 h-16 md:h-20 border-b relative z-10"
+          className="flex-shrink-0 flex items-center justify-between px-4 md:px-6 xl:px-8 h-16 md:h-20 border-b relative z-10"
           style={{
             backgroundColor: 'var(--bg-header)',
             borderColor: 'var(--border-color)',
@@ -313,7 +313,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         </header>
 
         {/* Contenido de página */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 md:p-8 md:pt-10 scroll-smooth">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 xl:p-8 xl:pt-10 scroll-smooth">
           <OnboardingWizard />
           <DashboardNotifications />
           <TrialBanner />

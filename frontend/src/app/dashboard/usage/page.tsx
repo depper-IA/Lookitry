@@ -57,20 +57,20 @@ export default function UsagePage() {
   return (
     <motion.div 
       initial="hidden" animate="visible" variants={containerVariants}
-      className="max-w-5xl mx-auto space-y-16 pb-32 px-4 relative"
+      className="max-w-5xl mx-auto space-y-12 xl:space-y-16 pb-32 px-4 xl:px-0 relative"
     >
       {/* 🔮 ORBES DE FONDO 🔮 */}
       <div className="absolute top-0 -left-20 w-80 h-80 bg-[#FF5C3A]/5 blur-[120px] rounded-full -z-10" />
       <div className="absolute bottom-20 -right-20 w-[400px] h-[400px] bg-indigo-500/5 blur-[150px] rounded-full -z-10" />
 
       {/* ══ HEADER ORBITAL ══ */}
-      <motion.header variants={itemVariants} className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-[var(--border-color)] pb-12">
+      <motion.header variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 border-b border-[var(--border-color)] pb-10 xl:pb-12">
         <div className="space-y-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
             <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center border border-[#FF5C3A]/10 shadow-inner">
               <Activity className="w-6 h-6 text-[#FF5C3A]" />
             </div>
-            <h1 className="text-5xl font-[950] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta">Consumo Vital</h1>
+            <h1 className="text-3xl md:text-4xl xl:text-5xl font-[950] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta">Consumo Vital</h1>
           </div>
           <p className="text-[11px] font-black tracking-[0.3em] text-[var(--text-muted)] uppercase opacity-60 italic">Monitor de Energía y Límites de Red</p>
         </div>
@@ -91,7 +91,7 @@ export default function UsagePage() {
       {stats && (
         <motion.div variants={itemVariants} className="space-y-12">
           {/* USAGE COMPONENT (Already highly stylized but can be improved in its own file if needed) */}
-          <div className="bg-[var(--bg-card)] rounded-[4rem] border border-[var(--border-color)] p-12 shadow-4xl relative overflow-hidden group">
+          <div className="bg-[var(--bg-card)] rounded-[2.5rem] xl:rounded-[4rem] border border-[var(--border-color)] p-6 md:p-8 xl:p-12 shadow-4xl relative overflow-hidden group">
              <div className="absolute top-0 right-0 p-12 opacity-5 translate-x-10 translate-y-[-10px] group-hover:scale-110 transition-transform duration-1000">
                 <Target size={200} strokeWidth={1} />
              </div>
@@ -104,7 +104,7 @@ export default function UsagePage() {
       {stats && stats.currentMonth.generationsUsed >= stats.currentMonth.generationsLimit * 0.8 && (
         <motion.div 
           variants={itemVariants}
-          className="bg-[var(--bg-card)] p-12 rounded-[4rem] border border-[var(--border-color)] shadow-4xl relative overflow-hidden group"
+          className="bg-[var(--bg-card)] p-6 md:p-8 xl:p-12 rounded-[2.5rem] xl:rounded-[4rem] border border-[var(--border-color)] shadow-4xl relative overflow-hidden group"
         >
            {/* GLOWING ORBS */}
            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#FF5C3A] blur-[100px] opacity-10 -translate-y-1/2 translate-x-1/4" />

@@ -10,6 +10,8 @@ import {
   ProductImage, 
   ProductBadge, 
   CoverImage, 
+  getCoverPresentation,
+  getVisibleSocialEntries,
   YouTubeIcon, 
   XIcon, 
   InstagramIcon, 
@@ -21,7 +23,7 @@ import {
 // ── Sub-componentes ──────────────────────────────────────────────────────────
 
 function ProbadorNav({ brand }: { brand: BrandData }) {
-  const entries = Object.entries(brand.social_links || {}).filter(([, url]) => !!url);
+  const entries = getVisibleSocialEntries(brand.social_links || {});
   const socialIcons: Record<string, React.ReactNode> = {
     instagram: <InstagramIcon className="w-3.5 h-3.5" />,
     facebook:  <FacebookIcon  className="w-3.5 h-3.5" />,
@@ -72,14 +74,12 @@ function ProbadorHero({ brand, onScrollDown, isPreview = false }: { brand: Brand
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
   const secondary = brand.social_links?._landing_secondary || primary;
   const hasCover = !!brand.cover_image_url;
-  const heroBg = brand.cover_bg_color || '#0f0f0f';
-  const overlayOpacity = brand.cover_overlay_opacity ?? 0.6;
+  const { backgroundColor: heroBg, imageOpacity } = getCoverPresentation(brand, '#0f0f0f');
   return (
     <section className={`relative ${isPreview ? 'py-8 md:py-12' : 'py-16 md:py-24'} px-6 text-center overflow-hidden`} style={{ backgroundColor: heroBg }}>
       {hasCover && (
-        <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" />
+        <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover" style={{ opacity: imageOpacity }} />
       )}
-      <div className="absolute inset-0 bg-black/50" style={{ opacity: overlayOpacity }} />
       <div className="relative z-10 max-w-2xl mx-auto text-white">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/20 bg-white/5 backdrop-blur-md mb-6 md:mb-8">
           <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
@@ -218,9 +218,9 @@ export function TemplateModerno({ brandSlug, brand, products, footerUrl, isPrevi
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-white ${brand.landing_font || 'font-jakarta'} overflow-x-hidden pb-32 ${isPreview ? 'p-0 h-auto' : ''}`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
+    <div className={`min-h-screen flex flex-col bg-white ${brand.landing_font || 'font-jakarta'} overflow-x-hidden ${isPreview ? 'p-0 h-auto' : ''}`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
       <ProbadorNav brand={brand} />
-      <ProbadorHero brand={brand} onScrollDown={() => document.getElementById('probador-products')?.scrollIntoView({ behavior: 'smooth' })} />
+      <ProbadorHero brand={brand} onScrollDown={() => document.getElementById('probador-products')?.scrollIntoView({ behavior: 'smooth' })} isPreview={isPreview} />
       <ProbadorTrustBar brand={brand} />
       <ProbadorProducts products={products} primaryColor={primary} ctaText={brand.cta_button_text} onProductClick={handleProductClick} selectedId={selectedId} />
       

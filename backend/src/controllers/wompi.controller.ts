@@ -56,6 +56,14 @@ export class WompiController {
       }
 
       if (brandId.startsWith('visitor_')) {
+        const { data: pendingRegistration } = await supabaseAdmin
+          .from('pending_registrations')
+          .select('email, reference, plan, amount, status')
+          .eq('reference', reference)
+          .maybeSingle();
+
+        const wasPending = pendingRegistration?.status === 'pending';
+
         const { error: updateError } = await supabaseAdmin
           .from('pending_registrations')
           .update({ 
@@ -66,6 +74,14 @@ export class WompiController {
           .eq('reference', reference);
 
         if (updateError) console.error('[Wompi] Error al marcar registro:', updateError.message);
+        if (!updateError && wasPending && pendingRegistration?.email && ['BASIC', 'PRO'].includes((pendingRegistration.plan || '').toUpperCase())) {
+          notificationService.sendCompleteRegistrationEmail({
+            email: pendingRegistration.email,
+            reference: pendingRegistration.reference,
+            plan: pendingRegistration.plan,
+            amount: pendingRegistration.amount,
+          }).catch(err => console.error('[Wompi] Error email registro pendiente:', err));
+        }
         res.status(200).json({ received: true });
         return;
       }

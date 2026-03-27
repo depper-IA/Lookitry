@@ -135,6 +135,52 @@ async function procesarEliminacionDefinitiva(): Promise<void> {
   }
 }
 
+export async function processPendingRegistrationReminders(now = new Date()): Promise<void> {
+  const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: pendings, error } = await supabaseAdmin
+    .from('pending_registrations')
+    .select('email, reference, plan, amount, status, created_at, reminder_sent_at')
+    .eq('status', 'paid')
+    .in('plan', ['BASIC', 'PRO'])
+    .is('reminder_sent_at', null)
+    .lte('created_at', cutoff);
+
+  if (error) {
+    console.error('[Pending Registration Job] Error consultando registros pendientes pagados:', error.message);
+    return;
+  }
+
+  if (!pendings || pendings.length === 0) {
+    console.log('[Pending Registration Job] No hay compras pagadas pendientes para recordar.');
+    return;
+  }
+
+  for (const pending of pendings) {
+    try {
+      await notificationService.sendCompleteRegistrationReminderEmail(pending as any);
+
+      const { error: updateError } = await supabaseAdmin
+        .from('pending_registrations')
+        .update({
+          reminder_sent_at: now.toISOString(),
+          updated_at: now.toISOString(),
+        })
+        .eq('reference', pending.reference)
+        .eq('status', 'paid')
+        .is('reminder_sent_at', null);
+
+      if (updateError) {
+        console.error(`[Pending Registration Job] Error marcando recordatorio enviado para ${pending.reference}:`, updateError.message);
+      } else {
+        console.log(`[Pending Registration Job] Recordatorio enviado para ${pending.reference}`);
+      }
+    } catch (jobError) {
+      console.error(`[Pending Registration Job] Error procesando ${pending.reference}:`, jobError);
+    }
+  }
+}
+
 /**
  * Elimina las imágenes de productos de una marca en MinIO.
  * Solo elimina imágenes alojadas en minio.wilkiedevs.com.
@@ -189,6 +235,16 @@ async function eliminarProductosMinIO(brandId: string): Promise<void> {
  * Se ejecuta todos los días a las 3:00 AM.
  */
 export function startCleanupJob() {
+  // Recordatorio de compras pagadas pendientes - minuto 20 de cada hora
+  cron.schedule('20 * * * *', async () => {
+    console.log('[Pending Registration Job] Verificando compras pagadas pendientes...');
+    try {
+      await processPendingRegistrationReminders();
+    } catch (error) {
+      console.error('[Pending Registration Job] Error enviando recordatorios:', error);
+    }
+  });
+
   // Procesar vencimientos de suscripciones (pasar a expiring_soon, expired o suspended) — 2:00 AM
   cron.schedule('0 2 * * *', async () => {
     console.log('[Subscription Job] Verificando vencimientos de estado...');

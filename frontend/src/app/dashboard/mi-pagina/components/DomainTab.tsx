@@ -93,7 +93,7 @@ export function DomainTab({ customDomain, setCustomDomain, brand, saving, handle
                 <code className="text-sm font-mono font-bold text-[#FF5C3A]">{FRONTEND_URL.replace('https://', '')}</code>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-100 dark:border-zinc-700">
+            <div className="flex items-start gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] p-4">
                <Info size={14} className="text-[var(--text-muted)] shrink-0 mt-0.5" />
                <p className="text-[10px] font-medium text-[var(--text-muted)] leading-relaxed">
                  Los cambios de DNS pueden tardar hasta 48 horas en propagarse por completo a nivel global.
