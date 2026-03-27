@@ -1,6 +1,19 @@
 import axios from 'axios';
 import { supabaseAdmin } from '../config/supabase';
 
+type PaypalOrderRecord = {
+  reference: string;
+  brand_id: string | null;
+  email: string | null;
+  plan: string;
+  months: number;
+  amount_cop: number;
+  trm: number;
+  amount_usd_expected: number;
+  order_id: string | null;
+  status: string | null;
+};
+
 export class PaypalService {
   convertCopToUsd(amountCOP: number, trm: number): number {
     const safeTrm = trm > 0 ? trm : 3900;
@@ -78,7 +91,13 @@ export class PaypalService {
    * @param returnUrl URL de retorno exitoso (opcional)
    * @param cancelUrl URL de cancelación (opcional)
    */
-  async createOrder(amountCOP: number, trm: number, reference: string, returnUrl?: string, cancelUrl?: string): Promise<string> {
+  async createOrder(
+    amountCOP: number,
+    trm: number,
+    reference: string,
+    returnUrl?: string,
+    cancelUrl?: string
+  ): Promise<{ checkoutUrl: string; orderId: string; amountUSD: number }> {
     const accessToken = await this.getAccessToken();
     const { sandbox } = await this.getActiveKeys();
     const baseUrl = sandbox ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
@@ -123,7 +142,11 @@ export class PaypalService {
     const approveLink = response.data.links.find((l: any) => l.rel === 'approve');
     if (!approveLink) throw new Error('No se pudo generar el link de aprobación de PayPal');
 
-    return approveLink.href;
+    return {
+      checkoutUrl: approveLink.href,
+      orderId: response.data.id,
+      amountUSD,
+    };
   }
 
   /**
@@ -167,6 +190,68 @@ export class PaypalService {
     );
 
     return response.data;
+  }
+
+  extractReference(source: any): string | null {
+    const purchaseUnit = source?.purchase_units?.[0];
+    return (
+      purchaseUnit?.custom_id ||
+      purchaseUnit?.invoice_id ||
+      purchaseUnit?.reference_id ||
+      source?.custom_id ||
+      source?.invoice_id ||
+      source?.supplementary_data?.related_ids?.order_id ||
+      null
+    );
+  }
+
+  extractAmountUsd(source: any): number | null {
+    const purchaseUnit = source?.purchase_units?.[0];
+    const captureAmount = purchaseUnit?.payments?.captures?.[0]?.amount?.value;
+    const orderAmount = purchaseUnit?.amount?.value;
+    const raw = captureAmount ?? orderAmount ?? source?.amount?.value;
+    const parsed = raw ? parseFloat(raw) : NaN;
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  async recordOrder(payload: PaypalOrderRecord): Promise<void> {
+    const { error } = await supabaseAdmin.from('paypal_orders').upsert(payload, {
+      onConflict: 'reference',
+    });
+
+    if (error) {
+      throw new Error(`No se pudo registrar la orden PayPal: ${error.message}`);
+    }
+  }
+
+  async getTrackedOrder(reference: string): Promise<PaypalOrderRecord | null> {
+    const { data, error } = await supabaseAdmin
+      .from('paypal_orders')
+      .select('reference, brand_id, email, plan, months, amount_cop, trm, amount_usd_expected, order_id, status')
+      .eq('reference', reference)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`No se pudo consultar paypal_orders: ${error.message}`);
+    }
+
+    return (data as PaypalOrderRecord | null) ?? null;
+  }
+
+  async markOrderStatus(reference: string, status: string, orderId?: string | null): Promise<void> {
+    const patch: Record<string, unknown> = { status };
+    if (orderId) {
+      patch.order_id = orderId;
+    }
+
+    const { error } = await supabaseAdmin
+      .from('paypal_orders')
+      .update(patch)
+      .eq('reference', reference);
+
+    if (error) {
+      throw new Error(`No se pudo actualizar paypal_orders: ${error.message}`);
+    }
   }
 
   /**
