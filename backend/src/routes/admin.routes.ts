@@ -118,6 +118,9 @@ router.delete('/feedback/:id', requirePermission('brands'), deleteFeedback);
 // Monitor de créditos OpenRouter
 router.get('/openrouter-credits', requirePermission('settings'), getOpenRouterCredits);
 
+// Estadísticas del sistema (RAM, Uptime)
+router.get('/system/stats', requirePermission('settings'), getSystemStats);
+
 // Historial de pagos global (Auditoría Marzo 2026)
 router.get('/revenue/payments', requirePermission('subscriptions'), getPayments);
 
