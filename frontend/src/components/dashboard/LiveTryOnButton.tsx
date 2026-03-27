@@ -2,9 +2,15 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import type { Brand } from '@/types';
 
-export function LiveTryOnButton() {
-  const { brand } = useAuth();
+interface LiveTryOnButtonProps {
+  brandOverride?: Brand | null;
+}
+
+export function LiveTryOnButton({ brandOverride = null }: LiveTryOnButtonProps) {
+  const { brand: authBrand } = useAuth();
+  const brand = brandOverride ?? authBrand;
   const [copied, setCopied] = useState(false);
 
   if (!brand?.slug) return null;

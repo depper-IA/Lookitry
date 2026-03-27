@@ -15,9 +15,11 @@ import { LookitryLogoText } from '@/components/mini-landing/shared';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, ChevronLeft, ChevronRight, LogOut, Building2 } from 'lucide-react';
 import { getProxiedUrl } from '@/utils/imageProxy';
+import type { Brand } from '@/types';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  brandOverride?: Brand | null;
 }
 
 const navigation = [
@@ -33,8 +35,9 @@ const navigation = [
   { name: 'Perfil',         href: '/dashboard/profile',      icon: ProfileIcon },
 ];
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout({ children, brandOverride = null }: DashboardLayoutProps) {
   const { brand, logout } = useAuth();
+  const currentBrand = brandOverride ?? brand;
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -54,10 +57,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     };
   }, [sidebarOpen]);
 
-  const showVerificationBanner = !verificationBannerDismissed && brand && !(brand as any).emailVerified;
+  const showVerificationBanner = !verificationBannerDismissed && currentBrand && !(currentBrand as any).emailVerified;
 
   const handleResendVerification = async () => {
-    if (!brand?.email) return;
+    if (!currentBrand?.email) return;
     setResendSending(true);
     try {
       await fetch(
@@ -65,7 +68,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: brand.email }),
+          body: JSON.stringify({ email: currentBrand.email }),
         }
       );
       setResendSent(true);
@@ -153,18 +156,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className={`p-4 flex-shrink-0 transition-all duration-300`}>
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 p-3 rounded-[2.5rem] bg-white/5 border border-white/5'} shadow-inner group/profile transition-all duration-300`}>
           <div className="w-11 h-11 rounded-2xl overflow-hidden flex items-center justify-center text-[13px] font-black text-white flex-shrink-0 bg-[#FF5C3A] shadow-lg group-hover/profile:scale-105 transition-all duration-500 border border-white/10">
-            {brand?.logo ? (
+            {currentBrand?.logo ? (
               <img 
-                src={getProxiedUrl(brand.logo)} 
-                alt={brand.name} 
+                src={getProxiedUrl(currentBrand.logo)} 
+                alt={currentBrand.name} 
                 className="w-full h-full object-contain bg-white/5 p-1"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
-                  (e.target as HTMLImageElement).parentElement!.innerHTML = brand?.name?.charAt(0)?.toUpperCase() ?? 'M';
+                  (e.target as HTMLImageElement).parentElement!.innerHTML = currentBrand?.name?.charAt(0)?.toUpperCase() ?? 'M';
                 }}
               />
             ) : (
-              brand?.name?.charAt(0)?.toUpperCase() ?? 'M'
+              currentBrand?.name?.charAt(0)?.toUpperCase() ?? 'M'
             )}
           </div>
           {!isCollapsed && (
@@ -174,11 +177,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 animate={{ opacity: 1 }}
                 className="flex-1 min-w-0"
               >
-                <p className="text-[12px] font-semibold text-white truncate leading-tight tracking-tight">{brand?.name}</p>
+                <p className="text-[12px] font-semibold text-white truncate leading-tight tracking-tight">{currentBrand?.name}</p>
                 <div className="flex items-center gap-1.5 mt-1">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <p className="text-[10px] truncate leading-none text-gray-500 font-bold uppercase tracking-tighter">
-                    Plan {brand?.plan}
+                    Plan {currentBrand?.plan}
                   </p>
                 </div>
               </motion.div>
@@ -242,7 +245,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </svg>
               </div>
               <p className="text-[13px] text-gray-300">
-                <span className="font-semibold text-white">Verifica tu cuenta:</span> Hemos enviado un correo a <span className="text-[#FF5C3A] font-medium">{brand?.email}</span>.{' '}
+                <span className="font-semibold text-white">Verifica tu cuenta:</span> Hemos enviado un correo a <span className="text-[#FF5C3A] font-medium">{currentBrand?.email}</span>.{' '}
                 {resendSent ? (
                   <span className="text-emerald-400 font-medium ml-1 inline-flex items-center gap-1">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
@@ -302,7 +305,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
           <div className="ml-auto flex items-center gap-2 md:gap-4">
             <div className="hidden md:block">
-              <LiveTryOnButton />
+              <LiveTryOnButton brandOverride={currentBrand} />
             </div>
             <SubscriptionBadge />
             <ThemeToggle />
