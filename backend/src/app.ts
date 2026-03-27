@@ -18,6 +18,8 @@ import trialRoutes from './routes/trial.routes';
 import couponsRoutes from './routes/coupons.routes';
 import embedRoutes from './routes/embed.routes';
 import imageRoutes from './routes/image.routes';
+import enterpriseRoutes from './routes/enterprise.routes';
+import { syncProductWebhook } from './controllers/enterprise.controller';
 import { getPublicPaymentSettings } from './controllers/paymentSettings.controller';
 import { getHealthStatus } from './controllers/health.controller';
 import { getTrialStatus } from './controllers/trialCampaign.controller';
@@ -145,6 +147,10 @@ app.use('/api/trial', trialRoutes);
 app.use('/api/admin/coupons', couponsRoutes);
 app.post('/api/coupons/redeem', redeemCoupon);
 app.post('/api/coupons/validate', validateCoupon);
+
+// Enterprise Sync — rutas de administración y webhook interno de n8n
+app.use('/api/admin/enterprise', enterpriseRoutes);
+app.post('/api/enterprise/sync-product', publicCors, syncProductWebhook);
 
 // Sitemap
 app.get('/api/sitemap/landings', async (_req, res) => {
