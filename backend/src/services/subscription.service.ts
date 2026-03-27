@@ -3,10 +3,10 @@ import { Brand, SubscriptionPayment, CreatePaymentDto } from '../types';
 
 /**
  * SubscriptionService
- * 
+ *
  * Servicio para gestionar suscripciones de marcas.
  * Maneja verificación de estado, renovaciones, suspensiones y cálculos de fechas.
- * 
+ *
  * Requirements: 11.1, 11.2, 11.3, 11.5, 11.6, 11.10
  */
 export class SubscriptionService {
@@ -135,10 +135,10 @@ export class SubscriptionService {
 
   /**
    * Calcula la fecha de vencimiento de una suscripción
-   * 
+   *
    * @param startDate - Fecha de inicio de la suscripción
    * @returns Fecha de vencimiento (+30 días desde la fecha de inicio)
-   * 
+   *
    * Requirement 11.2: Calcular fecha de vencimiento
    */
   calculateExpirationDate(startDate: Date, months: number = 1): Date {
@@ -149,13 +149,13 @@ export class SubscriptionService {
 
   /**
    * Renueva la suscripción de una marca por N meses
-   * 
+   *
    * @param brandId - ID de la marca
    * @param paymentData - Datos del pago realizado
    * @param months - Meses a activar (1, 3, 6 o 12)
    * @param plan - Plan a activar ('BASIC' | 'PRO'). Si se omite, mantiene el plan actual.
    * @returns Marca actualizada con nueva fecha de vencimiento
-   * 
+   *
    * Requirements: 11.6, 11.14
    */
   async renewSubscription(
@@ -234,31 +234,28 @@ export class SubscriptionService {
     // Actualizar plan si se especificó uno válido
     if (plan && ['BASIC', 'PRO', 'ENTERPRISE', 'TRIAL'].includes(plan.toUpperCase())) {
       const planUpper = plan.toUpperCase();
-      updateData.plan = planUpper === 'TRIAL' ? 'BASIC' : planUpper; // El plan base es BASIC
-      
+      updateData.plan = planUpper === 'TRIAL' ? 'BASIC' : planUpper;
+
       if (planUpper === 'TRIAL') {
-        // Buscar duración del trial en la campaña actual
-        const now = new Date().toISOString();
+        const nowIso = new Date().toISOString();
         const { data: campaign } = await supabaseAdmin
           .from('trial_campaigns')
           .select('trial_days')
           .eq('active', true)
-          .or(`ends_at.is.null,ends_at.gt.${now}`)
+          .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
-        
+
         const trialDays = campaign?.trial_days ?? 7;
         const trialEndDate = new Date();
         trialEndDate.setDate(trialEndDate.getDate() + trialDays);
-        
+
         updateData.trial_end_date = trialEndDate.toISOString();
         updateData.trial_payment_status = 'active';
-        // En trial, la suscripción pagada no empieza aún
-        updateData.subscription_status = 'active'; // Permitir acceso
+        updateData.subscription_status = 'active';
         updateData.subscription_end_date = trialEndDate.toISOString();
       } else {
-        // Limpiar trial al activar plan pagado
         updateData.trial_end_date = null;
         updateData.trial_payment_status = null;
       }
@@ -337,61 +334,63 @@ export class SubscriptionService {
 
     const now = new Date();
     const endDate = brand.subscription_end_date ? new Date(brand.subscription_end_date) : now;
-    // Días restantes calculados exactamente desde el fin actual.
-    const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+    const daysRemaining = Math.max(
+      0,
+      Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    );
 
-    // Días totales considerados para la prorrata: usar el ciclo del último pago si está disponible (en meses),
-    // o fallback de 30 días (período del plan).
-    // Esto evita que un subscription_start_date mal configurado reduzca totalDays a 1 y cause un crédito injusto.
     const { data: lastPayment } = await supabaseAdmin
       .from('subscription_payments')
       .select('amount, months_paid, notes')
       .eq('brand_id', brandId)
       .eq('status', 'completed')
-      .gt('months_paid', 0) // excluir pagos de solo landing page
-      .neq('payment_method', 'credit_proration') // excluir upgrades gratuitos previos
+      .gt('months_paid', 0)
+      .neq('payment_method', 'credit_proration')
       .order('payment_date', { ascending: false })
       .limit(1)
       .maybeSingle();
 
     const paymentMonths = lastPayment?.months_paid || 1;
-    const totalDays = Math.max(1, 30 * paymentMonths); // prorrateo basado en meses pagados
+    const totalDays = Math.max(1, 30 * paymentMonths);
     const effectiveDaysRemaining = Math.min(daysRemaining, totalDays);
 
-    // Usar el monto real del último pago; si no hay registro, usar el fallback del frontend
-    let currentPlanPriceTotal = lastPayment?.amount && lastPayment.amount > 0
-      ? lastPayment.amount
-      : currentPlanPriceTotalFallback;
+    let currentPlanPriceTotal =
+      lastPayment?.amount && lastPayment.amount > 0
+        ? lastPayment.amount
+        : currentPlanPriceTotalFallback;
 
-    // Si el último pago incluía mini-landing, restar su valor para no prorratear un pago único
     if (lastPayment?.notes?.includes('Incluye Landing Page')) {
       try {
         const { PaymentSettingsService } = require('./paymentSettings.service');
         const settingsService = new PaymentSettingsService();
         const settings = await settingsService.getSettings();
         const landingPrice = settings.landing_price || 650000;
-        
+
         const previousAmount = currentPlanPriceTotal;
         currentPlanPriceTotal = Math.max(0, currentPlanPriceTotal - landingPrice);
-        console.log(`[Proration] Ajustando monto por landing page: ${previousAmount} -> ${currentPlanPriceTotal} (Restado: ${landingPrice})`);
+        console.log(
+          `[Proration] Ajustando monto por landing page: ${previousAmount} -> ${currentPlanPriceTotal} (Restado: ${landingPrice})`
+        );
       } catch (err) {
         console.error('[Proration] Error al obtener precio de landing para ajuste:', err);
       }
     }
 
-    console.log(`[Proration] brandId=${brandId} lastPayment=${lastPayment?.amount} fallback=${currentPlanPriceTotalFallback} using=${currentPlanPriceTotal} totalDays=${totalDays} daysRemaining=${daysRemaining} effectiveDaysRemaining=${effectiveDaysRemaining}`);
+    console.log(
+      `[Proration] brandId=${brandId} lastPayment=${lastPayment?.amount} fallback=${currentPlanPriceTotalFallback} using=${currentPlanPriceTotal} totalDays=${totalDays} daysRemaining=${daysRemaining} effectiveDaysRemaining=${effectiveDaysRemaining}`
+    );
 
-    // Precio por día del plan actual (basado en lo que pagó realmente)
     const pricePerDay = currentPlanPriceTotal / totalDays;
-    const remainingPlanValue = Math.max(0, Math.min(currentPlanPriceTotal, Math.round(pricePerDay * effectiveDaysRemaining)));
+    const remainingPlanValue = Math.max(
+      0,
+      Math.min(currentPlanPriceTotal, Math.round(pricePerDay * effectiveDaysRemaining))
+    );
     const creditAmount = remainingPlanValue;
     const basePlanTotal = Math.round(newPlanTotal);
 
-    // Monto a cobrar: diferencia, mínimo 0 (hace downgrades gratis si el crédito excede)
     const amountToPay = Math.max(0, basePlanTotal - creditAmount);
     const remainingCredit = Math.max(0, creditAmount - basePlanTotal);
 
-    // Nueva fecha de fin base: hoy + meses nuevos
     const newEndDate = this.calculateExpirationDate(now, newMonths);
     const currentPlanLabel = brand.plan === 'PRO' ? 'Plan Pro' : 'Plan Básico';
 
@@ -419,11 +418,10 @@ export class SubscriptionService {
     creditAmount: number,
     newPlanTotal: number,
     reference: string,
-    forcedEndDate?: string // Opcional: permite al frontend enviar la fecha con días extra
+    forcedEndDate?: string
   ): Promise<Brand> {
     const now = new Date();
-    
-    // Si no viene fecha forzada (con días extra), calculamos la estándar
+
     let newEndDate: Date;
     if (forcedEndDate) {
       newEndDate = new Date(forcedEndDate);
@@ -445,9 +443,10 @@ export class SubscriptionService {
       .select()
       .single();
 
-    if (error || !updatedBrand) throw new Error('Error al aplicar cambio de plan: ' + error?.message);
+    if (error || !updatedBrand) {
+      throw new Error('Error al aplicar cambio de plan: ' + error?.message);
+    }
 
-    // Registrar en historial con monto $0 (crédito cubrió todo)
     await this.createPaymentRecord({
       brand_id: brandId,
       amount: 0,
@@ -464,10 +463,10 @@ export class SubscriptionService {
 
   /**
    * Suspende la suscripción de una marca
-   * 
+   *
    * @param brandId - ID de la marca
    * @returns Marca actualizada con estado suspended
-   * 
+   *
    * Requirement 11.3: Suspender marca por falta de pago
    */
   async suspendSubscription(brandId: string): Promise<Brand> {
@@ -489,10 +488,10 @@ export class SubscriptionService {
 
   /**
    * Calcula los días restantes de suscripción de una marca
-   * 
+   *
    * @param brandId - ID de la marca
    * @returns Número de días restantes (puede ser negativo si ya venció)
-   * 
+   *
    * Requirement 11.10: Mostrar días restantes en dashboard
    */
   async getDaysRemaining(brandId: string): Promise<number | null> {
@@ -516,10 +515,10 @@ export class SubscriptionService {
 
   /**
    * Obtiene las suscripciones que vencen en los próximos X días
-   * 
+   *
    * @param days - Número de días para filtrar (ej: 7 para suscripciones que vencen en 7 días)
    * @returns Lista de marcas cuyas suscripciones vencen en el período especificado
-   * 
+   *
    * Requirement 11.5: Identificar suscripciones por vencer para enviar recordatorios
    */
   async getExpiringSubscriptions(days: number): Promise<Brand[]> {
@@ -598,7 +597,6 @@ export class SubscriptionService {
    * @returns Marca actualizada con estado active
    */
   async reactivateSubscription(brandId: string): Promise<Brand> {
-    // Obtener datos actuales de la marca para verificar estado de la landing
     const { data: brand, error: fetchError } = await supabaseAdmin
       .from('brands')
       .select('id, landing_suspended_at, has_landing_page')
@@ -609,12 +607,10 @@ export class SubscriptionService {
       throw new Error('Marca no encontrada: ' + fetchError?.message);
     }
 
-    // Determinar si se debe restaurar la mini-landing
     let restaurarLanding = false;
     if (brand.landing_suspended_at) {
       const suspendidaHace = Date.now() - new Date(brand.landing_suspended_at).getTime();
       const diasSuspendida = suspendidaHace / (1000 * 60 * 60 * 24);
-      // Solo restaurar si han pasado menos de 90 días desde la suspensión
       if (diasSuspendida < 90) {
         restaurarLanding = true;
       }
@@ -647,9 +643,9 @@ export class SubscriptionService {
   /**
    * Actualiza el estado de suscripciones basado en fechas de vencimiento
    * Este método debe ser llamado por un job diario
-   * 
+   *
    * @returns Resumen de actualizaciones realizadas
-   * 
+   *
    * Requirement 11.3: Cambiar estado automáticamente al vencer
    */
   async updateSubscriptionStatuses(): Promise<{
@@ -661,7 +657,6 @@ export class SubscriptionService {
     const sevenDaysFromNow = new Date();
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
 
-    // Marcar como expired las que vencieron hoy o antes
     const { data: expiredBrands } = await supabaseAdmin
       .from('brands')
       .update({ subscription_status: 'expired' })
@@ -669,7 +664,6 @@ export class SubscriptionService {
       .in('subscription_status', ['active', 'expiring_soon'])
       .select();
 
-    // Marcar como expiring_soon las que vencen en menos de 7 días
     const { data: expiringSoonBrands } = await supabaseAdmin
       .from('brands')
       .update({ subscription_status: 'expiring_soon' })
@@ -678,7 +672,6 @@ export class SubscriptionService {
       .eq('subscription_status', 'active')
       .select();
 
-    // Suspender marcas con suscripción vencida (opcional, puede hacerse manualmente)
     const { data: suspendedBrands } = await supabaseAdmin
       .from('brands')
       .update({ subscription_status: 'suspended' })
@@ -694,17 +687,15 @@ export class SubscriptionService {
 
   /**
    * Crea un registro de pago en el historial
-   * 
+   *
    * @param paymentData - Datos del pago
    * @returns Registro de pago creado
-   * 
+   *
    * Requirement 11.14: Registrar historial de pagos
    */
   private async createPaymentRecord(
     paymentData: CreatePaymentDto
   ): Promise<SubscriptionPayment> {
-    // Idempotencia: si ya existe un pago con la misma reference, no lo duplicamos.
-    // Nota: la columna `reference` existe en el esquema real usado por el backend (CreatePaymentDto la incluye).
     if (paymentData.reference) {
       try {
         const { data: existing } = await supabaseAdmin
@@ -736,10 +727,10 @@ export class SubscriptionService {
 
   /**
    * Obtiene el historial de pagos de una marca
-   * 
+   *
    * @param brandId - ID de la marca
    * @returns Lista de pagos ordenados por fecha descendente
-   * 
+   *
    * Requirement 11.14: Mostrar historial de pagos
    */
   async getPaymentHistory(brandId: string): Promise<SubscriptionPayment[]> {
@@ -759,14 +750,13 @@ export class SubscriptionService {
   /**
    * Purga marcas suspendidas hace más de 90 días.
    * Elimina datos de la marca pero mantiene registros de pagos para auditoría.
-   * 
+   *
    * Requirements: 11.12, 11.13
    */
   async purgeExpiredSuspendedBrands(): Promise<{ purged: number; errors: number }> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - 90);
 
-    // Buscar marcas suspendidas cuya suscripción venció hace más de 90 días
     const { data: brandsToPurge, error: fetchError } = await supabaseAdmin
       .from('brands')
       .select('id, name, email')
@@ -782,7 +772,6 @@ export class SubscriptionService {
 
     for (const brand of brandsToPurge) {
       try {
-        // Soft-delete: marcar como eliminada en lugar de borrar físicamente
         const { error } = await supabaseAdmin
           .from('brands')
           .update({

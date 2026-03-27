@@ -29,7 +29,7 @@ interface PricingSettings {
 // ── Constantes ────────────────────────────────────────────────────────────────
 
 // Fallback estático — se sobreescribe con datos dinámicos de la API
-const PLAN_BASE_FALLBACK: Record<'BASIC' | 'PRO', number> = { BASIC: 150000, PRO: 250000 };
+const PLAN_BASE_FALLBACK: Record<'BASIC' | 'PRO', number> = { BASIC: 180000, PRO: 350000 };
 
 const DISCOUNTS_FALLBACK: { months: number; pct: number; label: string }[] = [
   { months: 1,  pct: 0,  label: '1 mes' },
@@ -49,7 +49,8 @@ const PLAN_FEATURES: Record<PlanKey, string[]> = {
   ],
   PRO: [
     'Hasta 15 productos en el probador',
-    '1.200 generaciones por mes',
+    '1.000 generaciones por mes',
+    'Plugin WooCommerce',
     'Branding avanzado y personalización completa',
     'Templates Minimal, Modern y Bold',
     'Modificación del slug del probador',
@@ -174,7 +175,7 @@ function CheckoutContent() {
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
         },
       }).then(r => r.ok ? r.json() : null),
-      fetch(`${API_URL}/api/promotions`).then(r => r.ok ? r.json() : null),
+      fetch('/api/promotions').then(r => r.ok ? r.json() : null),
     ]).then(([paySettings, pricingRows, promosRes]) => {
       if (paySettings) {
         setPricing(paySettings);

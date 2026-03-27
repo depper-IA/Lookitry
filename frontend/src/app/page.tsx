@@ -77,7 +77,7 @@ export default async function HomePage() {
             price: String(pricing.pro.precio_mensual_cop),
             priceCurrency: 'COP',
             priceValidUntil: '2026-12-31',
-            description: '15 productos, 1200 generaciones/mes, templates avanzados, soporte prioritario',
+            description: `15 productos, ${pricing.pro.generaciones_mensuales.toLocaleString('es-CO')} generaciones/mes, templates avanzados y soporte prioritario`,
             eligibleRegion: ['CO', 'MX', 'AR', 'CL', 'PE', 'VE'],
             availability: 'https://schema.org/InStock',
             url: `${BASE_URL}/planes`,

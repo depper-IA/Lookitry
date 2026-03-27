@@ -51,3 +51,61 @@ BEGIN
   WHERE id = p_brand_id;
 END;
 $$;
+
+CREATE OR REPLACE FUNCTION apply_addon_credit_purchase(
+  p_brand_id uuid,
+  p_reference text,
+  p_credits integer,
+  p_amount numeric,
+  p_currency text,
+  p_payment_method text,
+  p_transaction_id text,
+  p_notes text
+)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM subscription_payments
+    WHERE reference = p_reference
+  ) THEN
+    RETURN false;
+  END IF;
+
+  UPDATE brands
+  SET
+    extra_credits_balance = extra_credits_balance + p_credits,
+    updated_at = now()
+  WHERE id = p_brand_id;
+
+  INSERT INTO subscription_payments (
+    brand_id,
+    amount,
+    currency,
+    payment_date,
+    payment_method,
+    status,
+    months_paid,
+    reference,
+    transaction_id,
+    notes
+  )
+  VALUES (
+    p_brand_id,
+    p_amount,
+    p_currency,
+    now(),
+    p_payment_method,
+    'completed',
+    0,
+    p_reference,
+    p_transaction_id,
+    p_notes
+  );
+
+  RETURN true;
+END;
+$$;

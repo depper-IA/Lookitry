@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { SuspensionModal } from '@/components/dashboard/SuspensionModal';
@@ -18,15 +18,18 @@ export default function DashboardLayoutWrapper({
 }) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [brandData, setBrandData] = useState<Brand | null>(null);
   const [checkingSubscription, setCheckingSubscription] = useState(true);
   const [showProBanner, setShowProBanner] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      const currentPath = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`);
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, pathname, router, searchParams]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -43,9 +46,11 @@ export default function DashboardLayoutWrapper({
 
           // Detectar upgrade a PRO
           const prevPlan = localStorage.getItem('brand_plan');
-          if (brand.plan === 'PRO' && prevPlan !== 'PRO') {
-            const dismissed = sessionStorage.getItem('pro_upgrade_banner_dismissed');
-            if (!dismissed) setShowProBanner(true);
+          const proBannerSeenKey = `pro_upgrade_banner_seen_${brand.id}`;
+          const alreadySeenProBanner = localStorage.getItem(proBannerSeenKey) === '1';
+
+          if (brand.plan === 'PRO' && prevPlan !== 'PRO' && !alreadySeenProBanner) {
+            setShowProBanner(true);
           }
           localStorage.setItem('brand_plan', brand.plan);
         } catch (error) {
@@ -113,7 +118,11 @@ export default function DashboardLayoutWrapper({
   return (
     <>
       {showProBanner && brandData && (
-        <ProUpgradeBanner brandName={brandData.name} />
+        <ProUpgradeBanner
+          brandId={brandData.id}
+          brandName={brandData.name}
+          onClose={() => setShowProBanner(false)}
+        />
       )}
       {/* El banner de verificación de email ahora vive dentro de DashboardLayout
           para respetar el padding del sidebar y no solaparse con el header sticky */}

@@ -11,13 +11,10 @@ export const revalidate = 10;
 
 export async function GET() {
   try {
-    const now = new Date().toISOString();
     const url =
       `${SUPABASE_URL}/rest/v1/promotions` +
       `?select=*` +
       `&active=eq.true` +
-      `&or=(starts_at.is.null,starts_at.lte.${now})` +
-      `&or=(ends_at.is.null,ends_at.gte.${now})` +
       `&order=created_at.desc`;
 
     const res = await fetch(url, {
@@ -29,7 +26,16 @@ export async function GET() {
     });
 
     if (!res.ok) throw new Error(`Supabase ${res.status}`);
-    const data = await res.json();
+    const raw = await res.json();
+    const now = new Date();
+    const data = Array.isArray(raw)
+      ? raw.filter((promo) => {
+          const startsOk = !promo?.starts_at || new Date(promo.starts_at) <= now;
+          const endsOk = !promo?.ends_at || new Date(promo.ends_at) >= now;
+          return startsOk && endsOk;
+        })
+      : [];
+
     return NextResponse.json({ ok: true, data });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Error desconocido';

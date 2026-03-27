@@ -6,9 +6,7 @@ import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import type { PricingConfig, PlanPriceOverride } from '@/lib/pricing';
 import { precioConDescuento } from '@/lib/pricing';
-import { formatCurrency, formatPrice as formatPriceUtil } from '@/utils/currency';
-
-// ── Iconos ────────────────────────────────────────────────────────────────────
+import { formatPrice as formatPriceUtil } from '@/utils/currency';
 
 function IconCheck() {
   return (
@@ -50,14 +48,6 @@ function IconArrow() {
   );
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatCOP(n: number) {
-  return '$' + n.toLocaleString('es-CO');
-}
-
-// ── Componente ────────────────────────────────────────────────────────────────
-
 interface Props {
   pricing: PricingConfig;
   overrides?: PlanPriceOverride[];
@@ -69,7 +59,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
   const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
   const [trm, setTrm] = useState(pricing.meta?.trm_referencia ?? 3700);
 
-  const { basic, pro, enterprise, descuentos_duracion, meta } = pricing;
+  const { basic, pro, enterprise, descuentos_duracion } = pricing;
 
   useEffect(() => {
     const saved = localStorage.getItem('currency') as 'COP' | 'USD';
@@ -96,36 +86,32 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
     return () => window.removeEventListener('currencyChange', handleCurrencyChange);
   }, []);
 
-  const formatPrice = (cop: number) => {
-    return formatPriceUtil(cop, currency, trm);
-  };
+  const formatPrice = (cop: number) => formatPriceUtil(cop, currency, trm);
 
-  // Override de precio por plan
   const basicOverride = overrides.find(o => o.plan === 'BASIC');
-  const proOverride   = overrides.find(o => o.plan === 'PRO');
+  const proOverride = overrides.find(o => o.plan === 'PRO');
 
-  // Duraciones con descuentos desde config
   const DURATIONS = [
-    { months: 1,  label: '1 mes',    pct: descuentos_duracion.meses_1  },
-    { months: 3,  label: '3 meses',  pct: descuentos_duracion.meses_3  },
-    { months: 6,  label: '6 meses',  pct: descuentos_duracion.meses_6  },
+    { months: 1, label: '1 mes', pct: descuentos_duracion.meses_1 },
+    { months: 3, label: '3 meses', pct: descuentos_duracion.meses_3 },
+    { months: 6, label: '6 meses', pct: descuentos_duracion.meses_6 },
     { months: 12, label: '12 meses', pct: descuentos_duracion.meses_12 },
   ];
 
   const duration = DURATIONS.find(d => d.months === selectedMonths)!;
 
-  // Precios calculados dinámicamente (con override si aplica)
-  const basicBasePrice    = basicOverride ? basicOverride.override_price : basic.precio_mensual_cop;
-  const basicMonthlyPrice = basicOverride ? basicOverride.override_price : precioConDescuento(basic.precio_mensual_cop, selectedMonths, descuentos_duracion);
-  const basicTotalPrice   = basicMonthlyPrice * selectedMonths;
+  const basicMonthlyPrice = basicOverride
+    ? basicOverride.override_price
+    : precioConDescuento(basic.precio_mensual_cop, selectedMonths, descuentos_duracion);
+  const basicTotalPrice = basicMonthlyPrice * selectedMonths;
   const basicOriginalTotal = (basicOverride ? basicOverride.original_price : basic.precio_mensual_cop) * selectedMonths;
 
-  const proBasePrice    = proOverride ? proOverride.override_price : pro.precio_mensual_cop;
-  const proMonthlyPrice = proOverride ? proOverride.override_price : precioConDescuento(pro.precio_mensual_cop, selectedMonths, descuentos_duracion);
-  const proTotalPrice   = proMonthlyPrice * selectedMonths;
+  const proMonthlyPrice = proOverride
+    ? proOverride.override_price
+    : precioConDescuento(pro.precio_mensual_cop, selectedMonths, descuentos_duracion);
+  const proTotalPrice = proMonthlyPrice * selectedMonths;
   const proOriginalTotal = (proOverride ? proOverride.original_price : pro.precio_mensual_cop) * selectedMonths;
 
-  // Tabla comparativa generada desde features de ambos planes
   const allFeatures = Array.from(new Set([
     ...basic.features,
     ...(basic.features_excluidas ?? []),
@@ -133,13 +119,11 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
 
   return (
     <main className="min-h-screen bg-[#0a0a0a]">
-
       <LandingNav
-        ctaHref={`/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`}
+        ctaHref={`/checkout?plan=BASIC&months=${selectedMonths}`}
         ctaLabel="Contratar ahora"
       />
 
-      {/* Hero */}
       <section className="bg-[#0a0a0a] pt-14 pb-10 px-6 md:px-8 text-center">
         <div className="max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-[#1a1a1a] border border-[#333] text-[#FF5C3A] text-[11px] font-medium tracking-widest uppercase px-3 py-1.5 rounded-full mb-6">
@@ -156,7 +140,6 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
         </div>
       </section>
 
-      {/* Selector de duración */}
       <section className="pt-8 pb-2 px-6 md:px-8">
         <div className="flex justify-center">
           <div className="inline-flex bg-[#141414] border border-[#2a2a2a] rounded-xl p-1 gap-1">
@@ -165,9 +148,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                 key={d.months}
                 onClick={() => setSelectedMonths(d.months)}
                 className={`relative px-4 py-2 rounded-lg text-[13px] font-medium transition-all ${
-                  selectedMonths === d.months
-                    ? 'bg-[#1f1f1f] text-white shadow-sm'
-                    : 'text-[#555] hover:text-[#888]'
+                  selectedMonths === d.months ? 'bg-[#1f1f1f] text-white shadow-sm' : 'text-[#555] hover:text-[#888]'
                 }`}
               >
                 {d.label}
@@ -191,13 +172,10 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
         )}
       </section>
 
-      {/* Cards de planes */}
       <section className="py-10 px-6 md:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-
-            {/* Plan Básico */}
-            <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-6 md:p-7">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 xl:gap-8 items-stretch">
+            <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-6 md:p-7 min-h-[700px] flex flex-col">
               <div className="font-syne font-bold text-lg text-white mb-1">Básico</div>
               <p className="text-[13px] text-[#555] mb-5">{basic.subtitulo}</p>
 
@@ -229,18 +207,16 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                   {duration.pct > 0 && <span className="ml-1 line-through text-[#333]">{formatPrice(basicOriginalTotal)}</span>}
                 </p>
               )}
-              <p className="text-[12px] text-[#444] mb-6">
-                Pago directo — activación inmediata
-              </p>
+              <p className="text-[12px] text-[#444] mb-6 min-h-[40px]">Pago directo — activación inmediata</p>
 
               <button
-                onClick={() => router.push(`/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`)}
+                onClick={() => router.push(`/checkout?plan=BASIC&months=${selectedMonths}`)}
                 className="block w-full text-center py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-medium rounded-lg transition-colors mb-6"
               >
                 {basic.boton_texto_sin_trial ?? 'Contratar plan Básico ahora'}
               </button>
 
-              <ul className="flex flex-col gap-2.5">
+              <ul className="flex flex-col gap-2.5 flex-1">
                 {basic.features.map(f => (
                   <li key={f} className="flex items-center gap-2.5 text-[13px]">
                     <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(255,92,58,0.13)]">
@@ -260,8 +236,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
               </ul>
             </div>
 
-            {/* Plan Pro */}
-            <div className="bg-[#141414] border border-[#FF5C3A] rounded-xl p-6 md:p-7 relative">
+            <div className="bg-[#141414] border border-[#FF5C3A] rounded-xl p-6 md:p-7 relative min-h-[700px] flex flex-col">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#FF5C3A] text-white text-[10px] font-semibold tracking-widest uppercase px-3 py-1 rounded-full whitespace-nowrap">
                 Más popular
               </div>
@@ -296,16 +271,16 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                   {duration.pct > 0 && <span className="ml-1 line-through text-[#333]">{formatPrice(proOriginalTotal)}</span>}
                 </p>
               )}
-              <p className="text-[12px] text-[#444] mb-6">Contratación directa — sin período de prueba</p>
+              <p className="text-[12px] text-[#444] mb-6 min-h-[40px]">Contratación directa — sin período de prueba</p>
 
               <button
-                onClick={() => router.push(`/checkout?plan=PRO&amount=${proTotalPrice}&months=${selectedMonths}`)}
+                onClick={() => router.push(`/checkout?plan=PRO&months=${selectedMonths}`)}
                 className="block w-full text-center py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-medium rounded-lg transition-colors mb-6"
               >
                 {pro.boton_texto}
               </button>
 
-              <ul className="flex flex-col gap-2.5">
+              <ul className="flex flex-col gap-2.5 flex-1">
                 {pro.features.map(f => (
                   <li key={f} className="flex items-center gap-2.5 text-[13px]">
                     <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(255,92,58,0.13)]">
@@ -317,8 +292,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
               </ul>
             </div>
 
-            {/* Plan Enterprise */}
-            <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-6 md:p-7 relative">
+            <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-6 md:p-7 relative min-h-[700px] flex flex-col">
               <div className="font-syne font-bold text-lg text-white mb-1">Enterprise</div>
               <p className="text-[13px] text-[#555] mb-5">{enterprise.subtitulo}</p>
 
@@ -326,11 +300,11 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
               <div className="font-syne font-extrabold text-[28px] text-white tracking-tight mb-0.5 mt-2">
                 Personalizado
               </div>
-              <p className="text-[12px] text-[#444] mb-1">Base + Excedentes variables</p>
-              <p className="text-[12px] text-[#444] mb-6">Onboarding consultivo y SLA &lt; 5s</p>
+              <p className="text-[12px] text-[#444] mb-1 min-h-[20px]">Base + excedentes variables</p>
+              <p className="text-[12px] text-[#444] mb-6 min-h-[40px]">Onboarding consultivo y SLA &lt; 5s</p>
 
               <a
-                href="https://wa.me/573105436281?text=Hola,%20me%20interesa%20conocer%20m%C3%A1s%20sobre%20el%20Plan%20Enterprise%20de%20Lookitry."
+                href="https://wa.me/573105436281?text=Hola,%20me%20interesa%20conocer%20más%20sobre%20el%20Plan%20Enterprise%20de%20Lookitry."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full text-center py-2.5 bg-white hover:bg-gray-200 text-black text-[13px] font-medium rounded-lg transition-colors mb-6 mt-4"
@@ -338,7 +312,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                 {enterprise.boton_texto}
               </a>
 
-              <ul className="flex flex-col gap-2.5">
+              <ul className="flex flex-col gap-2.5 flex-1">
                 {enterprise.features.map(f => (
                   <li key={f} className="flex items-center gap-2.5 text-[13px]">
                     <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(255,255,255,0.13)]">
@@ -349,7 +323,6 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                 ))}
               </ul>
             </div>
-
           </div>
 
           <p className="text-center text-[12px] text-[#333] mt-5">
@@ -358,7 +331,6 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
         </div>
       </section>
 
-      {/* Tabla comparativa */}
       <section className="py-14 px-6 md:px-8 bg-[#0a0a0a] border-t border-[#1a1a1a]">
         <div className="max-w-5xl mx-auto">
           <h2 className="font-syne font-bold text-[26px] text-white text-center mb-8">
@@ -375,7 +347,6 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1f1f1f]">
-                {/* Filas de límites */}
                 <tr className="hover:bg-[#1a1a1a] transition-colors">
                   <td className="px-5 py-3 text-[#777]">Productos en el probador</td>
                   <td className="px-5 py-3 text-center"><span className="font-medium text-[#888]">{basic.productos_max}</span></td>
@@ -388,12 +359,16 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                   <td className="px-5 py-3 text-center"><span className="font-medium text-[#FF5C3A]">{pro.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
                   <td className="px-5 py-3 text-center"><span className="font-medium text-white">{enterprise.generaciones_mensuales.toLocaleString('es-CO')}+</span></td>
                 </tr>
-                {/* Filas de features */}
                 {allFeatures.map(feature => {
-                  if (feature.includes("productos en el probador") || feature.includes("generaciones por mes") || feature.includes("Volumen a medida") || feature.includes("+50 productos")) return null;
-                  const inBasic = basic.features.includes(feature) || basic.features_excluidas?.includes(feature) === false;
-                  const inPro   = pro.features.includes(feature) || pro.features_excluidas?.includes(feature) === false;
-                  const inEnterprise = enterprise.features.includes(feature) || inPro; // Enterprise inherits Pro features conceptually
+                  if (
+                    feature.includes('productos en el probador') ||
+                    feature.includes('generaciones por mes') ||
+                    feature.includes('Volumen a medida') ||
+                    feature.includes('+50 productos')
+                  ) return null;
+
+                  const inEnterprise = enterprise.features.includes(feature) || pro.features.includes(feature);
+
                   return (
                     <tr key={feature} className="hover:bg-[#1a1a1a] transition-colors">
                       <td className="px-5 py-3 text-[#777]">{feature}</td>
@@ -409,10 +384,11 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
         </div>
       </section>
 
-      {/* CTA final */}
       <section className="py-16 md:py-20 px-6 md:px-8 bg-[#0a0a0a] text-center relative overflow-hidden">
-        <div className="absolute pointer-events-none"
-          style={{ width: '500px', height: '300px', background: 'radial-gradient(ellipse, rgba(255,92,58,0.06) 0%, transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }} />
+        <div
+          className="absolute pointer-events-none"
+          style={{ width: '500px', height: '300px', background: 'radial-gradient(ellipse, rgba(255,92,58,0.06) 0%, transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}
+        />
         <div className="relative z-10 max-w-xl mx-auto">
           <h2 className="font-syne font-extrabold text-[32px] text-white tracking-tight mb-3">
             Empieza hoy
@@ -422,13 +398,13 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
           </p>
           <div className="flex gap-3 justify-center flex-wrap">
             <button
-              onClick={() => router.push(`/checkout?plan=BASIC&amount=${basicTotalPrice}&months=${selectedMonths}`)}
+              onClick={() => router.push(`/checkout?plan=BASIC&months=${selectedMonths}`)}
               className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[14px] font-medium px-7 py-3 rounded-lg transition-colors flex items-center gap-2"
             >
               Contratar plan Básico ahora <IconArrow />
             </button>
             <button
-              onClick={() => router.push(`/checkout?plan=PRO&amount=${proTotalPrice}&months=${selectedMonths}`)}
+              onClick={() => router.push(`/checkout?plan=PRO&months=${selectedMonths}`)}
               className="text-[#aaa] hover:text-white text-[14px] px-7 py-3 rounded-lg border border-[#333] hover:border-[#555] transition-colors"
             >
               {pro.boton_texto}
@@ -438,7 +414,6 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
       </section>
 
       <LandingFooter />
-
     </main>
   );
 }

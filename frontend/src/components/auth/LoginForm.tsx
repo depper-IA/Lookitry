@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -26,9 +27,11 @@ function EyeOffIcon() {
 
 export default function LoginForm() {
   const { login, isLoading, error } = useAuth();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -45,7 +48,7 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    try { await login(formData); } catch {}
+    try { await login(formData, redirectTo); } catch {}
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,7 +117,7 @@ export default function LoginForm() {
                 <label htmlFor="password" className="block text-[13px] font-medium text-[#888]">
                   Contraseña
                 </label>
-                <Link href="/auth/forgot-password" className="text-[12px] text-[#555] hover:text-[#FF5C3A] transition-colors">
+                <Link href={`/auth/forgot-password${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[12px] text-[#555] hover:text-[#FF5C3A] transition-colors">
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
@@ -157,7 +160,7 @@ export default function LoginForm() {
 
           <p className="text-center text-[13px] text-[#444] mt-6">
             ¿No tienes cuenta?{' '}
-            <Link href="/register" className="text-[#FF5C3A] hover:text-[#e84d2c] transition-colors">
+            <Link href={`/register${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[#FF5C3A] hover:text-[#e84d2c] transition-colors">
               Regístrate aquí
             </Link>
           </p>

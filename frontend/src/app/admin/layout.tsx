@@ -38,6 +38,7 @@ const adminNav = [
     label: 'Contenido',
     items: [
       { href: '/admin/mini-landings', label: 'Mini-Landings', icon: MiniLandingIcon },
+      { href: '/admin/blog',          label: 'Blog',          icon: BlogIcon },
     ],
   },
   {
@@ -379,6 +380,7 @@ function PageTitle({ pathname }: { pathname: string }) {
     '/admin/analytics':            'Analytics',
     '/admin/conversion':           'Conversión',
     '/admin/mini-landings':        'Mini-Landings',
+    '/admin/blog':                 'Blog',
     '/admin/marketing/promotions': 'Promociones',
     '/admin/notifications':        'Notificaciones',
     '/admin/woocommerce':          'WooCommerce',
@@ -442,4 +444,7 @@ function EnterpriseIcon({ className }: { className?: string }) {
 }
 function WooIcon({ className }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M6 5h12l-1 5H7L6 5z" /><path strokeLinecap="round" strokeLinejoin="round" d="M8 10v7a2 2 0 002 2h4a2 2 0 002-2v-7" /><circle cx="10" cy="19" r="1.5" /><circle cx="14" cy="19" r="1.5" /></svg>;
+}
+function BlogIcon({ className }: { className?: string }) {
+  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z" /><path strokeLinecap="round" strokeLinejoin="round" d="M14 3v5h5" /><path strokeLinecap="round" strokeLinejoin="round" d="M16 13H8" /><path strokeLinecap="round" strokeLinejoin="round" d="M16 17H8" /><path strokeLinecap="round" strokeLinejoin="round" d="M10 9H8" /></svg>;
 }

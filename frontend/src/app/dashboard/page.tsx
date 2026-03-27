@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usageService } from '@/services/usage.service';
 import { analyticsService } from '@/services/analytics.service';
 import { UsageStats } from '@/components/dashboard/UsageStats';
+import { CreditUsageAlert } from '@/components/dashboard/CreditUsageAlert';
 import { Spinner } from '@/components/ui/Spinner';
 import { 
   Sparkles, 
@@ -111,7 +112,12 @@ export default function DashboardPage() {
                   Ver Detalles <ArrowRight size={10} className="inline ml-1" />
                 </Link>
              </div>
-             {usage && <UsageStats stats={usage} />}
+             {usage && (
+               <div className="space-y-4 md:space-y-6">
+                 <CreditUsageAlert plan={(brand?.plan as any) || 'BASIC'} usage={usage} />
+                 <UsageStats stats={usage} />
+               </div>
+             )}
           </section>
 
           {/* TARJETAS DE ANALYTICS RÁPIDAS */}

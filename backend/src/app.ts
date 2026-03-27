@@ -1,6 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+
+// Importación de rutas
 import authRoutes from './routes/auth.routes';
 import brandsRoutes from './routes/brands.routes';
 import usageRoutes from './routes/usage.routes';
@@ -20,31 +24,36 @@ import couponsRoutes from './routes/coupons.routes';
 import embedRoutes from './routes/embed.routes';
 import imageRoutes from './routes/image.routes';
 import enterpriseRoutes from './routes/enterprise.routes';
+import blogRoutes from './routes/blog.routes';
+
+// Importación de controladores y middlewares
 import { syncProductWebhook } from './controllers/enterprise.controller';
 import { getPublicPaymentSettings } from './controllers/paymentSettings.controller';
 import { getHealthStatus } from './controllers/health.controller';
-import { getTrialStatus } from './controllers/trialCampaign.controller';
 import { uploadImage, uploadSelfie, multerMemory } from './controllers/upload.controller';
 import { redeemCoupon, validateCoupon } from './controllers/coupons.controller';
 import { authMiddleware } from './middleware/auth';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { globalRateLimiter } from './middleware/rateLimiter';
-import helmet from 'helmet';
-import cookieParser from 'cookie-parser';
+
+// Importación de servicios
 import { systemService } from './services/system.service';
+import { addonCreditsService } from './services/addonCredits.service';
 
 // Cargar variables de entorno
 dotenv.config();
 
+addonCreditsService.ensureDefaultPackages().catch((err) => {
+  console.error('[AddonCredits] Error inicializando paquetes por defecto:', err);
+});
+
 const app = express();
 
-// Iniciar monitoreo de RAM cada 10 minutos (600,000ms)
-// Operación extremadamente ligera, no consume CPU apreciable.
+// Iniciar monitoreo de RAM cada 10 minutos
 setInterval(() => {
   systemService.checkRamThreshold().catch(err => console.error('[System] Error in RAM check interval:', err));
 }, 10 * 60 * 1000);
 
-// Necesario para que express-rate-limit funcione correctamente detrás de Traefik/Nginx
 app.set('trust proxy', 1);
 
 // ── Seguridad: Helmet ────────────────────────────────────────────────────────
@@ -66,30 +75,20 @@ app.use(helmet({
   },
 }));
 
-// ── Cookie Parser ────────────────────────────────────────────────────────────
 app.use(cookieParser());
 
-// ── Parsers (DEBEN IR ANTES DE LAS RUTAS) ───────────────────────────────────
-// Webhook de Wompi necesita raw body para verificar firma HMAC
+// ── Parsers ──────────────────────────────────────────────────────────────────
 app.use('/api/payments/wompi/webhook', express.raw({ type: 'application/json' }));
-
-// Aumentar límite de tamaño de payload para imágenes base64
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ── Rutas Públicas (CORS Permisivo) ──────────────────────────────────────────
+// ── CORS Config ──────────────────────────────────────────────────────────────
 const publicCors = cors({ 
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'x-store-domain'],
   credentials: false
 });
-
-app.use('/api/pruebalo', publicCors, pruebaloRoutes);
-app.use('/api/embed', publicCors, embedRoutes);
-
-// ── CORS Global ──────────────────────────────────────────────────────────────
-app.use(globalRateLimiter);
 
 const corsOriginEnv = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
@@ -126,7 +125,16 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'x-store-domain'],
 }));
 
-// Rutas protegidas
+app.use(globalRateLimiter);
+
+// ── Rutas ────────────────────────────────────────────────────────────────────
+
+// Rutas Públicas (CORS Permisivo)
+app.use('/api/pruebalo', publicCors, pruebaloRoutes);
+app.use('/api/embed', publicCors, embedRoutes);
+app.post('/api/enterprise/sync-product', publicCors, syncProductWebhook);
+
+// Rutas Estándar
 app.use('/api/auth', authRoutes);
 app.use('/api/brands', brandsRoutes);
 app.use('/api/usage', usageRoutes);
@@ -141,20 +149,19 @@ app.use('/api/admin/revenue', revenueRoutes);
 app.use('/api/payments/wompi', wompiRoutes);
 app.use('/api/payments/paypal', paypalRoutes);
 app.use('/api/images', imageRoutes);
+app.use('/api/blog', blogRoutes);
+app.use('/api/trial', trialRoutes);
+app.use('/api/admin/coupons', couponsRoutes);
 
+// Endpoints Sueltos
 app.get('/api/payment-settings/public', getPublicPaymentSettings);
 app.post('/api/upload', authMiddleware, (req, res) => uploadImage(req as any, res));
 app.post('/api/upload/selfie', multerMemory.single('file'), (req, res) => uploadSelfie(req, res));
-app.use('/api/trial', trialRoutes);
-app.use('/api/admin/coupons', couponsRoutes);
 app.post('/api/coupons/redeem', redeemCoupon);
 app.post('/api/coupons/validate', validateCoupon);
-
-// Enterprise Sync — rutas de administración y webhook interno de n8n
 app.use('/api/admin/enterprise', enterpriseRoutes);
-app.post('/api/enterprise/sync-product', publicCors, syncProductWebhook);
 
-// Sitemap
+// Sitemap Dinámico
 app.get('/api/sitemap/landings', async (_req, res) => {
   try {
     const { supabase } = await import('./config/supabase');
@@ -171,6 +178,7 @@ app.get('/api/sitemap/landings', async (_req, res) => {
 
 app.get('/health', getHealthStatus);
 
+// Error Handling
 app.use(notFoundHandler);
 app.use(errorHandler);
 

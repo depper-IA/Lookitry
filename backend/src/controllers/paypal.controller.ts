@@ -5,6 +5,7 @@ import { supabaseAdmin } from '../config/supabase';
 import { asyncHandler } from '../middleware/errorHandler';
 import { pricingService } from '../services/pricing.service';
 import { NotificationService } from '../services/notification.service';
+import { addonCreditsService } from '../services/addonCredits.service';
 
 const subscriptionService = new SubscriptionService();
 const notificationService = new NotificationService();
@@ -82,6 +83,11 @@ function assertTrackedOrder(reference: string, trackedOrder: any, orderId: strin
 }
 
 async function fulfillPaypalPayment(reference: string, orderId: string, amountUSD: number, source: 'capture' | 'webhook') {
+  if (addonCreditsService.isAddonReference(reference)) {
+    await addonCreditsService.applyPurchasedCredits(reference, 'paypal', amountUSD, orderId);
+    return;
+  }
+
   const { brandId, months, plan, isNewRegistration, isTrial } = parsePaypalReference(reference);
   const includesLanding = reference.includes('LANDING');
   const notesPrefix = source === 'webhook' ? 'PayPal webhook' : 'PayPal';
@@ -202,7 +208,10 @@ export class PaypalController {
     const planStr = (plan as string).toUpperCase();
     const landing = includes_landing === 'true';
 
-    const amountCOP = await pricingService.calculateTotal(planStr, selectedMonths, landing);
+    const hasAuthenticatedBrand = Boolean((req as any).brand?.id);
+    const amountCOP = hasAuthenticatedBrand
+      ? await pricingService.calculateTotal(planStr, selectedMonths, landing)
+      : await pricingService.calculateExternalCheckoutTotal(planStr, selectedMonths, landing);
 
     const overrideTrm = trm ? parseFloat(trm as string) : undefined;
     const { trm: currentTrm, source } = await pricingService.getEffectiveTrm(overrideTrm);
@@ -315,7 +324,15 @@ export class PaypalController {
 
       console.log(`[PayPal Webhook] Pago completado. CaptureId: ${captureId}, Monto: ${amountUSD}, Ref: ${reference}`);
 
-      if (reference && (reference.startsWith('PAYPAL-') || reference.startsWith('TRIAL-') || reference.startsWith('GUEST-TRIAL-'))) {
+      if (
+        reference &&
+        (
+          reference.startsWith('PAYPAL-') ||
+          reference.startsWith('TRIAL-') ||
+          reference.startsWith('GUEST-TRIAL-') ||
+          addonCreditsService.isAddonReference(reference)
+        )
+      ) {
         const trackedOrder = await paypalService.getTrackedOrder(reference);
         assertTrackedOrder(reference, trackedOrder, orderId, amountUSD);
         await fulfillPaypalPayment(reference, orderId, amountUSD, 'webhook');

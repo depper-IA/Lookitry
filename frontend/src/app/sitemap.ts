@@ -1,14 +1,25 @@
 import { MetadataRoute } from 'next';
+import { createClient } from '@supabase/supabase-js';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  return [
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
       url: BASE_URL,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1.0,
+    },
+    {
+      url: `${BASE_URL}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
     },
     {
       url: `${BASE_URL}/planes`,
@@ -95,4 +106,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.4,
     },
   ];
+
+  try {
+    const { data: posts } = await supabase
+      .from('blogs')
+      .select('slug, updated_at')
+      .eq('status', 'published');
+
+    if (posts && posts.length > 0) {
+      const blogRoutes = posts.map((post) => ({
+        url: `${BASE_URL}/blog/${post.slug}`,
+        lastModified: post.updated_at ? new Date(post.updated_at) : new Date(),
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+      }));
+      return [...staticRoutes, ...blogRoutes];
+    }
+  } catch (err) {
+    console.error('Error fetching blog slugs for sitemap:', err);
+  }
+
+  return staticRoutes;
 }

@@ -1,0 +1,398 @@
+# Reglas Críticas — Lookitry (Master Memory)
+
+> [!IMPORTANT]
+> **REGLA DE ORO:** Este archivo es la ÚNICA fuente de verdad para la continuidad del proyecto. La IA debe leerlo en su totalidad antes de realizar cualquier acción para asegurar la coherencia técnica y estética.
+
+---
+
+## 1. REGLAS CRÍTICAS Y PROCEDIMIENTOS
+
+1.  **Respuesta**: Responde SIEMPRE en **español**.
+2.  **Registro de Cambios (Changelog)**: Cada cambio debe documentarse en `CHANGELOG_GEMINI.md` antes de finalizar la tarea, incluyendo fecha, descripción, archivos y motivo.
+3.  **No Placeholders**: Prohibido dejar comentarios `// TODO`. El código debe ser funcional y premium desde el primer commit.
+4.  **Uso de Skills**: Aplicar siempre `ui-ux-pro-max`, `seo`, y `dev-optimization` según corresponda.
+5.  **Git y Deploy**: No realizar commits ni despliegues al VPS sin autorización explícita del usuario.
+6.  **Base de Datos**: El backend DEBE usar `supabaseAdmin` para operaciones de escritura/bypass RLS. El frontend nunca debe exponer la `SERVICE_KEY`.
+
+---
+
+## 2. IDENTIDAD DE MARCA (BRANDING)
+
+### Visual y Estética
+- **Nombre**: Oficialmente **Lookitry**. En código/JSX se escribe: `Look<span className="text-[#FF5C3A]">itry</span>`.
+- **Colores Principales**:
+    - Naranja Lookitry: `#FF5C3A` (Accentos, CTAs, Nav activo).
+    - Negro Base: `#0a0a0a` (Fondo principal).
+    - Negro Card: `#141414` (Tarjetas y paneles).
+    - Crema/Beige: `#f5f2ee` (Secciones alternativas de landing).
+- **Tipografía**:
+    - Títulos: **Plus Jakarta Sans**.
+    - Cuerpo/UI: **DM Sans**.
+- **Reglas de Texto**: Prohibido usar grises oscuros como `#333`, `#444` o `#555`. Usar `#999` para secundario y `#bbb` para descripciones.
+- **UI**: Sin emojis. Usar exclusivamente iconos SVG o la librería `lucide-react`.
+
+### Propuesta de Valor
+Lookitry es un probador virtual con IA para tiendas de ropa en Latinoamérica, enfocado en reducir devoluciones y aumentar conversiones.
+
+---
+
+## 3. ARQUITECTURA TÉCNICA
+
+| Capa | Tecnología |
+|------|-----------|
+| **Frontend** | Next.js 14 (App Router), TypeScript, Tailwind CSS |
+| **Backend** | Node.js + Express, TypeScript |
+| **Base de Datos** | Supabase (PostgreSQL) — Auth propio con JWT |
+| **Almacenamiento**| MinIO (`minio.wilkiedevs.com`) |
+| **Pagos** | Wompi (Colombia/COP) + PayPal (Internacional/USD) |
+| **Inteligencia Artificial** | n8n + OpenRouter (Flujo principal: `wPLypk7KhBcFLicX`) |
+| **Infraestructura** | Docker Compose en VPS Hostinger (`31.220.18.39`) |
+
+---
+
+## 4. ESTRUCTURA DEL PROYECTO
+
+```
+Mostrador_wilkiedevs/
+├── frontend/                    # Next.js 14
+│   ├── src/app/                 # App Router (Público, Dashboard, Admin)
+│   ├── src/components/          # UI Components
+│   ├── src/services/            # Clientes API
+│   └── src/utils/               # Helpers y tipos
+├── backend/                     # API Express
+│   ├── src/controllers/         # Lógica de negocio
+│   ├── src/services/            # Servicios externos
+│   └── src/config/              # Configuración (Supabase Admin/Anon)
+└── scripts/                     # Automatización (Deploy)
+```
+
+---
+
+## 5. BASE DE DATOS Y LÓGICA DE NEGOCIO
+
+**Tablas Principales:**
+- `brands`: Clientes/Marcas. Almacena plan, suscripción y credenciales.
+- `products`: Catálogo de productos vinculados a cada marca.
+- `generations`: Historial de try-ons (selfies y resultados en MinIO).
+- `pricing_config`: Configuración de precios dinámicos cargada por el frontend.
+
+**Planes y Precios:**
+- `TRIAL`: Prueba temporal con límite de generaciones.
+- `BASIC`: $150.000 COP/mes (5 productos, 400 gen/mes).
+- `PRO`: $250.000 COP/mes (15 productos, 1200 gen/mes).
+- `LANDING`: Pago único de $650.000 COP (requiere plan activo).
+- `BLOG`: Sistema nativo de contenidos (Supabase + MinIO) con ingesta desde n8n.
+
+**Upgrades y Prorrateo:**
+Se calcula el crédito no consumido del plan actual para descontar del nuevo plan. Si el cobro es cero, se aplica `applyFreeUpgrade` automáticamente.
+
+---
+
+## 6. WORKFLOWS Y SERVICIOS EXTERNOS (n8n)
+
+| Workflow | ID | Descripción |
+|----------|-----|-------------|
+| **Try-On Principal** | `wPLypk7KhBcFLicX` | Corazón de la IA de prueba virtual |
+| **Error Handler** | `PNri7NdZYkZhpPnm` | Gestión de errores y notificaciones admin |
+| **Feedback Embedding**| `47RcLopJB6M82b0k` | Procesamiento de embeddings para RAG |
+| **Descriptor IA** | `ZjVTV3QxoPEi60GX` | Generación de descripciones de productos |
+| **Blog Automático** | `flujo-blog.json` | Ingesta de artículos y subida a MinIO |
+
+> [!NOTE]
+> Todos los workflows de n8n deben llevar la etiqueta `SaaS` y usar el Bearer Token: `Travis2305**` para la API de n8n, y el header `x-blog-secret` con valor `Travis2305**_blog_live` para los webhooks de blog en `api.lookitry.com`.
+
+---
+
+## 7. DESPLIEGUE (DEPLOY)
+
+El despliegue se realiza mediante el script `python scripts/_deploy_now.py`.
+- `--frontend`: Solo frontend.
+- `--backend`: Solo backend.
+- `--restart`: Reinicio rápido (recomiendo usar esto si solo cambian variables de entorno).
+
+**Importante:** Siempre ejecutar `git pull origin main --rebase` antes de cualquier push para integrar cambios de otros colaboradores (como Juli).
+tro-pro/page.tsx`:** El auto-link solo se ejecuta si el pending es tipo landing-only (`plan = NONE`) o si el usuario no tiene plan activo. Si tiene plan activo y el pending quiere cambiar el plan, se muestra el formulario normal.
+
+### Nuevo email: Activación de Mini-landing (22/03/2026)
+- `landingActivatedEmail` en `email-templates.ts` — template con enlace a la landing y botones "Ver mi página" / "Personalizar".
+- `sendLandingActivatedEmail(brand)` en `notification.service.ts` — se dispara automáticamente cuando `has_landing_page` se activa en el flujo post-pago. No bloquea el flujo (catch silencioso). Aplica tanto a cuentas nuevas como a usuarios existentes que compran la landing por separado.
+
+
+## BRAND ##
+---
+inclusion: always
+---
+
+# Lookitry — Identidad de Marca
+
+## Nombre y escritura
+
+- Nombre oficial: **Lookitry**
+- En JSX siempre: `Look<span className="text-[#FF5C3A]">itry</span>`
+- NUNCA usar "LOOKITRY", "LOOKITRY", "LOOKITRY" ni variantes antiguas en UI pública.
+
+## Descripción del producto
+
+Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica. Permite a las marcas integrar un widget de prueba virtual en su tienda en minutos, sin apps ni desarrollo adicional.
+
+- Mercado objetivo: Colombia, México, Argentina, Chile, Perú
+- Idioma principal: Español
+- Propuesta de valor: "Pruébalo antes de comprarlo" — reduce devoluciones y aumenta conversión
+
+## Paleta de colores corporativos
+
+| Nombre           | Hex       | Uso principal                                      |
+|------------------|-----------|----------------------------------------------------|
+| Naranja Lookitry | `#FF5C3A` | Color de marca, CTAs, acentos, ítem activo en nav  |
+| Negro base       | `#0a0a0a` | Fondo principal (modo oscuro)                      |
+| Negro card       | `#141414` | Fondo de tarjetas y paneles                        |
+| Crema / Beige    | `#f5f2ee` | Fondo alternativo claro, secciones landing         |
+| Blanco           | `#ffffff` | Texto principal sobre fondos oscuros               |
+
+### Grises (modo oscuro — regla de legibilidad)
+
+| Uso                        | Valor mínimo |
+|----------------------------|--------------|
+| Texto secundario / ayuda   | `#999`       |
+| Texto de features / listas | `#bbb`       |
+| Texto muy sutil (mínimo)   | `#666`       |
+| PROHIBIDO para texto       | `#333`, `#444`, `#555` |
+
+## Archivos de marca
+
+| Archivo                                    | Estado       | Uso                                         |
+|--------------------------------------------|--------------|---------------------------------------------|
+| `frontend/public/logo.svg`                 | ✅ Activo    | Logo principal — usar en TODAS las páginas  |
+| `frontend/public/favicon.png`              | ✅ Activo    | Favicon del sitio                           |
+| `templates-webs/Lookitry-logo - copia.svg` | ✅ Fuente    | Original SVG fuente                         |
+| `templates-webs/Lookitry-favicon.png`      | ✅ Fuente    | Original favicon fuente                     |
+| `frontend/public/logo.png`                 | ❌ Obsoleto  | NO usar — reemplazado por logo.svg          |
+| `templates-webs/Lookitry-logo.png`         | ❌ Obsoleto  | NO usar — reemplazado por SVG               |
+
+## Tipografía
+
+- Títulos / marca: **Plus Jakarta Sans** (`--font-jakarta`) — pesos 400–800
+- Cuerpo / UI: **DM Sans** (`--font-dm-sans`) — pesos 300–500
+
+## Variables CSS del sistema de diseño
+
+```css
+var(--bg-base)          /* Fondo principal */
+var(--bg-card)          /* Fondo de tarjetas */
+var(--bg-sidebar)       /* Fondo del sidebar */
+var(--bg-sidebar-hover) /* Hover en sidebar */
+var(--bg-header)        /* Fondo del header sticky */
+var(--bg-hover)         /* Hover genérico */
+var(--border-color)     /* Bordes */
+var(--text-primary)     /* Texto principal */
+var(--text-secondary)   /* Texto secundario */
+var(--text-muted)       /* Texto muy sutil */
+var(--text-sidebar)     /* Texto en sidebar */
+var(--shadow-header)    /* Sombra del header */
+```
+
+## Colores de estado / severidad
+
+| Estado  | Color     |
+|---------|-----------|
+| Info    | `#3b82f6` |
+| Warning | `#f59e0b` |
+| Error   | `#ef4444` |
+| Success | `#10b981` |
+
+## Planes del producto
+
+| Plan    | Precio           | Descripción                                      |
+|---------|------------------|--------------------------------------------------|
+| TRIAL   | Gratis temporal  | Badge violeta `#6366f1`. Independiente de BASIC. |
+| BASIC   | $150.000 COP/mes | 5 productos, 400 generaciones/mes                |
+| PRO     | $250.000 COP/mes | 15 productos, 1.200 generaciones/mes             |
+| LANDING | Pago único       | Mini-landing personalizada                       |
+
+## Toggle / Switch
+
+- Color activo: `#FF5C3A` (NUNCA `bg-blue-600`)
+
+## URLs del sistema
+
+| Servicio   | URL                                   |
+|------------|---------------------------------------|
+| Frontend   | `https://lookitry.com`     |
+| API        | `https://api.lookitry.com` |
+| n8n        | `https://n8n.wilkiedevs.com`          |
+| MinIO      | `https://minio.wilkiedevs.com`        |
+
+## Infraestructura — IDs y referencias clave
+
+| Recurso              | ID / Valor                                      |
+|----------------------|-------------------------------------------------|
+| Supabase Project ID  | `vkdooutklowctuudjnkl`                          |
+| Supabase URL         | `https://vkdooutklowctuudjnkl.supabase.co`      |
+| VPS ID (Hostinger)   | `1004711`                                       |
+| VPS IP               | `31.220.18.39`                                  |
+| Docker project       | `LOOKITRY`                                 |
+| GitHub repo          | `https://github.com/depper-IA/LOOKITRY.git`|
+
+## Workflows n8n (IDs — no cargar archivos para consultarlos)
+
+| Workflow                        | ID                   | Webhook / Uso                                          |
+|---------------------------------|----------------------|--------------------------------------------------------|
+| Try-On principal                | `wPLypk7KhBcFLicX`   | `/webhook/tryon`                                       |
+| Error Handler (OpenRouter)      | `PNri7NdZYkZhpPnm`   | errorWorkflow del Try-On — escribe en admin_notifications |
+| Feedback embedding              | `47RcLopJB6M82b0k`   | Flujo4 — embeddings de feedback                        |
+| Describir con IA                | `ZjVTV3QxoPEi60GX`   | Descriptor de productos                                |
+
+Nodo clave en "Describir con IA": `03feeeff-f6bb-4eaf-92f8-4d67d2ba18fe` (Formatear respuesta) — devuelve `{ description, category, enrichedPrompt }`.
+Todos los workflows tienen la etiqueta `SaaS`.
+
+### Reglas de gestión de workflows en n8n
+
+- Para buscar o filtrar workflows en n8n, usar siempre el tag `SaaS`.
+- Al crear un nuevo workflow bajo consentimiento explícito del usuario, agregar obligatoriamente la etiqueta `SaaS` antes de guardar.
+- Si se crea un workflow sin esa etiqueta, corregirlo inmediatamente.
+
+### Error Handler — detalles
+- Se activa automáticamente cuando el workflow principal falla en producción
+- Clasifica el error: `credits_exhausted` (HTTP 402/429 o keywords "credits"/"insufficient") vs `service_down`
+- Inserta directo en tabla `admin_notifications` via Supabase REST API (service role key)
+- Recupera `brand_id` y `product_id` del contexto de ejecución fallida si están disponibles
+- Archivo de referencia: `templates-webs/flujo5_error_handler_openrouter.json`
+
+
+## Cloudflare Turnstile — antispam registro
+
+| Clave | Valor |
+|-------|-------|
+| Site Key (pública, frontend) | `0x4AAAAAACsmy7e_yL9iyAXM` |
+| Secret Key (privada, backend) | `0x4AAAAAACsmy2ZsVW10HlNhDRP-ihDmo3o` |
+| Dashboard | https://dash.cloudflare.com → Turnstile |
+
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY` va en `docker-compose.frontend.yml` como `build arg`
+- `TURNSTILE_SECRET_KEY` y `TURNSTILE_ENABLED` van en `backend/.env`
+- Para activar/desactivar sin redeploy: cambiar `TURNSTILE_ENABLED=true/false` en el VPS y hacer `--restart`
+
+---
+
+## Sitemap — Regla obligatoria
+
+**Cada vez que se cree una nueva página pública**, actualizar `frontend/src/app/sitemap.ts`:
+- Agregar la URL con `changeFrequency` y `priority` apropiados
+- Páginas de contenido público (landing, planes, sobre-nosotros, términos, políticas): incluir
+- Páginas privadas (dashboard, admin, checkout, pago-exitoso, trial-payment, etc.): NO incluir
+- El archivo `robots.ts` también debe tener la ruta en `disallow` si es privada
+
+Páginas públicas actuales en el sitemap:
+| URL | Priority | Frecuencia |
+|-----|----------|------------|
+| `/` | 1.0 | weekly |
+| `/planes` | 0.9 | weekly |
+| `/register` | 0.8 | monthly |
+| `/login` | 0.5 | monthly |
+| `/sobre-nosotros` | 0.6 | monthly |
+| `/terminos` | 0.4 | yearly |
+| `/politicas-privacidad` | 0.4 | yearly |
+
+---
+
+## Favicon — Regla obligatoria
+
+- El favicon correcto está en `frontend/public/favicon.png` (64x64, PNG válido)
+- `frontend/src/app/favicon.ico` debe generarse desde ese PNG con múltiples resoluciones (16, 32, 48, 64px)
+- `frontend/src/app/icon.png` debe ser copia de `frontend/public/favicon.png`
+- Si el favicon deja de verse, regenerar con: `python -c "from PIL import Image; img=Image.open('frontend/public/favicon.png').convert('RGBA'); img.save('frontend/src/app/favicon.ico', format='ICO', sizes=[(16,16),(32,32),(48,48),(64,64)])"`
+
+---
+
+## Reglas de branding en nuevas páginas
+
+1. **Logo siempre SVG + nombre de texto** — en TODAS las páginas del frontend sin excepción:
+   - Usar `<Image src="/logo.svg" ... />` (nunca `logo.png`)
+   - Junto al logo siempre mostrar: `Look<span className="text-[#FF5C3A]">itry</span>`
+   - Aplica a: landing, login, register, dashboard, checkout, planes, términos, registro-pro, pago-exitoso, admin, y cualquier página creada a futuro
+2. El favicon debe ser `favicon.png` en todos los layouts.
+3. El color `#FF5C3A` es el único acento de marca — no introducir otros colores de acento.
+4. Fondo oscuro por defecto en dashboards (`#0a0a0a`). Landing puede usar `#f5f2ee` como sección alternativa.
+5. No usar emojis en UI — usar iconos SVG o `lucide-react`.
+6. NUNCA mostrar solo el logo sin el nombre de texto, ni solo el nombre sin el logo.
+7. Tamaños estándar del logo por contexto:
+   - Sidebar / header dashboard: `h-7` o `h-8`
+   - Páginas de auth (login, register): `h-8` o `h-10`
+   - Landing pública (nav): `h-8`
+   - Footer: `h-6`
+8. En JSX el nombre siempre es: `Look<span className="text-[#FF5C3A]">itry</span>` — nunca texto plano "Lookitry".
+
+## Flujo de trabajo Git y Deploy — Reglas obligatorias
+
+### Antes de cualquier commit/push
+1. Siempre hacer `git fetch origin` y revisar si hay commits nuevos en `main` que no están localmente.
+2. Verificar si Juli (u otro colaborador) tiene cambios pendientes de subir — revisar el log remoto con `git log origin/main --oneline -10` antes de hacer push.
+3. Hacer `git pull origin main --rebase` antes de cualquier push para integrar cambios remotos sin conflictos.
+4. Si hay conflictos de merge, resolverlos antes de continuar.
+
+### Antes de aplicar un deploy al VPS
+1. Verificar el estado del repo remoto: `git log origin/main --oneline -5` para ver si hay commits recientes de otros colaboradores.
+2. Si hay commits recientes de Juli u otro colaborador en los últimos minutos, esperar o coordinar antes de hacer deploy para no pisar sus cambios.
+3. El VPS siempre jala del repo git (`git pull origin main`) — los cambios locales que no estén en git NO se despliegan.
+4. Siempre verificar que el `git pull` en el VPS muestre los archivos modificados esperados, no solo "Already up to date".
+
+### Flujo correcto de deploy
+```
+git add <archivos>
+git commit -m "descripción"
+git pull origin main --rebase   ← integrar cambios de otros
+git push origin main
+python scripts/_deploy_now.py --backend --frontend --no-cache
+```
+
+
+## DEPLOY-WORKFLOW ##
+# Deploy y Verificación del Proyecto
+
+## Infraestructura
+- VPS: 31.220.18.39 (Hostinger)
+- Deploy via script: `python scripts/_deploy_now.py` (desde la carpeta `LOOKITRY_wilkiedevs`)
+- Backend: `--backend`, Frontend: `--frontend`, ambos: sin flags
+- Sin caché: `--no-cache`
+
+## Verificación rápida con MCP de Hostinger
+Para chequear el estado del servidor, deployments y logs, usar el MCP de Hostinger en lugar de SSH manual o el script de deploy.
+
+- Listar VMs: `mcp_hostinger_api_VPS_getVirtualMachinesV1`
+- Ver detalles de VM: `mcp_hostinger_api_VPS_getVirtualMachineDetailsV1`
+- Ver acciones recientes: `mcp_hostinger_api_VPS_getActionsV1`
+- Ver métricas: `mcp_hostinger_api_VPS_getMetricsV1`
+
+## Comandos de deploy
+```bash
+# Desde LOOKITRY_wilkiedevs/
+git add -A; git commit -m "mensaje"
+git push origin main
+python scripts/_deploy_now.py              # backend + frontend
+python scripts/_deploy_now.py --backend    # solo backend
+python scripts/_deploy_now.py --frontend   # solo frontend
+```
+
+## URLs
+- Frontend: https://lookitry.com
+- Backend API: https://api.lookitry.com
+- Health check: https://api.lookitry.com/health
+
+---
+
+## 8. BLOG (MIGRACIÓN NATIVA)
+
+El blog ha sido migrado de WordPress a un sistema nativo integrado en Lookitry.
+
+### Endpoints del Blog (Backend)
+- `POST /api/blog/webhook`: Ingesta de artículos (JSON).
+- `POST /api/blog/upload`: Subida de imágenes a MinIO (Multipart).
+- **Seguridad**: Ambas requieren el header `x-blog-secret`.
+
+### Almacenamiento
+- Las imágenes se guardan en MinIO (`images` bucket) bajo la carpeta `blog/`.
+- URLs generadas: `https://minio.wilkiedevs.com/images/blog/filename.webp`.
+
+### Frontend
+- Ruta pública: `/blog` y `/blog/[slug]`.
+- Panel Admin: `/admin/blog` (Gestión de artículos).
+- Sitemap: Se actualiza dinámicamente consultando la tabla `blogs`.

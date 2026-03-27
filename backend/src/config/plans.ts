@@ -21,13 +21,13 @@ export const PLANS: Record<string, Plan> = {
   PRO: {
     type: 'PRO',
     maxProducts: 15,
-    maxGenerationsPerMonth: 1200,
+    maxGenerationsPerMonth: 1000,
     price: 0,
   },
   ENTERPRISE: {
     type: 'ENTERPRISE',
-    maxProducts: 1000,
-    maxGenerationsPerMonth: 100000,
+    maxProducts: 50,
+    maxGenerationsPerMonth: 2000,
     price: 800000,
   },
 };
