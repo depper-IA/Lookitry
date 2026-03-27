@@ -6,6 +6,7 @@ import { asyncHandler } from '../middleware/errorHandler';
 import { pricingService } from '../services/pricing.service';
 
 const subscriptionService = new SubscriptionService();
+const PAYPAL_AMOUNT_TOLERANCE = 0.01;
 
 async function insertPaypalPaymentCompat(payload: Record<string, unknown>) {
   let result = await supabaseAdmin.from('subscription_payments').insert(payload);
@@ -64,6 +65,112 @@ function parsePaypalReference(reference: string): {
   };
 }
 
+function assertTrackedOrder(reference: string, trackedOrder: any, orderId: string, amountUSD: number) {
+  if (!trackedOrder) {
+    throw new Error('No se encontró la orden interna de PayPal para esta referencia');
+  }
+
+  if (trackedOrder.order_id && trackedOrder.order_id !== orderId) {
+    throw new Error('La orden de PayPal no coincide con la referencia registrada');
+  }
+
+  if (Math.abs(Number(trackedOrder.amount_usd_expected) - amountUSD) > PAYPAL_AMOUNT_TOLERANCE) {
+    throw new Error('El monto capturado no coincide con el monto esperado');
+  }
+}
+
+async function fulfillPaypalPayment(reference: string, orderId: string, amountUSD: number, source: 'capture' | 'webhook') {
+  const { brandId, months, plan, isNewRegistration, isTrial } = parsePaypalReference(reference);
+  const includesLanding = reference.includes('LANDING');
+  const notesPrefix = source === 'webhook' ? 'PayPal webhook' : 'PayPal';
+
+  if (isTrial && brandId) {
+    await supabaseAdmin
+      .from('brands')
+      .update({ trial_payment_status: 'active' })
+      .eq('id', brandId);
+
+    await insertPaypalPaymentCompat({
+      brand_id: brandId,
+      amount: amountUSD,
+      currency: 'USD',
+      payment_method: 'paypal',
+      status: 'completed',
+      months_paid: 1,
+      reference,
+      notes: `${notesPrefix} orderId=${orderId}. Trial`,
+    });
+    return;
+  }
+
+  if (isNewRegistration) {
+    await supabaseAdmin
+      .from('pending_registrations')
+      .update({
+        status: 'paid',
+        payment_id: orderId,
+      })
+      .eq('reference', reference);
+    return;
+  }
+
+  if (!brandId) {
+    return;
+  }
+
+  if (plan === 'NONE') {
+    const { data: existingLandingPayment } = await supabaseAdmin
+      .from('subscription_payments')
+      .select('id')
+      .eq('reference', reference)
+      .limit(1)
+      .maybeSingle();
+
+    if (!existingLandingPayment) {
+      await insertPaypalPaymentCompat({
+        brand_id: brandId,
+        amount: amountUSD,
+        currency: 'USD',
+        payment_method: 'paypal',
+        status: 'completed',
+        months_paid: 1,
+        reference,
+        notes: `SOLO Landing Page. ${notesPrefix} orderId=${orderId}`,
+      });
+    }
+
+    await supabaseAdmin
+      .from('brands')
+      .update({ has_landing_page: true, landing_suspended_at: null })
+      .eq('id', brandId);
+    return;
+  }
+
+  await subscriptionService.renewSubscription(
+    brandId,
+    {
+      brand_id: brandId,
+      amount: amountUSD,
+      currency: 'USD',
+      payment_method: 'paypal',
+      status: 'completed',
+      months_paid: months,
+      payment_date: new Date().toISOString(),
+      notes: `${notesPrefix} orderId=${orderId}. Ref=${reference}. Plan=${plan}. Meses=${months}.${includesLanding ? ' Incluye Landing Page.' : ''}`,
+      reference,
+    },
+    months,
+    plan as string
+  );
+
+  if (includesLanding) {
+    await supabaseAdmin
+      .from('brands')
+      .update({ has_landing_page: true, landing_suspended_at: null })
+      .eq('id', brandId);
+  }
+}
+
 export class PaypalController {
   getCheckoutUrl = asyncHandler(async (req: Request, res: Response) => {
     const { months, plan, email, trm, includes_landing } = req.query;
@@ -102,100 +209,69 @@ export class PaypalController {
       }
     }
 
-    const checkoutUrl = await paypalService.createOrder(amountCOP, currentTrm, reference);
-    return res.status(200).json({ checkoutUrl, reference });
+    const createdOrder = await paypalService.createOrder(amountCOP, currentTrm, reference);
+    await paypalService.recordOrder({
+      reference,
+      brand_id: (req as any).brand?.id || null,
+      email: email ? String(email) : null,
+      plan: planStr,
+      months: selectedMonths,
+      amount_cop: amountCOP,
+      trm: currentTrm,
+      amount_usd_expected: createdOrder.amountUSD,
+      order_id: createdOrder.orderId,
+      status: 'created',
+    });
+
+    return res.status(200).json({ checkoutUrl: createdOrder.checkoutUrl, reference });
   });
 
   capturePayment = asyncHandler(async (req: Request, res: Response) => {
-    const { orderId, reference } = req.body;
+    const { orderId, reference: requestedReference } = req.body;
 
-    if (!orderId || !reference) {
-      return res.status(400).json({ error: 'orderId y reference son requeridos' });
+    if (!orderId) {
+      return res.status(400).json({ error: 'orderId es requerido' });
     }
 
-    const captureData = await paypalService.captureOrder(orderId);
-
-    if (captureData.status !== 'COMPLETED') {
-      throw new Error(`El pago no se completó (Status: ${captureData.status})`);
+    const order = await paypalService.getOrder(orderId);
+    const resolvedReference = paypalService.extractReference(order);
+    if (!resolvedReference) {
+      throw new Error('No se pudo resolver la referencia interna del pago PayPal');
     }
 
-    const { brandId, months, plan, isNewRegistration, isTrial } = parsePaypalReference(reference);
-    const includesLanding = reference.includes('LANDING');
-    const amountUSD = parseFloat(captureData.purchase_units[0].payments.captures[0].amount.value);
-
-    if (isTrial && brandId) {
-      await supabaseAdmin
-        .from('brands')
-        .update({ trial_payment_status: 'active' })
-        .eq('id', brandId);
-
-      await insertPaypalPaymentCompat({
-        brand_id: brandId,
-        amount: amountUSD,
-        currency: 'USD',
-        payment_method: 'paypal',
-        status: 'completed',
-        months_paid: 1,
-        reference,
-        notes: `Pago de Plan Trial. PayPal orderId=${orderId}`,
-      });
-    } else if (isNewRegistration) {
-      await supabaseAdmin
-        .from('pending_registrations')
-        .update({
-          status: 'paid',
-          payment_id: orderId,
-        })
-        .eq('reference', reference);
-    } else if (brandId) {
-      if (plan === 'NONE') {
-        await supabaseAdmin
-          .from('brands')
-          .update({ has_landing_page: true, landing_suspended_at: null })
-          .eq('id', brandId);
-
-        await insertPaypalPaymentCompat({
-          brand_id: brandId,
-          amount: amountUSD,
-          currency: 'USD',
-          payment_method: 'paypal',
-          status: 'completed',
-          months_paid: 1,
-          reference,
-          notes: `SOLO Landing Page. PayPal orderId=${orderId}`,
-        });
-      } else {
-        await subscriptionService.renewSubscription(
-          brandId,
-          {
-            brand_id: brandId,
-            amount: amountUSD,
-            currency: 'USD',
-            payment_method: 'paypal',
-            status: 'completed',
-            months_paid: months,
-            payment_date: new Date().toISOString(),
-            notes: `PayPal orderId=${orderId}. Ref=${reference}. Plan=${plan}. Meses=${months}.${includesLanding ? ' Incluye Landing Page.' : ''}`,
-            reference,
-          },
-          months,
-          plan as string
-        );
-
-        if (includesLanding) {
-          await supabaseAdmin
-            .from('brands')
-            .update({ has_landing_page: true, landing_suspended_at: null })
-            .eq('id', brandId);
-        }
-      }
+    if (requestedReference && requestedReference !== resolvedReference) {
+      return res.status(409).json({ error: 'La referencia no coincide con la orden de PayPal' });
     }
+
+    const trackedOrder = await paypalService.getTrackedOrder(resolvedReference);
+    const orderAmountUSD = paypalService.extractAmountUsd(order);
+    if (orderAmountUSD == null) {
+      throw new Error('No se pudo validar el monto de la orden PayPal');
+    }
+    assertTrackedOrder(resolvedReference, trackedOrder, orderId, orderAmountUSD);
+
+    let effectiveOrder = order;
+    if (order.status === 'APPROVED') {
+      effectiveOrder = await paypalService.captureOrder(orderId);
+    } else if (order.status !== 'COMPLETED') {
+      throw new Error(`El pago no se completó (Status: ${order.status})`);
+    }
+
+    const amountUSD = paypalService.extractAmountUsd(effectiveOrder);
+    if (amountUSD == null) {
+      throw new Error('No se pudo validar el monto capturado en PayPal');
+    }
+    assertTrackedOrder(resolvedReference, trackedOrder, orderId, amountUSD);
+
+    await fulfillPaypalPayment(resolvedReference, orderId, amountUSD, 'capture');
+    await paypalService.markOrderStatus(resolvedReference, 'completed', orderId);
 
     return res.status(200).json({
       success: true,
       message: 'Pago capturado y suscripción activada',
       orderId,
-      status: captureData.status,
+      status: effectiveOrder.status,
+      reference: resolvedReference,
     });
   });
 
@@ -216,55 +292,15 @@ export class PaypalController {
         resource.custom_id ||
         resource.invoice_id ||
         resource.supplementary_data?.related_ids?.order_id;
+      const orderId = resource.supplementary_data?.related_ids?.order_id || captureId;
 
       console.log(`[PayPal Webhook] Pago completado. CaptureId: ${captureId}, Monto: ${amountUSD}, Ref: ${reference}`);
 
       if (reference && (reference.startsWith('PAYPAL-') || reference.startsWith('TRIAL-') || reference.startsWith('GUEST-TRIAL-'))) {
-        const { brandId, months, plan, isNewRegistration, isTrial } = parsePaypalReference(reference);
-        const includesLanding = reference.includes('LANDING');
-
-        if (isTrial && brandId) {
-          await supabaseAdmin.from('brands').update({ trial_payment_status: 'active' }).eq('id', brandId);
-        } else if (isNewRegistration) {
-          await supabaseAdmin
-            .from('pending_registrations')
-            .update({
-              status: 'paid',
-              payment_id: captureId,
-            })
-            .eq('reference', reference);
-        } else if (brandId) {
-          if (plan === 'NONE') {
-            await supabaseAdmin
-              .from('brands')
-              .update({ has_landing_page: true, landing_suspended_at: null })
-              .eq('id', brandId);
-          } else {
-            await subscriptionService.renewSubscription(
-              brandId,
-              {
-                brand_id: brandId,
-                amount: amountUSD,
-                currency: 'USD',
-                payment_method: 'paypal',
-                status: 'completed',
-                months_paid: months,
-                payment_date: new Date().toISOString(),
-                notes: `PayPal webhook captureId=${captureId}. Ref=${reference}`,
-                reference,
-              },
-              months,
-              plan as string
-            );
-
-            if (includesLanding) {
-              await supabaseAdmin
-                .from('brands')
-                .update({ has_landing_page: true, landing_suspended_at: null })
-                .eq('id', brandId);
-            }
-          }
-        }
+        const trackedOrder = await paypalService.getTrackedOrder(reference);
+        assertTrackedOrder(reference, trackedOrder, orderId, amountUSD);
+        await fulfillPaypalPayment(reference, orderId, amountUSD, 'webhook');
+        await paypalService.markOrderStatus(reference, 'completed', orderId);
       }
     }
 

@@ -170,6 +170,33 @@ export class SubscriptionService {
       throw new Error('Los períodos permitidos son 1, 3, 6 o 12 meses');
     }
 
+    if (paymentData.reference) {
+      try {
+        const { data: existingPayment } = await supabaseAdmin
+          .from('subscription_payments')
+          .select('id')
+          .eq('reference', paymentData.reference)
+          .limit(1)
+          .maybeSingle();
+
+        if (existingPayment) {
+          const { data: currentBrand, error: currentBrandError } = await supabaseAdmin
+            .from('brands')
+            .select('*')
+            .eq('id', brandId)
+            .single();
+
+          if (currentBrandError || !currentBrand) {
+            throw new Error('Marca no encontrada');
+          }
+
+          return currentBrand as Brand;
+        }
+      } catch {
+        // En entornos legacy sin columna reference seguimos sin esta protección.
+      }
+    }
+
     // Obtener marca actual
     const { data: brand, error: brandError } = await supabaseAdmin
       .from('brands')
