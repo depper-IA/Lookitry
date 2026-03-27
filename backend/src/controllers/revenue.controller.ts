@@ -27,7 +27,7 @@ export class RevenueController {
       // 1. Obtener ingresos mensuales de los últimos 12 meses
       const { data: monthlyRevenue, error: monthlyError } = await supabaseAdmin
         .from('subscription_payments')
-        .select('payment_date, amount, notes, brands!inner(plan)')
+        .select('payment_date, amount, notes, months_paid, brands!inner(plan)')
         .eq('status', 'completed')
         .gte('payment_date', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString())
         .order('payment_date', { ascending: true });
@@ -51,6 +51,7 @@ export class RevenueController {
         // Mejora detección de pago de landing: plan es LANDING o notas contienen 'landing' o 'plan: none' (case insensitive)
         const isLandingPayment =
           payment.brands?.plan === 'LANDING' ||
+          Number(payment.months_paid ?? 0) === 0 ||
           (typeof payment.notes === 'string' && (
             payment.notes.toLowerCase().includes('landing') ||
             payment.notes.toLowerCase().includes('plan: none')
@@ -121,7 +122,7 @@ export class RevenueController {
       // 6. Desglose por plan (totales históricos)
       const { data: planBreakdown, error: planError } = await supabaseAdmin
         .from('subscription_payments')
-        .select('amount, notes, brands(plan)')
+        .select('amount, notes, months_paid, brands(plan)')
         .eq('status', 'completed');
 
       if (planError) throw new Error(planError.message);
@@ -137,6 +138,7 @@ export class RevenueController {
         const amount = parseFloat(payment.amount);
         const isLanding =
           payment.brands?.plan === 'LANDING' ||
+          Number(payment.months_paid ?? 0) === 0 ||
           (typeof payment.notes === 'string' && (
             payment.notes.toLowerCase().includes('landing') ||
             payment.notes.toLowerCase().includes('plan: none')

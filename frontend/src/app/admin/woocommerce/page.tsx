@@ -9,6 +9,7 @@ type WooBrand = {
   email: string;
   plan: string;
   has_api_key: boolean;
+  subscription_status?: string | null;
   product_counts: { total: number; active: number; mapped: number };
   telemetry: {
     totalRequests: number;
@@ -53,6 +54,8 @@ export default function AdminWooCommercePage() {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [savingMap, setSavingMap] = useState<Record<string, boolean>>({});
   const [query, setQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const brandsPerPage = 6;
 
   const selectedBrand = useMemo(
     () => brands.find((b) => b.id === selectedBrandId) || null,
@@ -69,6 +72,12 @@ export default function AdminWooCommercePage() {
         b.email.toLowerCase().includes(q)
     );
   }, [brands, query]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredBrands.length / brandsPerPage));
+  const paginatedBrands = useMemo(() => {
+    const start = (currentPage - 1) * brandsPerPage;
+    return filteredBrands.slice(start, start + brandsPerPage);
+  }, [filteredBrands, currentPage]);
 
   const fetchBrands = async () => {
     setLoadingBrands(true);
@@ -142,6 +151,16 @@ export default function AdminWooCommercePage() {
   }, []);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [query]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  useEffect(() => {
     if (selectedBrandId) fetchProducts(selectedBrandId);
   }, [selectedBrandId]);
 
@@ -192,7 +211,7 @@ export default function AdminWooCommercePage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredBrands.map((b) => (
+                {paginatedBrands.map((b) => (
                   <tr
                     key={b.id}
                     onClick={() => setSelectedBrandId(b.id)}
@@ -218,6 +237,34 @@ export default function AdminWooCommercePage() {
             </table>
           </div>
         )}
+
+        {!loadingBrands && filteredBrands.length > 0 && (
+          <div className="mt-4 flex items-center justify-between gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+            <span>
+              {(currentPage - 1) * brandsPerPage + 1}–
+              {Math.min(currentPage * brandsPerPage, filteredBrands.length)} de {filteredBrands.length}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                disabled={currentPage === 1}
+                className="rounded-lg border px-3 py-1.5 disabled:opacity-40"
+                style={{ borderColor: 'var(--border-color)' }}
+              >
+                Anterior
+              </button>
+              <span className="font-semibold">{currentPage}/{totalPages}</span>
+              <button
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                disabled={currentPage === totalPages}
+                className="rounded-lg border px-3 py-1.5 disabled:opacity-40"
+                style={{ borderColor: 'var(--border-color)' }}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       <section
@@ -225,7 +272,7 @@ export default function AdminWooCommercePage() {
         style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
       >
         <div className="mb-4">
-          <h2 className="font-jakarta font-bold uppercase italic">
+          <h2 className="font-jakarta font-bold tracking-tight">
             {selectedBrand ? `Productos sincronizados - ${selectedBrand.name}` : 'Productos sincronizados'}
           </h2>
         </div>
@@ -277,7 +324,7 @@ export default function AdminWooCommercePage() {
               <thead>
                 <tr className="text-left">
                   <th className="py-2">Producto</th>
-                  <th className="py-2">External ID</th>
+                  {selectedBrand?.has_api_key && <th className="py-2">External ID</th>}
                   <th className="py-2">Categoria</th>
                   <th className="py-2">Activo</th>
                 </tr>
@@ -286,7 +333,7 @@ export default function AdminWooCommercePage() {
                 {products.map((p) => (
                   <tr key={p.id} className="border-t" style={{ borderColor: 'var(--border-color)' }}>
                     <td className="py-3">{p.name}</td>
-                    <td className="py-3">{p.external_id}</td>
+                    {selectedBrand?.has_api_key && <td className="py-3">{p.external_id}</td>}
                     <td className="py-3">{p.category || 'General'}</td>
                     <td className="py-3">
                       <button

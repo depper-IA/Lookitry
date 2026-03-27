@@ -243,7 +243,7 @@ export default function NotificationsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-syne font-semibold" style={{ color: 'var(--text-primary)' }}>Centro de actividad</h1>
+        <h1 className="text-xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Centro de actividad</h1>
         <button onClick={() => activeTab === 'notifications' ? fetchNotifications() : loadFeedback()}
           className="p-2 rounded-xl border transition-colors hover:opacity-80"
           style={{ borderColor: 'var(--border-color)', color: 'var(--text-muted)' }} title="Actualizar">

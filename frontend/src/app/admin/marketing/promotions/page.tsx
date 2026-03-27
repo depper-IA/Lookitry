@@ -405,7 +405,7 @@ export default function PromotionsPage() {
             <IconMegaphone />
           </div>
           <div>
-            <h1 className="font-jakarta font-black uppercase italic tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Promociones</h1>
+            <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Promociones</h1>
             <p className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>Modales, banners, cupones y precios especiales</p>
           </div>
         </div>
@@ -444,7 +444,7 @@ export default function PromotionsPage() {
         <div className="space-y-4">
           {showPromoForm && (
             <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-              <p className="font-jakarta font-bold uppercase italic text-[15px] mb-4" style={{ color: 'var(--text-primary)' }}>
+              <p className="font-jakarta font-bold tracking-tight text-[15px] mb-4" style={{ color: 'var(--text-primary)' }}>
                 {editingPromo ? 'Editar promoción' : 'Nueva promoción'}
               </p>
               <PromoForm
@@ -525,7 +525,7 @@ export default function PromotionsPage() {
 
           {showCouponForm && (
             <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-              <p className="font-jakarta font-bold uppercase italic text-[15px] mb-4" style={{ color: 'var(--text-primary)' }}>
+              <p className="font-jakarta font-bold tracking-tight text-[15px] mb-4" style={{ color: 'var(--text-primary)' }}>
                 {editingCoupon ? 'Editar cupón' : 'Nuevo cupón'}
               </p>
               <CouponForm

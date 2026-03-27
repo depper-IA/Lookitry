@@ -77,7 +77,7 @@ export default function AdminProfilePage() {
               <KeyRound className="w-5 h-5" style={{ color: '#FF5C3A' }} />
             </div>
             <div>
-              <h1 className="font-syne font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
+              <h1 className="font-jakarta font-bold text-lg tracking-tight" style={{ color: 'var(--text-primary)' }}>
                 Cambiar contraseña
               </h1>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>

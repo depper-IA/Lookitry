@@ -44,12 +44,20 @@ interface PaymentSettings {
   ip_whitelist: string;
   landing_price: number;
   landing_original_price: number;
-  footer_brand_url: string;
   currency: string;
   ai_prompt_master: string;
   ai_prompt_negative: string;
   maintenance_mode: boolean;
   maintenance_message: string;
+  manual_whatsapp?: string;
+  manual_email?: string;
+}
+
+interface ContactMeta {
+  social_instagram: string;
+  social_tiktok: string;
+  social_facebook: string;
+  social_youtube: string;
 }
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
@@ -233,11 +241,21 @@ export default function SystemConfigPage() {
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loadingHealth, setLoadingHealth] = useState(true);
 
-  // Precio mini-landing y footer URL
+  // Precio mini-landing
   const [landingPrice, setLandingPrice] = useState<number>(650000);
   const [landingOriginalPrice, setLandingOriginalPrice] = useState<number>(900000);
-  const [footerBrandUrl, setFooterBrandUrl] = useState<string>('https://lookitry.com');
-  const [savingLandingConfig, setSavingLandingConfig] = useState(false);
+  const [savingPricingConfig, setSavingPricingConfig] = useState(false);
+
+  // Contacto y redes
+  const [manualWhatsapp, setManualWhatsapp] = useState<string>('+57 310 543 6281');
+  const [manualEmail, setManualEmail] = useState<string>('info@lookitry.com');
+  const [contactMeta, setContactMeta] = useState<ContactMeta>({
+    social_instagram: '@looki.try',
+    social_tiktok: '@lookitry',
+    social_facebook: '',
+    social_youtube: '',
+  });
+  const [savingContactConfig, setSavingContactConfig] = useState(false);
 
   // Moneda del sistema
   const [currency, setCurrency] = useState<string>('COP');
@@ -313,22 +331,47 @@ export default function SystemConfigPage() {
         const data: PaymentSettings = await res.json();
         setBypassIp(data.bypass_ip_protection ?? false);
         setIpWhitelist(data.ip_whitelist ?? '');
-        if (data.landing_price) setLandingPrice(data.landing_price);
-        if (data.landing_original_price) setLandingOriginalPrice(data.landing_original_price);
-        if (data.footer_brand_url) setFooterBrandUrl(data.footer_brand_url);
-        if (data.currency) setCurrency(data.currency);
-        if (data.ai_prompt_master) setAiPromptMaster(data.ai_prompt_master);
-        if (data.ai_prompt_negative) setAiPromptNegative(data.ai_prompt_negative);
+        if (data.landing_price !== undefined && data.landing_price !== null) setLandingPrice(data.landing_price);
+        if (data.landing_original_price !== undefined && data.landing_original_price !== null) setLandingOriginalPrice(data.landing_original_price);
+        if (data.currency !== undefined && data.currency !== null) setCurrency(data.currency);
+        if (data.ai_prompt_master !== undefined && data.ai_prompt_master !== null) setAiPromptMaster(data.ai_prompt_master);
+        if (data.ai_prompt_negative !== undefined && data.ai_prompt_negative !== null) setAiPromptNegative(data.ai_prompt_negative);
         setMaintenanceMode(data.maintenance_mode ?? false);
         setMaintenanceMessage(data.maintenance_message ?? 'Estamos realizando mejoras en nuestra plataforma. Volveremos pronto.');
+        setManualWhatsapp(data.manual_whatsapp ?? '+57 310 543 6281');
+        setManualEmail(data.manual_email ?? 'info@lookitry.com');
       }
     } catch { /* silencioso */ }
+  }, []);
+
+  const loadPricingMeta = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/pricing`, { credentials: 'include', headers });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const metaRow = Array.isArray(data?.data)
+        ? data.data.find((row: any) => row.id === 'meta')
+        : null;
+
+      if (!metaRow?.data) return;
+
+      setContactMeta({
+        social_instagram: metaRow.data.social_instagram ?? '@looki.try',
+        social_tiktok: metaRow.data.social_tiktok ?? '@lookitry',
+        social_facebook: metaRow.data.social_facebook ?? '',
+        social_youtube: metaRow.data.social_youtube ?? '',
+      });
+    } catch {
+      /* silencioso */
+    }
   }, []);
 
   useEffect(() => {
     loadCampaigns();
     loadHealth();
     loadPaymentSettings();
+    loadPricingMeta();
     loadCredits();
   }, []);
 
@@ -390,35 +433,57 @@ export default function SystemConfigPage() {
 
   async function handleGlobalSave() {
     setSavingAIConfig(true);
-    setSavingLandingConfig(true);
+    setSavingPricingConfig(true);
     setSavingCurrency(true);
     setSavingWhitelist(true);
     setSavingMaintenance(true);
+    setSavingContactConfig(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', credentials: 'include', headers,
-        body: JSON.stringify({
-          bypass_ip_protection: bypassIp,
-          ip_whitelist: ipWhitelist,
-          landing_price: landingPrice,
-          landing_original_price: landingOriginalPrice,
-          footer_brand_url: footerBrandUrl,
-          currency: currency,
-          ai_prompt_master: aiPromptMaster,
-          ai_prompt_negative: aiPromptNegative,
-          maintenance_mode: maintenanceMode,
-          maintenance_message: maintenanceMessage,
+      const [settingsRes, pricingRes] = await Promise.all([
+        fetch(`${API_URL}/api/admin/payment-settings`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers,
+          body: JSON.stringify({
+            bypass_ip_protection: bypassIp,
+            ip_whitelist: ipWhitelist,
+            landing_price: landingPrice,
+            landing_original_price: landingOriginalPrice,
+            currency,
+            ai_prompt_master: aiPromptMaster,
+            ai_prompt_negative: aiPromptNegative,
+            maintenance_mode: maintenanceMode,
+            maintenance_message: maintenanceMessage,
+            manual_whatsapp: manualWhatsapp,
+            manual_email: manualEmail,
+          }),
         }),
-      });
-      if (!res.ok) throw new Error((await res.json()).message || 'Error');
+        fetch(`${API_URL}/api/admin/pricing`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers,
+          body: JSON.stringify({
+            id: 'meta',
+            data: {
+              social_instagram: contactMeta.social_instagram,
+              social_tiktok: contactMeta.social_tiktok,
+              social_facebook: contactMeta.social_facebook,
+              social_youtube: contactMeta.social_youtube,
+            },
+          }),
+        }),
+      ]);
+      if (!settingsRes.ok) throw new Error((await settingsRes.json()).message || 'Error');
+      if (!pricingRes.ok) throw new Error((await pricingRes.json()).error || 'Error al guardar redes');
       flash('Configuración global guardada correctamente', 'ok');
     } catch (err: any) { flash(err.message || 'Error al guardar', 'err'); }
     finally {
       setSavingAIConfig(false);
-      setSavingLandingConfig(false);
+      setSavingPricingConfig(false);
       setSavingCurrency(false);
       setSavingWhitelist(false);
       setSavingMaintenance(false);
+      setSavingContactConfig(false);
     }
   }
 
@@ -448,21 +513,55 @@ export default function SystemConfigPage() {
     finally { setSavingWhitelist(false); }
   }
 
-  async function handleSaveLandingConfig() {
-    setSavingLandingConfig(true);
+  async function handleSavePricingConfig() {
+    setSavingPricingConfig(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
+      const res = await fetch(`${API_URL}/api/admin/pricing`, {
         method: 'PUT', credentials: 'include', headers,
         body: JSON.stringify({
           landing_price: landingPrice,
           landing_original_price: landingOriginalPrice,
-          footer_brand_url: footerBrandUrl,
         }),
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Error');
       flash('Configuración de landing guardada', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
-    finally { setSavingLandingConfig(false); }
+    finally { setSavingPricingConfig(false); }
+  }
+
+  async function handleSaveContactConfig() {
+    setSavingContactConfig(true);
+    try {
+      const [settingsRes, pricingRes] = await Promise.all([
+        fetch(`${API_URL}/api/admin/payment-settings`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers,
+          body: JSON.stringify({
+            manual_whatsapp: manualWhatsapp,
+            manual_email: manualEmail,
+          }),
+        }),
+        fetch(`${API_URL}/api/admin/pricing`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers,
+          body: JSON.stringify({
+            id: 'meta',
+            data: {
+              social_instagram: contactMeta.social_instagram,
+              social_tiktok: contactMeta.social_tiktok,
+              social_facebook: contactMeta.social_facebook,
+              social_youtube: contactMeta.social_youtube,
+            },
+          }),
+        }),
+      ]);
+      if (!settingsRes.ok) throw new Error((await settingsRes.json()).message || 'Error');
+      if (!pricingRes.ok) throw new Error((await pricingRes.json()).error || 'Error al guardar redes');
+      flash('Contacto y redes guardados', 'ok');
+    } catch (err: any) { flash(err.message, 'err'); }
+    finally { setSavingContactConfig(false); }
   }
 
   async function handleSaveCurrency() {
@@ -508,19 +607,19 @@ export default function SystemConfigPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  type SysTab = 'trial' | 'debug' | 'credits' | 'ai' | 'health' | 'landing';
+  type SysTab = 'trial' | 'debug' | 'contact' | 'credits' | 'ai' | 'health';
   const [activeTab, setActiveTab] = useState<SysTab>('trial');
 
   const TABS: { id: SysTab; label: string; icon: React.ReactNode }[] = [
     { id: 'trial',   label: 'Trial',        icon: <IconClock className="w-4 h-4" /> },
     { id: 'debug',   label: 'Debugging',    icon: <IconShield className="w-4 h-4" /> },
-    { id: 'landing', label: 'Landing/URLs', icon: <IconLink className="w-4 h-4" /> },
+    { id: 'contact', label: 'Contacto y redes', icon: <IconExternalLink className="w-4 h-4" /> },
     { id: 'credits', label: 'Créditos IA',  icon: <IconCreditCard className="w-4 h-4" /> },
     { id: 'ai',      label: 'Motor de IA',  icon: <IconBrain className="w-4 h-4" /> },
     { id: 'health',  label: 'Servicios',    icon: <IconServer className="w-4 h-4" /> },
   ];
 
-  const isSaving = savingAIConfig || savingLandingConfig || savingCurrency || savingWhitelist;
+  const isSaving = savingAIConfig || savingPricingConfig || savingCurrency || savingWhitelist || savingContactConfig;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -529,7 +628,7 @@ export default function SystemConfigPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-bold">Configuración del sistema</h1>
-          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">Campañas, debugging, landing y estado de servicios.</p>
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">Campañas, debugging, contacto oficial y estado de servicios.</p>
         </div>
         <button
           onClick={handleGlobalSave}
@@ -761,55 +860,141 @@ export default function SystemConfigPage() {
       )} {/* fin tab debug */}
 
       {/* ── TAB: Landing ── */}
-      {activeTab === 'landing' && (
-      <Section title="URL Pública de la Empresa" icon={<IconLink className="w-4 h-4" />}>
+      {activeTab === 'contact' && (
+      <Section title="Contacto oficial y redes" icon={<IconExternalLink className="w-4 h-4" />}>
         <div className="space-y-6">
           <p style={{ color: 'var(--text-muted)' }} className="text-sm">
-            Esta es la dirección pública de tu plataforma. Aparece en el footer de todas las mini-landings y es el enlace principal para tus clientes.
+            Ajusta aquí el WhatsApp, correo y perfiles sociales que deben aparecer en botones, banners, footers y modales de todo el proyecto.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 items-center p-4 rounded-xl border border-dashed" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }}>
-            <div className="flex-1">
-              <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-1">URL de Marca (Footer)</label>
-              <div className="flex items-center gap-2">
+          <div
+            style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}
+            className="rounded-2xl border p-4 space-y-4"
+          >
+            <div>
+              <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">Precio de mini-landing</p>
+              <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">
+                Controla el valor de compra unica mostrado en el sitio y en los flujos comerciales.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Precio actual</label>
                 <input
-                  type="url"
-                  value={footerBrandUrl}
-                  onChange={e => setFooterBrandUrl(e.target.value)}
-                  placeholder="https://lookitry.com"
+                  type="number"
+                  min={0}
+                  value={landingPrice}
+                  onChange={e => setLandingPrice(Number(e.target.value || 0))}
+                  placeholder="650000"
                   style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                  className="flex-1 px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
+                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+                />
+              </div>
+              <div>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Precio comparativo</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={landingOriginalPrice}
+                  onChange={e => setLandingOriginalPrice(Number(e.target.value || 0))}
+                  placeholder="900000"
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
                 />
               </div>
             </div>
-            <a
-              href={footerBrandUrl.startsWith('http') ? footerBrandUrl : `https://${footerBrandUrl}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#FF5C3A] text-white text-sm font-bold hover:bg-[#e04e30] transition-all shadow-sm active:scale-95 w-full sm:w-auto justify-center"
-            >
-              <IconExternalLink className="w-4 h-4" />
-              Visitar Empresa
-            </a>
+
+            <div className="flex justify-end">
+              <button
+                onClick={handleSavePricingConfig}
+                disabled={savingPricingConfig}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
+              >
+                {savingPricingConfig
+                  ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                  : <IconCheck className="w-4 h-4" />}
+                Guardar precio
+              </button>
+            </div>
           </div>
 
-          <div style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }} className="p-4 rounded-xl border text-center">
-            <p style={{ color: 'var(--text-muted)' }} className="text-xs">
-              Vista previa en mini-landings:{' '}
-              <span style={{ color: 'var(--text-secondary)' }}>Probador virtual impulsado por </span>
-              <span className="font-medium" style={{ color: '#FF5C3A' }}>
-                {(footerBrandUrl || 'lookitry.com').replace(/^https?:\/\//, '')}
-              </span>
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">WhatsApp principal</label>
+              <input
+                type="text"
+                value={manualWhatsapp}
+                onChange={e => setManualWhatsapp(e.target.value)}
+                placeholder="+57 310 543 6281"
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+              />
+            </div>
+            <div>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Email principal</label>
+              <input
+                type="email"
+                value={manualEmail}
+                onChange={e => setManualEmail(e.target.value)}
+                placeholder="info@lookitry.com"
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+              />
+            </div>
+            <div>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Instagram</label>
+              <input
+                type="text"
+                value={contactMeta.social_instagram}
+                onChange={e => setContactMeta(prev => ({ ...prev, social_instagram: e.target.value }))}
+                placeholder="@looki.try"
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+              />
+            </div>
+            <div>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">TikTok</label>
+              <input
+                type="text"
+                value={contactMeta.social_tiktok}
+                onChange={e => setContactMeta(prev => ({ ...prev, social_tiktok: e.target.value }))}
+                placeholder="@lookitry"
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+              />
+            </div>
+            <div>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Facebook</label>
+              <input
+                type="text"
+                value={contactMeta.social_facebook}
+                onChange={e => setContactMeta(prev => ({ ...prev, social_facebook: e.target.value }))}
+                placeholder="lookitry"
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+              />
+            </div>
+            <div>
+              <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">YouTube</label>
+              <input
+                type="text"
+                value={contactMeta.social_youtube}
+                onChange={e => setContactMeta(prev => ({ ...prev, social_youtube: e.target.value }))}
+                placeholder="@lookitry"
+                style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end pt-2">
             <button
-              onClick={handleSaveLandingConfig}
-              disabled={savingLandingConfig}
+              onClick={handleSaveContactConfig}
+              disabled={savingContactConfig}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
             >
-              {savingLandingConfig
+              {savingContactConfig
                 ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
                 : <IconCheck className="w-4 h-4" />}
               Guardar Cambios

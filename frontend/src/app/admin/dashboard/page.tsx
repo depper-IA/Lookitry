@@ -73,7 +73,7 @@ export default function AdminDashboardPage() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="font-jakarta font-black uppercase italic tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
+        <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Métricas globales y seguimiento de conversiones</p>
       </div>
 
@@ -102,7 +102,7 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Plan distribution */}
         <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          <h2 className="font-jakarta font-bold uppercase italic text-sm mb-5" style={{ color: 'var(--text-primary)' }}>Distribución por plan</h2>
+          <h2 className="font-jakarta font-bold text-sm mb-5" style={{ color: 'var(--text-primary)' }}>Distribución por plan</h2>
           <div className="space-y-4">
             {[
               { label: 'Plan Basic', count: global.brandsByPlan.BASIC, color: '#64748b' },
@@ -134,7 +134,7 @@ export default function AdminDashboardPage() {
 
         {/* Conversions chart */}
         <div className="lg:col-span-2 rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          <h2 className="font-jakarta font-bold uppercase italic text-sm" style={{ color: 'var(--text-primary)' }}>Conversiones por mes</h2>
+          <h2 className="font-jakarta font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Conversiones por mes</h2>
           <p className="text-xs mb-5 mt-0.5" style={{ color: 'var(--text-secondary)' }}>Marcas que pasaron a suscripción activa</p>
           <div className="flex items-end gap-2 h-36">
             {conversion.conversionsByMonth.map(m => {
@@ -164,7 +164,7 @@ export default function AdminDashboardPage() {
       {/* Mini-landings */}
       {global.landingStats && (
         <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          <h2 className="font-jakarta font-bold uppercase italic text-sm mb-4" style={{ color: 'var(--text-primary)' }}>Mini-landings</h2>
+          <h2 className="font-jakarta font-bold tracking-tight text-sm mb-4" style={{ color: 'var(--text-primary)' }}>Mini-landings</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { label: 'Activas',     value: global.landingStats.active,    icon: <Globe className="w-4 h-4" />,       accent: '#10b981' },
@@ -190,7 +190,7 @@ export default function AdminDashboardPage() {
       {/* Monthly detail table */}
       <div className="rounded-[2rem] overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
-          <h2 className="font-jakarta font-bold uppercase italic text-sm" style={{ color: 'var(--text-primary)' }}>Detalle mensual de conversiones</h2>
+          <h2 className="font-jakarta font-bold tracking-tight text-sm" style={{ color: 'var(--text-primary)' }}>Detalle mensual de conversiones</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

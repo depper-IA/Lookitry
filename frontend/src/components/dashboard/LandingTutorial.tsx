@@ -130,7 +130,7 @@ export function LandingTutorial({ brandId, onClose }: LandingTutorialProps) {
             </p>
             <h3
               id="landing-tutorial-title"
-              className="text-white font-bold text-lg mt-0.5 font-syne"
+              className="text-white font-jakarta font-bold text-lg mt-0.5 tracking-tight"
             >
               Configura tu mini-landing
             </h3>

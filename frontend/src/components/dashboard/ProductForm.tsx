@@ -12,6 +12,7 @@ import { uploadService } from '@/services/upload.service';
 
 interface ProductFormProps {
   product?: Product | null;
+  showExternalId?: boolean;
   onSubmit: (data: CreateProductDto) => Promise<void>;
   onCancel: () => void;
 }
@@ -79,7 +80,7 @@ const BADGE_OPTIONS = [
   { value: 'oferta', label: 'Oferta' },
 ];
 
-export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
+export function ProductForm({ product, showExternalId = false, onSubmit, onCancel }: ProductFormProps) {
   const [formData, setFormData] = useState<CreateProductDto>({ name: '', description: '', imageUrl: '', category: 'tshirt', price: undefined, badge: undefined, externalId: undefined });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -267,7 +268,16 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       <CardBody>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input label="Nombre" name="name" value={formData.name} onChange={handleChange} error={errors.name} placeholder="Ej: Camiseta Logo" required />
-          <Input label="ID Externo (WooCommerce/Shopify)" name="externalId" value={formData.externalId || ''} onChange={handleChange} error={errors.externalId} placeholder="Ej: 12345 (opcional)" />
+          {showExternalId && (
+            <Input
+              label="ID Externo (WooCommerce/Shopify)"
+              name="externalId"
+              value={formData.externalId || ''}
+              onChange={handleChange}
+              error={errors.externalId}
+              placeholder="Ej: 12345 (opcional)"
+            />
+          )}
 
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">

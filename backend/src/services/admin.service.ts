@@ -778,6 +778,9 @@ export class AdminService {
     brand_id?: string;
     status?: string;
     payment_method?: string;
+    from?: string;
+    to?: string;
+    search?: string;
     limit?: number;
     offset?: number;
   }) {
@@ -788,10 +791,16 @@ export class AdminService {
       .eq('status', 'completed');
 
     if (filters.brand_id) statsQuery = statsQuery.eq('brand_id', filters.brand_id);
+    if (filters.status === 'completed') statsQuery = statsQuery.eq('status', 'completed');
     if (filters.payment_method) statsQuery = statsQuery.eq('payment_method', filters.payment_method);
+    if (filters.from) statsQuery = statsQuery.gte('payment_date', new Date(filters.from).toISOString());
+    if (filters.to) {
+      const endDate = new Date(filters.to);
+      endDate.setHours(23, 59, 59, 999);
+      statsQuery = statsQuery.lte('payment_date', endDate.toISOString());
+    }
 
-    const { data: statsData } = await statsQuery;
-    const totalRevenue = (statsData || []).reduce((sum, p) => sum + Number(p.amount), 0);
+    await statsQuery;
 
     // 2. Consulta paginada para la tabla (incluyendo plan)
     let query = supabaseAdmin
@@ -802,22 +811,50 @@ export class AdminService {
     if (filters.brand_id) query = query.eq('brand_id', filters.brand_id);
     if (filters.status) query = query.eq('status', filters.status);
     if (filters.payment_method) query = query.eq('payment_method', filters.payment_method);
-    
-    const limit = filters.limit || 50;
-    const offset = filters.offset || 0;
-    
-    query = query.range(offset, offset + limit - 1);
+    if (filters.from) query = query.gte('payment_date', new Date(filters.from).toISOString());
+    if (filters.to) {
+      const endDate = new Date(filters.to);
+      endDate.setHours(23, 59, 59, 999);
+      query = query.lte('payment_date', endDate.toISOString());
+    }
+
+    if (typeof filters.limit === 'number' && filters.limit > 0) {
+      const offset = filters.offset || 0;
+      query = query.range(offset, offset + filters.limit - 1);
+    }
 
     const { data, error, count } = await query;
 
     if (error) throw new Error('Error al obtener pagos: ' + error.message);
 
+    const normalizedSearch = filters.search?.trim().toLowerCase();
+    const filteredPayments = normalizedSearch
+      ? (data || []).filter((payment: any) => {
+          const haystack = [
+            payment.brands?.name,
+            payment.brands?.email,
+            payment.brands?.slug,
+            payment.reference,
+            payment.transaction_id,
+            payment.notes,
+          ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+
+          return haystack.includes(normalizedSearch);
+        })
+      : (data || []);
+
+    const completedPayments = filteredPayments.filter((payment: any) => payment.status === 'completed');
+    const totalRevenue = completedPayments.reduce((sum: number, payment: any) => sum + Number(payment.amount || 0), 0);
+
     return {
-      payments: data || [],
-      count: count || 0,
+      payments: filteredPayments,
+      count: normalizedSearch ? filteredPayments.length : (count || 0),
       stats: {
         total_revenue: totalRevenue,
-        completed_count: statsData?.length || 0
+        completed_count: completedPayments.length
       }
     };
   }

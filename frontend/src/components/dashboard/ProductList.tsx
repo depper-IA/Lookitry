@@ -301,7 +301,7 @@ function ListView({ products, onEdit, onDelete }: Omit<ProductListProps, 'viewMo
 // ── MAIN EXPORT ─────────────────────────────────────────────────────────────
 
 export function ProductList({ products, viewMode = 'grid', onEdit, onDelete }: ProductListProps) {
-  if (products.length === 0) return <EmptyState />;
+  if (products.length === 0) return null;
 
   const containerVariants = {
     hidden: { opacity: 0 },

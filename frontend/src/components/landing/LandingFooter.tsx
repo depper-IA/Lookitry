@@ -6,9 +6,12 @@ import { useState, useEffect } from 'react';
 import { 
   Mail, 
   Phone, 
-  Instagram
+  Instagram,
+  Facebook,
+  Youtube
 } from 'lucide-react';
 import { LookitryLogoText } from '@/components/mini-landing/shared';
+import { fetchPublicPaymentSettings, normalizeSocialUrl, toWhatsAppUrl } from '@/services/public-config.service';
 
 const NAV_PRODUCTO = [
   { label: 'Inicio', href: '/' },
@@ -47,8 +50,11 @@ export function LandingFooter() {
   const [socials, setSocials] = useState<{
     instagram?: string;
     tiktok?: string;
+    facebook?: string;
     youtube?: string;
     x?: string;
+    email?: string;
+    whatsapp?: string;
   }>({ instagram: '#', tiktok: '#' });
 
   useEffect(() => {
@@ -70,6 +76,23 @@ export function LandingFooter() {
             x: d.social_x,
           });
         }
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetchPublicPaymentSettings()
+      .then(data => {
+        if (!data) return;
+        setSocials(prev => ({
+          ...prev,
+          instagram: normalizeSocialUrl('instagram', data.socialInstagram) || prev.instagram || '#',
+          tiktok: normalizeSocialUrl('tiktok', data.socialTiktok) || prev.tiktok || '#',
+          facebook: normalizeSocialUrl('facebook', data.socialFacebook) || '',
+          youtube: normalizeSocialUrl('youtube', data.socialYoutube) || '',
+          email: data.manualEmail || 'info@lookitry.com',
+          whatsapp: toWhatsAppUrl(data.manualWhatsapp) || 'https://wa.me/573105436281',
+        }));
       })
       .catch(() => {});
   }, []);
@@ -133,15 +156,37 @@ export function LandingFooter() {
                 <IconTikTok />
               </a>
             )}
+            {socials.facebook && (
+              <a
+                href={socials.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="w-10 h-10 rounded-full bg-[#1a120f] border border-[#FF5C3A]/35 flex items-center justify-center text-[#ffb7a8] hover:text-white hover:bg-[#FF5C3A] transition-all"
+              >
+                <Facebook size={14} />
+              </a>
+            )}
+            {socials.youtube && (
+              <a
+                href={socials.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+                className="w-10 h-10 rounded-full bg-[#1a120f] border border-[#FF5C3A]/35 flex items-center justify-center text-[#ffb7a8] hover:text-white hover:bg-[#FF5C3A] transition-all"
+              >
+                <Youtube size={14} />
+              </a>
+            )}
             <a
-              href="mailto:info@lookitry.com"
+              href={`mailto:${socials.email || 'info@lookitry.com'}`}
               aria-label="Email"
               className="w-10 h-10 rounded-full bg-[#1a120f] border border-[#FF5C3A]/35 flex items-center justify-center text-[#ffb7a8] hover:text-white hover:bg-[#FF5C3A] transition-all"
             >
               <Mail size={14} />
             </a>
             <a
-              href="https://wa.me/573105436281"
+              href={socials.whatsapp || 'https://wa.me/573105436281'}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Teléfono"

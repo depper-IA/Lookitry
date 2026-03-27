@@ -408,8 +408,7 @@ export default function ProfilePage() {
                       placeholder={'https://landing.tumarca.com\nhttps://shop.tumarca.com\nhttps://micrositio.partner.com'}
                     />
                     <p className="text-[11px] font-medium text-[var(--text-muted)] opacity-70 leading-relaxed px-2">
-                      Un dominio por línea. Úsalo para permitir embeds manuales en varios sitios. Instagram y TikTok no ejecutan tu widget dentro de la app:
-                      ahí la estrategia correcta es enviar tráfico a tu mini-landing o dominio personalizado.
+                      Agrega un dominio por línea para activar tu probador en tu web, landing o micrositios autorizados.
                     </p>
                   </div>
 

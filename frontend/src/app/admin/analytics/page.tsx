@@ -83,7 +83,7 @@ export default function AdminAnalyticsPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-jakarta font-black uppercase italic tracking-tight" style={{ color: 'var(--text-primary)' }}>Analíticas Globales</h1>
+        <h1 className="text-2xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Analíticas globales</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Resumen del rendimiento y salud del ecosistema Lookitry.</p>
       </div>
 
@@ -124,7 +124,7 @@ export default function AdminAnalyticsPage() {
         <div className="lg:col-span-2 rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-lg font-jakarta font-bold uppercase italic" style={{ color: 'var(--text-primary)' }}>Uso de IA por Mes</h3>
+              <h3 className="text-lg font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Uso de IA por mes</h3>
               <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Volumen de generaciones en los últimos 6 meses</p>
             </div>
             <BarChart3 className="w-5 h-5 text-gray-400" />
@@ -177,7 +177,7 @@ export default function AdminAnalyticsPage() {
 
         {/* Distribución de Planes */}
         <div className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <h3 className="text-lg font-jakarta font-bold uppercase italic mb-6" style={{ color: 'var(--text-primary)' }}>Suscripciones</h3>
+          <h3 className="text-lg font-jakarta font-bold tracking-tight mb-6" style={{ color: 'var(--text-primary)' }}>Suscripciones</h3>
           
           <div className="space-y-6">
             <PlanStats 
