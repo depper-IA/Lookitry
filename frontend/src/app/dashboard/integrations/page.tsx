@@ -49,6 +49,37 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 }
 };
 
+const PLATFORM_CONNECTORS = [
+  {
+    name: 'WooCommerce',
+    icon: '/integrations/Woo_logo_color.svg',
+    status: 'Live',
+    tileClass: 'bg-white',
+    imageClass: 'object-contain',
+  },
+  {
+    name: 'Shopify Core',
+    icon: '/integrations/shopify.svg',
+    status: 'Beta',
+    tileClass: 'bg-white',
+    imageClass: 'object-contain scale-[0.9]',
+  },
+  {
+    name: 'Wix Global',
+    icon: '/integrations/Wix.svg',
+    status: 'Q4 2026',
+    tileClass: 'bg-[#f5f2ee]',
+    imageClass: 'object-contain scale-[0.9]',
+  },
+  {
+    name: 'Cloud SDK',
+    icon: '/logo.svg',
+    status: 'Available',
+    tileClass: 'bg-[#fff3ef] border-[#ffd3c8]',
+    imageClass: 'object-contain scale-[0.92]',
+  },
+] as const;
+
 type WooMetrics = {
   products: {
     totalMappedProducts: number;
@@ -118,24 +149,24 @@ export default function IntegrationsPage() {
       className="max-w-[1400px] mx-auto space-y-8 md:space-y-16 pb-20 px-4 xl:px-0 relative"
     >
       {/* ══ HEADER ══ */}
-      <motion.header variants={itemVariants} className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 md:gap-10 border-b border-[var(--border-color)] pb-10 md:pb-16 pt-4 md:pt-8 w-full overflow-hidden">
+      <motion.header variants={itemVariants} className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 md:gap-10 border-b border-[var(--border-color)] pb-8 md:pb-12 pt-4 md:pt-6 w-full overflow-hidden">
         <div className="space-y-4 md:space-y-6">
           <div className="flex items-center gap-4 md:gap-5">
-             <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl md:rounded-3xl bg-zinc-50 border border-zinc-100 flex items-center justify-center shadow-sm shrink-0 overflow-hidden p-2.5">
-                <img src="/logo.svg" alt="Lookitry" className="w-full h-full object-contain" />
+             <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl md:rounded-3xl bg-[#fff3ef] border border-[#ffd7cd] flex items-center justify-center shadow-sm shrink-0 overflow-hidden p-2.5">
+                <img src="/logo.svg" alt="Lookitry" className="w-full h-full object-contain scale-[0.92]" />
              </div>
              <div>
-                 <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white leading-none font-jakarta">
+                 <h1 className="text-2xl md:text-4xl xl:text-[2.7rem] font-bold tracking-tight text-[var(--text-primary)] leading-[0.95] font-jakarta">
                     Integraciones de <br />
                     <span className="text-[#FF5C3A]">Ecosistema Pro</span>
                  </h1>
-                 <p className="text-[10px] md:text-[11px] font-bold tracking-wider text-zinc-400 dark:text-zinc-500 uppercase mt-2 md:mt-3 mb-1">Conexión global • Tiempo real</p>
+                 <p className="text-[10px] md:text-[11px] font-bold tracking-wider text-[var(--text-muted)] uppercase mt-2 md:mt-3 mb-1">Conexión global • Tiempo real</p>
              </div>
           </div>
         </div>
 
-        <div className="flex flex-row overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 gap-3 md:gap-4 lg:self-end no-scrollbar scroll-smooth">
-           <Link href="/dashboard/integrations/docs" className="flex-none flex items-center justify-center gap-2 md:gap-3 px-5 md:px-10 py-4 md:py-5 bg-white border border-zinc-200 text-zinc-900 text-[10px] font-bold uppercase tracking-wider rounded-2xl md:rounded-3xl hover:bg-zinc-50 transition-all shadow-sm group whitespace-nowrap">
+        <div className="flex flex-row overflow-x-auto xl:overflow-visible pb-2 xl:pb-0 gap-3 md:gap-4 xl:self-end no-scrollbar scroll-smooth">
+           <Link href="/dashboard/integrations/docs" className="flex-none flex items-center justify-center gap-2 md:gap-3 px-5 md:px-10 py-4 md:py-5 bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] text-[10px] font-bold uppercase tracking-wider rounded-2xl md:rounded-3xl hover:bg-[var(--bg-hover)] transition-all shadow-sm group whitespace-nowrap">
               <HelpCircle className="w-4 h-4 text-[#FF5C3A] group-hover:rotate-12 transition-transform" />
               Documentación
            </Link>
@@ -146,22 +177,22 @@ export default function IntegrationsPage() {
         </div>
       </motion.header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-16">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 xl:gap-12">
         
         {/* ══ PANEL CENTRAL ══ */}
-        <div className="lg:col-span-8 space-y-12 md:space-y-16">
+        <div className="xl:col-span-8 space-y-10 md:space-y-14">
            
            {/* WOOCOMMERCE CARD */}
-           <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900/50 rounded-3xl md:rounded-[3rem] border border-zinc-100 dark:border-zinc-800 p-6 md:p-16 shadow-xl shadow-black/5 space-y-10 md:space-y-16 relative overflow-hidden group">
+           <motion.div variants={itemVariants} className="bg-[var(--bg-card)] rounded-3xl md:rounded-[3rem] border border-[var(--border-color)] p-6 md:p-10 xl:p-14 shadow-xl shadow-black/5 space-y-8 md:space-y-12 relative overflow-hidden group">
               
-              <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 border-b border-zinc-50 dark:border-zinc-800/50 pb-10 md:pb-16 text-center md:text-left">
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-zinc-50 dark:bg-zinc-800 flex items-center justify-center border border-zinc-100 dark:border-zinc-700 shadow-inner group-hover:rotate-6 transition-transform shrink-0 overflow-hidden p-4">
+              <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10 border-b border-[var(--border-color)] pb-10 md:pb-16 text-center md:text-left">
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-[var(--bg-input)] flex items-center justify-center border border-[var(--border-color)] shadow-inner group-hover:rotate-6 transition-transform shrink-0 overflow-hidden p-4">
                    <img src="/integrations/Woo_logo_color.svg" alt="WooCommerce" className="w-full h-full object-contain" />
                 </div>
                 <div>
                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-4 mb-3">
-                      <h2 className="text-2xl md:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight leading-none">WooCommerce</h2>
-                      <div className="px-3 py-1 bg-emerald-500 dark:bg-emerald-600 rounded-full border border-emerald-400/20 shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                      <h2 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight leading-none">WooCommerce</h2>
+                      <div className="px-3 py-1 bg-emerald-500 rounded-full border border-emerald-400/20 shadow-lg shadow-emerald-500/20 flex items-center gap-2">
                          <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                          <span className="text-[9px] font-bold text-white uppercase tracking-widest">Plugin activo</span>
                       </div>
@@ -176,7 +207,7 @@ export default function IntegrationsPage() {
               <div className="space-y-8 md:space-y-10">
                  <div className="space-y-4 md:space-y-6">
                     <div className="flex justify-between items-center px-2 md:px-4">
-                       <label className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-zinc-400">Clave de api de producción</label>
+                       <label className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Clave de api de producción</label>
                        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100 shrink-0">
                           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                           <span className="text-[8px] font-bold text-emerald-600 uppercase">Activa</span>
@@ -184,25 +215,25 @@ export default function IntegrationsPage() {
                     </div>
                     
                     <div className="relative group/key flex flex-col gap-3 md:block">
-                       <div className="absolute left-6 md:left-8 top-8 md:top-1/2 -translate-y-0 md:-translate-y-1/2 flex items-center gap-3 md:gap-5 md:pr-6 md:border-r md:border-zinc-100 hidden md:flex">
-                          <Terminal className="w-4 h-4 md:w-5 md:h-5 text-zinc-400" />
+                       <div className="absolute left-6 md:left-8 top-8 md:top-1/2 -translate-y-0 md:-translate-y-1/2 flex items-center gap-3 md:gap-5 md:pr-6 md:border-r md:border-[var(--border-color)] hidden md:flex">
+                          <Terminal className="w-4 h-4 md:w-5 md:h-5 text-[var(--text-muted)]" />
                        </div>
                        <input 
                           type={showKey ? 'text' : 'password'}
                           readOnly
                           value={apiKey}
-                          className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 rounded-2xl md:rounded-[2rem] py-5 md:py-8 px-6 md:pl-20 md:pr-44 text-[12px] md:text-base font-mono font-bold text-zinc-900 dark:text-white outline-none focus:border-[#FF5C3A]/30 transition-all shadow-inner truncate"
+                          className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-2xl md:rounded-[2rem] py-5 md:py-8 px-6 md:pl-20 md:pr-44 text-[12px] md:text-base font-mono font-bold text-[var(--text-primary)] outline-none focus:border-[#FF5C3A]/30 transition-all shadow-inner truncate"
                        />
-                       <div className="relative md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 flex flex-row gap-2 md:gap-4 p-1.5 md:p-2 bg-white dark:bg-zinc-900 rounded-xl md:rounded-[1.5rem] md:shadow-xl md:border md:border-zinc-50/5">
+                       <div className="relative md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 flex flex-row gap-2 md:gap-4 p-1.5 md:p-2 bg-[var(--bg-card)] rounded-xl md:rounded-[1.5rem] md:shadow-xl md:border md:border-[var(--border-color)]">
                           <button 
                             onMouseDown={() => setShowKey(true)} onTouchStart={() => setShowKey(true)} onMouseUp={() => setShowKey(false)} onTouchEnd={() => setShowKey(false)} onMouseLeave={() => setShowKey(false)}
-                            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-zinc-50 dark:bg-zinc-800 rounded-lg md:rounded-xl text-zinc-400 hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/5 transition-all shrink-0"
+                            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-[var(--bg-input)] rounded-lg md:rounded-xl text-[var(--text-muted)] hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/5 transition-all shrink-0"
                           >
                              {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
                           </button>
                           <button 
                              onClick={copyToClipboard}
-                             className={`flex-1 md:flex-none px-6 md:px-10 py-3 md:py-4 ${copied ? 'bg-emerald-500' : 'bg-zinc-900 dark:bg-zinc-700'} text-white rounded-lg md:rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-2 md:gap-3`}
+                             className={`flex-1 md:flex-none px-6 md:px-10 py-3 md:py-4 ${copied ? 'bg-emerald-500' : 'bg-[#0a0a0a]'} text-white rounded-lg md:rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-2 md:gap-3`}
                           >
                              {copied ? <Check size={14} /> : <Copy size={14} />}
                              {copied ? 'Listo' : 'Copiar clave'}
@@ -210,46 +241,46 @@ export default function IntegrationsPage() {
                        </div>
                     </div>
                     
-                    <div className="flex items-start gap-3 md:gap-4 px-4 md:px-6 py-3 md:py-4 bg-zinc-50 rounded-2xl border border-zinc-100">
+                    <div className="flex items-start gap-3 md:gap-4 px-4 md:px-6 py-3 md:py-4 bg-[var(--bg-input)] rounded-2xl border border-[var(--border-color)]">
                        <ShieldAlert className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                       <p className="text-[10px] font-medium text-zinc-400 tracking-tight leading-relaxed uppercase">Seguridad crítica: No expongas esta clave en el cliente de tu tienda.</p>
+                       <p className="text-[10px] font-medium text-[var(--text-muted)] tracking-tight leading-relaxed uppercase">Seguridad crítica: No expongas esta clave en el cliente de tu tienda.</p>
                     </div>
                  </div>
               </div>
 
-              <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+              <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
                  {metricsLoading ? (
                     <div className="col-span-2 xl:col-span-4 flex items-center justify-center py-10">
                        <Spinner />
                     </div>
                  ) : (
                     <>
-                       <div className="p-5 md:p-7 rounded-3xl bg-zinc-50 border border-zinc-100">
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Productos activos</p>
-                          <p className="text-2xl md:text-3xl font-black tracking-tight text-zinc-900">{wooMetrics?.products.activeMappedProducts || 0}</p>
+                       <div className="p-5 md:p-6 rounded-3xl bg-[var(--bg-input)] border border-[var(--border-color)]">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-2">Productos activos</p>
+                          <p className="text-2xl md:text-3xl font-black tracking-tight text-[var(--text-primary)]">{wooMetrics?.products.activeMappedProducts || 0}</p>
                        </div>
-                       <div className="p-5 md:p-7 rounded-3xl bg-zinc-50 border border-zinc-100">
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Mapeados</p>
-                          <p className="text-2xl md:text-3xl font-black tracking-tight text-zinc-900">{wooMetrics?.products.totalMappedProducts || 0}</p>
+                       <div className="p-5 md:p-6 rounded-3xl bg-[var(--bg-input)] border border-[var(--border-color)]">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-2">Mapeados</p>
+                          <p className="text-2xl md:text-3xl font-black tracking-tight text-[var(--text-primary)]">{wooMetrics?.products.totalMappedProducts || 0}</p>
                        </div>
-                       <div className="p-5 md:p-7 rounded-3xl bg-zinc-50 border border-zinc-100">
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Errores plugin (30d)</p>
-                          <p className="text-2xl md:text-3xl font-black tracking-tight text-zinc-900">{wooMetrics?.telemetry.failedRequests || 0}</p>
+                       <div className="p-5 md:p-6 rounded-3xl bg-[var(--bg-input)] border border-[var(--border-color)]">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-2">Errores plugin (30d)</p>
+                          <p className="text-2xl md:text-3xl font-black tracking-tight text-[var(--text-primary)]">{wooMetrics?.telemetry.failedRequests || 0}</p>
                        </div>
-                       <div className="p-5 md:p-7 rounded-3xl bg-zinc-50 border border-zinc-100">
-                          <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 mb-2">Latencia promedio</p>
-                          <p className="text-2xl md:text-3xl font-black tracking-tight text-zinc-900">{wooMetrics?.telemetry.avgLatencyMs || 0}ms</p>
+                       <div className="p-5 md:p-6 rounded-3xl bg-[var(--bg-input)] border border-[var(--border-color)]">
+                          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-2">Latencia promedio</p>
+                          <p className="text-2xl md:text-3xl font-black tracking-tight text-[var(--text-primary)]">{wooMetrics?.telemetry.avgLatencyMs || 0}ms</p>
                        </div>
                     </>
                  )}
               </div>
 
               {!metricsLoading && (
-                 <div className="rounded-3xl border border-zinc-100 bg-zinc-50 px-6 py-5">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                 <div className="rounded-3xl border border-[var(--border-color)] bg-[var(--bg-input)] px-6 py-5">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">
                       Ultima sincronizacion exitosa
                     </p>
-                    <p className="mt-2 text-sm font-semibold text-zinc-900">
+                    <p className="mt-2 text-sm font-semibold text-[var(--text-primary)]">
                       {wooMetrics?.telemetry.lastSyncAt
                         ? new Date(wooMetrics.telemetry.lastSyncAt).toLocaleString('es-CO')
                         : 'Aun no registrada'}
@@ -258,16 +289,16 @@ export default function IntegrationsPage() {
               )}
 
               {/* PASOS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pt-4 md:pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 md:gap-6 pt-2 md:pt-4">
                  {steps.map((step) => (
-                    <div key={step.id} className="group/step p-6 md:p-10 rounded-3xl bg-zinc-50/50 dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 transition-all relative overflow-hidden">
-                       <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 flex items-center justify-center mb-6 md:mb-8 shadow-sm group-hover:scale-110 transition-transform">
+                    <div key={step.id} className="group/step p-6 md:p-8 xl:p-9 rounded-3xl bg-[var(--bg-input)] border border-[var(--border-color)] hover:bg-[var(--bg-card)] hover:border-[#FF5C3A]/20 transition-all relative overflow-hidden min-h-[320px] flex flex-col">
+                       <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center mb-6 md:mb-8 shadow-sm group-hover:scale-110 transition-transform">
                           {step.icon}
                        </div>
-                       <h3 className="text-[11px] font-bold text-zinc-900 dark:text-white uppercase tracking-wider mb-3 md:mb-4">
+                       <h3 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-wider mb-3 md:mb-4">
                           {step.title}
                         </h3>
-                        <p className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 leading-relaxed tracking-tight group-hover:text-zinc-500 transition-colors">
+                        <p className="text-[10px] font-medium text-[var(--text-muted)] leading-relaxed tracking-tight group-hover:text-[var(--text-secondary)] transition-colors flex-1">
                            {step.description}
                         </p>
                        
@@ -296,7 +327,7 @@ export default function IntegrationsPage() {
                     <p className="text-sm font-medium text-zinc-400 leading-relaxed opacity-80">
                        Construye experiencias personalizadas sobre nuestra infraestructura de inteligencia artificial.
                     </p>
-                     <button className="w-full lg:w-auto px-8 md:px-12 py-4 md:py-6 bg-white text-zinc-900 text-[10px] font-bold uppercase tracking-wider rounded-xl md:rounded-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 md:gap-5">
+                     <button className="w-full lg:w-auto px-8 md:px-12 py-4 md:py-6 bg-[#FF5C3A] text-white text-[10px] font-bold uppercase tracking-wider rounded-xl md:rounded-2xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 md:gap-5 shadow-lg shadow-[#FF5C3A]/20">
                        Documentación SDK <ExternalLink className="w-[18px] h-[18px]" />
                     </button>
                  </div>
@@ -320,29 +351,24 @@ const { image } = await lookitry.render({
          </div>
 
         {/* ══ SIDEBAR ══ */}
-         <div className="lg:col-span-4 space-y-8 md:space-y-12">
+         <div className="xl:col-span-4 space-y-8 md:space-y-10">
             
             {/* PLATAFORMAS */}
-            <motion.div variants={itemVariants} className="bg-white dark:bg-zinc-900/50 rounded-3xl md:rounded-[3rem] border border-zinc-100 dark:border-zinc-800 p-8 md:p-12 shadow-xl shadow-black/5 space-y-8 md:space-y-12">
+            <motion.div variants={itemVariants} className="bg-[var(--bg-card)] rounded-3xl md:rounded-[3rem] border border-[var(--border-color)] p-8 md:p-12 shadow-xl shadow-black/5 space-y-8 md:space-y-12">
                <div className="space-y-2 md:space-y-3">
-                  <h3 className="text-[11px] font-bold text-zinc-900 dark:text-white uppercase tracking-widest leading-none">Connectors</h3>
-                  <p className="text-[9px] font-bold text-zinc-300 dark:text-zinc-600 uppercase tracking-wider">Framework availability</p>
+                  <h3 className="text-[11px] font-bold text-[var(--text-primary)] uppercase tracking-widest leading-none">Connectors</h3>
+                  <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Framework availability</p>
                </div>
                <div className="space-y-4 md:space-y-6">
-                  {[
-                    { name: 'WooCommerce', icon: '/integrations/Woo_logo_color.svg', color: '#f5f5f5', status: 'Live' },
-                    { name: 'Shopify Core', icon: '/integrations/shopify.svg', color: '#f5f5f5', status: 'Beta' },
-                    { name: 'Wix Global', icon: '/integrations/Wix.svg', color: '#f5f5f5', status: 'Q4 2026' },
-                    { name: 'Cloud SDK', icon: '/logo.svg', color: '#f5f5f5', status: 'Available' }
-                  ].map((plat) => (
-                     <div key={plat.name} className="flex items-center justify-between p-5 md:p-7 bg-zinc-50 dark:bg-zinc-800/30 border border-zinc-50 dark:border-zinc-800 rounded-2xl md:rounded-3xl hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 group/plat transition-all shadow-sm">
+                  {PLATFORM_CONNECTORS.map((plat) => (
+                     <div key={plat.name} className="flex items-center justify-between p-5 md:p-7 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-2xl md:rounded-3xl hover:bg-[var(--bg-card)] hover:border-[#FF5C3A]/20 group/plat transition-all shadow-sm">
                         <div className="flex items-center gap-4 md:gap-6">
-                           <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-all bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-700 shrink-0 overflow-hidden p-2.5">
-                              <img src={plat.icon} alt={plat.name} className="w-full h-full object-contain" />
+                           <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-all border border-[var(--border-color)] shrink-0 overflow-hidden p-2.5 ${plat.tileClass}`}>
+                              <img src={plat.icon} alt={plat.name} className={`w-full h-full ${plat.imageClass}`} />
                            </div>
                            <div>
-                              <p className="text-[12px] font-bold text-zinc-900 dark:text-white uppercase tracking-tight">{plat.name}</p>
-                              <p className={`text-[8px] font-bold uppercase tracking-widest mt-1 ${plat.status === 'Live' ? 'text-emerald-500' : 'text-zinc-400 dark:text-zinc-600 opacity-60'}`}>{plat.status}</p>
+                              <p className="text-[12px] font-bold text-[var(--text-primary)] uppercase tracking-tight">{plat.name}</p>
+                              <p className={`text-[8px] font-bold uppercase tracking-widest mt-1 ${plat.status === 'Live' ? 'text-emerald-500' : 'text-[var(--text-muted)] opacity-60'}`}>{plat.status}</p>
                            </div>
                         </div>
                      </div>

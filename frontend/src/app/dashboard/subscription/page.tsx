@@ -50,8 +50,8 @@ const DESIGN_SYSTEM = {
     name: 'Lookitry Basic',
     color: '#FF5C3A',
     secondaryColor: '#FF5C3A',
-    glow: 'rgba(255, 92, 58, 0.1)',
-    bg: 'bg-zinc-50/50',
+    glow: 'rgba(255, 92, 58, 0.08)',
+    bg: 'bg-[var(--bg-card)]',
     icon: <Globe className="w-8 h-8" />,
     label: 'Plan básico'
   },
@@ -59,8 +59,8 @@ const DESIGN_SYSTEM = {
     name: 'Lookitry Pro',
     color: '#FF5C3A',
     secondaryColor: '#FF5C3A',
-    glow: 'rgba(255, 92, 58, 0.15)',
-    bg: 'bg-zinc-50/80',
+    glow: 'rgba(255, 92, 58, 0.12)',
+    bg: 'bg-[var(--bg-card)]',
     icon: <Rocket className="w-8 h-8" />,
     label: 'Plan pro'
   },
@@ -68,8 +68,8 @@ const DESIGN_SYSTEM = {
      name: 'Período trial',
      color: '#FF5C3A',
      secondaryColor: '#FF5C3A',
-     glow: 'rgba(255, 92, 58, 0.1)',
-     bg: 'bg-zinc-100/50',
+     glow: 'rgba(255, 92, 58, 0.08)',
+     bg: 'bg-[var(--bg-card)]',
      icon: <Zap className="w-8 h-8" />,
      label: 'Acceso trial'
   }
@@ -213,8 +213,8 @@ export default function SubscriptionPage() {
         variants={itemVariants} 
         className={`relative overflow-hidden rounded-[3.5rem] p-8 sm:p-12 ${currentDesign.bg} border border-[var(--border-color)] shadow-xl shadow-black/5`}
       >
-         <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.15]" style={{ background: `radial-gradient(circle, ${currentDesign.color} 0%, transparent 70%)` }} />
-         <div className="absolute -bottom-20 -left-20 w-[400px] h-[400px] rounded-full blur-[120px] opacity-[0.1]" style={{ background: `radial-gradient(circle, ${currentDesign.secondaryColor || '#FF5C3A'} 0%, transparent 70%)` }} />
+         <div className="absolute inset-x-0 top-0 h-28 border-b border-[#FF5C3A]/10 bg-gradient-to-r from-[#FF5C3A]/6 via-transparent to-[#FF5C3A]/8" />
+         <div className="absolute top-10 right-10 h-40 w-40 rounded-full blur-[80px] opacity-[0.08]" style={{ background: currentDesign.color }} />
          
          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-12 items-center">
             <div className="space-y-8">
@@ -257,7 +257,7 @@ export default function SubscriptionPage() {
                </div>
             </div>
 
-            <div className="flex flex-col gap-4 bg-[var(--bg-input)] backdrop-blur-3xl p-10 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl">
+            <div className="flex flex-col gap-4 bg-[var(--bg-input)] p-10 rounded-[2.5rem] border border-[var(--border-color)] shadow-xl">
                <div className="flex items-center gap-4 mb-6">
                   <div className="w-14 h-14 rounded-2xl bg-[var(--bg-card)] flex items-center justify-center text-[#FF5C3A] shadow-inner">
                      {currentDesign.icon}
