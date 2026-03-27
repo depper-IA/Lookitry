@@ -3,20 +3,24 @@
 import { useEffect, useState } from 'react';
 
 interface ProUpgradeBannerProps {
+  brandId: string;
   brandName: string;
+  onClose?: () => void;
 }
 
-export function ProUpgradeBanner({ brandName }: ProUpgradeBannerProps) {
+export function ProUpgradeBanner({ brandId, brandName, onClose }: ProUpgradeBannerProps) {
   const [visible, setVisible] = useState(false);
+  const storageKey = `pro_upgrade_banner_seen_${brandId}`;
 
   useEffect(() => {
-    const dismissed = sessionStorage.getItem('pro_upgrade_banner_dismissed');
+    const dismissed = localStorage.getItem(storageKey);
     if (!dismissed) setVisible(true);
-  }, []);
+  }, [storageKey]);
 
   const dismiss = () => {
-    sessionStorage.setItem('pro_upgrade_banner_dismissed', '1');
+    localStorage.setItem(storageKey, '1');
     setVisible(false);
+    onClose?.();
   };
 
   if (!visible) return null;

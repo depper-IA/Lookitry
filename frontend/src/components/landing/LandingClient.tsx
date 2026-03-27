@@ -116,10 +116,10 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
       : formatCurrency(cop);
   };
 
-  const basicPrice = pricing?.basic?.precio_mensual_cop ?? 150000;
-  const proPrice   = pricing?.pro?.precio_mensual_cop   ?? 250000;
-  const basicOrig  = pricing?.basic?.precio_original_cop ?? 150000;
-  const proOrig    = pricing?.pro?.precio_original_cop   ?? 250000;
+  const basicPrice = pricing?.basic?.precio_mensual_cop ?? 180000;
+  const proPrice   = pricing?.pro?.precio_mensual_cop   ?? 350000;
+  const basicOrig  = pricing?.basic?.precio_original_cop ?? 180000;
+  const proOrig    = pricing?.pro?.precio_original_cop   ?? 350000;
 
   const basicFeatures = [
     `${pricing?.basic?.productos_max ?? 5} productos`,
@@ -131,11 +131,29 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
 
   const proFeatures = [
     `${pricing?.pro?.productos_max ?? 15} productos`,
-    `${isMounted ? (pricing?.pro?.generaciones_mensuales ?? 1200).toLocaleString('es-CO') : (pricing?.pro?.generaciones_mensuales ?? 1200)} generaciones/mes`,
+    `${isMounted ? (pricing?.pro?.generaciones_mensuales ?? 1000).toLocaleString('es-CO') : (pricing?.pro?.generaciones_mensuales ?? 1000)} generaciones/mes`,
+    'Plugin WooCommerce',
     'Templates avanzados',
     'Compartir con tu nombre de marca',
     'URL personalizada del widget',
     'Soporte prioritario'
+  ];
+
+  const enterpriseFeatures = [
+    '+50 productos',
+    'Volumen a medida',
+    'Marca Blanca',
+    'Panel de Analítica Avanzado',
+    'Acceso a API',
+  ];
+
+  const comparisonRows = [
+    ['Productos en el probador', '5', '15', '+50'],
+    ['Generaciones por mes', '400', '1.000', 'A medida'],
+    ['Plugin WooCommerce', 'No', 'Sí', 'Sí'],
+    ['Marca Blanca', 'No', 'No', 'Sí'],
+    ['Panel de Analítica Avanzado', 'No', 'No', 'Sí'],
+    ['Acceso a API', 'No', 'No', 'Sí'],
   ];
 
   return (
@@ -256,12 +274,12 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
 
         {/* PRICING */}
         <section className="bg-[#0a0a0a] py-16 md:py-20 px-6 md:px-8" aria-labelledby="pricing-heading">
-          <div className="max-w-[700px] mx-auto">
+          <div className="max-w-[1180px] mx-auto">
             <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Planes</p>
             <h2 id="pricing-heading" className="font-bold text-3xl text-white tracking-tight mb-10">
               Precios simples
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 xl:gap-7 pt-4">
               {/* Básico */}
               <div className="bg-[#141414] border border-[#2a2a2a] hover:border-[#FF5C3A]/60 transition-colors duration-200 rounded-xl p-6 md:p-7 flex flex-col h-full relative">
                 <div className="font-bold text-lg text-white mb-1">Básico</div>
@@ -343,6 +361,59 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
                     Contratar Pro
                   </Link>
                 </div>
+              </div>
+              {/* Enterprise */}
+              <div className="bg-[#141414] border border-[#2a2a2a] hover:border-[#FF5C3A]/60 transition-colors duration-200 rounded-xl p-6 md:p-7 flex flex-col h-full relative">
+                <div className="font-bold text-lg text-white mb-1">Enterprise</div>
+                <div className="mb-0.5 flex flex-wrap items-baseline gap-x-2">
+                  <span className="font-extrabold text-[30px] text-white tracking-tight">
+                    Personalizado
+                  </span>
+                </div>
+                <div className="text-[12px] text-[#666] mb-5">Implementación consultiva a medida</div>
+                <ul className="flex flex-col gap-2 mb-6 flex-1">
+                  {enterpriseFeatures.map(f => (
+                    <li key={f} className="flex items-center gap-2 text-[13px] text-[#999]">
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,92,58,0.13)' }} aria-hidden="true">
+                        <IconCheckSmall />
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/contacto?plan=enterprise"
+                  className="block w-full text-center py-2.5 border border-[#FF5C3A] text-[#FF5C3A] hover:bg-[#FF5C3A] hover:text-white text-[13px] font-medium rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF5C3A] mt-auto"
+                >
+                  Hablar con ventas
+                </Link>
+              </div>
+            </div>
+            <div className="mt-8 overflow-hidden rounded-xl border border-[#2a2a2a]">
+              <div className="px-6 py-4 border-b border-[#2a2a2a] text-sm font-bold text-white">
+                Comparativa completa
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[680px] text-sm">
+                  <thead className="bg-[#111] text-[#999]">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Característica</th>
+                      <th className="px-4 py-3 text-left">Básico</th>
+                      <th className="px-4 py-3 text-left">Pro</th>
+                      <th className="px-4 py-3 text-left">Enterprise</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comparisonRows.map(([label, basic, pro, enterprise]) => (
+                      <tr key={label} className="border-t border-[#1f1f1f] text-[#ddd]">
+                        <td className="px-4 py-3">{label}</td>
+                        <td className="px-4 py-3">{basic}</td>
+                        <td className="px-4 py-3">{pro}</td>
+                        <td className="px-4 py-3">{enterprise}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

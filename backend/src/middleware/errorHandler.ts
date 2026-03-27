@@ -52,7 +52,7 @@ export class LimitExceededError extends AppError {
   };
 
   constructor(message: string, usage?: { used: number; limit: number }) {
-    super(message, 429, 'LIMIT_EXCEEDED');
+    super(message, 403, 'LIMIT_EXCEEDED');
     this.usage = usage;
   }
 }

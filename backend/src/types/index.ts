@@ -24,6 +24,7 @@ export interface Brand {
   // Campos de período de prueba (Requirement 11 - Opción C)
   trial_end_date: string | null;
   trial_generations_limit: number;
+  extra_credits_balance?: number;
   created_at: string;
   updated_at: string;
   custom_domain: string | null;

@@ -1,6 +1,18 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 
+function getEnterpriseSyncWebhookUrl() {
+  if (process.env.N8N_ENTERPRISE_SYNC_WEBHOOK_URL) {
+    return process.env.N8N_ENTERPRISE_SYNC_WEBHOOK_URL;
+  }
+
+  if (process.env.N8N_WEBHOOK_URL) {
+    return process.env.N8N_WEBHOOK_URL.replace(/\/tryon\/?$/, '/enterprise-sync');
+  }
+
+  return '';
+}
+
 // GET /admin/enterprise — Listar todas las configs de sync Enterprise
 export const listEnterpriseSyncConfigs = async (req: Request, res: Response) => {
   try {
@@ -45,6 +57,10 @@ export const upsertEnterpriseSyncConfig = async (req: Request, res: Response) =>
 
     if (brandError || !brand) {
       return res.status(404).json({ error: 'Marca no encontrada' });
+    }
+
+    if (brand.plan !== 'ENTERPRISE') {
+      return res.status(400).json({ error: 'Solo las marcas con plan ENTERPRISE pueden usar The Sync' });
     }
 
     const payload: Record<string, any> = {
@@ -100,7 +116,7 @@ export const triggerEnterpriseSync = async (req: Request, res: Response) => {
     }
 
     // Disparar el webhook de n8n para este cliente
-    const n8nWebhookUrl = process.env.N8N_ENTERPRISE_SYNC_WEBHOOK_URL;
+    const n8nWebhookUrl = getEnterpriseSyncWebhookUrl();
     if (!n8nWebhookUrl) {
       return res.status(503).json({ error: 'Webhook de n8n no configurado (N8N_ENTERPRISE_SYNC_WEBHOOK_URL)' });
     }
@@ -129,7 +145,12 @@ export const triggerEnterpriseSync = async (req: Request, res: Response) => {
     // Marcar como pendiente en la BD
     await supabaseAdmin
       .from('enterprise_sync_configs')
-      .update({ last_sync_status: 'pending', updated_at: new Date().toISOString() })
+      .update({
+        last_sync_status: 'pending',
+        last_sync_message: null,
+        products_synced_count: 0,
+        updated_at: new Date().toISOString(),
+      })
       .eq('brand_id', brandId);
 
     return res.json({ message: 'Sync disparado exitosamente. n8n procesará los productos en breve.' });
@@ -233,7 +254,8 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
         return res.status(500).json({ error: error.message });
       }
 
-      // Actualizar timestamp en enterprise_sync_configs
+      // Actualizar timestamp y contador en enterprise_sync_configs
+      await supabaseAdmin.rpc('increment_sync_count', { p_brand_id: brand_id });
       await supabaseAdmin
         .from('enterprise_sync_configs')
         .update({

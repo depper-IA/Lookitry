@@ -60,22 +60,12 @@ export default function EnterpriseSyncPage() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  const getAuthHeaders = () => {
-    const token = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('admin_token='))
-      ?.split('=')[1];
-    return {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token || ''}`,
-    };
-  };
-
   const fetchConfigs = useCallback(async () => {
     try {
       const res = await fetch(`${API_URL}/api/admin/enterprise`, {
-        headers: getAuthHeaders(),
+        credentials: 'include',
       });
+      if (!res.ok) throw new Error('No se pudieron cargar las configuraciones de sync');
       const data = await res.json();
       setConfigs(data.configs || []);
     } catch (err) {
@@ -87,7 +77,8 @@ export default function EnterpriseSyncPage() {
 
   const fetchBrands = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/brands`, { headers: getAuthHeaders() });
+      const res = await fetch(`${API_URL}/api/admin/brands`, { credentials: 'include' });
+      if (!res.ok) throw new Error('No se pudieron cargar las marcas enterprise');
       const data = await res.json();
       setBrands((data.brands || []).filter((b: Brand) => b.plan === 'ENTERPRISE'));
     } catch (err) {
@@ -105,7 +96,7 @@ export default function EnterpriseSyncPage() {
     try {
       const res = await fetch(`${API_URL}/api/admin/enterprise/${brandId}/trigger-sync`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        credentials: 'include',
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al disparar sync');
@@ -152,7 +143,10 @@ export default function EnterpriseSyncPage() {
     try {
       const res = await fetch(`${API_URL}/api/admin/enterprise/${form.brand_id}/sync-config`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           sync_type: form.sync_type,
           source_url: form.source_url,

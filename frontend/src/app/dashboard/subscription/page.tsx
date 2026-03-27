@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   CreditCard, 
   CheckCircle, 
@@ -21,10 +21,13 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { subscriptionService } from '@/services/subscription.service';
+import { usageService } from '@/services/usage.service';
+import { paymentsService } from '@/services/payments.service';
 import { formatCurrency } from '@/utils/currency';
 import type { SubscriptionPayment } from '@/types';
 import type { SubscriptionInfo } from '@/services/subscription.service';
 import { Spinner } from '@/components/ui/Spinner';
+import type { UsageStats } from '@/types';
 
 // ── Animaciones ──────────────────────────────────────────────────────────────
 const containerVariants = {
@@ -103,14 +106,27 @@ function formatDateTime(d?: string | null): string {
   });
 }
 
+const formatUsd = (amount: number): string =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+
 export default function SubscriptionPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [info, setInfo] = useState<SubscriptionInfo | null>(null);
   const [payments, setPayments] = useState<SubscriptionPayment[]>([]);
   const [loading, setLoading] = useState(true);
   const [dynamicPrices, setDynamicPrices] = useState<{ BASIC: number; PRO: number; TRIAL: number }>({ BASIC: 150000, PRO: 250000, TRIAL: 0 });
   const [dynamicGenerations, setDynamicGenerations] = useState<{ BASIC: number; PRO: number }>({ BASIC: 400, PRO: 1200 });
   const [paySettings, setPaySettings] = useState<any>(null);
+  const [usage, setUsage] = useState<UsageStats | null>(null);
+  const [buyingAddon, setBuyingAddon] = useState(false);
+  const [addonError, setAddonError] = useState('');
+  const [selectedAddonGateway, setSelectedAddonGateway] = useState<'wompi' | 'paypal'>('wompi');
 
   // Filtros y paginación
   const [searchTerm, setSearchTerm] = useState('');
@@ -121,9 +137,10 @@ export default function SubscriptionPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [subResult, paymentsResult, settingsResult, pricingResult] = await Promise.allSettled([
+        const [subResult, paymentsResult, usageResult, settingsResult, pricingResult] = await Promise.allSettled([
           subscriptionService.getSubscriptionInfo(),
           subscriptionService.getPayments(),
+          usageService.getUsageStats(),
           fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
           fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?id=in.(basic,pro)&select=id,data`, {
             headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}` },
@@ -131,6 +148,7 @@ export default function SubscriptionPage() {
         ]);
         if (subResult.status === 'fulfilled') setInfo(subResult.value);
         if (paymentsResult.status === 'fulfilled') setPayments(paymentsResult.value);
+        if (usageResult.status === 'fulfilled') setUsage(usageResult.value);
         if (settingsResult.status === 'fulfilled') setPaySettings(settingsResult.value);
         if (pricingResult.status === 'fulfilled' && Array.isArray(pricingResult.value)) {
           const prices = { BASIC: 150000, PRO: 250000, TRIAL: 0 };
@@ -138,11 +156,15 @@ export default function SubscriptionPage() {
           pricingResult.value.forEach((row: any) => {
             if (row.id === 'basic') {
               prices.BASIC = row.data.precio_mensual_cop;
-              if (row.data.generaciones_mes) gens.BASIC = row.data.generaciones_mes;
+              if (row.data.generaciones_mensuales || row.data.generaciones_mes) {
+                gens.BASIC = row.data.generaciones_mensuales || row.data.generaciones_mes;
+              }
             }
             if (row.id === 'pro') {
               prices.PRO = row.data.precio_mensual_cop;
-              if (row.data.generaciones_mes) gens.PRO = row.data.generaciones_mes;
+              if (row.data.generaciones_mensuales || row.data.generaciones_mes) {
+                gens.PRO = row.data.generaciones_mensuales || row.data.generaciones_mes;
+              }
             }
           });
           setDynamicPrices(prices);
@@ -155,6 +177,22 @@ export default function SubscriptionPage() {
     load();
   }, []);
 
+  useEffect(() => {
+    if (!paySettings) return;
+
+    const wompiEnabled = paySettings?.wompiEnabled !== false;
+    const paypalEnabled = paySettings?.paypalEnabled === true;
+
+    if (!wompiEnabled && paypalEnabled) {
+      setSelectedAddonGateway('paypal');
+      return;
+    }
+
+    if (wompiEnabled) {
+      setSelectedAddonGateway('wompi');
+    }
+  }, [paySettings]);
+
   const planKey = (info?.brand?.plan ?? 'BASIC') as keyof typeof DESIGN_SYSTEM;
   const inTrial = info?.isInTrial ?? false;
   const currentDesign = inTrial ? DESIGN_SYSTEM.TRIAL : DESIGN_SYSTEM[planKey];
@@ -162,6 +200,17 @@ export default function SubscriptionPage() {
   const displayDaysRemaining = inTrial ? (info?.trialDaysRemaining ?? 0) : (info?.daysRemaining ?? 0);
   const maxDays = inTrial ? 7 : 30; // Approximation for progress bar
   const progressPercent = Math.min(100, Math.max(0, Math.round(((maxDays - displayDaysRemaining) / maxDays) * 100)));
+  const addonStatus = searchParams.get('addon');
+  const addonSuccess = addonStatus === 'success';
+  const addonCancelled = addonStatus === 'cancelled';
+  const wompiAvailable = paySettings?.wompiEnabled !== false;
+  const paypalAvailable = paySettings?.paypalEnabled === true;
+  const addonPriceCop = 50000;
+  const trm = Number(paySettings?.trm) > 0 ? Number(paySettings.trm) : 3900;
+  const addonPriceUsd = Math.ceil((addonPriceCop / trm) * 100) / 100;
+  const addonDisplayPrice = selectedAddonGateway === 'paypal'
+    ? formatUsd(addonPriceUsd)
+    : formatCurrency(addonPriceCop);
 
   const planFeatures = {
     BASIC: [
@@ -196,6 +245,24 @@ export default function SubscriptionPage() {
 
   const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
   const pagedPayments = filteredPayments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handleBuyAddon = async () => {
+    try {
+      setBuyingAddon(true);
+      setAddonError('');
+      const checkout = await paymentsService.checkoutAddon('credits_500', selectedAddonGateway);
+      window.location.href = checkout.checkoutUrl;
+    } catch (error: any) {
+      const rawMessage = error?.message || 'No se pudo iniciar la compra de créditos extra';
+      const friendlyMessage =
+        rawMessage.includes('Paquete adicional no encontrado o inactivo')
+          ? 'El paquete de créditos extra aún no está configurado o activo en este entorno.'
+          : rawMessage;
+      setAddonError(friendlyMessage);
+    } finally {
+      setBuyingAddon(false);
+    }
+  };
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Spinner size="lg" /></div>;
 
@@ -474,6 +541,123 @@ export default function SubscriptionPage() {
          </div>
 
          <div className="space-y-8">
+            <div className="bg-[var(--bg-card)] p-8 rounded-3xl border border-[var(--border-color)] space-y-6 shadow-xl shadow-black/5 relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF5C3A]/5 blur-3xl rounded-full" />
+               <div className="relative z-10 space-y-5">
+                  <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
+                        <Cpu className="w-5 h-5 text-[#FF5C3A]" />
+                     </div>
+                     <div>
+                        <h4 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">Créditos extra</h4>
+                        <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider mt-1">Capacidad adicional inmediata</p>
+                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                     <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] p-4">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Saldo extra</p>
+                        <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{usage?.extraCreditsBalance ?? 0}</p>
+                     </div>
+                     <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] p-4">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Disponibles</p>
+                        <p className="mt-2 text-2xl font-black text-[var(--text-primary)]">{usage?.availableCredits ?? 0}</p>
+                     </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-[#FF5C3A]/15 bg-[#FF5C3A]/5 p-4">
+                     <p className="text-[10px] font-bold uppercase tracking-wider text-[#FF5C3A]">Paquete sugerido</p>
+                     <div className="mt-2 flex items-end justify-between gap-4">
+                        <div>
+                           <p className="text-sm font-bold text-[var(--text-primary)]">500 generaciones extra</p>
+                           <p className="text-xs text-[var(--text-secondary)]">
+                             {selectedAddonGateway === 'paypal'
+                               ? 'Pago único con PayPal. El total se convierte automáticamente a USD usando la TRM actual.'
+                               : 'Pago único en COP. No depende del corte mensual.'}
+                           </p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-lg font-black text-[#FF5C3A]">{addonDisplayPrice}</span>
+                          {selectedAddonGateway === 'paypal' && (
+                            <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                              TRM {trm} COP
+                            </p>
+                          )}
+                        </div>
+                     </div>
+                  </div>
+
+                  {(wompiAvailable || paypalAvailable) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {wompiAvailable && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAddonGateway('wompi')}
+                          className={`rounded-2xl border px-4 py-3 text-left transition-all ${
+                            selectedAddonGateway === 'wompi'
+                              ? 'border-[#FF5C3A] bg-[#FF5C3A]/10'
+                              : 'border-[var(--border-color)] bg-[var(--bg-input)]'
+                          }`}
+                        >
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Método</p>
+                          <p className="mt-1 text-sm font-bold text-[var(--text-primary)]">Wompi</p>
+                        </button>
+                      )}
+                      {paypalAvailable && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedAddonGateway('paypal')}
+                          className={`rounded-2xl border px-4 py-3 text-left transition-all ${
+                            selectedAddonGateway === 'paypal'
+                              ? 'border-[#FF5C3A] bg-[#FF5C3A]/10'
+                              : 'border-[var(--border-color)] bg-[var(--bg-input)]'
+                          }`}
+                        >
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Método</p>
+                          <p className="mt-1 text-sm font-bold text-[var(--text-primary)]">PayPal</p>
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleBuyAddon}
+                    disabled={buyingAddon || (!wompiAvailable && !paypalAvailable)}
+                    className="w-full flex items-center justify-center gap-3 py-4 bg-[#FF5C3A] text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:brightness-110 active:scale-95 transition-all disabled:opacity-60"
+                  >
+                    {buyingAddon ? 'Redirigiendo...' : `Comprar 500 créditos extra con ${selectedAddonGateway === 'paypal' ? 'PayPal' : 'Wompi'}`}
+                  </button>
+
+                  {addonSuccess && (
+                    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Pago recibido</p>
+                      <p className="mt-1 text-xs text-emerald-200">La compra de créditos extra quedó en proceso de confirmación. Si el webhook ya llegó, el saldo se reflejará aquí.</p>
+                    </div>
+                  )}
+
+                  {addonCancelled && (
+                    <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Pago cancelado</p>
+                      <p className="mt-1 text-xs text-amber-200">No se registró una compra de créditos extra. Puedes intentarlo de nuevo.</p>
+                    </div>
+                  )}
+
+                  {addonError && (
+                    <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-rose-400">No se pudo abrir el checkout</p>
+                      <p className="mt-1 text-xs text-rose-200">{addonError}</p>
+                    </div>
+                  )}
+
+                  {!wompiAvailable && !paypalAvailable && (
+                    <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Checkout no disponible</p>
+                      <p className="mt-1 text-xs text-amber-200">No hay métodos de pago públicos habilitados para créditos extra en este entorno.</p>
+                    </div>
+                  )}
+               </div>
+            </div>
+
             <div className="bg-[var(--bg-card)] p-10 rounded-3xl border border-[var(--border-color)] space-y-6 shadow-xl shadow-black/5 relative overflow-hidden group">
                <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF5C3A]/5 blur-3xl rounded-full" />
                <h4 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">Soporte</h4>

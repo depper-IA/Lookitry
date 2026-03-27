@@ -54,7 +54,7 @@ export interface Database {
           password: string;
           name: string;
           slug: string;
-          plan: 'BASIC' | 'PRO';
+          plan: 'BASIC' | 'PRO' | 'ENTERPRISE';
           logo: string | null;
           primary_color: string;
           secondary_color: string;
@@ -67,7 +67,7 @@ export interface Database {
           password: string;
           name: string;
           slug: string;
-          plan?: 'BASIC' | 'PRO';
+          plan?: 'BASIC' | 'PRO' | 'ENTERPRISE';
           logo?: string | null;
           primary_color?: string;
           secondary_color?: string;
@@ -80,7 +80,7 @@ export interface Database {
           password?: string;
           name?: string;
           slug?: string;
-          plan?: 'BASIC' | 'PRO';
+          plan?: 'BASIC' | 'PRO' | 'ENTERPRISE';
           logo?: string | null;
           primary_color?: string;
           secondary_color?: string;

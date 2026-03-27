@@ -241,17 +241,24 @@ export class PruebaloController {
       });
     }
 
-    // 4. Verificar límites de plan solo si realmente hay una generación nueva
-    const canGenerate = await usageService.checkGenerationLimit(brand.id);
-    if (!canGenerate) {
-      const usage = await usageService.getUsageStats(brand.id);
-      throw new LimitExceededError(
-        `Has excedido el límite de ${usage.currentMonth.generationsLimit} generaciones mensuales`,
-        {
-          used: usage.currentMonth.generationsUsed,
-          limit: usage.currentMonth.generationsLimit,
-        }
-      );
+    // 4. Reservar un crédito real antes de generar.
+    // Si el mensual se agotó, intenta consumir uno extra. Si la IA falla,
+    // el crédito extra reservado se devuelve en el catch.
+    let creditReservation: { source: 'monthly' | 'extra' } | null = null;
+    try {
+      creditReservation = await usageService.reserveGenerationCredit(brand.id);
+    } catch (error: any) {
+      if (error.message === 'INSUFFICIENT_CREDITS') {
+        const usage = await usageService.getUsageStats(brand.id);
+        throw new LimitExceededError(
+          'Créditos insuficientes',
+          {
+            used: usage.currentMonth.generationsUsed,
+            limit: usage.currentMonth.generationsLimit,
+          }
+        );
+      }
+      throw error;
     }
 
     // 5. Subir imagen a MinIO en carpeta temporal
@@ -330,6 +337,12 @@ export class PruebaloController {
 
     } catch (n8nError: any) {
       const processingTime = Date.now() - startTime;
+      if (creditReservation?.source === 'extra') {
+        await usageService.refundReservedExtraCredit(brand.id).catch((refundError) => {
+          console.error('[pruebalo] No se pudo devolver el crédito extra reservado', refundError);
+        });
+      }
+
       const constraintViolation =
         n8nError?.code === '23505' ||
         (n8nError?.message || '').includes('generations_brand_product_input_success_idx');

@@ -7,22 +7,28 @@ export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
-export const metadata: Metadata = {
-  title: 'Planes y precios — Probador virtual IA para tiendas',
-  description:
-    'Elige el plan de probador virtual con IA para tu tienda. Plan Básico desde $150.000 COP/mes con prueba de 7 días por $20.000. Plan Pro desde $250.000 COP/mes. Sin apps, sin desarrollo.',
-  alternates: {
-    canonical: `${BASE_URL}/planes`,
-  },
-  openGraph: {
-    type: 'website',
-    url: `${BASE_URL}/planes`,
-    title: 'Planes y precios — Lookitry',
+export async function generateMetadata(): Promise<Metadata> {
+  const pricing = await getPricingConfig();
+  const basicPrice = pricing.basic.precio_mensual_cop;
+  const proPrice = pricing.pro.precio_mensual_cop;
+
+  return {
+    title: 'Planes y precios — Probador virtual IA para tiendas',
     description:
-      'Probador virtual con IA para tu tienda. Plan Básico $150.000 COP/mes · Plan Pro $250.000 COP/mes. Prueba por $20.000 COP.',
-    images: [{ url: `${BASE_URL}/og-image.png`, width: 1200, height: 630 }],
-  },
-};
+      `Elige el plan de probador virtual con IA para tu tienda. Plan Básico desde $${basicPrice.toLocaleString('es-CO')} COP/mes con prueba de 7 días por $20.000. Plan Pro desde $${proPrice.toLocaleString('es-CO')} COP/mes. Sin apps, sin desarrollo.`,
+    alternates: {
+      canonical: `${BASE_URL}/planes`,
+    },
+    openGraph: {
+      type: 'website',
+      url: `${BASE_URL}/planes`,
+      title: 'Planes y precios — Lookitry',
+      description:
+        `Probador virtual con IA para tu tienda. Plan Básico $${basicPrice.toLocaleString('es-CO')} COP/mes · Plan Pro $${proPrice.toLocaleString('es-CO')} COP/mes. Prueba por $20.000 COP.`,
+      images: [{ url: `${BASE_URL}/og-image.png`, width: 1200, height: 630 }],
+    },
+  };
+}
 
 const breadcrumbJsonLd = {
   '@context': 'https://schema.org',

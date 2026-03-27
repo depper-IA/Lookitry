@@ -129,7 +129,7 @@ const getFaqTabs = (pricing?: PricingConfig): FaqTab[] => [
     items: [
       {
         q: '¿Cuáles son los precios de los planes?',
-        a: `Hay tres opciones: Plan Trial (7 días), Plan Básico (${formatCurrency(pricing?.basic?.precio_mensual_cop ?? 150000)}/mes) y Plan Pro (${formatCurrency(pricing?.pro?.precio_mensual_cop ?? 250000)}/mes). El Trial te da acceso completo por 7 días para que pruebes la plataforma sin compromiso.`,
+        a: `Hay cuatro opciones: Plan Trial (7 días), Plan Básico (${formatCurrency(pricing?.basic?.precio_mensual_cop ?? 180000)}/mes), Plan Pro (${formatCurrency(pricing?.pro?.precio_mensual_cop ?? 350000)}/mes) y Enterprise con precio personalizado. El Trial te da acceso completo por 7 días para que pruebes la plataforma sin compromiso.`,
       },
       {
         q: '¿Hay descuentos por pagar varios meses?',
@@ -164,7 +164,7 @@ const getFaqTabs = (pricing?: PricingConfig): FaqTab[] => [
       },
       {
         q: '¿Cuántas generaciones incluye cada plan?',
-        a: `El Plan Básico incluye ${(pricing?.basic?.generaciones_mensuales ?? 400).toLocaleString('es-CO')} generaciones por mes. El Plan Pro incluye ${(pricing?.pro?.generaciones_mensuales ?? 1200).toLocaleString('es-CO')} generaciones por mes. El contador se reinicia el primer día de cada mes.`,
+        a: `El Plan Básico incluye ${(pricing?.basic?.generaciones_mensuales ?? 400).toLocaleString('es-CO')} generaciones por mes. El Plan Pro incluye ${(pricing?.pro?.generaciones_mensuales ?? 1000).toLocaleString('es-CO')} generaciones por mes. El contador se reinicia el primer día de cada mes.`,
       },
       {
         q: '¿Qué pasa si agoto mis generaciones?',
