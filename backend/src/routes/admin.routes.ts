@@ -37,6 +37,7 @@ import {
   deletePromotion,
   getPricingConfig,
   updatePricingConfig,
+  getSystemStats,
   getWooBrandsSummary,
   getWooBrandProducts,
   setWooProductActive,
