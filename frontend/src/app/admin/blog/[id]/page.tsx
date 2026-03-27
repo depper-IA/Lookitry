@@ -16,6 +16,7 @@ export default function BlogEditorPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
 
   useEffect(() => {
     if (id) {
@@ -135,51 +136,78 @@ export default function BlogEditorPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Columna Principal (8/12) */}
         <div className="lg:col-span-8 space-y-8">
-          <div className="rounded-[3rem] border border-white/5 p-10 space-y-8 shadow-2xl relative overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FF5C3A] to-transparent opacity-30"></div>
-            
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 ml-1">Título del Artículo</label>
-              <input 
-                type="text" 
-                name="title"
-                value={post?.title || ''} 
-                onChange={handleChange}
-                className="w-full px-6 py-4 rounded-[1.5rem] bg-white/[0.03] border border-white/10 text-xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/30 focus:border-[#FF5C3A]/50 transition-all placeholder:text-zinc-700"
-                placeholder="Introduzca el título..."
-              />
-            </div>
+          <div className="flex gap-2 p-1.5 rounded-[1.5rem] bg-white/5 border border-white/5 w-fit">
+            <button 
+              onClick={() => setActiveTab('edit')}
+              className={`px-6 py-2.5 rounded-[1rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'edit' ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-zinc-500 hover:text-white'}`}
+            >
+              Editor HTML
+            </button>
+            <button 
+              onClick={() => setActiveTab('preview')}
+              className={`px-6 py-2.5 rounded-[1rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'preview' ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-zinc-500 hover:text-white'}`}
+            >
+              Vista Previa
+            </button>
+          </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 ml-1">Slug Personalizado</label>
-              <div className="flex items-center gap-3 px-6 py-4 rounded-[1.5rem] bg-white/[0.03] border border-white/10 focus-within:border-[#FF5C3A]/30 transition-all">
-                <span className="text-xs text-zinc-600 font-bold select-none opacity-50">lookitry.com/blog/</span>
+          {activeTab === 'edit' ? (
+            <div className="rounded-[3rem] border border-white/5 p-10 space-y-8 shadow-2xl relative overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FF5C3A] to-transparent opacity-30"></div>
+              
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 ml-1">Título del Artículo</label>
                 <input 
                   type="text" 
-                  name="slug"
-                  value={post?.slug || ''} 
+                  name="title"
+                  value={post?.title || ''} 
                   onChange={handleChange}
-                  className="flex-1 bg-transparent border-none text-xs font-bold text-zinc-300 focus:outline-none focus:ring-0 p-0"
+                  className="w-full px-6 py-4 rounded-[1.5rem] bg-white/[0.03] border border-white/10 text-xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/30 focus:border-[#FF5C3A]/50 transition-all placeholder:text-zinc-700"
+                  placeholder="Introduzca el título..."
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 ml-1">Slug Personalizado</label>
+                <div className="flex items-center gap-3 px-6 py-4 rounded-[1.5rem] bg-white/[0.03] border border-white/10 focus-within:border-[#FF5C3A]/30 transition-all">
+                  <span className="text-xs text-zinc-600 font-bold select-none opacity-50">lookitry.com/blog/</span>
+                  <input 
+                    type="text" 
+                    name="slug"
+                    value={post?.slug || ''} 
+                    onChange={handleChange}
+                    className="flex-1 bg-transparent border-none text-xs font-bold text-zinc-300 focus:outline-none focus:ring-0 p-0"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between ml-1">
+                  <label className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500">Contenido HTML</label>
+                  <div className="flex gap-2">
+                    <span className="px-2 py-0.5 rounded bg-white/10 text-[8px] font-black uppercase tracking-widest text-zinc-400">Editor Manual</span>
+                  </div>
+                </div>
+                <textarea 
+                  name="content"
+                  value={post?.content || ''} 
+                  onChange={handleChange}
+                  className="w-full h-[700px] px-8 py-8 rounded-[2rem] bg-white/[0.02] border border-white/5 text-[13px] font-mono text-zinc-400 overflow-y-auto focus:outline-none focus:ring-1 focus:ring-[#FF5C3A]/20 transition-all leading-relaxed no-scrollbar"
+                  placeholder="Pega el código HTML del artículo generado..."
                 />
               </div>
             </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between ml-1">
-                <label className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500">Contenido HTML</label>
-                <div className="flex gap-2">
-                  <span className="px-2 py-0.5 rounded bg-white/10 text-[8px] font-black uppercase tracking-widest text-zinc-400">Editor Manual</span>
-                </div>
-              </div>
-              <textarea 
-                name="content"
-                value={post?.content || ''} 
-                onChange={handleChange}
-                className="w-full h-[700px] px-8 py-8 rounded-[2rem] bg-white/[0.02] border border-white/5 text-[13px] font-mono text-zinc-400 overflow-y-auto focus:outline-none focus:ring-1 focus:ring-[#FF5C3A]/20 transition-all leading-relaxed no-scrollbar"
-                placeholder="Pega el código HTML del artículo generado..."
-              />
+          ) : (
+            <div className="rounded-[3rem] border border-white/5 p-10 shadow-2xl overflow-hidden min-h-[800px]" style={{ backgroundColor: 'white' }}>
+              <article className="prose prose-zinc prose-invert max-w-none text-black">
+                <h1 className="text-4xl font-extrabold mb-8 text-black">{post?.title}</h1>
+                <div 
+                  className="blog-content text-zinc-800"
+                  dangerouslySetInnerHTML={{ __html: post?.content || '<p class="text-zinc-400">Sin contenido para previsualizar</p>' }}
+                />
+              </article>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Columna Lateral (4/12) */}

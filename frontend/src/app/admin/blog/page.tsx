@@ -2,16 +2,25 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { adminFetchPosts, adminDeletePost, BlogPost } from '@/services/blog.service';
+import { adminFetchPosts, adminDeletePost, BlogPost, fetchBlogSettings, updateBlogSettings, triggerBlogPulse, BlogSettings } from '@/services/blog.service';
 
 export default function AdminBlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [settings, setSettings] = useState<BlogSettings | null>(null);
+  const [isTriggering, setIsTriggering] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     loadPosts();
+    loadSettings();
   }, []);
+
+  const loadSettings = async () => {
+    const data = await fetchBlogSettings();
+    setSettings(data);
+  };
 
   const loadPosts = async () => {
     setLoading(true);
@@ -28,6 +37,35 @@ export default function AdminBlogPage() {
     } else {
       alert('Error al eliminar el artículo');
     }
+  };
+
+  const handleUpdateFrequency = async (freq: 'daily' | 'weekly' | 'monthly') => {
+    if (!settings) return;
+    setIsSaving(true);
+    const ok = await updateBlogSettings({ frequency: freq });
+    if (ok) {
+      await loadSettings();
+    }
+    setIsSaving(false);
+  };
+
+  const handleToggleEnabled = async () => {
+    if (!settings) return;
+    setIsSaving(true);
+    const ok = await updateBlogSettings({ is_enabled: !settings.is_enabled });
+    if (ok) {
+      await loadSettings();
+    }
+    setIsSaving(false);
+  };
+
+  const handleTriggerNow = async () => {
+    if (!confirm('¿Deseas disparar la generación de un artículo ahora mismo? Este proceso toma unos minutos en n8n.')) return;
+    setIsTriggering(true);
+    const result = await triggerBlogPulse();
+    alert(result.message);
+    setIsTriggering(false);
+    await loadSettings();
   };
 
   if (loading) return (
@@ -48,13 +86,98 @@ export default function AdminBlogPage() {
             Total de artículos: {posts.length}
           </p>
         </div>
-        <button 
-          disabled
-          className="px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest bg-zinc-800 text-zinc-500 border border-zinc-700 cursor-not-allowed"
-          title="Próximamente"
+        <Link 
+          href="/admin/blog/new"
+          className="px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20 hover:scale-105 active:scale-95 transition-all outline-none border-none decoration-transparent"
         >
           Crear Artículo Manual
-        </button>
+        </Link>
+      </div>
+
+      {/* Panel de Pulso Editorial */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 rounded-[2rem] border p-6 flex flex-col sm:flex-row items-center gap-6 shadow-lg transition-all hover:shadow-xl" 
+             style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <div className="w-16 h-16 rounded-3xl bg-[#FF5C3A]/10 flex items-center justify-center flex-shrink-0 animate-pulse">
+            <svg className="w-8 h-8 text-[#FF5C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div className="flex-1 text-center sm:text-left">
+            <h2 className="font-jakarta font-bold text-lg mb-1" style={{ color: 'var(--text-primary)' }}>Pulso Editorial IA</h2>
+            <p className="text-xs leading-relaxed max-w-md" style={{ color: 'var(--text-secondary)' }}>
+              Configura el ritmo automático de publicación de <span className="font-bold text-[#FF5C3A]">Lookitry Editorial</span>. 
+              La IA generará temas, imágenes y artículos optimizados para SEO y ventas.
+            </p>
+            {settings && (
+              <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-4">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Frecuencia:</span>
+                  <select 
+                    value={settings.frequency}
+                    onChange={(e) => handleUpdateFrequency(e.target.value as any)}
+                    disabled={isSaving}
+                    className="bg-transparent text-[11px] font-bold text-[#FF5C3A] outline-none cursor-pointer focus:ring-0 border-none p-0"
+                  >
+                    <option value="daily">Diaria</option>
+                    <option value="weekly">Semanal</option>
+                    <option value="monthly">Mensual</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Próximo:</span>
+                  <span className="text-[11px] font-bold text-white">
+                    {new Date(settings.next_run).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-col gap-2 w-full sm:w-auto">
+            <button 
+              onClick={handleTriggerNow}
+              disabled={isTriggering || !settings?.is_enabled}
+              className={`px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                isTriggering 
+                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                  : 'bg-white text-black hover:scale-105 active:scale-95 shadow-lg'
+              }`}
+            >
+              {isTriggering ? 'Generando...' : 'Disparar Ahora'}
+            </button>
+            <button 
+              onClick={handleToggleEnabled}
+              disabled={isSaving}
+              className={`px-4 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl border ${
+                settings?.is_enabled 
+                  ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10' 
+                  : 'text-zinc-500 border-zinc-500/20 bg-zinc-500/5 hover:bg-zinc-500/10'
+              }`}
+            >
+              {settings?.is_enabled ? '● Automatización Activa' : '○ Automatización Pausada'}
+            </button>
+          </div>
+        </div>
+
+        <div className="rounded-[2rem] border p-6 flex flex-col justify-between shadow-lg" 
+             style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: 'var(--text-muted)' }}>Métricas IA</div>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center text-xs">
+                <span style={{ color: 'var(--text-secondary)' }}>Artículos automáticos</span>
+                <span className="font-bold text-white">{posts.filter(p => !p.content.includes('manual')).length}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span style={{ color: 'var(--text-secondary)' }}>Total Generaciones</span>
+                <span className="font-bold text-[#FF5C3A]">{posts.length}</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-white/5 text-[10px] italic leading-tight" style={{ color: 'var(--text-muted)' }}>
+            * El contenido generado por IA sigue las reglas de Lookitry Editorial para optimización SEO.
+          </div>
+        </div>
       </div>
 
       <div className="rounded-[2.5rem] border overflow-hidden shadow-xl" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>

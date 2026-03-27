@@ -1,6 +1,7 @@
 import app from './app';
 import { setupUncaughtExceptionHandlers } from './middleware/errorHandler';
 import { startCleanupJob } from './jobs/cleanup.job';
+import { startBlogJob } from './jobs/blog.job';
 
 // Capturar CUALQUIER error no manejado antes de que mate el proceso
 process.on('uncaughtException', (err) => {
@@ -26,6 +27,7 @@ app.listen(PORT, () => {
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log(`Auth: POST /api/auth/register | POST /api/auth/login`);
 
-  // Iniciar cron job de limpieza
+  // Iniciar cron job de limpieza y blog
   startCleanupJob();
+  startBlogJob();
 });
