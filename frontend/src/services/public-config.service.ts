@@ -26,8 +26,8 @@ export const DEFAULT_PUBLIC_PAYMENT_SETTINGS: Required<PublicPaymentSettings> = 
 };
 
 const PLAN_PRICE_FALLBACK: PublicPlanPrices = {
-  BASIC: 150000,
-  PRO: 250000,
+  BASIC: 180000,
+  PRO: 350000,
 };
 
 export async function fetchPublicPlanPrices(): Promise<PublicPlanPrices> {

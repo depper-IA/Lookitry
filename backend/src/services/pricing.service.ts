@@ -9,7 +9,58 @@ export interface PricingConfig {
   data: any;
 }
 
+interface ActivePromotion {
+  type: string;
+  config: any;
+  starts_at?: string | null;
+  ends_at?: string | null;
+}
+
 export class PricingService {
+  private async getActivePromotions(): Promise<ActivePromotion[]> {
+    const { data, error } = await supabaseAdmin
+      .from('promotions')
+      .select('type, config, starts_at, ends_at')
+      .eq('active', true);
+
+    if (error || !data) {
+      return [];
+    }
+
+    const now = new Date();
+    return data.filter((promo: any) => {
+      const startsOk = !promo.starts_at || new Date(promo.starts_at) <= now;
+      const endsOk = !promo.ends_at || new Date(promo.ends_at) >= now;
+      return startsOk && endsOk;
+    });
+  }
+
+  private applyExternalPlanPromotions(planKey: string, baseMonthlyPrice: number, promotions: ActivePromotion[]): number {
+    const normalizedPlan = planKey.toUpperCase();
+    const overridePromo = promotions.find((promo) =>
+      promo.type === 'plan_override' &&
+      String(promo.config?.plan || '').toUpperCase() === normalizedPlan &&
+      Number(promo.config?.override_price) > 0
+    );
+
+    let effectiveBasePrice = overridePromo
+      ? Number(overridePromo.config.override_price)
+      : baseMonthlyPrice;
+
+    const globalDiscountPct = promotions.reduce((max, promo) => {
+      if (['launch_offer', 'modal_timer'].includes(promo.type) && Number(promo.config?.discount_pct) > 0) {
+        return Math.max(max, Number(promo.config.discount_pct));
+      }
+      return max;
+    }, 0);
+
+    if (globalDiscountPct > 0) {
+      effectiveBasePrice = Math.ceil(effectiveBasePrice * (1 - globalDiscountPct / 100));
+    }
+
+    return effectiveBasePrice;
+  }
+
   /**
    * Obtiene la configuración de precios desde la base de datos
    */
@@ -45,7 +96,7 @@ export class PricingService {
     const discounts = configs.find(c => c.id.toLowerCase() === 'descuentos_duracion')?.data;
     
     // 1. Precio base del plan (fallback si no está en DB)
-    const baseMonthlyPrice = planData?.precio_mensual_cop || (planKey === 'pro' ? 250000 : 150000);
+    const baseMonthlyPrice = planData?.precio_mensual_cop || (planKey === 'pro' ? 350000 : 180000);
     
     // 2. Aplicar descuento por duración
     const discountKey = `meses_${months}`;
@@ -64,6 +115,33 @@ export class PricingService {
     
     console.log(`[PricingService] Calculado: plan=${plan} months=${months} landing=${includesLanding} -> Total=${finalTotal} (Base=${baseMonthlyPrice} Desc=${discountPct}%)`);
     
+    return finalTotal;
+  }
+
+  async calculateExternalCheckoutTotal(plan: string, months: number, includesLanding: boolean = false): Promise<number> {
+    const configs = await this.getPricingConfig();
+    const promotions = await this.getActivePromotions();
+    const planKey = plan.toLowerCase();
+
+    const planConfig = configs.find(c => c.id.toLowerCase() === planKey);
+    const planData = planConfig?.data;
+    const discounts = configs.find(c => c.id.toLowerCase() === 'descuentos_duracion')?.data;
+
+    const baseMonthlyPrice = planData?.precio_mensual_cop || (planKey === 'pro' ? 350000 : 180000);
+    const effectiveMonthlyPrice = this.applyExternalPlanPromotions(planKey, baseMonthlyPrice, promotions);
+
+    const discountKey = `meses_${months}`;
+    const discountPct = discounts?.[discountKey] || 0;
+    const planTotal = Math.ceil(effectiveMonthlyPrice * months * (1 - discountPct / 100));
+
+    let landingTotal = 0;
+    if (includesLanding) {
+      const settings = await settingsService.getSettings();
+      landingTotal = settings.landing_price || 650000;
+    }
+
+    const finalTotal = planTotal + landingTotal;
+    console.log(`[PricingService] Checkout externo: plan=${plan} months=${months} landing=${includesLanding} -> Total=${finalTotal} (BasePromo=${effectiveMonthlyPrice} Desc=${discountPct}%)`);
     return finalTotal;
   }
 

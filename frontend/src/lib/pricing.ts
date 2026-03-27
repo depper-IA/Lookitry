@@ -67,14 +67,15 @@ export interface PricingConfig {
 
 const DEFAULTS: PricingConfig = {
   basic: {
-    precio_mensual_cop: 150000,
+    precio_mensual_cop: 180000,
+    precio_original_cop: 180000,
     productos_max: 5,
     generaciones_mensuales: 400,
     subtitulo: 'Para marcas pequeñas en Instagram y WhatsApp',
     boton_texto: 'Prueba $20.000 — 7 días',
     boton_texto_sin_trial: 'Contratar Básico',
     features: [
-      '5 productos en el probador',
+      'Hasta 5 productos en el probador',
       '400 generaciones por mes',
       'Logo y colores de marca',
       'Template Bare (widget limpio)',
@@ -91,14 +92,16 @@ const DEFAULTS: PricingConfig = {
     ],
   },
   pro: {
-    precio_mensual_cop: 250000,
+    precio_mensual_cop: 350000,
+    precio_original_cop: 350000,
     productos_max: 15,
-    generaciones_mensuales: 1200,
+    generaciones_mensuales: 1000,
     subtitulo: 'Para tiendas online con mayor volumen',
     boton_texto: 'Contratar Pro',
     features: [
-      '15 productos en el probador',
-      '1.200 generaciones por mes',
+      'Hasta 15 productos en el probador',
+      '1.000 generaciones por mes',
+      'Plugin WooCommerce',
       'Logo y colores de marca',
       'Template Bare (widget limpio)',
       'Widget embebible (iframe)',
@@ -119,10 +122,9 @@ const DEFAULTS: PricingConfig = {
     subtitulo: 'Para grandes retailers y operaciones a escala',
     boton_texto: 'Hablar con ventas',
     features: [
-      '+50 productos en el probador',
-      'Volumen a medida (>2000 gens)',
-      'SLA < 5 segundos',
-      'Marca Blanca (Sin logo Lookitry)',
+      '+50 productos',
+      'Volumen a medida',
+      'Marca Blanca',
       'Panel de Analítica Avanzado',
       'Acceso a API',
     ],
@@ -187,7 +189,7 @@ export async function getPricingConfig(): Promise<PricingConfig> {
         headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
         next: { revalidate: 300, tags: ['pricing'] },
       }),
-      fetch(`${SUPABASE_URL}/rest/v1/promotions?active=eq.true&select=type,config`, {
+      fetch(`${SUPABASE_URL}/rest/v1/promotions?active=eq.true&select=type,config,starts_at,ends_at`, {
         headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
         next: { revalidate: 300, tags: ['pricing'] },
       })
@@ -196,7 +198,8 @@ export async function getPricingConfig(): Promise<PricingConfig> {
     if (!configRes.ok) throw new Error(`Supabase error: ${configRes.status}`);
 
     const rows: { id: string; data: Record<string, unknown> }[] = await configRes.json();
-    const promos: { type: string; config: any }[] = promosRes.ok ? await promosRes.json() : [];
+    const promos: { type: string; config: any; starts_at?: string | null; ends_at?: string | null }[] =
+      promosRes.ok ? await promosRes.json() : [];
 
     const config = { ...DEFAULTS };
     for (const row of rows) {
@@ -205,8 +208,26 @@ export async function getPricingConfig(): Promise<PricingConfig> {
       }
     }
 
-    // 2. Aplicar descuentos de promociones globales (launch_offer, modal_timer) si existen
-    const globalDiscountPct = promos.reduce((max, p) => {
+    const now = new Date();
+    const activePromos = promos.filter((promo) => {
+      const startsOk = !promo.starts_at || new Date(promo.starts_at) <= now;
+      const endsOk = !promo.ends_at || new Date(promo.ends_at) >= now;
+      return startsOk && endsOk;
+    });
+
+    // 2. Aplicar overrides de precio por plan
+    for (const promo of activePromos) {
+      if (promo.type !== 'plan_override' || !promo.config?.plan || !promo.config?.override_price) continue;
+      const planKey = String(promo.config.plan).toLowerCase();
+      if (planKey === 'basic' || planKey === 'pro') {
+        const current = config[planKey];
+        current.precio_original_cop = Number(promo.config.original_price || current.precio_mensual_cop);
+        current.precio_mensual_cop = Number(promo.config.override_price);
+      }
+    }
+
+    // 3. Aplicar descuentos globales porcentuales si existen
+    const globalDiscountPct = activePromos.reduce((max, p) => {
       if (['launch_offer', 'modal_timer'].includes(p.type) && p.config?.discount_pct) {
         return Math.max(max, Number(p.config.discount_pct));
       }
@@ -215,9 +236,10 @@ export async function getPricingConfig(): Promise<PricingConfig> {
 
     if (globalDiscountPct > 0) {
       const factor = 1 - globalDiscountPct / 100;
+      config.basic.precio_original_cop = config.basic.precio_original_cop || config.basic.precio_mensual_cop;
+      config.pro.precio_original_cop = config.pro.precio_original_cop || config.pro.precio_mensual_cop;
       config.basic.precio_mensual_cop = Math.ceil(config.basic.precio_mensual_cop * factor);
       config.pro.precio_mensual_cop = Math.ceil(config.pro.precio_mensual_cop * factor);
-      // Opcional: podrías aplicar también a mini_landing si lo deseas
     }
 
     return config;

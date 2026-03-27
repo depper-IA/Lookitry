@@ -9,19 +9,16 @@ import {
 
 const router = Router();
 
-// Todas las rutas admin requieren autenticación
-router.use(adminAuthMiddleware);
-
 // Listar todas las configs de sync Enterprise
-router.get('/', listEnterpriseSyncConfigs);
+router.get('/', adminAuthMiddleware, listEnterpriseSyncConfigs);
 
 // Crear / actualizar config de sync para una marca
-router.post('/:brandId/sync-config', upsertEnterpriseSyncConfig);
+router.post('/:brandId/sync-config', adminAuthMiddleware, upsertEnterpriseSyncConfig);
 
 // Disparar sync manual desde el panel de admin
-router.post('/:brandId/trigger-sync', triggerEnterpriseSync);
+router.post('/:brandId/trigger-sync', adminAuthMiddleware, triggerEnterpriseSync);
 
-// Actualizar estado del sync (llamado por n8n al finalizar el proceso)
+// Actualizar estado del sync (llamado por n8n al finalizar el proceso o por admin)
 router.patch('/:brandId/sync-status', updateSyncStatus);
 
 export default router;

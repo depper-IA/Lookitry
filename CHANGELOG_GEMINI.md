@@ -1,5 +1,52 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 27 de Marzo, 2026 — Migración Sistema de Blog Nativo (Supabase + MinIO)
+
+**Objetivo:**
+- Migrar el blog automatizado desde WordPress a una solución nativa integrada en Lookitry.
+- Eliminar dependencias externas y centralizar el almacenamiento de imágenes en MinIO.
+
+**Cambios aplicados:**
+- **Backend (Express):**
+  - Nuevo controlador `blog.controller.ts` para gestionar artículos y carga de imágenes.
+  - Endpoints: `POST /api/blog/webhook` (creación) y `POST /api/blog/upload` (subida a MinIO).
+  - Integración con `UploadService` para almacenamiento seguro en el bucket `images/blog`.
+  - Protección de endpoints vía `BLOG_WEBHOOK_SECRET`.
+- **Frontend (Next.js):**
+  - Ajustes en `blog.service.ts` para mapeo dinámico de artículos.
+  - Actualización del sitemap dinámico para incluir artículos nativos.
+- **Automatización (n8n):**
+  - Migración completa de `flujo-blog.json`: redirigido de WordPress a `api.lookitry.com`.
+  - Actualización de mapeo de tags (de IDs numéricos a strings) y categorías (slugs).
+- **Documentación:**
+  - `REGLAS_IMPORTANTES.md` actualizada con la nueva arquitectura de blog y reglas de n8n.
+  - Nueva guía técnica: `n8n_guide.md`.
+
+**Motivo:**
+- Independencia tecnológica, mejora en el rendimiento de carga (Next.js nativo) y optimización SEO mediante sitemaps dinámicos controlados por el backend propio.
+
+---
+
+## 27 de Marzo, 2026 — Refactorización y Actualización de Reglas Críticas (Lookitry Master)
+
+**Objetivo:**
+- Consolidar la documentación en `.kiro/steering/REGLAS_IMPORTANTES.md` eliminando redundancias masivas (más de 1000 líneas duplicadas).
+- Sincronizar las reglas con el estado actual del producto (rebranding total a Lookitry).
+
+**Cambios aplicados:**
+- `REGLAS_IMPORTANTES.md`
+  - Se eliminó toda mención a nombres antiguos ("Virtual Try On", "Mostrador").
+  - Se erradicó la terminología sci-fi ("ADN", "Genoma", "Matriz") de todas las reglas y descripciones.
+  - Se integró el soporte real de **PayPal (USD vía TRM)** y el nuevo modelo de **Prueba Paga (Paid Trial)**.
+  - Se añadió la mención al nuevo plan **Enterprise (Sincronización de Catálogo)**.
+  - Se unificaron las secciones de Arquitectura, Brand y Deploy en un solo flujo coherente.
+  - Se actualizaron todas las URLs de `pruebalo.wilkiedevs.com` a `lookitry.com`.
+
+**Motivo:**
+- Mantener un contexto limpio y libre de ruido para futuras sesiones de la IA, asegurando que las reglas críticas sean legibles y precisas.
+
+---
+
 ## 26 de Marzo, 2026 — Fix de registro post-pago cuando el slug ya existe
 
 **Problema reportado:**

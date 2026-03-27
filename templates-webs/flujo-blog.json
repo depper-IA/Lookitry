@@ -1,0 +1,1332 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "triggerTimes": {
+                    "item": [
+                        {}
+                    ]
+                }
+            },
+            "id": "798d7c24-da17-46f8-9351-3c52354bab4b",
+            "name": "Schedule Trigger",
+            "type": "n8n-nodes-base.cron",
+            "typeVersion": 1,
+            "position": [
+                4368,
+                -640
+            ]
+        },
+        {
+            "parameters": {
+                "keepOnlySet": true,
+                "values": {
+                    "string": [
+                        {
+                            "name": "title",
+                            "value": "={{ $json.title }}"
+                        },
+                        {
+                            "name": "content",
+                            "value": "={{ $json.content }}"
+                        },
+                        {
+                            "name": "excerpt",
+                            "value": "={{ $json.excerpt }}"
+                        },
+                        {
+                            "name": "categories",
+                            "value": "14"
+                        },
+                        {
+                            "name": "Author",
+                            "value": "1"
+                        },
+                        {
+                            "name": "Tags",
+                            "value": "={{ $json.Tags }}"
+                        }
+                    ],
+                    "number": [
+                        {
+                            "name": "featured_media",
+                            "value": "={{ $json.featured_media }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "ceaa250c-eb2a-43c4-832b-834e6271f79d",
+            "name": "Prepare Post",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 1,
+            "position": [
+                8112,
+                -672
+            ]
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=# ROL\nEres un Estratega de Contenido Senior para \"WilkieDevs\", un blog de tecnología (wilkiedevs.com) que ayuda a emprendedores y dueños de negocios no-técnicos a resolver sus problemas con la tecnología.\n\n# OBJETIVO\nGenerar un array de 15 ideas de temas para artículos. Las ideas deben ser actuales, con alta intención comercial para ser monetizables con Ads, y deben despertar en el lector la necesidad de contratar un servicio o comprar un producto afiliado.\n\n# INSTRUCCIONES CLAVE\n1.  **Enfoque en el Problema del Cliente:** Los temas deben abordar un \"punto de dolor\" o una aspiración de un dueño de negocio no-técnico. En lugar de temas técnicos, enfócate en los resultados: \"ahorrar tiempo\", \"conseguir más clientes\", \"evitar problemas de seguridad\".\n2.  **Variedad de Formatos:** Genera una mezcla equilibrada de:\n    * `\"Tutorial Práctico\"`: Guías sencillas paso a paso.\n    * `\"Análisis de Tendencia\"`: Artículos que explican una tecnología de moda en términos de negocio.\n    * `\"Guía Completa\"`: Contenido pilar (cornerstone) sobre un problema o una solución.\n3.  **Ángulo de Monetización Estratégico:**\n    * **Servicios (Consultoría, Desarrollo, Automatización):** Crea temas que resalten problemas complejos cuya solución más fácil sea contratar a un experto.\n    * **Afiliados (Amazon):** Propón temas sobre \"el mejor equipo para...\", \"libros esenciales para...\", \"herramientas de software para...\" que justifiquen enlaces a cámaras, micrófonos, libros o software.\n    * **Afiliados (Hosting/VPS):** Incluye temas que expliquen por qué y cuándo un negocio necesita más potencia, como migrar a un mejor hosting o **comprar un VPS (como los de Hostinger)** para tener control total sobre sus aplicaciones y mejorar el rendimiento.\n4.  **Tags (Regla Estricta):** Usa un máximo de 3 tags por tema, seleccionados **EXCLUSIVAMENTE** de la siguiente lista:\n    `Agencia de viajes`, `Arquitectura`, `automatización`, `automatización empresarial`, `backend`, `chatbots`, `consultoría tecnológica`, `desarrollo software`, `desarrollo web`, `Dropshipping`, `Educación`, `emprendimiento tech`, `estrategia digital`, `Excel`, `frontend`, `futuro dev`, `Gratis`, `guía`, `hosting`, `hostinger`, `IA aplicada`, `IA para negocios`, `inteligencia artificial`, `mantenimiento web`, `nube`, `Office`, `oficina remota`, `Plataforma Virtual`, `plugin`, `productividad`, `seguridad digital`, `SEO`, `Software`, `startups`, `Supermercados`, `tendencias tecnológicas`, `Tienda de Ropa`, `transformación digital`, `Ventas Online`, `Word`, `WordPress`\n\n# FORMATO DE SALIDA\nDevuelve ÚNICAMENTE un array JSON válido. Cada objeto del array debe incluir:\n- `tema`: El título del artículo, formulado como una pregunta o afirmación que capte el interés.\n- `formato`: Uno de los tres tipos especificados.\n- `palabras`: Una cadena de 4-5 palabras clave que un cliente buscaría en Google.\n- `categoria`: El ID numérico de la categoría del blog (usa siempre el número 14).\n- `meta_descripcion`: Una meta descripción de máximo 110 caracteres, orientada a conseguir clics.\n- `tags`: Un array con 1 a 3 strings de la lista de tags permitida.\n\n# EJEMPLO DE SALIDA\n[\n  {\n    \"tema\": \"VPS para Principiantes: 5 Señales de que tu Negocio Necesita Más Potencia que un Hosting Compartido\",\n    \"formato\": \"Guía Completa\",\n    \"palabras\": \"qué es un vps, hosting vps, hostinger vps, escalar web, hosting compartido vs vps\",\n    \"categoria\": 14,\n    \"meta_descripcion\": \"¿Tu web se ha vuelto lenta? Aprende a identificar si necesitas la potencia y el control de un VPS y cómo empezar.\",\n    \"tags\": [\"hosting\", \"Hostinger\", \"nube\"]\n  }\n]\n\n# REGLAS FINALES\n- NO incluyas ` ```json` ni ` ``` ` en la salida.\n- NO añadas texto, introducciones o explicaciones antes o después del array JSON.\n- El resultado debe ser un JSON puro y directamente parseable.",
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 2.2,
+            "position": [
+                4752,
+                -112
+            ],
+            "id": "aafd2b2c-2b36-49d3-a99c-383954887a35",
+            "name": "AI Agent"
+        },
+        {
+            "parameters": {
+                "triggerTimes": {
+                    "item": [
+                        {
+                            "mode": "everyMonth"
+                        }
+                    ]
+                }
+            },
+            "id": "bf832929-4e1d-4722-8544-bd9994298cec",
+            "name": "Schedule Trigger1",
+            "type": "n8n-nodes-base.cron",
+            "typeVersion": 1,
+            "position": [
+                4560,
+                -112
+            ]
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+            "typeVersion": 1,
+            "position": [
+                4688,
+                128
+            ],
+            "id": "a0f848dd-87db-46ef-954b-4b474568fcdc",
+            "name": "Google Gemini Chat Model",
+            "credentials": {
+                "googlePalmApi": {
+                    "id": "t38zPMWleOvlSpPc",
+                    "name": "Que movida cu"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "dataTableId": {
+                    "__rl": true,
+                    "value": "7JcERYGdRj0XYuYL",
+                    "mode": "list",
+                    "cachedResultName": "temas",
+                    "cachedResultUrl": "/projects/ZwHHlnZoKhyDqulQ/datatables/7JcERYGdRj0XYuYL"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "tema": "={{ $json.tema }}",
+                        "palabras": "={{ $json.palabras }}",
+                        "categoria": "={{ $json.categoria }}",
+                        "Meta_descripcion": "={{ $json.Meta_descripcion }}",
+                        "Tags": "={{ $json.Tags }}",
+                        "Estado": "Pendiente"
+                    },
+                    "matchingColumns": [],
+                    "schema": [
+                        {
+                            "id": "tema",
+                            "displayName": "tema",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        },
+                        {
+                            "id": "palabras",
+                            "displayName": "palabras",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        },
+                        {
+                            "id": "categoria",
+                            "displayName": "categoria",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        },
+                        {
+                            "id": "Meta_descripcion",
+                            "displayName": "Meta_descripcion",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        },
+                        {
+                            "id": "Estado",
+                            "displayName": "Estado",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        },
+                        {
+                            "id": "Tags",
+                            "displayName": "Tags",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        }
+                    ],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": false
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.dataTable",
+            "typeVersion": 1,
+            "position": [
+                5440,
+                -112
+            ],
+            "id": "fffb62f4-8409-4288-ace2-7a7ff38ffa46",
+            "name": "Insert row"
+        },
+        {
+            "parameters": {
+                "jsCode": "const results = [];\nfor (const inputItem of $input.all()) {\n  let ideas = inputItem.json.output || inputItem.json.content;\n  if (typeof ideas === 'string') {\n    ideas = JSON.parse(ideas);\n  }\n  for (const idea of ideas) {\n    results.push({\n      json: {\n        tema: idea.tema || '',\n        palabras: idea.palabras || '',\n        categoria: idea.categoria || '',\n        Meta_descripcion: idea.Meta_descripcion || '',\n        tags: idea.tags || []\n      }\n    });\n  }\n}\nreturn results;\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                5056,
+                -112
+            ],
+            "id": "790124c9-c5a6-4313-932c-d2a5da92f8ca",
+            "name": "formatear"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Ahora usamos los tags como strings directamente\nreturn $input.all().map(item => ({\n    json: {\n      ...item.json,\n      Estado: \"Pendiente\",\n      Tags: Array.isArray(item.json.tags) ? item.json.tags.join(', ') : (item.json.tags || '')\n    }\n}));"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                5264,
+                -112
+            ],
+            "id": "2d16e042-1874-429e-9c73-5c2e19ab1efe",
+            "name": "traducir tags"
+        },
+        {
+            "parameters": {
+                "operation": "update",
+                "dataTableId": {
+                    "__rl": true,
+                    "value": "7JcERYGdRj0XYuYL",
+                    "mode": "list",
+                    "cachedResultName": "temas",
+                    "cachedResultUrl": "/projects/ZwHHlnZoKhyDqulQ/datatables/7JcERYGdRj0XYuYL"
+                },
+                "filters": {
+                    "conditions": [
+                        {
+                            "keyValue": "={{ $json.id }}"
+                        }
+                    ]
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "Estado": "publicado"
+                    },
+                    "matchingColumns": [],
+                    "schema": [
+                        {
+                            "id": "tema",
+                            "displayName": "tema",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": true
+                        },
+                        {
+                            "id": "palabras",
+                            "displayName": "palabras",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": true
+                        },
+                        {
+                            "id": "categoria",
+                            "displayName": "categoria",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": true
+                        },
+                        {
+                            "id": "Meta_descripcion",
+                            "displayName": "Meta_descripcion",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": true
+                        },
+                        {
+                            "id": "Estado",
+                            "displayName": "Estado",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "readOnly": false,
+                            "removed": false
+                        }
+                    ],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": false
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.dataTable",
+            "typeVersion": 1,
+            "position": [
+                8704,
+                -672
+            ],
+            "id": "2bfc1af9-1911-4be7-81da-f8631c35440b",
+            "name": "Actualizar tablas"
+        },
+        {
+            "parameters": {
+                "jsCode": "const rawText = $input.item.json.content.parts[0].text;\n\nconsole.log('=== RAW TEXT (primeros 500) ===');\nconsole.log(rawText.substring(0, 500));\n\n// Extraer todo lo que esté entre el primer { y el último }\nconst match = rawText.match(/\\{[^]*\\}/);\n\nif (!match) {\n  throw new Error('No se encontró un objeto JSON en la respuesta. Contenido: ' + rawText.substring(0, 300));\n}\n\nlet jsonString = match[0];\n\nconsole.log('=== JSON EXTRAÍDO (primeros 300) ===');\nconsole.log(jsonString.substring(0, 300));\n\n// Intentar parsear directamente\ntry {\n  const parsed = JSON.parse(jsonString);\n  console.log('✓ JSON parseado exitosamente');\n  return parsed;\n} catch (e1) {\n  console.log('⚠ Primera intento falló:', e1.message);\n  \n  // Intento 2: Desescapar\n  try {\n    const unescaped = jsonString\n      .replace(/\\\\\\\\\"/g, '\"')\n      .replace(/\\\\\\\\\\\\\\\\\"/g, '\\\\\"')\n      .replace(/\\\\\\\\\\\\\\\\/g, '\\\\');\n    \n    const parsed = JSON.parse(unescaped);\n    console.log('✓ JSON parseado después de desescapar');\n    return parsed;\n  } catch (e2) {\n    console.log('❌ Segundo intento también falló:', e2.message);\n    console.log('=== CONTENIDO COMPLETO ===');\n    console.log(jsonString);\n    \n    throw new Error(`No se pudo parsear. Error 1: ${e1.message}. Error 2: ${e2.message}. Revisa los logs arriba.`);\n  }\n}"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                7728,
+                -672
+            ],
+            "id": "ec01bfa0-3a1d-4c2c-8bef-b5485824183e",
+            "name": "traductor"
+        },
+        {
+            "parameters": {
+                "jsCode": "const crypto = require('crypto');\n\nconst accessKey = 'AKIAW3JS4V1760026568';\nconst secretKey = 'ns1U0w7wdNyCSb46oMpvtWm7YH8FCXk3xar+2QoV';\nconst partnerTag = 'samuelwilkie-20';\nconst host = 'webservices.amazon.com';\nconst region = 'us-east-1';\n\nfunction getSignature(canonicalRequest, date, time) {\n  const kDate = crypto.createHmac('sha256', 'AWS4' + secretKey).update(date).digest();\n  const kRegion = crypto.createHmac('sha256', kDate).update(region).digest();\n  const kService = crypto.createHmac('sha256', kRegion).update('ProductAdvertisingAPI').digest();\n  const kSigning = crypto.createHmac('sha256', kService).update('aws4_request').digest();\n  const stringToSign = `AWS4-HMAC-SHA256\\n${time}\\n${date}/${region}/ProductAdvertisingAPI/aws4_request\\n${crypto.createHash('sha256').update(canonicalRequest).digest('hex')}`;\n  return crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex');\n}\n\nreturn items.map(i => {\n  const keyword = i.json.amazon_keywords || \"AI business\";\n\n  const requestBody = {\n    Keywords: keyword,\n    PartnerTag: partnerTag,\n    PartnerType: 'Associates',\n    Resources: [\n      'Images.Primary.Medium',\n      'ItemInfo.Title',\n      'Offers.Listings.Price'\n    ],\n    SearchIndex: 'All',\n    ItemCount: 3\n  };\n\n  const bodyString = JSON.stringify(requestBody);\n  const amzDate = new Date().toISOString().replace(/[:-]|\\.\\\\d{3}/g, '');\n  const dateStamp = amzDate.substring(0, 8);\n  const timeStamp = amzDate;\n\n  const canonicalHeaders = `host:${host}\\nx-amz-date:${timeStamp}\\nx-amz-target:com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems\\n`;\n  const signedHeaders = 'host;x-amz-date;x-amz-target';\n  const canonicalRequest = `POST\\n/paapi5/searchitems\\n\\n${canonicalHeaders}\\n${signedHeaders}\\n${crypto.createHash('sha256').update(bodyString).digest('hex')}`;\n  const signature = getSignature(canonicalRequest, dateStamp, timeStamp);\n\n  i.json.url = `https://${host}/paapi5/searchitems`;\n  i.json.body = requestBody;\n  i.json.headers = {\n    'host': host,\n    'x-amz-date': timeStamp,\n    'x-amz-target': 'com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems',\n    'Content-Type': 'application/json; charset=utf-8',\n    'X-Amz-Content-Sha256': crypto.createHash('sha256').update(bodyString).digest('hex'),\n    'Authorization': `AWS4-HMAC-SHA256 Credential=${accessKey}/${dateStamp}/${region}/ProductAdvertisingAPI/aws4_request, SignedHeaders=${signedHeaders}, Signature=${signature}`\n  };\n\n  return i;\n});"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                6992,
+                -960
+            ],
+            "id": "6057e22f-6218-4e85-b9d5-416cbb7c3ff8",
+            "name": "Productos Amazon"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{ $json.url }}",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "=host",
+                            "value": "={{ $json.headers.host }}"
+                        },
+                        {
+                            "name": "=x-amz-date",
+                            "value": "={{ $json.headers['x-amz-date'] }}"
+                        },
+                        {
+                            "name": "=x-amz-target",
+                            "value": "={{ $json.headers['x-amz-target'] }}"
+                        },
+                        {
+                            "name": "=X-Amz-Content-Sha256",
+                            "value": "={{ $json.headers['X-Amz-Content-Sha256'] }}"
+                        },
+                        {
+                            "name": "=Authorization",
+                            "value": "={{ $json.headers.Authorization }}"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ $json.body }}",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                7200,
+                -960
+            ],
+            "id": "f09477a8-6a9a-4efb-a5ce-045fae30d4c3",
+            "name": "HTTP Request"
+        },
+        {
+            "parameters": {
+                "jsCode": "const searchResult = $input.item.json.SearchResult;\n\nif (!searchResult || !searchResult.Items) {\n  return [];\n}\n\nconst products = searchResult.Items.map(item => {\n  return {\n    json: {\n      asin: item.ASIN,\n      title: item.ItemInfo.Title.DisplayValue,\n      url: item.DetailPageURL,\n      imageUrl: item.Images.Primary.Medium.URL,\n      price: item.Offers?.Listings[0]?.Price?.DisplayAmount || 'No disponible'\n    }\n  };\n});\n\nreturn products;"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                7392,
+                -960
+            ],
+            "id": "d85840d7-f1c8-4c06-80d3-76045270744a",
+            "name": "formatear2"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "abc8da08-7640-4adc-8d16-8f75ef43a776",
+                            "name": "hostinger_link_general",
+                            "value": "https://hostinger.co?REFERRALCODE=1SAM870",
+                            "type": "string"
+                        },
+                        {
+                            "id": "a0a8796f-fc98-440e-a0d2-a132592c90d8",
+                            "name": "hostinger_link_vps",
+                            "value": "https://www.hostinger.co/cart?product=vps%3Avps_kvm_2&period=12&referral_type=cart_link&REFERRALCODE=1SAM870&referral_id=0199f8dc-0e1c-7216-a4ac-369cd438a06a",
+                            "type": "string"
+                        },
+                        {
+                            "id": "f7a6bd91-6c60-448e-978f-ae19a8c987db",
+                            "name": "hostinger_link_web",
+                            "value": "https://www.hostinger.co/cart?product=hosting%3Ahostinger_business&period=12&referral_type=cart_link&REFERRALCODE=1SAM870&referral_id=0199f8dd-65c9-7055-a656-edcbb8530462",
+                            "type": "string"
+                        },
+                        {
+                            "id": "b7309d54-d275-4146-9bee-f82c9298f9f5",
+                            "name": "Enlaces_Blogs",
+                            "value": "={{ $json.enlacesBlogs }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "includeOtherFields": true,
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                7200,
+                -672
+            ],
+            "id": "390255c6-4ae8-450d-baa8-8d8f6b21c159",
+            "name": "Añadir Enlace Hostinger"
+        },
+        {
+            "parameters": {
+                "modelId": {
+                    "__rl": true,
+                    "value": "models/gemini-2.0-flash",
+                    "mode": "list",
+                    "cachedResultName": "models/gemini-2.0-flash"
+                },
+                "messages": {
+                    "values": [
+                        {
+                            "content": "=Eres Rebecca Wilkie, redactora SEO experta para wilkiedevs.com. Creas contenido técnico empresarial de alto valor, visualmente atractivo y dinámico.\n\n# DATOS DE ENTRADA\n- Tema: {{ $json.tema }}\n- Keywords: {{ $json.palabras }}\n- Meta descripción: {{ $json.meta_descripcion }}\n- Imagen destacada ID: {{ $json.imagen_destacada_id }}\n- Imagen body1: {{ $json.imagen_body1_url }} (ID: {{ $json.imagen_body1_id }})\n- Imagen body2: {{ $json.imagen_body2_url }} (ID: {{ $json.imagen_body2_id }})\n- Enlaces Hostinger:\n  * General: {{ $json.hostinger_link_general }}\n  * VPS: {{ $json.hostinger_link_vps }}\n  * Web Hosting: {{ $json.hostinger_link_web }}\n- Artículos para enlazar: {{ JSON.stringify($json.enlacesBlogs).substring(0, 400) }}\n\n# OBJETIVO\nArtículo de 1800-2200 palabras, 100% original, visualmente atractivo con elementos dinámicos: tablas comparativas, cajas destacadas, listas, checklist, y banners contextuales.\n\n# COLORES CORPORATIVOS\n- Rojo: #A00010\n- Gris oscuro: #54595F\n- Negro: #1D1D1D\n- Amarillo/Dorado: #FFBE00\n- Blanco: #FFFFFF\n- Fondo claro: #F8F9FA\n\n# ESTRUCTURA HTML MEJORADA\n\n<!-- Intro destacada -->\n<div style=\\\"height:40px\\\" class=\\\"wp-block-spacer\\\"></div>\n<div style=\\\"background: linear-gradient(135deg, #1D1D1D 0%, #54595F 100%); padding: 30px; border-radius: 12px; border-left: 5px solid #A00010;\\\">\n<p style=\\\"color: #FFFFFF; font-size: 1.1em; line-height: 1.8; margin: 0;\\\">\n[Intro de 150-200 palabras que enganche. Menciona <strong style=\\\"color: #FFBE00;\\\">{{ $json.palabras }}</strong>]\n</p>\n</div>\n\n<div style=\\\"height:40px\\\" class=\\\"wp-block-spacer\\\"></div>\n\n<!-- Tabla de contenidos moderna -->\n<div style=\\\"background: #F8F9FA; padding: 25px; border-radius: 12px; border-left: 4px solid #A00010;\\\">\n<h3 style=\\\"color: #A00010; margin-top: 0; font-size: 1.3em;\\\">📋 Tabla de Contenidos</h3>\n<ul style=\\\"list-style: none; padding-left: 0; margin-bottom: 0;\\\">\n<li style=\\\"margin-bottom: 10px;\\\"><a href=\\\"#seccion-1\\\" style=\\\"color: #54595F; text-decoration: none; font-weight: 500;\\\"><span style=\\\"color: #A00010; margin-right: 10px;\\\">▸</span>[Título Sección 1]</a></li>\n<li style=\\\"margin-bottom: 10px;\\\"><a href=\\\"#seccion-2\\\" style=\\\"color: #54595F; text-decoration: none; font-weight: 500;\\\"><span style=\\\"color: #A00010; margin-right: 10px;\\\">▸</span>[Título Sección 2]</a></li>\n<li style=\\\"margin-bottom: 10px;\\\"><a href=\\\"#seccion-3\\\" style=\\\"color: #54595F; text-decoration: none; font-weight: 500;\\\"><span style=\\\"color: #A00010; margin-right: 10px;\\\">▸</span>[Título Sección 3]</a></li>\n<li><a href=\\\"#conclusion\\\" style=\\\"color: #54595F; text-decoration: none; font-weight: 500;\\\"><span style=\\\"color: #A00010; margin-right: 10px;\\\">▸</span>Conclusión</a></li>\n</ul>\n</div>\n\n<div style=\\\"height:50px\\\" class=\\\"wp-block-spacer\\\"></div>\n\n<!-- SECCIÓN 1 -->\n<div style=\\\"border-left: 5px solid #A00010; padding-left: 20px; margin-bottom: 30px;\\\">\n<h2 id=\\\"seccion-1\\\" style=\\\"color: #1D1D1D; font-size: 2em; margin-bottom: 20px;\\\">[Título Sección 1]</h2>\n<p style=\\\"line-height: 1.8;\\\">[Contenido 3-4 párrafos con <strong style=\\\"color: #A00010;\\\">énfasis en rojo</strong>]</p>\n</div>\n\n<!-- ELEMENTO DINÁMICO 1: Checklist o Stats -->\n<div style=\\\"background: linear-gradient(to right, #F8F9FA 0%, #FFFFFF 100%); padding: 25px; border-radius: 12px; border: 2px solid #FFBE00; margin: 30px 0;\\\">\n<h4 style=\\\"color: #A00010; margin-top: 0; font-size: 1.3em;\\\">✓ Puntos Clave:</h4>\n<ul style=\\\"list-style: none; padding-left: 0; margin-bottom: 0;\\\">\n<li style=\\\"padding: 10px 0; border-bottom: 1px solid #F8F9FA; color: #54595F;\\\">✅ <strong>[Punto importante 1]</strong></li>\n<li style=\\\"padding: 10px 0; border-bottom: 1px solid #F8F9FA; color: #54595F;\\\">✅ <strong>[Punto importante 2]</strong></li>\n<li style=\\\"padding: 10px 0; color: #54595F;\\\">✅ <strong>[Punto importante 3]</strong></li>\n</ul>\n</div>\n\n<!-- Imagen 1 -->\n<figure style=\\\"margin: 40px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden;\\\">\n<img src=\\\"{{ $json.imagen_body1_url }}\\\" alt=\\\"[ALT descriptivo con keywords]\\\" class=\\\"wp-image-{{ $json.imagen_body1_id }}\\\" style=\\\"display: block; width: 100%;\\\"/>\n<figcaption style=\\\"background: #F8F9FA; padding: 15px; color: #54595F; font-style: italic; border-top: 3px solid #FFBE00;\\\">[Leyenda imagen 1]</figcaption>\n</figure>\n\n<div style=\\\"height:50px\\\" class=\\\"wp-block-spacer\\\"></div>\n\n<!-- SECCIÓN 2 -->\n<div style=\\\"border-left: 5px solid #A00010; padding-left: 20px; margin-bottom: 30px;\\\">\n<h2 id=\\\"seccion-2\\\" style=\\\"color: #1D1D1D; font-size: 2em; margin-bottom: 20px;\\\">[Título Sección 2]</h2>\n<p style=\\\"line-height: 1.8;\\\">[Contenido 350-400 palabras. Integra enlaces internos: <a href=\\\"[URL_LISTA]\\\" style=\\\"color: #A00010; font-weight: 600; text-decoration: none; border-bottom: 2px solid #FFBE00;\\\">[texto ancla]</a>]</p>\n</div>\n\n<!-- TABLA COMPARATIVA (úsala cuando sea relevante) -->\n<div style=\\\"overflow-x: auto; margin: 40px 0;\\\">\n<table style=\\\"width: 100%; border-collapse: collapse; background: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.1);\\\">\n<thead>\n<tr style=\\\"background: linear-gradient(135deg, #A00010 0%, #54595F 100%);\\\">\n<th style=\\\"padding: 15px; text-align: left; color: #FFFFFF; font-weight: 700;\\\">[Característica]</th>\n<th style=\\\"padding: 15px; text-align: center; color: #FFFFFF; font-weight: 700;\\\">[Opción 1]</th>\n<th style=\\\"padding: 15px; text-align: center; color: #FFFFFF; font-weight: 700;\\\">[Opción 2]</th>\n<th style=\\\"padding: 15px; text-align: center; color: #FFFFFF; font-weight: 700;\\\">[Opción 3]</th>\n</tr>\n</thead>\n<tbody>\n<tr style=\\\"border-bottom: 1px solid #F8F9FA;\\\">\n<td style=\\\"padding: 15px; color: #1D1D1D; font-weight: 600;\\\">[Feature 1]</td>\n<td style=\\\"padding: 15px; text-align: center; color: #54595F;\\\">✅</td>\n<td style=\\\"padding: 15px; text-align: center; color: #54595F;\\\">✅</td>\n<td style=\\\"padding: 15px; text-align: center; color: #54595F;\\\">❌</td>\n</tr>\n<tr style=\\\"border-bottom: 1px solid #F8F9FA; background: #F8F9FA;\\\">\n<td style=\\\"padding: 15px; color: #1D1D1D; font-weight: 600;\\\">[Feature 2]</td>\n<td style=\\\"padding: 15px; text-align: center; color: #54595F;\\\">[Valor]</td>\n<td style=\\\"padding: 15px; text-align: center; color: #54595F;\\\">[Valor]</td>\n<td style=\\\"padding: 15px; text-align: center; color: #54595F;\\\">[Valor]</td>\n</tr>\n<tr style=\\\"border-bottom: 1px solid #F8F9FA;\\\">\n<td style=\\\"padding: 15px; color: #1D1D1D; font-weight: 600;\\\">[Feature 3]</td>\n<td style=\\\"padding: 15px; text-align: center; color: #54595F;\\\">✅</td>\n<td style=\\\"padding: 15px; text-align: center; color: #54595F;\\\">⚠️</td>\n<td style=\\\"padding: 15px; text-align: center; color: #54595F;\\\">✅</td>\n</tr>\n</tbody>\n</table>\n</div>\n\n<!-- BANNER HOSTINGER CONTEXTUAL -->\n<!-- IMPORTANTE: Elige EL BANNER MÁS RELEVANTE según el tema:\n- Si el tema es sobre hosting web, WordPress, sitios web → usa hostinger_link_web con imagen ES-New-WP_in-text-banner.png\n- Si el tema es sobre servidores, VPS, infraestructura → usa hostinger_link_vps con imagen ES-VPS-hosting_in-text-banner.png\n- Para otros temas generales → usa hostinger_link_general con imagen ES-New-WP_in-text-banner.png\n-->\n<div style=\\\"margin: 50px 0; text-align: center;\\\">\n<a href=\\\"[ELIGE: {{ $json.hostinger_link_web }} o {{ $json.hostinger_link_vps }} o {{ $json.hostinger_link_general }}]\\\" target=\\\"_blank\\\" rel=\\\"noopener sponsored\\\">\n<img src=\\\"[ELIGE: https://wilkiedevs.com/wp-content/uploads/2025/10/ES-New-WP_in-text-banner.png o ES-VPS-hosting_in-text-banner.png]\\\" alt=\\\"Banner promocional Hostinger\\\" style=\\\"max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 10px 30px rgba(160,0,16,0.2);\\\"/>\n</a>\n</div>\n\n<div style=\\\"height:50px\\\" class=\\\"wp-block-spacer\\\"></div>\n\n<!-- SECCIÓN 3 -->\n<div style=\\\"border-left: 5px solid #A00010; padding-left: 20px; margin-bottom: 30px;\\\">\n<h2 id=\\\"seccion-3\\\" style=\\\"color: #1D1D1D; font-size: 2em; margin-bottom: 20px;\\\">[Título Sección 3]</h2>\n<p style=\\\"line-height: 1.8;\\\">[Contenido 350-400 palabras]</p>\n</div>\n\n<!-- CAJA DESTACADA DE ADVERTENCIA O TIP -->\n<div style=\\\"background: #FFF9E6; border-left: 5px solid #FFBE00; padding: 25px; border-radius: 8px; margin: 30px 0;\\\">\n<p style=\\\"margin: 0; color: #54595F; line-height: 1.7;\\\"><strong style=\\\"color: #A00010;\\\">💡 Consejo Pro:</strong> [Tip valioso o advertencia importante relacionada con el tema]</p>\n</div>\n\n<!-- Imagen 2 -->\n<figure style=\\\"margin: 40px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden;\\\">\n<img src=\\\"{{ $json.imagen_body2_url }}\\\" alt=\\\"[ALT diferente]\\\" class=\\\"wp-image-{{ $json.imagen_body2_id }}\\\" style=\\\"display: block; width: 100%;\\\"/>\n<figcaption style=\\\"background: #F8F9FA; padding: 15px; color: #54595F; font-style: italic; border-top: 3px solid #FFBE00;\\\">[Leyenda imagen 2]</figcaption>\n</figure>\n\n<div style=\\\"height:50px\\\" class=\\\"wp-block-spacer\\\"></div>\n\n<!-- CONCLUSIÓN -->\n<div style=\\\"background: #F8F9FA; padding: 30px; border-radius: 12px; border-left: 5px solid #A00010;\\\">\n<h2 id=\\\"conclusion\\\" style=\\\"color: #A00010; margin-top: 0; font-size: 2em;\\\">Conclusión y Próximos Pasos</h2>\n<p style=\\\"line-height: 1.8; color: #1D1D1D; font-size: 1.05em;\\\">[200-250 palabras de conclusión]</p>\n</div>\n\n<div style=\\\"height:50px\\\" class=\\\"wp-block-spacer\\\"></div>\n\n<!-- CTA CONSULTORÍA -->\n<div style=\\\"background: linear-gradient(135deg, #1D1D1D 0%, #54595F 100%); padding: 40px; border-radius: 15px; text-align: center; border: 3px solid #A00010; box-shadow: 0 15px 40px rgba(0,0,0,0.2);\\\">\n<h3 style=\\\"color: #FFBE00; font-size: 1.9em; margin-top: 0; margin-bottom: 15px;\\\">🤔 ¿Te Sientes Abrumado? Hablemos.</h3>\n<p style=\\\"color: #FFFFFF; font-size: 1.1em; line-height: 1.7; margin-bottom: 30px;\\\">Implementar <strong style=\\\"color: #FFBE00;\\\">{{ $json.palabras }}</strong> puede ser complejo. En <strong>WilkieDevs</strong> te ofrecemos una consultoría gratuita para analizar tu caso y proponerte una solución a medida.</p>\n<a href=\\\"https://wilkiedevs.com/contacto\\\" style=\\\"display: inline-block; background: #A00010; color: #FFFFFF; padding: 18px 45px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 1.15em; box-shadow: 0 5px 20px rgba(160,0,16,0.4);\\\">🚀 Solicitar Consultoría Gratuita</a>\n<p style=\\\"color: #FFFFFF; font-size: 0.95em; margin-top: 25px; margin-bottom: 0; opacity: 0.9;\\\">⏱️ Respuesta garantizada en menos de 24 horas.</p>\n</div>\n\n# REGLAS CRÍTICAS\n1. **Tabla comparativa**: Úsala SOLO si es relevante para el tema (ej: comparar herramientas, planes, métodos)\n2. **Banner Hostinger**: Elige el más contextual (Web Hosting para WordPress/webs, VPS para servidores/infraestructura)\n3. **Enlaces internos**: 2-3 de la lista proporcionada, contextuales\n4. **Elementos dinámicos**: Al menos 2 (checklist, tabla, caja tip, stats)\n5. **Imágenes**: Alt text descriptivo y optimizado\n6. **Tono**: Profesional pero cercano, directo\n\n# FORMATO SALIDA\nDevuelve SOLO JSON sin bloques markdown ni comillas extras:\n{\n \\\"title\\\": \\\"[Título SEO 50-60 chars]\\\",\n \\\"content\\\": \\\"[HTML completo en una línea con escapes correctos]\\\",\n \\\"excerpt\\\": \\\"[Resumen 140-150 chars]\\\",\n \\\"featured_media\\\": {{ $json.imagen_destacada_id }}\n}\""
+                        }
+                    ]
+                },
+                "options": {
+                    "maxOutputTokens": 8000,
+                    "temperature": 0.7
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.googleGemini",
+            "typeVersion": 1,
+            "position": [
+                7392,
+                -672
+            ],
+            "id": "1dd28f86-f615-4278-abcc-752e59816bc8",
+            "name": "redactor",
+            "credentials": {
+                "googlePalmApi": {
+                    "id": "t38zPMWleOvlSpPc",
+                    "name": "Que movida cu"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const data = $input.first().json;\n\n// En el nuevo sistema los tags son directamente los nombres\nlet tagsArray = [];\nif (data.tags) {\n  tagsArray = Array.isArray(data.tags) ? data.tags : data.tags.split(',').map(t => t.trim());\n}\n\nconst wpBody = {\n  title: data.title,\n  excerpt: data.excerpt,\n  content: data.content,\n  status: 'published',\n  category_slug: 'ia', // O mapéalo si tienes lógica de categorías\n  tags: tagsArray,\n  featured_image: data.imagen_destacada_url,\n  meta_description: data.meta_description || data.excerpt.substring(0, 160)\n};\n\nconsole.log('=== BODY PARA LOOKITRY ===');\nconsole.log('Tags:', tagsArray);\nconsole.log('Featured Image:', wpBody.featured_image);\n\nreturn {\n  json: {\n    wpBody: wpBody,\n    ...data\n  }\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                8304,
+                -672
+            ],
+            "id": "c9e28c36-945a-4a43-8817-f2618dc42743",
+            "name": "Preparar JSON para Lookitry"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.lookitry.com/api/blog/webhook",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        },
+                        {
+                            "name": "x-blog-secret",
+                            "value": "Travis2305**_blog_live"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ JSON.stringify($json.wpBody) }}",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                8512,
+                -672
+            ],
+            "id": "bfdcb30b-4ca8-4adf-9012-706f3f0c18e6",
+            "name": "Publicar en Lookitry"
+        },
+        {
+            "parameters": {
+                "jsCode": "const item = $input.all()[0];\nlet content = item.json;\n\nconsole.log('=== VALIDACIÓN DE CONTENIDO ===');\nconsole.log('Tipo de content:', typeof content);\nconsole.log('Tags recibidos:', content.Tags);\n\n// Si viene como string, parsearlo\nif (typeof content === 'string') {\n  try {\n    content = JSON.parse(content);\n    console.log('✓ JSON parseado correctamente');\n  } catch (e) {\n    throw new Error(`Error al parsear JSON: ${e.message}\\nContenido: ${content.substring(0, 200)}`);\n  }\n}\n\n// CRÍTICO: Si los Tags no están en el content parseado, buscarlos en el input original\nif (!content.Tags) {\n  console.log('⚠ Tags no encontrados en content, buscando en input...');\n  \n  // Buscar en todos los items de input\n  const allInputs = $input.all();\n  for (const inputItem of allInputs) {\n    if (inputItem.json.Tags) {\n      content.Tags = inputItem.json.Tags;\n      console.log('✓ Tags recuperados del input:', content.Tags);\n      break;\n    }\n  }\n  \n  // Si aún no hay tags, intentar del nodo anterior\n  if (!content.Tags) {\n    try {\n      const prevData = $('Añadir Enlace Hostinger').first().json;\n      if (prevData.Tags) {\n        content.Tags = prevData.Tags;\n        console.log('✓ Tags recuperados de nodo anterior:', content.Tags);\n      }\n    } catch (e) {\n      console.log('⚠ No se pudieron recuperar Tags de nodo anterior');\n    }\n  }\n}\n\n// Validar campos críticos\nconst required = ['title', 'excerpt', 'featured_media'];\nconst missing = [];\nfor (const field of required) {\n  if (!content[field]) {\n    missing.push(field);\n  }\n}\nif (missing.length > 0) {\n  throw new Error(`Campos requeridos faltantes: ${missing.join(', ')}`);\n}\n\n// Manejar meta_description\nif (!content.meta_description || content.meta_description.trim() === '') {\n  console.log('⚠ meta_description vacío, usando excerpt como fallback');\n  content.meta_description = content.excerpt.substring(0, 160);\n}\n\nconsole.log('✓ meta_description:', content.meta_description.substring(0, 50) + '...');\n\n// Validar longitudes\nif (content.title && content.title.length > 60) {\n  console.log('⚠ Título muy largo:', content.title.length, 'caracteres');\n}\n\nif (content.excerpt && content.excerpt.length > 160) {\n  console.log('⚠ Excerpt muy largo:', content.excerpt.length, 'caracteres');\n  content.excerpt = content.excerpt.substring(0, 157) + '...';\n}\n\nif (content.meta_description && content.meta_description.length > 160) {\n  console.log('⚠ Meta description muy larga:', content.meta_description.length, 'caracteres');\n  content.meta_description = content.meta_description.substring(0, 157) + '...';\n}\n\nconsole.log('=== VALIDACIÓN COMPLETA ===');\nconsole.log('Tags finales que se pasarán:', content.Tags);\n\nreturn {\n  json: content\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                7920,
+                -672
+            ],
+            "id": "2773cf9d-1863-49c5-87e3-47e0d4a44f21",
+            "name": "Preparador"
+        },
+        {
+            "parameters": {
+                "url": "https://lookitry.com/api/blog",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                6608,
+                -896
+            ],
+            "id": "0d263dd1-3882-40d4-ae18-3498bc6a3b62",
+            "name": "conseguir Blogs"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Extrae título y url de todos los blogs en la categoría\nconst enlacesBlogs = items.map(item => ({\n  titulo: item.json.title.rendered,\n  url: item.json.link\n}));\n\nreturn [{\n  json: { enlacesBlogs }\n}];\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                6768,
+                -896
+            ],
+            "id": "9fb5655b-56b2-4a20-aab0-35caf7e29a0d",
+            "name": "conseguir link blogs"
+        },
+        {
+            "parameters": {
+                "numberInputs": 3
+            },
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "position": [
+                6768,
+                -688
+            ],
+            "id": "e646328b-057d-4a56-adc6-491a0b86f8de",
+            "name": "Merge"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Obtiene TODOS los items que llegan a este nodo desde las diferentes ramas\nconst allItems = $input.all();\n\n// Inicializa un objeto para consolidar toda la información\nconst datosFinales = {};\n\n// --- BÚSQUEDA INTELIGENTE DE DATOS ---\n\n// 1. Busca los datos del tema original (del nodo 'Obtener Temas')\nconst itemDelTema = allItems.find(item => item.json.tema && item.json.palabras);\nif (itemDelTema) {\n  // Copiar TODOS los campos del tema, incluyendo Tags\n  Object.keys(itemDelTema.json).forEach(key => {\n    datosFinales[key] = itemDelTema.json[key];\n  });\n  console.log('✓ Datos del tema encontrados');\n  console.log('  - Tags originales:', itemDelTema.json.Tags);\n  console.log('  - Tipo de Tags:', typeof itemDelTema.json.Tags);\n}\n\n// 2. Busca los datos de las imágenes ya subidas y ordenadas\nconst itemDeImagenes = allItems.find(item => item.json.imagen_destacada);\nif (itemDeImagenes) {\n  // Solo agregar campos de imágenes, NO sobrescribir Tags\n  datosFinales.imagen_destacada = itemDeImagenes.json.imagen_destacada;\n  datosFinales.imagen_destacada_url = itemDeImagenes.json.imagen_destacada?.url;\n  datosFinales.imagen_destacada_id = itemDeImagenes.json.imagen_destacada?.id;\n  datosFinales.imagen_body1 = itemDeImagenes.json.imagen_body1;\n  datosFinales.imagen_body1_url = itemDeImagenes.json.imagen_body1?.url;\n  datosFinales.imagen_body1_id = itemDeImagenes.json.imagen_body1?.id;\n  datosFinales.imagen_body2 = itemDeImagenes.json.imagen_body2;\n  datosFinales.imagen_body2_url = itemDeImagenes.json.imagen_body2?.url;\n  datosFinales.imagen_body2_id = itemDeImagenes.json.imagen_body2?.id;\n  console.log('✓ Datos de imágenes encontrados');\n}\n\n// 3. Busca la lista de enlaces de blogs existentes\nconst itemDeEnlaces = allItems.find(item => Array.isArray(item.json.enlacesBlogs));\nif (itemDeEnlaces) {\n  datosFinales.enlacesBlogs = itemDeEnlaces.json.enlacesBlogs;\n  console.log('✓ Enlaces de blogs encontrados');\n}\n\n// 4. FORMATEA LOS TAGS: Convierte el string \"93, 90, 87\" a un array de números [93, 90, 87]\nlet tagsArray = [];\nif (datosFinales.Tags) {\n  if (typeof datosFinales.Tags === 'string') {\n    tagsArray = datosFinales.Tags.split(',').map(t => parseInt(t.trim())).filter(t => !isNaN(t));\n    console.log('✓ Tags convertidos de string a array:', tagsArray);\n  } else if (Array.isArray(datosFinales.Tags)) {\n    tagsArray = datosFinales.Tags;\n    console.log('✓ Tags ya en formato array:', tagsArray);\n  }\n} else {\n  console.log('⚠ No se encontraron Tags en los datos');\n  console.log('Campos disponibles:', Object.keys(datosFinales));\n}\n\ndatosFinales.Tags = tagsArray;\n\n// 5. Añade el enlace de Hostinger\ndatosFinales.hostinger_link = \"https://hostinger.co?REFERRALCODE=1SAM870\";\n\nconsole.log('=== DATOS FINALES CONSOLIDADOS ===');\nconsole.log('Tags finales:', datosFinales.Tags);\n\n// Devuelve un único item con toda la información consolidada\nreturn [{\n  json: datosFinales\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                6992,
+                -672
+            ],
+            "id": "31b00a5c-4687-43ec-902d-186546599c02",
+            "name": "Obtener Info"
+        },
+        {
+            "parameters": {
+                "jsCode": "const imagenesUnidas = $input.first().json;\nconst datosOriginales = $('Obtener Temas').first().json;\n\nconsole.log('=== DEBUG RECUPERAR DATOS ===');\nconsole.log('Tags de Obtener Temas:', datosOriginales.Tags);\nconsole.log('Tipo:', typeof datosOriginales.Tags);\n\nreturn {\n  json: {\n    // Datos del tema original (INCLUYENDO TAGS)\n    tema: datosOriginales.tema,\n    palabras: datosOriginales.palabras,\n    meta_descripcion: datosOriginales.Meta_descripcion,\n    Tags: datosOriginales.Tags, // ← CRÍTICO: Preservar los Tags aquí\n    \n    // URLs e IDs de las imágenes consolidadas\n    imagen_destacada_url: imagenesUnidas.imagen_destacada.url,\n    imagen_destacada_id: imagenesUnidas.imagen_destacada.id,\n    imagen_body1_url: imagenesUnidas.imagen_body1.url,\n    imagen_body1_id: imagenesUnidas.imagen_body1.id,\n    imagen_body2_url: imagenesUnidas.imagen_body2.url,\n    imagen_body2_id: imagenesUnidas.imagen_body2.id\n  }\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                6352,
+                -896
+            ],
+            "id": "0583a9d2-fa5f-42c9-bc6d-e9150c437b2c",
+            "name": "recuperar datos"
+        },
+        {
+            "parameters": {
+                "jsCode": "const items = $input.all();\n\n// Ordenar por orden\nconst ordenadas = items.sort((a, b) => a.json.orden - b.json.orden);\n\nconsole.log('Imágenes recibidas:', ordenadas.map(i => i.json.tipo).join(', '));\n\nreturn [{\n  json: {\n    imagen_destacada: {\n      id: ordenadas[0].json.id,\n      url: ordenadas[0].json.file_url || ordenadas[0].json.url || ordenadas[0].json.source_url\n    },\n    imagen_body1: {\n      id: ordenadas[1].json.id,\n      url: ordenadas[1].json.file_url || ordenadas[1].json.url || ordenadas[1].json.source_url\n    },\n    imagen_body2: {\n      id: ordenadas[2].json.id,\n      url: ordenadas[2].json.file_url || ordenadas[2].json.url || ordenadas[2].json.source_url\n    }\n  }\n}];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                6160,
+                -896
+            ],
+            "id": "e28a1188-1bf7-48a3-965b-4ed707ec26de",
+            "name": "Filtrado"
+        },
+        {
+            "parameters": {
+                "modelId": {
+                    "__rl": true,
+                    "value": "models/gemini-2.0-flash-001",
+                    "mode": "list",
+                    "cachedResultName": "models/gemini-2.0-flash-001"
+                },
+                "messages": {
+                    "values": [
+                        {
+                            "content": "=Eres un experto en \"prompt engineering\" para el modelo de imagen \"Nano Banana\" (Gemini 2.5 Flash Image Preview). Tu misión es generar prompts que creen imágenes fotorrealistas y profesionales alineadas con la identidad visual de la marca de tecnología \"WILKIE DEVS\".\n\nIDENTIDAD VISUAL DE LA MARCA \"WILKIE DEVS\":\n- Paleta de Colores Principal: Rojo oscuro (#A00010), Gris oscuro (#54595F), y Negro/Fondo oscuro (#1D1D1D). El Amarillo/Dorado (#FFBE00) y el Blanco (#FFFFFF) se usan para énfasis y contraste.\n- Estilo: Moderno, audaz, profesional, tecnológico e impactante. Evoca energía, acción y resultados directos.\n- Atmósfera: Soluciones empresariales potentes, innovación, consultoría de alto nivel.\n\nREQUISITOS TÉCNICOS (Optimizados para Nano Banana):\n- Orientación: Estrictamente HORIZONTAL (aspect ratio 16:9).\n- Resolución: Máxima calidad, fotorrealista, alta definición.\n- Anatomía Humana: Precisa, natural y profesional si aparecen personas.\n\nTIPOS DE IMAGEN REQUERIDOS:\n(A) IMAGEN DESTACADA (HERO IMAGE): Impactante, fotorrealista, con composición cinematográfica. Debe representar el concepto principal del artículo usando la paleta de colores de WILKIE DEVS (rojo, gris, negro, amarillo).\n(B) IMAGEN BODY 1 (DE REFUERZO): Una imagen fotorrealista y muy directa que fortalezca el tema del artículo. No debe ser un logo ni abstracta, sino una representación visual clara y potente del contenido, integrada en la estética de WILKIE DEVS.\n(C) IMAGEN BODY 2 (DE APLICACIÓN): Fotorrealista, mostrando resultados o aplicaciones prácticas del tema. Debe ser coherente con la paleta de colores y el estilo profesional de WILKIE DEVS.\n\nREGLAS DE COMPOSICIÓN Y CALIDAD:\n- Prioriza la paleta de colores de WILKIE DEVS, especialmente el rojo oscuro (#A00010) y el gris (#54595F), con acentos en amarillo (#FFBE00) sobre fondos oscuros (#1D1D1D).\n- Iluminación dramática y profesional, con buenos contrastes que hagan resaltar los detalles.\n- **LENGUAJE SEGURO (NUEVA REGLA CRÍTICA):** Usa un lenguaje corporativo, positivo y neutral. Enfócate en conceptos de colaboración, crecimiento, soluciones y eficiencia. **Evita palabras que puedan ser ambiguas o interpretadas negativamente por los filtros de seguridad de la IA (ej. 'ataque', 'eliminar', 'amenaza', 'ejecutar', 'controlar').**\n- Si hay personas: profesionales de diversos orígenes en entornos de trabajo modernos y dinámicos.\n- **MODIFICADORES DE CALIDAD PARA NANO BANANA**: Incluye siempre términos como \"photorealistic, hyper-detailed, 8K, UHD, professional corporate photography, sharp focus, cinematic lighting, dramatic contrast\".\n\nNEGATIVOS UNIVERSALES (QUÉ EVITAR):\n- **ABSOLUTAMENTE NINGÚN**: texto, letras, logos, marcas de agua, firmas.\n- **EVITAR**: colores sobresaturados fuera de la paleta, anatomía deforme, manos con dedos extraños, elementos de baja calidad o borrosos.\n\nINSTRUCCIONES:\nAnaliza el tema: \"{{ $('Obtener Temas').first().json.tema }}\"\n\nGenera TRES prompts en inglés. Cada prompt debe ser una sola línea de texto optimizada para Nano Banana.\n- Prompt (A): Para la imagen destacada.\n- Prompt (B): Para la imagen de refuerzo.\n- Prompt (C): Para la imagen de aplicación.",
+                            "role": "model"
+                        },
+                        {
+                            "content": "=Transform the following blog topic into THREE distinct image prompts in English, each following the brand guidelines and technical requirements above. Return ONLY the three prompts in this exact format:\n\n(A) [First prompt here]\n(B) [Second prompt here]\n(C) [Third prompt here]\n\nTopic: \"{{ $('Obtener Temas').item.json.tema }}\"\n\nEnsure each prompt:\n- Includes IMPORTANT \"horizontal composition\"\n- References red/white/gray color scheme\n- Specifies professional, modern, tech-focused aesthetic\n- Has clear visual concept related to the topic\n- Maintains anatomical accuracy if humans are present"
+                        }
+                    ]
+                },
+                "options": {
+                    "maxOutputTokens": 250
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.googleGemini",
+            "typeVersion": 1,
+            "position": [
+                4608,
+                -880
+            ],
+            "id": "9b7ff181-6960-479c-9142-c3ef6b5a0f6f",
+            "name": "mejorar prompt",
+            "credentials": {
+                "googlePalmApi": {
+                    "id": "t38zPMWleOvlSpPc",
+                    "name": "Que movida cu"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// Extraer los 3 prompts del texto generado\nconst text = $input.first().json.content.parts[0].text;\n\n// Buscar los patrones (A), (B), (C)\nconst promptA = text.match(/\\(A\\)\\s*[\"\"\"]([^\"\"\"]+)[\"\"\"]/)?.[1] || \n                text.match(/\\(A\\)\\s*(.+?)(?=\\(B\\)|$)/s)?.[1]?.trim();\n\nconst promptB = text.match(/\\(B\\)\\s*[\"\"\"]([^\"\"\"]+)[\"\"\"]/)?.[1] || \n                text.match(/\\(B\\)\\s*(.+?)(?=\\(C\\)|$)/s)?.[1]?.trim();\n\nconst promptC = text.match(/\\(C\\)\\s*[\"\"\"]([^\"\"\"]+)[\"\"\"]/)?.[1] || \n                text.match(/\\(C\\)\\s*(.+?)$/s)?.[1]?.trim();\n\n// Verificar que se encontraron los 3 prompts\nif (!promptA || !promptB || !promptC) {\n  throw new Error(`No se pudieron extraer todos los prompts. \n    A: ${!!promptA}, B: ${!!promptB}, C: ${!!promptC}\n    Texto recibido: ${text.substring(0, 500)}`);\n}\n\nreturn [\n  {\n    json: {\n      prompt: promptA,\n      tipo: 'destacada',\n      orden: 1\n    }\n  },\n  {\n    json: {\n      prompt: promptB,\n      tipo: 'body1',\n      orden: 2\n    }\n  },\n  {\n    json: {\n      prompt: promptC,\n      tipo: 'body2',\n      orden: 3\n    }\n  }\n];"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                4944,
+                -880
+            ],
+            "id": "3b7fd56a-ef74-4afc-bade-cf2105609f90",
+            "name": "Extraer Prompts"
+        },
+        {
+            "parameters": {
+                "operation": "get",
+                "dataTableId": {
+                    "__rl": true,
+                    "value": "7JcERYGdRj0XYuYL",
+                    "mode": "list",
+                    "cachedResultName": "temas",
+                    "cachedResultUrl": "/projects/ZwHHlnZoKhyDqulQ/datatables/7JcERYGdRj0XYuYL"
+                },
+                "filters": {
+                    "conditions": [
+                        {
+                            "keyName": "Estado",
+                            "keyValue": "Pendiente"
+                        }
+                    ]
+                },
+                "limit": 1
+            },
+            "type": "n8n-nodes-base.dataTable",
+            "typeVersion": 1,
+            "position": [
+                4624,
+                -640
+            ],
+            "id": "dd86d9b7-ee6c-414c-86c9-ba40259d42f9",
+            "name": "Obtener Temas"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://openrouter.ai/api/v1/chat/completions",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpBearerAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\n  \"model\": \"openai/gpt-5-image-mini\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.prompt.replace(/\\\"/g, '\\\\\\\"') }}\"\n    }\n  ],\n  \"image_generation\": {\n    \"n\": 1,\n    \"size\": \"1792x1024\",\n    \"output_format\": \"png\",\n    \"quality\": \"hd\",\n    \"style\": \"natural\"\n  }\n}",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                5152,
+                -1104
+            ],
+            "id": "bf9d977b-9701-491a-87a1-e9adc6ddc8d3",
+            "name": "OpenRouter",
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "6cLjtvB0dCFi7skM",
+                    "name": "Telegram API"
+                },
+                "httpBearerAuth": {
+                    "id": "zfUV46xyt3CLaLh8",
+                    "name": "OpenRouter"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "mode": "runOnceForEachItem",
+                "jsCode": "// Modo: Run Once for Each Item\nconst item = $input.item;\nconst response = item.json;\n\n// Obtener tipo y orden del nodo que dividió los items\nconst inputData = $('Extraer Prompts').item.json;\nconst tipo = inputData.tipo;\nconst orden = inputData.orden;\n\nconsole.log(`Procesando imagen: ${tipo} (Orden: ${orden})`);\n\n// --- INICIO DE LA VALIDACIÓN ---\n// 1. Revisa si OpenRouter devolvió un error explícito.\nif (response.error) {\n  throw new Error(`Error de la API de OpenRouter para la imagen '${tipo}': ${response.error.message}`);\n}\n\n// 2. Usa \"optional chaining\" (?.) para acceder de forma segura a la URL.\n// Esto evita el error \"Cannot read properties of undefined\".\nconst url = response.choices?.[0]?.message?.images?.[0]?.image_url?.url;\n\n// 3. Verifica si la URL se encontró. Si no, la imagen no se generó.\nif (!url) {\n  console.log('Respuesta completa de OpenRouter:', JSON.stringify(response, null, 2));\n  throw new Error(`No se encontró la URL de la imagen para '${tipo}'. La API no generó la imagen (posiblemente por el filtro de contenido). Revisa la respuesta completa en el log de arriba.`);\n}\n// --- FIN DE LA VALIDACIÓN ---\n\n// Ahora que sabemos que la URL existe, la procesamos.\nconst base64Data = url.split('base64,')[1];\n\nif (!base64Data) {\n  throw new Error(`No se pudo extraer la data base64 de la URL para la imagen '${tipo}'.`);\n}\n\nconsole.log(`✓ Imagen ${tipo} extraída: ${base64Data.length} caracteres`);\n\nreturn {\n  json: {\n    ...inputData, // Muy importante: pasar los datos originales\n    base64: base64Data\n  }\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                5392,
+                -1104
+            ],
+            "id": "9280f9ba-0fc4-4054-aa92-d7fd0d4e92ba",
+            "name": "extraer imagenes"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "http://image-converter:3000/convert-to-webp",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Content-Type",
+                            "value": "multipart/form-data"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "contentType": "multipart-form-data",
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "parameterType": "formBinaryData",
+                            "name": "file",
+                            "inputDataFieldName": "data"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                5600,
+                -896
+            ],
+            "id": "4b312c37-41ba-4462-af34-be98fc53c59d",
+            "name": "convert to WEBP"
+        },
+        {
+            "parameters": {
+                "operation": "toBinary",
+                "sourceProperty": "base64",
+                "options": {
+                    "fileName": "=data",
+                    "mimeType": "image/png"
+                }
+            },
+            "type": "n8n-nodes-base.convertToFile",
+            "typeVersion": 1.1,
+            "position": [
+                5600,
+                -1104
+            ],
+            "id": "3b1ca12f-3160-4a57-87af-b8933b3097c0",
+            "name": "Traductor"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.lookitry.com/api/blog/upload",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "x-blog-secret",
+                            "value": "Travis2305**_blog_live"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "contentType": "multipart-form-data",
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "parameterType": "formBinaryData",
+                            "name": "file",
+                            "inputDataFieldName": "data"
+                        },
+                        {
+                            "name": "filename",
+                            "value": "={{ $('renombrar').item.binary.data.fileName }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                5952,
+                -896
+            ],
+            "id": "03a85ef6-186b-4ee8-8497-3682f7f83bf9",
+            "name": "Uploader"
+        },
+        {
+            "parameters": {
+                "mode": "runOnceForEachItem",
+                "jsCode": "// Modo: Run Once for Each Item\nconst item = $input.item;\nconst itemIndex = $itemIndex;\n\nconsole.log('=== DEBUG RENOMBRAR ===');\nconsole.log('Item Index:', itemIndex);\n\nlet tipo, orden;\n\n// Intentar recuperar datos del flujo de OpenRouter (arriba)\ntry {\n  const datosOpenRouter = $('extraer imagenes').all()[itemIndex]?.json;\n  if (datosOpenRouter?.tipo) {\n    tipo = datosOpenRouter.tipo;\n    orden = datosOpenRouter.orden;\n    console.log('✓ Datos recuperados de \"extraer imagenes\"');\n  }\n} catch (e) {\n  console.log('⚠ Nodo \"extraer imagenes\" no ejecutado');\n}\n\n// Si no hay datos del flujo superior, recuperar de \"Extraer Prompts\" (flujo directo)\nif (!tipo) {\n  try {\n    const datosExtraer = $('Extraer Prompts').all()[itemIndex]?.json;\n    if (datosExtraer?.tipo) {\n      tipo = datosExtraer.tipo;\n      orden = datosExtraer.orden;\n      console.log('✓ Datos recuperados de \"Extraer Prompts\"');\n    }\n  } catch (e) {\n    console.log('⚠ No se pudo recuperar de \"Extraer Prompts\"');\n  }\n}\n\n// Si aún no hay tipo, usar el del item actual o fallback\nif (!tipo) {\n  tipo = item.json.tipo || 'imagen';\n  orden = item.json.orden || itemIndex + 1;\n  console.log('⚠ Usando datos del item actual o fallback');\n}\n\nconsole.log('Tipo final:', tipo);\nconsole.log('Orden final:', orden);\nconsole.log('Tiene binary.data?:', !!item.binary?.data);\n\n// Renombrar el archivo binario con la extensión .webp\nif (item.binary && item.binary.data) {\n  const nuevoNombre = `${tipo}.webp`;\n  item.binary.data.fileName = nuevoNombre;\n  item.binary.data.mimeType = 'image/webp';\n  \n  console.log(`✓ Renombrado a: ${nuevoNombre}`);\n}\n\n// IMPORTANTE: Restaurar también los datos JSON para los nodos siguientes\nreturn {\n  json: {\n    ...item.json,\n    tipo: tipo,\n    orden: orden\n  },\n  binary: item.binary\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                5776,
+                -896
+            ],
+            "id": "8eb0d1c5-39b5-499a-9862-29af00b26d88",
+            "name": "renombrar"
+        },
+        {
+            "parameters": {
+                "resource": "image",
+                "modelId": {
+                    "__rl": true,
+                    "value": "models/gemini-2.0-flash-exp-image-generation",
+                    "mode": "list",
+                    "cachedResultName": "models/gemini-2.0-flash-exp-image-generation"
+                },
+                "prompt": "={{ $('Extraer Prompts').item.json.prompt }}",
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.googleGemini",
+            "typeVersion": 1,
+            "position": [
+                5392,
+                -896
+            ],
+            "id": "0928952b-4019-45bb-b6a7-827d8ae90921",
+            "name": "Generate an image",
+            "credentials": {
+                "googlePalmApi": {
+                    "id": "t38zPMWleOvlSpPc",
+                    "name": "Que movida cu"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "rules": {
+                    "values": [
+                        {
+                            "conditions": {
+                                "options": {
+                                    "caseSensitive": true,
+                                    "leftValue": "",
+                                    "typeValidation": "strict",
+                                    "version": 2
+                                },
+                                "conditions": [
+                                    {
+                                        "leftValue": true,
+                                        "rightValue": "",
+                                        "operator": {
+                                            "type": "boolean",
+                                            "operation": "true",
+                                            "singleValue": true
+                                        },
+                                        "id": "bbd49596-5cf5-449d-93ab-6cf6d90b4bde"
+                                    }
+                                ],
+                                "combinator": "and"
+                            },
+                            "renameOutput": true
+                        },
+                        {
+                            "conditions": {
+                                "options": {
+                                    "caseSensitive": true,
+                                    "leftValue": "",
+                                    "typeValidation": "strict",
+                                    "version": 2
+                                },
+                                "conditions": [
+                                    {
+                                        "id": "920381c6-aa55-4da9-8682-46db9d432346",
+                                        "leftValue": false,
+                                        "rightValue": "",
+                                        "operator": {
+                                            "type": "boolean",
+                                            "operation": "false",
+                                            "singleValue": true
+                                        }
+                                    }
+                                ],
+                                "combinator": "and"
+                            },
+                            "renameOutput": true,
+                            "outputKey": "False"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.switch",
+            "typeVersion": 3.3,
+            "position": [
+                5152,
+                -880
+            ],
+            "id": "97b9db37-1f54-4795-b6c2-39df090bc7d5",
+            "name": "tester"
+        }
+    ],
+    "connections": {
+        "Schedule Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Obtener Temas",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Prepare Post": {
+            "main": [
+                [
+                    {
+                        "node": "Preparar JSON para Lookitry",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "formatear",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Schedule Trigger1": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Gemini Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "formatear": {
+            "main": [
+                [
+                    {
+                        "node": "traducir tags",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "traducir tags": {
+            "main": [
+                [
+                    {
+                        "node": "Insert row",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "traductor": {
+            "main": [
+                [
+                    {
+                        "node": "Preparador",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Productos Amazon": {
+            "main": [
+                [
+                    {
+                        "node": "HTTP Request",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "HTTP Request": {
+            "main": [
+                [
+                    {
+                        "node": "formatear2",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "formatear2": {
+            "main": [
+                []
+            ]
+        },
+        "Añadir Enlace Hostinger": {
+            "main": [
+                [
+                    {
+                        "node": "redactor",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "redactor": {
+            "main": [
+                [
+                    {
+                        "node": "traductor",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Preparar JSON para Lookitry": {
+            "main": [
+                [
+                    {
+                        "node": "Publicar en Lookitry",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Publicar en Lookitry": {
+            "main": [
+                [
+                    {
+                        "node": "Actualizar tablas",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Preparador": {
+            "main": [
+                [
+                    {
+                        "node": "Prepare Post",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "conseguir Blogs": {
+            "main": [
+                [
+                    {
+                        "node": "conseguir link blogs",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "conseguir link blogs": {
+            "main": [
+                [
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Merge": {
+            "main": [
+                [
+                    {
+                        "node": "Obtener Info",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Obtener Info": {
+            "main": [
+                [
+                    {
+                        "node": "Añadir Enlace Hostinger",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "recuperar datos": {
+            "main": [
+                [
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 1
+                    },
+                    {
+                        "node": "conseguir Blogs",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Filtrado": {
+            "main": [
+                [
+                    {
+                        "node": "recuperar datos",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "mejorar prompt": {
+            "main": [
+                [
+                    {
+                        "node": "Extraer Prompts",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extraer Prompts": {
+            "main": [
+                [
+                    {
+                        "node": "tester",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Obtener Temas": {
+            "main": [
+                [
+                    {
+                        "node": "mejorar prompt",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Merge",
+                        "type": "main",
+                        "index": 2
+                    }
+                ]
+            ]
+        },
+        "OpenRouter": {
+            "main": [
+                [
+                    {
+                        "node": "extraer imagenes",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "extraer imagenes": {
+            "main": [
+                [
+                    {
+                        "node": "Traductor",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "convert to WEBP": {
+            "main": [
+                [
+                    {
+                        "node": "renombrar",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Traductor": {
+            "main": [
+                [
+                    {
+                        "node": "convert to WEBP",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Uploader": {
+            "main": [
+                [
+                    {
+                        "node": "Filtrado",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "renombrar": {
+            "main": [
+                [
+                    {
+                        "node": "Uploader",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Generate an image": {
+            "main": [
+                [
+                    {
+                        "node": "convert to WEBP",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "tester": {
+            "main": [
+                [
+                    {
+                        "node": "Generate an image",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "OpenRouter",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5519e0d30f"
+    }
+}

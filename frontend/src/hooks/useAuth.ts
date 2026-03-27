@@ -12,12 +12,36 @@ export function useAuth() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Verificar si hay una sesión activa al montar el componente
-    const storedBrand = authService.getBrand();
-    if (storedBrand) {
-      setBrand(storedBrand);
-    }
-    setIsLoading(false);
+    let cancelled = false;
+
+    const hydrateSession = async () => {
+      const storedBrand = authService.getBrand();
+      if (storedBrand && !cancelled) {
+        setBrand(storedBrand);
+      }
+
+      try {
+        const currentBrand = await brandsService.getCurrentBrand();
+        if (!cancelled) {
+          setBrand(currentBrand);
+          localStorage.setItem('brand', JSON.stringify(currentBrand));
+        }
+      } catch {
+        if (!cancelled && !storedBrand) {
+          setBrand(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    hydrateSession();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const register = async (data: RegisterData) => {
@@ -37,19 +61,13 @@ export function useAuth() {
     }
   };
 
-  const login = async (data: LoginData) => {
+  const login = async (data: LoginData, redirectTo?: string) => {
     try {
       setError(null);
       setIsLoading(true);
       const response = await authService.login(data);
       setBrand(response.brand);
-
-      // Si la marca tiene trial pendiente de verificación de tarjeta → redirigir
-      const brandData = response.brand as any;
-      // Ya no redirigimos forzosamente desde aquí para evitar bucles.
-      // El DashboardLayout se encargará de mostrar el SuspensionModal si el pago está pendiente.
-
-      router.push('/dashboard');
+      router.push(redirectTo && redirectTo.startsWith('/') ? redirectTo : '/dashboard');
       return response;
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || 'Error al iniciar sesión';

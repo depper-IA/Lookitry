@@ -4,6 +4,7 @@ import { SubscriptionService } from '../services/subscription.service';
 import { pricingService } from '../services/pricing.service';
 import { EmailService } from '../services/email.service';
 import { NotificationService } from '../services/notification.service';
+import { addonCreditsService } from '../services/addonCredits.service';
 import { supabaseAdmin } from '../config/supabase';
 import { verifyEmailTemplate } from '../templates/email-templates';
 
@@ -47,6 +48,17 @@ export class WompiController {
       const transaction = event.data.transaction;
       const reference: string = transaction.reference;
       const amountInCents: number = transaction.amount_in_cents;
+
+      if (addonCreditsService.isAddonReference(reference)) {
+        await addonCreditsService.applyPurchasedCredits(
+          reference,
+          'wompi',
+          amountInCents / 100,
+          String(transaction.id)
+        );
+        res.status(200).json({ received: true });
+        return;
+      }
 
       const brandId = wompiService.extractBrandIdFromReference(reference);
       if (!brandId) {
@@ -289,7 +301,9 @@ export class WompiController {
       const monthsNum = months ? parseInt(months as string, 10) : 1;
       const isLandingPurchase = (req.query.includes_landing as string) === 'true';
 
-      let amountCOP = await pricingService.calculateTotal(planStr, monthsNum, isLandingPurchase);
+      let amountCOP = brand?.id
+        ? await pricingService.calculateTotal(planStr, monthsNum, isLandingPurchase)
+        : await pricingService.calculateExternalCheckoutTotal(planStr, monthsNum, isLandingPurchase);
 
       if (brand?.id && planStr === 'PRO') {
         const { data: b } = await supabaseAdmin.from('brands').select('plan').eq('id', brand.id).single();
@@ -341,7 +355,9 @@ export class WompiController {
       const planStr = (plan as string)?.toUpperCase() || 'BASIC';
       const isLandingPurchase = (req.query.includes_landing as string) === 'true';
 
-      let amountCOP = await pricingService.calculateTotal(planStr, monthsNum, isLandingPurchase);
+      let amountCOP = brand?.id
+        ? await pricingService.calculateTotal(planStr, monthsNum, isLandingPurchase)
+        : await pricingService.calculateExternalCheckoutTotal(planStr, monthsNum, isLandingPurchase);
 
       if (brand?.id && planStr === 'PRO') {
         const { data: b } = await supabaseAdmin.from('brands').select('plan').eq('id', brand.id).single();

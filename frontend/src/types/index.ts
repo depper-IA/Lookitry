@@ -1,8 +1,8 @@
 // Plan types
-export type PlanType = 'BASIC' | 'PRO';
+export type PlanType = 'BASIC' | 'PRO' | 'ENTERPRISE';
 
 /** Todos los valores de plan que puede tener una marca (incluye TRIAL) */
-export type BrandPlan = 'BASIC' | 'PRO' | 'TRIAL';
+export type BrandPlan = 'BASIC' | 'PRO' | 'ENTERPRISE' | 'TRIAL';
 
 export interface Plan {
   type: PlanType;
@@ -36,6 +36,7 @@ export interface Brand {
   trialGenerationsLimit?: number;
   trialPaymentStatus?: 'pending_payment' | 'completed' | 'failed' | null;
   trialPaymentMethod?: string | null;
+  extraCreditsBalance?: number;
   // Email verification
   emailVerified?: boolean;
   hasLandingPage?: boolean;
@@ -100,9 +101,12 @@ export interface UsageStats {
   currentMonth: {
     generationsUsed: number;
     generationsLimit: number;
+    generationsRemaining: number;
     productsCount: number;
     productsLimit: number;
   };
+  extraCreditsBalance: number;
+  availableCredits: number;
   percentageUsed: number;
   resetDate: string;
 }

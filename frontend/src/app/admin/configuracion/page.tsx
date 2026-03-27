@@ -71,6 +71,8 @@ interface ContactMeta {
   social_youtube: string;
 }
 
+type SysTab = 'trial' | 'debug' | 'contact' | 'credits' | 'ai' | 'health';
+
 // ── Iconos ────────────────────────────────────────────────────────────────────
 
 function IconClock({ className }: { className?: string }) {
@@ -694,17 +696,16 @@ export default function SystemConfigPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  type SysTab = 'trial' | 'debug' | 'contact' | 'credits' | 'ai' | 'health';
   const [activeTab, setActiveTab] = useState<SysTab>('trial');
 
-  const TABS: { id: SysTab; label: string; icon: React.ReactNode }[] = [
+  const TABS = [
     { id: 'trial',   label: 'Trial',        icon: <IconClock className="w-4 h-4" /> },
     { id: 'debug',   label: 'Debugging',    icon: <IconShield className="w-4 h-4" /> },
     { id: 'contact', label: 'Contacto y redes', icon: <IconExternalLink className="w-4 h-4" /> },
     { id: 'credits', label: 'Créditos IA',  icon: <IconCreditCard className="w-4 h-4" /> },
     { id: 'ai',      label: 'Motor de IA',  icon: <IconBrain className="w-4 h-4" /> },
     { id: 'health',  label: 'Servicios',    icon: <IconServer className="w-4 h-4" /> },
-  ];
+  ] as const satisfies ReadonlyArray<{ id: SysTab; label: string; icon: React.ReactNode }>;
 
   const isSaving = savingAIConfig || savingPricingConfig || savingCurrency || savingWhitelist || savingContactConfig || savingTrm;
 

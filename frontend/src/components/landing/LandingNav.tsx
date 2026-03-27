@@ -117,6 +117,13 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
           Planes
         </Link>
 
+        <Link
+          href="/blog"
+          className="text-[13px] text-[#888] hover:text-white px-2 md:px-3.5 py-1.5 rounded-md transition-colors hidden sm:block"
+        >
+          Blog
+        </Link>
+
         {session ? (
           <div className="relative" ref={dropdownRef}>
             <button

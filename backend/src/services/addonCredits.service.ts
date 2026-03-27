@@ -24,6 +24,13 @@ const paymentSettingsService = new PaymentSettingsService();
 
 export class AddonCreditsService {
   private readonly DEFAULT_PACKAGE_ID = 'credits_500';
+  private readonly DEFAULT_PACKAGE: AddonPackage = {
+    id: 'credits_500',
+    name: 'Paquete 500 Generaciones Extra',
+    credits_amount: 500,
+    price_cop: 50000,
+    is_active: true,
+  };
 
   isAddonReference(reference: string | null | undefined): boolean {
     return typeof reference === 'string' && reference.startsWith('ADDON-');
@@ -43,6 +50,16 @@ export class AddonCreditsService {
 
   buildAddonReference(brandId: string, packageId: string): string {
     return `ADDON-${brandId}-PKG-${packageId}-${Date.now()}`;
+  }
+
+  async ensureDefaultPackages(): Promise<void> {
+    const { error } = await supabaseAdmin
+      .from('addon_packages')
+      .upsert(this.DEFAULT_PACKAGE, { onConflict: 'id' });
+
+    if (error) {
+      throw new Error(`No se pudo inicializar addon_packages: ${error.message}`);
+    }
   }
 
   async getPackageById(packageId = this.DEFAULT_PACKAGE_ID): Promise<AddonPackage> {
@@ -135,58 +152,23 @@ export class AddonCreditsService {
     const { brandId, packageId } = this.parseAddonReference(reference);
     const addonPackage = await this.getPackageById(packageId);
 
-    const { data: existingPayment } = await supabaseAdmin
-      .from('subscription_payments')
-      .select('id')
-      .eq('reference', reference)
-      .limit(1)
-      .maybeSingle();
+    const { data, error } = await supabaseAdmin.rpc('apply_addon_credit_purchase', {
+      p_brand_id: brandId,
+      p_reference: reference,
+      p_credits: addonPackage.credits_amount,
+      p_amount: amount,
+      p_currency: paymentMethod === 'wompi' ? 'COP' : 'USD',
+      p_payment_method: paymentMethod,
+      p_transaction_id: transactionId,
+      p_notes: `Compra add-on ${addonPackage.id}. +${addonPackage.credits_amount} créditos extra.`,
+    });
 
-    if (existingPayment) {
+    if (error) {
+      throw new Error(`No se pudo aplicar la compra del add-on: ${error.message}`);
+    }
+
+    if (data === false) {
       return;
-    }
-
-    const { data: brand } = await supabaseAdmin
-      .from('brands')
-      .select('id, extra_credits_balance')
-      .eq('id', brandId)
-      .single();
-
-    if (!brand) {
-      throw new Error('Marca no encontrada para aplicar créditos extra');
-    }
-
-    const newBalance = Number(brand.extra_credits_balance || 0) + Number(addonPackage.credits_amount || 0);
-
-    const { error: brandUpdateError } = await supabaseAdmin
-      .from('brands')
-      .update({
-        extra_credits_balance: newBalance,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', brandId);
-
-    if (brandUpdateError) {
-      throw new Error(`No se pudo actualizar extra_credits_balance: ${brandUpdateError.message}`);
-    }
-
-    const { error: paymentError } = await supabaseAdmin
-      .from('subscription_payments')
-      .insert({
-        brand_id: brandId,
-        amount,
-        currency: paymentMethod === 'wompi' ? 'COP' : 'USD',
-        payment_date: new Date().toISOString(),
-        payment_method: paymentMethod,
-        status: 'completed',
-        months_paid: 0,
-        reference,
-        transaction_id: transactionId,
-        notes: `Compra add-on ${addonPackage.id}. +${addonPackage.credits_amount} créditos extra.`,
-      });
-
-    if (paymentError) {
-      throw new Error(`No se pudo registrar el pago del add-on: ${paymentError.message}`);
     }
   }
 }

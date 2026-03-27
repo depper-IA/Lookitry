@@ -27,7 +27,11 @@ async function apiFetch<T>(
 
   if (res.status === 401) {
     authService.logout();
-    if (typeof window !== 'undefined') window.location.href = '/login';
+    if (typeof window !== 'undefined') {
+      const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      const redirect = currentPath.startsWith('/') ? `?redirect=${encodeURIComponent(currentPath)}` : '';
+      window.location.href = `/login${redirect}`;
+    }
   }
 
   if (!res.ok) {
