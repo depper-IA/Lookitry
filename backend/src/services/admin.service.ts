@@ -10,6 +10,11 @@ export interface Admin {
   updated_at: string;
 }
 
+type AdminRecord = Admin & {
+  password: string;
+  permissions?: string[];
+};
+
 export interface BrandWithStats {
   id: string;
   email: string;
@@ -41,10 +46,32 @@ export class AdminService {
   }
 
   /**
+   * Obtener admin por ID
+   */
+  async getAdminById(adminId: string): Promise<Admin | null> {
+    const { data, error } = await supabaseAdmin
+      .from('admins')
+      .select('*')
+      .eq('id', adminId)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data as Admin;
+  }
+
+  /**
    * Verificar contraseña de admin
    */
   async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
+  }
+
+  private isValidBcryptHash(value: string | null | undefined): boolean {
+    if (!value) return false;
+    return /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(value);
   }
 
   /**
@@ -151,15 +178,22 @@ export class AdminService {
 
     if (error || !admin) throw new Error('Admin no encontrado');
 
-    const valid = await bcrypt.compare(currentPassword, admin.password);
+    const adminRecord = admin as Pick<AdminRecord, 'id' | 'password'>;
+
+    if (!this.isValidBcryptHash(adminRecord.password)) {
+      throw new Error('La cuenta de administrador tiene una contraseña inválida en base de datos. Restablécela desde el panel o recrea el admin con el script seguro.');
+    }
+
+    const valid = await bcrypt.compare(currentPassword, adminRecord.password);
     if (!valid) throw new Error('La contraseña actual es incorrecta');
 
     if (newPassword.length < 8) throw new Error('La nueva contraseña debe tener al menos 8 caracteres');
+    if (newPassword === currentPassword) throw new Error('La nueva contraseña debe ser diferente a la actual');
 
     const hashed = await bcrypt.hash(newPassword, 10);
     const { error: updateError } = await supabaseAdmin
       .from('admins')
-      .update({ password: hashed })
+      .update({ password: hashed, updated_at: new Date().toISOString() })
       .eq('id', adminId);
 
     if (updateError) throw new Error('Error al actualizar contraseña: ' + updateError.message);

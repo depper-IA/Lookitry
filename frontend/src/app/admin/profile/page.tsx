@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, KeyRound, CheckCircle } from 'lucide-react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
@@ -8,6 +9,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 
 export default function AdminProfilePage() {
+  const router = useRouter();
   const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [show, setShow] = useState({ current: false, next: false, confirm: false });
   const [loading, setLoading] = useState(false);
@@ -25,6 +27,10 @@ export default function AdminProfilePage() {
     }
     if (form.newPassword.length < 8) {
       setError('La nueva contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+    if (form.newPassword === form.currentPassword) {
+      setError('La nueva contraseña debe ser diferente a la actual');
       return;
     }
 
@@ -45,6 +51,12 @@ export default function AdminProfilePage() {
       if (!res.ok) throw new Error(data.message || 'Error al cambiar contraseña');
       setSuccess(true);
       setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      if (data.requiresReauth) {
+        window.localStorage.removeItem('admin_user');
+        window.setTimeout(() => {
+          router.push('/admin/login');
+        }, 1200);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -205,7 +217,7 @@ export default function AdminProfilePage() {
           {success && (
             <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-emerald-600 bg-emerald-500/10 border border-emerald-500/20">
               <CheckCircle className="w-4 h-4 flex-shrink-0" />
-              Contraseña actualizada exitosamente
+              Contraseña actualizada exitosamente. Te redirigiremos para iniciar sesión otra vez.
             </div>
           )}
 

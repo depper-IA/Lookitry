@@ -47,7 +47,7 @@ export const adminAuthMiddleware = async (
       return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Token inválido para administrador' });
     }
 
-    const admin = await adminService.getAdminByEmail(payload.email);
+    const admin = await adminService.getAdminById((payload as any).adminId);
     if (!admin) {
       return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Administrador no encontrado' });
     }

@@ -232,7 +232,7 @@ export class SubscriptionService {
     };
 
     // Actualizar plan si se especificó uno válido
-    if (plan && ['BASIC', 'PRO', 'TRIAL'].includes(plan.toUpperCase())) {
+    if (plan && ['BASIC', 'PRO', 'ENTERPRISE', 'TRIAL'].includes(plan.toUpperCase())) {
       const planUpper = plan.toUpperCase();
       updateData.plan = planUpper === 'TRIAL' ? 'BASIC' : planUpper; // El plan base es BASIC
       
