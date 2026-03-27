@@ -10,6 +10,35 @@ import { Brand, SubscriptionPayment, CreatePaymentDto } from '../types';
  * Requirements: 11.1, 11.2, 11.3, 11.5, 11.6, 11.10
  */
 export class SubscriptionService {
+  private async insertPaymentCompat(payload: Record<string, unknown>): Promise<SubscriptionPayment> {
+    const { data, error } = await supabaseAdmin
+      .from('subscription_payments')
+      .insert(payload)
+      .select()
+      .single();
+
+    if (!error && data) {
+      return data as SubscriptionPayment;
+    }
+
+    if (error?.message?.toLowerCase().includes('reference') && 'reference' in payload) {
+      const { reference, ...fallbackPayload } = payload as Record<string, unknown>;
+      const retry = await supabaseAdmin
+        .from('subscription_payments')
+        .insert(fallbackPayload)
+        .select()
+        .single();
+
+      if (retry.error || !retry.data) {
+        throw new Error('Error al registrar el pago: ' + retry.error?.message);
+      }
+
+      return retry.data as SubscriptionPayment;
+    }
+
+    throw new Error('Error al registrar el pago: ' + error?.message);
+  }
+
   /**
    * Verifica si la suscripción de una marca está activa.
    * También permite acceso si la marca está en período de prueba activo.
@@ -675,27 +704,17 @@ export class SubscriptionService {
       }
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('subscription_payments')
-      .insert({
-        brand_id: paymentData.brand_id,
-        amount: paymentData.amount,
-        currency: paymentData.currency || 'COP',
-        payment_date: paymentData.payment_date || new Date().toISOString(),
-        payment_method: paymentData.payment_method || null,
-        status: paymentData.status || 'completed',
-        notes: paymentData.notes || null,
-        months_paid: paymentData.months_paid || 1,
-        reference: paymentData.reference || null,
-      })
-      .select()
-      .single();
-
-    if (error || !data) {
-      throw new Error('Error al registrar el pago: ' + error?.message);
-    }
-
-    return data as SubscriptionPayment;
+    return this.insertPaymentCompat({
+      brand_id: paymentData.brand_id,
+      amount: paymentData.amount,
+      currency: paymentData.currency || 'COP',
+      payment_date: paymentData.payment_date || new Date().toISOString(),
+      payment_method: paymentData.payment_method || null,
+      status: paymentData.status || 'completed',
+      notes: paymentData.notes || null,
+      months_paid: paymentData.months_paid || 1,
+      reference: paymentData.reference || null,
+    });
   }
 
   /**

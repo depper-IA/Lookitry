@@ -33,7 +33,13 @@ function adminApi(path: string, options?: RequestInit) {
 
 function formatDate(d: string | null) {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 const METHOD_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {

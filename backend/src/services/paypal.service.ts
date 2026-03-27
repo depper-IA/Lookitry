@@ -2,6 +2,11 @@ import axios from 'axios';
 import { supabaseAdmin } from '../config/supabase';
 
 export class PaypalService {
+  convertCopToUsd(amountCOP: number, trm: number): number {
+    const safeTrm = trm > 0 ? trm : 3900;
+    return Math.ceil((amountCOP / safeTrm) * 100) / 100;
+  }
+
   private isProd(): boolean {
     return process.env.NODE_ENV === 'production';
   }
@@ -79,7 +84,7 @@ export class PaypalService {
     const baseUrl = sandbox ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
 
     // Convertir COP a USD (PayPal no acepta COP directamente para suscripciones)
-    const amountUSD = Math.ceil(amountCOP / trm);
+    const amountUSD = this.convertCopToUsd(amountCOP, trm);
 
     const response = await axios.post(
       `${baseUrl}/v2/checkout/orders`,
@@ -92,7 +97,7 @@ export class PaypalService {
             invoice_id: reference,
             amount: {
               currency_code: 'USD',
-              value: amountUSD.toString()
+              value: amountUSD.toFixed(2)
             },
             description: `Suscripción Lookitry - Ref: ${reference}`
           }

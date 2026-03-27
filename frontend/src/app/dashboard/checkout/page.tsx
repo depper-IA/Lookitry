@@ -50,6 +50,12 @@ const MONTH_DISCOUNTS_FALLBACK = [
   { months: 12, pct: 15, label: '12 meses' },
 ];
 
+function formatPaypalUsd(amountCop: number, trm: number): string {
+  const safeTrm = trm > 0 ? trm : 3900;
+  const usd = Math.ceil((amountCop / safeTrm) * 100) / 100;
+  return usd.toFixed(2);
+}
+
 type CheckoutState = 'idle' | 'success' | 'error';
 
 // ── Sub-componente: sección de pago ──────────────────────────────────────────
@@ -209,7 +215,7 @@ function PaymentSection({
               ) : (
                 <Globe className="w-4 h-4" />
               )}
-              Pagar USD ${Math.ceil(amount / trm)} con PayPal
+              Pagar USD ${formatPaypalUsd(amount, trm)} con PayPal
             </button>
           </>
         )}
