@@ -215,7 +215,7 @@ export function OnboardingWizard() {
             <p className="text-white/80 text-xs font-medium uppercase tracking-wide">
               Configuración inicial
             </p>
-            <h3 id="onboarding-title" className="text-white font-bold text-lg mt-0.5 font-syne">
+            <h3 id="onboarding-title" className="text-white font-jakarta font-bold text-lg mt-0.5 tracking-tight">
               Bienvenido{brand?.name ? `, ${brand.name}` : ''}
             </h3>
           </div>

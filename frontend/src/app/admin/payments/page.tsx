@@ -70,7 +70,7 @@ export default function AdminPaymentsPage() {
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 6;
 
   // Ordenamiento
   const [sortField, setSortField] = useState<'name' | 'amount' | 'date' | 'status' | 'method'>('date');
@@ -149,7 +149,7 @@ export default function AdminPaymentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-black uppercase italic tracking-tight">Pagos</h1>
+          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-bold tracking-tight">Pagos</h1>
           <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">Historial completo de pagos registrados</p>
         </div>
         <button onClick={fetchPayments}

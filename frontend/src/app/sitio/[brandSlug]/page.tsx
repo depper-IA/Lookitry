@@ -23,6 +23,7 @@ async function getBrandConfig(slug: string) {
   }
 }
 
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const data = await getBrandConfig(params.brandSlug);
   if (!data) {

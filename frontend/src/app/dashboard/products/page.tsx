@@ -7,6 +7,7 @@ import { ProductForm } from '@/components/dashboard/ProductForm';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { productsService } from '@/services/products.service';
+import { brandsService } from '@/services/brands.service';
 import type { Product, CreateProductDto } from '@/types';
 import { 
   Package, 
@@ -52,11 +53,13 @@ export default function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [confirmDelete, setConfirmDelete] = useState<{ isOpen: boolean; id?: string }>({ isOpen: false });
+  const [showExternalIdField, setShowExternalIdField] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('products-view-mode') as ViewMode | null;
     if (saved && ['grid', 'thumbnails', 'list'].includes(saved)) setViewMode(saved);
     loadProducts();
+    loadBrandIntegrationState();
   }, []);
 
   const handleViewMode = (mode: ViewMode) => {
@@ -75,6 +78,15 @@ export default function ProductsPage() {
       setError(err.response?.data?.message || 'Error al sincronizar catálogo');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadBrandIntegrationState = async () => {
+    try {
+      const brand = await brandsService.getCurrentBrand();
+      setShowExternalIdField(Boolean(brand.apiKey));
+    } catch {
+      setShowExternalIdField(false);
     }
   };
 
@@ -244,6 +256,7 @@ export default function ProductsPage() {
                   </header>
                   <ProductForm
                     product={editingProduct}
+                    showExternalId={showExternalIdField}
                     onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
                     onCancel={() => { setShowForm(false); setEditingProduct(null); }}
                   />

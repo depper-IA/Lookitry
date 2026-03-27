@@ -470,11 +470,11 @@ export default function SubscriptionPage() {
                <h4 className="text-xl font-bold text-[var(--text-primary)] tracking-tight">Soporte</h4>
                <p className="text-sm font-medium text-[var(--text-secondary)] leading-relaxed">¿Necesitas ayuda con tu suscripción o plan?</p>
                <div className="space-y-3">
-                  <a href={`https://wa.me/573105436281`} target="_blank" className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl hover:border-emerald-500/50 transition-all group/wa">
+                  <a href={`https://wa.me/${(paySettings?.manualWhatsapp || '573105436281').replace(/\D/g, '')}`} target="_blank" className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl hover:border-emerald-500/50 transition-all group/wa">
                      <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">WhatsApp VIP</span>
                      <MessageCircle className="w-5 h-5 text-emerald-500 group-hover/wa:scale-110 transition-transform" />
                   </a>
-                  <a href="mailto:info@lookitry.com" className="flex items-center justify-between p-4 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-2xl hover:border-[#FF5C3A]/30 transition-all group/mail">
+                  <a href={`mailto:${paySettings?.manualEmail || 'info@lookitry.com'}`} className="flex items-center justify-between p-4 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-2xl hover:border-[#FF5C3A]/30 transition-all group/mail">
                      <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Asistencia email</span>
                      <Mail className="w-5 h-5 text-[var(--text-muted)] group-hover/mail:text-[#FF5C3A] transition-all" />
                   </a>

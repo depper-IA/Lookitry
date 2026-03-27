@@ -57,7 +57,7 @@ type CheckoutState = 'idle' | 'success' | 'error';
 function PaymentSection({
   wompiEnabled, paypalEnabled, plan, months, amount, includesLanding,
   trm, redirecting, onSuccess, onError, onPaypal,
-  paymentMethod, setPaymentMethod, currency,
+  paymentMethod, setPaymentMethod, currency, supportEmail,
 }: {
   wompiEnabled: boolean | null;
   paypalEnabled: boolean;
@@ -73,6 +73,7 @@ function PaymentSection({
   paymentMethod: 'wompi' | 'paypal';
   setPaymentMethod: (m: 'wompi' | 'paypal') => void;
   currency: 'COP' | 'USD';
+  supportEmail: string;
 }) {
   return (
     <div
@@ -177,7 +178,7 @@ function PaymentSection({
               <div className="space-y-3">
                 <p className="text-xs text-red-400">Wompi no está disponible temporalmente.</p>
                 <a
-                  href="mailto:info@lookitry.com"
+                  href={`mailto:${supportEmail}`}
                   className="flex items-center justify-center gap-2 w-full px-4 py-2.5 min-h-[44px] rounded-xl border text-sm hover:opacity-80 cursor-pointer"
                   style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
                 >
@@ -244,6 +245,7 @@ function CheckoutContent() {
   const [paypalEnabled, setPaypalEnabled] = useState<boolean>(true);
   const [trm, setTrm] = useState(3900);
   const [redirecting, setRedirecting] = useState(false);
+  const [supportEmail, setSupportEmail] = useState('info@lookitry.com');
 
   const [includeLanding, setIncludeLanding] = useState(false);
   const [miniLandingPrice, setMiniLandingPrice] = useState(MINI_LANDING_PRICE_FALLBACK);
@@ -332,6 +334,7 @@ function CheckoutContent() {
         if (paySettings.landingPrice)                       setMiniLandingPrice(paySettings.landingPrice);
         if (paySettings.trm)                                setTrm(paySettings.trm);
         if (typeof paySettings.paypalEnabled === 'boolean') setPaypalEnabled(paySettings.paypalEnabled);
+        if (paySettings.manualEmail)                        setSupportEmail(paySettings.manualEmail);
         // Si Wompi está habilitado globalmente, lo habilitamos por defecto en el estado local
         if (typeof paySettings.wompiEnabled === 'boolean')  setWompiEnabled(paySettings.wompiEnabled);
 
@@ -1015,10 +1018,11 @@ function CheckoutContent() {
               onSuccess={handleSuccess}
               onError={handleError}
               onPaypal={handlePagarPaypal}
-              paymentMethod={paymentMethod}
-              setPaymentMethod={setPaymentMethod}
-              currency={currency}
-            />
+          paymentMethod={paymentMethod}
+          setPaymentMethod={setPaymentMethod}
+          currency={currency}
+          supportEmail={supportEmail}
+        />
           )}
 
           {/* Seguridad */}

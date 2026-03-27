@@ -21,6 +21,7 @@ import {
   Smartphone,
   Info
 } from 'lucide-react';
+import { fetchPublicPaymentSettings, toWhatsAppUrl } from '@/services/public-config.service';
 
 type Platform = 'wordpress' | 'wix' | 'shopify' | 'other';
 
@@ -93,6 +94,19 @@ const Tooltip = ({ text }: { text: string }) => (
 
 export function EmbedSection() {
   const { brand } = useAuth();
+  const [support, setSupport] = useState({ whatsapp: 'https://wa.me/573105436281', email: 'info@lookitry.com' });
+
+  useEffect(() => {
+    fetchPublicPaymentSettings()
+      .then(data => {
+        if (!data) return;
+        setSupport({
+          whatsapp: toWhatsAppUrl(data.manualWhatsapp) || 'https://wa.me/573105436281',
+          email: data.manualEmail || 'info@lookitry.com',
+        });
+      })
+      .catch(() => {});
+  }, []);
   const [platform, setPlatform] = useState<Platform | null>('wordpress');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -266,10 +280,10 @@ export function EmbedSection() {
                <p className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-widest max-w-sm opacity-60">Nuestro equipo de arquitectura está listo para ayudarte con la integración directa sin costo adicional.</p>
             </div>
             <div className="flex gap-4">
-               <a href="https://wa.me/573105436281" target="_blank" rel="noopener noreferrer" className="p-5 bg-emerald-500/10 text-emerald-500 rounded-2xl border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all shadow-xl shadow-emerald-500/5 group/wa">
+               <a href={support.whatsapp} target="_blank" rel="noopener noreferrer" className="p-5 bg-emerald-500/10 text-emerald-500 rounded-2xl border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all shadow-xl shadow-emerald-500/5 group/wa">
                   <MessageCircle className="w-6 h-6 group-hover/wa:scale-110 transition-transform" />
                </a>
-               <a href="mailto:info@lookitry.com" className="p-5 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-2xl border border-[#FF5C3A]/20 hover:bg-[#FF5C3A] hover:text-white transition-all shadow-xl shadow-[#FF5C3A]/5 group/mail">
+               <a href={`mailto:${support.email}`} className="p-5 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-2xl border border-[#FF5C3A]/20 hover:bg-[#FF5C3A] hover:text-white transition-all shadow-xl shadow-[#FF5C3A]/5 group/mail">
                   <Mail className="w-6 h-6 group-hover/mail:scale-110 transition-transform" />
                </a>
             </div>

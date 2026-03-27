@@ -215,7 +215,7 @@ function PlanSection({
 
   return (
     <div className="rounded-[2rem] border p-6 space-y-5" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-      <h3 className="text-base font-jakarta font-bold uppercase italic" style={{ color: 'var(--text-primary)' }}>{title}</h3>
+      <h3 className="text-base font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>{title}</h3>
 
       {/* Cálculos automáticos — solo lectura */}
       <div className="grid grid-cols-4 gap-3 p-4 rounded-xl" style={{ background: 'var(--bg-base)' }}>
@@ -395,7 +395,7 @@ export default function PricingAdminPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-jakarta font-black uppercase italic tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          <h1 className="text-2xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             Configuración de Precios
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>

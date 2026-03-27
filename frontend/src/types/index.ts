@@ -38,6 +38,8 @@ export interface Brand {
   trialPaymentMethod?: string | null;
   // Email verification
   emailVerified?: boolean;
+  hasLandingPage?: boolean;
+  has_landing_page?: boolean;
   customDomain?: string | null;
   // Contact & Billing (Requirement 503)
   phone?: string | null;

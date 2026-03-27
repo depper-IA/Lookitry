@@ -166,6 +166,7 @@ export class PruebaloController {
     
     // Siempre permitimos locahost para pruebas y los dominios de la misma plataforma
     origins.add('http://localhost:3000');
+    origins.add('http://127.0.0.1:3000');
     origins.add('https://lookitry.com');
     origins.add('https://www.lookitry.com');
 
@@ -384,6 +385,31 @@ export class PruebaloController {
       });
 
       if (isCreditsError) {
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        const { count: recentCreditsAlerts } = await supabaseAdmin
+          .from('admin_notifications')
+          .select('*', { count: 'exact', head: true })
+          .eq('type', 'credits_exhausted')
+          .eq('brand_id', brand.id)
+          .gte('created_at', oneHourAgo);
+
+        if (!recentCreditsAlerts) {
+          await createAdminNotification({
+            type: 'credits_exhausted',
+            severity: 'error',
+            title: 'Créditos agotados en prueba virtual',
+            message: `${brand.name} se quedó sin créditos de generación. Los clientes finales verán un mensaje temporal de indisponibilidad hasta que se recargue capacidad.`,
+            brandId: brand.id,
+            brandName: brand.name,
+            metadata: {
+              brandSlug,
+              productId: product.id,
+              generationId: generation.id,
+              provider: 'openrouter',
+            },
+          });
+        }
+
         throw new ExternalServiceError(
           'SERVICE_CREDITS_EXHAUSTED',
           'openrouter'

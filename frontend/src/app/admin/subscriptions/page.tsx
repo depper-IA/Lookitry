@@ -114,7 +114,7 @@ function ConfirmModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border shadow-xl w-full max-w-sm p-6 space-y-4">
-        <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold uppercase italic text-lg">{title}</h3>
+        <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold tracking-tight text-lg">{title}</h3>
         <p style={{ color: 'var(--text-secondary)' }} className="text-sm">{message}</p>
         <div className="flex gap-3 justify-end pt-2">
           <button onClick={onCancel} style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }} className="px-4 py-2 rounded-xl border text-sm hover:opacity-80 transition-opacity">
@@ -197,7 +197,7 @@ function RenewModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border shadow-xl w-full max-w-md">
         <div style={{ borderColor: 'var(--border-color)' }} className="px-6 py-5 border-b">
-          <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold uppercase italic text-lg">Registrar pago — {brand.name}</h3>
+          <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold tracking-tight text-lg">Registrar pago - {brand.name}</h3>
           <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">
             {brand.is_in_trial ? 'Plan Trial' : `Plan ${brand.plan}`} · {brand.is_in_trial ? formatPlanPrice('BASIC') : formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes
           </p>
@@ -342,7 +342,7 @@ function ChangePlanModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border shadow-xl w-full max-w-sm">
         <div style={{ borderColor: 'var(--border-color)' }} className="px-6 py-5 border-b">
-          <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold uppercase italic text-lg">Cambiar plan — {brand.name}</h3>
+          <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold tracking-tight text-lg">Cambiar plan - {brand.name}</h3>
         </div>
         <div className="px-6 py-5 space-y-4">
           {error && <p className="text-sm text-red-500 bg-red-500/10 px-3 py-2 rounded-lg">{error}</p>}
@@ -552,7 +552,7 @@ export default function AdminSubscriptionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-black uppercase italic tracking-tight text-2xl">Suscripciones</h1>
+        <h1 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold tracking-tight text-2xl">Suscripciones</h1>
         <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">{subscriptions.length} suscripciones en total</p>
       </div>
 

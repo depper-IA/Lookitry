@@ -6,6 +6,7 @@ import { Suspense, useEffect, useState } from 'react';
 import Image from 'next/image';
 
 import { Alert } from '@/components/ui/Alert';
+import { fetchPublicPaymentSettings } from '@/services/public-config.service';
 
 function IconCheck() {
   return (
@@ -28,8 +29,17 @@ function PagoExitosoContent() {
   const [loading, setLoading] = useState<boolean>(method === 'paypal' || (!ref && !!wompiId));
   const [error, setError] = useState<string | null>(null);
   const [resolvedRef, setResolvedRef] = useState<string | null>(ref);
+  const [supportEmail, setSupportEmail] = useState('info@lookitry.com');
   const isTrialParam = searchParams.get('isTrial') === 'true';
   const isTrial = resolvedRef?.startsWith('TRIAL-') || resolvedRef?.startsWith('GUEST-TRIAL-') || ref?.startsWith('TRIAL-') || ref?.startsWith('GUEST-TRIAL-') || isTrialParam;
+
+  useEffect(() => {
+    fetchPublicPaymentSettings()
+      .then(data => {
+        if (data?.manualEmail) setSupportEmail(data.manualEmail);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     async function validatePayment() {
@@ -216,8 +226,8 @@ function PagoExitosoContent() {
             message={
               <>
                 Recibirás un correo de confirmación con los detalles. Si tienes dudas, escríbenos a {' '}
-                <a href="mailto:info@lookitry.com" className="text-white font-bold hover:text-[#FF5C3A] transition-colors">
-                  info@lookitry.com
+                <a href={`mailto:${supportEmail}`} className="text-white font-bold hover:text-[#FF5C3A] transition-colors">
+                  {supportEmail}
                 </a>
               </>
             }

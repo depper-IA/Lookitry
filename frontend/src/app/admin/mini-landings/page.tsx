@@ -305,7 +305,7 @@ export default function AdminMiniLandingsPage() {
       {/* Encabezado */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-jakarta font-black uppercase italic tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>
+          <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>
             Mini-Landings
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
@@ -672,7 +672,7 @@ export default function AdminMiniLandingsPage() {
             <IconGlobe className="w-6 h-6 text-[#FF5C3A]" />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-[var(--text-primary)] uppercase tracking-tight italic">Configuración Modal Promo</h2>
+            <h2 className="text-2xl font-jakarta font-bold text-[var(--text-primary)] tracking-tight">Configuración Modal Promo</h2>
             <p className="text-sm text-[var(--text-secondary)] mt-0.5 font-medium">Define el mensaje global que verán las marcas que aún no tienen mini-landing.</p>
           </div>
         </div>
@@ -758,7 +758,7 @@ export default function AdminMiniLandingsPage() {
                 <IconGlobe className="w-10 h-10 text-[#FF5C3A]" />
               </div>
               <div className="text-center space-y-3">
-                <h3 className="text-xl font-black text-[var(--text-primary)] uppercase tracking-tight italic leading-tight">{modalConfig.title}</h3>
+                <h3 className="text-xl font-jakarta font-bold text-[var(--text-primary)] tracking-tight leading-tight">{modalConfig.title}</h3>
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{modalConfig.description}</p>
               </div>
               

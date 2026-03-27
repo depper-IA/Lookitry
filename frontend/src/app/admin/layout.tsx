@@ -151,7 +151,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             className="w-9 h-9 rounded-full border-2 animate-spin"
             style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }}
           />
-          <p className="text-xs font-medium tracking-widest uppercase" style={{ color: '#555' }}>Cargando</p>
+          <p className="text-xs font-medium tracking-[0.12em]" style={{ color: '#555' }}>Cargando</p>
         </div>
       </div>
     );
@@ -162,8 +162,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Logo Area */}
       <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-6 h-[80px] flex-shrink-0 bg-[#0a0a0a]`}>
         <Link href="/admin/dashboard" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 group-hover:border-[#FF5C3A]/50 transition-all duration-500 shadow-lg shrink-0">
-            <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain group-hover:rotate-12 transition-transform duration-500" priority />
+          <div className="relative h-11 w-11 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 group-hover:border-[#FF5C3A]/50 transition-all duration-500 shadow-lg shrink-0 overflow-hidden">
+            <Image
+              src="/logo.svg"
+              alt="Lookitry"
+              width={28}
+              height={28}
+              className="object-contain"
+              priority
+            />
           </div>
           {!isCollapsed && (
             <motion.div 
@@ -171,10 +178,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               animate={{ opacity: 1, x: 0 }}
               className="flex items-baseline gap-1.5"
             >
-              <span className="font-jakarta font-[950] text-lg leading-none text-white tracking-tighter uppercase italic">
+              <span className="font-jakarta font-extrabold text-lg leading-none text-white tracking-tight">
                 Look<span style={{ color: '#FF5C3A' }}>itry</span>
               </span>
-              <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20">
+              <span className="text-[9px] font-black uppercase tracking-[0.18em] px-2 py-0.5 rounded bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20">
                 Admin
               </span>
             </motion.div>
@@ -228,7 +235,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
                     title={isCollapsed ? item.label : ''}
-                    className={`flex items-center ${isCollapsed ? 'justify-center py-4' : 'gap-3 px-5 py-3.5'} rounded-2xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 group
+                    className={`flex items-center ${isCollapsed ? 'justify-center py-4' : 'gap-3 px-5 py-3.5'} rounded-2xl text-[12px] font-semibold tracking-[0.01em] transition-all duration-300 group
                       ${isActive 
                         ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' 
                         : 'text-gray-500 hover:text-white hover:bg-white/5'
@@ -278,11 +285,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   href="/admin/profile"
                   onClick={() => setSidebarOpen(false)}
-                  className="block text-[12px] font-black text-white truncate leading-tight uppercase tracking-tight italic hover:text-[#FF5C3A] transition-colors"
+                  className="block text-[12px] font-semibold text-white truncate leading-tight tracking-tight hover:text-[#FF5C3A] transition-colors"
                 >
                   {adminUser?.name || 'Admin'}
                 </Link>
-                <p className="text-[10px] truncate leading-none text-zinc-600 font-bold uppercase tracking-tighter mt-1">
+                <p className="text-[10px] truncate leading-none text-zinc-600 font-medium tracking-tight mt-1">
                   {adminUser?.email || ''}
                 </p>
               </motion.div>
