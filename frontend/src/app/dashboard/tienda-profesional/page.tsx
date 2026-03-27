@@ -19,7 +19,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function TiendaProfesionalPage() {
   const { brand } = useAuth();
-  const contactPhone = brand?.phone || brand?.whatsapp_contact || '+57 310 543 6281';
+  const contactPhone = brand?.phone || '+57 310 543 6281';
   const cleanPhone = contactPhone.replace(/\D/g, '');
   const whatsappHref = cleanPhone
     ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent('Hola, quiero escalar mi marca a una tienda profesional con Wilkie Devs.')}`
