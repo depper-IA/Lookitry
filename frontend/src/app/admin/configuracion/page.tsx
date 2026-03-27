@@ -246,6 +246,9 @@ export default function SystemConfigPage() {
   const [landingOriginalPrice, setLandingOriginalPrice] = useState<number>(900000);
   const [savingPricingConfig, setSavingPricingConfig] = useState(false);
 
+  // Meta pricing_config (id='meta') — guardamos el objeto completo para no pisar campos al actualizar
+  const [pricingMeta, setPricingMeta] = useState<Record<string, any>>({});
+
   // Contacto y redes
   const [manualWhatsapp, setManualWhatsapp] = useState<string>('+57 310 543 6281');
   const [manualEmail, setManualEmail] = useState<string>('info@lookitry.com');
@@ -256,6 +259,11 @@ export default function SystemConfigPage() {
     social_youtube: '',
   });
   const [savingContactConfig, setSavingContactConfig] = useState(false);
+
+  // TRM (USD/COP) — pricing_config.meta
+  const [trmAuto, setTrmAuto] = useState<boolean>(true);
+  const [trmReferencia, setTrmReferencia] = useState<number>(4000);
+  const [savingTrm, setSavingTrm] = useState(false);
 
   // Moneda del sistema
   const [currency, setCurrency] = useState<string>('COP');
@@ -356,12 +364,20 @@ export default function SystemConfigPage() {
 
       if (!metaRow?.data) return;
 
+      setPricingMeta(metaRow.data || {});
+
       setContactMeta({
         social_instagram: metaRow.data.social_instagram ?? '@looki.try',
         social_tiktok: metaRow.data.social_tiktok ?? '@lookitry',
         social_facebook: metaRow.data.social_facebook ?? '',
         social_youtube: metaRow.data.social_youtube ?? '',
       });
+
+      // TRM config
+      setTrmAuto(metaRow.data.trm_auto !== false); // default true
+      const rawTrm = metaRow.data.trm_referencia;
+      const parsedTrm = typeof rawTrm === 'number' ? rawTrm : Number(rawTrm);
+      if (parsedTrm && parsedTrm > 0) setTrmReferencia(parsedTrm);
     } catch {
       /* silencioso */
     }
@@ -438,7 +454,18 @@ export default function SystemConfigPage() {
     setSavingWhitelist(true);
     setSavingMaintenance(true);
     setSavingContactConfig(true);
+    setSavingTrm(true);
     try {
+      const nextMeta = {
+        ...pricingMeta,
+        social_instagram: contactMeta.social_instagram,
+        social_tiktok: contactMeta.social_tiktok,
+        social_facebook: contactMeta.social_facebook,
+        social_youtube: contactMeta.social_youtube,
+        trm_auto: trmAuto,
+        trm_referencia: trmReferencia,
+      };
+
       const [settingsRes, pricingRes] = await Promise.all([
         fetch(`${API_URL}/api/admin/payment-settings`, {
           method: 'PUT',
@@ -464,17 +491,13 @@ export default function SystemConfigPage() {
           headers,
           body: JSON.stringify({
             id: 'meta',
-            data: {
-              social_instagram: contactMeta.social_instagram,
-              social_tiktok: contactMeta.social_tiktok,
-              social_facebook: contactMeta.social_facebook,
-              social_youtube: contactMeta.social_youtube,
-            },
+            data: nextMeta,
           }),
         }),
       ]);
       if (!settingsRes.ok) throw new Error((await settingsRes.json()).message || 'Error');
       if (!pricingRes.ok) throw new Error((await pricingRes.json()).error || 'Error al guardar redes');
+      setPricingMeta(nextMeta);
       flash('Configuración global guardada correctamente', 'ok');
     } catch (err: any) { flash(err.message || 'Error al guardar', 'err'); }
     finally {
@@ -484,6 +507,7 @@ export default function SystemConfigPage() {
       setSavingWhitelist(false);
       setSavingMaintenance(false);
       setSavingContactConfig(false);
+      setSavingTrm(false);
     }
   }
 
@@ -532,6 +556,16 @@ export default function SystemConfigPage() {
   async function handleSaveContactConfig() {
     setSavingContactConfig(true);
     try {
+      const nextMeta = {
+        ...pricingMeta,
+        social_instagram: contactMeta.social_instagram,
+        social_tiktok: contactMeta.social_tiktok,
+        social_facebook: contactMeta.social_facebook,
+        social_youtube: contactMeta.social_youtube,
+        trm_auto: trmAuto,
+        trm_referencia: trmReferencia,
+      };
+
       const [settingsRes, pricingRes] = await Promise.all([
         fetch(`${API_URL}/api/admin/payment-settings`, {
           method: 'PUT',
@@ -548,20 +582,50 @@ export default function SystemConfigPage() {
           headers,
           body: JSON.stringify({
             id: 'meta',
-            data: {
-              social_instagram: contactMeta.social_instagram,
-              social_tiktok: contactMeta.social_tiktok,
-              social_facebook: contactMeta.social_facebook,
-              social_youtube: contactMeta.social_youtube,
-            },
+            data: nextMeta,
           }),
         }),
       ]);
       if (!settingsRes.ok) throw new Error((await settingsRes.json()).message || 'Error');
       if (!pricingRes.ok) throw new Error((await pricingRes.json()).error || 'Error al guardar redes');
+      setPricingMeta(nextMeta);
       flash('Contacto y redes guardados', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
     finally { setSavingContactConfig(false); }
+  }
+
+  async function handleSaveTrm() {
+    setSavingTrm(true);
+    try {
+      if (!trmAuto && !(trmReferencia > 0)) {
+        throw new Error('TRM de referencia inválida');
+      }
+
+      const nextMeta = {
+        ...pricingMeta,
+        social_instagram: contactMeta.social_instagram,
+        social_tiktok: contactMeta.social_tiktok,
+        social_facebook: contactMeta.social_facebook,
+        social_youtube: contactMeta.social_youtube,
+        trm_auto: trmAuto,
+        trm_referencia: trmReferencia,
+      };
+
+      const res = await fetch(`${API_URL}/api/admin/pricing`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers,
+        body: JSON.stringify({ id: 'meta', data: nextMeta }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.message || json.error || 'Error al guardar TRM');
+      setPricingMeta(nextMeta);
+      flash('TRM guardada correctamente', 'ok');
+    } catch (err: any) {
+      flash(err.message || 'Error al guardar TRM', 'err');
+    } finally {
+      setSavingTrm(false);
+    }
   }
 
   async function handleSaveCurrency() {
@@ -619,7 +683,7 @@ export default function SystemConfigPage() {
     { id: 'health',  label: 'Servicios',    icon: <IconServer className="w-4 h-4" /> },
   ];
 
-  const isSaving = savingAIConfig || savingPricingConfig || savingCurrency || savingWhitelist || savingContactConfig;
+  const isSaving = savingAIConfig || savingPricingConfig || savingCurrency || savingWhitelist || savingContactConfig || savingTrm;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -825,6 +889,50 @@ export default function SystemConfigPage() {
                   : <IconCheck className="w-4 h-4" />}
                 Guardar
               </button>
+            </div>
+          </div>
+
+          {/* TRM (USD/COP) */}
+          <div className="pt-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+            <div className="flex items-start justify-between gap-4 py-3">
+              <div className="flex-1">
+                <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">TRM (USD/COP) para PayPal</p>
+                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
+                  Si está en automático, se usa la tasa del servicio externo con caché. Si lo desactivas, se usa la TRM de referencia que definas aquí.
+                </p>
+              </div>
+              <Toggle value={trmAuto} onChange={() => setTrmAuto(v => !v)} disabled={savingTrm} />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">TRM de referencia</label>
+                <input
+                  type="number"
+                  min={1}
+                  step="1"
+                  value={trmReferencia}
+                  onChange={e => setTrmReferencia(Number(e.target.value || 0))}
+                  disabled={trmAuto}
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm disabled:opacity-60"
+                  placeholder="4000"
+                />
+                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Solo aplica cuando TRM automático está desactivado.</p>
+              </div>
+
+              <div className="flex items-end justify-end">
+                <button
+                  onClick={handleSaveTrm}
+                  disabled={savingTrm}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
+                >
+                  {savingTrm
+                    ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                    : <IconCheck className="w-4 h-4" />}
+                  Guardar TRM
+                </button>
+              </div>
             </div>
           </div>
 

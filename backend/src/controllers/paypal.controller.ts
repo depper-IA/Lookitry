@@ -3,8 +3,6 @@ import { paypalService } from '../services/paypal.service';
 import { SubscriptionService } from '../services/subscription.service';
 import { supabaseAdmin } from '../config/supabase';
 import { asyncHandler } from '../middleware/errorHandler';
-import { TrmService } from '../utils/trm';
-
 import { pricingService } from '../services/pricing.service';
 
 const subscriptionService = new SubscriptionService();
@@ -41,8 +39,11 @@ export class PaypalController {
     // RECALCULAR MONTO EN BACKEND (SEGURIDAD)
     const amountCOP = await pricingService.calculateTotal(planStr, selectedMonths, landing);
     
-    // Obtener TRM (usar la de query si existe, sino automática)
-    const currentTrm = trm ? parseFloat(trm as string) : await TrmService.getCurrentTrm();
+    // Obtener TRM efectiva desde pricing_config.meta (auto o manual).
+    // En desarrollo se permite override por query para pruebas controladas.
+    const overrideTrm = trm ? parseFloat(trm as string) : undefined;
+    const { trm: currentTrm, source } = await pricingService.getEffectiveTrm(overrideTrm);
+    console.log(`[PaypalController] TRM usada para checkout: ${currentTrm} (source=${source})`);
     
     // Crear referencia única
     const brandId = (req as any).brand?.id || `visitor_${Date.now()}`;
