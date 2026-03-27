@@ -17,7 +17,7 @@ export class UsageService {
     // Obtener el plan de la marca
     const { data: brand } = await supabaseAdmin
       .from('brands')
-      .select('plan, email_verified')
+      .select('plan, email_verified, trial_end_date, trial_generations_limit, subscription_status')
       .eq('id', brandId)
       .single();
 
@@ -30,7 +30,15 @@ export class UsageService {
       return false;
     }
 
+    // Determinar si está en trial activo (sin suscripción pagada)
+    const hasPaidSub = brand.subscription_status === 'active' || brand.subscription_status === 'expiring_soon';
+    const inTrial = !hasPaidSub && brand.trial_end_date && new Date(brand.trial_end_date) > new Date();
+
     const plan = getPlanByType(brand.plan);
+    const generationsLimit = inTrial
+      ? (brand.trial_generations_limit ?? 15)
+      : plan.maxGenerationsPerMonth;
+    
     const currentMonth = this.getCurrentMonthRange();
 
     // Contar generaciones exitosas del mes actual
@@ -42,7 +50,7 @@ export class UsageService {
       .gte('generated_at', currentMonth.start.toISOString())
       .lte('generated_at', currentMonth.end.toISOString());
 
-    return (count || 0) < plan.maxGenerationsPerMonth;
+    return (count || 0) < generationsLimit;
   }
 
   async checkProductLimit(brandId: string): Promise<boolean> {
