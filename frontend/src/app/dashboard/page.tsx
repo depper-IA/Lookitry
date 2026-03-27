@@ -191,7 +191,7 @@ export default function DashboardPage() {
                    </div>
                 </div>
              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                    {analytics.mostUsedProducts.slice(0, 3).map((item: ProductUsageStats, index: number) => (
                       <div 
                         key={item.productId}

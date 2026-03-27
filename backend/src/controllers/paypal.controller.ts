@@ -4,8 +4,10 @@ import { SubscriptionService } from '../services/subscription.service';
 import { supabaseAdmin } from '../config/supabase';
 import { asyncHandler } from '../middleware/errorHandler';
 import { pricingService } from '../services/pricing.service';
+import { NotificationService } from '../services/notification.service';
 
 const subscriptionService = new SubscriptionService();
+const notificationService = new NotificationService();
 const PAYPAL_AMOUNT_TOLERANCE = 0.01;
 
 async function insertPaypalPaymentCompat(payload: Record<string, unknown>) {
@@ -104,6 +106,14 @@ async function fulfillPaypalPayment(reference: string, orderId: string, amountUS
   }
 
   if (isNewRegistration) {
+    const { data: pendingRegistration } = await supabaseAdmin
+      .from('pending_registrations')
+      .select('email, reference, plan, amount, status')
+      .eq('reference', reference)
+      .maybeSingle();
+
+    const wasPending = pendingRegistration?.status === 'pending';
+
     await supabaseAdmin
       .from('pending_registrations')
       .update({
@@ -111,6 +121,15 @@ async function fulfillPaypalPayment(reference: string, orderId: string, amountUS
         payment_id: orderId,
       })
       .eq('reference', reference);
+
+    if (wasPending && pendingRegistration?.email && ['BASIC', 'PRO'].includes((pendingRegistration.plan || '').toUpperCase())) {
+      notificationService.sendCompleteRegistrationEmail({
+        email: pendingRegistration.email,
+        reference: pendingRegistration.reference,
+        plan: pendingRegistration.plan,
+        amount: pendingRegistration.amount,
+      }).catch(err => console.error('[PayPal] Error email registro pendiente:', err));
+    }
     return;
   }
 

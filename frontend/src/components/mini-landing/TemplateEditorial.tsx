@@ -10,6 +10,8 @@ import {
   ProductImage, 
   ProductBadge, 
   CoverImage, 
+  getCoverPresentation,
+  getVisibleSocialEntries,
   YouTubeIcon, 
   XIcon, 
   InstagramIcon, 
@@ -56,16 +58,12 @@ function EditorialHeader({ brand, entries, socialIcons }: { brand: BrandData; en
 }
 
 function EditorialHero({ brand }: { brand: BrandData }) {
-  const overlayOpacity = brand.cover_overlay_opacity ?? 0.6;
+  const { backgroundColor: coverBaseColor, imageOpacity } = getCoverPresentation(brand, '#111111');
   return (
-    <section className="relative w-full h-[35vh] md:h-[50vh] flex items-center justify-center overflow-hidden bg-gray-900">
-      {brand.cover_image_url ? (
-        <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover scale-105" />
-      ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-black" style={brand.cover_bg_color ? { background: brand.cover_bg_color } : {}} />
+    <section className="relative w-full h-[35vh] md:h-[50vh] flex items-center justify-center overflow-hidden" style={{ backgroundColor: coverBaseColor }}>
+      {brand.cover_image_url && (
+        <CoverImage src={brand.cover_image_url} alt={brand.name} className="absolute inset-0 w-full h-full object-cover scale-105" style={{ opacity: imageOpacity }} />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-      <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity * 0.4})` }} />
       <div className="relative z-10 text-center px-6 max-w-4xl">
         <h1 className="text-4xl md:text-7xl font-black text-white italic uppercase tracking-tighter drop-shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-1000">
           {brand.name}
@@ -204,7 +202,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
   const [selectedId, setSelectedId] = useState<string | null>(products && products.length > 0 ? products[0].id : null);
 
   const socialLinks = brand.social_links || {};
-  const entries = Object.entries(socialLinks).filter(([, url]) => !!url);
+  const entries = getVisibleSocialEntries(socialLinks);
   const socialIcons: Record<string, React.ReactNode> = {
     instagram: <InstagramIcon className="w-3.5 h-3.5" />,
     facebook:  <FacebookIcon  className="w-3.5 h-3.5" />,
@@ -220,7 +218,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-[#fcfcfc] ${brand.landing_font || 'font-jakarta'} overflow-x-hidden pb-32 ${isPreview ? 'p-0 h-auto' : ''}`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
+    <div className={`min-h-screen flex flex-col bg-[#fcfcfc] ${brand.landing_font || 'font-jakarta'} overflow-x-hidden ${isPreview ? 'p-0 h-auto' : ''}`} style={{ "--primary": primary, "--secondary": secondary, "--secondary-10": secondary + "1a", "--secondary-20": secondary + "33", "--secondary-05": secondary + "0d" } as React.CSSProperties}>
       <EditorialHeader brand={brand} entries={entries} socialIcons={socialIcons} />
       <EditorialHero brand={brand} />
       
@@ -233,7 +231,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
               <span className="text-[10px] font-black bg-black text-white px-3 py-1 uppercase">{products?.length || 0} Items</span>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 md:gap-10">
+            <div className="grid grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8">
               {products && Array.isArray(products) && products.map(p => (
                 <EditorialProductCard key={p.id} product={p} selected={selectedId === p.id} primaryColor={primary} onClick={() => handleProductClick(p.id)} />
               ))}

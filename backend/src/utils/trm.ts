@@ -7,7 +7,7 @@ import axios from 'axios';
 export class TrmService {
   private static cachedTrm: number | null = null;
   private static lastFetch: number = 0;
-  private static CACHE_DURATION = 1000 * 60 * 60 * 6; // 6 horas
+  private static CACHE_DURATION = 1000 * 60 * 60 * 24; // 24 horas
 
   private static FALLBACK_TRM = 4000;
 
@@ -39,5 +39,9 @@ export class TrmService {
     }
 
     return this.cachedTrm || this.FALLBACK_TRM;
+  }
+
+  static isCacheFresh(): boolean {
+    return !!this.cachedTrm && (Date.now() - this.lastFetch < this.CACHE_DURATION);
   }
 }

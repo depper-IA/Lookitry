@@ -23,7 +23,8 @@ import {
   Phone,
   Check,
   Globe as GlobeIcon,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Truck
 } from 'lucide-react';
 
 const Tooltip = ({ text }: { text: string }) => (
@@ -87,9 +88,10 @@ export function DesignTab(props: DesignTabProps) {
     schedule, setSchedule,
   } = props;
 
-  const sectionStyle = "bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-6 md:p-8 space-y-6 shadow-xl shadow-black/5 hover:border-[#FF5C3A]/30 transition-all duration-700 relative overflow-hidden group";
+  const sectionStyle = "bg-[var(--bg-card)] rounded-3xl border border-[var(--border-color)] p-6 md:p-8 xl:p-10 space-y-6 shadow-xl shadow-black/5 hover:border-[#FF5C3A]/30 transition-all duration-700 relative overflow-hidden group";
   const labelStyle = "text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] mb-4 block leading-none opacity-80";
   const inputStyle = "w-full px-6 py-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] text-sm font-semibold text-[var(--text-primary)] focus:border-[#FF5C3A] hover:bg-[var(--bg-hover)] focus:ring-4 focus:ring-[#FF5C3A]/5 outline-none transition-all placeholder:text-[var(--text-muted)] shadow-sm";
+  const scheduleDays = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
 
   return (
     <div className="space-y-12 pb-10">
@@ -197,7 +199,7 @@ export function DesignTab(props: DesignTabProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-6 relative z-10">
           {[
             { label: 'Primario', val: primaryColor, set: setPrimaryColor, tip: 'Botones y destacados.' },
             { label: 'Secundario', val: secondaryColor, set: setSecondaryColor, tip: 'Bordes y sombras.' },
@@ -247,10 +249,20 @@ export function DesignTab(props: DesignTabProps) {
 
         <div className="pt-6 border-t border-[var(--border-color)] relative z-10">
           <div className="space-y-5 bg-[var(--bg-input)] p-8 rounded-[2rem] border border-[var(--border-color)] shadow-inner">
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <label className={labelStyle}>Color de fondo</label>
+                <Tooltip text="Este color queda por debajo de la imagen de portada y se hace mas visible cuando bajas la opacidad." />
+              </div>
+              <div className="flex items-center gap-4 bg-white/60 p-2 rounded-3xl border border-[var(--border-color)] shadow-inner">
+                <input type="color" value={coverBgColor || '#0a0a0a'} onChange={e => setCoverBgColor(e.target.value)} className="w-10 h-10 rounded-2xl overflow-hidden cursor-pointer border-0 bg-transparent flex-shrink-0 shadow-lg" />
+                <input type="text" value={coverBgColor || '#0a0a0a'} onChange={e => setCoverBgColor(e.target.value)} className="flex-1 min-w-0 bg-transparent border-0 text-xs font-black font-mono text-[var(--text-primary)] outline-none uppercase tracking-widest" />
+              </div>
+            </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <Plus size={14} className="opacity-40" />
-                <label className="text-[11px] font-[900] uppercase tracking-widest text-[var(--text-primary)] italic">Overlay Opacity</label>
+                <label className="text-[11px] font-[900] uppercase tracking-widest text-[var(--text-primary)] italic">Opacidad de la imagen</label>
               </div>
               <span className="text-[11px] font-black italic p-2 bg-[#FF5C3A] text-white rounded-lg">{Math.round(coverOverlayOpacity * 100)}%</span>
             </div>
@@ -260,6 +272,10 @@ export function DesignTab(props: DesignTabProps) {
               onChange={e => setCoverOverlayOpacity(parseFloat(e.target.value))} 
               className="w-full h-2 rounded-full cursor-pointer accent-[#FF5C3A] appearance-none bg-[var(--border-color)] border-0" 
             />
+            <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+              <span>0%: domina el color</span>
+              <span>100%: domina la imagen</span>
+            </div>
           </div>
         </div>
       </motion.section>
@@ -322,8 +338,20 @@ export function DesignTab(props: DesignTabProps) {
               <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} className={inputStyle} />
             </div>
             <div className="space-y-3">
+              <label className={labelStyle}>Mensaje de WhatsApp</label>
+              <input type="text" value={whatsappMessage} onChange={e => setWhatsappMessage(e.target.value)} className={inputStyle} />
+            </div>
+            <div className="space-y-3">
               <label className={labelStyle}>Instagram</label>
               <input type="text" value={instagram} onChange={e => setInstagram(e.target.value)} className={inputStyle} />
+            </div>
+            <div className="space-y-3">
+              <label className={labelStyle}>Facebook</label>
+              <input type="text" value={facebook} onChange={e => setFacebook(e.target.value)} className={inputStyle} />
+            </div>
+            <div className="space-y-3">
+              <label className={labelStyle}>YouTube</label>
+              <input type="text" value={youtube} onChange={e => setYoutube(e.target.value)} className={inputStyle} />
             </div>
           </div>
           <div className="space-y-6">
@@ -332,10 +360,63 @@ export function DesignTab(props: DesignTabProps) {
               <input type="text" value={tiktok} onChange={e => setTiktok(e.target.value)} className={inputStyle} />
             </div>
             <div className="space-y-3">
-              <label className={labelStyle}>Ciudad</label>
-              <input type="text" value={cityDisplay} onChange={e => setCityDisplay(e.target.value)} className={inputStyle} />
+              <label className={labelStyle}>X</label>
+              <input type="text" value={x} onChange={e => setX(e.target.value)} className={inputStyle} />
             </div>
+            <div className="space-y-3">
+              <label className={labelStyle}>Dirección</label>
+              <input type="text" value={cityDisplay} onChange={e => setCityDisplay(e.target.value)} placeholder="Ej: Calle 123 #45-67" className={inputStyle} />
+            </div>
+            <div className="space-y-3">
+              <label className={labelStyle}>Rating</label>
+              <input type="number" min="0" max="5" step="0.1" value={rating} onChange={e => setRating(e.target.value)} className={inputStyle} />
+            </div>
+            <div className="space-y-3">
+              <label className={labelStyle}>Total de reseñas</label>
+              <input type="number" min="0" step="1" value={totalReviews} onChange={e => setTotalReviews(e.target.value)} className={inputStyle} />
+            </div>
+            <button
+              type="button"
+              onClick={() => setNationalShipping(!nationalShipping)}
+              className={`flex items-center gap-4 px-6 py-4 rounded-2xl border transition-all w-full ${nationalShipping ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 text-[var(--text-primary)] shadow-xl shadow-[#FF5C3A]/5' : 'border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-secondary)] hover:border-[#FF5C3A]/30'}`}
+            >
+              <Truck className={`w-5 h-5 ${nationalShipping ? 'text-[#FF5C3A]' : 'opacity-50'}`} />
+              <div className="text-left">
+                <span className="text-xs font-black uppercase tracking-widest block leading-none">Envios nacionales</span>
+                <span className="text-[9px] font-bold opacity-50 uppercase tracking-tighter mt-1 block italic">{nationalShipping ? 'Activo' : 'Oculto'}</span>
+              </div>
+            </button>
           </div>
+        </div>
+      </motion.section>
+
+      <motion.section variants={itemVariants} className={sectionStyle}>
+        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform duration-700">
+          <Clock size={45} />
+        </div>
+        <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
+          <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center shadow-inner">
+            <Clock className="w-6 h-6 text-[#FF5C3A]" />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-[var(--text-primary)] italic uppercase tracking-tighter leading-none">Horarios</h3>
+            <p className="text-[10px] text-[var(--text-secondary)] uppercase font-black tracking-widest mt-1 opacity-60 italic">Disponibilidad por dia</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+          {scheduleDays.map((day) => (
+            <div key={day} className="space-y-3">
+              <label className={labelStyle}>{day}</label>
+              <input
+                type="text"
+                value={schedule[day] || schedule[day.toLowerCase()] || ''}
+                onChange={(e) => setSchedule((prev) => ({ ...prev, [day]: e.target.value }))}
+                placeholder="Ej: 9am - 6pm / Cerrado"
+                className={inputStyle}
+              />
+            </div>
+          ))}
         </div>
       </motion.section>
 
