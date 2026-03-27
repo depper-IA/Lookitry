@@ -122,11 +122,17 @@ const PRIORITY_LABEL: Record<number, { label: string; color: string }> = {
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Ahora mismo';
-  if (mins < 60) return `Hace ${mins} min`;
+  const exact = new Date(dateStr).toLocaleString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  if (mins < 1) return `Ahora mismo · ${exact}`;
+  if (mins < 60) return `Hace ${mins} min · ${exact}`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `Hace ${hrs}h`;
-  return `Hace ${Math.floor(hrs / 24)}d`;
+  if (hrs < 24) return `Hace ${hrs}h · ${exact}`;
+  return `Hace ${Math.floor(hrs / 24)}d · ${exact}`;
 }
 
 // ── Botón para aplicar cambio de plan directamente desde la notificación ──────

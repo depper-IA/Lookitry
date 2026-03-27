@@ -9,6 +9,19 @@ import { pricingService } from '../services/pricing.service';
 
 const subscriptionService = new SubscriptionService();
 
+async function insertPaypalPaymentCompat(payload: Record<string, unknown>) {
+  let result = await supabaseAdmin.from('subscription_payments').insert(payload);
+
+  if (result.error?.message?.toLowerCase().includes('reference') && 'reference' in payload) {
+    const { reference, ...fallbackPayload } = payload;
+    result = await supabaseAdmin.from('subscription_payments').insert(fallbackPayload);
+  }
+
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
+}
+
 export class PaypalController {
   /**
    * GET /api/payments/paypal/checkout-url
@@ -42,6 +55,7 @@ export class PaypalController {
         reference,
         plan: planStr, // Usar la variable sanitizada planStr
         months: selectedMonths,
+        amount: amountCOP,
         includes_landing: landing,
         status: 'pending'
       });
@@ -113,7 +127,7 @@ export class PaypalController {
         .eq('id', brandId);
         
       // Registrar pago (idempotente por reference interna)
-      await supabaseAdmin.from('subscription_payments').insert({
+      await insertPaypalPaymentCompat({
         brand_id: brandId,
         amount: amountUSD,
         currency: 'USD',
@@ -138,11 +152,11 @@ export class PaypalController {
         await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
 
         // Registrar pago (landing-only)
-        await supabaseAdmin.from('subscription_payments').insert({
-          brand_id: brandId,
-          amount: amountUSD,
-          currency: 'USD',
-          payment_method: 'paypal',
+      await insertPaypalPaymentCompat({
+        brand_id: brandId,
+        amount: amountUSD,
+        currency: 'USD',
+        payment_method: 'paypal',
           status: 'completed',
           months_paid: 0,
           reference,
@@ -158,7 +172,7 @@ export class PaypalController {
           status: 'completed',
           months_paid: months,
           payment_date: new Date().toISOString(),
-          notes: `PayPal orderId=${orderId}. Ref=${reference}. Plan=${plan}. Meses=${months}.`,
+          notes: `PayPal orderId=${orderId}. Ref=${reference}. Plan=${plan}. Meses=${months}.${includesLanding ? ' Incluye Landing Page.' : ''}`,
           reference,
         }, months, plan as string);
         
