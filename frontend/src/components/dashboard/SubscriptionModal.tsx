@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Calendar, CreditCard, Clock, CheckCircle, AlertTriangle, XCircle, Zap } from 'lucide-react';
 import type { SubscriptionInfo } from '@/services/subscription.service';
 import { formatCurrency } from '@/utils/currency';
@@ -15,6 +16,7 @@ interface SubscriptionModalProps {
 export function SubscriptionModal({ isOpen, onClose, subscriptionInfo }: SubscriptionModalProps) {
   const [planPrices, setPlanPrices] = useState({ BASIC: 150000, PRO: 250000 });
   const [supportEmail, setSupportEmail] = useState('info@lookitry.com');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -26,7 +28,12 @@ export function SubscriptionModal({ isOpen, onClose, subscriptionInfo }: Subscri
       .catch(() => {});
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const { brand, daysRemaining, status, isInTrial, trialDaysRemaining, trialEndDate } = subscriptionInfo;
 
@@ -91,14 +98,14 @@ export function SubscriptionModal({ isOpen, onClose, subscriptionInfo }: Subscri
       ? 'Tu suscripción requiere atención. Contáctanos para renovarla.'
       : 'Tu suscripción está por vencer. Renueva pronto para evitar interrupciones.';
 
-  return (
+  const modalContent = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.6)' }}
+      className="fixed inset-0 z-[120] flex items-center justify-center p-4 backdrop-blur-sm"
+      style={{ background: 'rgba(0,0,0,0.62)' }}
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg overflow-hidden rounded-[28px]"
+        className="relative isolate w-full max-w-lg overflow-hidden rounded-[28px]"
         style={{
           backgroundColor: 'var(--bg-card)',
           border: '1px solid var(--border-color)',
@@ -213,4 +220,6 @@ export function SubscriptionModal({ isOpen, onClose, subscriptionInfo }: Subscri
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

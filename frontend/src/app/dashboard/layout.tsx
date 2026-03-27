@@ -39,6 +39,7 @@ export default function DashboardLayoutWrapper({
         try {
           const brand = await brandsService.getCurrentBrand();
           setBrandData(brand);
+          localStorage.setItem('brand', JSON.stringify(brand));
 
           // Detectar upgrade a PRO
           const prevPlan = localStorage.getItem('brand_plan');
@@ -117,7 +118,7 @@ export default function DashboardLayoutWrapper({
       {/* El banner de verificación de email ahora vive dentro de DashboardLayout
           para respetar el padding del sidebar y no solaparse con el header sticky */}
       <IdleTimer>
-        <DashboardLayout>{children}</DashboardLayout>
+        <DashboardLayout brandOverride={brandData}>{children}</DashboardLayout>
       </IdleTimer>
     </>
   );
