@@ -74,8 +74,7 @@ function formatCOP(n: number) {
 
 function formatPaypalUsd(amountCop: number, trm: number) {
   const safeTrm = trm > 0 ? trm : 3900;
-  const usd = Math.ceil((amountCop / safeTrm) * 100) / 100;
-  return usd.toFixed(2);
+  return String(Math.ceil(amountCop / safeTrm));
 }
 
 // calcTotal eliminada — usar planBase (estado dinámico) directamente

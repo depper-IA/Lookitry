@@ -41,7 +41,8 @@ export function formatPrice(
   const isUSD = paymentMethodOrCurrency === 'paypal' || paymentMethodOrCurrency === 'USD';
   
   if (isUSD) {
-    const amountInUSD = Math.ceil(amountInCOP / trm); // Redondeo hacia arriba solicitado
+    const safeTrm = trm > 0 ? trm : 3900;
+    const amountInUSD = Math.ceil(amountInCOP / safeTrm);
     return formatCurrency(amountInUSD, 'USD');
   }
   

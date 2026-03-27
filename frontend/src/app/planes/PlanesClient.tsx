@@ -67,13 +67,25 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
   const router = useRouter();
   const [selectedMonths, setSelectedMonths] = useState(1);
   const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
+  const [trm, setTrm] = useState(pricing.meta?.trm_referencia ?? 3700);
 
   const { basic, pro, descuentos_duracion, meta } = pricing;
-  const trm = meta?.trm_referencia ?? 3700;
 
   useEffect(() => {
     const saved = localStorage.getItem('currency') as 'COP' | 'USD';
     if (saved) setCurrency(saved);
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    if (apiUrl) {
+      fetch(`${apiUrl}/api/payment-settings/public`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data?.trm && Number(data.trm) > 0) {
+            setTrm(Number(data.trm));
+          }
+        })
+        .catch(() => {});
+    }
 
     const handleCurrencyChange = () => {
       const current = localStorage.getItem('currency') as 'COP' | 'USD';
