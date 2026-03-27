@@ -1,5 +1,6 @@
-import { Router } from 'express';
+import { Request, Response, Router } from 'express';
 import { blogController } from '../controllers/blog.controller';
+import { blogSettingsController } from '../controllers/blogSettings.controller';
 import { adminAuthMiddleware } from '../middleware/adminAuth';
 import { multerMemory } from '../controllers/upload.controller';
 
@@ -15,9 +16,15 @@ router.post('/upload', multerMemory.single('file'), (req, res) => blogController
 router.use('/admin', adminAuthMiddleware);
 
 router.get('/admin', blogController.adminGetPosts);
+router.post('/admin', blogController.adminCreatePost);
 router.get('/admin/categories', blogController.adminGetCategories);
 router.get('/admin/:id', blogController.adminGetPost);
 router.put('/admin/:id', blogController.adminUpdatePost);
 router.delete('/admin/:id', blogController.adminDeletePost);
+
+// Configuración del Pulso Editorial
+router.get('/settings', blogSettingsController.getSettings);
+router.put('/settings', blogSettingsController.updateSettings);
+router.post('/settings/trigger', blogSettingsController.triggerNow);
 
 export default router;
