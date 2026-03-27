@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { productsService } from '@/services/products.service';
 import { brandsService } from '@/services/brands.service';
+import { api } from '@/services/api';
 import type { Product, CreateProductDto } from '@/types';
 import { 
   Package, 
@@ -83,8 +84,20 @@ export default function ProductsPage() {
 
   const loadBrandIntegrationState = async () => {
     try {
-      const brand = await brandsService.getCurrentBrand();
-      setShowExternalIdField(Boolean(brand.apiKey));
+      // IMPORTANTE:
+      // No usamos brand.apiKey como indicador, porque una marca puede tener api_key
+      // sin haber activado correctamente el plugin/integración.
+      // Señal real: el plugin ya hizo al menos una sincronización/telemetría (o hay productos mapeados).
+      const res = await api.get<{
+        products: { totalMappedProducts: number; activeMappedProducts: number };
+        telemetry: { totalRequests: number; failedRequests: number; avgLatencyMs: number; lastSyncAt: string | null };
+      }>('/brands/me/woocommerce-metrics');
+
+      const lastSyncAt = res.data?.telemetry?.lastSyncAt ?? null;
+      const totalRequests = Number(res.data?.telemetry?.totalRequests ?? 0);
+      const mapped = Number(res.data?.products?.totalMappedProducts ?? 0);
+
+      setShowExternalIdField(Boolean(lastSyncAt) || totalRequests > 0 || mapped > 0);
     } catch {
       setShowExternalIdField(false);
     }
