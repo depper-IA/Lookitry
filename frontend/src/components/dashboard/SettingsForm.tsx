@@ -589,6 +589,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
                                    'CTA 100% dinámicos',
                                    'Todas las plantillas incl. Bold',
                                    'Control total de branding',
+                                    'Plugin de WooCommerce',
                                    `${proGenerations ? proGenerations.toLocaleString('es-CO') : '1.200'} generaciones mensuales`,
                                    'Hasta 15 productos activos'
                                  ].map((f, i) => (
