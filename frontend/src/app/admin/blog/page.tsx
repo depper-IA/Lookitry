@@ -514,7 +514,7 @@ export default function AdminBlogPage() {
         <div className="overflow-x-auto custom-scrollbar">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr style={{ backgroundColor: 'var(--bg-base)' }} className="border-b" style={{ borderColor: 'var(--border-color)' }}>
+              <tr style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }} className="border-b">
                 <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>Artículo</th>
                 <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>Clasificación</th>
                 <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>Visibilidad</th>
