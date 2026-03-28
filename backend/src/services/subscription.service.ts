@@ -1,5 +1,7 @@
 import { supabaseAdmin } from '../config/supabase';
 import { Brand, SubscriptionPayment, CreatePaymentDto } from '../types';
+import { PaymentSettingsService } from './paymentSettings.service';
+import { getReportingTrm, normalizePaymentRecordToCop } from '../utils/paymentNormalization';
 
 /**
  * SubscriptionService
@@ -22,7 +24,9 @@ export class SubscriptionService {
     }
 
     if (error?.message?.toLowerCase().includes('reference') && 'reference' in payload) {
-      const { reference, ...fallbackPayload } = payload as Record<string, unknown>;
+      const fallbackPayload = Object.fromEntries(
+        Object.entries(payload as Record<string, unknown>).filter(([key]) => key !== 'reference')
+      );
       const retry = await supabaseAdmin
         .from('subscription_payments')
         .insert(fallbackPayload)
@@ -360,10 +364,9 @@ export class SubscriptionService {
         : currentPlanPriceTotalFallback;
 
     if (lastPayment?.notes?.includes('Incluye Landing Page')) {
-      try {
-        const { PaymentSettingsService } = require('./paymentSettings.service');
-        const settingsService = new PaymentSettingsService();
-        const settings = await settingsService.getSettings();
+        try {
+          const settingsService = new PaymentSettingsService();
+          const settings = await settingsService.getSettings();
         const landingPrice = settings.landing_price || 650000;
 
         const previousAmount = currentPlanPriceTotal;
@@ -599,12 +602,22 @@ export class SubscriptionService {
   async reactivateSubscription(brandId: string): Promise<Brand> {
     const { data: brand, error: fetchError } = await supabaseAdmin
       .from('brands')
-      .select('id, landing_suspended_at, has_landing_page')
+      .select('id, landing_suspended_at, has_landing_page, trial_end_date, subscription_end_date')
       .eq('id', brandId)
       .single();
 
     if (fetchError || !brand) {
       throw new Error('Marca no encontrada: ' + fetchError?.message);
+    }
+
+    const now = new Date();
+    const trialEndDate = brand.trial_end_date ? new Date(brand.trial_end_date) : null;
+    const subscriptionEndDate = brand.subscription_end_date ? new Date(brand.subscription_end_date) : null;
+    const hasActiveTrial = trialEndDate !== null && trialEndDate > now;
+    const hasActivePaidPeriod = subscriptionEndDate !== null && subscriptionEndDate > now;
+
+    if (!hasActiveTrial && !hasActivePaidPeriod) {
+      throw new Error('PAYMENT_REQUIRED_FOR_REACTIVATION');
     }
 
     let restaurarLanding = false;
@@ -616,8 +629,13 @@ export class SubscriptionService {
       }
     }
 
+    const shouldBeExpiringSoon =
+      hasActivePaidPeriod &&
+      subscriptionEndDate !== null &&
+      subscriptionEndDate.getTime() - now.getTime() <= 7 * 24 * 60 * 60 * 1000;
+
     const updatePayload: Record<string, unknown> = {
-      subscription_status: 'active',
+      subscription_status: hasActiveTrial ? 'trial' : shouldBeExpiringSoon ? 'expiring_soon' : 'active',
     };
 
     if (restaurarLanding) {
@@ -744,7 +762,25 @@ export class SubscriptionService {
       throw new Error('Error al obtener historial de pagos: ' + error.message);
     }
 
-    return (data || []) as SubscriptionPayment[];
+    const reportingTrm = await getReportingTrm();
+    const trmCache = new Map<string, number | null>();
+
+    const normalizedPayments = await Promise.all(
+      (data || []).map(async (payment: any) => {
+        const normalized = await normalizePaymentRecordToCop(payment, reportingTrm, trmCache);
+        return {
+          ...payment,
+          amount: normalized.amountCop,
+          amount_original: normalized.originalAmount,
+          amount_cop: normalized.amountCop,
+          exchange_rate_used: normalized.exchangeRateUsed,
+          currency: normalized.currency,
+          reference_used: normalized.referenceUsed,
+        };
+      })
+    );
+
+    return normalizedPayments as SubscriptionPayment[];
   }
 
   /**

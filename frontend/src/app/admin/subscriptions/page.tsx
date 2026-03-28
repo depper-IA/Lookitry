@@ -13,10 +13,11 @@ interface Subscription {
   slug: string;
   plan: string;
   is_in_trial?: boolean;
+  trial_end_date?: string | null;
   trial_days_remaining?: number | null;
-  subscription_status: 'active' | 'expiring_soon' | 'expired' | 'suspended';
-  subscription_start_date: string;
-  subscription_end_date: string;
+  subscription_status: 'active' | 'expiring_soon' | 'expired' | 'suspended' | 'trial';
+  subscription_start_date: string | null;
+  subscription_end_date: string | null;
   last_payment_date: string | null;
   next_payment_date: string | null;
   daysRemaining: number;
@@ -90,9 +91,10 @@ function StatusBadge({ status }: { status: string }) {
     expiring_soon: { bg: 'rgba(245,158,11,0.12)',  color: '#f59e0b' },
     expired:       { bg: 'rgba(239,68,68,0.12)',   color: '#ef4444' },
     suspended:     { bg: 'rgba(107,114,128,0.12)', color: '#6b7280' },
+    trial:         { bg: 'rgba(99,102,241,0.12)',  color: '#6366f1' },
   };
   const labels: Record<string, string> = {
-    active: 'Activa', expiring_soon: 'Por vencer', expired: 'Vencida', suspended: 'Suspendida',
+    active: 'Activa', expiring_soon: 'Por vencer', expired: 'Vencida', suspended: 'Suspendida', trial: 'Trial',
   };
   const style = map[status] ?? { bg: 'rgba(107,114,128,0.12)', color: '#6b7280' };
   return (
@@ -322,6 +324,16 @@ function ChangePlanModal({
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
+    if (brand.is_in_trial) {
+      setError('Para convertir un Trial en Basic o Pro primero debes registrar el pago desde "Renovar / Registrar pago".');
+      return;
+    }
+
+    if (brand.subscription_status === 'suspended' || brand.subscription_status === 'expired') {
+      setError('Para cambiar el plan de una suscripción suspendida o vencida primero registra el pago correspondiente.');
+      return;
+    }
+
     setLoading(true); setError('');
     try {
       const res = await adminApi(`/admin/brands/${brand.id}/plan`, {
@@ -366,12 +378,22 @@ function ChangePlanModal({
           </div>
           <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2.5">
             <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-500">El cambio se aplica inmediatamente. Los límites de productos y generaciones se actualizarán al instante.</p>
+            <p className="text-xs text-amber-500">
+              Este cambio no registra pago. Úsalo solo para ajustes internos sobre suscripciones ya activas.
+            </p>
           </div>
         </div>
         <div style={{ borderColor: 'var(--border-color)' }} className="px-6 py-4 border-t flex justify-end gap-3">
           <button onClick={onClose} style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }} className="px-4 py-2 rounded-xl border text-sm hover:opacity-80 transition-opacity">Cancelar</button>
-          <button onClick={handleSubmit} disabled={loading || newPlan === brand.plan}
+          <button
+            onClick={handleSubmit}
+            disabled={
+              loading ||
+              newPlan === brand.plan ||
+              brand.is_in_trial ||
+              brand.subscription_status === 'suspended' ||
+              brand.subscription_status === 'expired'
+            }
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {loading && <RefreshCw className="w-4 h-4 animate-spin" />}
             Confirmar cambio
@@ -674,7 +696,9 @@ export default function AdminSubscriptionsPage() {
                         : s.plan === 'LANDING' ? 'Pago único' : formatPlanPrice(s.plan as 'BASIC' | 'PRO')}
                     </p>
                   </td>
-                  <td style={{ color: 'var(--text-secondary)' }} className="px-5 py-3.5">{formatDate(s.subscription_end_date)}</td>
+                  <td style={{ color: 'var(--text-secondary)' }} className="px-5 py-3.5">
+                    {formatDate(s.is_in_trial ? (s.trial_end_date ?? s.subscription_end_date) : s.subscription_end_date)}
+                  </td>
                   <td className="px-5 py-3.5">
                     <DaysChip days={s.is_in_trial ? (s.trial_days_remaining ?? 0) : s.daysRemaining} />
                   </td>
@@ -760,7 +784,9 @@ export default function AdminSubscriptionsPage() {
           title={confirmAction.action === 'suspend' ? `Suspender ${confirmAction.brand.name}` : `Reactivar ${confirmAction.brand.name}`}
           message={confirmAction.action === 'suspend'
             ? 'La marca perderá acceso al dashboard y al probador público.'
-            : 'La marca recuperará acceso completo al sistema.'}
+            : confirmAction.brand.is_in_trial
+              ? 'Se restaurará solo el Trial restante. Esta acción no cobra ni cambia el plan. Si quieres pasarla a un plan pago, usa "Renovar / Registrar pago".'
+              : 'Solo se reactivará el acceso si la marca todavía tiene un período pago vigente. Esta acción no cobra ni cambia el plan.'}
           confirmLabel={confirmAction.action === 'suspend' ? 'Suspender' : 'Reactivar'}
           confirmClass={confirmAction.action === 'suspend' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
           onConfirm={handleConfirmAction}
@@ -774,7 +800,7 @@ export default function AdminSubscriptionsPage() {
           title={confirmBulk === 'suspend' ? `Suspender ${selected.size} suscripción${selected.size > 1 ? 'es' : ''}` : `Reactivar ${selected.size} suscripción${selected.size > 1 ? 'es' : ''}`}
           message={confirmBulk === 'suspend'
             ? `Las ${selected.size} marcas seleccionadas perderán acceso al dashboard y al probador público.`
-            : `Las ${selected.size} marcas seleccionadas recuperarán acceso completo al sistema.`}
+            : `Solo se restaurarán accesos con trial vigente o período pago activo. Esta acción masiva no registra cobros ni cambia planes.`}
           confirmLabel={confirmBulk === 'suspend' ? 'Suspender todas' : 'Reactivar todas'}
           confirmClass={confirmBulk === 'suspend' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
           onConfirm={() => handleBulkAction(confirmBulk)}

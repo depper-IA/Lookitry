@@ -1226,3 +1226,44 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 - `frontend/src/components/dashboard/EmbedSection.tsx`
 
 **Descripción:** Corregida la numeración de pasos (1 → plataforma, 2 → código, sin salto al 3). Reemplazado `rgba(0,0,0,0.4)` por `var(--bg-base)` en el fondo del bloque de código para mantener consistencia con el sistema de diseño en ambos modos (claro/oscuro).
+
+## 27 de Marzo, 2026 — Refactor visual de `/admin/pricing` alineado a memoria maestra
+
+**Archivos modificados:**
+- `frontend/src/app/admin/pricing/page.tsx`
+- `CHANGELOG_GEMINI.md`
+
+**Descripción:**
+- Rediseño completo de la interfaz de `admin/pricing` para alinearla con la identidad visual oficial definida en `LOOKITRY_MASTER_MEMORY.md` y el skill `lookitry-brand-guardian`.
+- Reemplazadas superficies genéricas por paneles premium consistentes con el admin usando `var(--bg-card)`, `var(--bg-base)`, `var(--border-color)` y una jerarquía tipográfica apoyada en `font-jakarta`.
+- Nuevo bloque principal con contexto visual, métricas rápidas y tabs convertidos en botones tipo chips con el acento naranja `#FF5C3A`.
+- Refactor de formularios y secciones:
+  - `Field` ahora usa contenedores más legibles, foco naranja y labels compactos.
+  - `SaveBtn` usa estados visuales más claros y consistentes con el panel.
+  - `PlanSection` fue reconstruido con métricas destacadas y mejor separación visual entre precio, capacidad y features.
+  - Las secciones de mini-landing, trial, descuentos, ROI y redes sociales ahora comparten el mismo patrón premium dark.
+- Limpieza de imports no usados y simplificación de la composición para que la página sea más mantenible.
+
+**Motivo:**
+- La versión anterior de `admin/pricing` se veía funcional pero visualmente desalineada con el sistema del panel: demasiada densidad plana, jerarquía débil y varios bloques con apariencia utilitaria en lugar del lenguaje premium de Lookitry.
+
+## 27 de Marzo, 2026 — Corrección multi-divisa en admin y rediseño de `/admin/enterprise`
+
+**Archivos modificados:**
+- `backend/src/utils/paymentNormalization.ts`
+- `backend/src/services/admin.service.ts`
+- `backend/src/controllers/revenue.controller.ts`
+- `frontend/src/app/admin/payments/page.tsx`
+- `frontend/src/app/admin/enterprise/page.tsx`
+
+**Descripción:**
+- Se centralizó la conversión de pagos a COP usando la TRM efectiva del sistema para evitar que montos en USD quedaran sumados como si fueran COP en reportes y tablas administrativas.
+- Para pagos PayPal con referencia trazable, la conversión ahora usa la TRM histórica exacta guardada en `paypal_orders`; solo si esa traza no existe se usa la TRM efectiva actual como fallback.
+- El historial de pagos del admin ahora devuelve `amount_original`, `amount_cop` y `exchange_rate_used`, y la UI muestra tanto el monto reportado en COP como el valor original en USD cuando aplica.
+- El historial de pagos del dashboard de usuario quedó alineado con el admin: ahora también muestra conversión a COP, monto original y TRM aplicada para pagos en USD.
+- Se corrigió `admin/analytics` para que las métricas de generaciones por mes y del mes actual acepten `created_at` como respaldo cuando `generated_at` esté vacío.
+- Se rediseñó `admin/enterprise` con una interfaz premium consistente con la memoria maestra, explicando mejor qué hace la pestaña, cómo funciona el flujo y qué revisar cuando un sync falla.
+
+**Verificación:**
+- `npx eslint src/app/admin/payments/page.tsx src/app/admin/enterprise/page.tsx`
+- `npx eslint src/services/admin.service.ts src/controllers/revenue.controller.ts src/utils/paymentNormalization.ts`

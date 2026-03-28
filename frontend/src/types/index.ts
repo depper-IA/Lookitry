@@ -188,7 +188,10 @@ export interface SubscriptionPayment {
   id: string;
   brandId: string;
   amount: number;
+  amount_original?: number;
+  amount_cop?: number;
   currency: string;
+  exchange_rate_used?: number | null;
   paymentDate: string;
   paymentMethod?: string;
   status: 'completed' | 'pending' | 'failed' | 'refunded';

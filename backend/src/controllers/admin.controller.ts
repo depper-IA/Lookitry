@@ -124,6 +124,109 @@ export const adminLogin = async (req: any, res: Response) => {
 };
 
 /**
+ * POST /api/admin/auth/forgot-password
+ * Solicita enlace de recuperación para un administrador
+ */
+export const adminForgotPassword = async (req: any, res: Response) => {
+  try {
+    const { email } = req.body || {};
+
+    if (!email) {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Email requerido',
+      });
+    }
+
+    const frontendUrl =
+      process.env.FRONTEND_URL ||
+      (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://lookitry.com');
+
+    const { admin, token } = await adminService.requestPasswordResetGetToken(email);
+
+    if (admin && token) {
+      const resetUrl = `${frontendUrl}/admin/reset-password?token=${token}`;
+
+      await emailService.sendEmail({
+        to: admin.email,
+        subject: 'Recuperar contraseña — Panel de administración Lookitry',
+        html: `
+          <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#ffffff">
+            <h2 style="margin:0 0 12px;color:#0a0a0a;font-size:22px">Restablecer contraseña</h2>
+            <p style="margin:0 0 16px;color:#555;line-height:1.6">
+              Hola <strong>${admin.name}</strong>, recibimos una solicitud para cambiar la contraseña de tu cuenta de administrador.
+            </p>
+            <div style="margin:28px 0;text-align:center">
+              <a href="${resetUrl}" style="display:inline-block;background:#FF5C3A;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700">
+                Crear nueva contraseña
+              </a>
+            </div>
+            <p style="margin:0 0 12px;color:#666;line-height:1.6">
+              Este enlace expira en 1 hora. Si no solicitaste este cambio, ignora este correo.
+            </p>
+            <p style="margin:0;color:#999;font-size:12px;word-break:break-all">${resetUrl}</p>
+          </div>
+        `,
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Si el email existe, recibirás un enlace para restablecer tu contraseña.',
+    });
+  } catch (error: any) {
+    console.error('Error in adminForgotPassword:', error);
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Error al procesar la solicitud',
+    });
+  }
+};
+
+/**
+ * POST /api/admin/auth/reset-password
+ * Restablece la contraseña de un administrador usando token
+ */
+export const adminResetPassword = async (req: any, res: Response) => {
+  try {
+    const { token, password } = req.body || {};
+
+    if (!token || !password) {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Token y contraseña son requeridos',
+      });
+    }
+
+    await adminService.resetPasswordWithToken(token, password);
+
+    return res.status(200).json({
+      message: 'Contraseña restablecida correctamente',
+    });
+  } catch (error: any) {
+    console.error('Error in adminResetPassword:', error);
+
+    if (error.message === 'TOKEN_INVALID' || error.message === 'TOKEN_EXPIRED') {
+      return res.status(400).json({
+        error: error.message,
+        message: 'El enlace es inválido o ha expirado. Solicita uno nuevo.',
+      });
+    }
+
+    if (error.message === 'PASSWORD_TOO_SHORT') {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'La contraseña debe tener al menos 8 caracteres',
+      });
+    }
+
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Error al restablecer la contraseña',
+    });
+  }
+};
+
+/**
  * POST /api/admin/auth/logout
  * Cerrar sesión de administrador
  */
@@ -219,6 +322,21 @@ export const changeBrandPlan = async (req: any, res: Response) => {
     });
   } catch (error: any) {
     console.error('Error in changeBrandPlan:', error);
+
+    if (error.message === 'PLAN_CHANGE_REQUIRES_PAYMENT') {
+      return res.status(409).json({
+        error: 'PLAN_CHANGE_REQUIRES_PAYMENT',
+        message: 'No puedes convertir un Trial a un plan pago sin registrar primero el cobro en Suscripciones/Admin Payments.',
+      });
+    }
+
+    if (error.message === 'PLAN_CHANGE_REQUIRES_ACTIVE_SUBSCRIPTION') {
+      return res.status(409).json({
+        error: 'PLAN_CHANGE_REQUIRES_ACTIVE_SUBSCRIPTION',
+        message: 'Solo puedes cambiar el plan directamente en suscripciones activas. Si está vencida o suspendida, primero registra el pago.',
+      });
+    }
+
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
       message: 'Error al cambiar plan',
@@ -1079,7 +1197,7 @@ export const getWooBrandsSummary = async (_req: any, res: Response) => {
     if (error) throw error;
 
     const brandIds = (brands || []).map((b: any) => b.id);
-    let productCounts = new Map<string, { total: number; active: number; mapped: number }>();
+    const productCounts = new Map<string, { total: number; active: number; mapped: number }>();
 
     if (brandIds.length) {
       const { data: products, error: prodErr } = await supabaseAdmin

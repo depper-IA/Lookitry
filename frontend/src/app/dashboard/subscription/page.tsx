@@ -114,6 +114,14 @@ const formatUsd = (amount: number): string =>
     maximumFractionDigits: 2,
   }).format(amount);
 
+const formatPaymentDisplay = (payment: SubscriptionPayment): string => {
+  if (payment.currency === 'USD') {
+    return formatUsd(payment.amount_original ?? payment.amount);
+  }
+
+  return formatCurrency(payment.amount_original ?? payment.amount);
+};
+
 export default function SubscriptionPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -503,7 +511,21 @@ export default function SubscriptionPage() {
                               <p className="text-xs font-bold text-[var(--text-primary)]">{formatDateTime(p.paymentDate)}</p>
                               <p className="text-[10px] font-semibold uppercase tracking-tight text-[var(--text-muted)] opacity-50">{p.paymentMethod ?? 'Pago manual'}</p>
                            </td>
-                           <td className="py-6 pr-4 text-sm font-bold text-[#FF5C3A] tracking-tight">{formatCurrency(p.amount)}</td>
+                           <td className="py-6 pr-4">
+                              <p className="text-sm font-bold text-[#FF5C3A] tracking-tight">
+                                {formatCurrency(p.amount_cop ?? p.amount)}
+                              </p>
+                              {p.currency === 'USD' ? (
+                                <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                                  {formatPaymentDisplay(p)}
+                                  {p.exchange_rate_used ? ` · TRM ${p.exchange_rate_used.toLocaleString('es-CO')}` : ''}
+                                </p>
+                              ) : (
+                                <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                                  {formatPaymentDisplay(p)}
+                                </p>
+                              )}
+                           </td>
                            <td className="py-6 text-right">
                               <span className={`text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-[var(--border-color)] ${PAYMENT_STATUS[p.status]?.color ?? 'text-white'}`}>
                                  {PAYMENT_STATUS[p.status]?.label ?? p.status}

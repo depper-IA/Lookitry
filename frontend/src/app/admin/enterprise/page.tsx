@@ -1,6 +1,21 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  ArrowRight,
+  BadgeCheck,
+  Database,
+  FileSpreadsheet,
+  Globe,
+  Loader2,
+  Plus,
+  RefreshCw,
+  Settings2,
+  ShieldCheck,
+  Store,
+  Workflow,
+  X,
+} from 'lucide-react';
 
 interface SyncConfig {
   id: string;
@@ -27,19 +42,99 @@ interface Brand {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
-const statusColors: Record<string, string> = {
-  success: 'bg-green-500/20 text-green-300',
-  partial: 'bg-yellow-500/20 text-yellow-300',
-  failed: 'bg-red-500/20 text-red-300',
-  pending: 'bg-blue-500/20 text-blue-300',
+const statusColors: Record<string, { bg: string; text: string; label: string }> = {
+  success: { bg: 'rgba(16,185,129,0.12)', text: '#10b981', label: 'Correcto' },
+  partial: { bg: 'rgba(245,158,11,0.12)', text: '#f59e0b', label: 'Parcial' },
+  failed: { bg: 'rgba(239,68,68,0.12)', text: '#ef4444', label: 'Con error' },
+  pending: { bg: 'rgba(59,130,246,0.12)', text: '#3b82f6', label: 'En proceso' },
 };
 
-const statusLabels: Record<string, string> = {
-  success: '✓ Exitoso',
-  partial: '⚠ Parcial',
-  failed: '✗ Error',
-  pending: '⟳ En proceso',
-};
+const syncTypeMeta = {
+  csv: {
+    label: 'CSV',
+    description: 'Archivo estructurado que se consulta para actualizar catálogo.',
+    icon: FileSpreadsheet,
+  },
+  api: {
+    label: 'API',
+    description: 'Endpoint JSON del cliente con inventario o catálogo en tiempo real.',
+    icon: Globe,
+  },
+  woocommerce: {
+    label: 'WooCommerce',
+    description: 'Conector a la API REST nativa de la tienda del cliente.',
+    icon: Store,
+  },
+} as const;
+
+function formatDate(value?: string) {
+  if (!value) return 'Nunca';
+  return new Date(value).toLocaleString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function ShellCard({
+  children,
+  className = '',
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`rounded-[2rem] border ${className}`}
+      style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+}) {
+  return (
+    <ShellCard className="p-5">
+      <p className="text-xs uppercase tracking-[0.24em]" style={{ color: 'var(--text-muted)' }}>
+        {label}
+      </p>
+      <p className="mt-3 text-3xl font-jakarta font-bold" style={{ color: 'var(--text-primary)' }}>
+        {value}
+      </p>
+      <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+        {sub}
+      </p>
+    </ShellCard>
+  );
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
 
 export default function EnterpriseSyncPage() {
   const [configs, setConfigs] = useState<SyncConfig[]>([]);
@@ -65,11 +160,12 @@ export default function EnterpriseSyncPage() {
       const res = await fetch(`${API_URL}/api/admin/enterprise`, {
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('No se pudieron cargar las configuraciones de sync');
+      if (!res.ok) throw new Error('No se pudieron cargar las configuraciones enterprise.');
       const data = await res.json();
       setConfigs(data.configs || []);
     } catch (err) {
       console.error('Error cargando configs:', err);
+      setError('No pude cargar las configuraciones enterprise.');
     } finally {
       setLoading(false);
     }
@@ -78,9 +174,9 @@ export default function EnterpriseSyncPage() {
   const fetchBrands = useCallback(async () => {
     try {
       const res = await fetch(`${API_URL}/api/admin/brands`, { credentials: 'include' });
-      if (!res.ok) throw new Error('No se pudieron cargar las marcas enterprise');
+      if (!res.ok) throw new Error('No se pudieron cargar las marcas enterprise.');
       const data = await res.json();
-      setBrands((data.brands || []).filter((b: Brand) => b.plan === 'ENTERPRISE'));
+      setBrands((data.brands || []).filter((brand: Brand) => brand.plan === 'ENTERPRISE'));
     } catch (err) {
       console.error('Error cargando marcas:', err);
     }
@@ -93,6 +189,8 @@ export default function EnterpriseSyncPage() {
 
   const handleTrigger = async (brandId: string, brandName: string) => {
     setTriggeringIds((prev) => new Set(prev).add(brandId));
+    setError('');
+
     try {
       const res = await fetch(`${API_URL}/api/admin/enterprise/${brandId}/trigger-sync`, {
         method: 'POST',
@@ -100,11 +198,11 @@ export default function EnterpriseSyncPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al disparar sync');
-      setSuccessMsg(`✓ Sync iniciado para "${brandName}". n8n procesará los productos en breve.`);
+      setSuccessMsg(`Sync iniciado para "${brandName}". n8n ya puede procesar el catálogo.`);
       setTimeout(() => setSuccessMsg(''), 5000);
       fetchConfigs();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'No se pudo ejecutar el sync.');
       setTimeout(() => setError(''), 5000);
     } finally {
       setTriggeringIds((prev) => {
@@ -128,18 +226,27 @@ export default function EnterpriseSyncPage() {
       });
     } else {
       setEditingConfig(null);
-      setForm({ brand_id: '', sync_type: 'csv', source_url: '', api_key: '', notes: '', active: true });
+      setForm({
+        brand_id: '',
+        sync_type: 'csv',
+        source_url: '',
+        api_key: '',
+        notes: '',
+        active: true,
+      });
     }
     setShowForm(true);
   };
 
   const handleSave = async () => {
     if (!form.brand_id || !form.source_url) {
-      setError('Marca y URL de fuente son obligatorios.');
+      setError('Marca y fuente son obligatorias para guardar la configuración.');
       return;
     }
+
     setSaving(true);
     setError('');
+
     try {
       const res = await fetch(`${API_URL}/api/admin/enterprise/${form.brand_id}/sync-config`, {
         method: 'POST',
@@ -155,266 +262,518 @@ export default function EnterpriseSyncPage() {
           active: form.active,
         }),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al guardar');
-      setSuccessMsg('✓ Configuración guardada exitosamente.');
+      if (!res.ok) throw new Error(data.error || 'Error al guardar la configuración');
+
+      setSuccessMsg('Configuración enterprise guardada correctamente.');
       setTimeout(() => setSuccessMsg(''), 4000);
       setShowForm(false);
       fetchConfigs();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'No se pudo guardar la configuración.');
     } finally {
       setSaving(false);
     }
   };
 
-  const allBrandsWithConfig = new Set(configs.map((c) => c.brand_id));
-  const availableBrands = brands.filter((b) => !allBrandsWithConfig.has(b.id));
+  const allBrandsWithConfig = new Set(configs.map((config) => config.brand_id));
+  const availableBrands = brands.filter((brand) => !allBrandsWithConfig.has(brand.id));
+
+  const summary = useMemo(() => {
+    const active = configs.filter((config) => config.active).length;
+    const withIssues = configs.filter((config) => ['failed', 'partial'].includes(config.last_sync_status || '')).length;
+    const syncedProducts = configs.reduce((sum, config) => sum + (config.products_synced_count || 0), 0);
+
+    return {
+      total: configs.length,
+      active,
+      withIssues,
+      syncedProducts,
+    };
+  }, [configs]);
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Enterprise Sync — The Sync</h1>
-          <p className="text-sm text-gray-400 mt-1">
-            Gestiona la ingesta automática de catálogos para clientes Enterprise vía CSV, API o WooCommerce.
-          </p>
-        </div>
-        <button
-          onClick={() => openForm()}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+    <div className="space-y-6">
+      <ShellCard className="overflow-hidden">
+        <div
+          className="p-6 md:p-8"
+          style={{
+            background:
+              'radial-gradient(circle at top left, rgba(255,92,58,0.18), transparent 32%), linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0))',
+          }}
         >
-          + Agregar Config
-        </button>
-      </div>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <span
+                className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em]"
+                style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}
+              >
+                <Workflow className="h-3.5 w-3.5" />
+                Ingesta enterprise
+              </span>
+              <h1 className="mt-4 text-3xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                Central de catálogos automatizados
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
+                Esta pestaña sirve para conectar catálogos externos de clientes Enterprise con Lookitry.
+                Aquí decides desde dónde se lee el inventario, activas o pausas la automatización y disparas
+                syncs manuales cuando el cliente cambia productos, precios o imágenes.
+              </p>
+            </div>
 
-      {/* Alerts */}
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={fetchConfigs}
+                className="inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-85"
+                style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+              >
+                <RefreshCw className="h-4 w-4" />
+                Actualizar
+              </button>
+              <button
+                onClick={() => openForm()}
+                className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ background: '#FF5C3A' }}
+              >
+                <Plus className="h-4 w-4" />
+                Nueva conexión
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <StatCard label="Conexiones" value={String(summary.total)} sub="clientes enterprise con fuente configurada" />
+            <StatCard label="Activas" value={String(summary.active)} sub="automatizaciones listas para ejecutar" />
+            <StatCard label="Con alertas" value={String(summary.withIssues)} sub="syncs que conviene revisar hoy" />
+            <StatCard label="Productos" value={summary.syncedProducts.toLocaleString('es-CO')} sub="registros sincronizados reportados" />
+          </div>
+        </div>
+      </ShellCard>
+
       {successMsg && (
-        <div className="bg-green-500/10 border border-green-500/30 text-green-300 px-4 py-3 rounded-lg text-sm">
+        <div
+          className="rounded-2xl border px-4 py-3 text-sm"
+          style={{ background: 'rgba(16,185,129,0.08)', borderColor: 'rgba(16,185,129,0.25)', color: '#10b981' }}
+        >
           {successMsg}
         </div>
       )}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-300 px-4 py-3 rounded-lg text-sm">
+        <div
+          className="rounded-2xl border px-4 py-3 text-sm"
+          style={{ background: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.25)', color: '#ef4444' }}
+        >
           {error}
         </div>
       )}
 
-      {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-lg p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-white">
-                {editingConfig ? 'Editar configuración' : 'Nueva configuración de sync'}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.6fr_1fr]">
+        <ShellCard className="p-6">
+          <div className="flex items-center gap-3">
+            <div className="rounded-2xl p-3" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>
+              <Database className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-jakarta font-bold" style={{ color: 'var(--text-primary)' }}>
+                Cómo funciona esta pestaña
               </h2>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-white text-xl">✕</button>
+              <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+                Piensa en esto como un puente entre el catálogo del cliente y tu sistema.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {[
+              {
+                icon: Workflow,
+                title: '1. Conectas la fuente',
+                body: 'Defines si el cliente entrega un CSV, un endpoint API o credenciales de WooCommerce.',
+              },
+              {
+                icon: Settings2,
+                title: '2. n8n transforma',
+                body: 'El flujo descarga los productos, procesa imágenes y arma la estructura que entiende Lookitry.',
+              },
+              {
+                icon: BadgeCheck,
+                title: '3. Lookitry actualiza',
+                body: 'Se crea o refresca el catálogo interno y luego revisas el estado del último sync.',
+              },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.title}
+                  className="rounded-[1.5rem] border p-5"
+                  style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)' }}
+                >
+                  <div className="inline-flex rounded-2xl p-2.5" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <h3 className="mt-4 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6" style={{ color: 'var(--text-muted)' }}>
+                    {item.body}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </ShellCard>
+
+        <ShellCard className="p-6">
+          <h2 className="text-lg font-jakarta font-bold" style={{ color: 'var(--text-primary)' }}>
+            Recomendaciones
+          </h2>
+          <div className="mt-5 space-y-4">
+            {[
+              'Usa CSV cuando el cliente solo puede exportar productos por lotes y no necesita cambios en tiempo real.',
+              'Prefiere API o WooCommerce cuando el inventario cambia seguido y quieres menos trabajo manual.',
+              'Si un sync queda “parcial”, normalmente hay campos vacíos, imágenes caídas o permisos incompletos.',
+              'Añade notas internas por cliente para dejar claro qué fuente manda y cuándo conviene ejecutar manualmente.',
+              'Mantén una sola conexión activa por marca para evitar duplicados y choques entre catálogos.',
+            ].map((tip) => (
+              <div
+                key={tip}
+                className="flex gap-3 rounded-[1.5rem] border p-4"
+                style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)' }}
+              >
+                <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#FF5C3A' }} />
+                <p className="text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
+                  {tip}
+                </p>
+              </div>
+            ))}
+          </div>
+        </ShellCard>
+      </div>
+
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <ShellCard className="w-full max-w-2xl p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-jakarta font-bold" style={{ color: 'var(--text-primary)' }}>
+                  {editingConfig ? 'Editar conexión enterprise' : 'Nueva conexión enterprise'}
+                </h2>
+                <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+                  Configura la fuente externa que n8n usará para sincronizar el catálogo.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowForm(false)}
+                className="rounded-2xl border p-2 transition-opacity hover:opacity-80"
+                style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
-            <div className="space-y-3">
-              {/* Marca */}
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
               {!editingConfig && (
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Marca Enterprise</label>
+                <Field label="Marca enterprise">
                   <select
                     value={form.brand_id}
                     onChange={(e) => setForm({ ...form, brand_id: e.target.value })}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                    className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                    style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                   >
                     <option value="">Seleccionar marca...</option>
-                    {availableBrands.map((b) => (
-                      <option key={b.id} value={b.id}>{b.name} ({b.email})</option>
+                    {availableBrands.map((brand) => (
+                      <option key={brand.id} value={brand.id}>
+                        {brand.name} ({brand.email})
+                      </option>
                     ))}
-                    {brands.length === 0 && (
-                      <option disabled>No hay marcas con plan ENTERPRISE</option>
-                    )}
+                    {brands.length === 0 && <option disabled>No hay marcas ENTERPRISE todavía</option>}
                   </select>
-                </div>
+                </Field>
               )}
 
-              {/* Tipo de fuente */}
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Tipo de fuente</label>
+              <Field label="Tipo de fuente">
                 <select
                   value={form.sync_type}
-                  onChange={(e) => setForm({ ...form, sync_type: e.target.value as any })}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white"
+                  onChange={(e) => setForm({ ...form, sync_type: e.target.value as 'csv' | 'api' | 'woocommerce' })}
+                  className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                  style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 >
-                  <option value="csv">CSV — Archivo delimitado por coma</option>
-                  <option value="api">API — Endpoint JSON del cliente</option>
-                  <option value="woocommerce">WooCommerce — API REST nativa</option>
+                  <option value="csv">CSV</option>
+                  <option value="api">API</option>
+                  <option value="woocommerce">WooCommerce</option>
                 </select>
+              </Field>
+
+              <div className="md:col-span-2">
+                <Field label={form.sync_type === 'csv' ? 'URL del CSV' : 'URL del endpoint'}>
+                  <input
+                    type="url"
+                    value={form.source_url}
+                    onChange={(e) => setForm({ ...form, source_url: e.target.value })}
+                    placeholder={
+                      form.sync_type === 'csv'
+                        ? 'https://cliente.com/catalogo.csv'
+                        : form.sync_type === 'woocommerce'
+                          ? 'https://cliente.com/wp-json/wc/v3/products'
+                          : 'https://cliente.com/api/products'
+                    }
+                    className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                    style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  />
+                </Field>
               </div>
 
-              {/* URL de la fuente */}
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">
-                  {form.sync_type === 'csv' ? 'URL del CSV' : 'URL del API endpoint'}
-                </label>
-                <input
-                  type="url"
-                  value={form.source_url}
-                  onChange={(e) => setForm({ ...form, source_url: e.target.value })}
-                  placeholder={form.sync_type === 'csv' ? 'https://tienda.com/productos.csv' : 'https://tienda.com/wp-json/wc/v3/products'}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600"
-                />
+              <div className="md:col-span-2">
+                <Field label="API key o credencial opcional">
+                  <input
+                    type="password"
+                    value={form.api_key}
+                    onChange={(e) => setForm({ ...form, api_key: e.target.value })}
+                    placeholder="ck_xxx o token del cliente"
+                    className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                    style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  />
+                </Field>
               </div>
 
-              {/* API Key (opcional) */}
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">API Key del cliente (opcional)</label>
-                <input
-                  type="password"
-                  value={form.api_key}
-                  onChange={(e) => setForm({ ...form, api_key: e.target.value })}
-                  placeholder="ck_xxxx:cs_xxxx"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600"
-                />
+              <div className="md:col-span-2">
+                <Field label="Notas operativas">
+                  <textarea
+                    value={form.notes}
+                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    rows={3}
+                    placeholder="Ej: catálogo de temporada, corre cada lunes, revisar imágenes verticales."
+                    className="w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                    style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  />
+                </Field>
               </div>
-
-              {/* Notas internas */}
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Notas internas del admin</label>
-                <textarea
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  rows={2}
-                  placeholder="Ej: Cliente de moda femenina. Actualizar catálogo cada lunes."
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 resize-none"
-                />
-              </div>
-
-              {/* Activo */}
-              <label className="flex items-center gap-3 cursor-pointer">
-                <div
-                  onClick={() => setForm({ ...form, active: !form.active })}
-                  className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 ${form.active ? 'bg-purple-600' : 'bg-gray-700'}`}
-                >
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${form.active ? 'translate-x-5' : 'translate-x-0'}`} />
-                </div>
-                <span className="text-sm text-gray-300">Sync activo</span>
-              </label>
             </div>
 
-            {error && <p className="text-red-400 text-xs">{error}</p>}
+            <div
+              className="mt-5 flex items-center justify-between rounded-[1.5rem] border px-4 py-3"
+              style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)' }}
+            >
+              <div>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  Sync activo
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                  Si lo apagas, la configuración queda guardada pero no debería ejecutarse.
+                </p>
+              </div>
+              <button
+                onClick={() => setForm({ ...form, active: !form.active })}
+                className={`relative h-7 w-14 rounded-full transition-colors ${form.active ? 'bg-[#FF5C3A]' : 'bg-white/10'}`}
+              >
+                <span
+                  className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${form.active ? 'translate-x-8' : 'translate-x-1'}`}
+                />
+              </button>
+            </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="mt-6 flex flex-wrap justify-end gap-3">
               <button
                 onClick={() => setShowForm(false)}
-                className="flex-1 border border-gray-700 text-gray-300 hover:text-white rounded-lg py-2 text-sm transition-colors"
+                className="rounded-2xl border px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-80"
+                style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-lg py-2 text-sm font-medium transition-colors"
+                className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                style={{ background: '#FF5C3A' }}
               >
-                {saving ? 'Guardando...' : 'Guardar'}
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />}
+                {saving ? 'Guardando...' : 'Guardar conexión'}
               </button>
             </div>
-          </div>
+          </ShellCard>
         </div>
       )}
 
-      {/* Table */}
       {loading ? (
-        <div className="text-center py-12 text-gray-500">Cargando configuraciones...</div>
+        <ShellCard className="p-10">
+          <div className="flex items-center justify-center gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Cargando conexiones enterprise...
+          </div>
+        </ShellCard>
       ) : configs.length === 0 ? (
-        <div className="text-center py-16 bg-gray-900/50 rounded-2xl border border-gray-800">
-          <div className="text-4xl mb-3">🔄</div>
-          <p className="text-gray-400 font-medium">No hay clientes Enterprise configurados</p>
-          <p className="text-gray-600 text-sm mt-1">Agrega la primera configuración de sync para un cliente Enterprise.</p>
-        </div>
+        <ShellCard className="p-10 text-center">
+          <div
+            className="mx-auto flex h-14 w-14 items-center justify-center rounded-[1.5rem]"
+            style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}
+          >
+            <Workflow className="h-6 w-6" />
+          </div>
+          <h3 className="mt-4 text-lg font-jakarta font-bold" style={{ color: 'var(--text-primary)' }}>
+            Aún no hay conexiones enterprise
+          </h3>
+          <p className="mt-2 max-w-xl mx-auto text-sm leading-6" style={{ color: 'var(--text-muted)' }}>
+            Crea la primera configuración cuando un cliente enterprise necesite que su catálogo se
+            sincronice automáticamente desde un origen externo.
+          </p>
+        </ShellCard>
       ) : (
-        <div className="space-y-3">
-          {configs.map((config) => (
-            <div
-              key={config.id}
-              className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition-colors"
-            >
-              <div className="flex items-start justify-between gap-4">
-                {/* Info de la marca */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-white font-semibold text-sm">
-                      {config.brands?.name || config.brand_id}
+        <div className="space-y-4">
+          {configs.map((config) => {
+            const meta = syncTypeMeta[config.sync_type];
+            const StatusIcon = meta.icon;
+            const status = statusColors[config.last_sync_status || 'pending'] || statusColors.pending;
+            const brandName = config.brands?.name || config.brand_id;
+
+            return (
+              <ShellCard key={config.id} className="p-6">
+                <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
+                        style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}
+                      >
+                        <StatusIcon className="h-3.5 w-3.5" />
+                        {meta.label}
+                      </span>
+                      <span
+                        className="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
+                        style={{ background: status.bg, color: status.text }}
+                      >
+                        {status.label}
+                      </span>
+                      <span
+                        className="inline-flex rounded-full px-3 py-1 text-xs font-semibold"
+                        style={{
+                          background: config.active ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.08)',
+                          color: config.active ? '#10b981' : 'var(--text-muted)',
+                        }}
+                      >
+                        {config.active ? 'Activa' : 'Pausada'}
+                      </span>
+                    </div>
+
+                    <h3 className="mt-4 text-xl font-jakarta font-bold truncate" style={{ color: 'var(--text-primary)' }}>
+                      {brandName}
                     </h3>
-                    <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full">
-                      ENTERPRISE
-                    </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${config.active ? 'bg-green-500/20 text-green-300' : 'bg-gray-700 text-gray-400'}`}>
-                      {config.active ? 'Activo' : 'Pausado'}
-                    </span>
-                    <span className="text-xs bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full capitalize">
-                      {config.sync_type}
-                    </span>
+                    <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+                      {config.brands?.email || 'Sin email'} · {meta.description}
+                    </p>
+
+                    <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+                      <div
+                        className="rounded-[1.5rem] border p-4"
+                        style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)' }}
+                      >
+                        <p className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
+                          Fuente
+                        </p>
+                        <p className="mt-2 text-sm break-all" style={{ color: 'var(--text-primary)' }}>
+                          {config.source_url}
+                        </p>
+                      </div>
+                      <div
+                        className="rounded-[1.5rem] border p-4"
+                        style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)' }}
+                      >
+                        <p className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
+                          Último sync
+                        </p>
+                        <p className="mt-2 text-sm" style={{ color: 'var(--text-primary)' }}>
+                          {formatDate(config.last_sync_at)}
+                        </p>
+                      </div>
+                      <div
+                        className="rounded-[1.5rem] border p-4"
+                        style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)' }}
+                      >
+                        <p className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
+                          Productos sincronizados
+                        </p>
+                        <p className="mt-2 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                          {config.products_synced_count.toLocaleString('es-CO')}
+                        </p>
+                      </div>
+                    </div>
+
+                    {config.notes && (
+                      <div
+                        className="mt-4 rounded-[1.5rem] border p-4"
+                        style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)' }}
+                      >
+                        <p className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
+                          Nota interna
+                        </p>
+                        <p className="mt-2 text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
+                          {config.notes}
+                        </p>
+                      </div>
+                    )}
+
+                    {config.last_sync_message && (
+                      <p className="mt-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+                        Último mensaje: {config.last_sync_message}
+                      </p>
+                    )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1 truncate">{config.brands?.email}</p>
-                  <p className="text-xs text-gray-600 mt-0.5 truncate font-mono">{config.source_url}</p>
-                  {config.notes && (
-                    <p className="text-xs text-gray-500 mt-1 italic">{config.notes}</p>
-                  )}
-                </div>
 
-                {/* Acciones */}
-                <div className="flex gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => openForm(config)}
-                    className="text-xs border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleTrigger(config.brand_id, config.brands?.name || config.brand_id)}
-                    disabled={!config.active || triggeringIds.has(config.brand_id)}
-                    className="text-xs bg-purple-600 hover:bg-purple-700 disabled:opacity-40 text-white px-3 py-1.5 rounded-lg transition-colors font-medium"
-                  >
-                    {triggeringIds.has(config.brand_id) ? '⟳ Iniciando...' : '▶ Ejecutar Sync'}
-                  </button>
-                </div>
-              </div>
+                  <div className="flex min-w-[220px] flex-col gap-3">
+                    <button
+                      onClick={() => handleTrigger(config.brand_id, brandName)}
+                      disabled={!config.active || triggeringIds.has(config.brand_id)}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                      style={{ background: '#FF5C3A' }}
+                    >
+                      {triggeringIds.has(config.brand_id) ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Iniciando sync
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4" />
+                          Ejecutar sync manual
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => openForm(config)}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition-opacity hover:opacity-85"
+                      style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+                    >
+                      <Settings2 className="h-4 w-4" />
+                      Editar conexión
+                    </button>
 
-              {/* Stats de último sync */}
-              <div className="mt-4 pt-4 border-t border-gray-800 flex items-center gap-4 flex-wrap text-xs text-gray-500">
-                <span>
-                  <span className="text-gray-400">Último sync:</span>{' '}
-                  {config.last_sync_at ? new Date(config.last_sync_at).toLocaleString('es-CO') : 'Nunca'}
-                </span>
-                {config.last_sync_status && (
-                  <span className={`px-2 py-0.5 rounded-full ${statusColors[config.last_sync_status] || 'bg-gray-700 text-gray-400'}`}>
-                    {statusLabels[config.last_sync_status] || config.last_sync_status}
-                  </span>
-                )}
-                <span>
-                  <span className="text-gray-400">Productos sincronizados:</span>{' '}
-                  <span className="text-white font-medium">{config.products_synced_count}</span>
-                </span>
-                {config.last_sync_message && (
-                  <span className="text-gray-600 truncate max-w-xs italic">
-                    {config.last_sync_message}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
+                    <div
+                      className="rounded-[1.5rem] border p-4"
+                      style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)' }}
+                    >
+                      <p className="text-xs uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
+                        Lectura rápida
+                      </p>
+                      <div className="mt-3 space-y-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                        <div className="flex items-start gap-2">
+                          <ArrowRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" style={{ color: '#FF5C3A' }} />
+                          <span>{config.active ? 'Automatización lista para correr.' : 'Configuración guardada pero en pausa.'}</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <ArrowRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" style={{ color: '#FF5C3A' }} />
+                          <span>
+                            Si el estado queda en parcial o error, revisa fuente, credenciales y estructura del catálogo.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ShellCard>
+            );
+          })}
         </div>
       )}
-
-      {/* N8n Workflow Guide */}
-      <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 mt-8">
-        <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-          <span>⚡</span> Configuración del Flujo en n8n
-        </h3>
-        <ol className="space-y-2 text-sm text-gray-400 list-decimal list-inside">
-          <li>Importa el flujo <code className="text-purple-300 bg-gray-800 px-1 rounded">enterprise-sync-workflow.json</code> en tu instancia de n8n.</li>
-          <li>Configura la variable de entorno <code className="text-green-300 bg-gray-800 px-1 rounded">N8N_ENTERPRISE_SYNC_WEBHOOK_URL</code> en el backend.</li>
-          <li>Agrega la clave <code className="text-green-300 bg-gray-800 px-1 rounded">ENTERPRISE_SYNC_TOKEN</code> tanto en el backend como en las credenciales de n8n (header Authorization).</li>
-          <li>El flujo procesa cada imagen con <strong className="text-white">background removal</strong>, la sube a MinIO y llama a <code className="text-blue-300 bg-gray-800 px-1 rounded">POST /api/enterprise/sync-product</code>.</li>
-          <li>Al finalizar, n8n llama a <code className="text-blue-300 bg-gray-800 px-1 rounded">PATCH /api/admin/enterprise/{'{brandId}'}/sync-status</code> con el resultado total.</li>
-        </ol>
-      </div>
     </div>
   );
 }
