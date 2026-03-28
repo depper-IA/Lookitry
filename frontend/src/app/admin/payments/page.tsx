@@ -16,7 +16,10 @@ interface Payment {
     plan: 'BASIC' | 'PRO';
   };
   amount: number;
+  amount_cop?: number;
+  amount_original?: number;
   currency: string;
+  exchange_rate_used?: number | null;
   payment_date: string;
   payment_method: string;
   status: 'completed' | 'pending' | 'failed' | 'refunded';
@@ -40,6 +43,15 @@ function formatDate(d: string | null) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function formatOriginalAmount(payment: Payment) {
+  const amount = payment.amount_original ?? payment.amount;
+  if (payment.currency === 'USD') {
+    return `USD ${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  }
+
+  return formatCurrency(amount);
 }
 
 const METHOD_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
@@ -124,7 +136,7 @@ export default function AdminPaymentsPage() {
     if (sortField === 'name') {
       valA = (a.brands?.name ?? '').toLowerCase(); valB = (b.brands?.name ?? '').toLowerCase();
     } else if (sortField === 'amount') {
-      valA = a.amount; valB = b.amount;
+      valA = a.amount_cop ?? a.amount; valB = b.amount_cop ?? b.amount;
     } else if (sortField === 'date') {
       valA = new Date(a.payment_date || a.created_at).getTime();
       valB = new Date(b.payment_date || b.created_at).getTime();
@@ -143,7 +155,7 @@ export default function AdminPaymentsPage() {
   const byMethod = payments.reduce<Record<string, { count: number; total: number }>>((acc, p) => {
     const m = p.payment_method || 'otro';
     if (!acc[m]) acc[m] = { count: 0, total: 0 };
-    if (p.status === 'completed') { acc[m].count++; acc[m].total += p.amount; }
+    if (p.status === 'completed') { acc[m].count++; acc[m].total += p.amount_cop ?? p.amount; }
     return acc;
   }, {});
 
@@ -292,7 +304,17 @@ export default function AdminPaymentsPage() {
                             {brand.plan}
                           </span>
                         </td>
-                        <td style={{ color: 'var(--text-primary)' }} className="px-5 py-3.5 font-semibold">{formatCurrency(p.amount)}</td>
+                        <td className="px-5 py-3.5">
+                          <p style={{ color: 'var(--text-primary)' }} className="font-semibold">{formatCurrency(p.amount_cop ?? p.amount)}</p>
+                          {p.currency === 'USD' ? (
+                            <p style={{ color: 'var(--text-muted)' }} className="text-[11px] mt-0.5">
+                              {formatOriginalAmount(p)}
+                              {p.exchange_rate_used ? ` · TRM ${p.exchange_rate_used.toLocaleString('es-CO')}` : ''}
+                            </p>
+                          ) : (
+                            <p style={{ color: 'var(--text-muted)' }} className="text-[11px] mt-0.5">{formatOriginalAmount(p)}</p>
+                          )}
+                        </td>
                         <td className="px-5 py-3.5">
                           <span className="flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
                             {methodCfg.icon} {methodCfg.label}

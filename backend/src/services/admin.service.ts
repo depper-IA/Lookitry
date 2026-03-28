@@ -1,5 +1,7 @@
 import { supabaseAdmin } from '../config/supabase';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import { getReportingTrm, normalizePaymentRecordToCop } from '../utils/paymentNormalization';
 
 export interface Admin {
   id: string;
@@ -13,6 +15,8 @@ export interface Admin {
 type AdminRecord = Admin & {
   password: string;
   permissions?: string[];
+  reset_token?: string | null;
+  reset_token_expires_at?: string | null;
 };
 
 export interface BrandWithStats {
@@ -193,10 +197,84 @@ export class AdminService {
     const hashed = await bcrypt.hash(newPassword, 10);
     const { error: updateError } = await supabaseAdmin
       .from('admins')
-      .update({ password: hashed, updated_at: new Date().toISOString() })
+      .update({
+        password: hashed,
+        reset_token: null,
+        reset_token_expires_at: null,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', adminId);
 
     if (updateError) throw new Error('Error al actualizar contraseña: ' + updateError.message);
+  }
+
+  async requestPasswordResetGetToken(email: string): Promise<{
+    admin: { name: string; email: string } | null;
+    token: string | null;
+  }> {
+    const { data: admin } = await supabaseAdmin
+      .from('admins')
+      .select('id, name, email')
+      .eq('email', email)
+      .single();
+
+    if (!admin) {
+      return { admin: null, token: null };
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    const { error } = await supabaseAdmin
+      .from('admins')
+      .update({
+        reset_token: token,
+        reset_token_expires_at: expiresAt.toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', admin.id);
+
+    if (error) {
+      throw new Error('Error al generar token de recuperación: ' + error.message);
+    }
+
+    return { admin: { name: admin.name, email: admin.email }, token };
+  }
+
+  async resetPasswordWithToken(token: string, newPassword: string): Promise<void> {
+    const { data: admin, error } = await supabaseAdmin
+      .from('admins')
+      .select('id, reset_token_expires_at')
+      .eq('reset_token', token)
+      .single();
+
+    if (error || !admin) {
+      throw new Error('TOKEN_INVALID');
+    }
+
+    const expiresAt = admin.reset_token_expires_at ? new Date(admin.reset_token_expires_at) : null;
+    if (!expiresAt || expiresAt < new Date()) {
+      throw new Error('TOKEN_EXPIRED');
+    }
+
+    if (newPassword.length < 8) {
+      throw new Error('PASSWORD_TOO_SHORT');
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    const { error: updateError } = await supabaseAdmin
+      .from('admins')
+      .update({
+        password: hashed,
+        reset_token: null,
+        reset_token_expires_at: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', admin.id);
+
+    if (updateError) {
+      throw new Error('Error al actualizar contraseña: ' + updateError.message);
+    }
   }
 
   /**
@@ -357,16 +435,34 @@ export class AdminService {
     // Leer fechas actuales para no pisarlas si ya existen
     const { data: current } = await supabaseAdmin
       .from('brands')
-      .select('subscription_start_date, subscription_end_date, subscription_status')
+      .select('subscription_start_date, subscription_end_date, subscription_status, trial_end_date')
       .eq('id', brandId)
       .single();
 
     const updatePayload: Record<string, any> = { plan: newPlan };
+    const now = new Date();
+    const hasActiveTrial =
+      !!current?.trial_end_date &&
+      new Date(current.trial_end_date).getTime() > now.getTime() &&
+      current?.subscription_status !== 'active' &&
+      current?.subscription_status !== 'expiring_soon';
+
+    if (hasActiveTrial) {
+      throw new Error('PLAN_CHANGE_REQUIRES_PAYMENT');
+    }
+
+    const hasActivePaidSubscription =
+      !!current?.subscription_end_date &&
+      new Date(current.subscription_end_date).getTime() > now.getTime() &&
+      (current?.subscription_status === 'active' || current?.subscription_status === 'expiring_soon');
+
+    if (!hasActivePaidSubscription) {
+      throw new Error('PLAN_CHANGE_REQUIRES_ACTIVE_SUBSCRIPTION');
+    }
 
     // Solo activar si estaba suspendida/expirada o sin estado
     const status = current?.subscription_status;
     if (!status || status === 'suspended' || status === 'expired') {
-      const now = new Date();
       const endDate = new Date(now);
       endDate.setDate(endDate.getDate() + 30);
       updatePayload.subscription_status = 'active';
@@ -415,11 +511,6 @@ export class AdminService {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    const { count: monthlyGenerations } = await supabaseAdmin
-      .from('generations')
-      .select('*', { count: 'exact', head: true })
-      .gte('generated_at', startOfMonth.toISOString());
-
     // Marcas por plan
     const { count: basicBrands } = await supabaseAdmin
       .from('brands')
@@ -452,24 +543,34 @@ export class AdminService {
 
     // Generaciones por mes (últimos 6 meses)
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-    const { data: recentGenerations } = await supabaseAdmin
-      .from('generations')
-      .select('generated_at, status')
-      .gte('generated_at', sixMonthsAgo.toISOString());
+      const { data: recentGenerations } = await supabaseAdmin
+        .from('generations')
+        .select('generated_at, created_at, status')
+        .or(`generated_at.gte.${sixMonthsAgo.toISOString()},and(generated_at.is.null,created_at.gte.${sixMonthsAgo.toISOString()})`);
 
-    const monthlyMap = new Map<string, { total: number; success: number; failed: number }>();
-    for (let i = 0; i < 6; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      monthlyMap.set(key, { total: 0, success: 0, failed: 0 });
-    }
+      const monthlyMap = new Map<string, { total: number; success: number; failed: number }>();
+      for (let i = 0; i < 6; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        monthlyMap.set(key, { total: 0, success: 0, failed: 0 });
+      }
 
-    recentGenerations?.forEach(g => {
-      const d = new Date(g.generated_at);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      if (monthlyMap.has(key)) {
-        const stats = monthlyMap.get(key)!;
-        stats.total++;
+      let monthlyGenerations = 0;
+
+      recentGenerations?.forEach(g => {
+        const timestamp = g.generated_at || g.created_at;
+        if (!timestamp) return;
+
+        const d = new Date(timestamp);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+        if (d >= startOfMonth) {
+          monthlyGenerations += 1;
+        }
+
+        if (monthlyMap.has(key)) {
+          const stats = monthlyMap.get(key)!;
+          stats.total++;
         if (g.status === 'SUCCESS') stats.success++;
         else if (g.status === 'FAILED') stats.failed++;
       }
@@ -819,10 +920,13 @@ export class AdminService {
     offset?: number;
   }) {
     // 1. Consulta para el total de ingresos (independiente de la paginación)
-    let statsQuery = supabaseAdmin
-      .from('subscription_payments')
-      .select('amount')
-      .eq('status', 'completed');
+      const reportingTrm = await getReportingTrm();
+      const trmCache = new Map<string, number | null>();
+
+      let statsQuery = supabaseAdmin
+        .from('subscription_payments')
+        .select('amount, currency, reference, notes')
+        .eq('status', 'completed');
 
     if (filters.brand_id) statsQuery = statsQuery.eq('brand_id', filters.brand_id);
     if (filters.status === 'completed') statsQuery = statsQuery.eq('status', 'completed');
@@ -834,7 +938,8 @@ export class AdminService {
       statsQuery = statsQuery.lte('payment_date', endDate.toISOString());
     }
 
-    await statsQuery;
+      const { data: statsRows, error: statsError } = await statsQuery;
+      if (statsError) throw new Error('Error al calcular ingresos: ' + statsError.message);
 
     // 2. Consulta paginada para la tabla (incluyendo plan)
     let query = supabaseAdmin
@@ -880,15 +985,33 @@ export class AdminService {
         })
       : (data || []);
 
-    const completedPayments = filteredPayments.filter((payment: any) => payment.status === 'completed');
-    const totalRevenue = completedPayments.reduce((sum: number, payment: any) => sum + Number(payment.amount || 0), 0);
+      const normalizedPayments = await Promise.all(
+        filteredPayments.map(async (payment: any) => {
+          const normalized = await normalizePaymentRecordToCop(payment, reportingTrm, trmCache);
+          return {
+            ...payment,
+            amount: normalized.amountCop,
+            amount_original: normalized.originalAmount,
+            amount_cop: normalized.amountCop,
+            exchange_rate_used: normalized.exchangeRateUsed,
+            currency: normalized.currency,
+            reference_used: normalized.referenceUsed,
+          };
+        })
+      );
 
-    return {
-      payments: filteredPayments,
-      count: normalizedSearch ? filteredPayments.length : (count || 0),
-      stats: {
-        total_revenue: totalRevenue,
-        completed_count: completedPayments.length
+      const completedPayments = normalizedPayments.filter((payment: any) => payment.status === 'completed');
+      const normalizedStatsRows = await Promise.all(
+        (statsRows || []).map((payment: any) => normalizePaymentRecordToCop(payment, reportingTrm, trmCache))
+      );
+      const totalRevenue = normalizedStatsRows.reduce((sum: number, payment) => sum + payment.amountCop, 0);
+
+      return {
+        payments: normalizedPayments,
+        count: normalizedSearch ? normalizedPayments.length : (count || 0),
+        stats: {
+          total_revenue: totalRevenue,
+          completed_count: completedPayments.length
       }
     };
   }
