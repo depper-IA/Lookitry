@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
-import { fetchBlogPostBySlug } from '@/services/blog.service';
+import { fetchBlogPostBySlug, getBlogFeaturedImage } from '@/services/blog.service';
 import { Calendar, Tag, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -15,6 +15,7 @@ interface BlogPostPageProps {
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   const post = await fetchBlogPostBySlug(params.slug);
+  const socialImage = getBlogFeaturedImage(post);
   
   if (!post) {
     return {
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     openGraph: {
       title: post.title,
       description: post.meta_description || post.excerpt,
-      images: post.featured_image ? [post.featured_image] : [],
+      images: socialImage ? [socialImage] : [],
       type: 'article',
       publishedTime: post.published_at || post.created_at,
     },
@@ -41,6 +42,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (!post) {
     notFound();
   }
+
+  const heroImage = getBlogFeaturedImage(post);
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('es-ES', {
@@ -91,10 +94,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           )}
         </div>
 
-        {post.featured_image && (
+        {heroImage && (
           <div className="relative aspect-[21/9] rounded-2xl overflow-hidden mb-12 border border-white/5">
             <img 
-              src={post.featured_image} 
+              src={heroImage} 
               alt={post.title} 
               className="w-full h-full object-cover"
             />
@@ -102,17 +105,24 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         )}
 
         {/* Contenido (HTML renderizado) */}
-        <div 
-          className="prose prose-invert prose-orange max-w-none 
-          text-[#ccc] text-lg leading-relaxed 
-          prose-headings:text-white prose-headings:font-bold prose-headings:tracking-tight prose-headings:font-plus-jakarta
-          prose-p:mb-8 prose-li:mb-2
-          prose-strong:text-white prose-strong:font-bold
-          prose-a:text-[#FF5C3A] prose-a:no-underline hover:prose-a:underline
-          prose-img:rounded-xl prose-img:border prose-img:border-white/5
-          "
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
+        <section className="rounded-[2rem] border border-white/10 bg-[#f6f0ee] text-[#1f1f1f] shadow-[0_30px_80px_rgba(0,0,0,0.24)] overflow-hidden">
+          <div 
+            className="prose max-w-none px-6 py-8 md:px-10 md:py-12 
+            text-[17px] leading-8 text-[#2b2623]
+            prose-headings:font-plus-jakarta prose-headings:tracking-tight
+            prose-h1:text-[#101010] prose-h2:text-[#FF5C3A] prose-h3:text-[#101010] prose-h4:text-[#101010]
+            prose-p:text-[#2f2a27] prose-p:leading-8
+            prose-li:text-[#2f2a27]
+            prose-strong:text-[#101010]
+            prose-a:text-[#d94d2b] prose-a:no-underline hover:prose-a:underline
+            prose-img:rounded-[1.25rem] prose-img:shadow-lg
+            [&_figure]:my-10 [&_figure]:overflow-hidden
+            [&_div[style*='background:_#FFF5F2']]:!bg-white [&_div[style*='background:_#FFF5F2']]:!border-[#FF5C3A]
+            [&_h4]:!text-[#FF5C3A]
+            "
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+        </section>
 
         {/* CTA Section */}
         <div className="mt-20 p-8 md:p-12 rounded-3xl bg-gradient-to-br from-[#141414] to-[#0a0a0a] border border-[#FF5C3A]/20 text-center">

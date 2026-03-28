@@ -5,6 +5,37 @@ import { v4 as uuidv4 } from 'uuid';
 
 const uploadService = new UploadService();
 
+function toBaseSlug(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+async function buildUniqueBlogSlug(title: string): Promise<string> {
+  const baseSlug = toBaseSlug(title);
+
+  const { data, error } = await supabaseAdmin
+    .from('blogs')
+    .select('slug')
+    .like('slug', `${baseSlug}%`);
+
+  if (error) throw error;
+
+  const existingSlugs = new Set((data || []).map((item) => item.slug).filter(Boolean));
+  if (!existingSlugs.has(baseSlug)) return baseSlug;
+
+  let suffix = 2;
+  while (existingSlugs.has(`${baseSlug}-${suffix}`)) {
+    suffix += 1;
+  }
+
+  return `${baseSlug}-${suffix}`;
+}
+
 export const blogController = {
   /**
    * n8n Webhook: Crea un post de blog directamente.
@@ -43,13 +74,7 @@ export const blogController = {
         if (firstCat) categoryId = firstCat.id;
       }
 
-      const slug = title
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '') + '-' + Math.random().toString(36).substring(2, 7);
+      const slug = await buildUniqueBlogSlug(title);
 
       const { data, error } = await supabaseAdmin
         .from('blogs')
@@ -163,13 +188,7 @@ export const blogController = {
         return res.status(400).json({ error: 'BAD_REQUEST', message: 'Título y contenido son obligatorios' });
       }
 
-      const slug = title
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-z0-9]/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '') + '-' + Math.random().toString(36).substring(2, 7);
+      const slug = await buildUniqueBlogSlug(title);
 
       const { data, error } = await supabaseAdmin
         .from('blogs')

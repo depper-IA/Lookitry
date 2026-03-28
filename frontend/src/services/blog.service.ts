@@ -1,5 +1,3 @@
-'use client';
-
 export interface BlogCategory {
   id: string;
   name: string;
@@ -29,23 +27,37 @@ export interface BlogSettings {
   next_run: string;
   last_run: string | null;
   webhook_url: string;
+  openrouter_article_model?: string;
+  image_generation_provider?: 'replicate' | 'openrouter';
   updated_at: string;
   has_webhook_secret?: boolean;
   webhook_auth_mode?: 'none' | 'header' | 'basic' | 'bearer';
   last_error?: string | null;
   last_error_at?: string | null;
+  execution_status?: 'idle' | 'running' | 'success' | 'error';
+  execution_title?: string | null;
+  execution_message?: string | null;
+  execution_updated_at?: string | null;
 }
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
-const fetchOptions = {
-  headers: {
-    apikey: anonKey || '',
-    Authorization: `Bearer ${anonKey || ''}`,
-  },
-};
+export function extractFirstImageFromContent(content?: string | null): string | null {
+  if (!content) return null;
+  const match = content.match(/<img[^>]+src=["']([^"' >]+)["']/i);
+  return match?.[1] || null;
+}
+
+export function getBlogFeaturedImage(
+  post?: {
+    featured_image?: string | null;
+    content?: string | null;
+  } | null,
+): string | null {
+  if (!post) return null;
+  return post.featured_image || extractFirstImageFromContent(post.content);
+}
 
 export async function fetchBlogCategories(): Promise<BlogCategory[]> {
   try {
@@ -73,16 +85,15 @@ export async function fetchBlogPosts(categoryId?: string): Promise<BlogPost[]> {
 }
 
 export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost | null> {
-  if (!supabaseUrl || !anonKey) return null;
-
   try {
-    const url = `${supabaseUrl}/rest/v1/blogs?select=*,category:blog_categories(*)&slug=eq.${slug}&status=eq.published&limit=1`;
-    const response = await fetch(url, fetchOptions);
-
+    const path = `/api/blog/${encodeURIComponent(slug)}`;
+    const url = typeof window === 'undefined' ? `${appBaseUrl}${path}` : path;
+    const response = await fetch(url, {
+      next: { revalidate: 60 },
+    });
     if (!response.ok) return null;
-
-    const posts = await response.json();
-    return posts.length > 0 ? posts[0] : null;
+    const payload = await response.json();
+    return payload?.data ?? null;
   } catch (error) {
     console.error('Error fetching blog post by slug:', error);
     return null;
@@ -191,10 +202,15 @@ export async function triggerBlogPulse(): Promise<{
   status?: number;
 }> {
   try {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+
     const response = await fetch(`${apiBase}/api/blog/settings/trigger`, {
       method: 'POST',
       credentials: 'include',
+      signal: controller.signal,
     });
+    window.clearTimeout(timeoutId);
     const data = await response.json();
     return {
       success: response.ok,
@@ -204,6 +220,12 @@ export async function triggerBlogPulse(): Promise<{
     };
   } catch (error: any) {
     console.error('Error triggering blog pulse:', error);
+    if (error?.name === 'AbortError') {
+      return {
+        success: false,
+        message: 'El disparo manual tardó demasiado en responder. Revisa si n8n quedó esperando una respuesta o si el webhook no respondió a tiempo.',
+      };
+    }
     return { success: false, message: error.message };
   }
 }

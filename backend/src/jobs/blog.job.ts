@@ -47,7 +47,10 @@ export async function startBlogJob() {
         console.log(`[Blog Job] Disparando n8n: ${url}`);
 
         try {
-          const triggerResult = await triggerBlogWebhook(url, secret, 'backend_cron_job');
+          const triggerResult = await triggerBlogWebhook(url, secret, 'backend_cron_job', {
+            openrouter_model: settings.openrouter_article_model || 'openrouter/free',
+            image_provider: settings.image_generation_provider || 'replicate',
+          });
 
           const next = new Date(now);
           if (settings.frequency === 'daily') next.setDate(next.getDate() + 1);
