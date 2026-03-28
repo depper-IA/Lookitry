@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
-import axios from 'axios';
+import { inferBlogWebhookAuthMode, triggerBlogWebhook } from '../utils/blogWebhook';
 
 export const blogSettingsController = {
   /**
@@ -15,7 +15,24 @@ export const blogSettingsController = {
         .single();
 
       if (error) throw error;
-      return res.json(data);
+
+      const { data: notifications } = await supabaseAdmin
+        .from('admin_notifications')
+        .select('message, created_at')
+        .eq('type', 'blog_error')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      const latestError = notifications?.[0] ?? null;
+
+      return res.json({
+        ...data,
+        webhook_secret: undefined,
+        has_webhook_secret: Boolean(data?.webhook_secret),
+        webhook_auth_mode: inferBlogWebhookAuthMode(data?.webhook_secret),
+        last_error: latestError?.message ?? null,
+        last_error_at: latestError?.created_at ?? null,
+      });
     } catch (error: any) {
       console.error('[BlogSettings] Error fetching settings:', error);
       return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
@@ -39,22 +56,33 @@ export const blogSettingsController = {
         next_run = now.toISOString();
       }
 
+      const updates: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+
+      if (frequency !== undefined) updates.frequency = frequency;
+      if (is_enabled !== undefined) updates.is_enabled = is_enabled;
+      if (webhook_url !== undefined) updates.webhook_url = webhook_url;
+      if (webhook_secret !== undefined) updates.webhook_secret = webhook_secret;
+      if (next_run) updates.next_run = next_run;
+
       const { data, error } = await supabaseAdmin
         .from('blog_settings')
-        .update({
-          frequency,
-          is_enabled,
-          webhook_url,
-          webhook_secret,
-          ...(next_run ? { next_run } : {}),
-          updated_at: new Date().toISOString()
-        })
+        .update(updates)
         .eq('id', 1)
         .select()
         .single();
 
       if (error) throw error;
-      return res.json({ message: 'Configuración actualizada', settings: data });
+      return res.json({
+        message: 'Configuración actualizada',
+        settings: {
+          ...data,
+          webhook_secret: undefined,
+          has_webhook_secret: Boolean(data?.webhook_secret),
+          webhook_auth_mode: inferBlogWebhookAuthMode(data?.webhook_secret),
+        },
+      });
     } catch (error: any) {
       console.error('[BlogSettings] Error updating settings:', error);
       return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
@@ -76,7 +104,7 @@ export const blogSettingsController = {
       if (fetchError || !settings) throw new Error('No se pudo cargar la configuración del blog');
 
       const url = settings.webhook_url || process.env.N8N_BLOG_WEBHOOK_URL;
-      const secret = settings.webhook_secret || 'Travis2305**_blog_n8n';
+      const secret = settings.webhook_secret || process.env.N8N_BLOG_WEBHOOK_SECRET || process.env.BLOG_WEBHOOK_SECRET || '';
 
       if (!url) throw new Error('URL de webhook n8n no configurada');
 
@@ -84,13 +112,7 @@ export const blogSettingsController = {
       console.log(`[Blog Job] Disparando n8n manualmente: ${url}`);
       
       try {
-        await axios.post(url, { triggered_by: 'admin_manual' }, {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-n8n-secret': secret
-          },
-          timeout: 10000
-        });
+        const triggerResult = await triggerBlogWebhook(url, secret, 'admin_manual');
 
         // 3. Actualizar last_run y calcular next_run
         const now = new Date();
@@ -107,7 +129,11 @@ export const blogSettingsController = {
           })
           .eq('id', 1);
 
-        return res.json({ message: 'Flujo n8n disparado exitosamente' });
+        return res.json({
+          message: `Flujo n8n disparado exitosamente (${triggerResult.attempt})`,
+          attempt: triggerResult.attempt,
+          status: triggerResult.status,
+        });
       } catch (axiosError: any) {
         // Registrar error en admin_notifications
         await supabaseAdmin.from('admin_notifications').insert({

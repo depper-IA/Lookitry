@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { supabaseAdmin } from '../config/supabase';
-import axios from 'axios';
+import { triggerBlogWebhook } from '../utils/blogWebhook';
 
 /**
  * Job para gestionar la publicación automática del blog.
@@ -10,9 +10,8 @@ export async function startBlogJob() {
   // Correr cada hora en el minuto 5
   cron.schedule('5 * * * *', async () => {
     console.log('[Blog Job] Verificando pulso editorial...');
-    
+
     try {
-      // 1. Obtener configuración
       const { data: settings, error: fetchError } = await supabaseAdmin
         .from('blog_settings')
         .select('*')
@@ -32,10 +31,13 @@ export async function startBlogJob() {
       const now = new Date();
       const nextRun = new Date(settings.next_run);
 
-      // 2. Verificar si toca disparar
       if (now >= nextRun) {
         const url = settings.webhook_url || process.env.N8N_BLOG_WEBHOOK_URL;
-        const secret = settings.webhook_secret || 'Travis2305**_blog_n8n';
+        const secret =
+          settings.webhook_secret ||
+          process.env.N8N_BLOG_WEBHOOK_SECRET ||
+          process.env.BLOG_WEBHOOK_SECRET ||
+          '';
 
         if (!url) {
           console.error('[Blog Job] Error: N8N_BLOG_WEBHOOK_URL no configurada.');
@@ -45,15 +47,8 @@ export async function startBlogJob() {
         console.log(`[Blog Job] Disparando n8n: ${url}`);
 
         try {
-          await axios.post(url, { triggered_by: 'backend_cron_job' }, {
-            headers: {
-              'Content-Type': 'application/json',
-              'x-n8n-secret': secret
-            },
-            timeout: 15000 // Aumento de timeout para n8n
-          });
+          const triggerResult = await triggerBlogWebhook(url, secret, 'backend_cron_job');
 
-          // 3. Calcular próxima ejecución
           const next = new Date(now);
           if (settings.frequency === 'daily') next.setDate(next.getDate() + 1);
           else if (settings.frequency === 'weekly') next.setDate(next.getDate() + 7);
@@ -64,22 +59,22 @@ export async function startBlogJob() {
             .update({
               last_run: now.toISOString(),
               next_run: next.toISOString(),
-              updated_at: now.toISOString()
+              updated_at: now.toISOString(),
             })
             .eq('id', 1);
 
-          console.log(`[Blog Job] Flujo disparado con éxito. Próxima ejecución: ${next.toISOString()}`);
-
+          console.log(
+            `[Blog Job] Flujo disparado con éxito usando ${triggerResult.attempt}. Próxima ejecución: ${next.toISOString()}`
+          );
         } catch (error: any) {
           console.error(`[Blog Job] Error al disparar flujo: ${error.message}`);
 
-          // Registrar alerta para el admin
           await supabaseAdmin.from('admin_notifications').insert({
             type: 'blog_error',
             title: 'Fallo en Automatización de Blog',
-            message: `El servidor no pudo despertar a n8n para generar el artículo semanal. Detalles: ${error.message}`,
+            message: `El servidor no pudo despertar a n8n para generar el artículo programado. Detalles: ${error.message}`,
             severity: 'error',
-            metadata: { error: error.message, url }
+            metadata: { error: error.message, url },
           });
         }
       } else {
@@ -90,5 +85,5 @@ export async function startBlogJob() {
     }
   });
 
-  console.log('[Blog Job] Automatización de Lookitry Editorial iniciada (Chequeo cada hora).');
+  console.log('[Blog Job] Automatización de Lookitry Editorial iniciada (chequeo cada hora).');
 }

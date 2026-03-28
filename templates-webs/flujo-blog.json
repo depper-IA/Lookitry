@@ -438,24 +438,6 @@
                 "assignments": {
                     "assignments": [
                         {
-                            "id": "abc8da08-7640-4adc-8d16-8f75ef43a776",
-                            "name": "hostinger_link_general",
-                            "value": "https://hostinger.co?REFERRALCODE=1SAM870",
-                            "type": "string"
-                        },
-                        {
-                            "id": "a0a8796f-fc98-440e-a0d2-a132592c90d8",
-                            "name": "hostinger_link_vps",
-                            "value": "https://www.hostinger.co/cart?product=vps%3Avps_kvm_2&period=12&referral_type=cart_link&REFERRALCODE=1SAM870&referral_id=0199f8dc-0e1c-7216-a4ac-369cd438a06a",
-                            "type": "string"
-                        },
-                        {
-                            "id": "f7a6bd91-6c60-448e-978f-ae19a8c987db",
-                            "name": "hostinger_link_web",
-                            "value": "https://www.hostinger.co/cart?product=hosting%3Ahostinger_business&period=12&referral_type=cart_link&REFERRALCODE=1SAM870&referral_id=0199f8dd-65c9-7055-a656-edcbb8530462",
-                            "type": "string"
-                        },
-                        {
                             "id": "b7309d54-d275-4146-9bee-f82c9298f9f5",
                             "name": "Enlaces_Blogs",
                             "value": "={{ $json.enlacesBlogs }}",
@@ -473,7 +455,7 @@
                 -672
             ],
             "id": "390255c6-4ae8-450d-baa8-8d8f6b21c159",
-            "name": "Añadir Enlace Hostinger"
+            "name": "Preparar contexto editorial"
         },
         {
             "parameters": {
@@ -557,7 +539,7 @@
         },
         {
             "parameters": {
-                "jsCode": "const item = $input.all()[0];\nlet content = item.json;\n\nconsole.log('=== VALIDACIÓN DE CONTENIDO ===');\nconsole.log('Tipo de content:', typeof content);\nconsole.log('Tags recibidos:', content.Tags);\n\n// Si viene como string, parsearlo\nif (typeof content === 'string') {\n  try {\n    content = JSON.parse(content);\n    console.log('✓ JSON parseado correctamente');\n  } catch (e) {\n    throw new Error(`Error al parsear JSON: ${e.message}\\nContenido: ${content.substring(0, 200)}`);\n  }\n}\n\n// CRÍTICO: Si los Tags no están en el content parseado, buscarlos en el input original\nif (!content.Tags) {\n  console.log('⚠ Tags no encontrados en content, buscando en input...');\n  \n  // Buscar en todos los items de input\n  const allInputs = $input.all();\n  for (const inputItem of allInputs) {\n    if (inputItem.json.Tags) {\n      content.Tags = inputItem.json.Tags;\n      console.log('✓ Tags recuperados del input:', content.Tags);\n      break;\n    }\n  }\n  \n  // Si aún no hay tags, intentar del nodo anterior\n  if (!content.Tags) {\n    try {\n      const prevData = $('Añadir Enlace Hostinger').first().json;\n      if (prevData.Tags) {\n        content.Tags = prevData.Tags;\n        console.log('✓ Tags recuperados de nodo anterior:', content.Tags);\n      }\n    } catch (e) {\n      console.log('⚠ No se pudieron recuperar Tags de nodo anterior');\n    }\n  }\n}\n\n// Validar campos críticos\nconst required = ['title', 'excerpt', 'featured_media'];\nconst missing = [];\nfor (const field of required) {\n  if (!content[field]) {\n    missing.push(field);\n  }\n}\nif (missing.length > 0) {\n  throw new Error(`Campos requeridos faltantes: ${missing.join(', ')}`);\n}\n\n// Manejar meta_description\nif (!content.meta_description || content.meta_description.trim() === '') {\n  console.log('⚠ meta_description vacío, usando excerpt como fallback');\n  content.meta_description = content.excerpt.substring(0, 160);\n}\n\nconsole.log('✓ meta_description:', content.meta_description.substring(0, 50) + '...');\n\n// Validar longitudes\nif (content.title && content.title.length > 60) {\n  console.log('⚠ Título muy largo:', content.title.length, 'caracteres');\n}\n\nif (content.excerpt && content.excerpt.length > 160) {\n  console.log('⚠ Excerpt muy largo:', content.excerpt.length, 'caracteres');\n  content.excerpt = content.excerpt.substring(0, 157) + '...';\n}\n\nif (content.meta_description && content.meta_description.length > 160) {\n  console.log('⚠ Meta description muy larga:', content.meta_description.length, 'caracteres');\n  content.meta_description = content.meta_description.substring(0, 157) + '...';\n}\n\nconsole.log('=== VALIDACIÓN COMPLETA ===');\nconsole.log('Tags finales que se pasarán:', content.Tags);\n\nreturn {\n  json: content\n};"
+                "jsCode": "const item = $input.all()[0];\nlet content = item.json;\n\nconsole.log('=== VALIDACIÓN DE CONTENIDO ===');\nconsole.log('Tipo de content:', typeof content);\nconsole.log('Tags recibidos:', content.Tags);\n\n// Si viene como string, parsearlo\nif (typeof content === 'string') {\n  try {\n    content = JSON.parse(content);\n    console.log('✓ JSON parseado correctamente');\n  } catch (e) {\n    throw new Error(`Error al parsear JSON: ${e.message}\\nContenido: ${content.substring(0, 200)}`);\n  }\n}\n\n// CRÍTICO: Si los Tags no están en el content parseado, buscarlos en el input original\nif (!content.Tags) {\n  console.log('⚠ Tags no encontrados en content, buscando en input...');\n  \n  // Buscar en todos los items de input\n  const allInputs = $input.all();\n  for (const inputItem of allInputs) {\n    if (inputItem.json.Tags) {\n      content.Tags = inputItem.json.Tags;\n      console.log('✓ Tags recuperados del input:', content.Tags);\n      break;\n    }\n  }\n  \n  // Si aún no hay tags, intentar del nodo anterior\n  if (!content.Tags) {\n    try {\n      const prevData = $('Preparar contexto editorial').first().json;\n      if (prevData.Tags) {\n        content.Tags = prevData.Tags;\n        console.log('✓ Tags recuperados de nodo anterior:', content.Tags);\n      }\n    } catch (e) {\n      console.log('⚠ No se pudieron recuperar Tags de nodo anterior');\n    }\n  }\n}\n\n// Validar campos críticos\nconst required = ['title', 'excerpt', 'featured_media'];\nconst missing = [];\nfor (const field of required) {\n  if (!content[field]) {\n    missing.push(field);\n  }\n}\nif (missing.length > 0) {\n  throw new Error(`Campos requeridos faltantes: ${missing.join(', ')}`);\n}\n\n// Manejar meta_description\nif (!content.meta_description || content.meta_description.trim() === '') {\n  console.log('⚠ meta_description vacío, usando excerpt como fallback');\n  content.meta_description = content.excerpt.substring(0, 160);\n}\n\nconsole.log('✓ meta_description:', content.meta_description.substring(0, 50) + '...');\n\n// Validar longitudes\nif (content.title && content.title.length > 60) {\n  console.log('⚠ Título muy largo:', content.title.length, 'caracteres');\n}\n\nif (content.excerpt && content.excerpt.length > 160) {\n  console.log('⚠ Excerpt muy largo:', content.excerpt.length, 'caracteres');\n  content.excerpt = content.excerpt.substring(0, 157) + '...';\n}\n\nif (content.meta_description && content.meta_description.length > 160) {\n  console.log('⚠ Meta description muy larga:', content.meta_description.length, 'caracteres');\n  content.meta_description = content.meta_description.substring(0, 157) + '...';\n}\n\nconsole.log('=== VALIDACIÓN COMPLETA ===');\nconsole.log('Tags finales que se pasarán:', content.Tags);\n\nreturn {\n  json: content\n};"
             },
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
@@ -584,7 +566,7 @@
         },
         {
             "parameters": {
-                "jsCode": "// Extrae título y url de todos los blogs en la categoría\nconst enlacesBlogs = items.map(item => ({\n  titulo: item.json.title.rendered,\n  url: item.json.link\n}));\n\nreturn [{\n  json: { enlacesBlogs }\n}];\n"
+                "jsCode": "// Extrae titulo y url desde la API publica actual de Lookitry\nconst rawItems = $input.all();\nconst source = rawItems.length === 1 && Array.isArray(rawItems[0].json?.data)\n  ? rawItems[0].json.data\n  : rawItems.map((item) => item.json);\n\nconst enlacesBlogs = source.map((post) => ({\n  titulo: post.title,\n  url: `https://lookitry.com/blog/${post.slug}`\n}));\n\nreturn [{\n  json: { enlacesBlogs }\n}];\n"
             },
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
@@ -610,7 +592,7 @@
         },
         {
             "parameters": {
-                "jsCode": "// Obtiene TODOS los items que llegan a este nodo desde las diferentes ramas\nconst allItems = $input.all();\n\n// Inicializa un objeto para consolidar toda la información\nconst datosFinales = {};\n\n// --- BÚSQUEDA INTELIGENTE DE DATOS ---\n\n// 1. Busca los datos del tema original (del nodo 'Obtener Temas')\nconst itemDelTema = allItems.find(item => item.json.tema && item.json.palabras);\nif (itemDelTema) {\n  // Copiar TODOS los campos del tema, incluyendo Tags\n  Object.keys(itemDelTema.json).forEach(key => {\n    datosFinales[key] = itemDelTema.json[key];\n  });\n  console.log('✓ Datos del tema encontrados');\n  console.log('  - Tags originales:', itemDelTema.json.Tags);\n  console.log('  - Tipo de Tags:', typeof itemDelTema.json.Tags);\n}\n\n// 2. Busca los datos de las imágenes ya subidas y ordenadas\nconst itemDeImagenes = allItems.find(item => item.json.imagen_destacada);\nif (itemDeImagenes) {\n  // Solo agregar campos de imágenes, NO sobrescribir Tags\n  datosFinales.imagen_destacada = itemDeImagenes.json.imagen_destacada;\n  datosFinales.imagen_destacada_url = itemDeImagenes.json.imagen_destacada?.url;\n  datosFinales.imagen_destacada_id = itemDeImagenes.json.imagen_destacada?.id;\n  datosFinales.imagen_body1 = itemDeImagenes.json.imagen_body1;\n  datosFinales.imagen_body1_url = itemDeImagenes.json.imagen_body1?.url;\n  datosFinales.imagen_body1_id = itemDeImagenes.json.imagen_body1?.id;\n  datosFinales.imagen_body2 = itemDeImagenes.json.imagen_body2;\n  datosFinales.imagen_body2_url = itemDeImagenes.json.imagen_body2?.url;\n  datosFinales.imagen_body2_id = itemDeImagenes.json.imagen_body2?.id;\n  console.log('✓ Datos de imágenes encontrados');\n}\n\n// 3. Busca la lista de enlaces de blogs existentes\nconst itemDeEnlaces = allItems.find(item => Array.isArray(item.json.enlacesBlogs));\nif (itemDeEnlaces) {\n  datosFinales.enlacesBlogs = itemDeEnlaces.json.enlacesBlogs;\n  console.log('✓ Enlaces de blogs encontrados');\n}\n\n// 4. FORMATEA LOS TAGS: Convierte el string \"93, 90, 87\" a un array de números [93, 90, 87]\nlet tagsArray = [];\nif (datosFinales.Tags) {\n  if (typeof datosFinales.Tags === 'string') {\n    tagsArray = datosFinales.Tags.split(',').map(t => parseInt(t.trim())).filter(t => !isNaN(t));\n    console.log('✓ Tags convertidos de string a array:', tagsArray);\n  } else if (Array.isArray(datosFinales.Tags)) {\n    tagsArray = datosFinales.Tags;\n    console.log('✓ Tags ya en formato array:', tagsArray);\n  }\n} else {\n  console.log('⚠ No se encontraron Tags en los datos');\n  console.log('Campos disponibles:', Object.keys(datosFinales));\n}\n\ndatosFinales.Tags = tagsArray;\n\n// 5. Añade el enlace de Hostinger\ndatosFinales.hostinger_link = \"https://hostinger.co?REFERRALCODE=1SAM870\";\n\nconsole.log('=== DATOS FINALES CONSOLIDADOS ===');\nconsole.log('Tags finales:', datosFinales.Tags);\n\n// Devuelve un único item con toda la información consolidada\nreturn [{\n  json: datosFinales\n}];"
+                "jsCode": "// Consolida la informacion del tema, imagenes y enlaces existentes\nconst allItems = $input.all();\nconst datosFinales = {};\n\nconst itemDelTema = allItems.find((item) => item.json.tema && item.json.palabras);\nif (itemDelTema) {\n  Object.keys(itemDelTema.json).forEach((key) => {\n    datosFinales[key] = itemDelTema.json[key];\n  });\n}\n\nconst itemDeImagenes = allItems.find((item) => item.json.imagen_destacada);\nif (itemDeImagenes) {\n  datosFinales.imagen_destacada = itemDeImagenes.json.imagen_destacada;\n  datosFinales.imagen_destacada_url = itemDeImagenes.json.imagen_destacada?.url;\n  datosFinales.imagen_destacada_id = itemDeImagenes.json.imagen_destacada?.id;\n  datosFinales.imagen_body1 = itemDeImagenes.json.imagen_body1;\n  datosFinales.imagen_body1_url = itemDeImagenes.json.imagen_body1?.url;\n  datosFinales.imagen_body1_id = itemDeImagenes.json.imagen_body1?.id;\n  datosFinales.imagen_body2 = itemDeImagenes.json.imagen_body2;\n  datosFinales.imagen_body2_url = itemDeImagenes.json.imagen_body2?.url;\n  datosFinales.imagen_body2_id = itemDeImagenes.json.imagen_body2?.id;\n}\n\nconst itemDeEnlaces = allItems.find((item) => Array.isArray(item.json.enlacesBlogs));\nif (itemDeEnlaces) {\n  datosFinales.enlacesBlogs = itemDeEnlaces.json.enlacesBlogs;\n}\n\nlet tagsArray = [];\nif (datosFinales.Tags) {\n  if (typeof datosFinales.Tags === 'string') {\n    tagsArray = datosFinales.Tags.split(',').map((tag) => tag.trim()).filter(Boolean);\n  } else if (Array.isArray(datosFinales.Tags)) {\n    tagsArray = datosFinales.Tags.filter(Boolean);\n  }\n}\n\ndatosFinales.Tags = tagsArray;\n\nreturn [{\n  json: datosFinales\n}];"
             },
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
@@ -1092,17 +1074,6 @@
                 []
             ]
         },
-        "Añadir Enlace Hostinger": {
-            "main": [
-                [
-                    {
-                        "node": "redactor",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
         "redactor": {
             "main": [
                 [
@@ -1184,7 +1155,7 @@
             "main": [
                 [
                     {
-                        "node": "Añadir Enlace Hostinger",
+                        "node": "Preparar contexto editorial",
                         "type": "main",
                         "index": 0
                     }
@@ -1345,6 +1316,17 @@
                 [
                     {
                         "node": "OpenRouter",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Preparar contexto editorial": {
+            "main": [
+                [
+                    {
+                        "node": "redactor",
                         "type": "main",
                         "index": 0
                     }
