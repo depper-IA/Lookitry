@@ -24,13 +24,24 @@ export interface AuthResponse {
  * Esto es necesario para que el backend reciba/envíe la cookie HTTP-Only del JWT.
  */
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
+  const normalizedApiUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+  const fullUrl = `${normalizedApiUrl}${path}`;
+  
+  const res = await fetch(fullUrl, {
     credentials: 'include', // ← enviar y recibir cookies cross-origin
     headers: { 'Content-Type': 'application/json', ...(options?.headers || {}) },
     ...options,
   });
-  const data = await res.json();
-  if (!res.ok) throw { response: { data, status: res.status } };
+
+  let data: any = {};
+  const contentType = res.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    data = await res.json().catch(() => ({}));
+  } else {
+    data = { message: await res.text().catch(() => 'Error de respuesta del servidor') };
+  }
+
+  if (!res.ok) throw { response: { data, status: res.status }, message: data.message };
   return data as T;
 }
 

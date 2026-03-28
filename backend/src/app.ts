@@ -100,6 +100,9 @@ const allowedOrigins = [
     process.env.API_URL || '',
     'https://api.lookitry.com',
     'https://lookitry.com',
+    'https://www.lookitry.com',
+    'http://lookitry.com',
+    'http://www.lookitry.com',
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002',
@@ -112,17 +115,35 @@ const allowedOrigins = [
     'http://127.0.0.1:3004',
     ...corsOriginEnv,
   ]),
-];
+].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
+    // Permitir requests sin origin (como mobile apps o curl)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    
+    // Verificar si el origen está en la whitelist
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    console.warn(`[CORS] Intento de acceso desde origen no permitido: ${origin}`);
     callback(new Error(`CORS: origen no permitido: ${origin}`));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-store-domain'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With', 
+    'Accept', 
+    'Origin', 
+    'X-Api-Key', 
+    'X-Store-Domain', 
+    'Cache-Control', 
+    'Pragma'
+  ],
+  exposedHeaders: ['Set-Cookie'], // Importante para depuración de cookies cross-origin
 }));
 
 app.use(globalRateLimiter);

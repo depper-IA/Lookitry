@@ -70,7 +70,14 @@ export function useAuth() {
       router.push(redirectTo && redirectTo.startsWith('/') ? redirectTo : '/dashboard');
       return response;
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || 'Error al iniciar sesión';
+      console.error('[useAuth] Login error:', err);
+      let errorMessage = err.response?.data?.message || err.message || 'Error al iniciar sesión';
+      
+      // Manejar específicamente errores de red (CORS o desconexión)
+      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión o intenta de nuevo más tarde.';
+      }
+      
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
