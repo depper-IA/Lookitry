@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { PaymentSettingsService } from '../services/paymentSettings.service';
-import { getReportingTrm, normalizePaymentRecordToCop } from '../utils/paymentNormalization';
+import { getReportingTrm, normalizePaymentRecordToCop, convertPaymentToCop } from '../utils/paymentNormalization';
 
 const paymentSettingsService = new PaymentSettingsService();
 
