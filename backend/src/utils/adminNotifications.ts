@@ -15,7 +15,10 @@ export type AdminNotificationType =
   | 'subscription_expiring'
   | 'service_down'
   | 'service_recovered'
-  | 'plugin_error_spike';
+  | 'plugin_error_spike'
+  | 'blog_running'
+  | 'blog_error'
+  | 'blog_success';
 
 export interface CreateAdminNotificationDto {
   type: AdminNotificationType;

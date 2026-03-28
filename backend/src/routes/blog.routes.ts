@@ -11,6 +11,7 @@ router.post('/webhook', (req, res) => blogController.webhookCreatePost(req, res)
 
 // Webhook de n8n para subir imágenes
 router.post('/upload', multerMemory.single('file'), (req, res) => blogController.uploadBlogImage(req, res));
+router.post('/execution-status', (req, res) => blogSettingsController.reportExecutionStatus(req, res));
 
 // Rutas de administración (requieren JWT de admin)
 router.use('/admin', adminAuthMiddleware);

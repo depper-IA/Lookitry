@@ -1,6 +1,26 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { inferBlogWebhookAuthMode, triggerBlogWebhook } from '../utils/blogWebhook';
+import { createAdminNotification } from '../utils/adminNotifications';
+
+type BlogExecutionStatus = 'idle' | 'running' | 'success' | 'error';
+
+function mapNotificationTypeToExecutionStatus(type?: string | null): BlogExecutionStatus {
+  if (type === 'blog_running') return 'running';
+  if (type === 'blog_success') return 'success';
+  if (type === 'blog_error') return 'error';
+  return 'idle';
+}
+
+async function resolveExpectedBlogSecret(): Promise<string> {
+  const { data } = await supabaseAdmin
+    .from('blog_settings')
+    .select('webhook_secret')
+    .eq('id', 1)
+    .single();
+
+  return data?.webhook_secret || process.env.BLOG_WEBHOOK_SECRET || '';
+}
 
 export const blogSettingsController = {
   /**
@@ -18,20 +38,27 @@ export const blogSettingsController = {
 
       const { data: notifications } = await supabaseAdmin
         .from('admin_notifications')
-        .select('message, created_at')
-        .eq('type', 'blog_error')
+        .select('type, title, message, created_at')
+        .in('type', ['blog_running', 'blog_error', 'blog_success'])
         .order('created_at', { ascending: false })
-        .limit(1);
+        .limit(10);
 
-      const latestError = notifications?.[0] ?? null;
+      const latestExecution = notifications?.[0] ?? null;
+      const latestError = notifications?.find((notification) => notification.type === 'blog_error') ?? null;
 
       return res.json({
         ...data,
+        openrouter_article_model: data?.openrouter_article_model || 'openrouter/free',
+        image_generation_provider: data?.image_generation_provider || 'replicate',
         webhook_secret: undefined,
         has_webhook_secret: Boolean(data?.webhook_secret),
         webhook_auth_mode: inferBlogWebhookAuthMode(data?.webhook_secret),
         last_error: latestError?.message ?? null,
         last_error_at: latestError?.created_at ?? null,
+        execution_status: mapNotificationTypeToExecutionStatus(latestExecution?.type),
+        execution_title: latestExecution?.title ?? null,
+        execution_message: latestExecution?.message ?? null,
+        execution_updated_at: latestExecution?.created_at ?? null,
       });
     } catch (error: any) {
       console.error('[BlogSettings] Error fetching settings:', error);
@@ -44,7 +71,7 @@ export const blogSettingsController = {
    */
   async updateSettings(req: Request, res: Response) {
     try {
-      const { frequency, is_enabled, webhook_url, webhook_secret } = req.body;
+      const { frequency, is_enabled, webhook_url, webhook_secret, openrouter_article_model, image_generation_provider } = req.body;
 
       // Calcular próxima ejecución si cambia la frecuencia o se activa
       let next_run = undefined;
@@ -64,6 +91,8 @@ export const blogSettingsController = {
       if (is_enabled !== undefined) updates.is_enabled = is_enabled;
       if (webhook_url !== undefined) updates.webhook_url = webhook_url;
       if (webhook_secret !== undefined) updates.webhook_secret = webhook_secret;
+      if (openrouter_article_model !== undefined) updates.openrouter_article_model = openrouter_article_model;
+      if (image_generation_provider !== undefined) updates.image_generation_provider = image_generation_provider;
       if (next_run) updates.next_run = next_run;
 
       const { data, error } = await supabaseAdmin
@@ -78,6 +107,8 @@ export const blogSettingsController = {
         message: 'Configuración actualizada',
         settings: {
           ...data,
+          openrouter_article_model: data?.openrouter_article_model || 'openrouter/free',
+          image_generation_provider: data?.image_generation_provider || 'replicate',
           webhook_secret: undefined,
           has_webhook_secret: Boolean(data?.webhook_secret),
           webhook_auth_mode: inferBlogWebhookAuthMode(data?.webhook_secret),
@@ -112,7 +143,18 @@ export const blogSettingsController = {
       console.log(`[Blog Job] Disparando n8n manualmente: ${url}`);
       
       try {
-        const triggerResult = await triggerBlogWebhook(url, secret, 'admin_manual');
+        await createAdminNotification({
+          type: 'blog_running',
+          title: 'Generación de blog iniciada',
+          message: 'Se disparó una ejecución manual del flujo editorial en n8n.',
+          severity: 'info',
+          metadata: { source: 'admin_manual' },
+        });
+
+        const triggerResult = await triggerBlogWebhook(url, secret, 'admin_manual', {
+          openrouter_model: settings.openrouter_article_model || 'openrouter/free',
+          image_provider: settings.image_generation_provider || 'replicate',
+        });
 
         // 3. Actualizar last_run y calcular next_run
         const now = new Date();
@@ -149,6 +191,53 @@ export const blogSettingsController = {
     } catch (error: any) {
       console.error('[BlogSettings] Error triggering n8n:', error.message);
       return res.status(500).json({ error: 'TRIGGER_ERROR', message: error.message });
+    }
+  },
+
+  async reportExecutionStatus(req: Request, res: Response) {
+    try {
+      const secret = String(req.headers['x-blog-secret'] || '');
+      const expectedSecret = await resolveExpectedBlogSecret();
+
+      if (!expectedSecret || secret !== expectedSecret) {
+        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Secreto de blog inválido' });
+      }
+
+      const status = String(req.body?.status || '').toLowerCase();
+      const title = String(req.body?.title || '').trim();
+      const message = String(req.body?.message || '').trim();
+      const metadata = typeof req.body?.metadata === 'object' && req.body?.metadata
+        ? req.body.metadata
+        : {};
+
+      if (!['running', 'success', 'error'].includes(status)) {
+        return res.status(400).json({ error: 'BAD_REQUEST', message: 'status inválido' });
+      }
+
+      await createAdminNotification({
+        type: status === 'running' ? 'blog_running' : status === 'success' ? 'blog_success' : 'blog_error',
+        title: title || (
+          status === 'running'
+            ? 'Generación de blog en curso'
+            : status === 'success'
+              ? 'Generación de blog completada'
+              : 'Generación de blog fallida'
+        ),
+        message: message || (
+          status === 'running'
+            ? 'n8n está procesando una nueva ejecución del blog.'
+            : status === 'success'
+              ? 'n8n completó la generación del artículo del blog.'
+              : 'n8n reportó un fallo durante la generación del artículo.'
+        ),
+        severity: status === 'error' ? 'error' : status === 'success' ? 'success' : 'info',
+        metadata,
+      });
+
+      return res.json({ ok: true });
+    } catch (error: any) {
+      console.error('[BlogSettings] Error reporting execution status:', error);
+      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
     }
   }
 };
