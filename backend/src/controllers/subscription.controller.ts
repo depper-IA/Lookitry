@@ -235,6 +235,13 @@ export class SubscriptionController {
         },
       });
     } catch (error: any) {
+      if (error.message === 'PAYMENT_REQUIRED_FOR_REACTIVATION') {
+        return res.status(409).json({
+          error: 'PAYMENT_REQUIRED_FOR_REACTIVATION',
+          message: 'Esta marca ya no tiene trial vigente ni un período pago activo para restaurar. Registra un pago desde Suscripciones/Admin Payments antes de reactivarla.',
+        });
+      }
+
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
         message: error.message || 'Error al reactivar marca',

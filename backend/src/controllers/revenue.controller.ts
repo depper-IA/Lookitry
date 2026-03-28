@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { PaymentSettingsService } from '../services/paymentSettings.service';
+import { getReportingTrm, normalizePaymentRecordToCop } from '../utils/paymentNormalization';
 
 const paymentSettingsService = new PaymentSettingsService();
 
@@ -22,9 +23,10 @@ export class RevenueController {
     try {
       const paymentSettings = await paymentSettingsService.getSettings().catch(() => null);
       const landingPrice = Number(paymentSettings?.landing_price || 650000);
+      const reportingTrm = await getReportingTrm();
+      const trmCache = new Map<string, number | null>();
 
-      const splitPaymentAmounts = (payment: any) => {
-        const amount = parseFloat(payment.amount);
+      const splitPaymentAmounts = (amount: number, payment: any) => {
         const monthsPaid = Number(payment.months_paid ?? 0);
         const notes = typeof payment.notes === 'string' ? payment.notes.toLowerCase() : '';
         const hasLandingMention = notes.includes('landing');
@@ -59,7 +61,7 @@ export class RevenueController {
       // 1. Obtener ingresos mensuales de los últimos 12 meses
       const { data: monthlyRevenue, error: monthlyError } = await supabaseAdmin
         .from('subscription_payments')
-        .select('payment_date, amount, notes, months_paid, brands!inner(plan)')
+        .select('payment_date, amount, currency, reference, notes, months_paid, brands!inner(plan)')
         .eq('status', 'completed')
         .gte('payment_date', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString())
         .order('payment_date', { ascending: true });
@@ -71,15 +73,22 @@ export class RevenueController {
       // 2. Agrupar por mes y plan
       const monthlyData: Record<string, { total: number; basic: number; pro: number; landing: number; count: number }> = {};
 
-      (monthlyRevenue || []).forEach((payment: any) => {
+      const normalizedMonthlyRevenue = await Promise.all(
+        (monthlyRevenue || []).map(async (payment: any) => ({
+          payment,
+          normalized: await normalizePaymentRecordToCop(payment, reportingTrm, trmCache),
+        }))
+      );
+
+      normalizedMonthlyRevenue.forEach(({ payment, normalized }) => {
         const month = new Date(payment.payment_date).toISOString().substring(0, 7); // YYYY-MM
 
         if (!monthlyData[month]) {
           monthlyData[month] = { total: 0, basic: 0, pro: 0, landing: 0, count: 0 };
         }
 
-        const amount = parseFloat(payment.amount);
-        const split = splitPaymentAmounts(payment);
+        const amount = normalized.amountCop;
+        const split = splitPaymentAmounts(amount, payment);
 
         monthlyData[month].total += amount;
         monthlyData[month].count += 1;
@@ -151,7 +160,7 @@ export class RevenueController {
       // 6. Desglose por plan (totales históricos)
       const { data: planBreakdown, error: planError } = await supabaseAdmin
         .from('subscription_payments')
-        .select('amount, notes, months_paid, brands(plan)')
+        .select('amount, currency, reference, notes, months_paid, brands(plan)')
         .eq('status', 'completed');
 
       if (planError) throw new Error(planError.message);
@@ -163,8 +172,15 @@ export class RevenueController {
       let proPaymentsCount = 0;
       let landingPaymentsCount = 0;
 
-      (planBreakdown || []).forEach((payment: any) => {
-        const split = splitPaymentAmounts(payment);
+      const normalizedPlanBreakdown = await Promise.all(
+        (planBreakdown || []).map(async (payment: any) => ({
+          payment,
+          normalized: await normalizePaymentRecordToCop(payment, reportingTrm, trmCache),
+        }))
+      );
+
+      normalizedPlanBreakdown.forEach(({ payment, normalized }) => {
+        const split = splitPaymentAmounts(normalized.amountCop, payment);
 
         if (split.landing > 0) {
           totalLandingRevenue += split.landing;
@@ -183,10 +199,10 @@ export class RevenueController {
             basicPaymentsCount += 1;
           }
         } else if (split.landing === 0) {
-          totalBasicRevenue += parseFloat(payment.amount);
+          totalBasicRevenue += normalized.amountCop;
           basicPaymentsCount += 1;
         } else {
-          totalLandingRevenue += parseFloat(payment.amount);
+          totalLandingRevenue += normalized.amountCop;
           landingPaymentsCount += 1;
         }
       });
@@ -243,6 +259,7 @@ export class RevenueController {
   async getAllPayments(req: Request, res: Response): Promise<Response> {
     try {
       const { method, status, from, to, search, plan } = req.query;
+      const reportingTrm = await getReportingTrm();
 
       let query = supabaseAdmin
         .from('subscription_payments')
@@ -263,25 +280,31 @@ export class RevenueController {
       const { data, error } = await query;
       if (error) throw new Error(error.message);
 
-      let payments = (data || []).map((p: any) => ({
-        id: p.id,
-        brandId: p.brand_id,
-        brandName: p.brands?.name ?? '—',
-        brandEmail: p.brands?.email ?? '—',
-        brandSlug: p.brands?.slug ?? '—',
-        brandPlan: p.brands?.plan ?? '—',
-        amount: parseFloat(p.amount),
-        currency: p.currency,
-        paymentDate: p.payment_date,
-        paymentMethod: p.payment_method,
-        status: p.status,
-        notes: p.notes,
-        createdAt: p.created_at,
-        // Identificar si es pago de landing consistentemente
-        isLanding:
-          p.brands?.plan === 'LANDING' ||
-          (typeof p.notes === 'string' && p.notes.toLowerCase().includes('landing')),
-      }));
+      let payments = (data || []).map((p: any) => {
+        const normalized = convertPaymentToCop(p.amount, p.currency, reportingTrm);
+        return {
+          id: p.id,
+          brandId: p.brand_id,
+          brandName: p.brands?.name ?? '—',
+          brandEmail: p.brands?.email ?? '—',
+          brandSlug: p.brands?.slug ?? '—',
+          brandPlan: p.brands?.plan ?? '—',
+          amount: normalized.amountCop,
+          amount_original: normalized.originalAmount,
+          amount_cop: normalized.amountCop,
+          exchange_rate_used: normalized.exchangeRateUsed,
+          currency: normalized.currency,
+          paymentDate: p.payment_date,
+          paymentMethod: p.payment_method,
+          status: p.status,
+          notes: p.notes,
+          createdAt: p.created_at,
+          // Identificar si es pago de landing consistentemente
+          isLanding:
+            p.brands?.plan === 'LANDING' ||
+            (typeof p.notes === 'string' && p.notes.toLowerCase().includes('landing')),
+        };
+      });
 
       if (search) {
         const q = (search as string).toLowerCase();
@@ -292,7 +315,7 @@ export class RevenueController {
         );
       }
 
-      const total = payments.reduce((sum, p) => sum + p.amount, 0);
+      const total = payments.reduce((sum, p) => sum + p.amount_cop, 0);
       return res.json({ payments, total, count: payments.length });
     } catch (error: any) {
       return res.status(500).json({

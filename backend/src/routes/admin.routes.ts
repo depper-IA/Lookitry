@@ -3,6 +3,8 @@ import { adminAuthMiddleware, requirePermission } from '../middleware/adminAuth'
 import {
   adminLogin,
   adminLogout,
+  adminForgotPassword,
+  adminResetPassword,
   getAllBrands,
   changeBrandPlan,
   getGlobalStats,
@@ -63,6 +65,8 @@ const router = Router();
 
 router.post('/auth/login', authRateLimiter, adminLogin);
 router.post('/auth/logout', adminLogout);
+router.post('/auth/forgot-password', authRateLimiter, adminForgotPassword);
+router.post('/auth/reset-password', authRateLimiter, adminResetPassword);
 
 // Ruta de verificación de token (usada por Next.js API routes)
 router.get('/verify', adminAuthMiddleware, (req: any, res) => {

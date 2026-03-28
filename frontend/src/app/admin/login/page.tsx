@@ -126,8 +126,8 @@ export default function AdminLoginPage() {
                 <label htmlFor="password" className="block text-[13px] font-medium text-[#888]">
                   Contraseña
                 </label>
-                <Link href="/auth/forgot-password" className="text-[12px] text-[#555] hover:text-[#FF5C3A] transition-colors">
-                  ¿Olvidaste tu contraseña?
+                <Link href="/admin/forgot-password" className="text-[12px] text-[#555] hover:text-[#FF5C3A] transition-colors">
+                  Recuperar o cambiar contraseña
                 </Link>
               </div>
               <div className="relative">
