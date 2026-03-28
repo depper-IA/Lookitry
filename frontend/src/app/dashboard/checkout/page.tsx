@@ -14,6 +14,8 @@ import { Spinner } from '@/components/ui/Spinner';
 import type { PlanType } from '@/types';
 import type { WompiWidgetResult } from '@/types/wompi';
 
+type CheckoutPlan = Exclude<PlanType, 'ENTERPRISE'>;
+
 // ── Fallbacks (solo si la API falla) ─────────────────────────────────────────
 
 const PLAN_INFO_FALLBACK: Record<PlanType, { name: string; price: number; features: string[] }> = {
@@ -38,6 +40,16 @@ const PLAN_INFO_FALLBACK: Record<PlanType, { name: string; price: number; featur
       'Modificación del slug del probador',
       'Soporte prioritario',
       'Integración con sistemas externos',
+    ],
+  },
+  ENTERPRISE: {
+    name: 'Plan Enterprise',
+    price: 0,
+    features: [
+      'Catalogo y operaciones a medida',
+      'Integraciones avanzadas',
+      'Acompanamiento tecnico prioritario',
+      'Infraestructura y limites personalizados',
     ],
   },
 };
@@ -66,7 +78,7 @@ function PaymentSection({
 }: {
   wompiEnabled: boolean | null;
   paypalEnabled: boolean;
-  plan: PlanType;
+  plan: CheckoutPlan;
   months: number;
   amount: number;
   includesLanding: boolean;
@@ -228,10 +240,10 @@ function PaymentSection({
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const planParam = (searchParams.get('plan') ?? 'BASIC').toUpperCase() as PlanType;
-  const initialPlan: PlanType = planParam in PLAN_INFO_FALLBACK ? planParam : 'BASIC';
+  const planParam = (searchParams.get('plan') ?? 'BASIC').toUpperCase();
+  const initialPlan: CheckoutPlan = planParam === 'PRO' ? 'PRO' : 'BASIC';
 
-  const [selectedPlan, setSelectedPlan] = useState<PlanType>(initialPlan);
+  const [selectedPlan, setSelectedPlan] = useState<CheckoutPlan>(initialPlan);
   const [selectedMonths, setSelectedMonths] = useState(1);
   const [state, setState] = useState<CheckoutState>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -366,6 +378,7 @@ function CheckoutContent() {
             price:    proData?.precio_mensual_cop   ?? PLAN_INFO_FALLBACK.PRO.price,
             features: proData?.features            ?? PLAN_INFO_FALLBACK.PRO.features,
           },
+          ENTERPRISE: PLAN_INFO_FALLBACK.ENTERPRISE,
         });
 
         if (descData) {
@@ -758,7 +771,7 @@ function CheckoutContent() {
               </p>
             </div>
             <div className="p-4 grid grid-cols-2 gap-3">
-              {(Object.keys(PLAN_INFO_FALLBACK) as PlanType[]).map((p) => {
+              {(['BASIC', 'PRO'] as CheckoutPlan[]).map((p) => {
                 const info       = planInfo[p];
                 const isSelected = selectedPlan === p;
                 const isCurrent  = hasActiveSub && p === currentPlan;

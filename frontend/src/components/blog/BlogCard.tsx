@@ -11,6 +11,7 @@ interface BlogCardProps {
     excerpt: string;
     featured_image?: string;
     published_at: string;
+    created_at?: string;
     category?: { name: string };
   };
 }
@@ -23,6 +24,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
       day: 'numeric',
     });
   };
+  const postDate = post.published_at || post.created_at || new Date().toISOString();
 
   return (
     <Link 
@@ -53,7 +55,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
       <div className="p-6 flex flex-col flex-grow">
         <div className="flex items-center gap-2 text-[#999] text-xs mb-3">
           <Calendar size={14} />
-          <span>{formatDate(post.published_at || post.created_at)}</span>
+          <span>{formatDate(postDate)}</span>
         </div>
         
         <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#FF5C3A] transition-colors line-clamp-2 leading-tight font-plus-jakarta">
