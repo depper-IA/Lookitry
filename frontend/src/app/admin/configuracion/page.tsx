@@ -301,6 +301,7 @@ export default function SystemConfigPage() {
   // Alertas globales
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [activeTab, setActiveTab] = useState<SysTab>('trial');
 
   const headers = { 'Content-Type': 'application/json' };
 
@@ -696,16 +697,14 @@ export default function SystemConfigPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
-  const [activeTab, setActiveTab] = useState<SysTab>('trial');
-
-  const TABS = [
+  const TABS: ReadonlyArray<{ id: SysTab; label: string; icon: React.ReactNode }> = [
     { id: 'trial',   label: 'Trial',        icon: <IconClock className="w-4 h-4" /> },
     { id: 'debug',   label: 'Debugging',    icon: <IconShield className="w-4 h-4" /> },
     { id: 'contact', label: 'Contacto y redes', icon: <IconExternalLink className="w-4 h-4" /> },
     { id: 'credits', label: 'Créditos IA',  icon: <IconCreditCard className="w-4 h-4" /> },
     { id: 'ai',      label: 'Motor de IA',  icon: <IconBrain className="w-4 h-4" /> },
     { id: 'health',  label: 'Servicios',    icon: <IconServer className="w-4 h-4" /> },
-  ] as const satisfies ReadonlyArray<{ id: SysTab; label: string; icon: React.ReactNode }>;
+  ];
 
   const isSaving = savingAIConfig || savingPricingConfig || savingCurrency || savingWhitelist || savingContactConfig || savingTrm;
 
@@ -1450,6 +1449,7 @@ export default function SystemConfigPage() {
       </div>
       )} {/* fin tab health */}
 
+      </div>
     </div>
   );
 }
