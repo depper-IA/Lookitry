@@ -68,8 +68,20 @@ export const blogController = {
       
       if (cat) {
         categoryId = cat.id;
-      } else {
-        // Fallback al primero disponible si el slug no existe
+      } else if (category_slug && category_slug !== 'ia') {
+        const generatedName = category_slug.charAt(0).toUpperCase() + category_slug.slice(1).replace(/-/g, ' ');
+        const { data: newCat } = await supabaseAdmin.from('blog_categories').insert({
+          name: generatedName,
+          slug: category_slug
+        }).select('id').single();
+
+        if (newCat) {
+          categoryId = newCat.id;
+        }
+      }
+      
+      if (!categoryId) {
+        // Fallback al primero disponible
         const { data: firstCat } = await supabaseAdmin.from('blog_categories').select('id').limit(1).single();
         if (firstCat) categoryId = firstCat.id;
       }

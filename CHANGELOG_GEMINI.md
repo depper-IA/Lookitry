@@ -1,5 +1,44 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 28 de Marzo, 2026 — Corrección de Etiquetas Dinámicas (n8n) y Miniaturas de Blog
+
+**Objetivo:**
+- Resolver el fallo por el cual todos los artículos generados por n8n adoptaban la etiqueta "Inteligencia Artificial" (slug: `ia`).
+- Hacer funcionales las miniaturas en la tabla del panel administrativo del blog (`/admin/blog`).
+
+**Cambios aplicados:**
+- **Backend (`blog.controller.ts`):**
+  - Se modificó la lógica de recepción de artículos para auto-crear categorías dinámicamente si n8n envía un slug que no existe en `blog_categories`. Esto soluciona el fallback silencioso que forzaba todas las publicaciones a la primera categoría disponible (`ia`).
+- **Frontend (`admin/blog/page.tsx`):**
+  - Implementación de la función `getBlogFeaturedImage` para extraer visualizaciones correctas de la miniatura a partir del contenido del editor HTML si el `featured_image` viniera nulo del webhook.
+  - Refinamiento UI del panel administrativo ajustándolo al diseño Lookitry premium (tipografía Jakarta uppercase y variables CSS consistentes).
+
+**Despliegue:**
+- Cambios locales comiteados y subidos a `main`. Se reiniciaron los contenedores en producción aplicando las actualizaciones del API y Frontend.
+
+---
+## 28 de Marzo, 2026 — Saneamiento de Autenticación y CORS (Producción)
+
+**Objetivo:**
+- Resolver el error "Failed to fetch" en el flujo de login de producción.
+- Asegurar la compatibilidad entre el dominio principal y la API mediante políticas CORS robustas.
+- Habilitar la persistencia de cookies de sesión cross-origin en navegadores modernos.
+
+**Cambios aplicados:**
+- **Backend (Express):**
+  - `app.ts`: Ampliación de `allowedOrigins` para incluir todas las variantes de dominio de producción (`www`, `http/https`) y adición de cabeceras estándar para compatibilidad con preflights de navegadores.
+  - `.env`: Cambio forzado de `NODE_ENV=production` para activar políticas de cookies seguras (`SameSite=None`, `Secure=true`).
+- **Frontend (Next.js):**
+  - `auth.service.ts`: Mejora en el wrapper de `fetch` para normalizar URLs y gestionar errores de parsing en respuestas de error de red o proxy.
+  - `useAuth.ts`: Diagnóstico específico para fallos de red ("Failed to fetch"), informando al usuario sobre posibles problemas de conexión o bloqueo del navegador.
+- **Despliegue:**
+  - Ejecución del script `_deploy_now.py --force` para aplicar los cambios de seguridad y variables de entorno en el VPS.
+
+**Motivo:**
+- Los navegadores bloquean cookies de terceros o cross-origin por defecto si no se configuran explícitamente con `SameSite=None` y `Secure=true`. El entorno previo en `development` impedía que el backend emitiera estas cabeceras correctamente.
+
+---
+
 ## 27 de Marzo, 2026 — Migración Sistema de Blog Nativo (Supabase + MinIO)
 
 **Objetivo:**
