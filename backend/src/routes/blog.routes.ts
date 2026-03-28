@@ -23,8 +23,8 @@ router.put('/admin/:id', blogController.adminUpdatePost);
 router.delete('/admin/:id', blogController.adminDeletePost);
 
 // Configuración del Pulso Editorial
-router.get('/settings', blogSettingsController.getSettings);
-router.put('/settings', blogSettingsController.updateSettings);
-router.post('/settings/trigger', blogSettingsController.triggerNow);
+router.get('/settings', adminAuthMiddleware, blogSettingsController.getSettings);
+router.put('/settings', adminAuthMiddleware, blogSettingsController.updateSettings);
+router.post('/settings/trigger', adminAuthMiddleware, blogSettingsController.triggerNow);
 
 export default router;
