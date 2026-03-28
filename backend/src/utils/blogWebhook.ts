@@ -11,6 +11,8 @@ type BlogTriggerResult = {
   data: unknown;
 };
 
+type BlogTriggerPayload = Record<string, unknown>;
+
 function normalizeSecret(rawSecret?: string | null): string {
   return (rawSecret || '').trim();
 }
@@ -100,15 +102,24 @@ export function inferBlogWebhookAuthMode(secret?: string | null): 'none' | 'head
   return 'header';
 }
 
-export async function triggerBlogWebhook(url: string, secret?: string | null, triggeredBy: string = 'unknown'): Promise<BlogTriggerResult> {
+export async function triggerBlogWebhook(
+  url: string,
+  secret?: string | null,
+  triggeredBy: string = 'unknown',
+  payload: BlogTriggerPayload = {}
+): Promise<BlogTriggerResult> {
   const normalizedSecret = normalizeSecret(secret);
   const attempts = buildAttemptHeaders(normalizedSecret);
   const failures: Array<{ label: string; status: number; data: unknown }> = [];
+  const requestBody = {
+    triggered_by: triggeredBy,
+    ...payload,
+  };
 
   for (const attempt of attempts) {
     const response = await axios.post(
       url,
-      { triggered_by: triggeredBy },
+      requestBody,
       {
         headers: {
           'Content-Type': 'application/json',

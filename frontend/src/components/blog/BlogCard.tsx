@@ -3,12 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { Calendar, ChevronRight } from 'lucide-react';
+import { getBlogFeaturedImage } from '@/services/blog.service';
 
 interface BlogCardProps {
   post: {
     slug: string;
     title: string;
     excerpt: string;
+    content?: string;
     featured_image?: string;
     published_at: string;
     created_at?: string;
@@ -25,6 +27,7 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
     });
   };
   const postDate = post.published_at || post.created_at || new Date().toISOString();
+  const previewImage = getBlogFeaturedImage(post);
 
   return (
     <Link 
@@ -32,9 +35,9 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
       className="group flex flex-col bg-[#141414] border border-white/5 rounded-2xl overflow-hidden hover:border-[#FF5C3A]/50 transition-all duration-300 hover:shadow-2xl hover:shadow-[#FF5C3A]/10"
     >
       <div className="relative aspect-video overflow-hidden">
-        {post.featured_image ? (
+        {previewImage ? (
           <img 
-            src={post.featured_image} 
+            src={previewImage} 
             alt={post.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
