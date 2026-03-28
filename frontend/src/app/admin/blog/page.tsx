@@ -299,19 +299,19 @@ export default function AdminBlogPage() {
       : settings?.execution_message || 'El panel mostrará aquí el progreso y los fallos reportados por n8n.';
   const executionTimestamp = settings?.execution_updated_at || settings?.last_error_at || null;
   const executionToneClasses = executionStatus === 'error'
-    ? 'border-red-500/20 bg-red-500/[0.08] text-red-200'
+    ? 'border-red-500/30 bg-red-500/10 dark:bg-red-500/[0.08] text-red-700 dark:text-red-200 shadow-sm'
     : executionStatus === 'success'
-      ? 'border-emerald-500/20 bg-emerald-500/[0.08] text-emerald-200'
+      ? 'border-emerald-500/30 bg-emerald-500/10 dark:bg-emerald-500/[0.08] text-emerald-700 dark:text-emerald-200 shadow-sm'
       : executionStatus === 'running'
-        ? 'border-amber-500/20 bg-amber-500/[0.08] text-amber-100'
-        : 'border-white/10 bg-white/[0.04] text-zinc-300';
+        ? 'border-amber-500/30 bg-amber-500/10 dark:bg-amber-500/[0.08] text-amber-700 dark:text-amber-100 shadow-sm'
+        : 'border-black/5 dark:border-white/10 bg-black/5 dark:bg-white/[0.04] text-zinc-700 dark:text-zinc-300';
   const executionBadgeClasses = executionStatus === 'error'
-    ? 'text-red-300 bg-red-500/10'
+    ? 'text-red-600 dark:text-red-300 bg-red-500/20 dark:bg-red-500/10'
     : executionStatus === 'success'
-      ? 'text-emerald-300 bg-emerald-500/10'
+      ? 'text-emerald-600 dark:text-emerald-300 bg-emerald-500/20 dark:bg-emerald-500/10'
       : executionStatus === 'running'
-        ? 'text-amber-200 bg-amber-500/10'
-        : 'text-zinc-400 bg-white/5';
+        ? 'text-amber-600 dark:text-amber-200 bg-amber-500/20 dark:bg-amber-500/10'
+        : 'text-zinc-500 dark:text-zinc-400 bg-black/5 dark:bg-white/5';
   const executionLabel = executionStatus === 'error'
     ? 'Fallo'
     : executionStatus === 'success'
@@ -341,78 +341,70 @@ export default function AdminBlogPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div
-          className="lg:col-span-2 rounded-[2rem] border p-6 flex flex-col sm:flex-row items-center gap-6 shadow-lg transition-all hover:shadow-xl"
+          className="lg:col-span-2 rounded-[2rem] border p-6 sm:p-8 flex flex-col lg:flex-row items-center lg:items-start gap-6 shadow-md transition-all hover:shadow-lg relative overflow-hidden"
           style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
         >
-          <div className="w-16 h-16 rounded-3xl bg-[#FF5C3A]/10 flex items-center justify-center flex-shrink-0 animate-pulse">
-            <svg className="w-8 h-8 text-[#FF5C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          <div className="w-16 h-16 rounded-[1.5rem] bg-[#FF5C3A]/10 text-[#FF5C3A] flex items-center justify-center flex-shrink-0">
+            <svg className="w-8 h-8 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <div className="flex-1 text-center sm:text-left">
-            <h2 className="font-jakarta font-bold uppercase italic text-lg mb-1" style={{ color: 'var(--text-primary)' }}>
-              Pulso Editorial IA
+          <div className="flex-1 text-center lg:text-left w-full">
+            <h2 className="font-jakarta font-black uppercase tracking-tight text-xl mb-2" style={{ color: 'var(--text-primary)' }}>
+              Pulso Editorial <span className="text-[#FF5C3A]">IA</span>
             </h2>
-            <p className="text-xs leading-relaxed max-w-md" style={{ color: 'var(--text-secondary)' }}>
-              Configura el ritmo automático de publicación de <span className="font-bold text-[#FF5C3A]">Lookitry Editorial</span>.
-              La IA generará temas, imágenes y artículos optimizados para SEO y ventas.
+            <p className="text-[13px] leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium" style={{ color: 'var(--text-secondary)' }}>
+              Configura el ritmo automático de publicación de Lookitry Editorial.
+              La Inteligencia Artificial generará temas, imágenes de alta resolución y artículos optimizados para SEO y conversión.
             </p>
             {settings && (
-              <div className="mt-3 flex flex-wrap items-center justify-center sm:justify-start gap-4">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Frecuencia:</span>
+              <div className="mt-5 flex flex-wrap items-center justify-center lg:justify-start gap-3 w-full">
+                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl border bg-black/5 border-black/5 dark:bg-white/5 dark:border-white/5 transition-colors">
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-60" style={{ color: 'var(--text-primary)' }}>Frecuencia:</span>
                   <select
                     value={settings.frequency}
                     onChange={(e) => handleUpdateFrequency(e.target.value as 'daily' | 'weekly' | 'monthly')}
                     disabled={isSaving}
-                    className="bg-transparent text-[11px] font-bold text-[#FF5C3A] outline-none cursor-pointer focus:ring-0 border-none p-0"
+                    className="bg-transparent text-[11px] font-black text-[#FF5C3A] uppercase tracking-widest outline-none cursor-pointer focus:ring-0 border-none p-0"
                   >
                     <option value="daily">Diaria</option>
                     <option value="weekly">Semanal</option>
                     <option value="monthly">Mensual</option>
                   </select>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Próximo:</span>
-                  <span className="text-[11px] font-bold text-white">
+                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl border bg-black/5 border-black/5 dark:bg-white/5 dark:border-white/5 transition-colors">
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-60" style={{ color: 'var(--text-primary)' }}>Próximo:</span>
+                  <span className="text-[11px] font-bold" style={{ color: 'var(--text-primary)' }}>
                     {new Date(settings.next_run).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Auth:</span>
-                  <span className="text-[11px] font-bold text-white">{settings.webhook_auth_mode || 'none'}</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Secreto:</span>
-                  <span className="text-[11px] font-bold text-white">
-                    {settings.has_webhook_secret ? 'configurado' : 'ausente'}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Modelo:</span>
+                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl border bg-black/5 border-black/5 dark:bg-white/5 dark:border-white/5 transition-colors">
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-60" style={{ color: 'var(--text-primary)' }}>Modelo:</span>
                   <select
                     value={articleModelSelectValue}
                     onChange={(e) => handleUpdateArticleModel(e.target.value)}
                     disabled={isSaving}
-                    className="bg-transparent text-[11px] font-bold text-[#FF5C3A] outline-none cursor-pointer focus:ring-0 border-none p-0 max-w-[180px]"
+                    className="bg-transparent text-[11px] font-bold outline-none cursor-pointer focus:ring-0 border-none p-0 w-[120px] sm:w-[150px] truncate"
+                    style={{ color: 'var(--text-primary)' }}
                   >
                     {OPENROUTER_ARTICLE_MODELS.map((model) => (
-                      <option key={model.value} value={model.value}>
+                      <option key={model.value} value={model.value} className="bg-white dark:bg-[#0a0a0a]">
                         {model.label}
                       </option>
                     ))}
                   </select>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Imágenes:</span>
+                <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl border bg-black/5 border-black/5 dark:bg-white/5 dark:border-white/5 transition-colors">
+                  <span className="text-[10px] font-black uppercase tracking-widest opacity-60" style={{ color: 'var(--text-primary)' }}>Imágenes:</span>
                   <select
                     value={settings.image_generation_provider || 'replicate'}
                     onChange={(e) => handleUpdateImageProvider(e.target.value as 'replicate' | 'openrouter')}
                     disabled={isSaving}
-                    className="bg-transparent text-[11px] font-bold text-[#FF5C3A] outline-none cursor-pointer focus:ring-0 border-none p-0 max-w-[140px]"
+                    className="bg-transparent text-[11px] font-bold outline-none cursor-pointer focus:ring-0 border-none p-0"
+                    style={{ color: 'var(--text-primary)' }}
                   >
                     {BLOG_IMAGE_PROVIDERS.map((provider) => (
-                      <option key={provider.value} value={provider.value}>
+                      <option key={provider.value} value={provider.value} className="bg-white dark:bg-[#0a0a0a]">
                         {provider.label}
                       </option>
                     ))}
@@ -421,171 +413,167 @@ export default function AdminBlogPage() {
               </div>
             )}
             {settings && articleModelSelectValue === '__custom__' && (
-              <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:items-center">
+              <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
                 <input
                   type="text"
                   value={customArticleModel}
                   onChange={(e) => setCustomArticleModel(e.target.value)}
                   placeholder="Ej: openai/gpt-4.1 o meta-llama/llama-3.3-70b-instruct"
                   disabled={isSaving}
-                  className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white outline-none placeholder:text-zinc-500"
+                  className="flex-1 rounded-[1.2rem] border bg-black/5 border-black/10 dark:bg-white/5 dark:border-white/10 px-4 py-2.5 text-xs outline-none focus:border-[#FF5C3A]/50 transition-all font-medium"
+                  style={{ color: 'var(--text-primary)' }}
                 />
                 <button
                   onClick={handleSaveCustomArticleModel}
                   disabled={isSaving || !customArticleModel.trim()}
-                  className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-[#FF5C3A] text-white disabled:opacity-50"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-[1rem] text-[10px] font-black uppercase tracking-widest bg-zinc-800 dark:bg-zinc-200 text-white dark:text-black shadow-md hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                 >
                   Guardar Modelo
                 </button>
               </div>
             )}
-            <div className={`mt-4 rounded-[1.6rem] border px-4 py-4 text-left ${executionToneClasses}`}>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <div className="text-[10px] font-black uppercase tracking-[0.24em] text-zinc-500">
-                    Estado del flujo
+            <div className={`mt-6 rounded-[1.6rem] border p-5 sm:p-6 text-left transition-all relative overflow-hidden ${executionToneClasses}`}>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-current opacity-[0.03] blur-2xl rounded-full -mr-10 -mt-10 pointer-events-none"></div>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between relative z-10">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.24em] opacity-80 mb-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
+                    Estado del Flujo
                   </div>
-                  <div className="mt-2 text-sm font-bold text-white">
+                  <div className="mt-1 text-base font-bold tracking-tight">
                     {executionTitle}
                   </div>
-                  <div className="mt-2 text-xs leading-6">
+                  <div className="mt-2 text-xs leading-relaxed opacity-90 font-medium">
                     {executionMessage}
                   </div>
                 </div>
-                <div className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] ${executionBadgeClasses}`}>
+                <div className={`inline-flex shrink-0 items-center justify-center rounded-2xl px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${executionBadgeClasses}`}>
                   {executionLabel}
                 </div>
               </div>
               {executionTimestamp && (
-                <div className="mt-3 text-[10px] uppercase tracking-[0.18em] text-zinc-500">
-                  Actualizado {new Date(executionTimestamp).toLocaleString('es-ES')}
+                <div className="mt-4 pt-3 border-t border-current/10 text-[9px] font-bold uppercase tracking-[0.15em] opacity-60">
+                  Actualizado: <span className="opacity-100">{new Date(executionTimestamp).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' })}</span>
                 </div>
               )}
             </div>
           </div>
-          <div className="flex flex-col gap-2 w-full sm:w-auto">
+          <div className="flex flex-col gap-3 w-full lg:w-48 xl:w-56 shrink-0 mt-4 lg:mt-0 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-current/10 lg:pl-6 text-center lg:text-left">
             <button
               onClick={requestTriggerNow}
               disabled={isTriggering || isMonitoringRun}
-              className={`px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                (isTriggering || isMonitoringRun) ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' : 'bg-white text-black hover:scale-105 active:scale-95 shadow-lg'
+              className={`w-full px-5 py-3.5 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest transition-all ${
+                (isTriggering || isMonitoringRun) 
+                  ? 'bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/40 cursor-not-allowed shadow-none' 
+                  : 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20 hover:scale-[1.02] active:scale-[0.98]'
               }`}
             >
-              {isTriggering ? 'Disparando...' : isMonitoringRun ? 'Monitoreando...' : 'Disparar Ahora'}
+              {isTriggering ? 'Generando...' : isMonitoringRun ? 'Procesando...' : 'Forzar Artículo'}
             </button>
             <button
               onClick={handleToggleEnabled}
               disabled={isSaving}
-              className={`px-4 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl border ${
+              className={`w-full px-5 py-3 rounded-[1rem] border text-[9px] font-black uppercase tracking-widest transition-all ${
                 settings?.is_enabled
-                  ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10'
-                  : 'text-zinc-500 border-zinc-500/20 bg-zinc-500/5 hover:bg-zinc-500/10'
+                  ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20'
+                  : 'text-zinc-600 dark:text-zinc-400 border-zinc-500/30 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10'
               }`}
             >
-              {settings?.is_enabled ? '● Automatización Activa' : '○ Automatización Pausada'}
+              {settings?.is_enabled ? '● Sistema Activo' : '○ Flujo Pausado'}
             </button>
           </div>
         </div>
 
         <div
-          className="rounded-[2rem] border p-6 flex flex-col justify-between shadow-lg"
+          className="rounded-[2rem] border p-6 sm:p-8 flex flex-col justify-between shadow-md relative overflow-hidden"
           style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
         >
-          <div>
-            <h2 className="font-jakarta font-bold uppercase italic text-lg mb-4" style={{ color: 'var(--text-primary)' }}>
+          <div className="absolute top-0 right-0 w-24 h-24 bg-current opacity-[0.02] blur-xl rounded-full -mr-6 -mt-6"></div>
+          <div className="relative z-10">
+            <h2 className="font-jakarta font-black uppercase tracking-tight text-xl mb-6 flex items-center gap-3 text-current">
               Métricas IA
             </h2>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>Artículos automáticos</span>
-                <span className="font-bold text-white">{posts.filter((post) => !post.content.includes('manual')).length}</span>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center px-4 py-3 rounded-xl border bg-black/5 border-black/5 dark:bg-white/5 dark:border-white/5">
+                <span className="text-[11px] font-bold opacity-80 uppercase tracking-wider text-current">Artículos Autónomos</span>
+                <span className="text-base font-black text-current">{posts.filter((post) => !post.content.includes('manual')).length}</span>
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>Total Generaciones</span>
-                <span className="font-bold text-[#FF5C3A]">{posts.length}</span>
+              <div className="flex justify-between items-center px-4 py-3 rounded-xl border bg-black/5 border-black/5 dark:bg-white/5 dark:border-white/5">
+                <span className="text-[11px] font-bold opacity-80 uppercase tracking-wider text-current">Total Publicaciones</span>
+                <span className="text-base font-black text-[#FF5C3A]">{posts.length}</span>
               </div>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-white/5 text-[10px] italic leading-tight" style={{ color: 'var(--text-muted)' }}>
-            * El contenido generado por IA sigue las reglas de Lookitry Editorial para optimización SEO.
+          <div className="mt-8 pt-4 border-t border-current/10 text-[10px] font-medium leading-relaxed opacity-60 text-current text-center sm:text-left relative z-10">
+            * El contenido inteligente se rige por las directrices de optimización orgánica y semántica de Lookitry.
           </div>
         </div>
       </div>
 
-      <div className="rounded-[2rem] border overflow-hidden shadow-xl" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      <div className="rounded-[2.5rem] border shadow-md overflow-hidden bg-card" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr style={{ backgroundColor: 'var(--bg-base)' }}>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-secondary)' }}>
-                  Artículo
-                </th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-secondary)' }}>
-                  Categoría
-                </th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-secondary)' }}>
-                  Estado
-                </th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-secondary)' }}>
-                  Fecha
-                </th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-right" style={{ color: 'var(--text-secondary)' }}>
-                  Acciones
-                </th>
+              <tr style={{ backgroundColor: 'var(--bg-base)' }} className="border-b" style={{ borderColor: 'var(--border-color)' }}>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>Artículo</th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>Clasificación</th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>Visibilidad</th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>Registro</th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 text-right transition-colors" style={{ color: 'var(--text-primary)' }}>Control</th>
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
               {posts.map((post) => (
-                <tr key={post.id} className="group hover:bg-white/[0.02] transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
+                <tr key={post.id} className="group hover:bg-black/5 dark:hover:bg-white/[0.03] transition-colors">
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-4">
                       {getBlogFeaturedImage(post) && (
-                        <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-white/10">
-                          <img src={getBlogFeaturedImage(post) as string} alt="" className="w-full h-full object-cover" />
+                        <div className="w-12 h-12 rounded-[0.85rem] overflow-hidden flex-shrink-0 border bg-black/5 dark:bg-white/5" style={{ borderColor: 'var(--border-color)' }}>
+                          <img src={getBlogFeaturedImage(post) as string} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
                         </div>
                       )}
-                      <div>
+                      <div className="min-w-0 pr-4">
                         <Link
                           href={`/admin/blog/${post.id}`}
-                          className="text-sm font-bold block hover:text-[#FF5C3A] transition-colors"
+                          className="text-sm font-bold block truncate max-w-[200px] sm:max-w-xs transition-colors hover:text-[#FF5C3A]"
                           style={{ color: 'var(--text-primary)' }}
                         >
                           {post.title}
                         </Link>
-                        <span className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
+                        <span className="text-[10px] font-semibold mt-1 block truncate opacity-60 transition-opacity" style={{ color: 'var(--text-primary)' }}>
                           /blog/{post.slug}
                         </span>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-white/5 border border-white/5" style={{ color: 'var(--text-secondary)' }}>
+                  <td className="px-6 py-5">
+                    <span className="text-[10px] font-bold px-3 py-1.5 rounded-lg border bg-black/5 border-black/10 dark:bg-white/5 dark:border-white/10 uppercase tracking-widest whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>
                       {post.category?.name || 'IA & Moda'}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-5">
                     <span
-                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                      className={`inline-flex items-center px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm ${
                         post.status === 'published'
-                          ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                          : 'bg-zinc-500/10 text-zinc-500 border border-zinc-500/20'
+                          ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400'
+                          : 'bg-black/5 border border-black/10 text-zinc-600 dark:bg-white/5 dark:border-white/10 dark:text-zinc-400'
                       }`}
                     >
-                      {post.status === 'published' ? 'Publicado' : 'Borrador'}
+                      {post.status === 'published' ? 'Público' : 'Borrador'}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+                  <td className="px-6 py-5">
+                    <span className="text-xs font-bold opacity-80" style={{ color: 'var(--text-primary)' }}>
                       {new Date(post.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-5 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Link
                         href={`/blog/${post.slug}`}
                         target="_blank"
-                        className="p-2 rounded-xl bg-white/5 text-zinc-500 hover:text-white transition-all border border-white/5 hover:border-white/10"
-                        title="Ver en el sitio"
+                        className="p-2.5 rounded-[0.85rem] bg-black/5 border-transparent text-zinc-500 hover:text-white hover:bg-zinc-800 dark:bg-white/5 dark:text-zinc-400 dark:hover:bg-white/10 transition-all border dark:hover:border-white/20 shadow-sm"
+                        title="Abrir URL Pública"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -593,8 +581,8 @@ export default function AdminBlogPage() {
                       </Link>
                       <Link
                         href={`/admin/blog/${post.id}`}
-                        className="p-2 rounded-xl bg-white/5 text-zinc-500 hover:text-[#FF5C3A] transition-all border border-white/5 hover:border-[#FF5C3A]/20"
-                        title="Editar"
+                        className="p-2.5 rounded-[0.85rem] bg-black/5 border-transparent text-zinc-500 hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/10 dark:bg-white/5 dark:text-zinc-400 dark:hover:bg-[#FF5C3A]/20 transition-all border dark:hover:border-[#FF5C3A]/30 shadow-sm"
+                        title="Editar Artículo"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -602,8 +590,8 @@ export default function AdminBlogPage() {
                       </Link>
                       <button
                         onClick={() => requestDelete(post.id)}
-                        className="p-2 rounded-xl bg-white/5 text-zinc-500 hover:text-red-500 transition-all border border-white/5 hover:border-red-500/20"
-                        title="Eliminar"
+                        className="p-2.5 rounded-[0.85rem] bg-black/5 border-transparent text-zinc-500 hover:text-red-500 hover:bg-red-500/10 dark:bg-white/5 dark:text-zinc-400 dark:hover:bg-red-500/20 transition-all border dark:hover:border-red-500/30 shadow-sm"
+                        title="Borrar Definitivamente"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -616,18 +604,18 @@ export default function AdminBlogPage() {
             </tbody>
           </table>
           {posts.length === 0 && (
-            <div className="py-20 flex flex-col items-center justify-center text-center px-6">
-              <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center mb-4 border border-white/10">
-                <svg className="w-8 h-8 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="py-24 flex flex-col items-center justify-center text-center px-6">
+              <div className="w-20 h-20 rounded-[1.5rem] bg-black/5 dark:bg-white/5 flex items-center justify-center mb-5 border border-black/10 dark:border-white/10 shadow-sm">
+                <svg className="w-10 h-10 opacity-60" style={{ color: 'var(--text-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 3v5h5" />
                 </svg>
               </div>
-              <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
-                Sin artículos
+              <h3 className="text-xl font-black mb-2 tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                Directorio Vacío
               </h3>
-              <p className="text-xs max-w-xs" style={{ color: 'var(--text-secondary)' }}>
-                El n8n aún no ha generado ningún artículo o no hay datos en la base de datos.
+              <p className="text-sm max-w-sm leading-relaxed font-medium" style={{ color: 'var(--text-secondary)' }}>
+                No hay artículos redactados. La Inteligencia Artificial nutrirá este espacio en el próximo ciclo programado.
               </p>
             </div>
           )}
@@ -640,54 +628,59 @@ export default function AdminBlogPage() {
             type="button"
             aria-label="Cerrar modal"
             onClick={() => setConfirmState(null)}
-            className="absolute inset-0 bg-[#050505]/80 backdrop-blur-xl"
+            className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-md transition-opacity"
           />
-          <div className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border shadow-[0_30px_120px_rgba(0,0,0,0.55)]" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,92,58,0.28),transparent_34%),radial-gradient(circle_at_85%_18%,rgba(255,255,255,0.08),transparent_20%),linear-gradient(180deg,rgba(255,92,58,0.02),rgba(255,255,255,0))]" />
-            <div className="relative border-b border-white/10 px-7 py-6 sm:px-8">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[1.35rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/12 text-[#FF5C3A] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                  <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="relative w-full max-w-lg sm:max-w-xl overflow-hidden rounded-[2.5rem] border shadow-2xl transform transition-all" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#FF5C3A]/5 to-transparent pointer-events-none" />
+            
+            <div className="relative p-6 sm:p-8">
+              <div className="flex flex-col items-center text-center gap-4 mb-6">
+                <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 text-[#FF5C3A] shadow-inner">
+                  <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <div className="min-w-0">
-                  <div className="text-[11px] font-black uppercase tracking-[0.34em] text-[#FF5C3A]/80">
+                <div className="space-y-1 sm:space-y-2">
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF5C3A]">
                     Lookitry Editorial
                   </div>
-                  <h3 className="mt-1 font-jakarta text-2xl font-bold tracking-tight text-white">
+                  <h3 className="font-jakarta text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
                     {confirmState.title}
                   </h3>
                 </div>
               </div>
-            </div>
-            <div className="relative px-7 py-7 sm:px-8">
-              <p className="max-w-xl text-[15px] leading-8 text-zinc-300">
-                {confirmState.message}
-              </p>
-              <div className="mt-6 rounded-[1.5rem] border px-4 py-4" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
-                <div className="text-[10px] font-black uppercase tracking-[0.28em] text-zinc-500">
-                  Nota
-                </div>
-                <p className="mt-2 text-sm leading-7 text-zinc-400">
-                  {confirmState.kind === 'trigger'
-                    ? 'La generación se ejecutará en n8n y puede tardar unos minutos mientras crea imágenes, redacta y publica el artículo.'
-                    : 'Esta acción quitará el artículo del panel y del sitio si ya estaba publicado.'}
+              
+              <div className="px-2 sm:px-4 text-center">
+                <p className="text-[14px] leading-relaxed font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  {confirmState.message}
                 </p>
+                
+                <div className="mt-6 rounded-2xl border p-4 sm:p-5 text-left bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Nota Importante
+                  </div>
+                  <p className="mt-2 text-xs sm:text-[13px] leading-relaxed font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    {confirmState.kind === 'trigger'
+                      ? 'La generación se ejecutará en n8n y puede tardar unos minutos. El panel reflejará el progreso automáticamente.'
+                      : 'Esta acción borrará el artículo permanentemente. Si fue publicado, dejará de ser visible en el sitio.'}
+                  </p>
+                </div>
               </div>
-              <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:justify-center">
                 <button
                   type="button"
                   onClick={() => setConfirmState(null)}
-                  className="rounded-2xl border px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] transition hover:scale-[1.02] active:scale-[0.99]"
-                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+                  className="w-full sm:w-auto rounded-[1.2rem] border px-6 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-[0.98]"
+                  style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 >
                   Cancelar
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirmAction}
-                  className="rounded-2xl bg-[#FF5C3A] px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-white shadow-lg shadow-[#FF5C3A]/20 transition hover:scale-[1.02] active:scale-[0.99]"
+                  className="w-full sm:w-auto rounded-[1.2rem] bg-[#FF5C3A] px-6 py-3.5 text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-[#FF5C3A]/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   {confirmState.confirmLabel}
                 </button>

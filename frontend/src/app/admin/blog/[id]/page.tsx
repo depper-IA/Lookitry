@@ -58,18 +58,27 @@ export default function BlogEditorPage() {
     setError('');
     setSuccess(false);
 
-    // Limpiar campos nulos o vacíos que Supabase podría rechazar si son UUIDs
-    const cleanData = { ...post };
-    if (!cleanData.category_id) delete cleanData.category_id;
+    try {
+      const payload = { ...post };
+      // Normalizar category_id: si es string vacío, enviamos null para que Supabase lo acepte
+      if (!payload.category_id || payload.category_id === '') {
+        payload.category_id = null as any;
+      }
 
-    const ok = await adminUpdatePost(id, cleanData);
-    if (ok) {
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    } else {
-      setError('Error al guardar los cambios');
+      const ok = await adminUpdatePost(id, payload);
+      if (ok) {
+        setSuccess(true);
+        // Recargar datos para confirmar que la categoría se guardó
+        await loadData();
+        setTimeout(() => setSuccess(false), 3000);
+      } else {
+        setError('Error al guardar los cambios en el servidor');
+      }
+    } catch (err) {
+      setError('Excepción al intentar guardar');
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   if (loading) return (
