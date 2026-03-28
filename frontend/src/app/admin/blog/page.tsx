@@ -8,6 +8,7 @@ import {
   BlogPost,
   BlogSettings,
   fetchBlogSettings,
+  getBlogFeaturedImage,
   triggerBlogPulse,
   updateBlogSettings,
 } from '@/services/blog.service';
@@ -323,7 +324,7 @@ export default function AdminBlogPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-jakarta font-bold text-2xl tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          <h1 className="font-jakarta font-black uppercase italic tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>
             Gestión de Blog
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
@@ -349,7 +350,7 @@ export default function AdminBlogPage() {
             </svg>
           </div>
           <div className="flex-1 text-center sm:text-left">
-            <h2 className="font-jakarta font-bold text-lg mb-1" style={{ color: 'var(--text-primary)' }}>
+            <h2 className="font-jakarta font-bold uppercase italic text-lg mb-1" style={{ color: 'var(--text-primary)' }}>
               Pulso Editorial IA
             </h2>
             <p className="text-xs leading-relaxed max-w-md" style={{ color: 'var(--text-secondary)' }}>
@@ -491,9 +492,9 @@ export default function AdminBlogPage() {
           style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
         >
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: 'var(--text-muted)' }}>
+            <h2 className="font-jakarta font-bold uppercase italic text-lg mb-4" style={{ color: 'var(--text-primary)' }}>
               Métricas IA
-            </div>
+            </h2>
             <div className="space-y-3">
               <div className="flex justify-between items-center text-xs">
                 <span style={{ color: 'var(--text-secondary)' }}>Artículos automáticos</span>
@@ -511,7 +512,7 @@ export default function AdminBlogPage() {
         </div>
       </div>
 
-      <div className="rounded-[2.5rem] border overflow-hidden shadow-xl" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+      <div className="rounded-[2rem] border overflow-hidden shadow-xl" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -538,9 +539,9 @@ export default function AdminBlogPage() {
                 <tr key={post.id} className="group hover:bg-white/[0.02] transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      {post.featured_image && (
+                      {getBlogFeaturedImage(post) && (
                         <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-white/10">
-                          <img src={post.featured_image} alt="" className="w-full h-full object-cover" />
+                          <img src={getBlogFeaturedImage(post) as string} alt="" className="w-full h-full object-cover" />
                         </div>
                       )}
                       <div>
@@ -641,8 +642,8 @@ export default function AdminBlogPage() {
             onClick={() => setConfirmState(null)}
             className="absolute inset-0 bg-[#050505]/80 backdrop-blur-xl"
           />
-          <div className="relative w-full max-w-2xl overflow-hidden rounded-[2.25rem] border border-white/10 bg-[#101010] shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,92,58,0.28),transparent_34%),radial-gradient(circle_at_85%_18%,rgba(255,255,255,0.08),transparent_20%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0))]" />
+          <div className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border shadow-[0_30px_120px_rgba(0,0,0,0.55)]" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,92,58,0.28),transparent_34%),radial-gradient(circle_at_85%_18%,rgba(255,255,255,0.08),transparent_20%),linear-gradient(180deg,rgba(255,92,58,0.02),rgba(255,255,255,0))]" />
             <div className="relative border-b border-white/10 px-7 py-6 sm:px-8">
               <div className="flex items-center gap-4">
                 <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[1.35rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/12 text-[#FF5C3A] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
@@ -664,7 +665,7 @@ export default function AdminBlogPage() {
               <p className="max-w-xl text-[15px] leading-8 text-zinc-300">
                 {confirmState.message}
               </p>
-              <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-4 py-4">
+              <div className="mt-6 rounded-[1.5rem] border px-4 py-4" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
                 <div className="text-[10px] font-black uppercase tracking-[0.28em] text-zinc-500">
                   Nota
                 </div>
@@ -678,7 +679,8 @@ export default function AdminBlogPage() {
                 <button
                   type="button"
                   onClick={() => setConfirmState(null)}
-                  className="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] text-zinc-300 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+                  className="rounded-2xl border px-5 py-3 text-[11px] font-black uppercase tracking-[0.22em] transition hover:scale-[1.02] active:scale-[0.99]"
+                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
                 >
                   Cancelar
                 </button>
