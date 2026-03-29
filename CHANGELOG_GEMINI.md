@@ -1372,3 +1372,17 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 
 **Verificación:**
 - `npx vitest run` → `5 suites`, `15 tests`, todos pasando
+
+## 29 de Marzo, 2026 — Hotfix de build para deploy en `main`
+
+**Archivos modificados:**
+- `frontend/src/app/admin/payments/page.tsx`
+- `frontend/src/app/dashboard/checkout/page.tsx`
+- `CHANGELOG_GEMINI.md`
+
+**Descripción:**
+- Se corrigió un error de tipado en `admin/payments` que rompía `next build` por inferencia implícita de `any` al normalizar pagos.
+- Se ajustó `dashboard/checkout` para tolerar correctamente `TRIAL` en la información de suscripción sin intentar asignarlo a estados que sólo aceptan planes pagables (`BASIC` / `PRO`).
+
+**Motivo:**
+- El deploy inicial a `main` dejó backend saludable, pero el rebuild del frontend se detuvo durante `next build` por incompatibilidades de tipos derivadas de la nueva lógica de trial.

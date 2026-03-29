@@ -140,8 +140,8 @@ export default function AdminPaymentsPage() {
       const res = await adminApi(`/admin/revenue/payments?${params}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al cargar pagos');
-      const normalizedPayments = Array.isArray(data.payments) ? data.payments.map(normalizePayment) : [];
-      const completedPayments = normalizedPayments.filter((payment) => payment.status === 'completed');
+      const normalizedPayments: Payment[] = Array.isArray(data.payments) ? data.payments.map(normalizePayment) : [];
+      const completedPayments = normalizedPayments.filter((payment: Payment) => payment.status === 'completed');
       setPayments(normalizedPayments);
       setTotalRevenue(data.stats?.total_revenue ?? completedPayments.reduce((sum, payment) => sum + (payment.amount_cop ?? payment.amount), 0));
       setCompletedCount(data.stats?.completed_count ?? completedPayments.length);
