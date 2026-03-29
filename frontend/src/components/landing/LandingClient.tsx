@@ -9,8 +9,10 @@ import { PaymentTrustBadges } from '@/components/landing/PaymentTrustBadges';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { LandingPricingCard } from '@/components/landing/LandingPricingCard';
 import { ProPlanButton, CtaProButton } from '@/components/landing/LandingCtaButtons';
+import { ReviewsSlider } from '@/components/landing/ReviewsSlider';
 import { PricingConfig } from '@/lib/pricing';
 import { formatCurrency, formatPrice as formatDynamicPrice } from '@/utils/currency';
+import type { PublicReview } from '@/types';
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 function IconUser() {
@@ -66,7 +68,17 @@ const PRODUCTS = [
   { name: 'Bolso cuero café', price: '$210.000', img: '/products/bolso_cuero_cafe.png', active: false },
 ];
 
-export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
+export default function LandingClient({
+  pricing,
+  reviews,
+  realReviewsCount,
+  usingMockReviews,
+}: {
+  pricing: PricingConfig;
+  reviews: PublicReview[];
+  realReviewsCount: number;
+  usingMockReviews: boolean;
+}) {
   const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
   const [isMounted, setIsMounted] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -488,6 +500,12 @@ export default function LandingClient({ pricing }: { pricing: PricingConfig }) {
             </div>
           </div>
         </section>
+
+        <ReviewsSlider
+          reviews={reviews}
+          realReviewsCount={realReviewsCount}
+          usingMockReviews={usingMockReviews}
+        />
 
         <FaqSection pricing={pricing} />
         <LandingFooter />

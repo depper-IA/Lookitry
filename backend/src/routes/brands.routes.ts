@@ -34,6 +34,15 @@ router.get('/me/payments', async (req: any, res) => {
   }
 });
 
+// GET /api/brands/me/legal-requests - Historial de solicitudes legales/autoservicio
+router.get('/me/legal-requests', (req, res) => brandsController.getLegalRequests(req, res));
+
+// POST /api/brands/me/legal-requests - Crear solicitud legal/autoservicio
+router.post('/me/legal-requests', (req, res) => brandsController.createLegalRequest(req, res));
+
+// POST /api/brands/me/trial-events - Registrar eventos comerciales de trial
+router.post('/me/trial-events', (req, res) => brandsController.createTrialEvent(req, res));
+
 // POST /api/brands/request-plan-change - Solicitar cambio de plan (upgrade o downgrade)
 // Fuera de checkActiveSubscription para que marcas suspendidas/vencidas también puedan solicitarlo
 router.post('/request-plan-change', (req, res) =>

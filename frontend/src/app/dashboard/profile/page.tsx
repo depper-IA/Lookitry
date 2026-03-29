@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, 
@@ -12,6 +12,7 @@ import {
   Eye, 
   EyeOff, 
   Lock,
+  Download,
   Phone,
   Briefcase,
   ExternalLink,
@@ -29,12 +30,9 @@ import {
   AlertCircle,
   X
 } from 'lucide-react';
-import { Country, State, City } from 'country-state-city';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/services/api';
 import { brandsService } from '@/services/brands.service';
-import { Spinner } from '@/components/ui/Spinner';
-import { formatCurrency } from '@/utils/currency';
 import { getSubscriptionDisplayState } from '@/lib/subscription-display';
 
 function formatDate(d?: string | null): string {
@@ -64,6 +62,45 @@ const itemVariants = {
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 type Tab = 'personal' | 'billing' | 'security';
+
+type CountryOption = { name: string; isoCode: string };
+type StateOption = { name: string; isoCode: string };
+type CityOption = { name: string };
+type LegalRequestItem = {
+  id: string;
+  type: string;
+  status?: string;
+  createdAt?: string | null;
+  created_at?: string | null;
+  processedAt?: string | null;
+};
+
+type LegalDataExportItem = {
+  id: string;
+  request_id: string;
+  type: 'customers/data_request';
+  status: 'available';
+  format: 'json';
+  created_at: string;
+  expires_at: string;
+  file_name: string;
+  data: Record<string, unknown>;
+};
+
+function formatLegalRequestType(type: string): string {
+  switch (type) {
+    case 'customers/data_request':
+      return 'Ver mis datos';
+    case 'customers/redact':
+      return 'Redactar datos de comprador final';
+    case 'shop/redact':
+      return 'Redactar datos de tienda y app';
+    case 'app/uninstalled':
+      return 'Desinstalar o pausar integración';
+    default:
+      return type;
+  }
+}
 
 export default function ProfilePage() {
   const { brand, refreshBrand } = useAuth();
@@ -110,11 +147,83 @@ export default function ProfilePage() {
   // UI state
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [legalRequests, setLegalRequests] = useState<LegalRequestItem[]>([]);
+  const [legalDataExports, setLegalDataExports] = useState<LegalDataExportItem[]>([]);
+  const [legalLoading, setLegalLoading] = useState(false);
+  const [legalActionLoading, setLegalActionLoading] = useState('');
+  const [legalResultMsg, setLegalResultMsg] = useState('');
+  const [selectedDataExport, setSelectedDataExport] = useState<LegalDataExportItem | null>(null);
+  const [countries, setCountries] = useState<CountryOption[]>([]);
+  const [states, setStates] = useState<StateOption[]>([]);
+  const [cities, setCities] = useState<CityOption[]>([]);
 
-  // Location Data
-  const countries = useMemo(() => Country.getAllCountries(), []);
-  const states = useMemo(() => countryCode ? State.getStatesOfCountry(countryCode) : [], [countryCode]);
-  const cities = useMemo(() => (countryCode && stateCode) ? City.getCitiesOfState(countryCode, stateCode) : [], [countryCode, stateCode]);
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadCountries = async () => {
+      const { Country } = await import('country-state-city');
+      if (!cancelled) {
+        setCountries(Country.getAllCountries());
+      }
+    };
+
+    loadCountries().catch(() => {
+      if (!cancelled) setCountries([]);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadStates = async () => {
+      if (!countryCode) {
+        setStates([]);
+        return;
+      }
+
+      const { State } = await import('country-state-city');
+      if (!cancelled) {
+        setStates(State.getStatesOfCountry(countryCode));
+      }
+    };
+
+    loadStates().catch(() => {
+      if (!cancelled) setStates([]);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [countryCode]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadCities = async () => {
+      if (!countryCode || !stateCode) {
+        setCities([]);
+        return;
+      }
+
+      const { City } = await import('country-state-city');
+      if (!cancelled) {
+        setCities(City.getCitiesOfState(countryCode, stateCode));
+      }
+    };
+
+    loadCities().catch(() => {
+      if (!cancelled) setCities([]);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [countryCode, stateCode]);
 
   // Sync initial state with brand data
   useEffect(() => {
@@ -144,7 +253,7 @@ export default function ProfilePage() {
           if (brand.stateProvince) {
             const stateName = brand.stateProvince;
             setStateProvince(stateName);
-            const foundState = State.getStatesOfCountry(foundCountry.isoCode).find(s => s.name === stateName);
+            const foundState = states.find(s => s.name === stateName);
             if (foundState) {
               setStateCode(foundState.isoCode);
             }
@@ -152,7 +261,7 @@ export default function ProfilePage() {
         }
       }
     }
-  }, [brand, countries]);
+  }, [brand, countries, states]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -216,6 +325,65 @@ export default function ProfilePage() {
       setLoading(false);
     }
   };
+
+  const loadLegalRequests = async () => {
+    setLegalLoading(true);
+    try {
+      const response = await brandsService.getLegalRequests();
+      setLegalRequests(Array.isArray(response.requests) ? response.requests : []);
+      const exportsList = Array.isArray(response.data_exports) ? response.data_exports : [];
+      setLegalDataExports(exportsList);
+      setSelectedDataExport(exportsList[0] || null);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'No pude cargar tus solicitudes legales');
+    } finally {
+      setLegalLoading(false);
+    }
+  };
+
+  const downloadLegalExport = (dataExport: LegalDataExportItem) => {
+    const blob = new Blob([JSON.stringify(dataExport.data, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = dataExport.file_name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleLegalRequest = async (type: string) => {
+    setLegalActionLoading(type);
+    setLegalResultMsg('');
+    setErrorMsg('');
+    try {
+      const response = await brandsService.createLegalRequest(type);
+      setLegalRequests(Array.isArray(response.requests) ? response.requests : []);
+      const exportsList = Array.isArray(response.data_exports) ? response.data_exports : [];
+      setLegalDataExports(exportsList);
+      if (type === 'customers/data_request' && response.data_export) {
+        setSelectedDataExport(response.data_export);
+      } else if (!selectedDataExport && exportsList[0]) {
+        setSelectedDataExport(exportsList[0]);
+      }
+      setLegalResultMsg(
+        type === 'customers/data_request'
+          ? 'Tu export de datos quedó listo. Puedes verlo aquí o descargarlo en JSON.'
+          : 'Tu solicitud fue registrada correctamente.'
+      );
+    } catch (err: any) {
+      setErrorMsg(err.message || 'No pude registrar la solicitud legal');
+    } finally {
+      setLegalActionLoading('');
+    }
+  };
+
+  useEffect(() => {
+    if (isLegalModalOpen) {
+      loadLegalRequests();
+    }
+  }, [isLegalModalOpen]);
 
   return (
     <motion.div
@@ -619,6 +787,19 @@ export default function ProfilePage() {
               )}
             </AnimatePresence>
 
+            <div className="mt-8 flex items-center justify-between gap-4 border-t border-[var(--border-color)] pt-6">
+              <p className="text-[11px] text-[var(--text-muted)]">
+                Si necesitas ejercer derechos de privacidad, acceso o redacción, puedes iniciar la solicitud desde aquí.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsLegalModalOpen(true)}
+                className="text-[11px] font-black uppercase tracking-[0.18em] text-[#FF5C3A] hover:opacity-80 transition-opacity"
+              >
+                Solicitudes de privacidad y datos
+              </button>
+            </div>
+
             {/* FEEDBACK OVERLAYS */}
             <AnimatePresence>
                {(successMsg || errorMsg) && (
@@ -637,6 +818,202 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isLegalModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[120] bg-black/75 backdrop-blur-md px-4 py-6 overflow-y-auto"
+          >
+            <div className="min-h-full flex items-center justify-center">
+              <motion.div
+                initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 16, scale: 0.98 }}
+                className="w-full max-w-3xl rounded-[2rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 md:p-8 shadow-2xl"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#FF5C3A]">Privacidad y Datos</p>
+                    <h2 className="text-2xl font-black tracking-tight text-[var(--text-primary)]">Solicitudes legales automáticas</h2>
+                    <p className="text-sm text-[var(--text-muted)]">
+                      Puedes pedir acceso a tus datos, redacción o pausar la integración. Algunas acciones son irreversibles y no eliminan el ledger financiero mínimo permitido.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsLegalModalOpen(false)}
+                    className="rounded-2xl border border-[var(--border-color)] p-3 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    {
+                      id: 'customers/data_request',
+                      title: 'Ver mis datos',
+                      body: 'Genera una solicitud de acceso a los datos operativos que tenemos de tu cuenta.',
+                    },
+                    {
+                      id: 'customers/redact',
+                      title: 'Redactar datos de comprador final',
+                      body: 'Anonimiza datos personales del comprador final sin destruir el histórico financiero mínimo permitido.',
+                    },
+                    {
+                      id: 'shop/redact',
+                      title: 'Redactar datos de tienda y app',
+                      body: 'Oculta datos identificables de la tienda, desactiva website/orígenes y apaga componentes operativos vinculados.',
+                    },
+                    {
+                      id: 'app/uninstalled',
+                      title: 'Desinstalar o pausar integración',
+                      body: 'Pausa créditos, facturación futura e integración/plugin sin borrar el histórico financiero.',
+                    },
+                  ].map((action) => (
+                    <div key={action.id} className="rounded-[1.75rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-5">
+                      <h3 className="text-sm font-black uppercase tracking-[0.15em] text-[var(--text-primary)]">{action.title}</h3>
+                      <p className="mt-2 text-sm text-[var(--text-muted)]">{action.body}</p>
+                      <button
+                        type="button"
+                        onClick={() => handleLegalRequest(action.id)}
+                        disabled={legalActionLoading === action.id}
+                        className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-[#FF5C3A] px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white disabled:opacity-60"
+                      >
+                        {legalActionLoading === action.id ? <Loader2 size={14} className="animate-spin" /> : <Shield size={14} />}
+                        Solicitar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 rounded-[1.75rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-5">
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <h3 className="text-sm font-black uppercase tracking-[0.15em] text-[var(--text-primary)]">Resumen disponible</h3>
+                      <p className="mt-1 text-sm text-[var(--text-muted)]">
+                        Cuando solicitas acceso a tus datos, generamos un snapshot operativo descargable en JSON. Lo conservamos por 30 días.
+                      </p>
+                    </div>
+                    {selectedDataExport && (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDataExport(selectedDataExport)}
+                          className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border-color)] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--text-primary)]"
+                        >
+                          <Eye size={14} />
+                          Ver
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => downloadLegalExport(selectedDataExport)}
+                          className="inline-flex items-center gap-2 rounded-2xl bg-[#FF5C3A] px-4 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-white"
+                        >
+                          <Download size={14} />
+                          Descargar JSON
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {!selectedDataExport ? (
+                    <p className="mt-4 text-sm text-[var(--text-muted)]">
+                      Aún no has generado un export de datos. Usa la acción <span className="font-bold text-[var(--text-primary)]">Ver mis datos</span> para crearlo.
+                    </p>
+                  ) : (
+                    <div className="mt-5 space-y-4">
+                      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                        <div className="rounded-2xl border border-[var(--border-color)] px-4 py-3">
+                          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">Generado</p>
+                          <p className="mt-1 text-sm font-bold text-[var(--text-primary)]">{formatDate(selectedDataExport.created_at)}</p>
+                        </div>
+                        <div className="rounded-2xl border border-[var(--border-color)] px-4 py-3">
+                          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">Expira</p>
+                          <p className="mt-1 text-sm font-bold text-[var(--text-primary)]">{formatDate(selectedDataExport.expires_at)}</p>
+                        </div>
+                        <div className="rounded-2xl border border-[var(--border-color)] px-4 py-3">
+                          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">Formato</p>
+                          <p className="mt-1 text-sm font-bold uppercase text-[var(--text-primary)]">{selectedDataExport.format}</p>
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-[var(--border-color)] bg-black/20 p-4">
+                        <p className="mb-3 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">Vista previa del export</p>
+                        <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words text-xs leading-6 text-[var(--text-primary)]">
+                          {JSON.stringify(selectedDataExport.data, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-6 rounded-[1.75rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-sm font-black uppercase tracking-[0.15em] text-[var(--text-primary)]">Historial reciente</h3>
+                      <p className="mt-1 text-sm text-[var(--text-muted)]">Solicitudes creadas desde tu cuenta y su último estado.</p>
+                    </div>
+                    {legalLoading && <Loader2 size={16} className="animate-spin text-[var(--text-muted)]" />}
+                  </div>
+
+                  <div className="mt-4 space-y-3">
+                    {legalRequests.length === 0 && !legalLoading && (
+                      <p className="text-sm text-[var(--text-muted)]">Aún no tienes solicitudes legales registradas.</p>
+                    )}
+                    {legalRequests.slice().reverse().slice(0, 6).map((request) => (
+                      <div key={request.id} className="flex flex-col gap-3 rounded-2xl border border-[var(--border-color)] px-4 py-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <p className="text-sm font-bold text-[var(--text-primary)]">{formatLegalRequestType(request.type)}</p>
+                          <p className="text-xs text-[var(--text-muted)]">{formatDate(request.createdAt || request.created_at || request.processedAt || null)}</p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {request.type === 'customers/data_request' && (() => {
+                            const matchingExport = legalDataExports.find((item) => item.request_id === request.id);
+                            if (!matchingExport) return null;
+                            return (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedDataExport(matchingExport)}
+                                  className="inline-flex items-center gap-2 rounded-xl border border-[var(--border-color)] px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--text-primary)]"
+                                >
+                                  <Eye size={12} />
+                                  Abrir export
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => downloadLegalExport(matchingExport)}
+                                  className="inline-flex items-center gap-2 rounded-xl bg-[#FF5C3A] px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white"
+                                >
+                                  <Download size={12} />
+                                  Descargar
+                                </button>
+                              </>
+                            );
+                          })()}
+                          <span className="w-fit rounded-full bg-emerald-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-400">
+                            {request.status || 'completed'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {(legalResultMsg || errorMsg) && (
+                  <div className={`mt-6 rounded-2xl border px-4 py-3 text-sm ${legalResultMsg ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400' : 'border-rose-500/20 bg-rose-500/10 text-rose-400'}`}>
+                    {legalResultMsg || errorMsg}
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
