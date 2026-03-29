@@ -46,19 +46,35 @@ export const blogSettingsController = {
       const latestExecution = notifications?.[0] ?? null;
       const latestError = notifications?.find((notification) => notification.type === 'blog_error') ?? null;
 
+      // Timeout automático: si la última notificación es blog_running con más de 3 horas,
+      // se considera expirada y se reporta como 'idle' para no bloquear el panel admin.
+      const RUNNING_TIMEOUT_MS = 3 * 60 * 60 * 1000; // 3 horas en ms
+      let effectiveExecution = latestExecution;
+      if (
+        latestExecution?.type === 'blog_running' &&
+        latestExecution?.created_at
+      ) {
+        const elapsedMs = Date.now() - new Date(latestExecution.created_at).getTime();
+        if (elapsedMs > RUNNING_TIMEOUT_MS) {
+          // La ejecución lleva más de 3 horas sin novedades — se marca como expirada
+          effectiveExecution = null;
+        }
+      }
+
       return res.json({
         ...data,
         openrouter_article_model: data?.openrouter_article_model || 'google/gemini-2.5-flash',
+        openrouter_image_model: data?.openrouter_image_model || 'openai/dall-e-3',
         image_generation_provider: data?.image_generation_provider || 'replicate',
         webhook_secret: undefined,
         has_webhook_secret: Boolean(data?.webhook_secret),
         webhook_auth_mode: inferBlogWebhookAuthMode(data?.webhook_secret),
         last_error: latestError?.message ?? null,
         last_error_at: latestError?.created_at ?? null,
-        execution_status: mapNotificationTypeToExecutionStatus(latestExecution?.type),
-        execution_title: latestExecution?.title ?? null,
-        execution_message: latestExecution?.message ?? null,
-        execution_updated_at: latestExecution?.created_at ?? null,
+        execution_status: mapNotificationTypeToExecutionStatus(effectiveExecution?.type),
+        execution_title: effectiveExecution?.title ?? null,
+        execution_message: effectiveExecution?.message ?? null,
+        execution_updated_at: effectiveExecution?.created_at ?? null,
       });
     } catch (error: any) {
       console.error('[BlogSettings] Error fetching settings:', error);
@@ -71,7 +87,7 @@ export const blogSettingsController = {
    */
   async updateSettings(req: Request, res: Response) {
     try {
-      const { frequency, is_enabled, webhook_url, webhook_secret, openrouter_article_model, image_generation_provider } = req.body;
+      const { frequency, is_enabled, webhook_url, webhook_secret, openrouter_article_model, openrouter_image_model, image_generation_provider } = req.body;
 
       // Calcular próxima ejecución si cambia la frecuencia o se activa
       let next_run = undefined;
@@ -92,6 +108,7 @@ export const blogSettingsController = {
       if (webhook_url !== undefined) updates.webhook_url = webhook_url;
       if (webhook_secret !== undefined) updates.webhook_secret = webhook_secret;
       if (openrouter_article_model !== undefined) updates.openrouter_article_model = openrouter_article_model;
+      if (openrouter_image_model !== undefined) updates.openrouter_image_model = openrouter_image_model;
       if (image_generation_provider !== undefined) updates.image_generation_provider = image_generation_provider;
       if (next_run) updates.next_run = next_run;
 
@@ -108,6 +125,7 @@ export const blogSettingsController = {
         settings: {
           ...data,
           openrouter_article_model: data?.openrouter_article_model || 'google/gemini-2.5-flash',
+          openrouter_image_model: data?.openrouter_image_model || 'openai/dall-e-3',
           image_generation_provider: data?.image_generation_provider || 'replicate',
           webhook_secret: undefined,
           has_webhook_secret: Boolean(data?.webhook_secret),
@@ -153,6 +171,7 @@ export const blogSettingsController = {
 
         const triggerResult = await triggerBlogWebhook(url, secret, 'admin_manual', {
           openrouter_model: settings.openrouter_article_model || 'google/gemini-2.5-flash',
+          openrouter_image_model: settings.openrouter_image_model || 'openai/dall-e-3',
           image_provider: settings.image_generation_provider || 'replicate',
         });
 
