@@ -382,3 +382,173 @@ export const updateSyncStatus = async (req: Request, res: Response) => {
     return res.status(500).json({ error: err.message });
   }
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /admin/enterprise/create-client
+// Alta completa de un cliente Enterprise: crea la marca con plan ENTERPRISE,
+// activa la suscripción, registra el pago y genera la notificación de admin.
+// ─────────────────────────────────────────────────────────────────────────────
+export const createEnterpriseClient = async (req: Request, res: Response) => {
+  const {
+    name,
+    email,
+    password,
+    slug,
+    contact_name,
+    phone,
+    monthly_amount,     // Mensualidad acordada en COP
+    setup_amount,       // Pago único de setup en COP (puede ser 0)
+    months_paid,        // Meses del contrato (1, 3, 6, 12...)
+    payment_method,     // 'transfer', 'efectivo', 'wompi', 'otro'
+    notes,              // Notas internas del contrato
+    products_limit,     // Máximo de productos activos (default 50)
+    generations_limit,  // Generaciones por mes (default 2000)
+  } = req.body;
+
+  // ── Validaciones básicas ──────────────────────────────────────────────────
+  if (!name || !email || !password || !slug) {
+    return res.status(400).json({
+      error: 'VALIDATION_ERROR',
+      message: 'nombre, email, contraseña y slug son requeridos',
+    });
+  }
+  if (!monthly_amount || Number(monthly_amount) <= 0) {
+    return res.status(400).json({
+      error: 'VALIDATION_ERROR',
+      message: 'monthly_amount debe ser mayor a 0',
+    });
+  }
+  if (!/^[a-z0-9-]+$/.test(slug)) {
+    return res.status(400).json({
+      error: 'VALIDATION_ERROR',
+      message: 'El slug solo puede contener letras minúsculas, números y guiones',
+    });
+  }
+
+  try {
+    // 1. Verificar email único
+    const { data: existingEmail } = await supabaseAdmin
+      .from('brands')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+    if (existingEmail) {
+      return res.status(409).json({ error: 'CONFLICT', message: 'El email ya está registrado' });
+    }
+
+    // 2. Verificar slug único
+    const { data: existingSlug } = await supabaseAdmin
+      .from('brands')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle();
+    if (existingSlug) {
+      return res.status(409).json({ error: 'CONFLICT', message: 'El slug ya está en uso' });
+    }
+
+    // 3. Hash de contraseña
+    const bcrypt = await import('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 4. Calcular fechas de suscripción
+    const now = new Date();
+    const contractMonths = Number(months_paid) || 1;
+    const endDate = new Date(now);
+    endDate.setMonth(endDate.getMonth() + contractMonths);
+
+    // 5. Crear la marca con plan ENTERPRISE y suscripción activa inmediata
+    const { data: newBrand, error: createError } = await supabaseAdmin
+      .from('brands')
+      .insert({
+        email,
+        password: hashedPassword,
+        name,
+        slug,
+        contact_name: contact_name || null,
+        phone: phone || null,
+        plan: 'ENTERPRISE',
+        subscription_status: 'active',
+        subscription_start_date: now.toISOString(),
+        subscription_end_date: endDate.toISOString(),
+        last_payment_date: now.toISOString(),
+        next_payment_date: endDate.toISOString(),
+        email_verified: true, // El admin es responsable de la verificación
+        trial_generations_limit: Number(generations_limit) || 2000,
+      })
+      .select()
+      .single();
+
+    if (createError || !newBrand) {
+      console.error('[Enterprise] Error creando marca:', createError);
+      return res.status(500).json({
+        error: 'ERROR_CREATING_BRAND',
+        message: createError?.message || 'Error desconocido al crear la marca',
+      });
+    }
+
+    // 6. Registrar pago en subscription_payments
+    const totalSetup = Number(setup_amount) || 0;
+    const totalMonthly = Number(monthly_amount) * contractMonths;
+    const totalPaid = totalSetup + totalMonthly;
+
+    await supabaseAdmin.from('subscription_payments').insert({
+      brand_id: newBrand.id,
+      amount: totalPaid,
+      currency: 'COP',
+      payment_date: now.toISOString(),
+      payment_method: payment_method || 'manual',
+      status: 'completed',
+      months_paid: contractMonths,
+      notes: notes
+        ? `[ENTERPRISE] ${notes}`
+        : `Alta Enterprise — $${Number(monthly_amount).toLocaleString('es-CO')} COP/mes × ${contractMonths} mes(es) + Setup $${totalSetup.toLocaleString('es-CO')} COP`,
+    });
+
+    // 7. Notificación de admin
+    await supabaseAdmin.from('admin_notifications').insert({
+      type: 'new_enterprise_client',
+      title: 'Nuevo cliente Enterprise activado',
+      message: `${name} (${email}) dado de alta como cliente Enterprise — ${contractMonths} mes(es) de contrato.`,
+      severity: 'success',
+      brand_id: newBrand.id,
+      metadata: {
+        monthly_amount: Number(monthly_amount),
+        setup_amount: totalSetup,
+        total_paid: totalPaid,
+        months_paid: contractMonths,
+        products_limit: Number(products_limit) || 50,
+        generations_limit: Number(generations_limit) || 2000,
+        payment_method: payment_method || 'manual',
+        subscription_end_date: endDate.toISOString(),
+      },
+    });
+
+    // 8. Auditoría
+    const adminReq = req as any;
+    console.log(`[Enterprise] Alta por ${adminReq.admin?.email || 'admin'}: ${name} (${email}) hasta ${endDate.toISOString()}`);
+
+    return res.status(201).json({
+      message: 'Cliente Enterprise activado exitosamente',
+      brand: {
+        id: newBrand.id,
+        name: newBrand.name,
+        email: newBrand.email,
+        slug: newBrand.slug,
+        plan: newBrand.plan,
+        subscription_status: newBrand.subscription_status,
+        subscription_start_date: newBrand.subscription_start_date,
+        subscription_end_date: newBrand.subscription_end_date,
+      },
+      contract: {
+        monthly_amount: Number(monthly_amount),
+        setup_amount: totalSetup,
+        total_paid: totalPaid,
+        months_paid: contractMonths,
+        subscription_end_date: endDate.toISOString(),
+      },
+    });
+  } catch (err: any) {
+    console.error('[Enterprise] Error en createEnterpriseClient:', err);
+    return res.status(500).json({ error: err.message });
+  }
+};

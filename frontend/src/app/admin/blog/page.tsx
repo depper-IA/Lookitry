@@ -26,6 +26,14 @@ const BLOG_IMAGE_PROVIDERS = [
   { value: 'openrouter', label: 'OpenRouter' },
 ];
 
+const OPENROUTER_IMAGE_MODELS = [
+  { value: 'openai/dall-e-3', label: 'DALL-E 3 (OpenAI)' },
+  { value: 'openai/gpt-4o-mini', label: 'GPT-4o Mini (OpenAI)' },
+  { value: 'google/gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite' },
+  { value: 'anthropic/claude-3-haiku', label: 'Claude 3 Haiku' },
+  { value: '__custom__', label: 'Otro' },
+];
+
 export default function AdminBlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +45,8 @@ export default function AdminBlogPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [customArticleModel, setCustomArticleModel] = useState('');
   const [isCustomArticleModelSelected, setIsCustomArticleModelSelected] = useState(false);
+  const [customImageModel, setCustomImageModel] = useState('');
+  const [isCustomImageModelSelected, setIsCustomImageModelSelected] = useState(false);
   const [confirmState, setConfirmState] = useState<
     | null
     | {
@@ -64,6 +74,14 @@ export default function AdminBlogPage() {
     } else {
       setCustomArticleModel('');
       setIsCustomArticleModelSelected(false);
+    }
+
+    if (data?.openrouter_image_model && !OPENROUTER_IMAGE_MODELS.some((model) => model.value === data.openrouter_image_model)) {
+      setCustomImageModel(data.openrouter_image_model);
+      setIsCustomImageModelSelected(true);
+    } else {
+      setCustomImageModel('');
+      setIsCustomImageModelSelected(false);
     }
   };
 
@@ -143,6 +161,44 @@ export default function AdminBlogPage() {
       setIsCustomArticleModelSelected(true);
     } else {
       setError('No se pudo actualizar el modelo editorial personalizado.');
+    }
+    setIsSaving(false);
+  };
+
+  const handleUpdateImageModel = async (model: string) => {
+    if (!settings) return;
+    if (model === '__custom__') {
+      setCustomImageModel(settings.openrouter_image_model || '');
+      setIsCustomImageModelSelected(true);
+      return;
+    }
+    setIsCustomImageModelSelected(false);
+    setIsSaving(true);
+    setError('');
+    const ok = await updateBlogSettings({ openrouter_image_model: model });
+    if (ok) {
+      await loadSettings();
+    } else {
+      setError('No se pudo actualizar el modelo de imagen de OpenRouter.');
+    }
+    setIsSaving(false);
+  };
+
+  const handleSaveCustomImageModel = async () => {
+    if (!settings) return;
+    const normalized = customImageModel.trim();
+    if (!normalized) {
+      setError('Escribe un modelo de imagen válido de OpenRouter antes de guardar.');
+      return;
+    }
+    setIsSaving(true);
+    setError('');
+    const ok = await updateBlogSettings({ openrouter_image_model: normalized });
+    if (ok) {
+      await loadSettings();
+      setIsCustomImageModelSelected(true);
+    } else {
+      setError('No se pudo actualizar el modelo de imagen personalizado.');
     }
     setIsSaving(false);
   };
@@ -411,6 +467,25 @@ export default function AdminBlogPage() {
                     ))}
                   </select>
                 </div>
+
+                {settings.image_generation_provider === 'openrouter' && (
+                  <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl border bg-black/5 border-black/5 dark:bg-white/5 dark:border-white/5 transition-colors animate-in fade-in slide-in-from-left-2 duration-300">
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60" style={{ color: 'var(--text-primary)' }}>Modelo Img:</span>
+                    <select
+                      value={(isCustomImageModelSelected || (settings.openrouter_image_model && !OPENROUTER_IMAGE_MODELS.some(m => m.value === settings.openrouter_image_model))) ? '__custom__' : settings.openrouter_image_model}
+                      onChange={(e) => handleUpdateImageModel(e.target.value)}
+                      disabled={isSaving}
+                      className="bg-transparent text-[11px] font-bold outline-none cursor-pointer focus:ring-0 border-none p-0 w-[100px] sm:w-[130px] truncate"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {OPENROUTER_IMAGE_MODELS.map((model) => (
+                        <option key={model.value} value={model.value} className="bg-white dark:bg-[#0a0a0a]">
+                          {model.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             )}
             {settings && articleModelSelectValue === '__custom__' && (
@@ -430,6 +505,26 @@ export default function AdminBlogPage() {
                   className="w-full sm:w-auto px-5 py-2.5 rounded-[1rem] text-[10px] font-black uppercase tracking-widest bg-zinc-800 dark:bg-zinc-200 text-white dark:text-black shadow-md hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                 >
                   Guardar Modelo
+                </button>
+              </div>
+            )}
+            {settings && (isCustomImageModelSelected || (settings.openrouter_image_model && !OPENROUTER_IMAGE_MODELS.some(m => m.value === settings.openrouter_image_model))) && settings.image_generation_provider === 'openrouter' && (
+              <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center animate-in fade-in slide-in-from-top-2 duration-300">
+                <input
+                  type="text"
+                  value={customImageModel}
+                  onChange={(e) => setCustomImageModel(e.target.value)}
+                  placeholder="Ej: openai/dall-e-3 o nano banana"
+                  disabled={isSaving}
+                  className="flex-1 rounded-[1.2rem] border bg-black/5 border-black/10 dark:bg-white/5 dark:border-white/10 px-4 py-2.5 text-xs outline-none focus:border-[#FF5C3A]/50 transition-all font-medium"
+                  style={{ color: 'var(--text-primary)' }}
+                />
+                <button
+                  onClick={handleSaveCustomImageModel}
+                  disabled={isSaving || !customImageModel.trim()}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-[1rem] text-[10px] font-black uppercase tracking-widest bg-zinc-800 dark:bg-zinc-200 text-white dark:text-black shadow-md hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                >
+                  Guardar Modelo Imagen
                 </button>
               </div>
             )}

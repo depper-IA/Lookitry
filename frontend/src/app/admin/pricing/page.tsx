@@ -100,38 +100,42 @@ function SectionShell({
 }) {
   return (
     <section
-      className="rounded-[2rem] border p-6 md:p-8 shadow-xl"
-      style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+      className="rounded-[2.5rem] border p-6 md:p-10 shadow-2xl transition-all"
+      style={{ 
+        background: 'var(--bg-card)', 
+        borderColor: 'var(--border-color)',
+        boxShadow: '0 24px 60px -12px rgba(0,0,0,0.25)' 
+      }}
     >
       <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           {eyebrow && (
-            <div className="mb-3 flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[#FF5C3A]" />
-              <span className="text-[10px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">
+            <div className="mb-4 flex items-center gap-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-[#FF5C3A]" />
+              <span className="text-[11px] font-black uppercase tracking-[0.28em] text-[#FF5C3A]">
                 {eyebrow}
               </span>
             </div>
           )}
           <h2
-            className="font-jakarta text-xl font-extrabold tracking-tight md:text-2xl"
+            className="font-jakarta text-2xl font-black tracking-tight md:text-3xl"
             style={{ color: 'var(--text-primary)' }}
           >
             {title}
           </h2>
           {description && (
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            <p className="mt-3 max-w-3xl text-[15px] font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {description}
             </p>
           )}
         </div>
         {icon && (
-          <div className="flex h-14 w-14 items-center justify-center rounded-[1.25rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 text-[#FF5C3A]">
+          <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 text-[#FF5C3A] shadow-inner">
             {icon}
           </div>
         )}
       </div>
-      <div className="mt-7">{children}</div>
+      <div className="mt-10">{children}</div>
     </section>
   );
 }
@@ -147,21 +151,42 @@ function InfoStat({
 }) {
   return (
     <div
-      className="rounded-[1.35rem] border px-4 py-4"
+      className="group rounded-[1.5rem] border px-5 py-5 transition-all hover:scale-[1.02]"
       style={{
-        background: accent ? 'rgba(255,92,58,0.08)' : 'var(--bg-base)',
-        borderColor: accent ? 'rgba(255,92,58,0.18)' : 'var(--border-color)',
+        background: accent ? 'linear-gradient(135deg, rgba(255,92,58,0.12) 0%, rgba(255,92,58,0.04) 100%)' : 'var(--bg-base)',
+        borderColor: accent ? 'rgba(255,92,58,0.25)' : 'var(--border-color)',
       }}
     >
-      <div className="text-[10px] font-black uppercase tracking-[0.22em]" style={{ color: 'var(--text-muted)' }}>
+      <div className="text-[10px] font-black uppercase tracking-[0.24em]" style={{ color: 'var(--text-muted)' }}>
         {label}
       </div>
       <div
-        className="mt-2 text-lg font-black tracking-tight"
+        className="mt-2.5 text-xl font-black tracking-tight"
         style={{ color: accent ? '#FF5C3A' : 'var(--text-primary)' }}
       >
         {value}
       </div>
+    </div>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-end">
+      <span className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+        {label}
+      </span>
+      <span className={`text-sm font-black tracking-tight ${accent ? 'text-[#FF5C3A]' : ''}`} style={{ color: accent ? '#FF5C3A' : 'var(--text-primary)' }}>
+        {value}
+      </span>
     </div>
   );
 }
@@ -288,15 +313,31 @@ function TabButton({
   return (
     <button
       onClick={() => onClick(id)}
-      className="flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition-all"
+      className="group flex w-full items-center justify-between gap-4 rounded-2xl border p-4 transition-all duration-300 xl:p-5"
       style={{
-        background: active ? 'rgba(255,92,58,0.12)' : 'var(--bg-card)',
+        background: active 
+          ? 'linear-gradient(90deg, rgba(255,92,58,0.15) 0%, rgba(255,92,58,0.02) 100%)' 
+          : 'var(--bg-card)',
         color: active ? '#FF5C3A' : 'var(--text-secondary)',
-        border: `1px solid ${active ? 'rgba(255,92,58,0.22)' : 'var(--border-color)'}`,
+        borderColor: active ? 'rgba(255,92,58,0.3)' : 'var(--border-color)',
+        boxShadow: active ? '0 10px 30px -10px rgba(255,92,58,0.15)' : 'none',
       }}
     >
-      <Icon className="h-4 w-4" />
-      {label}
+      <div className="flex items-center gap-3">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 ${active ? 'bg-[#FF5C3A] text-white' : 'bg-base border-border text-muted-foreground group-hover:bg-accent'}`}
+          style={{
+            borderColor: active ? '#FF5C3A' : 'var(--border-color)',
+            background: active ? '#FF5C3A' : 'var(--bg-base)',
+          }}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="flex flex-col items-start">
+          <span className="text-[13px] font-extrabold tracking-tight">{label}</span>
+          <span className="text-[10px] font-bold opacity-60 uppercase tracking-widest">{active ? 'Seleccionado' : 'Configurar'}</span>
+        </div>
+      </div>
+      <div className={`h-2 w-2 rounded-full transition-all duration-500 ${active ? 'bg-[#FF5C3A] scale-125 shadow-[0_0_10px_#FF5C3A]' : 'bg-transparent scale-0'}`} />
     </button>
   );
 }
@@ -517,263 +558,297 @@ export default function PricingAdminPage() {
   const lastUpdated = rows.length > 0 ? new Date(rows[0].updated_at).toLocaleString('es-CO') : 'Sin registro';
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 pb-10">
-      <SectionShell
-        eyebrow="Pricing Control Center"
-        title="Configura precios, márgenes y percepción del producto"
-        description="Esta vista concentra la lógica comercial de Lookitry: planes, descuentos, TRM de referencia, métricas de rentabilidad y señales visibles en la landing."
-        icon={<TrendingUp className="h-6 w-6" />}
-      >
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <InfoStat label="TRM activa" value={formatCurrency(Math.round(trmLive)).replace(' COP', '')} accent />
-          <InfoStat label="Meta mensual" value={formatCurrency(metaCop)} />
-          <InfoStat label="Última actualización" value={lastUpdated} />
-          <InfoStat label="Acento oficial" value="#FF5C3A" />
-        </div>
-
-        <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap gap-2">
-            <TabButton id="plans" label="Suscripciones" icon={CreditCard} activeTab={activeTab} onClick={setActiveTab} />
-            <TabButton id="landing" label="Mini-landing" icon={Palette} activeTab={activeTab} onClick={setActiveTab} />
-            <TabButton id="config" label="Configuración & ROI" icon={Settings} activeTab={activeTab} onClick={setActiveTab} />
+    <div className="mx-auto max-w-screen-2xl px-4 pb-20 md:px-6">
+      {/* Header Minimalista con Estadísticas */}
+      <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b pb-8" style={{ borderColor: 'var(--border-color)' }}>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-[#FF5C3A]">
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-[10px] font-black uppercase tracking-[0.25em]">Pricing Dashboard</span>
           </div>
-
+          <h1 className="font-jakarta text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Estructura Comercial
+          </h1>
+          <p className="max-w-xl text-sm font-medium leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            Control maestro de precios, márgenes de utilidad y configuración técnica de planes.
+          </p>
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+          <MiniStat label="TRM de Referencia" value={formatCurrency(Math.round(trmLive)).replace(' COP', '')} accent />
+          <MiniStat label="Meta Mensual" value={formatCurrency(metaCop)} />
+          <MiniStat label="Última Sincro" value={lastUpdated.split(',')[0]} />
+          <div className="h-10 w-[1px] bg-border hidden md:block" />
           <button
             onClick={load}
-            className="inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-[#FF5C3A] transition-all"
+            className="group inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/5 active:scale-95"
             style={{
-              background: 'rgba(255,92,58,0.08)',
-              border: '1px solid rgba(255,92,58,0.18)',
+              background: 'rgba(255,92,58,0.06)',
+              border: '1px solid rgba(255,92,58,0.15)',
             }}
           >
-            <RefreshCw className="h-4 w-4" />
-            Recargar datos
+            <RefreshCw className="h-3.5 w-3.5 transition-transform group-hover:rotate-180" />
+            Sincronizar
           </button>
         </div>
-      </SectionShell>
+      </div>
 
-      {error && (
-        <div
-          className="flex items-center justify-between rounded-[1.5rem] border px-5 py-4 text-sm"
-          style={{
-            background: 'rgba(239,68,68,0.08)',
-            borderColor: 'rgba(239,68,68,0.18)',
-            color: '#ef4444',
-          }}
-        >
-          <span>{error}</span>
-          <button className="text-[11px] font-black uppercase tracking-[0.18em]" onClick={() => setError('')}>
-            Cerrar
-          </button>
-        </div>
-      )}
-
-      {activeTab === 'plans' && (
-        <div className="space-y-6">
-          {trialPlan && (
-            <div className="space-y-3">
-              <PlanSection title="Plan trial" eyebrow="Onboarding" plan={trialPlan} trm={trm} meta={metaCop} costs={costsObj} onChange={setTrialPlan} />
-              <div className="flex justify-end">
-                <SaveBtn id="trial" data={trialPlan as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-            <div className="space-y-3">
-              <PlanSection title="Plan básico" eyebrow="Core SaaS" plan={basic} trm={trm} meta={metaCop} costs={costsObj} onChange={setBasic} />
-              <div className="flex justify-end">
-                <SaveBtn id="basic" data={basic as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+      <div className="flex flex-col-reverse gap-10 xl:flex-row-reverse xl:items-start">
+        {/* Navegación Vertical a la Derecha */}
+        <div className="w-full shrink-0 space-y-6 xl:w-80">
+          <div className="sticky top-10 space-y-6">
+            <div className="space-y-2 px-1">
+              <h3 className="text-[9px] font-black uppercase tracking-[0.3em]" style={{ color: 'var(--text-muted)' }}>
+                Secciones Disponibles
+              </h3>
+              <div className="space-y-2.5">
+                <TabButton id="plans" label="Suscripciones" icon={CreditCard} activeTab={activeTab} onClick={setActiveTab} />
+                <TabButton id="landing" label="Mini-landing" icon={Palette} activeTab={activeTab} onClick={setActiveTab} />
+                <TabButton id="config" label="Configuración & ROI" icon={Settings} activeTab={activeTab} onClick={setActiveTab} />
               </div>
             </div>
 
-            <div className="space-y-3">
-              <PlanSection title="Plan pro" eyebrow="Growth" plan={pro} trm={trm} meta={metaCop} costs={costsObj} onChange={setPro} />
-              <div className="flex justify-end">
-                <SaveBtn id="pro" data={pro as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
-              </div>
+            {/* Hint Box */}
+            <div className="rounded-3xl border p-6" style={{ background: 'rgba(255,92,58,0.03)', borderColor: 'rgba(255,92,58,0.1)' }}>
+              <TrendingUp className="mb-3 h-5 w-5 text-[#FF5C3A]" />
+              <p className="text-xs font-bold leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                Recuerda que los cambios en precios afectan directamente a la landing y el checkout público.
+              </p>
             </div>
           </div>
+        </div>
 
-          {enterprise && (
-            <div className="space-y-3">
-              <PlanSection title="Plan enterprise base" eyebrow="High volume" plan={enterprise} trm={trm} meta={metaCop} costs={costsObj} onChange={setEnterprise} />
-              <div className="flex justify-end">
-                <SaveBtn id="enterprise" data={enterprise as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+        {/* Área de Visualización y Edición a la Izquierda */}
+        <div className="min-w-0 flex-grow">
+          {error && (
+            <div
+              className="mb-8 flex items-center justify-between rounded-3xl border px-6 py-5 text-sm"
+              style={{
+                background: 'rgba(239,68,68,0.08)',
+                borderColor: 'rgba(239,68,68,0.18)',
+                color: '#ef4444',
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                <span className="font-bold">{error}</span>
               </div>
+              <button className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100" onClick={() => setError('')}>
+                Cerrar
+              </button>
             </div>
           )}
-        </div>
-      )}
 
-      {activeTab === 'landing' && miniLanding && (
-        <div className="space-y-3">
-          <SectionShell
-            eyebrow="Upsell"
-            title="Mini-landing de pago único"
-            description="Controla el precio público, el valor original tachado y la narrativa de conversión para la oferta complementaria."
-            icon={<Palette className="h-6 w-6" />}
-          >
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <InfoStat label="Precio USD" value={`$${precioEnUSD(miniLanding.precio_unico_cop, trm)}`} accent />
-              <InfoStat
-                label="Descuento automático"
-                value={`${miniLanding.precio_original_cop > miniLanding.precio_unico_cop
-                  ? Math.round((1 - miniLanding.precio_unico_cop / miniLanding.precio_original_cop) * 100)
-                  : 0}%`}
-              />
-              <InfoStat label="TRM aplicada" value={formatCurrency(Math.round(trm)).replace(' COP', '')} />
-            </div>
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {activeTab === 'plans' && (
+              <div className="space-y-12">
+                {trialPlan && (
+                  <div className="space-y-4">
+                    <PlanSection title="Plan Trial" eyebrow="Onboarding Experience" plan={trialPlan} trm={trm} meta={metaCop} costs={costsObj} onChange={setTrialPlan} />
+                    <div className="flex justify-end pr-4">
+                      <SaveBtn id="trial" data={trialPlan as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                    </div>
+                  </div>
+                )}
 
-            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <Field
-                label="Precio único (COP)"
-                type="number"
-                prefix="$"
-                value={miniLanding.precio_unico_cop}
-                onChange={v => {
-                  const val = Number(v);
-                  const desc = miniLanding.precio_original_cop > val
-                    ? Math.round((1 - val / miniLanding.precio_original_cop) * 100)
-                    : 0;
-                  setMiniLanding({ ...miniLanding, precio_unico_cop: val, descuento_porcentaje: desc });
-                }}
-              />
-              <Field
-                label="Precio original (COP)"
-                type="number"
-                prefix="$"
-                value={miniLanding.precio_original_cop}
-                onChange={v => {
-                  const val = Number(v);
-                  const desc = val > miniLanding.precio_unico_cop
-                    ? Math.round((1 - miniLanding.precio_unico_cop / val) * 100)
-                    : 0;
-                  setMiniLanding({ ...miniLanding, precio_original_cop: val, descuento_porcentaje: desc });
-                }}
-              />
-              <Field label="Descuento automático" type="number" suffix="%" value={miniLanding.descuento_porcentaje} disabled onChange={() => {}} />
-              <Field label="Subtítulo" value={miniLanding.subtitulo} onChange={v => setMiniLanding({ ...miniLanding, subtitulo: v })} />
-              <div className="md:col-span-2 xl:col-span-2">
-                <Field label="Texto del botón" value={miniLanding.boton_texto} onChange={v => setMiniLanding({ ...miniLanding, boton_texto: v })} />
+                <div className="grid grid-cols-1 gap-12 xl:grid-cols-2">
+                  <div className="space-y-4">
+                    <PlanSection title="Plan Básico" eyebrow="SaaS Entry Tier" plan={basic} trm={trm} meta={metaCop} costs={costsObj} onChange={setBasic} />
+                    <div className="flex justify-end pr-4">
+                      <SaveBtn id="basic" data={basic as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <PlanSection title="Plan Pro" eyebrow="Growth & Performance" plan={pro} trm={trm} meta={metaCop} costs={costsObj} onChange={setPro} />
+                    <div className="flex justify-end pr-4">
+                      <SaveBtn id="pro" data={pro as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                    </div>
+                  </div>
+                </div>
+
+                {enterprise && (
+                  <div className="space-y-4">
+                    <PlanSection title="Plan Enterprise" eyebrow="Unlimited Potential" plan={enterprise} trm={trm} meta={metaCop} costs={costsObj} onChange={setEnterprise} />
+                    <div className="flex justify-end pr-4">
+                      <SaveBtn id="enterprise" data={enterprise as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
-            <div className="mt-6">
-              <FeaturesList features={miniLanding.features} onChange={f => setMiniLanding({ ...miniLanding, features: f })} />
-            </div>
-          </SectionShell>
+            {activeTab === 'landing' && miniLanding && (
+              <div className="space-y-4">
+                <SectionShell
+                  eyebrow="Upsell Channel"
+                  title="Estrategia de Mini-landing"
+                  description="Optimiza el precio único y los mensajes de conversión para la oferta complementaria de mini-sitios personalizados."
+                  icon={<Palette className="h-6 w-6" />}
+                >
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <InfoStat label="Precio USD Ref." value={`$${precioEnUSD(miniLanding.precio_unico_cop, trm)}`} accent />
+                    <InfoStat
+                      label="Descuento Calculado"
+                      value={`${miniLanding.precio_original_cop > miniLanding.precio_unico_cop
+                        ? Math.round((1 - miniLanding.precio_unico_cop / miniLanding.precio_original_cop) * 100)
+                        : 0}%`}
+                    />
+                    <InfoStat label="TRM Aplicada" value={formatCurrency(Math.round(trm)).replace(' COP', '')} />
+                  </div>
 
-          <div className="flex justify-end">
-            <SaveBtn id="mini_landing" data={miniLanding as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                  <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    <Field
+                      label="Precio Único (COP)"
+                      type="number"
+                      prefix="$"
+                      value={miniLanding.precio_unico_cop}
+                      onChange={v => {
+                        const val = Number(v);
+                        const desc = miniLanding.precio_original_cop > val
+                          ? Math.round((1 - val / miniLanding.precio_original_cop) * 100)
+                          : 0;
+                        setMiniLanding({ ...miniLanding, precio_unico_cop: val, descuento_porcentaje: desc });
+                      }}
+                    />
+                    <Field
+                      label="Precio Original (COP)"
+                      type="number"
+                      prefix="$"
+                      value={miniLanding.precio_original_cop}
+                      onChange={v => {
+                        const val = Number(v);
+                        const desc = val > miniLanding.precio_unico_cop
+                          ? Math.round((1 - miniLanding.precio_unico_cop / val) * 100)
+                          : 0;
+                        setMiniLanding({ ...miniLanding, precio_original_cop: val, descuento_porcentaje: desc });
+                      }}
+                    />
+                    <Field label="Descuento Automático" type="number" suffix="%" value={miniLanding.descuento_porcentaje} disabled onChange={() => {}} />
+                    <Field label="Subtítulo de Oferta" value={miniLanding.subtitulo} onChange={v => setMiniLanding({ ...miniLanding, subtitulo: v })} />
+                    <div className="md:col-span-2">
+                      <Field label="Texto del Botón" value={miniLanding.boton_texto} onChange={v => setMiniLanding({ ...miniLanding, boton_texto: v })} />
+                    </div>
+                  </div>
+
+                  <div className="mt-8">
+                    <FeaturesList features={miniLanding.features} onChange={f => setMiniLanding({ ...miniLanding, features: f })} />
+                  </div>
+                </SectionShell>
+
+                <div className="flex justify-end pr-4">
+                  <SaveBtn id="mini_landing" data={miniLanding as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'config' && (
+              <div className="space-y-10">
+                {meta && (
+                  <div className="space-y-4">
+                    <SectionShell
+                      eyebrow="Onboarding Control"
+                      title="Periodo de Prueba IA"
+                      description="Gestión de durabilidad y privilegios para nuevos registros durante su fase de evaluación."
+                      icon={<Settings className="h-6 w-6" />}
+                    >
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <Field label="Duración del Trial" type="number" suffix="días corridos" value={meta.trial_days ?? 7} onChange={v => setMeta({ ...meta, trial_days: Number(v) })} />
+                        <Field
+                          label="Capacidad del Trial"
+                          type="number"
+                          value={meta.trial_products_max ?? 1}
+                          disabled
+                          onChange={() => {}}
+                          hint="Se define globalmente en la configuración de la base de datos."
+                        />
+                      </div>
+                    </SectionShell>
+                    <div className="flex justify-end pr-4">
+                      <SaveBtn id="meta" data={meta as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                    </div>
+                  </div>
+                )}
+
+                {descuentos && (
+                  <div className="space-y-4">
+                    <SectionShell
+                      eyebrow="Conversion Engine"
+                      title="Escalera de Retención"
+                      description="Configura los incentivos de precios por volumen de meses para fomentar planes semestrales y anuales."
+                      icon={<CreditCard className="h-6 w-6" />}
+                    >
+                      <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+                        <Field label="Mensual (Base)" type="number" suffix="%" value={descuentos.meses_1} onChange={v => setDescuentos({ ...descuentos, meses_1: Number(v) })} />
+                        <Field label="Trimestral" type="number" suffix="%" value={descuentos.meses_3} onChange={v => setDescuentos({ ...descuentos, meses_3: Number(v) })} />
+                        <Field label="Semestral" type="number" suffix="%" value={descuentos.meses_6} onChange={v => setDescuentos({ ...descuentos, meses_6: Number(v) })} />
+                        <Field label="Anual" type="number" suffix="%" value={descuentos.meses_12} onChange={v => setDescuentos({ ...descuentos, meses_12: Number(v) })} />
+                      </div>
+                    </SectionShell>
+                    <div className="flex justify-end pr-4">
+                      <SaveBtn id="descuentos_duracion" data={descuentos as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                    </div>
+                  </div>
+                )}
+
+                {meta && (
+                  <div className="space-y-4">
+                    <SectionShell
+                      eyebrow="ROI Master"
+                      title="Proyecciones y Salud Financiera"
+                      description="Métricas de meta de facturación y gastos fijos para calcular la rentabilidad neta por cliente."
+                      icon={<TrendingUp className="h-6 w-6" />}
+                    >
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <Field
+                          label="Meta de Ingreso Global"
+                          type="number"
+                          prefix="$"
+                          value={meta.meta_ingreso_cop}
+                          onChange={v => setMeta({ ...meta, meta_ingreso_cop: Number(v) })}
+                          hint="Valor objetivo para alcanzar el equilibrio comercial."
+                        />
+                        <Field
+                          label="Gastos de Operación"
+                          type="number"
+                          prefix="$"
+                          value={meta.gastos_personales_cop}
+                          onChange={v => setMeta({ ...meta, gastos_personales_cop: Number(v) })}
+                          hint="Incluye VPS, servicios de terceros y mantenimiento."
+                        />
+                      </div>
+                    </SectionShell>
+                    <div className="flex justify-end pr-4">
+                      <SaveBtn id="meta" data={meta as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                    </div>
+                  </div>
+                )}
+
+                {meta && (
+                  <div className="space-y-4">
+                    <SectionShell
+                      eyebrow="Branding Presence"
+                      title="Conectividad Social"
+                      description="URLs oficiales de Lookitry que se despliegan en correos, facturas y pie de página."
+                      icon={<Globe className="h-6 w-6" />}
+                    >
+                      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <Field label="Instagram Oficial" value={meta.social_instagram ?? '#'} onChange={v => setMeta({ ...meta, social_instagram: v })} />
+                        <Field label="TikTok Oficial" value={meta.social_tiktok ?? '#'} onChange={v => setMeta({ ...meta, social_tiktok: v })} />
+                        <Field label="YouTube" value={meta.social_youtube ?? ''} onChange={v => setMeta({ ...meta, social_youtube: v })} />
+                        <Field label="X (Twitter)" value={meta.social_x ?? ''} onChange={v => setMeta({ ...meta, social_x: v })} />
+                      </div>
+                    </SectionShell>
+                    <div className="flex justify-end pr-4">
+                      <SaveBtn id="meta" data={meta as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
-      )}
-
-      {activeTab === 'config' && (
-        <div className="space-y-6">
-          {meta && (
-            <div className="space-y-3">
-              <SectionShell
-                eyebrow="Trial"
-                title="Configuración del periodo de prueba"
-                description="Parámetros operativos del onboarding para controlar duración y capacidad del trial."
-                icon={<Settings className="h-6 w-6" />}
-              >
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <Field label="Días de duración" type="number" suffix="días" value={meta.trial_days ?? 7} onChange={v => setMeta({ ...meta, trial_days: Number(v) })} />
-                  <Field
-                    label="Límite de productos"
-                    type="number"
-                    value={meta.trial_products_max ?? 1}
-                    disabled
-                    onChange={() => {}}
-                    hint="Este valor ahora se ajusta desde la pestaña de suscripciones."
-                  />
-                </div>
-              </SectionShell>
-              <div className="flex justify-end">
-                <SaveBtn id="meta" data={meta as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
-              </div>
-            </div>
-          )}
-
-          {descuentos && (
-            <div className="space-y-3">
-              <SectionShell
-                eyebrow="Conversión"
-                title="Descuentos por duración"
-                description="Ajusta el incentivo comercial de 1, 3, 6 y 12 meses para empujar compras de mayor permanencia."
-                icon={<CreditCard className="h-6 w-6" />}
-              >
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                  <Field label="1 mes" type="number" suffix="%" value={descuentos.meses_1} onChange={v => setDescuentos({ ...descuentos, meses_1: Number(v) })} />
-                  <Field label="3 meses" type="number" suffix="%" value={descuentos.meses_3} onChange={v => setDescuentos({ ...descuentos, meses_3: Number(v) })} />
-                  <Field label="6 meses" type="number" suffix="%" value={descuentos.meses_6} onChange={v => setDescuentos({ ...descuentos, meses_6: Number(v) })} />
-                  <Field label="12 meses" type="number" suffix="%" value={descuentos.meses_12} onChange={v => setDescuentos({ ...descuentos, meses_12: Number(v) })} />
-                </div>
-              </SectionShell>
-              <div className="flex justify-end">
-                <SaveBtn id="descuentos_duracion" data={descuentos as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
-              </div>
-            </div>
-          )}
-
-          {meta && (
-            <div className="space-y-3">
-              <SectionShell
-                eyebrow="ROI"
-                title="Metas financieras y costo de vida"
-                description="Estos valores alimentan los cálculos internos de margen, cumplimiento y excedente neto del panel administrativo."
-                icon={<TrendingUp className="h-6 w-6" />}
-              >
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <Field
-                    label="Meta de ingreso mensual"
-                    type="number"
-                    prefix="$"
-                    value={meta.meta_ingreso_cop}
-                    onChange={v => setMeta({ ...meta, meta_ingreso_cop: Number(v) })}
-                    hint="Se usa para medir avance comercial y capacidad de cumplimiento."
-                  />
-                  <Field
-                    label="Gastos personales"
-                    type="number"
-                    prefix="$"
-                    value={meta.gastos_personales_cop}
-                    onChange={v => setMeta({ ...meta, gastos_personales_cop: Number(v) })}
-                    hint="Sirve para proyectar excedente real después de operación."
-                  />
-                </div>
-              </SectionShell>
-              <div className="flex justify-end">
-                <SaveBtn id="meta" data={meta as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
-              </div>
-            </div>
-          )}
-
-          {meta && (
-            <div className="space-y-3">
-              <SectionShell
-                eyebrow="Footer"
-                title="Redes sociales de la marca"
-                description="Estos enlaces se usan en el pie del sitio y deben mantener coherencia con la identidad pública de Lookitry."
-                icon={<Globe className="h-6 w-6" />}
-              >
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <Field label="Instagram" value={meta.social_instagram ?? '#'} onChange={v => setMeta({ ...meta, social_instagram: v })} />
-                  <Field label="TikTok" value={meta.social_tiktok ?? '#'} onChange={v => setMeta({ ...meta, social_tiktok: v })} />
-                  <Field label="YouTube" value={meta.social_youtube ?? ''} onChange={v => setMeta({ ...meta, social_youtube: v })} />
-                  <Field label="X" value={meta.social_x ?? ''} onChange={v => setMeta({ ...meta, social_x: v })} />
-                </div>
-              </SectionShell>
-              <div className="flex justify-end">
-                <SaveBtn id="meta" data={meta as unknown as Record<string, unknown>} saving={saving} saved={saved} onSave={handleSave} />
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      </div>
     </div>
   );
 }
