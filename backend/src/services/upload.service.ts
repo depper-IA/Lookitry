@@ -6,12 +6,14 @@ export interface UploadImageDto {
   image_base64: string;
   filename: string;
   temporary?: boolean;
+  folder?: string;
 }
 
 export interface UploadImageBufferDto {
   buffer: Buffer;
   filename: string;
   temporary?: boolean;
+  folder?: string;
 }
 
 export interface UploadResponse {
@@ -36,12 +38,17 @@ export class UploadService {
       ? data.image_base64.split(',')[1]
       : data.image_base64;
     const buffer = Buffer.from(base64Data, 'base64');
-    return this.uploadImageBuffer({ buffer, filename: data.filename, temporary: data.temporary });
+    return this.uploadImageBuffer({
+      buffer,
+      filename: data.filename,
+      temporary: data.temporary,
+      folder: data.folder,
+    });
   }
 
   async uploadImageBuffer(data: UploadImageBufferDto): Promise<UploadResponse> {
     try {
-      let { buffer, filename, temporary } = data;
+      let { buffer, filename, temporary, folder } = data;
       
       // OPTIMIZACIÓN CON SHARP
       // Si no es temporal, optimizamos para producción (blog/productos)
@@ -70,8 +77,8 @@ export class UploadService {
 
       const contentType = this.detectContentType(filename, buffer);
       const ext = this.getExtension(filename, contentType);
-      const folder = temporary ? 'temp' : 'products';
-      const uniqueName = `${folder}/${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
+      const targetFolder = folder || (temporary ? 'temp' : 'products');
+      const uniqueName = `${targetFolder}/${Date.now()}-${crypto.randomBytes(6).toString('hex')}${ext}`;
 
       await this.putObject(uniqueName, buffer, contentType);
 
