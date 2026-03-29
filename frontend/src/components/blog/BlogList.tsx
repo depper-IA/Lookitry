@@ -34,35 +34,59 @@ export const BlogList: React.FC = () => {
     post.title.toLowerCase().includes(search.toLowerCase()) || 
     post.excerpt?.toLowerCase().includes(search.toLowerCase())
   );
+  const visibleCategories = (() => {
+    const merged = new Map<string, BlogCategory>();
+
+    for (const cat of categories) {
+      if (cat?.id) merged.set(cat.id, cat);
+    }
+
+    for (const post of posts) {
+      if (post.category_id && post.category?.name && !merged.has(post.category_id)) {
+        merged.set(post.category_id, {
+          id: post.category_id,
+          name: post.category.name,
+          slug: post.category.slug || post.category.name.toLowerCase().replace(/\s+/g, '-'),
+        });
+      }
+    }
+
+    return Array.from(merged.values());
+  })();
 
   return (
     <div className="w-full max-w-7xl mx-auto px-6 py-12">
       {/* Filtros y búsqueda */}
       <div className="flex flex-col md:flex-row gap-6 mb-12 items-center justify-between">
-        <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              selectedCategory === null 
-                ? 'bg-[#FF5C3A] text-white' 
-                : 'bg-[#141414] text-[#999] hover:bg-[#1a1a1a] hover:text-white border border-white/5'
-            }`}
-          >
-            Todos
-          </button>
-          {categories.map((cat) => (
+        <div className="w-full md:flex-1">
+          <div className="text-[11px] font-black uppercase tracking-[0.22em] text-[#FF5C3A] mb-3 text-center md:text-left">
+            Explora por categoría
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 justify-start">
             <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                selectedCategory === cat.id 
-                  ? 'bg-[#FF5C3A] text-white' 
-                  : 'bg-[#141414] text-[#999] hover:bg-[#1a1a1a] hover:text-white border border-white/5'
+              onClick={() => setSelectedCategory(null)}
+              className={`shrink-0 px-4 py-2.5 rounded-full text-sm font-bold transition-all border ${
+                selectedCategory === null
+                  ? 'bg-[#FF5C3A] text-white border-[#FF5C3A] shadow-lg shadow-[#FF5C3A]/20'
+                  : 'bg-[#141414] text-[#b8b8b8] hover:bg-[#1a1a1a] hover:text-white border-white/10'
               }`}
             >
-              {cat.name}
+              Todos
             </button>
-          ))}
+            {visibleCategories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`shrink-0 px-4 py-2.5 rounded-full text-sm font-bold transition-all border ${
+                  selectedCategory === cat.id
+                    ? 'bg-[#FF5C3A] text-white border-[#FF5C3A] shadow-lg shadow-[#FF5C3A]/20'
+                    : 'bg-[#141414] text-[#b8b8b8] hover:bg-[#1a1a1a] hover:text-white border-white/10'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="relative w-full md:w-80">

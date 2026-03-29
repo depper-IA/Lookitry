@@ -117,6 +117,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             prose-a:text-[#d94d2b] prose-a:no-underline hover:prose-a:underline
             prose-img:rounded-[1.25rem] prose-img:shadow-lg
             [&_figure]:my-10 [&_figure]:overflow-hidden
+            [&_figcaption]:mt-3 [&_figcaption]:text-sm [&_figcaption]:leading-6 [&_figcaption]:text-[#6d625c]
+            [&_[data-blog-intro='lead']]:mb-10 [&_[data-blog-intro='lead']]:rounded-[1.75rem] [&_[data-blog-intro='lead']]:border [&_[data-blog-intro='lead']]:border-[#FF5C3A]/20 [&_[data-blog-intro='lead']]:bg-[linear-gradient(135deg,rgba(255,92,58,0.12),rgba(255,255,255,0.88))] [&_[data-blog-intro='lead']]:px-6 [&_[data-blog-intro='lead']]:py-6 [&_[data-blog-intro='lead']]:text-[1.08rem] [&_[data-blog-intro='lead']]:font-medium [&_[data-blog-intro='lead']]:leading-8 [&_[data-blog-intro='lead']]:text-[#1b1715] [&_[data-blog-block='impact']]:my-8 [&_[data-blog-block='impact']]:rounded-[1.5rem] [&_[data-blog-block='impact']]:border [&_[data-blog-block='impact']]:border-[#101010]/10 [&_[data-blog-block='impact']]:bg-white/80 [&_[data-blog-block='impact']]:px-6 [&_[data-blog-block='impact']]:py-6 [&_[data-blog-block='impact']]:shadow-[0_18px_40px_rgba(0,0,0,0.06)] [&_[data-blog-block='impact']_h3]:mt-0 [&_[data-blog-block='impact']_h3]:mb-3 [&_[data-blog-block='impact']_h3]:text-[#101010] [&_[data-blog-block='impact']_ul]:my-0 [&_[data-blog-block='impact']_li]:marker:text-[#FF5C3A] [&_[data-blog-cta='final']]:mt-10 [&_[data-blog-cta='final']]:rounded-[1.75rem] [&_[data-blog-cta='final']]:bg-[#101010] [&_[data-blog-cta='final']]:px-6 [&_[data-blog-cta='final']]:py-6 [&_[data-blog-cta='final']]:text-white [&_[data-blog-cta='final']_p]:m-0 [&_[data-blog-cta='final']_a]:inline-flex [&_[data-blog-cta='final']_a]:items-center [&_[data-blog-cta='final']_a]:justify-center [&_[data-blog-cta='final']_a]:rounded-full [&_[data-blog-cta='final']_a]:bg-[#FF5C3A] [&_[data-blog-cta='final']_a]:px-5 [&_[data-blog-cta='final']_a]:py-3 [&_[data-blog-cta='final']_a]:font-bold [&_[data-blog-cta='final']_a]:text-white"
             [&_div[style*='background:_#FFF5F2']]:!bg-white [&_div[style*='background:_#FFF5F2']]:!border-[#FF5C3A]
             [&_h4]:!text-[#FF5C3A]
             "
@@ -130,10 +132,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <p className="text-[#999] mb-8 max-w-xl mx-auto">Únete a cientos de marcas que ya están transformando la experiencia de compra de sus clientes con Lookitry.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
-              href="/register" 
+              href="/trial-checkout" 
               className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white font-bold py-3 px-8 rounded-full transition-all"
             >
-              Probar gratis ahora
+              Comenzar prueba ahora
             </Link>
             <Link 
               href="/planes" 

@@ -14,10 +14,10 @@ import {
 } from '@/services/blog.service';
 
 const OPENROUTER_ARTICLE_MODELS = [
-  { value: 'openrouter/free', label: 'OpenRouter Free' },
   { value: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
   { value: 'openai/gpt-4.1-mini', label: 'GPT-4.1 Mini' },
   { value: 'anthropic/claude-3.5-haiku', label: 'Claude 3.5 Haiku' },
+  { value: 'openrouter/free', label: 'OpenRouter Free' },
   { value: '__custom__', label: 'Otro' },
 ];
 
@@ -241,7 +241,8 @@ export default function AdminBlogPage() {
       }
     }
 
-    setTriggerMessage('La ejecución sigue en curso o no reportó un estado final todavía. Revisa n8n si tarda más de lo normal.');
+    setTriggerMessage('');
+    setError('n8n no confirmó el resultado del flujo a tiempo. Revisa la ejecución fallida y asegúrate de reportar `success` o `error` al endpoint `/api/blog/execution-status` para que el panel muestre el fallo real.');
     setIsMonitoringRun(false);
   };
 
@@ -283,10 +284,10 @@ export default function AdminBlogPage() {
     );
   }
 
-  const selectedArticleModel = settings?.openrouter_article_model || 'openrouter/free';
+  const selectedArticleModel = settings?.openrouter_article_model || 'google/gemini-2.5-flash';
   const hasUnknownSavedModel = !OPENROUTER_ARTICLE_MODELS.some((model) => model.value === selectedArticleModel);
   const articleModelSelectValue = (isCustomArticleModelSelected || hasUnknownSavedModel) ? '__custom__' : selectedArticleModel;
-  const executionStatus = isMonitoringRun ? 'running' : (settings?.execution_status || 'idle');
+  const executionStatus = error ? 'error' : (isMonitoringRun ? 'running' : (settings?.execution_status || 'idle'));
   const executionTitle = error
     ? 'La ejecución falló'
     : triggerMessage

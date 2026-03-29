@@ -36,6 +36,29 @@ async function buildUniqueBlogSlug(title: string): Promise<string> {
   return `${baseSlug}-${suffix}`;
 }
 
+function normalizeCategorySlug(value?: string | null): string | null {
+  if (!value || typeof value !== 'string') return null;
+  const slug = toBaseSlug(value);
+  return slug || null;
+}
+
+function normalizeTags(raw: unknown): string[] {
+  if (Array.isArray(raw)) {
+    return raw
+      .map((tag) => String(tag || '').trim())
+      .filter(Boolean);
+  }
+
+  if (typeof raw === 'string') {
+    return raw
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
 export const blogController = {
   /**
    * n8n Webhook: Crea un post de blog directamente.
@@ -50,7 +73,19 @@ export const blogController = {
         return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Secreto de webhook inválido' });
       }
 
-      const { title, content, excerpt, meta_description, featured_image, category_slug, tags, status } = req.body;
+      const {
+        title,
+        content,
+        excerpt,
+        meta_description,
+        featured_image,
+        category_slug,
+        categoria,
+        category,
+        category_name,
+        tags,
+        status,
+      } = req.body;
 
       if (!title || !content) {
         return res.status(400).json({ error: 'BAD_REQUEST', message: 'Título y contenido son obligatorios' });
@@ -58,7 +93,13 @@ export const blogController = {
 
       // Buscar categoría por slug o usar default
       let categoryId = null;
-      const targetSlug = category_slug || 'ia'; 
+      const targetSlug =
+        normalizeCategorySlug(category_slug) ||
+        normalizeCategorySlug(categoria) ||
+        normalizeCategorySlug(category) ||
+        normalizeCategorySlug(category_name) ||
+        'ia';
+      const normalizedTags = normalizeTags(tags);
       
       const { data: cat } = await supabaseAdmin
         .from('blog_categories')
@@ -68,11 +109,11 @@ export const blogController = {
       
       if (cat) {
         categoryId = cat.id;
-      } else if (category_slug && category_slug !== 'ia') {
-        const generatedName = category_slug.charAt(0).toUpperCase() + category_slug.slice(1).replace(/-/g, ' ');
+      } else if (targetSlug && targetSlug !== 'ia') {
+        const generatedName = targetSlug.charAt(0).toUpperCase() + targetSlug.slice(1).replace(/-/g, ' ');
         const { data: newCat } = await supabaseAdmin.from('blog_categories').insert({
           name: generatedName,
-          slug: category_slug
+          slug: targetSlug
         }).select('id').single();
 
         if (newCat) {
@@ -97,7 +138,7 @@ export const blogController = {
           meta_description,
           featured_image,
           category_id: categoryId,
-          tags: tags || [],
+          tags: normalizedTags,
           status: status || 'published',
           slug,
           published_at: (status === 'published' || !status) ? new Date().toISOString() : null,
