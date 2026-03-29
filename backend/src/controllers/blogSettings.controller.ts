@@ -19,7 +19,7 @@ async function resolveExpectedBlogSecret(): Promise<string> {
     .eq('id', 1)
     .single();
 
-  return data?.webhook_secret || process.env.BLOG_WEBHOOK_SECRET || '';
+  return data?.webhook_secret || process.env.BLOG_WEBHOOK_SECRET;
 }
 
 export const blogSettingsController = {
@@ -153,7 +153,7 @@ export const blogSettingsController = {
       if (fetchError || !settings) throw new Error('No se pudo cargar la configuración del blog');
 
       const url = settings.webhook_url || process.env.N8N_BLOG_WEBHOOK_URL;
-      const secret = settings.webhook_secret || process.env.N8N_BLOG_WEBHOOK_SECRET || process.env.BLOG_WEBHOOK_SECRET || '';
+      const secret = settings.webhook_secret || process.env.N8N_BLOG_WEBHOOK_SECRET || process.env.BLOG_WEBHOOK_SECRET;
 
       if (!url) throw new Error('URL de webhook n8n no configurada');
 
