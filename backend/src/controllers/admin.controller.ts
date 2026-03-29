@@ -1349,10 +1349,23 @@ export const getWooBrandsSummary = async (_req: any, res: Response) => {
         lastSyncAt: null,
         lastErrorAt: null,
         lastErrorMessage: null,
+        storeDomain: null,
       }));
+
+      // Lógica de status para el frontend
+      let status: 'active' | 'pending' | 'inactive' = 'inactive';
+      if (b.api_key) {
+        // Si tiene API key y ha habido actividad, está activa. Si no, está pendiente.
+        status = telemetry.totalRequests > 0 ? 'active' : 'pending';
+      }
+
       return {
         ...b,
         has_api_key: !!b.api_key,
+        status,
+        plugin_store_domain: telemetry.storeDomain,
+        plugin_validated_at: telemetry.lastSyncAt,
+        subscription_status: b.subscription_status,
         product_counts: counts,
         telemetry,
       };

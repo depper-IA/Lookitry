@@ -127,6 +127,37 @@ export const blogController = {
         if (firstCat) categoryId = firstCat.id;
       }
 
+      // 1. Validar duplicidad extra: si ya existe un post con el mismo título
+      const { data: existingPost } = await supabaseAdmin
+        .from('blogs')
+        .select('id')
+        .eq('title', title)
+        .single();
+      
+      if (existingPost) {
+        return res.status(409).json({ 
+          error: 'CONFLICT', 
+          message: 'Ya existe un artículo con ese título exacto.' 
+        });
+      }
+
+      // 2. Validar si el topic_id ya fue procesado
+      const topicId = req.body.topic_id || null;
+      if (topicId) {
+        const { data: existingTopicPost } = await supabaseAdmin
+          .from('blogs')
+          .select('id')
+          .eq('topic_id', topicId)
+          .single();
+        
+        if (existingTopicPost) {
+          return res.status(409).json({ 
+            error: 'CONFLICT', 
+            message: 'Este tema ya ha sido convertido en un artículo.' 
+          });
+        }
+      }
+
       const slug = await buildUniqueBlogSlug(title);
 
       const { data, error } = await supabaseAdmin
@@ -141,12 +172,21 @@ export const blogController = {
           tags: normalizedTags,
           status: status || 'published',
           slug,
+          topic_id: topicId,
           published_at: (status === 'published' || !status) ? new Date().toISOString() : null,
         })
         .select()
         .single();
 
       if (error) throw error;
+
+      // 3. Si se usó un topic_id, marcarlo como publicado
+      if (topicId) {
+        await supabaseAdmin
+          .from('blog_topics')
+          .update({ status: 'published', updated_at: new Date().toISOString() })
+          .eq('id', topicId);
+      }
 
       return res.status(201).json({ message: 'Post creado exitosamente', post: data });
     } catch (error: any) {

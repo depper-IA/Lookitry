@@ -1,0 +1,1423 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "6ddf61ee-106f-4769-b49a-f4abfea3523e",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        64400,
+        30352
+      ]
+    },
+    {
+      "parameters": {
+        "path": "lookitry-blog-trigger",
+        "options": {}
+      },
+      "id": "d1f5aab9-ed8b-443e-91c0-ac9e7bfc21a3",
+      "name": "Webhook Trigger Manual",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        64400,
+        30544
+      ],
+      "webhookId": "lookitry-blog-trigger-v3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "HTTP-Referer",
+              "value": "https://lookitry.com"
+            },
+            {
+              "name": "X-Title",
+              "value": "Lookitry Trend Hunter"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"model\": \"google/gemma-3-4b-it:free\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Eres el editor jefe de Lookitry, un SaaS de probador virtual de moda con IA para ecommerce.\\n\\nGenera exactamente 3 ideas de artículos de blog sobre tendencias ACTUALES de IA en ecommerce de moda y probadores virtuales.\\n\\nCRITERIOS:\\n- Temas con alta búsqueda SEO y baja competencia editorial.\\n- Enfocados en beneficios de negocio: conversión, devoluciones, experiencia de compra.\\n- Orientados a tomadores de decisión en ecommerce (directores, CTOs, marketing).\\n\\nRESPUESTA: Devuelve SOLO un array JSON válido. Sin markdown, sin code fences, sin texto fuera del JSON.\\n\\nFormato exacto:\\n[\\n  {\\n    \\\"title\\\": \\\"Título SEO del artículo\\\",\\n    \\\"keywords\\\": \\\"keyword1, keyword2, keyword3\\\",\\n    \\\"category_slug\\\": \\\"ia\\\"\\n  },\\n  { ... },\\n  { ... }\\n]\"\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 1000\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "d5ec9885-8fbd-4f14-a5d7-61c99e87cc03",
+      "name": "AI Trend Hunter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        64720,
+        30352
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "zoSkapW7VQMaPW6Y",
+          "name": "Open Pruebalo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// BUG FIX: Este nodo ahora lanza AMBAS peticiones en paralelo\n// y usa un merge interno para deduplicar correctamente.\n// Recibe la respuesta del AI Trend Hunter y TAMBIÉN hace el GET a Supabase\n// antes de comparar.\n\nconst source = $input.first().json;\nlet rawText = '';\nif (typeof source?.choices?.[0]?.message?.content === 'string') {\n  rawText = source.choices[0].message.content;\n} else if (Array.isArray(source?.choices?.[0]?.message?.content)) {\n  rawText = source.choices[0].message.content.map(p => p?.text || '').join('');\n} else {\n  rawText = JSON.stringify(source);\n}\nrawText = rawText.replace(/```json\\s*/gi, '').replace(/```\\s*/g, '').trim();\nlet topics;\ntry { topics = JSON.parse(rawText); } catch(e) {\n  const m = rawText.match(/\\[([\\s\\S]+?)\\]/);\n  if (!m) throw new Error('No se pudo parsear array de temas: ' + rawText.substring(0, 500));\n  try { topics = JSON.parse('[' + m[1] + ']'); } catch(e2) {\n    throw new Error('Parse fallido incluso con extracción manual: ' + rawText.substring(0, 500));\n  }\n}\nif (!Array.isArray(topics) || topics.length === 0) throw new Error('El AI no devolvió temas válidos.');\nconst result = topics.slice(0, 3).map(t => ({ json: { title: (t.title || '').trim(), keywords: (t.keywords || '').trim(), category_slug: (t.category_slug || 'ia').trim() } }));\nconsole.log('Temas parseados del AI:', result.map(r => r.json.title));\nreturn result;"
+      },
+      "id": "4e788260-aaf5-4084-b4fd-0ad97ca2b6bc",
+      "name": "Parsear Temas AI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64960,
+        30352
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://vkdooutklowctuudjnkl.supabase.co/rest/v1/blog_topics?select=title",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e26affe8-ea9e-4242-b56e-6cf06baf8771",
+      "name": "GET Temas Existentes Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        64960,
+        30544
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "id": "2f5b6ca7-845f-49d0-978d-1aa8aedbf5db",
+      "name": "Merge Para Deduplicar",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        65200,
+        30448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// BUG FIX PRINCIPAL:\n// Antes: recibía solo 1 input (Supabase), perdía los temas del AI.\n// Ahora: recibe el Merge con AMBOS inputs y compara correctamente.\n\nconst allItems = $input.all();\n\n// Separar los temas del AI (tienen title + keywords) vs los de Supabase (solo title)\nconst aiTopics = allItems.filter(i => i.json.keywords !== undefined);\nconst supabaseItems = allItems.filter(i => i.json.keywords === undefined);\n\nconsole.log(`Items del AI: ${aiTopics.length}, Items de Supabase: ${supabaseItems.length}`);\n\n// Construir set de títulos existentes en Supabase (todos los status)\nconst existingTitles = new Set();\nfor (const item of supabaseItems) {\n  // Supabase devuelve array directamente o dentro de .data\n  const raw = item.json;\n  const arr = Array.isArray(raw) ? raw : (raw?.data || [raw]);\n  for (const t of arr) {\n    if (t?.title) existingTitles.add(t.title.toLowerCase().trim());\n  }\n}\n\nconsole.log(`Títulos existentes en Supabase: ${existingTitles.size}`, [...existingTitles]);\n\n// Filtrar temas del AI que NO estén en Supabase\nconst newTopics = aiTopics.filter(item => {\n  const t = (item.json.title || '').toLowerCase().trim();\n  const isDup = existingTitles.has(t);\n  if (isDup) console.log(`Duplicado detectado, saltando: \"${item.json.title}\"`);\n  return t.length > 5 && !isDup;\n});\n\nif (newTopics.length === 0) {\n  console.log('Todos los temas propuestos ya existen. No se insertarán duplicados.');\n  return [{ json: { skipped: true, message: 'No hay temas nuevos para insertar.' } }];\n}\n\nconsole.log(`Temas nuevos a insertar: ${newTopics.length}`, newTopics.map(t => t.json.title));\nreturn newTopics.map(i => ({ json: i.json }));"
+      },
+      "id": "4f0fd39b-8d6e-4dd2-9e20-664bb50078e5",
+      "name": "Deduplicar Temas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        65440,
+        30448
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "skip-check",
+              "leftValue": "={{ $json.skipped }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notTrue",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "17f9afff-c649-4ebe-817b-0d7dcd833109",
+      "name": "¿Hay temas nuevos?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        65680,
+        30448
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://vkdooutklowctuudjnkl.supabase.co/rest/v1/blog_topics",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: $json.title, keywords: $json.keywords, category_slug: $json.category_slug, status: 'pending' }) }}",
+        "options": {}
+      },
+      "id": "e536e210-5d33-4311-8497-f67acadf0da4",
+      "name": "INSERT Tema en Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        65920,
+        30352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Verificar que el INSERT fue exitoso antes de continuar\nconst res = $input.first().json;\nconst inserted = Array.isArray(res) ? res[0] : res;\nif (!inserted?.id) {\n  console.warn('INSERT no devolvió id, respuesta:', JSON.stringify(res));\n} else {\n  console.log(`✓ Tema insertado correctamente: id=${inserted.id}, title=\"${inserted.title}\"`);\n}\nreturn [{ json: inserted || res }];"
+      },
+      "id": "f1bb6350-dfb4-419c-a372-d9d5961d2c68",
+      "name": "Verificar INSERT",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        66160,
+        30352
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://vkdooutklowctuudjnkl.supabase.co/rest/v1/blog_topics?select=id,title,keywords,category_slug&status=eq.pending&order=created_at.asc&limit=5",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a3910a7a-e8a0-4f95-8708-42a6fafacb20",
+      "name": "GET Temas Pendientes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        66400,
+        30352
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconsole.log('GET Temas Pendientes respuesta raw:', JSON.stringify(raw));\n\nlet topics = [];\nif (Array.isArray(raw)) {\n  topics = raw;\n} else if (raw?.data && Array.isArray(raw.data)) {\n  topics = raw.data;\n} else if (raw?.id) {\n  topics = [raw];\n}\n\nconsole.log(`Temas pendientes encontrados: ${topics.length}`);\n\nif (topics.length === 0) {\n  throw new Error(\n    'No hay temas pendientes en blog_topics. ' +\n    'Respuesta cruda: ' + JSON.stringify(raw)\n  );\n}\n\nreturn topics.map(t => ({\n  json: {\n    topic_id: t.id,\n    title: t.title,\n    keywords: t.keywords || '',\n    category_slug: t.category_slug || 'ia'\n  }\n}));"
+      },
+      "id": "b4311335-f95b-4bb4-aa03-66e69a261217",
+      "name": "Preparar Loop Temas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        66640,
+        30352
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "08a1d45d-ae90-48fe-bfb0-6201ad1b20ac",
+      "name": "Loop Temas Pendientes",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        72352,
+        32880
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-1.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-1.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres el director de arte de Lookitry Editorial. Debes generar prompts de imagen editoriales que representen el tema elegido con precisión.\n\nIDENTIDAD VISUAL DE LOOKITRY:\n- Paleta guía: naranja principal (#FF5C3A), blanco, negro, grises tecnológicos.\n- Estilo: editorial premium, ecommerce de moda, tecnología aplicada a retail, fotografía realista.\n\nDATOS DEL ARTÍCULO:\n- Tema: \"{{ $(\"Loop Temas Pendientes\").item.json.title }}\"\n- Categoría: \"{{ $(\"Loop Temas Pendientes\").item.json.category_slug || \"ia\" }}\"\n- Keywords: \"{{ $(\"Loop Temas Pendientes\").item.json.keywords || \"\" }}\"\n\nREGLAS:\n- Todas las imágenes deben ser horizontales 16:9, fotorrealistas, sin texto, sin logos, sin marcas de agua.\n- Escenas específicas al tema, no genéricas.",
+              "role": "model"
+            },
+            {
+              "content": "=Genera TRES prompts de imagen editoriales en inglés para este artículo.\n\nDevuelve SOLO en este formato exacto:\n(A) [prompt de imagen destacada/hero]\n(B) [prompt imagen body 1 - pain point o problema]\n(C) [prompt imagen body 2 - solución o resultado positivo]\n\nTema: \"{{ $(\"Loop Temas Pendientes\").item.json.title }}\"\nKeywords: \"{{ $(\"Loop Temas Pendientes\").item.json.keywords || \"\" }}\"\n\nNo añadas intro, explicaciones, markdown ni code fences. Solo las tres líneas."
+            }
+          ]
+        },
+        "options": {
+          "maxOutputTokens": 300
+        }
+      },
+      "id": "400128ae-0516-4f66-804d-93a371358efa",
+      "name": "Generar Prompts Imágenes",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        72384,
+        32416
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZYbXBAz7cxAnp7Co",
+          "name": "samu.wilkie"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first()?.json?.content?.parts?.[0]?.text ||\n  $input.first()?.json?.choices?.[0]?.message?.content ||\n  $input.first()?.json?.text || '';\nconst text = raw.replace(/\\r/g, '').trim();\nfunction cleanPrompt(v) {\n  return (v || '').replace(/^[\"'`]+|[\"'`]+$/g,'').replace(/\\n+/g,' ').replace(/\\s+/g,' ').trim();\n}\nfunction extractLabeled(label, nextLabels=[]) {\n  const next = nextLabels.length ? `(?=\\\\(${nextLabels.join('|')}\\\\)|$)` : '$';\n  const rx = new RegExp(`\\\\(${label}\\\\)\\\\s*([\\\\s\\\\S]+?)${next}`,'i');\n  return cleanPrompt(text.match(rx)?.[1] || '');\n}\nlet pA = extractLabeled('A',['B','C']);\nlet pB = extractLabeled('B',['C']);\nlet pC = extractLabeled('C',[]);\nconst bullets = text.split('\\n').map(l=>cleanPrompt(l.replace(/^[-*•\\d.)\\s]+/,''))).filter(Boolean);\nif (!pA && bullets[0]) pA = bullets[0];\nif (!pB && bullets[1]) pB = bullets[1];\nif (!pC && bullets[2]) pC = bullets[2];\nif (pA && !pB) pB = `${pA}, editorial lifestyle scene, fashion ecommerce context, different composition`;\nif (pA && !pC) pC = `${pA}, secondary supporting visual, alternate angle, AI virtual try-on detail`;\nif (!pA) throw new Error('No se pudieron extraer los prompts. Texto: ' + text.substring(0,500));\nconst topicData = $('Loop Temas Pendientes').item.json;\nreturn [\n  { json: { prompt: pA, tipo: 'destacada', orden: 1, ...topicData } },\n  { json: { prompt: pB, tipo: 'body1', orden: 2, ...topicData } },\n  { json: { prompt: pC, tipo: 'body2', orden: 3, ...topicData } }\n];"
+      },
+      "id": "5cd9024c-8b62-414d-bfbe-149b9e8d62ed",
+      "name": "Extraer Prompts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        67472,
+        29888
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "89c764ce-2dc0-4fb5-80fd-26fb2b9ac842",
+      "name": "Loop Imágenes",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        67664,
+        29888
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer r8_D4VY9Ay3avB9k5qMARUTqD09qIaiTne3TKVu0"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait=10"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"input\": {\n    \"prompt\": \"{{ $json.prompt }}\",\n    \"aspect_ratio\": \"16:9\",\n    \"output_format\": \"png\",\n    \"output_quality\": 90,\n    \"num_inference_steps\": 4,\n    \"go_fast\": true,\n    \"megapixels\": \"1\"\n  }\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "404e2532-e99b-40a0-bed2-970c29e2cc99",
+      "name": "Replicate FLUX",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        67904,
+        29904
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "use-replicate",
+                    "leftValue": true,
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Replicate"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "use-openrouter",
+                    "leftValue": false,
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OpenRouter"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f457a390-49d2-4fec-b6eb-a39ff22596f0",
+      "name": "Switch Proveedor Imagen",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        67664,
+        30144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "HTTP-Referer",
+              "value": "https://lookitry.com"
+            },
+            {
+              "name": "X-Title",
+              "value": "Lookitry Blog Automation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({\n  model: 'openai/dall-e-3',\n  messages: [{ role: 'user', content: $json.prompt }],\n  temperature: 0.5\n}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "1c5137be-615e-4a97-a211-7c8d9b7263f1",
+      "name": "OpenRouter Generar Imagen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        67904,
+        30240
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "zoSkapW7VQMaPW6Y",
+          "name": "Open Pruebalo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $input.item.json;\nconst loopData = $('Loop Imágenes').item.json;\nlet url = '';\nif (source?.choices?.[0]?.message?.content) {\n  const content = source.choices[0].message.content;\n  const m = content.match(/https:\\/\\/\\S+/);\n  url = m ? m[0] : content;\n} else if (source?.imageUrl) {\n  url = source.imageUrl;\n} else if (source?.data?.[0]?.url) {\n  url = source.data[0].url;\n} else {\n  url = JSON.stringify(source);\n}\nreturn [{ json: { ...loopData, imageUrl: url } }];"
+      },
+      "id": "15cd173e-2af3-4a29-a96d-4a59cba2b999",
+      "name": "Extraer URL OpenRouter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        68128,
+        30240
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.imageUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "3fe2516d-d353-49a8-9ff7-ad35e3267608",
+      "name": "Descargar Imagen OpenRouter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        68336,
+        30240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst currentItem = $('Loop Imágenes').item.json;\nconst token = 'r8_D4VY9Ay3avB9k5qMARUTqD09qIaiTne3TKVu0';\nasync function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }\nasync function getPrediction(url) {\n  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });\n  if (!res.ok) throw new Error(`Replicate lookup failed (${res.status}): ${await res.text()}`);\n  return await res.json();\n}\nasync function resolvePrediction(pred) {\n  let cur = pred;\n  for (let i = 0; i < 30; i++) {\n    if (cur?.error) throw new Error(`Replicate error en ${currentItem.tipo}: ${cur.error}`);\n    if (cur?.status === 'failed' || cur?.status === 'canceled') throw new Error(`Replicate ${cur.status}. ID: ${cur.id}`);\n    if (cur?.status === 'succeeded' && cur?.output) {\n      const imageUrl = Array.isArray(cur.output) ? cur.output[0] : cur.output;\n      return [{ json: { ...currentItem, imageUrl, predictionId: cur.id } }];\n    }\n    const pollUrl = cur?.urls?.get;\n    if (!pollUrl) throw new Error(`Sin output ni poll URL. Status: ${cur?.status || 'unknown'}`);\n    await sleep(4000);\n    cur = await getPrediction(pollUrl);\n  }\n  throw new Error(`Replicate timeout para ${currentItem.tipo}`);\n}\nreturn await resolvePrediction(response);"
+      },
+      "id": "09e0dd49-90f6-4975-9f88-3dc53865b791",
+      "name": "Replicate Extraer URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        68112,
+        29904
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.imageUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "2b5adb86-97d4-46d9-9375-cb7bb63b08e7",
+      "name": "Descargar PNG Replicate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        68304,
+        29904
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst tipo = item.json.tipo || 'imagen';\nif (item.binary?.data) {\n  item.binary.data.fileName = `${tipo}.png`;\n  item.binary.data.mimeType = 'image/png';\n}\nreturn { json: { ...item.json, tipo }, binary: item.binary };"
+      },
+      "id": "eaf2faf8-2801-4cb2-b250-296ac2fa7b60",
+      "name": "Renombrar PNG",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        68544,
+        30096
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/blog/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-blog-secret",
+              "value": "Travis2305**_blog_live"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "filename",
+              "value": "={{ $('Renombrar PNG').item.binary.data.fileName }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bc50155c-e785-47c6-b988-78a55945f69d",
+      "name": "Uploader Imagen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        68800,
+        30096
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://lookitry.com/api/blog",
+        "options": {}
+      },
+      "id": "cec67c92-e973-49ef-bdfe-4ebc10c9c3c1",
+      "name": "GET Blogs Existentes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        72384,
+        33072
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawItems = $input.all();\nconst source = rawItems.length === 1 && Array.isArray(rawItems[0].json?.data) ? rawItems[0].json.data : rawItems.map(i => i.json);\nconst enlacesBlogs = source.slice(0, 8).map(post => ({ titulo: post.title, url: `https://lookitry.com/blog/${post.slug}` }));\nreturn [{ json: { enlacesBlogs } }];"
+      },
+      "id": "bbcad26b-7b50-408e-8f28-cdf4dc99f84b",
+      "name": "Extraer Links Blog",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        68096,
+        30560
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "id": "80bd2bc4-0f3f-4e49-a2c1-66ffb7308edf",
+      "name": "Merge Datos Completos",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        69040,
+        30512
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\nconst topicItem = allItems.find(i => i.json.topic_id && i.json.title);\nconst imgItem = allItems.find(i => i.json.imagen_destacada);\nconst linksItem = allItems.find(i => Array.isArray(i.json.enlacesBlogs));\nif (!topicItem) throw new Error('No se encontraron datos del tema en el merge.');\nif (!imgItem) throw new Error('No se encontraron datos de imágenes en el merge.');\nconst d = {\n  ...topicItem.json,\n  imagen_destacada: imgItem.json.imagen_destacada,\n  imagen_destacada_url: imgItem.json.imagen_destacada?.url || '',\n  imagen_body1_url: imgItem.json.imagen_body1?.url || '',\n  imagen_body2_url: imgItem.json.imagen_body2?.url || '',\n  enlacesBlogs: linksItem?.json?.enlacesBlogs || []\n};\nreturn [{ json: d }];"
+      },
+      "id": "b5fdcd70-fb4c-4122-a6ac-df87f619bda8",
+      "name": "Obtener Info Consolidada",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        69808,
+        30528
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ctx-001",
+              "name": "Tema",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-002",
+              "name": "Keywords",
+              "value": "={{ $json.keywords }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-003",
+              "name": "Categoria",
+              "value": "={{ $json.category_slug }}",
+              "type": "string"
+            },
+            {
+              "id": "ctx-004",
+              "name": "EnlacesBlogs",
+              "value": "={{ $json.enlacesBlogs }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "027c4ad6-b53e-4cd5-8850-d2fad93ff036",
+      "name": "Preparar Contexto Editorial",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        69792,
+        30272
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "HTTP-Referer",
+              "value": "https://lookitry.com"
+            },
+            {
+              "name": "X-Title",
+              "value": "Lookitry Blog Automation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({\n  model: 'google/gemini-2.0-flash-exp',\n  messages: [{\n    role: 'user',\n    content: [\n      'Eres Lookitry Editorial. Escribe un articulo SEO people-first para ecommerce de moda.',\n      '',\n      '# DATOS DE ENTRADA',\n      '- Tema: ' + ($json.title || ''),\n      '- Categoria: ' + ($json.category_slug || 'ia'),\n      '- Keywords: ' + ($json.keywords || ''),\n      '- topic_id: ' + ($json.topic_id || ''),\n      '- Imagen destacada URL: ' + ($json.imagen_destacada_url || ''),\n      '- Imagen body1 URL: ' + ($json.imagen_body1_url || ''),\n      '- Imagen body2 URL: ' + ($json.imagen_body2_url || ''),\n      '- Blogs internos relacionados (usa 2-3 como enlaces): ' + JSON.stringify($json.enlacesBlogs || []),\n      '',\n      '# OBJETIVO',\n      'Genera un articulo de 1200-1500 palabras, persuasivo, claro y orientado a conversion.',\n      '',\n      '# REGLAS CRITICAS',\n      '1. Devuelve SOLO un objeto JSON valido, sin markdown, sin code fences.',\n      '2. El campo content debe ser HTML completo en una sola linea.',\n      '3. Usa EXACTAMENTE dos figuras dentro del HTML:',\n      '   - primera figura con: ' + ($json.imagen_body1_url || ''),\n      '   - segunda figura con: ' + ($json.imagen_body2_url || ''),\n      '4. La imagen destacada NO va dentro del content.',\n      '5. Incluye 2-3 enlaces internos a los blogs relacionados.',\n      '6. Genera entre 3-5 tags relevantes.',\n      '',\n      '# ESTRUCTURA HTML OBLIGATORIA',\n      '- <div data-blog-intro=\"lead\"> parrafo de apertura fuerte',\n      '- primer <h2> con parrafo',\n      '- <section data-blog-block=\"impact\"> con puntos de impacto',\n      '- primer <figure> con imagen body1 y <figcaption>',\n      '- segundo <h2> con 2 parrafos',\n      '- segundo <figure> con imagen body2 y <figcaption>',\n      '- tercer <h2> con cierre',\n      '- <div data-blog-cta=\"final\"> CTA a https://lookitry.com/trial-checkout',\n      '',\n      '# FORMATO DE SALIDA',\n      '{\"title\":\"...\",\"content\":\"...\",\"excerpt\":\"...\",\"tags\":[\"...\",\"...\",\"...\"]}'\n    ].join('\\n')\n  }],\n  temperature: 0.2,\n  max_tokens: 4000\n}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "fbbc4044-3dd4-4462-b1c8-e37d0232d283",
+      "name": "Redactor IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        70016,
+        30272
+      ],
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "zoSkapW7VQMaPW6Y",
+          "name": "Open Pruebalo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $input.item.json;\nlet rawText = '';\nif (typeof source?.choices?.[0]?.message?.content === 'string') {\n  rawText = source.choices[0].message.content;\n} else if (Array.isArray(source?.choices?.[0]?.message?.content)) {\n  rawText = source.choices[0].message.content.map(p => typeof p === 'string' ? p : p?.text || '').join('');\n} else if (source?.content?.parts?.[0]?.text) {\n  rawText = source.content.parts[0].text;\n} else {\n  rawText = JSON.stringify(source);\n}\nrawText = rawText.replace(/```json\\s*/gi,'').replace(/```\\s*/g,'').trim();\nlet parsed = null;\ntry { parsed = JSON.parse(rawText); } catch(_) {}\nif (!parsed) {\n  function extractFirstJson(text) {\n    const start = text.indexOf('{');\n    if (start === -1) return null;\n    let depth=0, inStr=false, esc=false;\n    for (let i=start;i<text.length;i++) {\n      const ch=text[i];\n      if(esc){esc=false;continue;}\n      if(ch==='\\\\'){esc=true;continue;}\n      if(ch==='\"'){inStr=!inStr;continue;}\n      if(inStr)continue;\n      if(ch==='{')depth++;\n      if(ch==='}')depth--;\n      if(depth===0)return text.slice(start,i+1);\n    }\n    return null;\n  }\n  const jsonStr = extractFirstJson(rawText);\n  if (!jsonStr) throw new Error('No JSON válido. Respuesta: '+rawText.substring(0,700));\n  parsed = JSON.parse(jsonStr);\n}\nconst missing=['title','excerpt','content'].filter(f=>!parsed[f]);\nif(missing.length>0) throw new Error(`Campos faltantes: ${missing.join(', ')}`);\nreturn [{ json: parsed }];"
+      },
+      "id": "b310a887-aee3-4ab6-b037-3fe4583d4cb1",
+      "name": "Parsear Artículo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        70256,
+        30272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const article = $input.first().json;\nlet ctx = {};\ntry { ctx = $('Preparar Contexto Editorial').first().json || {}; } catch(e) {}\nconst rawTags = article.tags || article.Tags || ctx.Tags || [];\nconst tagsArray = Array.isArray(rawTags) ? rawTags.map(t=>String(t||'').trim()).filter(Boolean) : String(rawTags||'').split(',').map(t=>t.trim()).filter(Boolean);\nconst categorySlug = String(article.category_slug || ctx.category_slug || 'ia').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'ia';\nconst excerpt = (article.excerpt || '').substring(0,157) + ((article.excerpt||'').length > 157 ? '...' : '');\nconst meta_description = (article.meta_description || article.excerpt || '').substring(0,157) + '...';\nconst wpBody = {\n  title: article.title,\n  excerpt,\n  content: article.content,\n  status: 'published',\n  category_slug: categorySlug,\n  tags: tagsArray,\n  featured_image: ctx.imagen_destacada_url || '',\n  meta_description,\n  topic_id: ctx.topic_id || ''\n};\nreturn [{ json: { wpBody, ...ctx, tags: tagsArray, category_slug: categorySlug, title: article.title, excerpt, content: article.content, meta_description } }];"
+      },
+      "id": "c557fe4a-b9a6-4c5f-87f8-4a01a8e23756",
+      "name": "Preparar JSON Lookitry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        70496,
+        30272
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/blog/webhook",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-blog-secret",
+              "value": "Travis2305**_blog_live"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.wpBody) }}",
+        "options": {}
+      },
+      "id": "2efba4cf-23d3-4620-b9b0-39cbb5724275",
+      "name": "Publicar en Lookitry",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        70720,
+        30272
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "status-check",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": 201,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "92d48ee1-e160-4c7f-9a1e-9a06ef158f55",
+      "name": "¿Publicado OK (201)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        70976,
+        30272
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://vkdooutklowctuudjnkl.supabase.co/rest/v1/blog_topics?id=eq.{{ $('Preparar Contexto Editorial').first().json.topic_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NjU2NjUsImV4cCI6MjA4NjM0MTY2NX0.ysvYQtcl2hCEOJVczXG-4knzt6oOd74z9iE3Ci_KOWM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"status\": \"published\" }",
+        "options": {}
+      },
+      "id": "85c52544-97e4-4173-a088-63b034653902",
+      "name": "PATCH status published",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        71216,
+        30256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const topicId = $('Preparar Contexto Editorial').first().json?.topic_id || 'desconocido';\nconst title = $('Preparar Contexto Editorial').first().json?.title || 'desconocido';\nconst respuesta = $input.first().json;\nconsole.log(`ERROR AL PUBLICAR: topic_id=${topicId}, title=${title}`);\nconsole.log('Respuesta Lookitry:', JSON.stringify(respuesta));\nreturn [{ json: { error: true, topic_id: topicId, title, response: respuesta, timestamp: new Date().toISOString() } }];"
+      },
+      "id": "4bf40900-0404-4710-9d5e-da77d8251127",
+      "name": "Log Error Publicación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        70992,
+        30576
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const topicId = $('Preparar Contexto Editorial').first().json?.topic_id || 'N/A';\nconst title = $('Preparar Contexto Editorial').first().json?.title || 'N/A';\nconsole.log(`✓ Artículo publicado. topic_id=${topicId}, title=${title}`);\nreturn [{ json: { success: true, topic_id: topicId, title, timestamp: new Date().toISOString() } }];"
+      },
+      "id": "4db9fa80-fe9f-46e5-a888-ba6c3d92eaff",
+      "name": "Log Éxito",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        71200,
+        30896
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "b5b0180a-a56c-43b2-b99a-676a584a57c3",
+      "name": "NoOp Trend Insertado",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        66016,
+        30624
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Trend Hunter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger Manual": {
+      "main": [
+        [
+          {
+            "node": "AI Trend Hunter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Trend Hunter": {
+      "main": [
+        [
+          {
+            "node": "Parsear Temas AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET Temas Existentes Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear Temas AI": {
+      "main": [
+        [
+          {
+            "node": "Merge Para Deduplicar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Temas Existentes Supabase": {
+      "main": [
+        [
+          {
+            "node": "Merge Para Deduplicar",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Para Deduplicar": {
+      "main": [
+        [
+          {
+            "node": "Deduplicar Temas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplicar Temas": {
+      "main": [
+        [
+          {
+            "node": "¿Hay temas nuevos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay temas nuevos?": {
+      "main": [
+        [
+          {
+            "node": "INSERT Tema en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NoOp Trend Insertado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Tema en Supabase": {
+      "main": [
+        [
+          {
+            "node": "Verificar INSERT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar INSERT": {
+      "main": [
+        [
+          {
+            "node": "GET Temas Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Temas Pendientes": {
+      "main": [
+        [
+          {
+            "node": "Preparar Loop Temas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Loop Temas": {
+      "main": [
+        [
+          {
+            "node": "Loop Temas Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Temas Pendientes": {
+      "main": [
+        [
+          {
+            "node": "Generar Prompts Imágenes",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET Blogs Existentes",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Datos Completos",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Generar Prompts Imágenes": {
+      "main": [
+        [
+          {
+            "node": "Extraer Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Prompts": {
+      "main": [
+        [
+          {
+            "node": "Loop Imágenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Imágenes": {
+      "main": [
+        [
+          {
+            "node": "Switch Proveedor Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replicate FLUX": {
+      "main": [
+        [
+          {
+            "node": "Replicate Extraer URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Proveedor Imagen": {
+      "main": [
+        [
+          {
+            "node": "Replicate FLUX",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OpenRouter Generar Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Generar Imagen": {
+      "main": [
+        [
+          {
+            "node": "Extraer URL OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer URL OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "Descargar Imagen OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Imagen OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "Renombrar PNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replicate Extraer URL": {
+      "main": [
+        [
+          {
+            "node": "Descargar PNG Replicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar PNG Replicate": {
+      "main": [
+        [
+          {
+            "node": "Renombrar PNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Renombrar PNG": {
+      "main": [
+        [
+          {
+            "node": "Uploader Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Uploader Imagen": {
+      "main": [
+        [
+          {
+            "node": "Consolidar URLs Imágenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar URLs Imágenes": {
+      "main": [
+        [
+          {
+            "node": "Merge Datos Completos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Blogs Existentes": {
+      "main": [
+        [
+          {
+            "node": "Extraer Links Blog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Links Blog": {
+      "main": [
+        [
+          {
+            "node": "Merge Datos Completos",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge Datos Completos": {
+      "main": [
+        [
+          {
+            "node": "Obtener Info Consolidada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Info Consolidada": {
+      "main": [
+        [
+          {
+            "node": "Preparar Contexto Editorial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Contexto Editorial": {
+      "main": [
+        [
+          {
+            "node": "Redactor IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redactor IA": {
+      "main": [
+        [
+          {
+            "node": "Parsear Artículo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear Artículo": {
+      "main": [
+        [
+          {
+            "node": "Preparar JSON Lookitry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar JSON Lookitry": {
+      "main": [
+        [
+          {
+            "node": "Publicar en Lookitry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publicar en Lookitry": {
+      "main": [
+        [
+          {
+            "node": "¿Publicado OK (201)?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Publicado OK (201)?": {
+      "main": [
+        [
+          {
+            "node": "PATCH status published",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Error Publicación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH status published": {
+      "main": [
+        [
+          {
+            "node": "Log Éxito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Error Publicación": {
+      "main": [
+        [
+          {
+            "node": "Loop Temas Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Éxito": {
+      "main": [
+        [
+          {
+            "node": "Loop Temas Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NoOp Trend Insertado": {
+      "main": [
+        [
+          {
+            "node": "GET Temas Pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Schedule Trigger": [
+      {}
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5519e0d30f"
+  }
+}

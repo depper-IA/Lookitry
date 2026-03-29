@@ -1,6 +1,7 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import {
   ArrowRight,
   BadgeCheck,
@@ -13,6 +14,7 @@ import {
   Settings2,
   ShieldCheck,
   Store,
+  UserPlus,
   Workflow,
   X,
 } from 'lucide-react';
@@ -362,6 +364,14 @@ export default function EnterpriseSyncPage() {
                 <Plus className="h-4 w-4" />
                 Nueva conexión
               </button>
+              <Link
+                href="/admin/enterprise/crear"
+                className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
+              >
+                <UserPlus className="h-4 w-4" />
+                Crear cliente Enterprise
+              </Link>
             </div>
           </div>
 

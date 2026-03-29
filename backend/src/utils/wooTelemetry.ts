@@ -9,6 +9,7 @@ export interface WooTelemetrySummary {
   lastSyncAt: string | null;
   lastErrorAt: string | null;
   lastErrorMessage: string | null;
+  storeDomain: string | null;
 }
 
 export interface WooProductSummary {
@@ -43,7 +44,7 @@ export async function getWooTelemetrySummary(
 
   const { data, error } = await supabaseAdmin
     .from('plugin_telemetry_events')
-    .select('success, duration_ms, retry_count, error_message, endpoint, created_at')
+    .select('success, duration_ms, retry_count, error_message, endpoint, created_at, store_domain')
     .eq('brand_id', brandId)
     .gte('created_at', since)
     .order('created_at', { ascending: false })
@@ -64,6 +65,7 @@ export async function getWooTelemetrySummary(
 
   const lastSync = rows.find((row) => row.endpoint === '/api/pruebalo/sync-woocommerce' && row.success);
   const lastError = rows.find((row) => !row.success);
+  const firstWithDomain = rows.find((row) => !!row.store_domain);
 
   return {
     totalRequests,
@@ -74,5 +76,6 @@ export async function getWooTelemetrySummary(
     lastSyncAt: lastSync?.created_at || null,
     lastErrorAt: lastError?.created_at || null,
     lastErrorMessage: lastError?.error_message || null,
+    storeDomain: firstWithDomain?.store_domain || null,
   };
 }
