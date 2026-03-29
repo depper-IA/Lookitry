@@ -1,14 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { adminFetchPostById, adminUpdatePost, fetchBlogCategories, BlogPost, BlogCategory } from '@/services/blog.service';
+import { useCallback, useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import {
+  adminFetchPostById,
+  adminUpdatePost,
+  fetchBlogCategories,
+  BlogPost,
+  BlogCategory,
+} from '@/services/blog.service';
+
+const panelStyle = { backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' };
+const fieldStyle = { backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' };
+const optionStyle = { backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)' };
 
 export default function BlogEditorPage() {
   const params = useParams();
   const id = params?.id as string;
-  const router = useRouter();
   const [post, setPost] = useState<Partial<BlogPost> | null>(null);
   const [categories, setCategories] = useState<BlogCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,101 +26,112 @@ export default function BlogEditorPage() {
   const [success, setSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
 
-  useEffect(() => {
-    if (id) {
-       loadData();
-    }
-  }, [id]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [postData, cats] = await Promise.all([
         adminFetchPostById(id),
-        fetchBlogCategories()
+        fetchBlogCategories(),
       ]);
-      
+
       if (postData) {
         setPost(postData);
       } else {
-        setError('No se encontró el artículo');
+        setError('No se encontrÃ³ el artÃ­culo');
       }
       setCategories(cats);
-    } catch (err) {
+    } catch {
       setError('Error al cargar datos');
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      void loadData();
+    }
+  }, [id, loadData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setPost(prev => prev ? { ...prev, [name]: value } : null);
+    setPost((prev) => (prev ? { ...prev, [name]: value } : null));
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async () => {
     if (!post || !id) return;
-    
+
     setSaving(true);
     setError('');
     setSuccess(false);
 
     try {
       const payload = { ...post };
-      // Normalizar category_id: si es string vacío, enviamos null para que Supabase lo acepte
       if (!payload.category_id || payload.category_id === '') {
-        payload.category_id = null as any;
+        payload.category_id = null as never;
       }
 
       const ok = await adminUpdatePost(id, payload);
       if (ok) {
         setSuccess(true);
-        // Recargar datos para confirmar que la categoría se guardó
         await loadData();
-        setTimeout(() => setSuccess(false), 3000);
+        window.setTimeout(() => setSuccess(false), 3000);
       } else {
         setError('Error al guardar los cambios en el servidor');
       }
-    } catch (err) {
-      setError('Excepción al intentar guardar');
+    } catch {
+      setError('ExcepciÃ³n al intentar guardar');
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return (
-    <div className="min-h-[400px] flex flex-col items-center justify-center">
-      <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
-      <div className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Iniciando Editor</div>
-    </div>
-  );
-
-  if (error && !post) return (
-    <div className="text-center py-20 px-6">
-      <div className="w-16 h-16 rounded-3xl bg-red-500/10 flex items-center justify-center mb-4 mx-auto border border-red-500/20">
-        <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+  if (loading) {
+    return (
+      <div className="min-h-[400px] flex flex-col items-center justify-center">
+        <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+        <div className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+          Iniciando Editor
+        </div>
       </div>
-      <p className="text-sm font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{error}</p>
-      <Link href="/admin/blog" className="text-[11px] font-black uppercase tracking-widest text-[#FF5C3A] hover:underline">Volver al listado</Link>
-    </div>
-  );
+    );
+  }
+
+  if (error && !post) {
+    return (
+      <div className="text-center py-20 px-6">
+        <div className="w-16 h-16 rounded-3xl bg-red-500/10 flex items-center justify-center mb-4 mx-auto border border-red-500/20">
+          <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        </div>
+        <p className="text-sm font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{error}</p>
+        <Link href="/admin/blog" className="text-[11px] font-black uppercase tracking-widest text-[#FF5C3A] hover:underline">
+          Volver al listado
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-32">
-      {/* Header Fijo/Sticky */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
-          <Link href="/admin/blog" className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 transition-all group">
-            <svg className="w-5 h-5 text-zinc-500 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+          <Link
+            href="/admin/blog"
+            className="w-12 h-12 flex items-center justify-center rounded-2xl border transition-all group hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/10"
+            style={panelStyle}
+          >
+            <svg className="w-5 h-5 transition-colors group-hover:text-[#FF5C3A]" style={{ color: 'var(--text-secondary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
           </Link>
           <div>
-            <h1 className="font-jakarta font-extrabold text-3xl tracking-tight text-white">
-              Editar Artículo
+            <h1 className="font-jakarta font-extrabold text-3xl tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              Editar ArtÃ­culo
             </h1>
-            <p className="text-xs font-medium mt-1" style={{ color: 'var(--text-muted)' }}>{post?.title?.substring(0, 50)}...</p>
+            <p className="text-xs font-medium mt-1" style={{ color: 'var(--text-muted)' }}>
+              {post?.title?.substring(0, 50) || 'Sin tÃ­tulo'}...
+            </p>
           </div>
         </div>
+
         <div className="flex items-center gap-4">
           {success && (
             <div className="px-4 py-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
@@ -119,8 +139,8 @@ export default function BlogEditorPage() {
               <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Guardado exitoso</span>
             </div>
           )}
-          <button 
-            onClick={handleSave}
+          <button
+            onClick={() => void handleSave()}
             disabled={saving}
             className="px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] text-white transition-all shadow-xl shadow-[#FF5C3A]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 min-w-[180px] flex items-center justify-center gap-3"
             style={{ backgroundColor: '#FF5C3A' }}
@@ -137,190 +157,230 @@ export default function BlogEditorPage() {
         </div>
       </div>
 
+      {error && post && (
+        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold">
+          {error}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Columna Principal (8/12) */}
         <div className="lg:col-span-8 space-y-8">
-          <div className="flex gap-2 p-1.5 rounded-[1.5rem] bg-white/5 border border-white/5 w-fit">
-            <button 
-              onClick={() => setActiveTab('edit')}
-              className={`px-6 py-2.5 rounded-[1rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'edit' ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-zinc-500 hover:text-white'}`}
-            >
-              Editor HTML
-            </button>
-            <button 
-              onClick={() => setActiveTab('preview')}
-              className={`px-6 py-2.5 rounded-[1rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'preview' ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-zinc-500 hover:text-white'}`}
-            >
-              Vista Previa
-            </button>
+          <div className="flex gap-2 p-1.5 rounded-[1.5rem] border w-fit" style={panelStyle}>
+            {[
+              { id: 'edit', label: 'Editor HTML' },
+              { id: 'preview', label: 'Vista Previa' },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as 'edit' | 'preview')}
+                  className={`px-6 py-2.5 rounded-[1rem] text-[10px] font-black uppercase tracking-widest transition-all ${
+                    isActive
+                      ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20'
+                      : 'hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/8'
+                  }`}
+                  style={isActive ? undefined : { color: 'var(--text-secondary)' }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
 
           {activeTab === 'edit' ? (
-            <div className="rounded-[3rem] border border-white/5 p-10 space-y-8 shadow-2xl relative overflow-hidden" style={{ backgroundColor: 'var(--bg-card)' }}>
+            <div className="rounded-[3rem] border p-10 space-y-8 shadow-2xl relative overflow-hidden" style={panelStyle}>
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FF5C3A] to-transparent opacity-30"></div>
-              
+
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 ml-1">Título del Artículo</label>
-                <input 
-                  type="text" 
+                <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--text-muted)' }}>
+                  TÃ­tulo del ArtÃ­culo
+                </label>
+                <input
+                  type="text"
                   name="title"
-                  value={post?.title || ''} 
+                  value={post?.title || ''}
                   onChange={handleChange}
-                  className="w-full px-6 py-4 rounded-[1.5rem] bg-white/[0.03] border border-white/10 text-xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/30 focus:border-[#FF5C3A]/50 transition-all placeholder:text-zinc-700"
-                  placeholder="Introduzca el título..."
+                  className="w-full px-6 py-4 rounded-[1.5rem] border text-xl font-bold transition-all placeholder:opacity-50 outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  style={fieldStyle}
+                  placeholder="Introduzca el tÃ­tulo..."
                 />
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500 ml-1">Slug Personalizado</label>
-                <div className="flex items-center gap-3 px-6 py-4 rounded-[1.5rem] bg-white/[0.03] border border-white/10 focus-within:border-[#FF5C3A]/30 transition-all">
-                  <span className="text-xs text-zinc-600 font-bold select-none opacity-50">lookitry.com/blog/</span>
-                  <input 
-                    type="text" 
+                <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--text-muted)' }}>
+                  Slug Personalizado
+                </label>
+                <div className="flex items-center gap-3 px-6 py-4 rounded-[1.5rem] border transition-all focus-within:ring-2 focus-within:ring-[#FF5C3A]/20 focus-within:border-[#FF5C3A]/40" style={fieldStyle}>
+                  <span className="text-xs font-bold select-none opacity-60" style={{ color: 'var(--text-secondary)' }}>
+                    lookitry.com/blog/
+                  </span>
+                  <input
+                    type="text"
                     name="slug"
-                    value={post?.slug || ''} 
+                    value={post?.slug || ''}
                     onChange={handleChange}
-                    className="flex-1 bg-transparent border-none text-xs font-bold text-zinc-300 focus:outline-none focus:ring-0 p-0"
+                    className="flex-1 bg-transparent border-none text-xs font-bold focus:outline-none focus:ring-0 p-0"
+                    style={{ color: 'var(--text-primary)' }}
                   />
                 </div>
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between ml-1">
-                  <label className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-500">Contenido HTML</label>
-                  <div className="flex gap-2">
-                    <span className="px-2 py-0.5 rounded bg-white/10 text-[8px] font-black uppercase tracking-widest text-zinc-400">Editor Manual</span>
-                  </div>
+                <div className="flex items-center justify-between ml-1 gap-3">
+                  <label className="text-[10px] font-black uppercase tracking-[0.25em]" style={{ color: 'var(--text-muted)' }}>
+                    Contenido HTML
+                  </label>
+                  <span className="px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border" style={{ ...fieldStyle, color: 'var(--text-secondary)' }}>
+                    Editor Manual
+                  </span>
                 </div>
-                <textarea 
+                <textarea
                   name="content"
-                  value={post?.content || ''} 
+                  value={post?.content || ''}
                   onChange={handleChange}
-                  className="w-full h-[700px] px-8 py-8 rounded-[2rem] bg-white/[0.02] border border-white/5 text-[13px] font-mono text-zinc-400 overflow-y-auto focus:outline-none focus:ring-1 focus:ring-[#FF5C3A]/20 transition-all leading-relaxed no-scrollbar"
-                  placeholder="Pega el código HTML del artículo generado..."
+                  className="w-full h-[700px] px-8 py-8 rounded-[2rem] border text-[13px] font-mono overflow-y-auto transition-all leading-relaxed no-scrollbar outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  style={fieldStyle}
+                  placeholder="Pega el cÃ³digo HTML del artÃ­culo generado..."
                 />
               </div>
             </div>
           ) : (
-            <div className="rounded-[3rem] border border-white/5 p-10 shadow-2xl overflow-hidden min-h-[800px]" style={{ backgroundColor: 'white' }}>
-              <article className="prose prose-zinc prose-invert max-w-none text-black">
-                <h1 className="text-4xl font-extrabold mb-8 text-black">{post?.title}</h1>
-                <div 
-                  className="blog-content text-zinc-800"
-                  dangerouslySetInnerHTML={{ __html: post?.content || '<p class="text-zinc-400">Sin contenido para previsualizar</p>' }}
+            <div className="rounded-[3rem] border p-6 sm:p-8 shadow-2xl overflow-hidden min-h-[800px]" style={panelStyle}>
+              <article
+                className="prose prose-zinc max-w-none rounded-[2rem] border p-6 sm:p-8 shadow-inner"
+                style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              >
+                <h1 className="text-4xl font-extrabold mb-8" style={{ color: 'var(--text-primary)' }}>
+                  {post?.title}
+                </h1>
+                <div
+                  className="blog-content"
+                  style={{ color: 'var(--text-primary)' }}
+                  dangerouslySetInnerHTML={{ __html: post?.content || '<p>Sin contenido para previsualizar</p>' }}
                 />
               </article>
             </div>
           )}
         </div>
 
-        {/* Columna Lateral (4/12) */}
         <div className="lg:col-span-4 space-y-8">
-          
-          {/* Publicación */}
-          <div className="rounded-[2.5rem] border border-white/5 p-8 space-y-6 shadow-xl" style={{ backgroundColor: 'var(--bg-card)' }}>
-            <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-white flex items-center gap-2">
+          <div className="rounded-[2.5rem] border p-8 space-y-6 shadow-xl" style={panelStyle}>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]"></div>
-              Publicación
+              PublicaciÃ³n
             </h3>
-            
+
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">Visibilidad</label>
-                <select 
+                <label className="text-[9px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>
+                  Visibilidad
+                </label>
+                <select
                   name="status"
-                  value={post?.status || 'draft'} 
+                  value={post?.status || 'draft'}
                   onChange={handleChange}
-                  className="w-full px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/10 text-xs font-bold text-white focus:outline-none focus:border-[#FF5C3A]/50 appearance-none cursor-pointer group-hover:bg-white/[0.05] transition-all"
-                  style={{ color: post?.status === 'published' ? '#10b981' : '#f59e0b' }}
+                  className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  style={{ ...fieldStyle, color: post?.status === 'published' ? '#10b981' : '#f59e0b' }}
                 >
-                  <option value="draft" className="bg-[#0a0a0a]">Borrador</option>
-                  <option value="published" className="bg-[#0a0a0a]">Publicado</option>
+                  <option value="draft" style={optionStyle}>Borrador</option>
+                  <option value="published" style={optionStyle}>Publicado</option>
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">Categoría</label>
-                <select 
+                <label className="text-[9px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>
+                  CategorÃ­a
+                </label>
+                <select
                   name="category_id"
-                  value={post?.category_id || ''} 
+                  value={post?.category_id || ''}
                   onChange={handleChange}
-                  className="w-full px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/10 text-xs font-bold text-white focus:outline-none focus:border-[#FF5C3A]/50 appearance-none cursor-pointer transition-all"
+                  className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  style={fieldStyle}
                 >
-                  <option value="" className="bg-[#0a0a0a]">Sin Categoría</option>
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.id} className="bg-[#0a0a0a]">{cat.name}</option>
+                  <option value="" style={optionStyle}>Sin CategorÃ­a</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id} style={optionStyle}>
+                      {cat.name}
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
           </div>
 
-          {/* Multimedia */}
-          <div className="rounded-[2.5rem] border border-white/5 p-8 space-y-6 shadow-xl" style={{ backgroundColor: 'var(--bg-card)' }}>
-            <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-white flex items-center gap-2">
+          <div className="rounded-[2.5rem] border p-8 space-y-6 shadow-xl" style={panelStyle}>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]"></div>
               Multimedia
             </h3>
-            
+
             <div className="space-y-4">
-              <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 bg-black/40 group">
+              <div className="relative aspect-video rounded-2xl overflow-hidden border group" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)' }}>
                 {post?.featured_image ? (
                   <img src={post.featured_image} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-zinc-700">
+                  <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
                     <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                   </div>
                 )}
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">URL de Imagen</label>
-                <input 
-                  type="text" 
+                <label className="text-[9px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>
+                  URL de Imagen
+                </label>
+                <input
+                  type="text"
                   name="featured_image"
-                  value={post?.featured_image || ''} 
+                  value={post?.featured_image || ''}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-[10px] font-medium text-zinc-400 focus:outline-none focus:border-[#FF5C3A]/50 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border text-[10px] font-medium transition-all outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  style={fieldStyle}
                   placeholder="https://minio..."
                 />
               </div>
             </div>
           </div>
 
-          {/* SEO Pro */}
-          <div className="rounded-[2.5rem] border border-white/5 p-8 space-y-6 shadow-xl" style={{ backgroundColor: 'var(--bg-card)' }}>
-            <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-white flex items-center gap-2">
+          <div className="rounded-[2.5rem] border p-8 space-y-6 shadow-xl" style={panelStyle}>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]"></div>
-              Optimización SEO
+              OptimizaciÃ³n SEO
             </h3>
-            
+
             <div className="space-y-5">
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">Meta Descripción</label>
-                <textarea 
+                <label className="text-[9px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>
+                  Meta DescripciÃ³n
+                </label>
+                <textarea
                   name="meta_description"
-                  value={post?.meta_description || ''} 
+                  value={post?.meta_description || ''}
                   onChange={handleChange}
                   rows={4}
-                  className="w-full px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/10 text-xs text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FF5C3A]/20 transition-all leading-relaxed resize-none no-scrollbar"
-                  placeholder="Descripción para resultados de búsqueda..."
+                  className="w-full px-5 py-4 rounded-2xl border text-xs transition-all leading-relaxed resize-none no-scrollbar outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  style={fieldStyle}
+                  placeholder="DescripciÃ³n para resultados de bÃºsqueda..."
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-500 ml-1">Extracto / Hook</label>
-                <textarea 
+                <label className="text-[9px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>
+                  Extracto / Hook
+                </label>
+                <textarea
                   name="excerpt"
-                  value={post?.excerpt || ''} 
+                  value={post?.excerpt || ''}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-5 py-4 rounded-2xl bg-white/[0.03] border border-white/10 text-xs text-zinc-400 focus:outline-none focus:ring-1 focus:ring-[#FF5C3A]/20 transition-all leading-relaxed resize-none no-scrollbar"
+                  className="w-full px-5 py-4 rounded-2xl border text-xs transition-all leading-relaxed resize-none no-scrollbar outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  style={fieldStyle}
                   placeholder="Resumen corto para el listado..."
                 />
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
