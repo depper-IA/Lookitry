@@ -1616,3 +1616,13 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 
 **Motivo:**
 - Se necesitaba cerrar el circuito completo de reviews para capturar prueba social real dentro del SaaS, moderarla desde admin y aprovecharla comercialmente en la landing sin depender de contenido manual desde el primer dia.
+
+## 2026-03-29 - Handoff temporal n8n blog automation
+
+**Cambios aplicados:**
+- Se creo `docs/HANDOFF_N8N_BLOG_2026-03-29.md` con el estado exacto de la investigacion del workflow de blog automatizado en `n8n`.
+- El handoff incluye: workflow activo e ID, ejecuciones probadas, nodos alcanzados, bloqueo actual en consolidacion de imagenes y pasos sugeridos para retomar.
+- Tambien se dejo documentada una seccion temporal con datos de conexion para `n8n` y `Supabase`, junto con la instruccion explicita de mover esos secretos al `.env` y eliminar la informacion critica del `.md` antes de versionar.
+
+**Motivo:**
+- Se necesitaba pausar el trabajo sin perder contexto tecnico ni el punto exacto del bloqueo actual del blog automatizado.
