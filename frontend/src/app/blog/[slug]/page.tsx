@@ -52,6 +52,24 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       day: 'numeric',
     });
   };
+  const articleProseClass = `
+    prose max-w-none px-6 py-8 md:px-10 md:py-12
+    text-[17px] leading-8 text-[#2b2623]
+    prose-headings:font-plus-jakarta prose-headings:tracking-tight
+    prose-h1:text-[#101010] prose-h2:text-[#FF5C3A] prose-h3:text-[#101010] prose-h4:text-[#101010]
+    prose-p:text-[#2f2a27] prose-p:leading-8
+    prose-li:text-[#2f2a27]
+    prose-strong:text-[#101010]
+    prose-a:text-[#d94d2b] prose-a:no-underline hover:prose-a:underline
+    prose-img:rounded-[1.25rem] prose-img:shadow-lg
+    [&_figure]:my-10 [&_figure]:overflow-hidden
+    [&_figcaption]:mt-3 [&_figcaption]:text-sm [&_figcaption]:leading-6 [&_figcaption]:text-[#6d625c]
+    [&_[data-blog-intro='lead']]:mb-10 [&_[data-blog-intro='lead']]:rounded-[1.75rem] [&_[data-blog-intro='lead']]:border [&_[data-blog-intro='lead']]:border-[#FF5C3A]/20 [&_[data-blog-intro='lead']]:bg-[linear-gradient(135deg,rgba(255,92,58,0.12),rgba(255,255,255,0.88))] [&_[data-blog-intro='lead']]:px-6 [&_[data-blog-intro='lead']]:py-6 [&_[data-blog-intro='lead']]:text-[1.08rem] [&_[data-blog-intro='lead']]:font-medium [&_[data-blog-intro='lead']]:leading-8 [&_[data-blog-intro='lead']]:text-[#1b1715]
+    [&_[data-blog-block='impact']]:my-8 [&_[data-blog-block='impact']]:rounded-[1.5rem] [&_[data-blog-block='impact']]:border [&_[data-blog-block='impact']]:border-[#101010]/10 [&_[data-blog-block='impact']]:bg-white/80 [&_[data-blog-block='impact']]:px-6 [&_[data-blog-block='impact']]:py-6 [&_[data-blog-block='impact']]:shadow-[0_18px_40px_rgba(0,0,0,0.06)] [&_[data-blog-block='impact']_h3]:mt-0 [&_[data-blog-block='impact']_h3]:mb-3 [&_[data-blog-block='impact']_h3]:text-[#101010] [&_[data-blog-block='impact']_ul]:my-0 [&_[data-blog-block='impact']_li]:marker:text-[#FF5C3A]
+    [&_[data-blog-cta='final']]:mt-10 [&_[data-blog-cta='final']]:rounded-[1.75rem] [&_[data-blog-cta='final']]:bg-[#101010] [&_[data-blog-cta='final']]:px-6 [&_[data-blog-cta='final']]:py-6 [&_[data-blog-cta='final']]:text-white [&_[data-blog-cta='final']_p]:m-0 [&_[data-blog-cta='final']_a]:inline-flex [&_[data-blog-cta='final']_a]:items-center [&_[data-blog-cta='final']_a]:justify-center [&_[data-blog-cta='final']_a]:rounded-full [&_[data-blog-cta='final']_a]:bg-[#FF5C3A] [&_[data-blog-cta='final']_a]:px-5 [&_[data-blog-cta='final']_a]:py-3 [&_[data-blog-cta='final']_a]:font-bold [&_[data-blog-cta='final']_a]:text-white
+    [&_div[style*='background:_#FFF5F2']]:!bg-white [&_div[style*='background:_#FFF5F2']]:!border-[#FF5C3A]
+    [&_h4]:!text-[#FF5C3A]
+  `.replace(/\s+/g, ' ').trim();
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] selection:bg-[#FF5C3A]/30 pb-20">
@@ -107,21 +125,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         {/* Contenido (HTML renderizado) */}
         <section className="rounded-[2rem] border border-white/10 bg-[#f6f0ee] text-[#1f1f1f] shadow-[0_30px_80px_rgba(0,0,0,0.24)] overflow-hidden">
           <div 
-            className="prose max-w-none px-6 py-8 md:px-10 md:py-12 
-            text-[17px] leading-8 text-[#2b2623]
-            prose-headings:font-plus-jakarta prose-headings:tracking-tight
-            prose-h1:text-[#101010] prose-h2:text-[#FF5C3A] prose-h3:text-[#101010] prose-h4:text-[#101010]
-            prose-p:text-[#2f2a27] prose-p:leading-8
-            prose-li:text-[#2f2a27]
-            prose-strong:text-[#101010]
-            prose-a:text-[#d94d2b] prose-a:no-underline hover:prose-a:underline
-            prose-img:rounded-[1.25rem] prose-img:shadow-lg
-            [&_figure]:my-10 [&_figure]:overflow-hidden
-            [&_figcaption]:mt-3 [&_figcaption]:text-sm [&_figcaption]:leading-6 [&_figcaption]:text-[#6d625c]
-            [&_[data-blog-intro='lead']]:mb-10 [&_[data-blog-intro='lead']]:rounded-[1.75rem] [&_[data-blog-intro='lead']]:border [&_[data-blog-intro='lead']]:border-[#FF5C3A]/20 [&_[data-blog-intro='lead']]:bg-[linear-gradient(135deg,rgba(255,92,58,0.12),rgba(255,255,255,0.88))] [&_[data-blog-intro='lead']]:px-6 [&_[data-blog-intro='lead']]:py-6 [&_[data-blog-intro='lead']]:text-[1.08rem] [&_[data-blog-intro='lead']]:font-medium [&_[data-blog-intro='lead']]:leading-8 [&_[data-blog-intro='lead']]:text-[#1b1715] [&_[data-blog-block='impact']]:my-8 [&_[data-blog-block='impact']]:rounded-[1.5rem] [&_[data-blog-block='impact']]:border [&_[data-blog-block='impact']]:border-[#101010]/10 [&_[data-blog-block='impact']]:bg-white/80 [&_[data-blog-block='impact']]:px-6 [&_[data-blog-block='impact']]:py-6 [&_[data-blog-block='impact']]:shadow-[0_18px_40px_rgba(0,0,0,0.06)] [&_[data-blog-block='impact']_h3]:mt-0 [&_[data-blog-block='impact']_h3]:mb-3 [&_[data-blog-block='impact']_h3]:text-[#101010] [&_[data-blog-block='impact']_ul]:my-0 [&_[data-blog-block='impact']_li]:marker:text-[#FF5C3A] [&_[data-blog-cta='final']]:mt-10 [&_[data-blog-cta='final']]:rounded-[1.75rem] [&_[data-blog-cta='final']]:bg-[#101010] [&_[data-blog-cta='final']]:px-6 [&_[data-blog-cta='final']]:py-6 [&_[data-blog-cta='final']]:text-white [&_[data-blog-cta='final']_p]:m-0 [&_[data-blog-cta='final']_a]:inline-flex [&_[data-blog-cta='final']_a]:items-center [&_[data-blog-cta='final']_a]:justify-center [&_[data-blog-cta='final']_a]:rounded-full [&_[data-blog-cta='final']_a]:bg-[#FF5C3A] [&_[data-blog-cta='final']_a]:px-5 [&_[data-blog-cta='final']_a]:py-3 [&_[data-blog-cta='final']_a]:font-bold [&_[data-blog-cta='final']_a]:text-white"
-            [&_div[style*='background:_#FFF5F2']]:!bg-white [&_div[style*='background:_#FFF5F2']]:!border-[#FF5C3A]
-            [&_h4]:!text-[#FF5C3A]
-            "
+            className={articleProseClass}
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
         </section>
