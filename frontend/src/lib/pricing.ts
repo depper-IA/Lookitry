@@ -202,9 +202,10 @@ export async function getPricingConfig(): Promise<PricingConfig> {
       promosRes.ok ? await promosRes.json() : [];
 
     const config: PricingConfig = JSON.parse(JSON.stringify(DEFAULTS));
+    const configMap = config as unknown as Record<string, Record<string, unknown>>;
     for (const row of rows) {
       if (row.id in config) {
-        (config as Record<string, unknown>)[row.id] = row.data;
+        configMap[row.id] = row.data;
       }
     }
 

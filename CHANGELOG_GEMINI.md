@@ -1386,3 +1386,12 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 
 **Motivo:**
 - El deploy inicial a `main` dejó backend saludable, pero el rebuild del frontend se detuvo durante `next build` por incompatibilidades de tipos derivadas de la nueva lógica de trial.
+
+## 29 de Marzo, 2026 — Hotfix adicional de tipado en pricing
+
+**Archivos modificados:**
+- `frontend/src/lib/pricing.ts`
+- `CHANGELOG_GEMINI.md`
+
+**Descripción:**
+- Se corrigió el casteo interno de `PricingConfig` al hidratar configuración dinámica desde Supabase, usando una conversión segura vía `unknown` para evitar que `next build` fallara en producción.
