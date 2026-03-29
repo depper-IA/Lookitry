@@ -1,5 +1,37 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 29 de Marzo, 2026 — Endurecimiento QA preproducción (backend + frontend)
+
+**Objetivo:**
+- Auditar la cobertura existente antes de salida a producción y completar pruebas faltantes sobre validaciones críticas, pagos y helpers de pricing.
+- Corregir fallos de la infraestructura de testing para obtener resultados confiables de backend y frontend.
+- Resolver un bug real de mutación compartida en la configuración por defecto de precios del frontend.
+
+**Cambios aplicados:**
+- **Backend (`auth.controller.test.ts`, `payments.controller.test.ts`):**
+  - Nuevos tests unitarios para validaciones de registro/login/reset de contraseña y para el flujo de compra de add-ons con y sin sesión.
+- **Backend (`preproduction.smoke.test.ts`, `package.json`):**
+  - Nueva batería smoke preproducción sobre rutas HTTP reales de Express para health, auth, checkout guest Wompi y compra autenticada de add-ons.
+  - Nuevo comando `npm run test:smoke` para ejecución rápida antes de deploy.
+- **Backend (`checkout-email-registro-pro.property.test.ts`, `subscription.service.test.ts`, `notification.service.test.ts`):**
+  - Ajuste de mocks incompletos para `calculateExternalCheckoutTotal` y `PaymentSettingsService`.
+  - Corrección de expectativas desalineadas con la lógica actual de prorrateo/reactivación para que la suite refleje el comportamiento real del servicio.
+- **Frontend (`pricing.test.ts`, `WompiButton.test.tsx`, `payments.service.test.ts`):**
+  - Nuevos tests para helpers de pricing, botón de Wompi y servicio de checkout de add-ons.
+- **Frontend (`src/lib/pricing.ts`):**
+  - Corrección del armado de config para evitar mutar `DEFAULTS` entre ejecuciones usando una copia profunda del objeto de defaults.
+- **Documentación (`docs/SMOKE_PREPRODUCCION.md`):**
+  - Guía rápida del alcance y ejecución del smoke preproducción.
+
+**Resultados de validación:**
+- Smoke backend: `npm run test:smoke` → **1 suite, 5 tests, todos pasando**.
+- Backend: `npm test -- --runInBand` → **13 suites, 140 tests, todos pasando**.
+- Frontend: `npx vitest run` → **4 suites, 12 tests, todos pasando**.
+
+**Motivo:**
+- El proyecto tenía cobertura relevante en backend, pero faltaban pruebas directas sobre validaciones de entrada y piezas críticas del frontend. Además, existía un bug silencioso en pricing que podía contaminar estados entre requests/tests y alterar precios renderizados.
+
+---
 ## 28 de Marzo, 2026 — Corrección de Etiquetas Dinámicas (n8n) y Miniaturas de Blog
 
 **Objetivo:**
@@ -1306,3 +1338,37 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 **Verificación:**
 - `npx eslint src/app/admin/payments/page.tsx src/app/admin/enterprise/page.tsx`
 - `npx eslint src/services/admin.service.ts src/controllers/revenue.controller.ts src/utils/paymentNormalization.ts`
+
+## 29 de Marzo, 2026 — Correcciones QA de trial, revenue, payments y responsive admin/mobile
+
+**Archivos modificados:**
+- `frontend/src/lib/subscription-display.ts`
+- `frontend/src/__tests__/lib/subscription-display.test.ts`
+- `frontend/src/types/index.ts`
+- `frontend/src/services/subscription.service.ts`
+- `frontend/src/app/admin/dashboard/page.tsx`
+- `frontend/src/app/dashboard/integrations/page.tsx`
+- `frontend/src/app/dashboard/subscription/page.tsx`
+- `frontend/src/components/dashboard/SuspensionModal.tsx`
+- `frontend/src/app/dashboard/profile/page.tsx`
+- `frontend/src/app/admin/revenue/page.tsx`
+- `frontend/src/app/admin/payments/page.tsx`
+- `frontend/src/app/admin/payment-settings/page.tsx`
+- `frontend/src/components/admin/AdminNotifications.tsx`
+
+**Descripción:**
+- Se centralizó la lógica de visualización del estado de suscripción para evitar que cuentas `trial` aparecieran como `BASIC` en perfil, suscripción e integraciones cuando en base de datos conservan `plan=BASIC` durante la prueba.
+- La UI ahora deriva correctamente:
+  - plan visible `TRIAL`
+  - estado `Trial activo`, `Trial por vencer` o `Trial vencido`
+  - etiqueta correcta de fecha (`Fin del trial` vs `Próxima renovación`)
+- En `dashboard/integrations` se eliminaron los estados hardcodeados de plugin activo y API activa. Ahora sólo se muestran como activos cuando existe API configurada y hay evidencia real de sincronización/telemetría.
+- En `dashboard/subscription` se corrigió la tarjeta principal para que trial no muestre copy de renovación mensual como si fuera una suscripción renovable. También se ajustó el modal de suspensión para ocultar “Valor vigente” en trial vencido o pendiente.
+- En `admin/dashboard` se mantuvo la estructura visual pero se unificaron los bordes de las tarjetas KPI al color corporativo, conservando los colores en íconos.
+- En `admin/revenue` se corrigió la carga de configuración para usar el endpoint admin real de precios; antes intentaba consumir rutas relativas inexistentes (`/api/pricing` y `/api/pricing/trm`), lo que podía disparar el error “Error al cargar estadísticas”.
+- En `admin/payments` se añadió normalización defensiva de respuesta para soportar ambos formatos de payload y evitar que la pantalla falle cuando cambie el controlador que responde la ruta.
+- En `admin/payment-settings` se mejoró el responsive del header, CTA principal, tabs horizontales y bloques con toggles para mobile.
+- En `AdminNotifications` se ajustó el dropdown y el modal para que no se desborden en mobile.
+
+**Verificación:**
+- `npx vitest run` → `5 suites`, `15 tests`, todos pasando

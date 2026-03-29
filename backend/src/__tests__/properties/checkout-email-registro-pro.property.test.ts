@@ -39,6 +39,7 @@ jest.mock('../../config/supabase', () => ({
 jest.mock('../../services/pricing.service', () => ({
   pricingService: {
     calculateTotal: jest.fn().mockResolvedValue(250000),
+    calculateExternalCheckoutTotal: jest.fn().mockResolvedValue(250000),
     getPricingConfig: jest.fn().mockResolvedValue([]),
   },
 }));

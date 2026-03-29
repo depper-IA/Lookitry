@@ -86,7 +86,7 @@ export default function AdminDashboardPage() {
             style={{
               backgroundColor: 'var(--bg-card)',
               border: '1px solid var(--border-color)',
-              borderLeft: `3px solid ${c.accent}`,
+              borderLeft: '3px solid #FF5C3A',
             }}
           >
             <div className="flex items-start justify-between mb-3">

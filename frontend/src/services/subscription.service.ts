@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { Brand, SubscriptionPayment, PlanType } from '@/types';
+import type { Brand, SubscriptionPayment, BrandPlan } from '@/types';
 
 export interface SubscriptionDetails {
   status: string;
@@ -20,7 +20,7 @@ export interface SubscriptionResponse {
 
 export interface SubscriptionInfo {
   brand: Brand;
-  plan: PlanType;
+  plan: BrandPlan;
   hasLandingPage: boolean;
   daysRemaining: number;
   status: 'active' | 'expiring_soon' | 'expired' | 'suspended' | null;
@@ -55,7 +55,7 @@ class SubscriptionService {
 
     return {
       brand,
-      plan: (rawBrand.plan ?? 'BASIC') as PlanType,
+      plan: (rawBrand.plan ?? 'BASIC') as BrandPlan,
       hasLandingPage: rawBrand.has_landing_page ?? false,
       daysRemaining: subscription.daysRemaining ?? 0,
       status: (subscription.status as 'active' | 'expiring_soon' | 'expired' | 'suspended') || null,

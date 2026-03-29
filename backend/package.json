@@ -12,6 +12,7 @@
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest --runInBand",
+    "test:smoke": "jest --runInBand --testPathPatterns=smoke",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "clean": "rimraf dist",

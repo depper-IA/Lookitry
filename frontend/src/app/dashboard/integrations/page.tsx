@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { Spinner } from '@/components/ui/Spinner';
 import { api } from '@/services/api';
+import { getSubscriptionDisplayState } from '@/lib/subscription-display';
 
 // ── Animaciones ──────────────────────────────────────────────────────────────
 const containerVariants = {
@@ -110,6 +111,35 @@ export default function IntegrationsPage() {
   }, []);
 
   const apiKey = (brand as any)?.apiKey || (brand as any)?.api_key || '•••••••••••••••••••••••••••••';
+  const subscriptionState = getSubscriptionDisplayState(brand);
+  const hasConfiguredApiKey = Boolean(apiKey && !apiKey.includes('•'));
+  const pluginConnected = Boolean(
+    hasConfiguredApiKey &&
+    (
+      wooMetrics?.telemetry.lastSyncAt ||
+      (wooMetrics?.telemetry.totalRequests ?? 0) > 0 ||
+      (wooMetrics?.products.totalMappedProducts ?? 0) > 0 ||
+      (wooMetrics?.products.activeMappedProducts ?? 0) > 0
+    )
+  );
+  const pluginPendingActivation = hasConfiguredApiKey && !pluginConnected;
+  const pluginBadgeClass = pluginConnected
+    ? 'bg-emerald-500 border-emerald-400/20 shadow-emerald-500/20'
+    : pluginPendingActivation
+      ? 'bg-amber-500 border-amber-400/20 shadow-amber-500/20'
+      : 'bg-zinc-600 border-zinc-500/20 shadow-zinc-900/20';
+  const pluginBadgeLabel = pluginConnected
+    ? 'Plugin activo'
+    : pluginPendingActivation
+      ? 'Pendiente de validar'
+      : 'Plugin inactivo';
+  const pluginStatusLabel = pluginConnected
+    ? 'Conectado correctamente'
+    : pluginPendingActivation
+      ? 'API configurada, falta validación del plugin'
+      : subscriptionState.isTrial
+        ? 'Activa tu plan y conecta la API para marcarlo como activo'
+        : 'Aún no hay evidencia de activación del plugin';
 
 
   const copyToClipboard = () => {
@@ -192,13 +222,13 @@ export default function IntegrationsPage() {
                 <div>
                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 md:gap-4 mb-3">
                       <h2 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight leading-none">WooCommerce</h2>
-                      <div className="px-3 py-1 bg-emerald-500 rounded-full border border-emerald-400/20 shadow-lg shadow-emerald-500/20 flex items-center gap-2">
+                      <div className={`px-3 py-1 rounded-full border shadow-lg flex items-center gap-2 ${pluginBadgeClass}`}>
                          <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                         <span className="text-[9px] font-bold text-white uppercase tracking-widest">Plugin activo</span>
+                         <span className="text-[9px] font-bold text-white uppercase tracking-widest">{pluginBadgeLabel}</span>
                       </div>
                    </div>
                    <p className="text-[10px] md:text-[12px] font-bold text-[#FF5C3A] uppercase tracking-wider flex items-center justify-center md:justify-start gap-2 md:gap-3 opacity-80">
-                      <Check className="w-3.5 h-3.5 text-emerald-500" strokeWidth={4} /> Conectado correctamente
+                      <Check className={`w-3.5 h-3.5 ${pluginConnected ? 'text-emerald-500' : pluginPendingActivation ? 'text-amber-500' : 'text-zinc-500'}`} strokeWidth={4} /> {pluginStatusLabel}
                    </p>
                 </div>
               </div>
@@ -208,9 +238,15 @@ export default function IntegrationsPage() {
                  <div className="space-y-4 md:space-y-6">
                     <div className="flex justify-between items-center px-2 md:px-4">
                        <label className="text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Clave de api de producción</label>
-                       <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100 shrink-0">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                          <span className="text-[8px] font-bold text-emerald-600 uppercase">Activa</span>
+                       <div className={`flex items-center gap-2 px-3 py-1 rounded-full border shrink-0 ${
+                         hasConfiguredApiKey
+                           ? 'bg-emerald-50 border-emerald-100'
+                           : 'bg-zinc-100 border-zinc-200'
+                       }`}>
+                          <div className={`w-1.5 h-1.5 rounded-full ${hasConfiguredApiKey ? 'bg-emerald-500' : 'bg-zinc-400'}`} />
+                          <span className={`text-[8px] font-bold uppercase ${hasConfiguredApiKey ? 'text-emerald-600' : 'text-zinc-500'}`}>
+                            {hasConfiguredApiKey ? 'Configurada' : 'Sin configurar'}
+                          </span>
                        </div>
                     </div>
                     
