@@ -24,6 +24,7 @@ interface Subscription {
 }
 
 type FilterStatus = 'all' | 'active' | 'expiring_soon' | 'expired' | 'suspended' | 'trial';
+type SortField = 'name' | 'plan' | 'vencimiento' | 'dias' | 'estado';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -416,7 +417,7 @@ export default function AdminSubscriptionsPage() {
   const itemsPerPage = 10;
 
   // Ordenamiento
-  const [sortField, setSortField] = useState<'name' | 'plan' | 'vencimiento'>('name');
+  const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Selección masiva
@@ -450,7 +451,7 @@ export default function AdminSubscriptionsPage() {
     }
   };
 
-  const toggleSort = (field: 'name' | 'plan' | 'vencimiento') => {
+  const toggleSort = (field: SortField) => {
     if (sortField === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -540,6 +541,14 @@ export default function AdminSubscriptionsPage() {
     } else if (sortField === 'vencimiento') {
       valA = new Date(a.subscription_end_date || 0).getTime();
       valB = new Date(b.subscription_end_date || 0).getTime();
+    } else if (sortField === 'dias') {
+      valA = a.is_in_trial ? (a.trial_days_remaining ?? 9999) : a.daysRemaining;
+      valB = b.is_in_trial ? (b.trial_days_remaining ?? 9999) : b.daysRemaining;
+    } else if (sortField === 'estado') {
+      const normalizeStatus = (subscription: Subscription) =>
+        subscription.is_in_trial ? 'trial' : (subscription.subscription_status || '');
+      valA = normalizeStatus(a);
+      valB = normalizeStatus(b);
     }
 
     if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
@@ -559,7 +568,12 @@ export default function AdminSubscriptionsPage() {
     trial: subscriptions.filter(s => s.is_in_trial === true).length,
   };
 
-  const expiringSoon = subscriptions.filter(s => s.daysRemaining !== null && s.daysRemaining >= 0 && s.daysRemaining <= 7);
+  const expiringSoon = subscriptions.filter(s =>
+    !s.is_in_trial &&
+    s.daysRemaining !== null &&
+    s.daysRemaining >= 0 &&
+    s.daysRemaining <= 7
+  );
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
@@ -667,8 +681,18 @@ export default function AdminSubscriptionsPage() {
                     <ArrowUpDown className="w-3 h-3" style={{ color: sortField === 'vencimiento' ? '#FF5C3A' : 'var(--text-muted)' }} />
                   </div>
                 </th>
-                <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Días</th>
-                <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide">Estado</th>
+                <th onClick={() => toggleSort('dias')} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide cursor-pointer hover:bg-black/5 transition-colors">
+                  <div className="flex items-center gap-1">
+                    Días
+                    <ArrowUpDown className="w-3 h-3" style={{ color: sortField === 'dias' ? '#FF5C3A' : 'var(--text-muted)' }} />
+                  </div>
+                </th>
+                <th onClick={() => toggleSort('estado')} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide cursor-pointer hover:bg-black/5 transition-colors">
+                  <div className="flex items-center gap-1">
+                    Estado
+                    <ArrowUpDown className="w-3 h-3" style={{ color: sortField === 'estado' ? '#FF5C3A' : 'var(--text-muted)' }} />
+                  </div>
+                </th>
                 <th style={{ color: 'var(--text-muted)' }} className="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wide">Acciones</th>
               </tr>
             </thead>

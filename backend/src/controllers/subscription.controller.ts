@@ -96,12 +96,17 @@ export class SubscriptionController {
           const is_in_trial =
             trialEnd !== null &&
             trialEnd > now &&
-            brand.subscription_status !== 'active' &&
-            brand.subscription_status !== 'expiring_soon';
+            brand.subscription_status !== 'suspended';
           const trial_days_remaining = is_in_trial && trialEnd
             ? Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
             : null;
-          return { ...brand, daysRemaining, is_in_trial, trial_days_remaining };
+          return {
+            ...brand,
+            subscription_status: is_in_trial ? 'trial' : brand.subscription_status,
+            daysRemaining,
+            is_in_trial,
+            trial_days_remaining,
+          };
         })
       );
 

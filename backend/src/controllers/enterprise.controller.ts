@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 
+const ENTERPRISE_SYNC_TABLE = 'enterprise_sync_configs';
+
 function getEnterpriseSyncWebhookUrl() {
   if (process.env.N8N_ENTERPRISE_SYNC_WEBHOOK_URL) {
     return process.env.N8N_ENTERPRISE_SYNC_WEBHOOK_URL;
@@ -13,22 +15,77 @@ function getEnterpriseSyncWebhookUrl() {
   return '';
 }
 
+function isMissingEnterpriseSyncTableError(error: any) {
+  const message = `${error?.message || ''} ${error?.details || ''} ${error?.hint || ''}`.toLowerCase();
+  return (
+    message.includes(`could not find the table 'public.${ENTERPRISE_SYNC_TABLE}'`) ||
+    message.includes(`relation "public.${ENTERPRISE_SYNC_TABLE}" does not exist`) ||
+    message.includes(`relation "${ENTERPRISE_SYNC_TABLE}" does not exist`) ||
+    message.includes(`'public.${ENTERPRISE_SYNC_TABLE}'`) ||
+    message.includes(ENTERPRISE_SYNC_TABLE)
+  );
+}
+
+function getEnterpriseModuleUnavailableMessage() {
+  return 'El módulo enterprise aún no está provisionado en esta base de datos. Falta la tabla enterprise_sync_configs.';
+}
+
+async function safeUpdateEnterpriseConfig(brandId: string, payload: Record<string, any>) {
+  const response = await supabaseAdmin
+    .from(ENTERPRISE_SYNC_TABLE)
+    .update(payload)
+    .eq('brand_id', brandId);
+
+  if (response.error && isMissingEnterpriseSyncTableError(response.error)) {
+    return { missingTable: true, error: null };
+  }
+
+  return { missingTable: false, error: response.error };
+}
+
 // GET /admin/enterprise — Listar todas las configs de sync Enterprise
 export const listEnterpriseSyncConfigs = async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabaseAdmin
-      .from('enterprise_sync_configs')
-      .select(`
-        *,
-        brands (id, name, email, slug, plan)
-      `)
+      .from(ENTERPRISE_SYNC_TABLE)
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
+      if (isMissingEnterpriseSyncTableError(error)) {
+        return res.json({
+          configs: [],
+          moduleAvailable: false,
+          moduleMessage: getEnterpriseModuleUnavailableMessage(),
+        });
+      }
       return res.status(500).json({ error: error.message });
     }
 
-    return res.json({ configs: data || [] });
+    const configs = data || [];
+    const brandIds = [...new Set(configs.map((config: any) => config.brand_id).filter(Boolean))];
+
+    let brandsById = new Map<string, { id: string; name: string; email: string; slug: string; plan: string }>();
+
+    if (brandIds.length > 0) {
+      const { data: brands, error: brandsError } = await supabaseAdmin
+        .from('brands')
+        .select('id, name, email, slug, plan')
+        .in('id', brandIds);
+
+      if (brandsError) {
+        return res.status(500).json({ error: brandsError.message });
+      }
+
+      brandsById = new Map((brands || []).map((brand: any) => [brand.id, brand]));
+    }
+
+    const hydratedConfigs = configs.map((config: any) => ({
+      ...config,
+      brands: brandsById.get(config.brand_id) || null,
+    }));
+
+    return res.json({ configs: hydratedConfigs });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
@@ -76,12 +133,15 @@ export const upsertEnterpriseSyncConfig = async (req: Request, res: Response) =>
     if (notes !== undefined) payload.notes = notes;
 
     const { data, error } = await supabaseAdmin
-      .from('enterprise_sync_configs')
+      .from(ENTERPRISE_SYNC_TABLE)
       .upsert(payload, { onConflict: 'brand_id' })
       .select()
       .single();
 
     if (error) {
+      if (isMissingEnterpriseSyncTableError(error)) {
+        return res.status(503).json({ error: getEnterpriseModuleUnavailableMessage() });
+      }
       return res.status(500).json({ error: error.message });
     }
 
@@ -100,10 +160,14 @@ export const triggerEnterpriseSync = async (req: Request, res: Response) => {
 
   try {
     const { data: config, error } = await supabaseAdmin
-      .from('enterprise_sync_configs')
+      .from(ENTERPRISE_SYNC_TABLE)
       .select('*')
       .eq('brand_id', brandId)
       .single();
+
+    if (error && isMissingEnterpriseSyncTableError(error)) {
+      return res.status(503).json({ error: getEnterpriseModuleUnavailableMessage() });
+    }
 
     if (error || !config) {
       return res.status(404).json({
@@ -144,7 +208,7 @@ export const triggerEnterpriseSync = async (req: Request, res: Response) => {
 
     // Marcar como pendiente en la BD
     await supabaseAdmin
-      .from('enterprise_sync_configs')
+      .from(ENTERPRISE_SYNC_TABLE)
       .update({
         last_sync_status: 'pending',
         last_sync_message: null,
@@ -256,27 +320,21 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
 
       // Actualizar timestamp y contador en enterprise_sync_configs
       await supabaseAdmin.rpc('increment_sync_count', { p_brand_id: brand_id });
-      await supabaseAdmin
-        .from('enterprise_sync_configs')
-        .update({
-          last_sync_at: new Date().toISOString(),
-          last_sync_status: 'success',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('brand_id', brand_id);
+      await safeUpdateEnterpriseConfig(brand_id, {
+        last_sync_at: new Date().toISOString(),
+        last_sync_status: 'success',
+        updated_at: new Date().toISOString(),
+      });
 
       return res.status(201).json({ action: 'created', product: created });
     }
   } catch (err: any) {
     // Registrar el error en la config de sync
-    await supabaseAdmin
-      .from('enterprise_sync_configs')
-      .update({
-        last_sync_status: 'failed',
-        last_sync_message: err.message,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('brand_id', brand_id);
+    await safeUpdateEnterpriseConfig(brand_id, {
+      last_sync_status: 'failed',
+      last_sync_message: err.message,
+      updated_at: new Date().toISOString(),
+    });
 
     return res.status(500).json({ error: err.message });
   }
@@ -307,11 +365,15 @@ export const updateSyncStatus = async (req: Request, res: Response) => {
     if (products_synced_count !== undefined) updatePayload.products_synced_count = products_synced_count;
 
     const { data, error } = await supabaseAdmin
-      .from('enterprise_sync_configs')
+      .from(ENTERPRISE_SYNC_TABLE)
       .update(updatePayload)
       .eq('brand_id', brandId)
       .select()
       .single();
+
+    if (error && isMissingEnterpriseSyncTableError(error)) {
+      return res.status(503).json({ error: getEnterpriseModuleUnavailableMessage() });
+    }
 
     if (error) return res.status(500).json({ error: error.message });
 

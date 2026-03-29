@@ -68,8 +68,10 @@ export class UsageService {
       throw new Error('EMAIL_NOT_VERIFIED');
     }
 
-    const hasPaidSub = brand.subscription_status === 'active' || brand.subscription_status === 'expiring_soon';
-    const inTrial = !hasPaidSub && brand.trial_end_date && new Date(brand.trial_end_date) > new Date();
+    const inTrial =
+      brand.subscription_status !== 'suspended' &&
+      !!brand.trial_end_date &&
+      new Date(brand.trial_end_date) > new Date();
     const generationsLimit = inTrial
       ? (brand.trial_generations_limit ?? 15)
       : await this.getPlanGenerationsLimit(brand.plan);
@@ -139,8 +141,10 @@ export class UsageService {
 
     if (!brand) return false;
 
-    const hasPaidSub = brand.subscription_status === 'active' || brand.subscription_status === 'expiring_soon';
-    const inTrial = !hasPaidSub && brand.trial_end_date && new Date(brand.trial_end_date) > new Date();
+    const inTrial =
+      brand.subscription_status !== 'suspended' &&
+      !!brand.trial_end_date &&
+      new Date(brand.trial_end_date) > new Date();
     const plan = getPlanByType(brand.plan);
     const productsLimit = inTrial ? 1 : plan.maxProducts;
 

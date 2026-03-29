@@ -24,9 +24,12 @@ describe('subscription-display', () => {
     vi.useRealTimers();
   });
 
-  it('no trata como trial una cuenta con suscripcion paga activa aunque conserve trial_end_date', () => {
+  it('mantiene como trial una cuenta legacy con trial_end_date vigente aunque el status siga en active', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-03-29T12:00:00.000Z'));
+
     const state = getSubscriptionDisplayState({
-      plan: 'PRO',
+      plan: 'BASIC',
       trialEndDate: '2026-04-02T12:00:00.000Z',
       subscriptionStatus: 'active',
       subscriptionEndDate: '2026-05-02T12:00:00.000Z',
@@ -34,16 +37,18 @@ describe('subscription-display', () => {
 
     expect(hasActivePaidSubscription({ subscriptionStatus: 'active' })).toBe(true);
     expect(isTrialBrand({
-      plan: 'PRO',
+      plan: 'BASIC',
       trialEndDate: '2026-04-02T12:00:00.000Z',
       subscriptionStatus: 'active',
-    })).toBe(false);
-    expect(state.displayPlan).toBe('PRO');
-    expect(state.statusLabel).toBe('Activo');
-    expect(state.renewalLabel).toBe('Próxima renovación');
+    })).toBe(true);
+    expect(state.displayPlan).toBe('TRIAL');
+    expect(state.isTrial).toBe(true);
+    expect(state.renewalLabel).toBe('Fin del trial');
+
+    vi.useRealTimers();
   });
 
-  it('marca trial vencido cuando la prueba ya expiró y no hay plan pago activo', () => {
+  it('marca trial vencido cuando la prueba ya expiro y no hay plan pago activo', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-03-29T12:00:00.000Z'));
 
@@ -54,6 +59,7 @@ describe('subscription-display', () => {
     });
 
     expect(state.displayPlan).toBe('TRIAL');
+    expect(state.isTrial).toBe(false);
     expect(state.isTrialExpired).toBe(true);
     expect(state.statusLabel).toBe('Trial vencido');
 

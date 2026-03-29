@@ -1,29 +1,83 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { 
-  TrendingUp, 
-  Users, 
-  CreditCard, 
-  Percent, 
-  ChevronRight,
-  Target,
-  ArrowRight,
+import { useEffect, useMemo, useState } from 'react';
+import {
   AlertCircle,
+  CreditCard,
+  Percent,
   RefreshCcw,
-  Zap
+  Target,
+  Users,
+  Zap,
 } from 'lucide-react';
 import { api } from '@/services/api';
+
+interface ActiveTrialRow {
+  id: string;
+  name: string;
+  email: string;
+  slug: string;
+  plan: string;
+  subscription_status: string | null;
+  trial_end_date: string | null;
+  created_at: string;
+  trial_days_remaining: number;
+}
 
 interface ConversionStats {
   totalBrands: number;
   inTrial: number;
   converted: number;
   conversionRate: number;
+  trialRate: number;
   conversionsByMonth: {
     month: string;
     count: number;
   }[];
+  activeTrials: ActiveTrialRow[];
+}
+
+function formatMonth(month: string) {
+  const parsed = new Date(`${month}-01T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return month;
+  return parsed.toLocaleDateString('es-CO', { month: 'short' });
+}
+
+function KpiCard({
+  label,
+  value,
+  icon,
+  accent,
+  helper,
+}: {
+  label: string;
+  value: string | number;
+  icon: React.ReactNode;
+  accent?: boolean;
+  helper: string;
+}) {
+  return (
+    <div
+      className="rounded-[1.6rem] border p-5"
+      style={{
+        background: accent ? 'rgba(255,92,58,0.08)' : 'var(--bg-card)',
+        borderColor: accent ? 'rgba(255,92,58,0.18)' : 'var(--border-color)',
+      }}
+    >
+      <div className="flex items-center justify-between">
+        <div className="rounded-2xl bg-[#FF5C3A]/10 p-3 text-[#FF5C3A]">{icon}</div>
+      </div>
+      <p className="mt-4 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: 'var(--text-muted)' }}>
+        {label}
+      </p>
+      <p className="mt-2 text-3xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+        {value}
+      </p>
+      <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+        {helper}
+      </p>
+    </div>
+  );
 }
 
 export default function AdminConversionPage() {
@@ -32,176 +86,240 @@ export default function AdminConversionPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const { data } = await api.get<ConversionStats>('/admin/stats/conversion');
+        setStats(data);
+      } catch (err: any) {
+        setError(err?.message || 'Error al cargar conversión');
+        setStats(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchStats();
   }, []);
 
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      const { data } = await api.get<ConversionStats>('/admin/stats/conversion');
-      setStats(data);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar métricas de conversión');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const churnEstimate = useMemo(
+    () => Math.max(0, 100 - (stats?.conversionRate || 0)),
+    [stats]
+  );
+  const maxMonthly = useMemo(
+    () => Math.max(1, ...(stats?.conversionsByMonth || []).map((row) => row.count)),
+    [stats]
+  );
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF5C3A]"></div>
+      <div className="flex min-h-[400px] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#FF5C3A]" />
       </div>
     );
   }
 
   if (error || !stats) {
     return (
-      <div className="bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444] p-4 rounded-xl flex items-center gap-3">
-        <AlertCircle className="w-5 h-5" />
-        <p>{error || 'No se pudieron cargar las métricas'}</p>
+      <div className="flex items-center gap-3 rounded-2xl border border-red-500/25 bg-red-500/10 p-4 text-red-400">
+        <AlertCircle className="h-5 w-5 flex-shrink-0" />
+        <p>{error || 'No se pudieron cargar las métricas de conversión.'}</p>
       </div>
     );
   }
 
-  // Tasa de abandono (estimada como los que no han convertido)
-  const churnEstimate = Math.max(0, 100 - stats.conversionRate);
-
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Header */}
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Embudo de conversión</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Métricas de adquisición y retención de clientes.</p>
+        <h1 className="text-2xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          Embudo de conversión
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
+          Seguimiento de trials activos, cuentas convertidas y crecimiento mensual del admin.
+        </p>
       </div>
 
-      {/* Main Funnel Visualization */}
-      <div className="rounded-[2rem] border p-8 bg-gradient-to-br from-[#FF5C3A]/5 via-transparent to-transparent" style={{ borderColor: 'var(--border-color)' }}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-          
-          {/* Step 1: Registration */}
-          <div className="relative group">
-            <div className="p-6 rounded-[2rem] border shadow-sm transition-all group-hover:shadow-md" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center mb-4">
-                <Users className="w-5 h-5" />
-              </div>
-              <h3 className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Registros Totales</h3>
-              <p className="text-3xl font-black" style={{ color: 'var(--text-primary)' }}>{stats.totalBrands}</p>
-              <p className="text-[10px] mt-2 font-medium" style={{ color: 'var(--text-secondary)' }}>Marcas que crearon cuenta</p>
-            </div>
-            <div className="hidden md:flex absolute -right-6 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full border items-center justify-center shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-              <ArrowRight className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
-            </div>
-          </div>
-
-          {/* Step 2: Trial */}
-          <div className="relative group">
-            <div className="p-6 rounded-[2rem] border shadow-sm transition-all group-hover:shadow-md" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-              <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 flex items-center justify-center mb-4">
-                <Zap className="w-5 h-5" />
-              </div>
-              <h3 className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Prueba Activa</h3>
-              <p className="text-3xl font-black" style={{ color: 'var(--text-primary)' }}>{stats.inTrial}</p>
-              <p className="text-[10px] mt-2 font-medium" style={{ color: 'var(--text-secondary)' }}>Marcas en trial period</p>
-            </div>
-            <div className="hidden md:flex absolute -right-6 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full border items-center justify-center shadow-sm" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-              <ArrowRight className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
-            </div>
-          </div>
-
-          {/* Step 3: Converted */}
-          <div className="group">
-            <div className="p-6 rounded-[2rem] border-2 shadow-lg border-[#FF5C3A]/30 transition-all group-hover:border-[#FF5C3A]" style={{ backgroundColor: 'var(--bg-card)' }}>
-              <div className="w-10 h-10 rounded-full bg-[#FF5C3A]/10 text-[#FF5C3A] flex items-center justify-center mb-4">
-                <CreditCard className="w-5 h-5" />
-              </div>
-              <h3 className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Marcas Pagas</h3>
-              <p className="text-3xl font-black" style={{ color: 'var(--text-primary)' }}>{stats.converted}</p>
-              <p className="text-[10px] mt-2 font-bold text-[#FF5C3A]">Conversión Final: {stats.conversionRate}%</p>
-            </div>
-          </div>
-
-        </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <KpiCard label="Registros" value={stats.totalBrands} icon={<Users className="h-5 w-5" />} helper="Base total de marcas creadas" />
+        <KpiCard label="Trials activos" value={stats.inTrial} icon={<Zap className="h-5 w-5" />} helper={`${stats.trialRate}% del total vigente`} accent />
+        <KpiCard label="Cuentas pagas" value={stats.converted} icon={<CreditCard className="h-5 w-5" />} helper="Marcas con suscripción activa o por renovar" />
+        <KpiCard label="Conversión" value={`${stats.conversionRate}%`} icon={<Percent className="h-5 w-5" />} helper="Porcentaje total de conversión" />
       </div>
 
-      {/* Analytics Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Conversion KPIs */}
-        <div className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <h3 className="text-lg font-jakarta font-bold tracking-tight mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <Target className="w-5 h-5 text-[#FF5C3A]" />
-            KPIs de Eficiencia
-          </h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'var(--bg-hover)' }}>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600">
-                  <Percent className="w-4 h-4" />
-                </div>
-                <span className="text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>Tasa de Conversión</span>
-              </div>
-              <span className="text-xl font-black" style={{ color: '#10b981' }}>{stats.conversionRate}%</span>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+        <section
+          className="rounded-[2rem] border p-6"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="rounded-2xl bg-[#FF5C3A]/10 p-3 text-[#FF5C3A]">
+              <Target className="h-5 w-5" />
             </div>
-
-            <div className="flex items-center justify-between p-4 rounded-xl" style={{ backgroundColor: 'var(--bg-hover)' }}>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600">
-                  <RefreshCcw className="w-4 h-4" />
-                </div>
-                <span className="text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>Drop-off Rate</span>
-              </div>
-              <span className="text-xl font-black" style={{ color: '#f59e0b' }}>{churnEstimate}%</span>
-            </div>
-
-            <div className="flex items-center justify-between p-4 rounded-xl opacity-50" style={{ backgroundColor: 'var(--bg-hover)' }}>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600">
-                  <TrendingUp className="w-4 h-4" />
-                </div>
-                <span className="text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>Lifetime Value (LTV)</span>
-              </div>
-              <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Calculando...</span>
+            <div>
+              <h2 className="text-lg font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                Lectura del embudo
+              </h2>
+              <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+                El filtro ahora incluye correctamente cuentas con `subscription_status = trial` y expiración futura.
+              </p>
             </div>
           </div>
-        </div>
 
-        {/* Growth Chart */}
-        <div className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <h3 className="text-lg font-jakarta font-bold tracking-tight mb-6" style={{ color: 'var(--text-primary)' }}>Crecimiento mensual</h3>
-          
-          <div className="h-48 flex items-end gap-3 pt-4">
-            {stats.conversionsByMonth.map((m) => {
-              const maxVal = Math.max(...stats.conversionsByMonth.map(x => x.count)) || 1;
-              const height = (m.count / maxVal) * 100;
-              
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {[
+              { title: 'Entrada', value: stats.totalBrands, desc: 'Cuentas creadas' },
+              { title: 'Activación trial', value: stats.inTrial, desc: 'Trials vigentes hoy' },
+              { title: 'Pago', value: stats.converted, desc: 'Marcas convertidas' },
+            ].map((step, index) => (
+              <div
+                key={step.title}
+                className="rounded-[1.5rem] border p-5"
+                style={{ background: index === 2 ? 'rgba(255,92,58,0.08)' : 'var(--bg-base)', borderColor: index === 2 ? 'rgba(255,92,58,0.18)' : 'var(--border-color)' }}
+              >
+                <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                  {step.title}
+                </p>
+                <p className="mt-3 text-3xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                  {step.value}
+                </p>
+                <p className="mt-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {step.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
+            <div className="rounded-[1.25rem] border p-4" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                Tasa trial
+              </p>
+              <p className="mt-2 text-2xl font-bold text-[#FF5C3A]">{stats.trialRate}%</p>
+            </div>
+            <div className="rounded-[1.25rem] border p-4" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                Drop-off
+              </p>
+              <p className="mt-2 text-2xl font-bold text-amber-400">{churnEstimate}%</p>
+            </div>
+            <div className="rounded-[1.25rem] border p-4" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                Trials visibles
+              </p>
+              <p className="mt-2 text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                {stats.activeTrials.length}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="rounded-[2rem] border p-6"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="rounded-2xl bg-[#FF5C3A]/10 p-3 text-[#FF5C3A]">
+              <RefreshCcw className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                Crecimiento mensual
+              </h2>
+              <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+                Nuevas cuentas convertidas durante los últimos 6 meses.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex h-56 items-end gap-3">
+            {stats.conversionsByMonth.map((row) => {
+              const height = row.count > 0 ? Math.max(8, (row.count / maxMonthly) * 100) : 0;
               return (
-                <div key={m.month} className="flex-1 flex flex-col items-center gap-2 group relative">
-                  <div className="w-full bg-[#FF5C3A]/10 rounded-t-lg relative overflow-hidden h-full flex items-end">
-                    <div 
-                      className="w-full bg-[#FF5C3A] transition-all duration-700" 
-                      style={{ height: `${height}%` }}
-                    />
+                <div key={row.month} className="group relative flex flex-1 flex-col items-center gap-3">
+                  <div className="flex h-full w-full items-end overflow-hidden rounded-t-2xl bg-[#FF5C3A]/10">
+                    <div className="w-full rounded-t-2xl bg-[#FF5C3A]" style={{ height: `${height}%` }} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-tighter" style={{ color: 'var(--text-secondary)' }}>
-                    {new Date(m.month + '-01').toLocaleDateString('es-ES', { month: 'short' })}
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                    {formatMonth(row.month)}
                   </span>
-                  
-                  {/* Tooltip */}
-                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
-                    {m.count} conversiones
+                  <div className="pointer-events-none absolute -top-10 left-1/2 z-10 -translate-x-1/2 rounded-lg bg-black px-2 py-1 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    {row.count} conversiones
                   </div>
                 </div>
               );
             })}
           </div>
-          <p className="mt-6 text-[10px] text-center font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-            Nuevas activaciones pagas (6 meses)
-          </p>
+        </section>
+      </div>
+
+      <section
+        className="rounded-[2rem] border p-6"
+        style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+      >
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              Trials activos
+            </h2>
+            <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+              Lista operativa de cuentas que siguen en trial y aún no deben desaparecer del admin.
+            </p>
+          </div>
+          <span className="rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.18em]" style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
+            {stats.activeTrials.length} visibles
+          </span>
         </div>
 
-      </div>
+        {stats.activeTrials.length === 0 ? (
+          <div className="rounded-[1.5rem] border border-dashed p-8 text-center" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              No hay cuentas en trial activo
+            </p>
+            <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+              Cuando existan trials vigentes aparecerán aquí con su fecha de expiración y días restantes.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-sm">
+              <thead>
+                <tr className="border-b" style={{ borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}>
+                  <th className="py-3 text-left text-[11px] font-black uppercase tracking-[0.18em]">Marca</th>
+                  <th className="py-3 text-left text-[11px] font-black uppercase tracking-[0.18em]">Estado</th>
+                  <th className="py-3 text-left text-[11px] font-black uppercase tracking-[0.18em]">Plan base</th>
+                  <th className="py-3 text-left text-[11px] font-black uppercase tracking-[0.18em]">Expira</th>
+                  <th className="py-3 text-left text-[11px] font-black uppercase tracking-[0.18em]">Días restantes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.activeTrials.map((trial) => (
+                  <tr key={trial.id} className="border-b" style={{ borderColor: 'var(--border-color)' }}>
+                    <td className="py-4">
+                      <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{trial.name}</div>
+                      <div style={{ color: 'var(--text-muted)' }}>{trial.email}</div>
+                    </td>
+                    <td className="py-4">
+                      <span className="rounded-full bg-[#FF5C3A]/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#FF5C3A]">
+                        {trial.subscription_status || 'trial'}
+                      </span>
+                    </td>
+                    <td className="py-4" style={{ color: 'var(--text-secondary)' }}>{trial.plan}</td>
+                    <td className="py-4" style={{ color: 'var(--text-secondary)' }}>
+                      {trial.trial_end_date ? new Date(trial.trial_end_date).toLocaleDateString('es-CO') : '—'}
+                    </td>
+                    <td className="py-4">
+                      <span className="font-bold" style={{ color: trial.trial_days_remaining <= 2 ? '#f59e0b' : 'var(--text-primary)' }}>
+                        {trial.trial_days_remaining}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

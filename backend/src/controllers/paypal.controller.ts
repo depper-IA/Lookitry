@@ -6,6 +6,7 @@ import { asyncHandler } from '../middleware/errorHandler';
 import { pricingService } from '../services/pricing.service';
 import { NotificationService } from '../services/notification.service';
 import { addonCreditsService } from '../services/addonCredits.service';
+import { isTrialLandingBlocked } from '../utils/brandLifecycle';
 
 const subscriptionService = new SubscriptionService();
 const notificationService = new NotificationService();
@@ -143,6 +144,11 @@ async function fulfillPaypalPayment(reference: string, orderId: string, amountUS
     return;
   }
 
+  const { data: currentBrand } = await supabaseAdmin.from('brands').select('*').eq('id', brandId).single();
+  if (plan === 'NONE' && currentBrand && isTrialLandingBlocked(currentBrand)) {
+    throw new Error('TRIAL_LANDING_BLOCKED');
+  }
+
   if (plan === 'NONE') {
     const { data: existingLandingPayment } = await supabaseAdmin
       .from('subscription_payments')
@@ -207,6 +213,12 @@ export class PaypalController {
     const selectedMonths = parseInt(months as string, 10);
     const planStr = (plan as string).toUpperCase();
     const landing = includes_landing === 'true';
+    if ((req as any).brand?.id && landing && planStr === 'NONE') {
+      const { data: currentBrand } = await supabaseAdmin.from('brands').select('*').eq('id', (req as any).brand.id).single();
+      if (currentBrand && isTrialLandingBlocked(currentBrand)) {
+        return res.status(403).json({ error: 'TRIAL_LANDING_BLOCKED', message: 'La mini-landing requiere primero activar un plan pago.' });
+      }
+    }
 
     const hasAuthenticatedBrand = Boolean((req as any).brand?.id);
     const amountCOP = hasAuthenticatedBrand

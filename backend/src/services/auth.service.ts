@@ -4,6 +4,8 @@ import { supabaseAdmin } from '../config/supabase';
 import { RegisterBrandDto, LoginDto, AuthResponse, Brand } from '../types';
 import { generateToken } from '../utils/jwt';
 import { pricingService } from './pricing.service';
+import { attachLedgerSnapshotToNotes } from '../utils/paymentLedger';
+import { recordTrialEvent } from '../utils/brandLifecycle';
 
 // ── Helpers de campaña de trial ───────────────────────────────────────────────
 
@@ -243,10 +245,29 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
     notes: `Activación via registro post-pago. Ref: ${ref}. ID Pago: ${(pending as any).payment_id || 'N/A'}.${pending.includes_landing ? ' Incluye Landing Page.' : ''}`
   };
 
-  let { error: paymentInsertError } = await supabaseAdmin.from('subscription_payments').insert(paymentPayload);
+  const finalBrand = await this.getBrandById(targetBrandId);
+  if (!finalBrand) throw new Error('Error al recuperar datos de la marca');
+
+  const paymentPayloadWithSnapshot = {
+    ...paymentPayload,
+    notes: attachLedgerSnapshotToNotes(paymentPayload.notes, {
+      version: 1,
+      brandId: targetBrandId,
+      brandName: finalBrand?.name || name || null,
+      brandEmail: finalBrand?.email || pending.email || null,
+      brandSlug: finalBrand?.slug || slug || null,
+      planPurchased: String(pending.plan || 'BASIC').toUpperCase(),
+      billingType: String(pending.plan || '').toUpperCase() === 'TRIAL' ? 'trial_activation' : 'subscription',
+      includesLanding: Boolean(pending.includes_landing),
+      brandPlanBefore: existingBrand?.plan || null,
+      brandPlanAfter: finalBrand?.plan || null,
+    }),
+  };
+
+  let { error: paymentInsertError } = await supabaseAdmin.from('subscription_payments').insert(paymentPayloadWithSnapshot);
 
   if (paymentInsertError?.message?.toLowerCase().includes('reference')) {
-    const { reference, ...fallbackPayload } = paymentPayload;
+    const { reference, ...fallbackPayload } = paymentPayloadWithSnapshot;
     const retry = await supabaseAdmin.from('subscription_payments').insert(fallbackPayload);
     paymentInsertError = retry.error || null;
   }
@@ -255,8 +276,12 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
     throw new Error('Error al registrar el pago: ' + paymentInsertError.message);
   }
 
-  const finalBrand = await this.getBrandById(targetBrandId);
-  if (!finalBrand) throw new Error('Error al recuperar datos de la marca');
+  if ((pending.plan || '').toUpperCase() === 'TRIAL' && finalBrand.trial_end_date) {
+    await recordTrialEvent(finalBrand.id, 'trial_started', {
+      source: 'post_payment_registration',
+      trialEndDate: finalBrand.trial_end_date,
+    }).catch(() => {});
+  }
 
   const token = generateToken({ brandId: finalBrand.id, email: finalBrand.email });
 
@@ -347,6 +372,10 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       const ip = data.ip || 'unknown';
       const fingerprint = data.fingerprint || null;
       recordTrialRegistration(newBrand.id, ip, fingerprint, campaign.id).catch(() => {});
+      recordTrialEvent(newBrand.id, 'trial_started', {
+        trialDays: campaign.trial_days,
+        trialGenerationsLimit: campaign.trial_generations_limit,
+      }).catch(() => {});
     }
 
     // Generar token
@@ -433,6 +462,11 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       .from('brands')
       .update({ email_verified: true, email_verification_token: null })
       .eq('id', brand.id);
+
+    const verifiedBrand = await this.getBrandById(brand.id);
+    if (verifiedBrand?.trial_end_date) {
+      await recordTrialEvent(brand.id, 'trial_email_verified').catch(() => {});
+    }
 
     return { ok: true, message: 'Correo verificado correctamente', brandId: brand.id };
   }

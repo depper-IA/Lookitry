@@ -13,6 +13,7 @@
 4.  **Uso de Skills**: Aplicar siempre `ui-ux-pro-max`, `seo`, y `dev-optimization` según corresponda.
 5.  **Git y Deploy**: No realizar commits ni despliegues al VPS sin autorización explícita del usuario.
 6.  **Base de Datos**: El backend DEBE usar `supabaseAdmin` para operaciones de escritura/bypass RLS. El frontend nunca debe exponer la `SERVICE_KEY`.
+7.  **Responsive obligatorio**: Toda vista nueva o editada debe funcionar correctamente en pantallas wide, laptops, tablets y telefonos antes de considerarse terminada.
 
 ---
 
