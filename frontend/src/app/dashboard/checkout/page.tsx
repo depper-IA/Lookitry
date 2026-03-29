@@ -328,7 +328,7 @@ function CheckoutContent() {
   useEffect(() => {
     subscriptionService.getSubscriptionInfo().then((info) => {
       if (info) {
-        setCurrentPlan(info.plan);
+        setCurrentPlan(info.plan === 'PRO' ? 'PRO' : info.plan === 'BASIC' ? 'BASIC' : null);
         setHasActiveSub(info.status === 'active' || info.status === 'expiring_soon');
         setHasLandingPage(info.hasLandingPage);
         setDaysRemaining(info.daysRemaining);
