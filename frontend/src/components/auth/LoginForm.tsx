@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -25,13 +24,11 @@ function EyeOffIcon() {
   );
 }
 
-export default function LoginForm() {
+export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: string }) {
   const { login, isLoading, error } = useAuth();
-  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
-  const redirectTo = searchParams.get('redirect') || '/dashboard';
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};

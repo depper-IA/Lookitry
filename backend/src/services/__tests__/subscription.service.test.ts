@@ -152,6 +152,28 @@ describe('SubscriptionService', () => {
     });
   });
 
+  describe('isInTrial', () => {
+    it('debe retornar true si trial_end_date sigue vigente aunque el status sea active', async () => {
+      const futureDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
+      (supabaseAdmin.from as jest.Mock).mockReturnValue(
+        mockSupabaseChain({ data: { subscription_status: 'active', trial_end_date: futureDate }, error: null })
+      );
+
+      const result = await service.isInTrial('brand-1');
+      expect(result).toBe(true);
+    });
+
+    it('debe retornar false si la marca esta suspendida aunque conserve trial_end_date', async () => {
+      const futureDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
+      (supabaseAdmin.from as jest.Mock).mockReturnValue(
+        mockSupabaseChain({ data: { subscription_status: 'suspended', trial_end_date: futureDate }, error: null })
+      );
+
+      const result = await service.isInTrial('brand-1');
+      expect(result).toBe(false);
+    });
+  });
+
   // ─── suspendSubscription ──────────────────────────────────────────────────
 
   describe('suspendSubscription', () => {

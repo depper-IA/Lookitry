@@ -2,6 +2,12 @@ import { supabaseAdmin } from '../config/supabase';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { getReportingTrm, normalizePaymentRecordToCop } from '../utils/paymentNormalization';
+import {
+  getPaymentDisplayBrand,
+  inferBillingType,
+  inferIncludesLanding,
+} from '../utils/paymentLedger';
+import { getBrandSocialLinks } from '../utils/brandLifecycle';
 
 export interface Admin {
   id: string;
@@ -17,6 +23,12 @@ type AdminRecord = Admin & {
   permissions?: string[];
   reset_token?: string | null;
   reset_token_expires_at?: string | null;
+};
+
+type PricingMetaData = {
+  replicate_api_token?: string;
+  replicate_monthly_budget_usd?: number;
+  replicate_cost_per_generation_usd?: number;
 };
 
 export interface BrandWithStats {
@@ -102,7 +114,7 @@ export class AdminService {
   }): Promise<Omit<Admin, 'password'>> {
     const { data: existing } = await supabaseAdmin
       .from('admins')
-      .select('id')
+      .select('id, social_links')
       .eq('email', data.email)
       .single();
 
@@ -136,6 +148,31 @@ export class AdminService {
       .eq('id', adminId);
 
     if (error) throw new Error('Error al actualizar permisos: ' + error.message);
+  }
+
+  async changeAdminPassword(adminId: string, newPassword: string): Promise<void> {
+    if (newPassword.length < 8) throw new Error('La nueva contraseña debe tener al menos 8 caracteres');
+
+    const { data: admin, error } = await supabaseAdmin
+      .from('admins')
+      .select('id, social_links')
+      .eq('id', adminId)
+      .single();
+
+    if (error || !admin) throw new Error('Admin no encontrado');
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    const { error: updateError } = await supabaseAdmin
+      .from('admins')
+      .update({
+        password: hashed,
+        reset_token: null,
+        reset_token_expires_at: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', adminId);
+
+    if (updateError) throw new Error('Error al actualizar contraseña: ' + updateError.message);
   }
 
   /**
@@ -380,8 +417,7 @@ export class AdminService {
         const isInTrial =
           trialEnd !== null &&
           trialEnd > now &&
-          brand.subscription_status !== 'active' &&
-          brand.subscription_status !== 'expiring_soon';
+          brand.subscription_status !== 'suspended';
         const trialDaysRemaining = isInTrial && trialEnd
           ? Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
           : null;
@@ -510,17 +546,38 @@ export class AdminService {
     // Generaciones del mes actual
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const { count: generationsThisMonth } = await supabaseAdmin
+      .from('generations')
+      .select('*', { count: 'exact', head: true })
+      .gte('generated_at', startOfMonth.toISOString());
     
-    // Marcas por plan
-    const { count: basicBrands } = await supabaseAdmin
+    const { data: brandsForPlanStats, error: brandsForPlanStatsError } = await supabaseAdmin
       .from('brands')
-      .select('*', { count: 'exact', head: true })
-      .eq('plan', 'BASIC');
+      .select('plan, subscription_status, trial_end_date');
 
-    const { count: proBrands } = await supabaseAdmin
-      .from('brands')
-      .select('*', { count: 'exact', head: true })
-      .eq('plan', 'PRO');
+    if (brandsForPlanStatsError) {
+      throw new Error('Error al obtener distribucion de planes: ' + brandsForPlanStatsError.message);
+    }
+
+    const brandsByPlan = (brandsForPlanStats || []).reduce(
+      (acc, brand) => {
+        const inTrial =
+          !!brand.trial_end_date &&
+          new Date(brand.trial_end_date) > now &&
+          brand.subscription_status !== 'suspended';
+
+        if (inTrial) {
+          acc.TRIAL += 1;
+        } else if (brand.plan === 'PRO') {
+          acc.PRO += 1;
+        } else {
+          acc.BASIC += 1;
+        }
+
+        return acc;
+      },
+      { BASIC: 0, PRO: 0, TRIAL: 0 }
+    );
 
     // Mini-landings: activas
     const { count: landingsActive } = await supabaseAdmin
@@ -543,10 +600,15 @@ export class AdminService {
 
     // Generaciones por mes (últimos 6 meses)
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-      const { data: recentGenerations } = await supabaseAdmin
+      const { data: recentGenerations, error: recentGenerationsError } = await supabaseAdmin
         .from('generations')
-        .select('generated_at, created_at, status')
-        .or(`generated_at.gte.${sixMonthsAgo.toISOString()},and(generated_at.is.null,created_at.gte.${sixMonthsAgo.toISOString()})`);
+        .select('generated_at, status')
+        .gte('generated_at', sixMonthsAgo.toISOString())
+        .order('generated_at', { ascending: true });
+
+      if (recentGenerationsError) {
+        throw new Error(`Error al obtener generaciones recientes: ${recentGenerationsError.message}`);
+      }
 
       const monthlyMap = new Map<string, { total: number; success: number; failed: number }>();
       for (let i = 0; i < 6; i++) {
@@ -555,26 +617,22 @@ export class AdminService {
         monthlyMap.set(key, { total: 0, success: 0, failed: 0 });
       }
 
-      let monthlyGenerations = 0;
+      recentGenerations?.forEach(generation => {
+        if (!generation.generated_at) return;
 
-      recentGenerations?.forEach(g => {
-        const timestamp = g.generated_at || g.created_at;
-        if (!timestamp) return;
+        const generatedAt = new Date(generation.generated_at);
+        if (Number.isNaN(generatedAt.getTime())) return;
 
-        const d = new Date(timestamp);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const key = `${generatedAt.getFullYear()}-${String(generatedAt.getMonth() + 1).padStart(2, '0')}`;
+        if (!monthlyMap.has(key)) return;
 
-        if (d >= startOfMonth) {
-          monthlyGenerations += 1;
-        }
+        const stats = monthlyMap.get(key)!;
+        const normalizedStatus = String(generation.status || '').toUpperCase();
 
-        if (monthlyMap.has(key)) {
-          const stats = monthlyMap.get(key)!;
-          stats.total++;
-        if (g.status === 'SUCCESS') stats.success++;
-        else if (g.status === 'FAILED') stats.failed++;
-      }
-    });
+        stats.total++;
+        if (normalizedStatus === 'SUCCESS') stats.success++;
+        else if (normalizedStatus === 'FAILED') stats.failed++;
+      });
 
     const generationsByMonth = Array.from(monthlyMap.entries())
       .map(([month, s]) => ({ month, ...s }))
@@ -586,12 +644,9 @@ export class AdminService {
       totalGenerations: totalGenerations || 0,
       successfulGenerations: successfulGenerations || 0,
       failedGenerations: (totalGenerations || 0) - (successfulGenerations || 0),
-      generationsThisMonth: monthlyGenerations || 0,
+      generationsThisMonth: generationsThisMonth || 0,
       successRate: totalGenerations ? ((successfulGenerations || 0) / totalGenerations) * 100 : 0,
-      brandsByPlan: {
-        BASIC: basicBrands || 0,
-        PRO: proBrands || 0,
-      },
+      brandsByPlan,
       landingStats: {
         active: landingsActive || 0,
         suspended: landingsSuspended || 0,
@@ -641,19 +696,26 @@ export class AdminService {
     }
 
     // Eliminar en cascada: generaciones, pagos, productos, preferencias de notificación
-    await supabaseAdmin.from('generations').delete().eq('brand_id', brandId);
-    await supabaseAdmin.from('subscription_payments').delete().eq('brand_id', brandId);
-    await supabaseAdmin.from('notification_preferences').delete().eq('brand_id', brandId);
-    await supabaseAdmin.from('products').delete().eq('brand_id', brandId);
+    const socialLinks = getBrandSocialLinks(brand as any);
 
     // Eliminar la marca
     const { error: deleteError } = await supabaseAdmin
       .from('brands')
-      .delete()
+      .update({
+        subscription_status: 'suspended',
+        has_landing_page: false,
+        landing_suspended_at: new Date().toISOString(),
+        social_links: {
+          ...socialLinks,
+          account_archived_at: new Date().toISOString(),
+          account_archived_reason: 'admin_delete',
+          account_archived_by: 'admin',
+        },
+      })
       .eq('id', brandId);
 
     if (deleteError) {
-      throw new Error('Error al eliminar marca: ' + deleteError.message);
+      throw new Error('Error al archivar marca: ' + deleteError.message);
     }
   }
 
@@ -747,7 +809,7 @@ export class AdminService {
     password: string;
     name: string;
     slug: string;
-    plan?: 'BASIC' | 'PRO';
+    plan?: 'BASIC' | 'PRO' | 'TRIAL';
     trial_days?: number;
     phone?: string;
     contact_name?: string;
@@ -779,6 +841,8 @@ export class AdminService {
     const trialDays = data.trial_days ?? 7;
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + trialDays);
+    const requestedPlan = String(data.plan || 'TRIAL').toUpperCase();
+    const persistedPlan = requestedPlan === 'TRIAL' ? 'BASIC' : requestedPlan;
 
     const { data: newBrand, error } = await supabaseAdmin
       .from('brands')
@@ -787,10 +851,10 @@ export class AdminService {
         password: hashedPassword,
         name: data.name,
         slug: data.slug,
-        plan: data.plan || 'BASIC',
+        plan: persistedPlan,
         phone: data.phone || null,
         contact_name: data.contact_name || null,
-        subscription_status: 'trial', // Asegurar estado trial explícito
+        subscription_status: null,
         trial_end_date: trialEndDate.toISOString(),
         trial_generations_limit: 30,
       })
@@ -816,7 +880,7 @@ export class AdminService {
       .from('brands')
       .select('id, name, email, slug, plan, trial_end_date, subscription_status, created_at')
       .gt('trial_end_date', now)
-      .not('subscription_status', 'in', '("active","expiring_soon")')
+      .neq('subscription_status', 'suspended')
       .order('trial_end_date', { ascending: true });
 
     if (error) {
@@ -838,7 +902,7 @@ export class AdminService {
   async getConversionStats() {
     const { data: brands, error } = await supabaseAdmin
       .from('brands')
-      .select('id, plan, subscription_status, trial_end_date, created_at')
+      .select('id, name, email, slug, plan, subscription_status, trial_end_date, created_at')
       .order('created_at', { ascending: true });
 
     if (error || !brands) {
@@ -847,13 +911,12 @@ export class AdminService {
 
     const now = new Date();
 
-    // Marcas en trial activo
+    // Marcas en trial activo: el modelo real se deriva por trial_end_date vigente.
     const inTrial = brands.filter(b => {
       if (!b.trial_end_date) return false;
       const trialEnd = new Date(b.trial_end_date);
-      return trialEnd > now &&
-        b.subscription_status !== 'active' &&
-        b.subscription_status !== 'expiring_soon';
+      if (trialEnd <= now) return false;
+      return b.subscription_status !== 'suspended';
     });
 
     // Marcas convertidas (tienen suscripción activa o por vencer)
@@ -864,6 +927,9 @@ export class AdminService {
     const totalBrands = brands.length;
     const conversionRate = totalBrands > 0
       ? Math.round((converted.length / totalBrands) * 100)
+      : 0;
+    const trialRate = totalBrands > 0
+      ? Math.round((inTrial.length / totalBrands) * 100)
       : 0;
 
     // Conversiones por mes (últimos 6 meses) — basado en created_at de marcas convertidas
@@ -897,12 +963,34 @@ export class AdminService {
       count,
     }));
 
+    const activeTrials = inTrial
+      .map((brand) => {
+        const trialEnd = brand.trial_end_date ? new Date(brand.trial_end_date) : null;
+        const diffMs = trialEnd ? trialEnd.getTime() - now.getTime() : 0;
+        const daysRemaining = trialEnd ? Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24))) : 0;
+
+        return {
+          id: brand.id,
+          name: brand.name,
+          email: brand.email,
+          slug: brand.slug,
+          plan: brand.plan,
+          subscription_status: brand.subscription_status,
+          trial_end_date: brand.trial_end_date,
+          created_at: brand.created_at,
+          trial_days_remaining: daysRemaining,
+        };
+      })
+      .sort((a, b) => a.trial_days_remaining - b.trial_days_remaining);
+
     return {
       totalBrands,
       inTrial: inTrial.length,
       converted: converted.length,
       conversionRate,
+      trialRate,
       conversionsByMonth,
+      activeTrials,
     };
   }
 
@@ -925,7 +1013,7 @@ export class AdminService {
 
       let statsQuery = supabaseAdmin
         .from('subscription_payments')
-        .select('amount, currency, reference, notes')
+        .select('amount, currency, notes')
         .eq('status', 'completed');
 
     if (filters.brand_id) statsQuery = statsQuery.eq('brand_id', filters.brand_id);
@@ -944,7 +1032,7 @@ export class AdminService {
     // 2. Consulta paginada para la tabla (incluyendo plan)
     let query = supabaseAdmin
       .from('subscription_payments')
-      .select('*, brands(name, email, slug, plan)', { count: 'exact' })
+      .select('*, brands(name, email, slug, plan, social_links)', { count: 'exact' })
       .order('payment_date', { ascending: false });
 
     if (filters.brand_id) query = query.eq('brand_id', filters.brand_id);
@@ -969,10 +1057,11 @@ export class AdminService {
     const normalizedSearch = filters.search?.trim().toLowerCase();
     const filteredPayments = normalizedSearch
       ? (data || []).filter((payment: any) => {
+          const displayBrand = getPaymentDisplayBrand(payment);
           const haystack = [
-            payment.brands?.name,
-            payment.brands?.email,
-            payment.brands?.slug,
+            displayBrand.name,
+            displayBrand.email,
+            displayBrand.slug,
             payment.reference,
             payment.transaction_id,
             payment.notes,
@@ -988,8 +1077,18 @@ export class AdminService {
       const normalizedPayments = await Promise.all(
         filteredPayments.map(async (payment: any) => {
           const normalized = await normalizePaymentRecordToCop(payment, reportingTrm, trmCache);
+          const displayBrand = getPaymentDisplayBrand(payment);
           return {
             ...payment,
+            brands: {
+              name: displayBrand.name,
+              email: displayBrand.email,
+              slug: displayBrand.slug,
+              plan: displayBrand.plan,
+            },
+            billing_type: inferBillingType(payment),
+            includes_landing: inferIncludesLanding(payment),
+            archived: Boolean(payment.brands?.social_links?.account_archived_at),
             amount: normalized.amountCop,
             amount_original: normalized.originalAmount,
             amount_cop: normalized.amountCop,
@@ -1014,5 +1113,19 @@ export class AdminService {
           completed_count: completedPayments.length
       }
     };
+  }
+
+  async getAdminMeta(): Promise<PricingMetaData> {
+    const { data, error } = await supabaseAdmin
+      .from('pricing_config')
+      .select('data')
+      .eq('id', 'meta')
+      .maybeSingle();
+
+    if (error) {
+      throw new Error('Error al obtener metadata administrativa: ' + error.message);
+    }
+
+    return (data?.data || {}) as PricingMetaData;
   }
 }

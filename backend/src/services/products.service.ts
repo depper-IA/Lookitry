@@ -3,6 +3,7 @@ import { N8nClient } from './n8n.client';
 import { invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { Product } from '../types';
 import { PLANS } from '../config/plans';
+import { recordTrialEvent } from '../utils/brandLifecycle';
 
 const n8nClient = new N8nClient();
 
@@ -129,13 +130,10 @@ export class ProductsService {
       throw new Error('Error al obtener información de la marca');
     }
 
-    // Detectar si está en trial activo (sin suscripción pagada)
-    const hasActivePaidSubscription =
-      brand.subscription_status === 'active' ||
-      brand.subscription_status === 'expiring_soon';
+    // Trial activo = trial_end_date vigente y marca no suspendida.
     const isInTrial =
-      !hasActivePaidSubscription &&
-      brand.trial_end_date &&
+      brand.subscription_status !== 'suspended' &&
+      !!brand.trial_end_date &&
       new Date(brand.trial_end_date) > new Date();
 
     const planKey = isInTrial ? 'TRIAL' : (brand.plan ?? 'BASIC');
@@ -208,6 +206,13 @@ export class ProductsService {
 
     if (error || !data) {
       throw new Error('Error al crear el producto: ' + error?.message);
+    }
+
+    if (currentCount === 0) {
+      await recordTrialEvent(brandId, 'first_product_created', {
+        source: 'manual',
+        productId: data.id,
+      }).catch(() => {});
     }
 
     // Mapear snake_case a camelCase para el frontend
@@ -434,6 +439,13 @@ export class ProductsService {
           }).catch(err => console.error(`❌ Error descripción IA para ${p.id}:`, err.message));
         }
       });
+    }
+
+    if (currentCount === 0 && createdCount > 0) {
+      await recordTrialEvent(brandId, 'first_product_created', {
+        source: 'woocommerce_sync',
+        createdCount,
+      }).catch(() => {});
     }
 
     return {

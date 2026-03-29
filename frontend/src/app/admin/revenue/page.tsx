@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { formatCurrency } from '@/utils/currency';
+import { adminApi } from '@/services/adminApi';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -662,39 +663,34 @@ export default function RevenuePage() {
     try {
       setLoading(true);
       setError('');
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-      const [statsRes, pricingRes] = await Promise.all([
-        fetch(`${apiBase}/api/admin/revenue/stats`, { credentials: 'include' }),
-        fetch(`${apiBase}/api/admin/pricing`, { credentials: 'include' }),
+      const [statsJson, pricingJson] = await Promise.all([
+        adminApi.get<RevenueStats>('/admin/revenue/stats'),
+        adminApi.get<{ ok?: boolean; data?: { id: string; data: Record<string, unknown> }[] }>('/admin/pricing'),
       ]);
 
-      if (!statsRes.ok) throw new Error('Error al cargar estadísticas');
-      setStats(await statsRes.json());
+      setStats(statsJson);
 
-      if (pricingRes.ok) {
-        const pricingJson = await pricingRes.json();
-        if (pricingJson.ok) {
-          const rows: { id: string; data: Record<string, unknown> }[] = pricingJson.data;
-          const costsRow   = rows.find(r => r.id === 'costs')?.data        as unknown as CostsConfig;
-          const metaRow    = rows.find(r => r.id === 'meta')?.data         as unknown as MetaConfig;
-          const basicRow   = rows.find(r => r.id === 'basic')?.data        as unknown as { precio_mensual_cop: number };
-          const proRow     = rows.find(r => r.id === 'pro')?.data          as unknown as { precio_mensual_cop: number };
-          const landingRow = rows.find(r => r.id === 'mini_landing')?.data as unknown as { precio_unico_cop: number };
-          if (costsRow) { setCosts(costsRow); setCostsEdit(costsRow); }
-          if (metaRow)  {
-            setMeta(metaRow);
-            setMetaEdit(metaRow);
-            setTrmAutoEdit(metaRow.trm_auto ?? true);
-            if (metaRow.trm_referencia) {
-              setTrmLive(metaRow.trm_referencia);
-              setTrm(metaRow.trm_referencia);
-              setTrmEdit(metaRow.trm_referencia);
-            }
+      if (pricingJson.ok && Array.isArray(pricingJson.data)) {
+        const rows: { id: string; data: Record<string, unknown> }[] = pricingJson.data;
+        const costsRow   = rows.find(r => r.id === 'costs')?.data        as unknown as CostsConfig;
+        const metaRow    = rows.find(r => r.id === 'meta')?.data         as unknown as MetaConfig;
+        const basicRow   = rows.find(r => r.id === 'basic')?.data        as unknown as { precio_mensual_cop: number };
+        const proRow     = rows.find(r => r.id === 'pro')?.data          as unknown as { precio_mensual_cop: number };
+        const landingRow = rows.find(r => r.id === 'mini_landing')?.data as unknown as { precio_unico_cop: number };
+        if (costsRow) { setCosts(costsRow); setCostsEdit(costsRow); }
+        if (metaRow)  {
+          setMeta(metaRow);
+          setMetaEdit(metaRow);
+          setTrmAutoEdit(metaRow.trm_auto ?? true);
+          if (metaRow.trm_referencia) {
+            setTrmLive(metaRow.trm_referencia);
+            setTrm(metaRow.trm_referencia);
+            setTrmEdit(metaRow.trm_referencia);
           }
-          if (basicRow?.precio_mensual_cop)   setBasicPrecio(basicRow.precio_mensual_cop);
-          if (proRow?.precio_mensual_cop)     setProPrecio(proRow.precio_mensual_cop);
-          if (landingRow?.precio_unico_cop)   setLandingPrecio(landingRow.precio_unico_cop);
         }
+        if (basicRow?.precio_mensual_cop)   setBasicPrecio(basicRow.precio_mensual_cop);
+        if (proRow?.precio_mensual_cop)     setProPrecio(proRow.precio_mensual_cop);
+        if (landingRow?.precio_unico_cop)   setLandingPrecio(landingRow.precio_unico_cop);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error desconocido');

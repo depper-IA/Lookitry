@@ -16,6 +16,7 @@ import {
   Workflow,
   X,
 } from 'lucide-react';
+import EnterpriseCalculator from '@/components/admin/EnterpriseCalculator';
 
 interface SyncConfig {
   id: string;
@@ -139,6 +140,8 @@ function Field({
 export default function EnterpriseSyncPage() {
   const [configs, setConfigs] = useState<SyncConfig[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
+  const [moduleAvailable, setModuleAvailable] = useState(true);
+  const [moduleMessage, setModuleMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [triggeringIds, setTriggeringIds] = useState<Set<string>>(new Set());
   const [showForm, setShowForm] = useState(false);
@@ -157,15 +160,19 @@ export default function EnterpriseSyncPage() {
 
   const fetchConfigs = useCallback(async () => {
     try {
+      setLoading(true);
       const res = await fetch(`${API_URL}/api/admin/enterprise`, {
         credentials: 'include',
       });
-      if (!res.ok) throw new Error('No se pudieron cargar las configuraciones enterprise.');
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || data.message || 'No se pudieron cargar las configuraciones enterprise.');
       setConfigs(data.configs || []);
-    } catch (err) {
+      setModuleAvailable(data.moduleAvailable !== false);
+      setModuleMessage(data.moduleMessage || '');
+      setError('');
+    } catch (err: any) {
       console.error('Error cargando configs:', err);
-      setError('No pude cargar las configuraciones enterprise.');
+      setError(err?.message || 'No pude cargar las configuraciones enterprise.');
     } finally {
       setLoading(false);
     }
@@ -188,6 +195,11 @@ export default function EnterpriseSyncPage() {
   }, [fetchConfigs, fetchBrands]);
 
   const handleTrigger = async (brandId: string, brandName: string) => {
+    if (!moduleAvailable) {
+      setError(moduleMessage || 'El módulo enterprise aún no está disponible en esta base.');
+      return;
+    }
+
     setTriggeringIds((prev) => new Set(prev).add(brandId));
     setError('');
 
@@ -214,6 +226,11 @@ export default function EnterpriseSyncPage() {
   };
 
   const openForm = (config?: SyncConfig) => {
+    if (!moduleAvailable) {
+      setError(moduleMessage || 'El módulo enterprise aún no está disponible en esta base.');
+      return;
+    }
+
     if (config) {
       setEditingConfig(config);
       setForm({
@@ -239,6 +256,11 @@ export default function EnterpriseSyncPage() {
   };
 
   const handleSave = async () => {
+    if (!moduleAvailable) {
+      setError(moduleMessage || 'El módulo enterprise aún no está disponible en esta base.');
+      return;
+    }
+
     if (!form.brand_id || !form.source_url) {
       setError('Marca y fuente son obligatorias para guardar la configuración.');
       return;
@@ -333,8 +355,9 @@ export default function EnterpriseSyncPage() {
               </button>
               <button
                 onClick={() => openForm()}
-                className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                style={{ background: '#FF5C3A' }}
+                disabled={!moduleAvailable}
+                className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed"
+                style={{ background: '#FF5C3A', opacity: moduleAvailable ? 1 : 0.5 }}
               >
                 <Plus className="h-4 w-4" />
                 Nueva conexión
@@ -342,12 +365,6 @@ export default function EnterpriseSyncPage() {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <StatCard label="Conexiones" value={String(summary.total)} sub="clientes enterprise con fuente configurada" />
-            <StatCard label="Activas" value={String(summary.active)} sub="automatizaciones listas para ejecutar" />
-            <StatCard label="Con alertas" value={String(summary.withIssues)} sub="syncs que conviene revisar hoy" />
-            <StatCard label="Productos" value={summary.syncedProducts.toLocaleString('es-CO')} sub="registros sincronizados reportados" />
-          </div>
         </div>
       </ShellCard>
 
@@ -367,8 +384,24 @@ export default function EnterpriseSyncPage() {
           {error}
         </div>
       )}
+      {!moduleAvailable && moduleMessage && (
+        <div
+          className="rounded-2xl border px-4 py-3 text-sm"
+          style={{ background: 'rgba(245,158,11,0.08)', borderColor: 'rgba(245,158,11,0.25)', color: '#f59e0b' }}
+        >
+          {moduleMessage}
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.6fr_1fr]">
+      <section className="space-y-4">
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Información del cliente</p>
+          <h2 className="mt-2 text-xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Contexto operativo para cuentas enterprise
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.6fr_1fr]">
         <ShellCard className="p-6">
           <div className="flex items-center gap-3">
             <div className="rounded-2xl p-3" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>
@@ -449,7 +482,42 @@ export default function EnterpriseSyncPage() {
             ))}
           </div>
         </ShellCard>
-      </div>
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Calculadora de precios</p>
+          <h2 className="mt-2 text-xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Margen y propuesta comercial
+          </h2>
+        </div>
+        <EnterpriseCalculator />
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Estado de cuenta</p>
+          <h2 className="mt-2 text-xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Resumen de conexiones enterprise
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="Conexiones" value={String(summary.total)} sub="clientes enterprise con fuente configurada" />
+          <StatCard label="Activas" value={String(summary.active)} sub="automatizaciones listas para ejecutar" />
+          <StatCard label="Con alertas" value={String(summary.withIssues)} sub="syncs que conviene revisar hoy" />
+          <StatCard label="Productos" value={summary.syncedProducts.toLocaleString('es-CO')} sub="registros sincronizados reportados" />
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Historial</p>
+          <h2 className="mt-2 text-xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Conexiones, syncs y trazabilidad
+          </h2>
+        </div>
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -774,6 +842,7 @@ export default function EnterpriseSyncPage() {
           })}
         </div>
       )}
+      </section>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 type Severity = 'info' | 'warning' | 'error' | 'success';
 type Tab = 'notifications' | 'feedback';
@@ -111,7 +112,9 @@ function Toggle({ enabled, onChange, loading }: { enabled: boolean; onChange: ()
 }
 
 export default function NotificationsPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('notifications');
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'feedback' ? 'feedback' : 'notifications';
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   // Notificaciones
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -182,6 +185,9 @@ export default function NotificationsPage() {
 
   useEffect(() => { fetchNotifications(); fetchPreferences(); }, [fetchNotifications, fetchPreferences]);
   useEffect(() => { if (activeTab === 'feedback') loadFeedback(); }, [activeTab, loadFeedback]);
+  useEffect(() => {
+    setActiveTab(searchParams.get('tab') === 'feedback' ? 'feedback' : 'notifications');
+  }, [searchParams]);
 
   const togglePreference = async (type: string) => {
     const current = preferences.find(p => p.type === type);

@@ -2,6 +2,8 @@ import { supabaseAdmin } from '../config/supabase';
 import { Brand, SubscriptionPayment, CreatePaymentDto } from '../types';
 import { PaymentSettingsService } from './paymentSettings.service';
 import { getReportingTrm, normalizePaymentRecordToCop } from '../utils/paymentNormalization';
+import { attachLedgerSnapshotToNotes, type PaymentLedgerSnapshot } from '../utils/paymentLedger';
+import { isTrialOperationalBrand, recordTrialEvent } from '../utils/brandLifecycle';
 
 /**
  * SubscriptionService
@@ -100,12 +102,7 @@ export class SubscriptionService {
       return false;
     }
 
-    // Solo es "en trial" si no tiene suscripción activa pagada
-    const hasActivePaidSubscription =
-      data.subscription_status === 'active' ||
-      data.subscription_status === 'expiring_soon';
-
-    if (hasActivePaidSubscription) {
+    if (data.subscription_status === 'suspended') {
       return false;
     }
 
@@ -214,6 +211,8 @@ export class SubscriptionService {
 
     // Calcular nueva fecha de inicio y vencimiento
     const now = new Date();
+    const hadActiveTrial = isTrialOperationalBrand(brand);
+    const previousPlan = brand.plan ?? 'BASIC';
     // En upgrade: siempre desde hoy (el crédito ya fue descontado del precio)
     // En renovación normal: extender desde la fecha de fin actual si no venció
     const newStartDate = isUpgrade
@@ -288,13 +287,42 @@ export class SubscriptionService {
       throw new Error('Error al renovar la suscripción: ' + updateError?.message);
     }
 
+    const planPurchased = String((plan || updatedBrand.plan || brand.plan || 'BASIC')).toUpperCase();
+    const includesLanding = String(paymentData.notes || '').toUpperCase().includes('LANDING');
+    const billingType =
+      paymentData.payment_method === 'credit_proration' || isUpgrade
+        ? 'upgrade'
+        : includesLanding && Number(paymentData.months_paid || months || 0) === 0
+          ? 'landing'
+          : hadActiveTrial && ['BASIC', 'PRO', 'ENTERPRISE'].includes(planPurchased)
+            ? 'subscription'
+            : 'subscription';
+
+    const ledgerSnapshot: PaymentLedgerSnapshot = {
+      version: 1,
+      brandId: brand.id,
+      brandName: brand.name || null,
+      brandEmail: brand.email || null,
+      brandSlug: brand.slug || null,
+      planPurchased,
+      billingType,
+      includesLanding,
+      brandPlanBefore: previousPlan,
+      brandPlanAfter: updatedBrand.plan || previousPlan,
+    };
+
     // Registrar pago en historial
     await this.createPaymentRecord({
       ...paymentData,
       brand_id: brandId,
       payment_date: paymentData.payment_date || now.toISOString(),
       status: paymentData.status || 'completed',
+      ledger_snapshot: ledgerSnapshot,
     });
+
+    if (hadActiveTrial && ['BASIC', 'PRO', 'ENTERPRISE'].includes(planPurchased)) {
+      await recordTrialEvent(brandId, 'trial_converted', { planPurchased }).catch(() => {});
+    }
 
     return updatedBrand as Brand;
   }
@@ -459,6 +487,18 @@ export class SubscriptionService {
       status: 'completed',
       months_paid: newMonths,
       notes: `Cambio de plan gratuito por prorrateo. Plan: ${newPlan}. Crédito aplicado: $${creditAmount}. Valor plan: $${newPlanTotal}. Ref: ${reference}`,
+      ledger_snapshot: {
+        version: 1,
+        brandId: brandId,
+        brandName: (updatedBrand as any).name || null,
+        brandEmail: (updatedBrand as any).email || null,
+        brandSlug: (updatedBrand as any).slug || null,
+        planPurchased: newPlan.toUpperCase(),
+        billingType: 'upgrade',
+        includesLanding: false,
+        brandPlanBefore: null,
+        brandPlanAfter: newPlan.toUpperCase(),
+      },
     });
 
     return updatedBrand as Brand;
@@ -577,6 +617,17 @@ export class SubscriptionService {
     const daysRemaining = await this.getDaysRemaining(brandId);
     const inTrial = await this.isInTrial(brandId);
     const trialDaysRemaining = await this.getTrialDaysRemaining(brandId);
+
+    if (inTrial && trialDaysRemaining !== null && trialDaysRemaining <= 3) {
+      await recordTrialEvent(brandId, 'trial_expiring', { trialDaysRemaining }).catch(() => {});
+    }
+
+    if (!inTrial && data.trial_end_date) {
+      const trialEnd = new Date(data.trial_end_date);
+      if (!Number.isNaN(trialEnd.getTime()) && trialEnd <= new Date()) {
+        await recordTrialEvent(brandId, 'trial_expired').catch(() => {});
+      }
+    }
 
     return {
       status: data.subscription_status,
@@ -730,6 +781,13 @@ export class SubscriptionService {
       }
     }
 
+    const notesWithSnapshot = paymentData.ledger_snapshot
+      ? attachLedgerSnapshotToNotes(
+          paymentData.notes || null,
+          paymentData.ledger_snapshot as unknown as PaymentLedgerSnapshot
+        )
+      : (paymentData.notes || null);
+
     return this.insertPaymentCompat({
       brand_id: paymentData.brand_id,
       amount: paymentData.amount,
@@ -737,7 +795,7 @@ export class SubscriptionService {
       payment_date: paymentData.payment_date || new Date().toISOString(),
       payment_method: paymentData.payment_method || null,
       status: paymentData.status || 'completed',
-      notes: paymentData.notes || null,
+      notes: notesWithSnapshot,
       months_paid: paymentData.months_paid || 1,
       reference: paymentData.reference || null,
     });

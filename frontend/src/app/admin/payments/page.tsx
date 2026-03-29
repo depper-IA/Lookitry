@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Search, CreditCard, RefreshCw, CheckCircle, XCircle, Clock, Banknote, Wifi, ArrowUpDown } from 'lucide-react';
 import { formatCurrency } from '@/utils/currency';
+import { adminApi } from '@/services/adminApi';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -25,6 +26,8 @@ interface Payment {
   status: 'completed' | 'pending' | 'failed' | 'refunded';
   notes: string | null;
   created_at: string;
+  billing_type?: string;
+  archived?: boolean;
 }
 
 function normalizePayment(raw: any): Payment {
@@ -47,15 +50,12 @@ function normalizePayment(raw: any): Payment {
     status: raw.status ?? 'pending',
     notes: raw.notes ?? null,
     created_at: raw.created_at ?? raw.createdAt ?? raw.payment_date ?? raw.paymentDate ?? '',
+    billing_type: raw.billing_type ?? raw.billingType ?? undefined,
+    archived: Boolean(raw.archived),
   };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function adminApi(path: string, options?: RequestInit) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-  return fetch(`${base}/api${path}`, { ...options, credentials: 'include' });
-}
 
 function formatDate(d: string | null) {
   if (!d) return '—';
@@ -131,22 +131,23 @@ export default function AdminPaymentsPage() {
     try {
       setError('');
       const params = new URLSearchParams();
-      if (methodFilter !== 'all') params.set('payment_method', methodFilter);
+      if (methodFilter !== 'all') {
+        params.set('payment_method', methodFilter);
+        params.set('method', methodFilter);
+      }
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (fromDate) params.set('from', fromDate);
       if (toDate) params.set('to', toDate);
       if (search) params.set('search', search);
 
-      const res = await adminApi(`/admin/revenue/payments?${params}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al cargar pagos');
+      const data = await adminApi.get<{ payments?: Payment[]; stats?: { total_revenue?: number; completed_count?: number } }>(`/admin/revenue/payments?${params.toString()}`);
       const normalizedPayments: Payment[] = Array.isArray(data.payments) ? data.payments.map(normalizePayment) : [];
       const completedPayments = normalizedPayments.filter((payment: Payment) => payment.status === 'completed');
       setPayments(normalizedPayments);
       setTotalRevenue(data.stats?.total_revenue ?? completedPayments.reduce((sum, payment) => sum + (payment.amount_cop ?? payment.amount), 0));
       setCompletedCount(data.stats?.completed_count ?? completedPayments.length);
     } catch (e: any) {
-      setError(e.message);
+      setError(e.message || 'Error al obtener pagos');
     } finally {
       setLoading(false);
     }
@@ -324,6 +325,18 @@ export default function AdminPaymentsPage() {
                         <td className="px-5 py-3.5">
                           <p style={{ color: 'var(--text-primary)' }} className="font-medium">{brand.name}</p>
                           <p style={{ color: 'var(--text-muted)' }} className="text-xs">{brand.email}</p>
+                          <div className="mt-1 flex items-center gap-2">
+                            {p.billing_type && (
+                              <span className="rounded-full bg-zinc-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-400">
+                                {p.billing_type}
+                              </span>
+                            )}
+                            {p.archived && (
+                              <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-400">
+                                Archivada
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-5 py-3.5">
                           <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${brand.plan === 'PRO' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'}`}>

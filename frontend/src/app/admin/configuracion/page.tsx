@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -38,17 +39,23 @@ interface SystemStats {
   platform: string;
 }
 
-interface OpenRouterCredits {
+interface ProviderCredits {
+  provider: 'openrouter' | 'replicate';
+  status: 'ok' | 'partial' | 'not_configured';
   label: string | null;
-  usage: number;
+  usage: number | null;
   limit: number | null;
   balance: number | null;
-  is_free_tier: boolean;
   usage_percent: number | null;
   estimated_generations_remaining: number | null;
   cost_per_generation: number;
   low_balance_alert: boolean;
   critical_balance_alert: boolean;
+  can_top_up?: boolean;
+  settings_url?: string | null;
+  message?: string | null;
+  configured?: boolean;
+  is_free_tier?: boolean;
 }
 interface PaymentSettings {
   bypass_ip_protection: boolean;
@@ -69,6 +76,8 @@ interface ContactMeta {
   social_tiktok: string;
   social_facebook: string;
   social_youtube: string;
+  replicate_api_token?: string;
+  replicate_monthly_budget_usd?: number;
 }
 
 type SysTab = 'trial' | 'debug' | 'contact' | 'credits' | 'ai' | 'health';
@@ -227,6 +236,7 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
 // ── Página principal ──────────────────────────────────────────────────────────
 
 export default function SystemConfigPage() {
+  const searchParams = useSearchParams();
   // Campañas
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [activeCampaign, setActiveCampaign] = useState<Campaign | null>(null);
@@ -279,6 +289,9 @@ export default function SystemConfigPage() {
   const [trmAuto, setTrmAuto] = useState<boolean>(true);
   const [trmReferencia, setTrmReferencia] = useState<number>(4000);
   const [savingTrm, setSavingTrm] = useState(false);
+  const [replicateApiToken, setReplicateApiToken] = useState('');
+  const [replicateMonthlyBudgetUsd, setReplicateMonthlyBudgetUsd] = useState('');
+  const [savingReplicateConfig, setSavingReplicateConfig] = useState(false);
 
   // Moneda del sistema
   const [currency, setCurrency] = useState<string>('COP');
@@ -295,13 +308,15 @@ export default function SystemConfigPage() {
   const [savingMaintenance, setSavingMaintenance] = useState(false);
 
   // Créditos OpenRouter
-  const [credits, setCredits] = useState<OpenRouterCredits | null>(null);
+  const [openRouterCredits, setOpenRouterCredits] = useState<ProviderCredits | null>(null);
+  const [replicateCredits, setReplicateCredits] = useState<ProviderCredits | null>(null);
   const [loadingCredits, setLoadingCredits] = useState(true);
 
   // Alertas globales
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState<SysTab>('trial');
+  const credits = openRouterCredits;
 
   const headers = { 'Content-Type': 'application/json' };
 
@@ -351,8 +366,16 @@ export default function SystemConfigPage() {
   const loadCredits = useCallback(async () => {
     setLoadingCredits(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/openrouter-credits`, { credentials: 'include', headers });
-      if (res.ok) setCredits(await res.json());
+      const [openrouterRes, replicateRes] = await Promise.all([
+        fetch(`${API_URL}/api/admin/openrouter-credits`, { credentials: 'include', headers }),
+        fetch(`${API_URL}/api/admin/replicate-credits`, { credentials: 'include', headers }),
+      ]);
+
+      if (openrouterRes.ok) setOpenRouterCredits(await openrouterRes.json());
+      else setOpenRouterCredits(null);
+
+      if (replicateRes.ok) setReplicateCredits(await replicateRes.json());
+      else setReplicateCredits(null);
     } catch { /* silencioso */ }
     finally { setLoadingCredits(false); }
   }, []);
@@ -397,6 +420,12 @@ export default function SystemConfigPage() {
         social_facebook: metaRow.data.social_facebook ?? '',
         social_youtube: metaRow.data.social_youtube ?? '',
       });
+      setReplicateApiToken(metaRow.data.replicate_api_token ?? '');
+      setReplicateMonthlyBudgetUsd(
+        metaRow.data.replicate_monthly_budget_usd !== undefined && metaRow.data.replicate_monthly_budget_usd !== null
+          ? String(metaRow.data.replicate_monthly_budget_usd)
+          : ''
+      );
 
       // TRM config
       setTrmAuto(metaRow.data.trm_auto !== false); // default true
@@ -416,6 +445,13 @@ export default function SystemConfigPage() {
     loadPricingMeta();
     loadCredits();
   }, []);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'trial' || tab === 'debug' || tab === 'contact' || tab === 'credits' || tab === 'ai' || tab === 'health') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   function flash(msg: string, type: 'ok' | 'err') {
     if (type === 'ok') { setSuccess(msg); setTimeout(() => setSuccess(''), 3000); }
@@ -490,6 +526,7 @@ export default function SystemConfigPage() {
         social_youtube: contactMeta.social_youtube,
         trm_auto: trmAuto,
         trm_referencia: trmReferencia,
+        replicate_monthly_budget_usd: replicateMonthlyBudgetUsd.trim() ? Number(replicateMonthlyBudgetUsd) : null,
       };
 
       const [settingsRes, pricingRes] = await Promise.all([
@@ -581,6 +618,7 @@ export default function SystemConfigPage() {
 
   async function handleSaveContactConfig() {
     setSavingContactConfig(true);
+    setSavingReplicateConfig(true);
     try {
       const nextMeta = {
         ...pricingMeta,
@@ -590,6 +628,8 @@ export default function SystemConfigPage() {
         social_youtube: contactMeta.social_youtube,
         trm_auto: trmAuto,
         trm_referencia: trmReferencia,
+        replicate_api_token: replicateApiToken.trim(),
+        replicate_monthly_budget_usd: replicateMonthlyBudgetUsd.trim() ? Number(replicateMonthlyBudgetUsd) : null,
       };
 
       const [settingsRes, pricingRes] = await Promise.all([
@@ -617,7 +657,43 @@ export default function SystemConfigPage() {
       setPricingMeta(nextMeta);
       flash('Contacto y redes guardados', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
-    finally { setSavingContactConfig(false); }
+    finally {
+      setSavingContactConfig(false);
+      setSavingReplicateConfig(false);
+    }
+  }
+
+  async function handleSaveReplicateConfig() {
+    setSavingReplicateConfig(true);
+    try {
+      const nextMeta = {
+        ...pricingMeta,
+        social_instagram: contactMeta.social_instagram,
+        social_tiktok: contactMeta.social_tiktok,
+        social_facebook: contactMeta.social_facebook,
+        social_youtube: contactMeta.social_youtube,
+        trm_auto: trmAuto,
+        trm_referencia: trmReferencia,
+        replicate_api_token: replicateApiToken.trim(),
+        replicate_monthly_budget_usd: replicateMonthlyBudgetUsd.trim() ? Number(replicateMonthlyBudgetUsd) : null,
+      };
+
+      const res = await fetch(`${API_URL}/api/admin/pricing`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers,
+        body: JSON.stringify({ id: 'meta', data: nextMeta }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.message || json.error || 'Error al guardar la API key de Replicate');
+      setPricingMeta(nextMeta);
+      flash('API key de Replicate guardada', 'ok');
+      await loadCredits();
+    } catch (err: any) {
+      flash(err.message || 'Error al guardar la API key de Replicate', 'err');
+    } finally {
+      setSavingReplicateConfig(false);
+    }
   }
 
   async function handleSaveTrm() {
@@ -1218,7 +1294,7 @@ export default function SystemConfigPage() {
 
       {/* ── TAB: Créditos IA ── */}
       {activeTab === 'credits' && (
-      <Section title="Créditos OpenRouter" icon={<IconCreditCard className="w-4 h-4" />}>
+      <Section title="Créditos IA" icon={<IconCreditCard className="w-4 h-4" />}>
         <div className="space-y-4">
           {/* Alertas */}
           {credits?.critical_balance_alert && (
@@ -1242,7 +1318,7 @@ export default function SystemConfigPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   { label: 'Balance disponible', value: credits.balance !== null ? `$${credits.balance.toFixed(2)}` : '—', sub: 'USD restantes', color: credits.critical_balance_alert ? 'text-red-500' : credits.low_balance_alert ? 'text-amber-500' : 'text-emerald-500' },
-                  { label: 'Uso acumulado', value: `$${credits.usage.toFixed(2)}`, sub: 'USD gastados', color: 'var(--text-primary)' },
+                  { label: 'Uso acumulado', value: credits.usage !== null ? `$${credits.usage.toFixed(2)}` : 'No disponible', sub: 'USD gastados', color: 'var(--text-primary)' },
                   { label: 'Límite total', value: credits.limit !== null ? `$${credits.limit.toFixed(2)}` : 'Sin límite', sub: 'USD comprados', color: 'var(--text-primary)' },
                   { label: 'Generaciones restantes', value: credits.estimated_generations_remaining !== null ? credits.estimated_generations_remaining.toLocaleString() : '—', sub: `~$${credits.cost_per_generation}/gen`, color: 'var(--text-primary)' },
                 ].map(m => (
@@ -1319,6 +1395,54 @@ export default function SystemConfigPage() {
           ) : (
             <p style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-6">No se pudo obtener información de créditos</p>
           )}
+          <div className="border-t pt-4 space-y-4" style={{ borderColor: 'var(--border-color)' }}>
+            <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div className="flex-1">
+                  <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-semibold uppercase tracking-wide mb-2">
+                    API key de Replicate
+                  </p>
+                  <input
+                    type="password"
+                    value={replicateApiToken}
+                    onChange={(e) => setReplicateApiToken(e.target.value)}
+                    placeholder="r8_... o token privado de Replicate"
+                    className="w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
+                    style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  />
+                  <p style={{ color: 'var(--text-muted)' }} className="mt-2 text-xs">
+                    Si la defines aquí, el panel de Crédito IA la usará directamente para validar la cuenta de Replicate sin depender solo de variables del servidor.
+                  </p>
+                  <div className="mt-4">
+                    <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-semibold uppercase tracking-wide mb-2">
+                      Presupuesto mensual estimado (USD)
+                    </p>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={replicateMonthlyBudgetUsd}
+                      onChange={(e) => setReplicateMonthlyBudgetUsd(e.target.value)}
+                      placeholder="Ej: 120"
+                      className="w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
+                      style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                    />
+                    <p style={{ color: 'var(--text-muted)' }} className="mt-2 text-xs">
+                      Este valor permite calcular saldo restante y generaciones estimadas sin depender solo de variables del servidor.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleSaveReplicateConfig}
+                  disabled={savingReplicateConfig}
+                  className="rounded-xl bg-[#FF5C3A] px-4 py-2.5 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
+                >
+                  {savingReplicateConfig ? 'Guardando...' : 'Guardar API key'}
+                </button>
+              </div>
+            </div>
+            <CreditProviderCard provider={replicateCredits} loading={loadingCredits} onRefresh={loadCredits} fallbackProvider="replicate" />
+          </div>
         </div>
       </Section>
       )} {/* fin tab credits */}
@@ -1450,6 +1574,161 @@ export default function SystemConfigPage() {
       )} {/* fin tab health */}
 
       </div>
+    </div>
+  );
+}
+
+function CreditMetric({
+  label,
+  value,
+  sub,
+  color,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+  color?: string;
+}) {
+  return (
+    <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
+      <p style={{ color: 'var(--text-muted)' }} className="mb-1 text-xs font-medium">{label}</p>
+      <p className="text-xl font-bold font-mono" style={{ color: color || 'var(--text-primary)' }}>{value}</p>
+      <p style={{ color: 'var(--text-muted)' }} className="mt-0.5 text-xs">{sub}</p>
+    </div>
+  );
+}
+
+function CreditProviderCard({
+  provider,
+  loading,
+  onRefresh,
+  fallbackProvider,
+}: {
+  provider: ProviderCredits | null;
+  loading: boolean;
+  onRefresh: () => void;
+  fallbackProvider: 'openrouter' | 'replicate';
+}) {
+  const providerKey = provider?.provider || fallbackProvider;
+  const providerName = providerKey === 'replicate' ? 'Replicate' : 'OpenRouter';
+  const providerAction = providerKey === 'replicate'
+    ? 'Ir a billing de Replicate'
+    : 'Ir a créditos de OpenRouter';
+  const balanceColor = provider?.critical_balance_alert
+    ? '#ef4444'
+    : provider?.low_balance_alert
+      ? '#f59e0b'
+      : '#10b981';
+
+  return (
+    <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-2xl border p-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#FF5C3A]">{providerName}</p>
+          <h3 style={{ color: 'var(--text-primary)' }} className="mt-1 text-lg font-jakarta font-bold">
+            Crédito y consumo independiente
+          </h3>
+          {provider?.message && (
+            <p style={{ color: 'var(--text-muted)' }} className="mt-2 text-sm">{provider.message}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onRefresh}
+            disabled={loading}
+            className="flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
+            style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', background: 'var(--bg-hover)' }}
+          >
+            <IconRefresh className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+            Actualizar
+          </button>
+          {provider?.settings_url && (
+            <a
+              href={provider.settings_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 rounded-xl bg-[#FF5C3A] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#e04e30]"
+            >
+              <IconExternalLink className="h-3.5 w-3.5" />
+              {providerAction}
+            </a>
+          )}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-8">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#FF5C3A] border-t-transparent" />
+        </div>
+      ) : provider ? (
+        <div className="mt-5 space-y-4">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+            <CreditMetric
+              label="Saldo disponible"
+              value={provider.balance !== null ? `$${provider.balance.toFixed(2)}` : 'No disponible'}
+              sub="USD restantes"
+              color={provider.balance !== null ? balanceColor : 'var(--text-primary)'}
+            />
+            <CreditMetric
+              label="Consumo"
+              value={provider.usage !== null ? `$${provider.usage.toFixed(2)}` : 'No disponible'}
+              sub="USD usados"
+            />
+            <CreditMetric
+              label="Límite"
+              value={provider.limit !== null ? `$${provider.limit.toFixed(2)}` : 'No configurado'}
+              sub="Presupuesto o cupo"
+            />
+            <CreditMetric
+              label="Generaciones restantes"
+              value={provider.estimated_generations_remaining !== null ? provider.estimated_generations_remaining.toLocaleString() : 'No disponible'}
+              sub={`~$${provider.cost_per_generation}/gen`}
+            />
+          </div>
+
+          {provider.usage_percent !== null && provider.limit !== null ? (
+            <div>
+              <div className="mb-1.5 flex items-center justify-between">
+                <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-medium">Consumo del proveedor</p>
+                <p style={{ color: 'var(--text-muted)' }} className="text-xs font-mono">{provider.usage_percent}%</p>
+              </div>
+              <div style={{ background: 'var(--bg-hover)' }} className="h-2.5 w-full overflow-hidden rounded-full">
+                <div
+                  className={`h-full rounded-full transition-all ${provider.critical_balance_alert ? 'bg-red-500' : provider.low_balance_alert ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                  style={{ width: `${provider.usage_percent}%` }}
+                />
+              </div>
+            </div>
+          ) : (
+            <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-muted)' }} className="rounded-xl border p-4 text-sm">
+              Este proveedor no está entregando porcentaje de uso consumible desde la API. El panel mantiene la tarjeta operativa y muestra el estado de configuración.
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
+              <p style={{ color: 'var(--text-muted)' }} className="text-xs font-semibold uppercase tracking-wide">Estado</p>
+              <p style={{ color: 'var(--text-primary)' }} className="mt-2 text-sm font-semibold">
+                {provider.status === 'ok' ? 'Cuenta validada' : provider.status === 'partial' ? 'Cuenta parcial' : 'No configurado'}
+              </p>
+              {provider.label && (
+                <p style={{ color: 'var(--text-muted)' }} className="mt-1 text-xs">Referencia: {provider.label}</p>
+              )}
+            </div>
+            <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
+              <p style={{ color: 'var(--text-muted)' }} className="text-xs font-semibold uppercase tracking-wide">Configuración y recarga</p>
+              <p style={{ color: 'var(--text-primary)' }} className="mt-2 text-sm font-semibold">
+                {provider.can_top_up ? 'Listo para recarga o ajuste de límites' : 'Sin acción de recarga disponible'}
+              </p>
+              <p style={{ color: 'var(--text-muted)' }} className="mt-1 text-xs">
+                Usa el acceso rápido para revisar billing, API key o presupuesto mensual.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <p style={{ color: 'var(--text-muted)' }} className="py-6 text-sm text-center">No se pudo obtener información de este proveedor.</p>
+      )}
     </div>
   );
 }

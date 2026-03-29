@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import WompiButton from '@/components/payments/WompiButton';
 import { subscriptionService } from '@/services/subscription.service';
+import { brandsService } from '@/services/brands.service';
 import { api } from '@/services/api';
 import { formatCurrency, formatPrice } from '@/utils/currency';
 import { Spinner } from '@/components/ui/Spinner';
@@ -254,6 +255,8 @@ function CheckoutContent() {
   const [hasLandingPage, setHasLandingPage] = useState(false);
   const [daysRemaining, setDaysRemaining] = useState<number | null>(null);
   const [loadingInfo, setLoadingInfo] = useState(true);
+  const [isOperationalTrial, setIsOperationalTrial] = useState(false);
+  const [trialViewTracked, setTrialViewTracked] = useState(false);
 
   // Pagos
   const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
@@ -332,6 +335,7 @@ function CheckoutContent() {
         setHasActiveSub(info.status === 'active' || info.status === 'expiring_soon');
         setHasLandingPage(info.hasLandingPage);
         setDaysRemaining(info.daysRemaining);
+        setIsOperationalTrial(Boolean((info as any).isInTrial));
       }
       setLoadingInfo(false);
     });
@@ -423,6 +427,15 @@ function CheckoutContent() {
     window.addEventListener('currencyChange', handler);
     return () => window.removeEventListener('currencyChange', handler);
   }, []);
+
+  useEffect(() => {
+    if (!isOperationalTrial || trialViewTracked) return;
+    brandsService.createTrialEvent('checkout_viewed', {
+      selectedPlan,
+      selectedMonths,
+    }).catch(() => {});
+    setTrialViewTracked(true);
+  }, [isOperationalTrial, trialViewTracked, selectedPlan, selectedMonths]);
 
   // Calcular prorrateo cuando hay cambio de plan (SOLO UPGRADES)
   useEffect(() => {

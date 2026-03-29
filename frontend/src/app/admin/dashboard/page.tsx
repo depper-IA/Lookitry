@@ -5,7 +5,7 @@ import { Users, TrendingUp, UserCheck, BarChart2, Image, Package, Globe, PauseCi
 
 interface GlobalStats {
   totalBrands: number; totalProducts: number; totalGenerations: number;
-  generationsThisMonth: number; successRate: number; brandsByPlan: { BASIC: number; PRO: number };
+  generationsThisMonth: number; successRate: number; brandsByPlan: { BASIC: number; PRO: number; TRIAL: number };
   landingStats: { active: number; suspended: number; inactive: number };
 }
 interface ConversionStats {
@@ -107,6 +107,7 @@ export default function AdminDashboardPage() {
             {[
               { label: 'Plan Basic', count: global.brandsByPlan.BASIC, color: '#64748b' },
               { label: 'Plan Pro',   count: global.brandsByPlan.PRO,   color: '#FF5C3A' },
+              { label: 'Plan Trial', count: global.brandsByPlan.TRIAL, color: '#f59e0b' },
             ].map(p => {
               const pct = global.totalBrands > 0 ? Math.round((p.count / global.totalBrands) * 100) : 0;
               return (

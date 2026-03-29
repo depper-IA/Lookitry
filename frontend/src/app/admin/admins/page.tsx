@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useEffect, useState } from 'react';
-import { Trash2, Plus, Shield, ShieldOff, Mail, Loader2 } from 'lucide-react';
+import { Trash2, Plus, Shield, ShieldOff, Mail, Loader2, KeyRound, Eye, EyeOff } from 'lucide-react';
 
 type Permission =
   | 'brands' | 'subscriptions' | 'revenue'
@@ -84,6 +84,7 @@ export default function AdminsPage() {
   const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [sendCredentialsConfirm, setSendCredentialsConfirm] = useState<Admin | null>(null);
+  const [passwordAdmin, setPasswordAdmin] = useState<Admin | null>(null);
   const [sendingCredentials, setSendingCredentials] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -140,6 +141,22 @@ export default function AdminsPage() {
       setToast({ message: e.message, type: 'error' });
     } finally {
       setSendingCredentials(false);
+    }
+  };
+
+  const handleChangePassword = async (adminId: string, newPassword: string) => {
+    try {
+      const res = await adminFetch(`/admin/admins/${adminId}/password`, {
+        method: 'PUT',
+        body: JSON.stringify({ newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setPasswordAdmin(null);
+      setToast({ message: 'Contraseña actualizada correctamente', type: 'success' });
+    } catch (e: any) {
+      setToast({ message: e.message, type: 'error' });
+      throw e;
     }
   };
 
@@ -252,6 +269,9 @@ export default function AdminsPage() {
                     <ActionBtn title="Editar permisos" onClick={() => setEditingAdmin(a)} color="#FF5C3A">
                       <Shield style={{ width: 15, height: 15 }} />
                     </ActionBtn>
+                    <ActionBtn title="Cambiar contraseña" onClick={() => setPasswordAdmin(a)} color="#FF5C3A">
+                      <KeyRound style={{ width: 15, height: 15 }} />
+                    </ActionBtn>
                     <ActionBtn title="Eliminar" onClick={() => setDeleteConfirm(a.id)} color="#ef4444">
                       <Trash2 style={{ width: 15, height: 15 }} />
                     </ActionBtn>
@@ -282,6 +302,14 @@ export default function AdminsPage() {
         />
       )}
 
+      {passwordAdmin && (
+        <ChangePasswordModal
+          admin={passwordAdmin}
+          onClose={() => setPasswordAdmin(null)}
+          onSave={(newPassword) => handleChangePassword(passwordAdmin.id, newPassword)}
+        />
+      )}
+
       {/* Confirm delete */}
       {deleteConfirm && (
         <ConfirmModal
@@ -298,7 +326,7 @@ export default function AdminsPage() {
       {sendCredentialsConfirm && (
         <ConfirmModal
           title="Enviar credenciales"
-          description={`Se generará una nueva contraseña temporal y se enviará a ${sendCredentialsConfirm.email}. La contraseña actual dejará de funcionar.`}
+          description={`Esto solo debería usarse si ${sendCredentialsConfirm.email} perdió acceso al panel. Para cambios normales de contraseña usa la opción directa desde esta tabla.`}
           confirmLabel={sendingCredentials ? 'Enviando...' : 'Enviar credenciales'}
           confirmDanger={false}
           loading={sendingCredentials}
@@ -385,6 +413,111 @@ function ConfirmModal({ title, description, confirmLabel, confirmDanger, loading
           >
             {loading && <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} />}
             {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChangePasswordModal({ admin, onClose, onSave }: {
+  admin: Admin;
+  onClose: () => void;
+  onSave: (newPassword: string) => Promise<void>;
+}) {
+  const [form, setForm] = useState({ newPassword: '', confirmPassword: '' });
+  const [show, setShow] = useState({ next: false, confirm: false });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async () => {
+    setError('');
+    if (form.newPassword.length < 8) {
+      setError('La nueva contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+    if (form.newPassword !== form.confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await onSave(form.newPassword);
+    } catch {
+      // el error visible ya se maneja en el padre/toast
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', padding: 16 }}>
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 20, width: '100%', maxWidth: 520, padding: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}>
+            <KeyRound style={{ width: 18, height: 18 }} />
+          </div>
+          <div>
+            <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: 18, fontWeight: 700 }}>Cambiar contraseña</h3>
+            <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)', fontSize: 13 }}>
+              {admin.name} · {admin.email}
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gap: 14 }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: 6, color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600 }}>Nueva contraseña</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={show.next ? 'text' : 'password'}
+                value={form.newPassword}
+                onChange={(e) => setForm((f) => ({ ...f, newPassword: e.target.value }))}
+                placeholder="Mínimo 8 caracteres"
+                className="w-full rounded-xl border px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
+                style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              />
+              <button type="button" onClick={() => setShow((s) => ({ ...s, next: !s.next }))} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                {show.next ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: 6, color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600 }}>Confirmar contraseña</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={show.confirm ? 'text' : 'password'}
+                value={form.confirmPassword}
+                onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
+                placeholder="Repite la nueva contraseña"
+                className="w-full rounded-xl border px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
+                style={{ background: 'var(--bg-hover)', borderColor: form.confirmPassword && form.confirmPassword !== form.newPassword ? '#ef4444' : 'var(--border-color)', color: 'var(--text-primary)' }}
+              />
+              <button type="button" onClick={() => setShow((s) => ({ ...s, confirm: !s.confirm }))} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+                {show.confirm ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
+              </button>
+            </div>
+          </div>
+
+          <div style={{ background: 'rgba(255,92,58,0.08)', border: '1px solid rgba(255,92,58,0.18)', color: 'var(--text-secondary)', borderRadius: 12, padding: '10px 12px', fontSize: 12 }}>
+            Este cambio actualiza la contraseña directamente desde el panel. El envío por correo queda solo para recuperación de acceso.
+          </div>
+
+          {error && (
+            <div style={{ border: '1px solid rgba(239,68,68,0.25)', background: 'rgba(239,68,68,0.08)', color: '#ef4444', borderRadius: 12, padding: '10px 12px', fontSize: 13 }}>
+              {error}
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+          <button onClick={onClose} style={{ flex: 1, minHeight: 44, borderRadius: 12, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+            Cancelar
+          </button>
+          <button onClick={handleSubmit} disabled={loading} style={{ flex: 1, minHeight: 44, borderRadius: 12, border: 'none', background: '#FF5C3A', color: '#fff', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.65 : 1 }}>
+            {loading ? 'Guardando...' : 'Guardar contraseña'}
           </button>
         </div>
       </div>

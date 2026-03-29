@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { PaymentSettingsService } from '../services/paymentSettings.service';
 import { getReportingTrm, normalizePaymentRecordToCop, convertPaymentToCop } from '../utils/paymentNormalization';
+import { inferBillingType, inferPlanPurchased } from '../utils/paymentLedger';
 
 const paymentSettingsService = new PaymentSettingsService();
 
@@ -27,17 +28,16 @@ export class RevenueController {
       const trmCache = new Map<string, number | null>();
 
       const splitPaymentAmounts = (amount: number, payment: any) => {
-        const monthsPaid = Number(payment.months_paid ?? 0);
+        const billingType = inferBillingType(payment);
         const notes = typeof payment.notes === 'string' ? payment.notes.toLowerCase() : '';
         const hasLandingMention = notes.includes('landing');
-        const isLandingOnly =
-          payment.brands?.plan === 'LANDING' ||
-          monthsPaid === 0 ||
-          notes.includes('solo landing') ||
-          notes.includes('plan: none');
 
-        if (isLandingOnly) {
-          return { landing: amount, subscription: 0 };
+        if (billingType === 'landing') {
+          return { landing: amount, subscription: 0, billingType };
+        }
+
+        if (billingType === 'trial_activation') {
+          return { landing: 0, subscription: 0, billingType };
         }
 
         if (hasLandingMention) {
@@ -45,10 +45,11 @@ export class RevenueController {
           return {
             landing: landingComponent,
             subscription: Math.max(0, amount - landingComponent),
+            billingType,
           };
         }
 
-        return { landing: 0, subscription: amount };
+        return { landing: 0, subscription: amount, billingType };
       };
 
       // Precios por plan en COP (para proyecciones)
@@ -61,7 +62,7 @@ export class RevenueController {
       // 1. Obtener ingresos mensuales de los últimos 12 meses
       const { data: monthlyRevenue, error: monthlyError } = await supabaseAdmin
         .from('subscription_payments')
-        .select('payment_date, amount, currency, reference, notes, months_paid, brands!inner(plan)')
+        .select('payment_date, amount, currency, notes, months_paid')
         .eq('status', 'completed')
         .gte('payment_date', new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString())
         .order('payment_date', { ascending: true });
@@ -98,14 +99,15 @@ export class RevenueController {
         }
 
         if (split.subscription > 0) {
-          if (payment.brands?.plan === 'BASIC') {
+          const planPurchased = inferPlanPurchased(payment);
+          if (planPurchased === 'BASIC') {
             monthlyData[month].basic += split.subscription;
-          } else if (payment.brands?.plan === 'PRO') {
+          } else if (planPurchased === 'PRO') {
             monthlyData[month].pro += split.subscription;
-          } else {
+          } else if (split.billingType !== 'trial_activation') {
             monthlyData[month].basic += split.subscription;
           }
-        } else if (split.landing === 0) {
+        } else if (split.landing === 0 && split.billingType !== 'trial_activation') {
           monthlyData[month].basic += amount;
         }
       });
@@ -160,7 +162,7 @@ export class RevenueController {
       // 6. Desglose por plan (totales históricos)
       const { data: planBreakdown, error: planError } = await supabaseAdmin
         .from('subscription_payments')
-        .select('amount, currency, reference, notes, months_paid, brands(plan)')
+        .select('amount, currency, notes, months_paid')
         .eq('status', 'completed');
 
       if (planError) throw new Error(planError.message);
@@ -188,20 +190,21 @@ export class RevenueController {
         }
 
         if (split.subscription > 0) {
-          if (payment.brands?.plan === 'BASIC') {
+          const planPurchased = inferPlanPurchased(payment);
+          if (planPurchased === 'BASIC') {
             totalBasicRevenue += split.subscription;
             basicPaymentsCount += 1;
-          } else if (payment.brands?.plan === 'PRO') {
+          } else if (planPurchased === 'PRO') {
             totalProRevenue += split.subscription;
             proPaymentsCount += 1;
-          } else {
+          } else if (split.billingType !== 'trial_activation') {
             totalBasicRevenue += split.subscription;
             basicPaymentsCount += 1;
           }
-        } else if (split.landing === 0) {
+        } else if (split.landing === 0 && split.billingType !== 'trial_activation') {
           totalBasicRevenue += normalized.amountCop;
           basicPaymentsCount += 1;
-        } else {
+        } else if (split.billingType !== 'trial_activation') {
           totalLandingRevenue += normalized.amountCop;
           landingPaymentsCount += 1;
         }
@@ -258,7 +261,7 @@ export class RevenueController {
    */
   async getAllPayments(req: Request, res: Response): Promise<Response> {
     try {
-      const { method, status, from, to, search, plan } = req.query;
+      const { method, payment_method, status, from, to, search, plan } = req.query;
       const reportingTrm = await getReportingTrm();
 
       let query = supabaseAdmin
@@ -266,29 +269,31 @@ export class RevenueController {
         .select(`
           id, brand_id, amount, currency, payment_date,
           payment_method, status, notes, created_at,
-          brands!inner(name, email, slug, plan)
+          brands(name, email, slug, plan, social_links)
         `)
         .order('payment_date', { ascending: false });
 
-      if (method && method !== 'all') query = query.eq('payment_method', method as string);
+      const methodFilter = (payment_method || method) as string | undefined;
+      if (methodFilter && methodFilter !== 'all') query = query.eq('payment_method', methodFilter);
       if (status && status !== 'all') query = query.eq('status', status as string);
       if (from) query = query.gte('payment_date', from as string);
       if (to) query = query.lte('payment_date', `${to}T23:59:59`);
-      // Filtrar por plan de la marca (BASIC, PRO, LANDING)
-      if (plan && plan !== 'all') query = (query as any).eq('brands.plan', plan as string);
 
       const { data, error } = await query;
       if (error) throw new Error(error.message);
 
       let payments = (data || []).map((p: any) => {
         const normalized = convertPaymentToCop(p.amount, p.currency, reportingTrm);
+        const brandPlan = inferPlanPurchased(p);
         return {
           id: p.id,
           brandId: p.brand_id,
-          brandName: p.brands?.name ?? '—',
-          brandEmail: p.brands?.email ?? '—',
-          brandSlug: p.brands?.slug ?? '—',
-          brandPlan: p.brands?.plan ?? '—',
+          brandName: p.brands?.name ?? '?',
+          brandEmail: p.brands?.email ?? '?',
+          brandSlug: p.brands?.slug ?? '?',
+          brandPlan,
+          billingType: inferBillingType(p),
+          archived: Boolean(p.brands?.social_links?.account_archived_at),
           amount: normalized.amountCop,
           amount_original: normalized.originalAmount,
           amount_cop: normalized.amountCop,
@@ -299,12 +304,13 @@ export class RevenueController {
           status: p.status,
           notes: p.notes,
           createdAt: p.created_at,
-          // Identificar si es pago de landing consistentemente
-          isLanding:
-            p.brands?.plan === 'LANDING' ||
-            (typeof p.notes === 'string' && p.notes.toLowerCase().includes('landing')),
+          isLanding: inferBillingType(p) === 'landing',
         };
       });
+
+      if (plan && plan !== 'all') {
+        payments = payments.filter((payment) => payment.brandPlan === plan);
+      }
 
       if (search) {
         const q = (search as string).toLowerCase();
@@ -315,8 +321,17 @@ export class RevenueController {
         );
       }
 
-      const total = payments.reduce((sum, p) => sum + p.amount_cop, 0);
-      return res.json({ payments, total, count: payments.length });
+      const completedPayments = payments.filter((payment) => payment.status === 'completed');
+      const total = completedPayments.reduce((sum, payment) => sum + payment.amount_cop, 0);
+      return res.json({
+        payments,
+        total,
+        count: payments.length,
+        stats: {
+          total_revenue: total,
+          completed_count: completedPayments.length,
+        },
+      });
     } catch (error: any) {
       return res.status(500).json({
         error: 'INTERNAL_ERROR',

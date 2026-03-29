@@ -49,7 +49,7 @@ export default function AdminBrandsPage() {
   const [showProductsModal, setShowProductsModal] = useState(false);
   const [showActivateModal, setShowActivateModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [createForm, setCreateForm] = useState({ name: '', email: '', slug: '', password: '', plan: 'BASIC', trial_days: '7', phone: '', contact_name: '' });
+  const [createForm, setCreateForm] = useState({ name: '', email: '', slug: '', password: '', plan: 'TRIAL', trial_days: '7', phone: '', contact_name: '' });
   const [creating, setCreating] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(false);
@@ -72,7 +72,7 @@ export default function AdminBrandsPage() {
   const itemsPerPage = 10;
 
   // Ordenamiento
-  const [sortField, setSortField] = useState<'name' | 'plan' | 'status' | 'products' | 'generations'>('name');
+  const [sortField, setSortField] = useState<'name' | 'email' | 'plan' | 'status' | 'products' | 'generations'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Selección masiva
@@ -113,6 +113,9 @@ export default function AdminBrandsPage() {
       if (sortField === 'name') {
         valA = a.name.toLowerCase();
         valB = b.name.toLowerCase();
+      } else if (sortField === 'email') {
+        valA = a.email.toLowerCase();
+        valB = b.email.toLowerCase();
       } else if (sortField === 'plan') {
         valA = a.plan;
         valB = b.plan;
@@ -243,7 +246,7 @@ export default function AdminBrandsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
       setShowCreateModal(false);
-      setCreateForm({ name: '', email: '', slug: '', password: '', plan: 'BASIC', trial_days: '7', phone: '', contact_name: '' });
+      setCreateForm({ name: '', email: '', slug: '', password: '', plan: 'TRIAL', trial_days: '7', phone: '', contact_name: '' });
       await fetchBrands();
     } catch (err: any) {
       alert(err.message || 'Error al crear marca');
@@ -559,7 +562,7 @@ export default function AdminBrandsPage() {
               </th>
               {[
                 { label: 'Marca', field: 'name' as const },
-                { label: 'Email', field: null },
+                { label: 'Email', field: 'email' as const },
                 { label: 'Plan', field: 'plan' as const },
                 { label: 'Estado', field: 'status' as const },
                 { label: 'Productos', field: 'products' as const },
