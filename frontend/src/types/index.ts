@@ -18,7 +18,7 @@ export interface Brand {
   slug: string;
   logo?: string | null;
   coverImageUrl?: string | null;
-  plan: PlanType;
+  plan: BrandPlan;
   primaryColor: string;
   secondaryColor: string;
   headerColor?: string | null;
@@ -28,7 +28,7 @@ export interface Brand {
   // Subscription fields
   subscriptionStartDate?: string | null;
   subscriptionEndDate?: string | null;
-  subscriptionStatus?: 'active' | 'expiring_soon' | 'expired' | 'suspended' | null;
+  subscriptionStatus?: 'trial' | 'active' | 'expiring_soon' | 'expired' | 'suspended' | null;
   lastPaymentDate?: string | null;
   nextPaymentDate?: string | null;
   // Trial fields (Requirement 11 - Opción C)

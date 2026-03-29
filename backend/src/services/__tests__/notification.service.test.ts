@@ -24,6 +24,12 @@ jest.mock('../../config/supabase', () => ({
   },
 }));
 
+jest.mock('../paymentSettings.service', () => ({
+  PaymentSettingsService: jest.fn().mockImplementation(() => ({
+    getSettings: jest.fn().mockResolvedValue({ landing_price: 650000 }),
+  })),
+}));
+
 // Mock de SubscriptionService
 jest.mock('../subscription.service');
 

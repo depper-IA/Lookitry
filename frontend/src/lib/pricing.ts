@@ -201,7 +201,7 @@ export async function getPricingConfig(): Promise<PricingConfig> {
     const promos: { type: string; config: any; starts_at?: string | null; ends_at?: string | null }[] =
       promosRes.ok ? await promosRes.json() : [];
 
-    const config = { ...DEFAULTS };
+    const config: PricingConfig = JSON.parse(JSON.stringify(DEFAULTS));
     for (const row of rows) {
       if (row.id in config) {
         (config as Record<string, unknown>)[row.id] = row.data;

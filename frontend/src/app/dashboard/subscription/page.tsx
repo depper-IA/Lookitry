@@ -28,6 +28,7 @@ import type { SubscriptionPayment } from '@/types';
 import type { SubscriptionInfo } from '@/services/subscription.service';
 import { Spinner } from '@/components/ui/Spinner';
 import type { UsageStats } from '@/types';
+import { getSubscriptionDisplayState } from '@/lib/subscription-display';
 
 // ── Animaciones ──────────────────────────────────────────────────────────────
 const containerVariants = {
@@ -204,6 +205,13 @@ export default function SubscriptionPage() {
   const planKey = (info?.brand?.plan ?? 'BASIC') as keyof typeof DESIGN_SYSTEM;
   const inTrial = info?.isInTrial ?? false;
   const currentDesign = inTrial ? DESIGN_SYSTEM.TRIAL : DESIGN_SYSTEM[planKey];
+  const subscriptionState = getSubscriptionDisplayState(info?.brand);
+  const planStatus = inTrial
+    ? {
+        label: subscriptionState.statusLabel,
+        color: subscriptionState.isTrialExpired ? 'text-rose-500' : 'text-amber-500',
+      }
+    : STATUS_LABELS[info?.status ?? 'active'];
 
   const displayDaysRemaining = inTrial ? (info?.trialDaysRemaining ?? 0) : (info?.daysRemaining ?? 0);
   const maxDays = inTrial ? 7 : 30; // Approximation for progress bar
@@ -315,12 +323,20 @@ export default function SubscriptionPage() {
 
                 <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
                   <div className="space-y-1">
-                     <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Próxima renovación</p>
-                     <p className="text-xl font-bold text-[var(--text-primary)]">{formatDate(info?.brand?.subscriptionEndDate)}</p>
+                     <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                       {inTrial ? 'Fin del trial' : 'Próxima renovación'}
+                     </p>
+                     <p className="text-xl font-bold text-[var(--text-primary)]">
+                       {formatDate(inTrial ? info?.trialEndDate : info?.brand?.subscriptionEndDate)}
+                     </p>
                   </div>
                   <div className="space-y-1">
-                     <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Precio mensual</p>
-                     <p className="text-xl font-bold text-[#FF5C3A]">{inTrial ? '$0' : formatCurrency(dynamicPrices[planKey] ?? 0)}</p>
+                     <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                       {inTrial ? 'Siguiente paso' : 'Precio mensual'}
+                     </p>
+                     <p className="text-xl font-bold text-[#FF5C3A]">
+                       {inTrial ? 'Activa un plan' : formatCurrency(dynamicPrices[planKey] ?? 0)}
+                     </p>
                   </div>
                </div>
 
@@ -348,8 +364,8 @@ export default function SubscriptionPage() {
                   </div>
                   <div>
                      <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Estado del plan</p>
-                     <p className={`text-sm font-bold uppercase ${STATUS_LABELS[info?.status ?? 'active'].color}`}>
-                        {STATUS_LABELS[info?.status ?? 'active'].label}
+                     <p className={`text-sm font-bold uppercase ${planStatus.color}`}>
+                        {planStatus.label}
                      </p>
                   </div>
                </div>

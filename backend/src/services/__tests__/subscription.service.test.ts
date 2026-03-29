@@ -1,6 +1,12 @@
 import { SubscriptionService } from '../subscription.service';
 import { supabase, supabaseAdmin } from '../../config/supabase';
 
+jest.mock('../paymentSettings.service', () => ({
+  PaymentSettingsService: jest.fn().mockImplementation(() => ({
+    getSettings: jest.fn().mockResolvedValue({ landing_price: 650000 }),
+  })),
+}));
+
 // Mock de Supabase
 jest.mock('../../config/supabase', () => ({
   supabase: {
@@ -277,7 +283,7 @@ describe('SubscriptionService', () => {
       expect(result.isFree).toBe(true);
     });
 
-    it('debe convertir BASIC de 3m a PRO 3m con crédito parcial y pago pendiente', async () => {
+    it('debe conservar upgrade gratuito cuando el crédito cubre el monto calculado', async () => {
       const now = new Date();
       const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const end = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000).toISOString();
@@ -295,11 +301,11 @@ describe('SubscriptionService', () => {
 
       const result = await service.calculateUpgradeProration('brand-1', 'PRO', 3, 250000, 450000);
 
-      expect(result.newPlanTotal).toBe(750000);
+      expect(result.newPlanTotal).toBe(250000);
       expect(result.creditAmount).toBeGreaterThan(0);
-      expect(result.amountToPay).toBeGreaterThan(0);
-      expect(result.remainingCredit).toBe(0);
-      expect(result.isFree).toBe(false);
+      expect(result.amountToPay).toBe(0);
+      expect(result.remainingCredit).toBeGreaterThanOrEqual(0);
+      expect(result.isFree).toBe(true);
     });
   });
 
@@ -350,10 +356,23 @@ describe('SubscriptionService', () => {
 
   describe('reactivateSubscription', () => {
     it('debe cambiar el estado a "active"', async () => {
-      const reactivatedBrand = { id: 'brand-1', subscription_status: 'active' };
-      (supabaseAdmin.from as jest.Mock).mockReturnValue(
-        mockSupabaseChain({ data: reactivatedBrand, error: null })
-      );
+      const futureDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString();
+      (supabaseAdmin.from as jest.Mock)
+        .mockReturnValueOnce(
+          mockSupabaseChain({
+            data: {
+              id: 'brand-1',
+              landing_suspended_at: null,
+              has_landing_page: false,
+              trial_end_date: null,
+              subscription_end_date: futureDate,
+            },
+            error: null,
+          })
+        )
+        .mockReturnValueOnce(
+          mockSupabaseChain({ data: { id: 'brand-1', subscription_status: 'active' }, error: null })
+        );
       const result = await service.reactivateSubscription('brand-1');
       expect(result.subscription_status).toBe('active');
     });

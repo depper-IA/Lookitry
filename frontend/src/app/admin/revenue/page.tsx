@@ -661,11 +661,11 @@ export default function RevenuePage() {
   const load = useCallback(async () => {
     try {
       setLoading(true);
+      setError('');
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-      const [statsRes, pricingRes, trmRes] = await Promise.all([
+      const [statsRes, pricingRes] = await Promise.all([
         fetch(`${apiBase}/api/admin/revenue/stats`, { credentials: 'include' }),
-        fetch('/api/pricing', { credentials: 'include' }),
-        fetch('/api/pricing/trm'),
+        fetch(`${apiBase}/api/admin/pricing`, { credentials: 'include' }),
       ]);
 
       if (!statsRes.ok) throw new Error('Error al cargar estadísticas');
@@ -685,20 +685,15 @@ export default function RevenuePage() {
             setMeta(metaRow);
             setMetaEdit(metaRow);
             setTrmAutoEdit(metaRow.trm_auto ?? true);
-            if (metaRow.trm_referencia) setTrmEdit(metaRow.trm_referencia);
+            if (metaRow.trm_referencia) {
+              setTrmLive(metaRow.trm_referencia);
+              setTrm(metaRow.trm_referencia);
+              setTrmEdit(metaRow.trm_referencia);
+            }
           }
           if (basicRow?.precio_mensual_cop)   setBasicPrecio(basicRow.precio_mensual_cop);
           if (proRow?.precio_mensual_cop)     setProPrecio(proRow.precio_mensual_cop);
           if (landingRow?.precio_unico_cop)   setLandingPrecio(landingRow.precio_unico_cop);
-        }
-      }
-
-      if (trmRes.ok) {
-        const trmJson = await trmRes.json();
-        if (trmJson.trm) {
-          setTrmLive(trmJson.trm);
-          setTrm(trmJson.trm);
-          if (trmAutoEdit) setTrmEdit(trmJson.trm);
         }
       }
     } catch (err: unknown) {
@@ -706,7 +701,7 @@ export default function RevenuePage() {
     } finally {
       setLoading(false);
     }
-  }, [trmAutoEdit]);
+  }, []);
 
   useEffect(() => { load(); }, [load]);
 
