@@ -17,6 +17,7 @@ export interface BlogPost {
   status: 'draft' | 'published';
   published_at: string;
   created_at: string;
+  updated_at?: string;
   topic_id?: string;
   category?: BlogCategory;
 }

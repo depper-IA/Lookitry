@@ -67,10 +67,10 @@ export const blogController = {
   async webhookCreatePost(req: Request, res: Response) {
     try {
       const secret = req.headers['x-blog-secret'];
-      const expectedSecret = process.env.BLOG_WEBHOOK_SECRET || 'Travis2305**_blog_live';
-
-      if (secret !== expectedSecret) {
-        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Secreto de webhook inválido' });
+      const expectedSecret = process.env.BLOG_WEBHOOK_SECRET;
+      
+      if (!expectedSecret || secret !== expectedSecret) {
+        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Fallo de autenticación en el acceso al blog' });
       }
 
       const {
@@ -327,10 +327,10 @@ export const blogController = {
   async uploadBlogImage(req: Request, res: Response) {
     try {
       const secret = req.headers['x-blog-secret'];
-      const expectedSecret = process.env.BLOG_WEBHOOK_SECRET || 'Travis2305**_blog_live';
+      const expectedSecret = process.env.BLOG_WEBHOOK_SECRET;
 
-      if (secret !== expectedSecret) {
-        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Secreto de blog inválido' });
+      if (!expectedSecret || secret !== expectedSecret) {
+        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Fallo de autenticación en la subida de medios' });
       }
 
       const isMultipart = req.is('multipart/form-data');

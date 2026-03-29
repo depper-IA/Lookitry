@@ -71,8 +71,39 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     [&_h4]:!text-[#FF5C3A]
   `.replace(/\s+/g, ' ').trim();
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    image: heroImage ? [heroImage] : [],
+    datePublished: post.published_at || post.created_at,
+    dateModified: post.updated_at || post.published_at || post.created_at,
+    author: {
+      '@type': 'Organization',
+      name: 'Lookitry Editorial',
+      url: 'https://lookitry.com',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Lookitry',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://lookitry.com/logo.png', // Ajustar si hay una URL de logo oficial
+      },
+    },
+    description: post.meta_description || post.excerpt,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://lookitry.com/blog/${params.slug}`,
+    },
+  };
+
   return (
     <main className="min-h-screen bg-[#0a0a0a] selection:bg-[#FF5C3A]/30 pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <LandingNav />
       
       {/* Header del artículo */}

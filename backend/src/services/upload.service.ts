@@ -1,3 +1,4 @@
+import sharp from 'sharp';
 import axios from 'axios';
 import crypto from 'crypto';
 
@@ -40,7 +41,33 @@ export class UploadService {
 
   async uploadImageBuffer(data: UploadImageBufferDto): Promise<UploadResponse> {
     try {
-      const { buffer, filename, temporary } = data;
+      let { buffer, filename, temporary } = data;
+      
+      // OPTIMIZACIÓN CON SHARP
+      // Si no es temporal, optimizamos para producción (blog/productos)
+      if (!temporary) {
+        try {
+          const image = sharp(buffer);
+          const metadata = await image.metadata();
+          
+          let pipeline = image
+            .webp({ quality: 82, lossless: false, smartSubsample: true })
+            .rotate(); // Auto-rotate basado en EXIF
+
+          // Redimensionar si es muy grande (max 1400px de ancho)
+          if (metadata.width && metadata.width > 1400) {
+            pipeline = pipeline.resize(1400, null, { withoutEnlargement: true });
+          }
+
+          buffer = await pipeline.toBuffer();
+          // Cambiar extensión a .webp en el nombre de destino
+          const nameWithoutExt = filename.split('.').slice(0, -1).join('.') || 'image';
+          filename = `${nameWithoutExt}.webp`;
+        } catch (sharpError) {
+          console.error('[Upload Service] Falló Sharp, subiendo original:', sharpError);
+        }
+      }
+
       const contentType = this.detectContentType(filename, buffer);
       const ext = this.getExtension(filename, contentType);
       const folder = temporary ? 'temp' : 'products';
