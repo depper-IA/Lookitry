@@ -118,7 +118,7 @@ export async function getAdminNotifications(_req: Request, res: Response): Promi
       .filter(b => {
         if (!b.trial_end_date) return false;
         const daysLeft = Math.ceil((new Date(b.trial_end_date).getTime() - now.getTime()) / 86400000);
-        return daysLeft >= 0 && daysLeft <= 3 && b.subscription_status !== 'active';
+        return daysLeft >= 0 && daysLeft <= 3;
       })
       .forEach(b => {
         const daysLeft = Math.ceil((new Date(b.trial_end_date).getTime() - now.getTime()) / 86400000);
@@ -137,7 +137,6 @@ export async function getAdminNotifications(_req: Request, res: Response): Promi
       .filter(b => {
         if (!b.trial_end_date) return false;
         return new Date(b.trial_end_date) < now &&
-          b.subscription_status !== 'active' &&
           b.subscription_status !== 'suspended';
       })
       .slice(0, 5)
@@ -154,7 +153,7 @@ export async function getAdminNotifications(_req: Request, res: Response): Promi
     brands
       .filter(b => {
         if (!b.subscription_end_date) return false;
-        if (b.trial_end_date && b.subscription_status !== 'active') return false;
+        if (b.trial_end_date && new Date(b.trial_end_date) > now) return false;
         if (b.subscription_status !== 'active' && b.subscription_status !== 'expiring_soon') return false;
         const daysLeft = Math.ceil((new Date(b.subscription_end_date).getTime() - now.getTime()) / 86400000);
         return daysLeft >= 0 && daysLeft <= 7;

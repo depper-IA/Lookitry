@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+type WooBrandStatus = 'active' | 'pending' | 'inactive';
+
 type WooBrand = {
   id: string;
   name: string;
@@ -9,6 +11,9 @@ type WooBrand = {
   email: string;
   plan: string;
   has_api_key: boolean;
+  status: WooBrandStatus;
+  plugin_validated_at?: string | null;
+  plugin_store_domain?: string | null;
   subscription_status?: string | null;
   product_counts: { total: number; active: number; mapped: number };
   telemetry: {
@@ -16,6 +21,7 @@ type WooBrand = {
     failedRequests: number;
     avgLatencyMs: number;
     lastSyncAt: string | null;
+    lastErrorMessage?: string | null;
   };
 };
 
@@ -44,6 +50,12 @@ type WooSummary = {
   };
 };
 
+const STATUS_META: Record<WooBrandStatus, { label: string; bg: string; text: string }> = {
+  active: { label: 'Activa', bg: 'rgba(16,185,129,0.12)', text: '#10b981' },
+  pending: { label: 'Pendiente', bg: 'rgba(245,158,11,0.12)', text: '#f59e0b' },
+  inactive: { label: 'Inactiva', bg: 'rgba(148,163,184,0.12)', text: '#cbd5e1' },
+};
+
 export default function AdminWooCommercePage() {
   const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
   const [brands, setBrands] = useState<WooBrand[]>([]);
@@ -54,44 +66,50 @@ export default function AdminWooCommercePage() {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [savingMap, setSavingMap] = useState<Record<string, boolean>>({});
   const [query, setQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const brandsPerPage = 6;
+  const [error, setError] = useState('');
 
   const selectedBrand = useMemo(
-    () => brands.find((b) => b.id === selectedBrandId) || null,
+    () => brands.find((brand) => brand.id === selectedBrandId) || null,
     [brands, selectedBrandId]
   );
 
   const filteredBrands = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return brands;
-    return brands.filter(
-      (b) =>
-        b.name.toLowerCase().includes(q) ||
-        b.slug.toLowerCase().includes(q) ||
-        b.email.toLowerCase().includes(q)
+    const activeOnly = brands.filter((brand) => brand.status === 'active');
+
+    if (!q) return activeOnly;
+
+    return activeOnly.filter((brand) =>
+      [brand.name, brand.slug, brand.email, brand.plugin_store_domain || '']
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
     );
   }, [brands, query]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredBrands.length / brandsPerPage));
-  const paginatedBrands = useMemo(() => {
-    const start = (currentPage - 1) * brandsPerPage;
-    return filteredBrands.slice(start, start + brandsPerPage);
-  }, [filteredBrands, currentPage]);
-
   const fetchBrands = async () => {
     setLoadingBrands(true);
+    setError('');
     try {
       const res = await fetch(`${apiBase}/api/admin/woocommerce/brands-summary`, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error('No se pudo cargar marcas WooCommerce');
       const data = await res.json();
-      const list: WooBrand[] = data.brands || [];
+      const list: WooBrand[] = Array.isArray(data.brands) ? data.brands : [];
       setBrands(list);
-      if (!selectedBrandId && list.length) setSelectedBrandId(list[0].id);
-    } catch (error) {
-      console.error(error);
+
+      const firstActive = list.find((brand) => brand.status === 'active');
+      setSelectedBrandId((current) => {
+        if (current && list.some((brand) => brand.id === current && brand.status === 'active')) {
+          return current;
+        }
+        return firstActive?.id || '';
+      });
+    } catch (err: any) {
+      setError(err?.message || 'No se pudo cargar la integración WooCommerce.');
+      setBrands([]);
+      setSelectedBrandId('');
     } finally {
       setLoadingBrands(false);
     }
@@ -106,10 +124,10 @@ export default function AdminWooCommercePage() {
       });
       if (!res.ok) throw new Error('No se pudo cargar productos de la marca');
       const data = await res.json();
-      setProducts((data.products || []).filter((p: WooProduct) => !!p.external_id));
+      setProducts((data.products || []).filter((product: WooProduct) => !!product.external_id));
       setSummary(data.summary || null);
-    } catch (error) {
-      console.error(error);
+    } catch (err: any) {
+      setError(err?.message || 'No se pudo cargar el detalle de WooCommerce.');
       setProducts([]);
       setSummary(null);
     } finally {
@@ -133,14 +151,13 @@ export default function AdminWooCommercePage() {
 
       if (!res.ok) throw new Error('No se pudo actualizar el estado del producto');
 
-      setProducts((prev) =>
-        prev.map((p) => (p.id === productId ? { ...p, is_active: nextState } : p))
-      );
-      fetchBrands();
-      fetchProducts(selectedBrandId);
-    } catch (error) {
-      console.error(error);
-      alert('No se pudo actualizar el producto. Intenta de nuevo.');
+      setProducts((prev) => prev.map((product) => (
+        product.id === productId ? { ...product, is_active: nextState } : product
+      )));
+
+      await Promise.all([fetchBrands(), fetchProducts(selectedBrandId)]);
+    } catch (err: any) {
+      setError(err?.message || 'No se pudo actualizar el producto.');
     } finally {
       setSavingMap((prev) => ({ ...prev, [productId]: false }));
     }
@@ -151,118 +168,117 @@ export default function AdminWooCommercePage() {
   }, []);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [query]);
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
+    if (selectedBrandId) {
+      fetchProducts(selectedBrandId);
+    } else {
+      setProducts([]);
+      setSummary(null);
     }
-  }, [currentPage, totalPages]);
-
-  useEffect(() => {
-    if (selectedBrandId) fetchProducts(selectedBrandId);
   }, [selectedBrandId]);
 
   return (
     <div className="space-y-8">
       <header className="flex flex-col gap-2">
-        <h1 className="font-jakarta font-black tracking-tight text-2xl text-[var(--text-primary)]">WooCommerce Control</h1>
+        <h1 className="text-2xl font-jakarta font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          WooCommerce activo
+        </h1>
         <p style={{ color: 'var(--text-muted)' }}>
-          Control centralizado desde Admin: marcas integradas, productos mapeados y metricas reales del plugin.
+          Vista filtrada solo a marcas con plugin validado y conexión operativa.
         </p>
       </header>
+
+      {error && (
+        <div className="rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          {error}
+        </div>
+      )}
 
       <section
         className="rounded-[2rem] border p-5"
         style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
       >
-        <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar marca por nombre, slug o email"
-            className="w-full max-w-md rounded-xl px-3 py-2 border"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Buscar marca, slug, email o dominio"
+            className="w-full max-w-md rounded-xl border px-3 py-2"
             style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           />
           <button
             onClick={fetchBrands}
-            className="rounded-xl px-4 py-2 text-white font-bold uppercase text-xs tracking-wider"
-            style={{ backgroundColor: '#FF5C3A' }}
+            className="rounded-xl bg-[#FF5C3A] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white"
           >
             Refrescar
           </button>
         </div>
 
         {loadingBrands ? (
-          <p style={{ color: 'var(--text-muted)' }}>Cargando marcas...</p>
+          <p style={{ color: 'var(--text-muted)' }}>Cargando marcas activas...</p>
+        ) : filteredBrands.length === 0 ? (
+          <div className="rounded-[1.5rem] border border-dashed p-8 text-center" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              No hay marcas WooCommerce activas para mostrar
+            </p>
+            <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+              Esta pantalla ya no mezcla pendientes o API keys sueltas sin validación real del plugin.
+            </p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[900px] text-sm">
               <thead>
-                <tr className="text-left">
-                  <th className="py-2">Marca</th>
-                  <th className="py-2">Plan</th>
-                  <th className="py-2">API Key</th>
-                  <th className="py-2">Mapeados</th>
-                  <th className="py-2">Activos</th>
-                  <th className="py-2">Errores 30d</th>
-                  <th className="py-2">Latencia</th>
+                <tr className="border-b text-left" style={{ borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">Marca</th>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">Estado</th>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">Plan</th>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">Tienda</th>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">Mapeados</th>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">Activos</th>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">Errores 30d</th>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">Último sync</th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedBrands.map((b) => (
-                  <tr
-                    key={b.id}
-                    onClick={() => setSelectedBrandId(b.id)}
-                    className="cursor-pointer border-t"
-                    style={{
-                      borderColor: 'var(--border-color)',
-                      backgroundColor: selectedBrandId === b.id ? 'var(--bg-hover)' : 'transparent',
-                    }}
-                  >
-                    <td className="py-3">
-                      <div className="font-semibold">{b.name}</div>
-                      <div style={{ color: 'var(--text-muted)' }}>/{b.slug}</div>
-                    </td>
-                    <td className="py-3">{b.plan}</td>
-                    <td className="py-3">{b.has_api_key ? 'OK' : 'NO'}</td>
-                    <td className="py-3">{b.product_counts.mapped}</td>
-                    <td className="py-3">{b.product_counts.active}</td>
-                    <td className="py-3">{b.telemetry?.failedRequests || 0}</td>
-                    <td className="py-3">{b.telemetry?.avgLatencyMs || 0}ms</td>
-                  </tr>
-                ))}
+                {filteredBrands.map((brand) => {
+                  const meta = STATUS_META[brand.status];
+                  return (
+                    <tr
+                      key={brand.id}
+                      onClick={() => setSelectedBrandId(brand.id)}
+                      className="cursor-pointer border-b"
+                      style={{
+                        borderColor: 'var(--border-color)',
+                        backgroundColor: selectedBrandId === brand.id ? 'var(--bg-hover)' : 'transparent',
+                      }}
+                    >
+                      <td className="py-4">
+                        <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{brand.name}</div>
+                        <div style={{ color: 'var(--text-muted)' }}>/{brand.slug}</div>
+                      </td>
+                      <td className="py-4">
+                        <span
+                          className="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em]"
+                          style={{ background: meta.bg, color: meta.text }}
+                        >
+                          {meta.label}
+                        </span>
+                      </td>
+                      <td className="py-4" style={{ color: 'var(--text-secondary)' }}>{brand.plan}</td>
+                      <td className="py-4" style={{ color: 'var(--text-secondary)' }}>
+                        {brand.plugin_store_domain || 'Sin dominio reportado'}
+                      </td>
+                      <td className="py-4">{brand.product_counts.mapped}</td>
+                      <td className="py-4">{brand.product_counts.active}</td>
+                      <td className="py-4">{brand.telemetry?.failedRequests || 0}</td>
+                      <td className="py-4" style={{ color: 'var(--text-secondary)' }}>
+                        {brand.telemetry?.lastSyncAt ? new Date(brand.telemetry.lastSyncAt).toLocaleString('es-CO') : 'Sin sync'}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
-          </div>
-        )}
-
-        {!loadingBrands && filteredBrands.length > 0 && (
-          <div className="mt-4 flex items-center justify-between gap-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-            <span>
-              {(currentPage - 1) * brandsPerPage + 1}–
-              {Math.min(currentPage * brandsPerPage, filteredBrands.length)} de {filteredBrands.length}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                disabled={currentPage === 1}
-                className="rounded-lg border px-3 py-1.5 disabled:opacity-40"
-                style={{ borderColor: 'var(--border-color)' }}
-              >
-                Anterior
-              </button>
-              <span className="font-semibold">{currentPage}/{totalPages}</span>
-              <button
-                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                disabled={currentPage === totalPages}
-                className="rounded-lg border px-3 py-1.5 disabled:opacity-40"
-                style={{ borderColor: 'var(--border-color)' }}
-              >
-                Siguiente
-              </button>
-            </div>
           </div>
         )}
       </section>
@@ -272,81 +288,73 @@ export default function AdminWooCommercePage() {
         style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
       >
         <div className="mb-4">
-          <h2 className="font-jakarta font-bold tracking-tight">
-            {selectedBrand ? `Productos sincronizados - ${selectedBrand.name}` : 'Productos sincronizados'}
+          <h2 className="font-jakarta text-lg font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            {selectedBrand ? `Productos sincronizados · ${selectedBrand.name}` : 'Productos sincronizados'}
           </h2>
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+            Solo se habilita detalle sobre marcas activas validadas por el plugin.
+          </p>
         </div>
 
         {summary && (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
-            <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
-              <div style={{ color: 'var(--text-muted)' }} className="text-xs uppercase">Mapeados</div>
-              <div className="text-xl font-bold">{summary.products.totalMappedProducts}</div>
-            </div>
-            <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
-              <div style={{ color: 'var(--text-muted)' }} className="text-xs uppercase">Activos</div>
-              <div className="text-xl font-bold">{summary.products.activeMappedProducts}</div>
-            </div>
-            <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
-              <div style={{ color: 'var(--text-muted)' }} className="text-xs uppercase">Requests 30d</div>
-              <div className="text-xl font-bold">{summary.telemetry.totalRequests}</div>
-            </div>
-            <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
-              <div style={{ color: 'var(--text-muted)' }} className="text-xs uppercase">Errores 30d</div>
-              <div className="text-xl font-bold">{summary.telemetry.failedRequests}</div>
-            </div>
-            <div className="rounded-2xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
-              <div style={{ color: 'var(--text-muted)' }} className="text-xs uppercase">Latencia media</div>
-              <div className="text-xl font-bold">{summary.telemetry.avgLatencyMs}ms</div>
-            </div>
-          </div>
-        )}
-
-        {summary?.telemetry.lastSyncAt && (
-          <div className="mb-5 text-sm" style={{ color: 'var(--text-muted)' }}>
-            Ultima sincronizacion exitosa: {new Date(summary.telemetry.lastSyncAt).toLocaleString('es-CO')}
+          <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-5">
+            {[
+              { label: 'Mapeados', value: summary.products.totalMappedProducts },
+              { label: 'Activos', value: summary.products.activeMappedProducts },
+              { label: 'Requests 30d', value: summary.telemetry.totalRequests },
+              { label: 'Errores 30d', value: summary.telemetry.failedRequests },
+              { label: 'Latencia media', value: `${summary.telemetry.avgLatencyMs}ms` },
+            ].map((card) => (
+              <div key={card.label} className="rounded-2xl border p-4" style={{ borderColor: 'var(--border-color)' }}>
+                <div className="text-[11px] font-black uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
+                  {card.label}
+                </div>
+                <div className="mt-2 text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                  {card.value}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {summary?.telemetry.lastErrorMessage && (
-          <div className="mb-5 text-sm text-red-400">
-            Ultimo error reportado: {summary.telemetry.lastErrorMessage}
+          <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            Último error: {summary.telemetry.lastErrorMessage}
           </div>
         )}
 
         {!selectedBrandId ? (
-          <p style={{ color: 'var(--text-muted)' }}>Selecciona una marca para ver sus productos mapeados.</p>
+          <p style={{ color: 'var(--text-muted)' }}>Selecciona una marca activa para revisar sus productos mapeados.</p>
         ) : loadingProducts ? (
           <p style={{ color: 'var(--text-muted)' }}>Cargando productos...</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[760px] text-sm">
               <thead>
-                <tr className="text-left">
-                  <th className="py-2">Producto</th>
-                  {selectedBrand?.has_api_key && <th className="py-2">External ID</th>}
-                  <th className="py-2">Categoria</th>
-                  <th className="py-2">Activo</th>
+                <tr className="border-b text-left" style={{ borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">Producto</th>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">External ID</th>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">Categoría</th>
+                  <th className="py-3 text-[11px] font-black uppercase tracking-[0.18em]">Activo</th>
                 </tr>
               </thead>
               <tbody>
-                {products.map((p) => (
-                  <tr key={p.id} className="border-t" style={{ borderColor: 'var(--border-color)' }}>
-                    <td className="py-3">{p.name}</td>
-                    {selectedBrand?.has_api_key && <td className="py-3">{p.external_id}</td>}
-                    <td className="py-3">{p.category || 'General'}</td>
-                    <td className="py-3">
+                {products.map((product) => (
+                  <tr key={product.id} className="border-b" style={{ borderColor: 'var(--border-color)' }}>
+                    <td className="py-4" style={{ color: 'var(--text-primary)' }}>{product.name}</td>
+                    <td className="py-4" style={{ color: 'var(--text-secondary)' }}>{product.external_id}</td>
+                    <td className="py-4" style={{ color: 'var(--text-secondary)' }}>{product.category || 'General'}</td>
+                    <td className="py-4">
                       <button
-                        disabled={!!savingMap[p.id]}
-                        onClick={() => toggleProduct(p.id, !p.is_active)}
-                        className="px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider"
+                        disabled={!!savingMap[product.id]}
+                        onClick={() => toggleProduct(product.id, !product.is_active)}
+                        className="rounded-lg px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-white"
                         style={{
-                          backgroundColor: p.is_active ? '#10b981' : '#374151',
-                          color: '#fff',
-                          opacity: savingMap[p.id] ? 0.6 : 1,
+                          backgroundColor: product.is_active ? '#10b981' : '#475569',
+                          opacity: savingMap[product.id] ? 0.6 : 1,
                         }}
                       >
-                        {savingMap[p.id] ? 'Guardando...' : p.is_active ? 'Activo' : 'Inactivo'}
+                        {savingMap[product.id] ? 'Guardando' : product.is_active ? 'Activo' : 'Inactivo'}
                       </button>
                     </td>
                   </tr>

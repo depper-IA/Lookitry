@@ -28,6 +28,7 @@ import {
   ExternalServiceError,
   asyncHandler,
 } from '../middleware/errorHandler';
+import { getBrandSocialLinks, recordTrialEvent } from '../utils/brandLifecycle';
 
 const brandsService = new BrandsService();
 const productsService = new ProductsService();
@@ -40,6 +41,13 @@ const promptRagService = new PromptRagService();
 const uploadService = new UploadService();
 
 export class PruebaloController {
+  private assertPluginOperational(brand: any) {
+    const socialLinks = getBrandSocialLinks(brand);
+    if (socialLinks.app_uninstalled_at || socialLinks.integration_paused_at) {
+      throw new ValidationError('La integración está pausada o desinstalada para esta tienda');
+    }
+  }
+
   /**
    * GET /api/pruebalo/:brandSlug
    * Endpoint público para obtener configuración de marca y productos
@@ -326,6 +334,16 @@ export class PruebaloController {
         prompt_used: prompt,
       });
 
+      const { count: successfulCount } = await supabaseAdmin
+        .from('generations')
+        .select('*', { count: 'exact', head: true })
+        .eq('brand_id', brand.id)
+        .eq('status', 'SUCCESS');
+
+      if ((successfulCount || 0) === 1) {
+        await recordTrialEvent(brand.id, 'first_generation_completed').catch(() => {});
+      }
+
       // 9. Retornar imageUrl al frontend
       return res.status(200).json({
         success: true,
@@ -554,30 +572,9 @@ export class PruebaloController {
     if (!brand) {
       return res.status(200).json({ valid: false, message: 'Clave de API inválida' });
     }
+    this.assertPluginOperational(brand);
 
-    // Auto-registrar o actualizar el dominio del plugin en la base de datos
-    if (incomingDomain) {
-      const currentSocialLinks = (brand as any).social_links || {};
-      const normalizedIncomingOrigin = normalizeOrigin(incomingDomain);
-      const mergedOrigins = sanitizeDomainList([
-        ...(Array.isArray(currentSocialLinks.allowed_origins) ? currentSocialLinks.allowed_origins : []),
-        currentSocialLinks.website,
-        normalizedIncomingOrigin,
-      ]);
-
-      const updates: any = {
-        social_links: {
-          ...currentSocialLinks,
-          allowed_origins: mergedOrigins,
-        }
-      };
-
-      if (!currentSocialLinks.website && normalizedIncomingOrigin) {
-        updates.social_links.website = normalizedIncomingOrigin;
-      }
-
-      await brandsService.updateBrand(brand.id, updates);
-    }
+    await this.markPluginValidated(brand, incomingDomain);
 
     const currentCount = await productsService.countActiveProducts(brand.id);
     const { PLANS } = await import('../config/plans');
@@ -613,6 +610,7 @@ export class PruebaloController {
     if (!brand) {
       return res.status(401).json({ success: false, message: 'Clave de API inválida' });
     }
+    this.assertPluginOperational(brand);
 
     if (!isAllowedStoreHost(brand, req)) {
       return res.status(403).json({
@@ -646,12 +644,15 @@ export class PruebaloController {
     if (!brand) {
       throw new ValidationError('Clave de API inválida');
     }
+    this.assertPluginOperational(brand);
 
     if (!isAllowedStoreHost(brand, req)) {
       throw new ValidationError(
         `Dominio no autorizado para esta API Key. Esperado: ${getExpectedStoreHost(brand)}. Recibido: ${getIncomingStoreHost(req)}`
       );
     }
+
+    await this.markPluginValidated(brand, getIncomingStoreHost(req));
 
     const result = await productsService.bulkSyncProducts(brand.id, products);
 
@@ -680,12 +681,15 @@ export class PruebaloController {
     if (!brand) {
       throw new ValidationError('Clave de API inválida');
     }
+    this.assertPluginOperational(brand);
 
     if (!isAllowedStoreHost(brand, req)) {
       throw new ValidationError(
         `Dominio no autorizado para esta API Key. Esperado: ${getExpectedStoreHost(brand)}. Recibido: ${getIncomingStoreHost(req)}`
       );
     }
+
+    await this.markPluginValidated(brand, getIncomingStoreHost(req));
 
     const endpoint = String(req.body.endpoint || '').trim();
     const eventName = String(req.body.event_name || 'request_completed').trim();
@@ -758,6 +762,76 @@ export class PruebaloController {
 
     return res.status(201).json({ success: true });
   });
+
+  appUninstalled = asyncHandler(async (req: Request, res: Response) => {
+    const apiKey = req.headers['x-api-key'] as string;
+    if (!apiKey) {
+      throw new ValidationError('Clave de API requerida');
+    }
+
+    const brand = await brandsService.getBrandByApiKey(apiKey);
+    if (!brand) {
+      throw new ValidationError('Clave de API inválida');
+    }
+
+    const currentSocialLinks = getBrandSocialLinks(brand);
+    const nowIso = new Date().toISOString();
+
+    await brandsService.updateBrand(brand.id, {
+      has_landing_page: false,
+      social_links: {
+        ...currentSocialLinks,
+        app_uninstalled_at: nowIso,
+        integration_paused_at: nowIso,
+        billing_paused_at: nowIso,
+        credits_paused_at: nowIso,
+        woo_plugin_validated_at: null,
+        woo_plugin_store_domain: null,
+        woo_plugin_validation_source: 'app_uninstalled',
+      },
+    });
+
+    return res.status(200).json({ success: true, message: 'Integración pausada correctamente' });
+  });
+
+  private async markPluginValidated(brand: any, incomingDomain?: string | null) {
+    const currentSocialLinks = ((brand as any).social_links || {}) as Record<string, any>;
+    const normalizedIncomingOrigin = normalizeOrigin(incomingDomain || null);
+    const mergedOrigins = sanitizeDomainList([
+      ...(Array.isArray(currentSocialLinks.allowed_origins) ? currentSocialLinks.allowed_origins : []),
+      currentSocialLinks.website,
+      currentSocialLinks.woo_plugin_store_domain,
+      normalizedIncomingOrigin,
+    ]);
+
+    const nextSocialLinks: Record<string, any> = {
+      ...currentSocialLinks,
+      allowed_origins: mergedOrigins,
+      woo_plugin_validated_at:
+        currentSocialLinks.woo_plugin_validated_at || new Date().toISOString(),
+      woo_plugin_validation_source: 'plugin_handshake',
+    };
+
+    if (!currentSocialLinks.website && normalizedIncomingOrigin) {
+      nextSocialLinks.website = normalizedIncomingOrigin;
+    }
+
+    if (normalizedIncomingOrigin) {
+      nextSocialLinks.woo_plugin_store_domain = normalizedIncomingOrigin;
+    }
+
+    const shouldUpdate =
+      nextSocialLinks.woo_plugin_validated_at !== currentSocialLinks.woo_plugin_validated_at ||
+      nextSocialLinks.woo_plugin_store_domain !== currentSocialLinks.woo_plugin_store_domain ||
+      JSON.stringify(nextSocialLinks.allowed_origins || []) !== JSON.stringify(currentSocialLinks.allowed_origins || []) ||
+      nextSocialLinks.website !== currentSocialLinks.website;
+
+    if (shouldUpdate) {
+      await brandsService.updateBrand(brand.id, {
+        social_links: nextSocialLinks,
+      });
+    }
+  }
 
   /**
    * GET /api/pruebalo/img-proxy?url=...

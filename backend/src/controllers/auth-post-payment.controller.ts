@@ -8,6 +8,7 @@ import { wompiService } from '../services/wompi.service';
 import { paypalService } from '../services/paypal.service';
 import { notificationService } from '../services/notification.service';
 import { AuthRequest } from '../middleware/auth';
+import { isTrialLandingBlocked } from '../utils/brandLifecycle';
 
 const authService = new AuthService();
 const emailService = new EmailService();
@@ -146,6 +147,10 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
       return res.status(402).json({ error: 'PAYMENT_REQUIRED', message: 'El pago no ha sido confirmado aún' });
     }
 
+    if (pending.includes_landing && String(pending.plan || '').toUpperCase() === 'NONE') {
+      return res.status(403).json({ error: 'TRIAL_LANDING_BLOCKED', message: 'La mini-landing requiere primero activar un plan pago.' });
+    }
+
     // 5. Crear la cuenta o Usar la existente si hay sesión
     let result: any;
     let shouldActivateSubscription = true;
@@ -154,6 +159,9 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
     if (existingBrandId) {
       // 5.1 Si el usuario ya está logueado, la activación se hace una sola vez en renewSubscription
       const { data: currentBrand } = await supabaseAdmin.from('brands').select('*').eq('id', existingBrandId).single();
+      if (pending.includes_landing && currentBrand && isTrialLandingBlocked(currentBrand) && String(pending.plan || '').toUpperCase() === 'NONE') {
+        return res.status(403).json({ error: 'TRIAL_LANDING_BLOCKED', message: 'La mini-landing requiere primero activar un plan pago.' });
+      }
       
       result = {
         token: req.headers.authorization?.split(' ')[1] || (req as any).cookies?.token, // Mantener token actual

@@ -45,7 +45,7 @@ export default function CheckoutLandingPage() {
   
   // Normalizar el plan para comparación insensible a mayúsculas
   const brandPlan = brand?.plan?.toUpperCase() || '';
-  const isTrial = !brandPlan || brandPlan === 'TRIAL';
+  const isTrial = Boolean(brand?.trialEndDate && new Date(brand.trialEndDate) > new Date());
   const hasActivePlan = brandPlan === 'BASIC' || brandPlan === 'PRO';
   
   // Derivamos si se incluye plan: obligatorio para Trial, prohibido para Activos
@@ -183,9 +183,18 @@ export default function CheckoutLandingPage() {
           Activar Mini-landing
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-          {isTrial ? 'Selecciona tu suscripción y activa tu página profesional' : 'Añade tu propia mini-landing a tu plan activo'}
+          {isTrial ? 'Selecciona tu plan y meses para activar landing + suscripcion en una sola compra' : 'Anade tu propia mini-landing a tu plan activo'}
         </p>
       </div>
+
+      {isTrial && (
+        <div className="rounded-3xl border border-amber-500/20 bg-amber-500/10 p-5">
+          <p className="text-sm font-bold text-amber-400">Tu cuenta sigue en trial.</p>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
+            Aqui puedes activar tu mini-landing junto con un plan pago en la misma compra. Lo unico no permitido es comprar la landing sola mientras sigues en trial.
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">

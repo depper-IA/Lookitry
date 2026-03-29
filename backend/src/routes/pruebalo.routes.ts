@@ -24,6 +24,9 @@ router.post('/sync-woocommerce', publicRateLimiter, pruebaloController.syncWooCo
 // POST /api/pruebalo/plugin-telemetry - Registrar telemetria tecnica del plugin
 router.post('/plugin-telemetry', publicRateLimiter, pruebaloController.recordPluginTelemetry);
 
+// POST /api/pruebalo/app-uninstalled - Pausar integracion al desinstalar plugin/app
+router.post('/app-uninstalled', publicRateLimiter, pruebaloController.appUninstalled);
+
 // GET /api/pruebalo/img-proxy - Proxy de imágenes
 router.get('/img-proxy', publicRateLimiter, pruebaloController.imgProxy);
 

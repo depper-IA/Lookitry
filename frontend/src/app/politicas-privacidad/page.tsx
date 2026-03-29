@@ -45,19 +45,27 @@ const SECTIONS = [
     content: `Lookitry no vende ni cede datos personales a terceros con fines comerciales. Los datos pueden ser compartidos únicamente con:\n\n— Proveedores de infraestructura tecnológica (Supabase, servidores VPS) bajo acuerdos de confidencialidad.\n— Pasarelas de pago (Wompi) para procesar transacciones, quienes tienen sus propias políticas de privacidad.\n— Autoridades competentes cuando sea requerido por ley.`,
   },
   {
-    title: '7. Derechos del titular (Ley 1581 de 2012)',
+    title: '7. Retención, archivo y redacción legal',
+    content: `Esta política aplica a todos los planes y productos de Lookitry, incluyendo TRIAL, BASIC, PRO, ENTERPRISE, mini-landings y add-ons.\n\n— El archivo operativo de una cuenta no implica borrado automático del histórico financiero.\n— Conservamos un ledger mínimo de pagos, referencias y trazabilidad contable cuando la ley o la seguridad operativa lo requieren.\n— Cuando exista una solicitud formal de redacción o supresión, anonimizaremos los datos personales en el alcance que corresponda sin destruir el histórico financiero mínimo permitido.\n— La desinstalación de la app o integración puede pausar facturación futura, créditos y sincronizaciones, sin alterar el revenue histórico ya devengado.`,
+  },
+  {
+    title: '8. Derechos del titular (Ley 1581 de 2012)',
     content: `Como titular de datos personales, tienes derecho a:\n\n— Conocer, actualizar y rectificar tus datos personales.\n— Solicitar prueba de la autorización otorgada.\n— Ser informado sobre el uso de tus datos.\n— Presentar quejas ante la Superintendencia de Industria y Comercio (SIC).\n— Revocar la autorización y solicitar la supresión de tus datos, salvo que exista obligación legal de conservarlos.\n\nPara ejercer estos derechos, escríbenos a info@lookitry.com.`,
   },
   {
-    title: '8. Seguridad de los datos',
+    title: '9. Autoservicio de solicitudes legales',
+    content: `Desde la página de perfil de tu cuenta puedes iniciar solicitudes automáticas de privacidad y datos, incluyendo:\n\n— customers/data_request: acceso a los datos operativos asociados a tu cuenta.\n— customers/redact: redacción de datos personales del comprador final cuando aplique.\n— shop/redact: redacción de datos de tienda/app dentro del alcance legal solicitado.\n— app/uninstalled: pausa operativa de integración, créditos y facturación futura.\n\nAlgunas solicitudes se procesan de inmediato y otras pueden completarse de forma asíncrona con trazabilidad interna.`,
+  },
+  {
+    title: '10. Seguridad de los datos',
     content: `Implementamos medidas técnicas y organizativas para proteger los datos personales contra acceso no autorizado, pérdida o alteración. Esto incluye cifrado en tránsito (HTTPS/TLS), control de acceso por roles y auditorías periódicas de seguridad.`,
   },
   {
-    title: '9. Cookies y tecnologías de seguimiento',
+    title: '11. Cookies y tecnologías de seguimiento',
     content: `La plataforma utiliza cookies de sesión estrictamente necesarias para el funcionamiento del servicio (autenticación, preferencias). No utilizamos cookies de seguimiento publicitario ni compartimos datos de navegación con redes publicitarias.`,
   },
   {
-    title: '10. Cambios en esta política',
+    title: '12. Cambios en esta política',
     content: `Lookitry puede actualizar esta política en cualquier momento. Los cambios serán notificados mediante aviso en la plataforma o por correo electrónico con al menos 10 días de anticipación. El uso continuado del servicio tras la notificación implica la aceptación de los cambios.`,
   },
 ];

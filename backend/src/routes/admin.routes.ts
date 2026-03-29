@@ -22,6 +22,7 @@ import {
   listAdmins,
   createAdmin,
   updateAdminPermissions,
+  changeAdminPassword,
   deleteAdmin,
   sendAdminCredentials,
   changeOwnPassword,
@@ -31,6 +32,7 @@ import {
   deleteFeedback,
   getUnresolvedFeedbackCount,
   getOpenRouterCredits,
+  getReplicateCredits,
   sendBrandResetEmail,
   getPayments,
   getAllPromotions,
@@ -102,6 +104,7 @@ router.patch('/notification-preferences/:type', requirePermission('notifications
 router.get('/admins', requirePermission('admins'), listAdmins);
 router.post('/admins', requirePermission('admins'), createAdmin);
 router.patch('/admins/:id/permissions', requirePermission('admins'), updateAdminPermissions);
+router.put('/admins/:id/password', requirePermission('admins'), changeAdminPassword);
 router.post('/admins/:id/send-credentials', requirePermission('admins'), sendAdminCredentials);
 router.delete('/admins/:id', requirePermission('admins'), deleteAdmin);
 
@@ -122,6 +125,7 @@ router.delete('/feedback/:id', requirePermission('brands'), deleteFeedback);
 
 // Monitor de créditos OpenRouter
 router.get('/openrouter-credits', requirePermission('settings'), getOpenRouterCredits);
+router.get('/replicate-credits', requirePermission('settings'), getReplicateCredits);
 
 // Estadísticas del sistema (RAM, Uptime)
 router.get('/system/stats', requirePermission('settings'), getSystemStats);

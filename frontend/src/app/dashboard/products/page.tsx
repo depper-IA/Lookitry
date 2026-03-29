@@ -91,13 +91,15 @@ export default function ProductsPage() {
       const res = await api.get<{
         products: { totalMappedProducts: number; activeMappedProducts: number };
         telemetry: { totalRequests: number; failedRequests: number; avgLatencyMs: number; lastSyncAt: string | null };
+        integration: { pluginValidated: boolean; pluginValidatedAt: string | null; pluginStoreDomain: string | null };
       }>('/brands/me/woocommerce-metrics');
 
+      const pluginValidated = Boolean(res.data?.integration?.pluginValidated);
       const lastSyncAt = res.data?.telemetry?.lastSyncAt ?? null;
       const totalRequests = Number(res.data?.telemetry?.totalRequests ?? 0);
       const mapped = Number(res.data?.products?.totalMappedProducts ?? 0);
 
-      setShowExternalIdField(Boolean(lastSyncAt) || totalRequests > 0 || mapped > 0);
+      setShowExternalIdField(pluginValidated || Boolean(lastSyncAt) || totalRequests > 0 || mapped > 0);
     } catch {
       setShowExternalIdField(false);
     }

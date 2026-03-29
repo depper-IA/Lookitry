@@ -29,19 +29,28 @@ export function hasActivePaidSubscription(brand?: Partial<Brand> | null): boolea
 }
 
 export function isTrialBrand(brand?: Partial<Brand> | null): boolean {
-  return Boolean(brand?.trialEndDate) && !hasActivePaidSubscription(brand);
+  if (!brand?.trialEndDate || brand?.subscriptionStatus === 'suspended') {
+    return false;
+  }
+
+  const trialEnd = new Date(brand.trialEndDate);
+  if (Number.isNaN(trialEnd.getTime())) {
+    return false;
+  }
+
+  return trialEnd > new Date();
 }
 
 export function getSubscriptionDisplayState(brand?: Partial<Brand> | null): SubscriptionDisplayState {
   const fallbackPlan = (brand?.plan ?? 'BASIC') as BrandPlan;
   const daysUntilTrialEnd = getDaysDifference(brand?.trialEndDate);
   const trial = isTrialBrand(brand);
-  const trialExpired = trial && daysUntilTrialEnd !== null && daysUntilTrialEnd < 0;
+  const trialExpired = !trial && !hasActivePaidSubscription(brand) && daysUntilTrialEnd !== null && daysUntilTrialEnd < 0;
 
-  if (trial) {
+  if (trial || trialExpired) {
     return {
       displayPlan: 'TRIAL',
-      isTrial: true,
+      isTrial: trial,
       isTrialExpired: trialExpired,
       daysUntilTrialEnd,
       renewalLabel: 'Fin del trial',

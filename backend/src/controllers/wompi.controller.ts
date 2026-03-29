@@ -7,6 +7,7 @@ import { NotificationService } from '../services/notification.service';
 import { addonCreditsService } from '../services/addonCredits.service';
 import { supabaseAdmin } from '../config/supabase';
 import { verifyEmailTemplate } from '../templates/email-templates';
+import { isTrialLandingBlocked } from '../utils/brandLifecycle';
 
 const subscriptionService = new SubscriptionService();
 const emailService = new EmailService();
@@ -259,6 +260,10 @@ export class WompiController {
         return;
       }
       const effectivePlan = (plan === 'LANDING' ? 'BASIC' : plan).toUpperCase();
+      if (includes_landing && isTrialLandingBlocked(currentBrand) && effectivePlan === 'NONE') {
+        res.status(403).json({ error: 'TRIAL_LANDING_BLOCKED', message: 'La mini-landing requiere primero activar un plan pago.' });
+        return;
+      }
       const parsedMonths = Number.parseInt(months as string, 10);
       const monthsNum = Number.isNaN(parsedMonths) ? 1 : parsedMonths;
       const ref = reqRef || `FREE-${brand.id}-${Date.now()}`;
@@ -300,6 +305,13 @@ export class WompiController {
       const planStr = (plan as string)?.toUpperCase() || 'BASIC';
       const monthsNum = months ? parseInt(months as string, 10) : 1;
       const isLandingPurchase = (req.query.includes_landing as string) === 'true';
+      if (brand?.id && isLandingPurchase && planStr === 'NONE') {
+        const { data: currentBrand } = await supabaseAdmin.from('brands').select('*').eq('id', brand.id).single();
+        if (currentBrand && isTrialLandingBlocked(currentBrand)) {
+          res.status(403).json({ error: 'TRIAL_LANDING_BLOCKED', message: 'La mini-landing requiere primero activar un plan pago.' });
+          return;
+        }
+      }
 
       let amountCOP = brand?.id
         ? await pricingService.calculateTotal(planStr, monthsNum, isLandingPurchase)
@@ -354,6 +366,13 @@ export class WompiController {
       const monthsNum = months ? parseInt(months as string, 10) : 1;
       const planStr = (plan as string)?.toUpperCase() || 'BASIC';
       const isLandingPurchase = (req.query.includes_landing as string) === 'true';
+      if (brand?.id && isLandingPurchase && planStr === 'NONE') {
+        const { data: currentBrand } = await supabaseAdmin.from('brands').select('*').eq('id', brand.id).single();
+        if (currentBrand && isTrialLandingBlocked(currentBrand)) {
+          res.status(403).json({ error: 'TRIAL_LANDING_BLOCKED', message: 'La mini-landing requiere primero activar un plan pago.' });
+          return;
+        }
+      }
 
       let amountCOP = brand?.id
         ? await pricingService.calculateTotal(planStr, monthsNum, isLandingPurchase)

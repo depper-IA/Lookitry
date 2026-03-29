@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { formatCurrency } from '@/utils/currency';
 import {
-  Calculator,
   CreditCard,
   Globe,
   Palette,
@@ -11,7 +10,6 @@ import {
   Settings,
   TrendingUp,
 } from 'lucide-react';
-import EnterpriseCalculator from '@/components/admin/EnterpriseCalculator';
 
 interface PlanConfig {
   precio_mensual_cop: number;
@@ -63,7 +61,7 @@ interface DescuentosConfig {
 }
 
 type ConfigRow = { id: string; data: Record<string, unknown>; updated_at: string };
-type TabId = 'plans' | 'enterprise' | 'landing' | 'config';
+type TabId = 'plans' | 'landing' | 'config';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -536,7 +534,6 @@ export default function PricingAdminPage() {
         <div className="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap gap-2">
             <TabButton id="plans" label="Suscripciones" icon={CreditCard} activeTab={activeTab} onClick={setActiveTab} />
-            <TabButton id="enterprise" label="Enterprise" icon={Calculator} activeTab={activeTab} onClick={setActiveTab} />
             <TabButton id="landing" label="Mini-landing" icon={Palette} activeTab={activeTab} onClick={setActiveTab} />
             <TabButton id="config" label="Configuración & ROI" icon={Settings} activeTab={activeTab} onClick={setActiveTab} />
           </div>
@@ -608,8 +605,6 @@ export default function PricingAdminPage() {
           )}
         </div>
       )}
-
-      {activeTab === 'enterprise' && <EnterpriseCalculator />}
 
       {activeTab === 'landing' && miniLanding && (
         <div className="space-y-3">

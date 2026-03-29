@@ -92,6 +92,11 @@ type WooMetrics = {
     avgLatencyMs: number;
     lastSyncAt: string | null;
   };
+  integration: {
+    pluginValidated: boolean;
+    pluginValidatedAt: string | null;
+    pluginStoreDomain: string | null;
+  };
 };
 
 export default function IntegrationsPage() {
@@ -113,15 +118,7 @@ export default function IntegrationsPage() {
   const apiKey = (brand as any)?.apiKey || (brand as any)?.api_key || '•••••••••••••••••••••••••••••';
   const subscriptionState = getSubscriptionDisplayState(brand);
   const hasConfiguredApiKey = Boolean(apiKey && !apiKey.includes('•'));
-  const pluginConnected = Boolean(
-    hasConfiguredApiKey &&
-    (
-      wooMetrics?.telemetry.lastSyncAt ||
-      (wooMetrics?.telemetry.totalRequests ?? 0) > 0 ||
-      (wooMetrics?.products.totalMappedProducts ?? 0) > 0 ||
-      (wooMetrics?.products.activeMappedProducts ?? 0) > 0
-    )
-  );
+  const pluginConnected = Boolean(hasConfiguredApiKey && wooMetrics?.integration?.pluginValidated);
   const pluginPendingActivation = hasConfiguredApiKey && !pluginConnected;
   const pluginBadgeClass = pluginConnected
     ? 'bg-emerald-500 border-emerald-400/20 shadow-emerald-500/20'

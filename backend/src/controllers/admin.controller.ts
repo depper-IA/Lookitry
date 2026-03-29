@@ -21,7 +21,7 @@ export interface AdminRequest extends Request {
 
 /**
  * GET /api/admin/system/stats
- * Obtener estadísticas de RAM y uptime del servidor
+ * Obtener estadÃƒÂ­sticas de RAM y uptime del servidor
  */
 export const getSystemStats = async (_req: any, res: Response) => {
   try {
@@ -31,7 +31,7 @@ export const getSystemStats = async (_req: any, res: Response) => {
     console.error('Error in getSystemStats:', error);
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
-      message: 'Error al obtener estadísticas del sistema',
+      message: 'Error al obtener estadÃƒÂ­sticas del sistema',
     });
   }
 };
@@ -47,7 +47,7 @@ export const adminLogin = async (req: any, res: Response) => {
     if (!email || !password) {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
-        message: 'Email y contraseña son requeridos',
+        message: 'Email y contraseÃƒÂ±a son requeridos',
       });
     }
 
@@ -57,17 +57,17 @@ export const adminLogin = async (req: any, res: Response) => {
     if (!admin) {
       return res.status(401).json({
         error: 'UNAUTHORIZED',
-        message: 'Credenciales inválidas',
+        message: 'Credenciales invÃƒÂ¡lidas',
       });
     }
 
-    // Verificar contraseña
+    // Verificar contraseÃƒÂ±a
     const isValidPassword = await adminService.verifyPassword(password, (admin as any).password);
 
     if (!isValidPassword) {
       return res.status(401).json({
         error: 'UNAUTHORIZED',
-        message: 'Credenciales inválidas',
+        message: 'Credenciales invÃƒÂ¡lidas',
       });
     }
 
@@ -77,8 +77,8 @@ export const adminLogin = async (req: any, res: Response) => {
       email: admin.email,
     });
 
-    // ── Seguridad: Cookie HTTP-Only ──────────────────────────────────────────
-    // Se envía como cookie segura para proteger contra XSS (P1 Hallazgo Auditoría)
+    // Ã¢â€â‚¬Ã¢â€â‚¬ Seguridad: Cookie HTTP-Only Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+    // Se envÃƒÂ­a como cookie segura para proteger contra XSS (P1 Hallazgo AuditorÃƒÂ­a)
     const IS_PROD = process.env.NODE_ENV === 'production';
     const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
 
@@ -96,7 +96,7 @@ export const adminLogin = async (req: any, res: Response) => {
 
     res.cookie('admin_token', token, cookieOptions);
 
-    // Auditoría de login
+    // AuditorÃƒÂ­a de login
     auditService.log({
       admin_id: admin.id,
       admin_email: admin.email,
@@ -125,7 +125,7 @@ export const adminLogin = async (req: any, res: Response) => {
 
 /**
  * POST /api/admin/auth/forgot-password
- * Solicita enlace de recuperación para un administrador
+ * Solicita enlace de recuperaciÃƒÂ³n para un administrador
  */
 export const adminForgotPassword = async (req: any, res: Response) => {
   try {
@@ -149,16 +149,16 @@ export const adminForgotPassword = async (req: any, res: Response) => {
 
       await emailService.sendEmail({
         to: admin.email,
-        subject: 'Recuperar contraseña — Panel de administración Lookitry',
+        subject: 'Recuperar contraseÃƒÂ±a Ã¢â‚¬â€ Panel de administraciÃƒÂ³n Lookitry',
         html: `
           <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;background:#ffffff">
-            <h2 style="margin:0 0 12px;color:#0a0a0a;font-size:22px">Restablecer contraseña</h2>
+            <h2 style="margin:0 0 12px;color:#0a0a0a;font-size:22px">Restablecer contraseÃƒÂ±a</h2>
             <p style="margin:0 0 16px;color:#555;line-height:1.6">
-              Hola <strong>${admin.name}</strong>, recibimos una solicitud para cambiar la contraseña de tu cuenta de administrador.
+              Hola <strong>${admin.name}</strong>, recibimos una solicitud para cambiar la contraseÃƒÂ±a de tu cuenta de administrador.
             </p>
             <div style="margin:28px 0;text-align:center">
               <a href="${resetUrl}" style="display:inline-block;background:#FF5C3A;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700">
-                Crear nueva contraseña
+                Crear nueva contraseÃƒÂ±a
               </a>
             </div>
             <p style="margin:0 0 12px;color:#666;line-height:1.6">
@@ -171,7 +171,7 @@ export const adminForgotPassword = async (req: any, res: Response) => {
     }
 
     return res.status(200).json({
-      message: 'Si el email existe, recibirás un enlace para restablecer tu contraseña.',
+      message: 'Si el email existe, recibirÃƒÂ¡s un enlace para restablecer tu contraseÃƒÂ±a.',
     });
   } catch (error: any) {
     console.error('Error in adminForgotPassword:', error);
@@ -184,7 +184,7 @@ export const adminForgotPassword = async (req: any, res: Response) => {
 
 /**
  * POST /api/admin/auth/reset-password
- * Restablece la contraseña de un administrador usando token
+ * Restablece la contraseÃƒÂ±a de un administrador usando token
  */
 export const adminResetPassword = async (req: any, res: Response) => {
   try {
@@ -193,14 +193,14 @@ export const adminResetPassword = async (req: any, res: Response) => {
     if (!token || !password) {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
-        message: 'Token y contraseña son requeridos',
+        message: 'Token y contraseÃƒÂ±a son requeridos',
       });
     }
 
     await adminService.resetPasswordWithToken(token, password);
 
     return res.status(200).json({
-      message: 'Contraseña restablecida correctamente',
+      message: 'ContraseÃƒÂ±a restablecida correctamente',
     });
   } catch (error: any) {
     console.error('Error in adminResetPassword:', error);
@@ -208,27 +208,27 @@ export const adminResetPassword = async (req: any, res: Response) => {
     if (error.message === 'TOKEN_INVALID' || error.message === 'TOKEN_EXPIRED') {
       return res.status(400).json({
         error: error.message,
-        message: 'El enlace es inválido o ha expirado. Solicita uno nuevo.',
+        message: 'El enlace es invÃƒÂ¡lido o ha expirado. Solicita uno nuevo.',
       });
     }
 
     if (error.message === 'PASSWORD_TOO_SHORT') {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
-        message: 'La contraseña debe tener al menos 8 caracteres',
+        message: 'La contraseÃƒÂ±a debe tener al menos 8 caracteres',
       });
     }
 
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
-      message: 'Error al restablecer la contraseña',
+      message: 'Error al restablecer la contraseÃƒÂ±a',
     });
   }
 };
 
 /**
  * POST /api/admin/auth/logout
- * Cerrar sesión de administrador
+ * Cerrar sesiÃƒÂ³n de administrador
  */
 export const adminLogout = async (_req: any, res: Response) => {
   try {
@@ -256,19 +256,19 @@ export const adminLogout = async (_req: any, res: Response) => {
     //   action: 'admin.logout',
     // });
 
-    return res.status(200).json({ message: 'Sesión cerrada exitosamente' });
+    return res.status(200).json({ message: 'SesiÃƒÂ³n cerrada exitosamente' });
   } catch (error: any) {
     console.error('Error in adminLogout:', error);
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
-      message: 'Error interno del servidor al cerrar sesión',
+      message: 'Error interno del servidor al cerrar sesiÃƒÂ³n',
     });
   }
 };
 
 /**
  * GET /api/admin/brands
- * Obtener todas las marcas con estadísticas
+ * Obtener todas las marcas con estadÃƒÂ­sticas
  */
 export const getAllBrands = async (_req: any, res: Response) => {
   try {
@@ -306,7 +306,7 @@ export const changeBrandPlan = async (req: any, res: Response) => {
 
     await adminService.changeBrandPlan(id, plan);
 
-    // Auditoría
+    // AuditorÃƒÂ­a
     auditService.log({
       admin_id: req.admin?.id ?? 'unknown',
       admin_email: req.admin?.email ?? 'unknown',
@@ -333,7 +333,7 @@ export const changeBrandPlan = async (req: any, res: Response) => {
     if (error.message === 'PLAN_CHANGE_REQUIRES_ACTIVE_SUBSCRIPTION') {
       return res.status(409).json({
         error: 'PLAN_CHANGE_REQUIRES_ACTIVE_SUBSCRIPTION',
-        message: 'Solo puedes cambiar el plan directamente en suscripciones activas. Si está vencida o suspendida, primero registra el pago.',
+        message: 'Solo puedes cambiar el plan directamente en suscripciones activas. Si estÃƒÂ¡ vencida o suspendida, primero registra el pago.',
       });
     }
 
@@ -347,7 +347,7 @@ export const changeBrandPlan = async (req: any, res: Response) => {
 
 /**
  * GET /api/admin/stats
- * Obtener estadísticas globales del sistema
+ * Obtener estadÃƒÂ­sticas globales del sistema
  */
 export const getGlobalStats = async (_req: any, res: Response) => {
   try {
@@ -358,7 +358,7 @@ export const getGlobalStats = async (_req: any, res: Response) => {
     console.error('Error in getGlobalStats:', error);
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
-      message: 'Error al obtener estadísticas',
+      message: 'Error al obtener estadÃƒÂ­sticas',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
@@ -366,7 +366,7 @@ export const getGlobalStats = async (_req: any, res: Response) => {
 
 /**
  * GET /api/admin/brands/:id/products
- * Obtener productos de una marca específica
+ * Obtener productos de una marca especÃƒÂ­fica
  */
 export const getBrandProducts = async (req: any, res: Response) => {
   try {
@@ -406,7 +406,7 @@ export const createBrand = async (req: any, res: Response) => {
     if (!email || !password || !name || !slug) {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
-        message: 'Email, contraseña, nombre y slug son requeridos',
+        message: 'Email, contraseÃƒÂ±a, nombre y slug son requeridos',
       });
     }
 
@@ -428,7 +428,7 @@ export const createBrand = async (req: any, res: Response) => {
       Number(trial_days) || 7
     ).catch(err => console.error('Error enviando email de bienvenida:', err));
 
-    // Auditoría
+    // AuditorÃƒÂ­a
     auditService.log({
       admin_id: req.admin?.id ?? 'unknown',
       admin_email: req.admin?.email ?? 'unknown',
@@ -451,8 +451,8 @@ export const createBrand = async (req: any, res: Response) => {
   } catch (error: any) {
     console.error('Error in createBrand:', error);
     const isValidationError =
-      error.message === 'El email ya está registrado' ||
-      error.message === 'El slug ya está en uso';
+      error.message === 'El email ya estÃƒÂ¡ registrado' ||
+      error.message === 'El slug ya estÃƒÂ¡ en uso';
     return res.status(isValidationError ? 400 : 500).json({
       error: isValidationError ? 'VALIDATION_ERROR' : 'INTERNAL_ERROR',
       message: error.message || 'Error al crear marca',
@@ -529,10 +529,10 @@ export const deleteInactiveProduct = async (req: any, res: Response) => {
 
 /**
  * PATCH /api/admin/brands/:id/activate-plan
- * Activar plan de una marca que está en período de prueba.
- * Convierte el trial en suscripción activa pagada
+ * Activar plan de una marca que estÃƒÂ¡ en perÃƒÂ­odo de prueba.
+ * Convierte el trial en suscripciÃƒÂ³n activa pagada
  *
- * Requirement: 11 (Opción C)
+ * Requirement: 11 (OpciÃƒÂ³n C)
  */
 export const activateBrandPlan = async (req: any, res: Response) => {
   try {
@@ -550,10 +550,10 @@ export const activateBrandPlan = async (req: any, res: Response) => {
       plan: plan || 'BASIC',
       amount: amount || 0,
       payment_method: payment_method || 'manual',
-      notes: notes || 'Activación manual por administrador',
+      notes: notes || 'ActivaciÃƒÂ³n manual por administrador',
     });
 
-    // Auditoría
+    // AuditorÃƒÂ­a
     auditService.log({
       admin_id: req.admin?.id ?? 'unknown',
       admin_email: req.admin?.email ?? 'unknown',
@@ -562,11 +562,11 @@ export const activateBrandPlan = async (req: any, res: Response) => {
       details: { plan: plan || 'BASIC', amount, payment_method },
     });
 
-    // Notificación de conversión trial → plan pagado
+    // NotificaciÃƒÂ³n de conversiÃƒÂ³n trial Ã¢â€ â€™ plan pagado
     createAdminNotification({
       type: 'trial_converted',
       title: 'Trial convertido a plan pagado',
-      message: `${updatedBrand.name} convirtió su trial al Plan ${updatedBrand.plan}`,
+      message: `${updatedBrand.name} convirtiÃƒÂ³ su trial al Plan ${updatedBrand.plan}`,
       severity: 'success',
       brandId: updatedBrand.id,
       brandName: updatedBrand.name,
@@ -644,7 +644,7 @@ export const toggleLandingPage = async (req: any, res: Response) => {
 
 /**
  * PATCH /api/admin/brands/:id/modal-config
- * Actualiza el texto del modal de activación que ven los visitantes.
+ * Actualiza el texto del modal de activaciÃƒÂ³n que ven los visitantes.
  */
 export const updateModalConfig = async (req: any, res: Response) => {
   try {
@@ -671,7 +671,7 @@ export const updateModalConfig = async (req: any, res: Response) => {
       details: { modal_title, modal_description },
     });
 
-    return res.status(200).json({ message: 'Configuración del modal actualizada', brand: data });
+    return res.status(200).json({ message: 'ConfiguraciÃƒÂ³n del modal actualizada', brand: data });
   } catch (error: any) {
     console.error('Error in updateModalConfig:', error);
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al actualizar modal' });
@@ -779,7 +779,7 @@ export const restoreMiniLanding = async (req: any, res: Response) => {
 
 /**
  * GET /api/admin/stats/conversion
- * Métricas de conversión: marcas en trial, convertidas, tasa y conversiones por mes.
+ * MÃƒÂ©tricas de conversiÃƒÂ³n: marcas en trial, convertidas, tasa y conversiones por mes.
  * Requirement 29.2
  */
 export const getConversionStats = async (_req: any, res: Response) => {
@@ -790,12 +790,12 @@ export const getConversionStats = async (_req: any, res: Response) => {
     console.error('Error in getConversionStats:', error);
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
-      message: 'Error al obtener métricas de conversión',
+      message: 'Error al obtener mÃƒÂ©tricas de conversiÃƒÂ³n',
     });
   }
 };
 
-// ── Gestión de admins ─────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬ GestiÃƒÂ³n de admins Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 export const listAdmins = async (_req: any, res: Response) => {
   try {
@@ -813,7 +813,7 @@ export const createAdmin = async (req: any, res: Response) => {
       return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'email, password y name son requeridos' });
     }
     if (password.length < 8) {
-      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La contraseña debe tener al menos 8 caracteres' });
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La contraseÃƒÂ±a debe tener al menos 8 caracteres' });
     }
     const admin = await adminService.createAdmin({ email, password, name, permissions });
 
@@ -826,23 +826,23 @@ export const createAdmin = async (req: any, res: Response) => {
 
     emailService.sendEmail({
       to: email,
-      subject: 'Acceso al Panel de Administración — Virtual Try-On',
+      subject: 'Acceso al Panel de AdministraciÃƒÂ³n Ã¢â‚¬â€ Virtual Try-On',
       html: `
         <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
-          <h2 style="color:#FF5C3A;margin-bottom:8px">Bienvenido al Panel de Administración</h2>
+          <h2 style="color:#FF5C3A;margin-bottom:8px">Bienvenido al Panel de AdministraciÃƒÂ³n</h2>
           <p style="color:#6b7280;margin-bottom:24px">
             Hola <strong>${name}</strong>, se ha creado tu cuenta de administrador en Virtual Try-On.
           </p>
           <table style="width:100%;border-collapse:collapse;margin-bottom:24px;background:#f9fafb;border-radius:8px;padding:16px">
             <tr><td style="padding:8px 12px;color:#6b7280;font-size:14px">Email</td><td style="padding:8px 12px;font-weight:600;color:#111827">${email}</td></tr>
-            <tr><td style="padding:8px 12px;color:#6b7280;font-size:14px">Contraseña</td><td style="padding:8px 12px;font-weight:600;color:#111827">${password}</td></tr>
+            <tr><td style="padding:8px 12px;color:#6b7280;font-size:14px">ContraseÃƒÂ±a</td><td style="padding:8px 12px;font-weight:600;color:#111827">${password}</td></tr>
             <tr><td style="padding:8px 12px;color:#6b7280;font-size:14px">Nivel de acceso</td><td style="padding:8px 12px;color:#111827">${permissionsList}</td></tr>
           </table>
           <p style="color:#dc2626;font-size:13px;margin-bottom:24px">
-            Por seguridad, cambia tu contraseña después de iniciar sesión por primera vez.
+            Por seguridad, cambia tu contraseÃƒÂ±a despuÃƒÂ©s de iniciar sesiÃƒÂ³n por primera vez.
           </p>
           <a href="${appUrl}/admin/login" style="display:inline-block;background:#FF5C3A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">
-            Ir al panel de administración
+            Ir al panel de administraciÃƒÂ³n
           </a>
         </div>
       `,
@@ -885,7 +885,7 @@ export const sendAdminCredentials = async (req: any, res: Response) => {
 
     emailService.sendEmail({
       to: admin.email,
-      subject: 'Restablecimiento de contraseña — Panel de Administración',
+      subject: 'Restablecimiento de contraseÃƒÂ±a Ã¢â‚¬â€ Panel de AdministraciÃƒÂ³n',
       html: adminPasswordResetEmail(admin.name, admin.email, newPassword),
     }).catch(err => console.error('[sendAdminCredentials] Error enviando email:', err));
 
@@ -904,7 +904,7 @@ export const sendAdminCredentials = async (req: any, res: Response) => {
 
 /**
  * PUT /api/admin/admins/me/password
- * El admin autenticado cambia su propia contraseña
+ * El admin autenticado cambia su propia contraseÃƒÂ±a
  */
 export const changeOwnPassword = async (req: any, res: Response) => {
   try {
@@ -940,17 +940,17 @@ export const changeOwnPassword = async (req: any, res: Response) => {
     });
 
     return res.status(200).json({
-      message: 'Contraseña actualizada exitosamente. Inicia sesión de nuevo con tu nueva contraseña.',
+      message: 'ContraseÃƒÂ±a actualizada exitosamente. Inicia sesiÃƒÂ³n de nuevo con tu nueva contraseÃƒÂ±a.',
       requiresReauth: true,
     });
 
-    return res.status(200).json({ message: 'Contraseña actualizada exitosamente' });
+    return res.status(200).json({ message: 'ContraseÃƒÂ±a actualizada exitosamente' });
   } catch (error: any) {
-    const isValidation = error.message === 'La contraseña actual es incorrecta'
-      || error.message === 'La nueva contraseña debe tener al menos 8 caracteres';
+    const isValidation = error.message === 'La contraseÃƒÂ±a actual es incorrecta'
+      || error.message === 'La nueva contraseÃƒÂ±a debe tener al menos 8 caracteres';
     if (
-      error.message === 'La nueva contraseña debe ser diferente a la actual'
-      || error.message === 'La cuenta de administrador tiene una contraseña inválida en base de datos. Restablécela desde el panel o recrea el admin con el script seguro.'
+      error.message === 'La nueva contraseÃƒÂ±a debe ser diferente a la actual'
+      || error.message === 'La cuenta de administrador tiene una contraseÃƒÂ±a invÃƒÂ¡lida en base de datos. RestablÃƒÂ©cela desde el panel o recrea el admin con el script seguro.'
     ) {
       return res.status(400).json({ error: 'BAD_REQUEST', message: error.message });
     }
@@ -959,11 +959,30 @@ export const changeOwnPassword = async (req: any, res: Response) => {
   }
 };
 
-// ── Créditos OpenRouter ───────────────────────────────────────────────────────
+export const changeAdminPassword = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { newPassword } = req.body || {};
+    if (!newPassword) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'newPassword es requerido' });
+    }
+    await adminService.changeAdminPassword(id, newPassword);
+    auditService.log({
+      admin_id: req.admin?.id ?? 'unknown',
+      admin_email: req.admin?.email ?? 'unknown',
+      action: 'admin.change_password',
+      details: { target_admin_id: id },
+    });
+    return res.status(200).json({ message: 'Contraseña actualizada correctamente' });
+  } catch (error: any) {
+    return res.status(400).json({ error: 'BAD_REQUEST', message: error.message });
+  }
+};
+// Ã¢â€â‚¬Ã¢â€â‚¬ CrÃƒÂ©ditos OpenRouter Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
 /**
  * GET /api/admin/openrouter-credits
- * Consulta el balance de créditos en OpenRouter
+ * Consulta el balance de crÃƒÂ©ditos en OpenRouter
  */
 export const getOpenRouterCredits = async (_req: any, res: Response) => {
   try {
@@ -987,7 +1006,7 @@ export const getOpenRouterCredits = async (_req: any, res: Response) => {
     const usage: number = data.usage ?? 0;
     const balance = limit !== null ? Math.max(0, limit - usage) : null;
 
-    // Costo estimado por generación con gemini-2.5-flash-image
+    // Costo estimado por generaciÃƒÂ³n con gemini-2.5-flash-image
     const COST_PER_GEN = 0.039;
     const estimatedGenerations = balance !== null ? Math.floor(balance / COST_PER_GEN) : null;
     const usagePercent = limit ? Math.min(100, Math.round((usage / limit) * 100)) : null;
@@ -1007,12 +1026,115 @@ export const getOpenRouterCredits = async (_req: any, res: Response) => {
     });
   } catch (error: any) {
     console.error('Error in getOpenRouterCredits:', error);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener créditos' });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener crÃƒÂ©ditos' });
   }
 };
 
-// ── Feedback de generaciones (51.8) ──────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬ Feedback de generaciones (51.8) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
+/**
+ * GET /api/admin/replicate-credits
+ * Valida la cuenta de Replicate y estima consumo del mes actual.
+ */
+export const getReplicateCredits = async (_req: any, res: Response) => {
+  try {
+    const adminMeta = await adminService.getAdminMeta().catch(() => ({} as {
+      replicate_api_token?: string;
+      replicate_monthly_budget_usd?: number;
+      replicate_cost_per_generation_usd?: number;
+    }));
+    const apiToken = String(adminMeta.replicate_api_token || process.env.REPLICATE_API_TOKEN || '').trim();
+    const metaCost = Number(adminMeta.replicate_cost_per_generation_usd);
+    const envCost = Number(process.env.REPLICATE_COST_PER_GENERATION_USD);
+    const costPerGeneration = Number.isFinite(metaCost) && metaCost > 0 ? metaCost : Number.isFinite(envCost) && envCost > 0 ? envCost : 0.05;
+    const metaLimit = Number(adminMeta.replicate_monthly_budget_usd);
+    const envLimit = Number(process.env.REPLICATE_MONTHLY_BUDGET_USD);
+    const configuredLimit = Number.isFinite(metaLimit) && metaLimit > 0 ? metaLimit : Number.isFinite(envLimit) && envLimit > 0 ? envLimit : null;
+
+    if (!apiToken) {
+      return res.status(200).json({ provider: 'replicate', status: 'not_configured', configured: false, label: null, usage: null, limit: configuredLimit, balance: configuredLimit, usage_percent: null, estimated_generations_remaining: configuredLimit !== null ? Math.floor(configuredLimit / costPerGeneration) : null, cost_per_generation: costPerGeneration, low_balance_alert: false, critical_balance_alert: false, can_top_up: true, settings_url: 'https://replicate.com/account/billing', message: 'REPLICATE_API_TOKEN no configurado.' });
+    }
+
+    let label: string | null = null;
+    let status: 'ok' | 'partial' = 'partial';
+    let monthPredictionCount = 0;
+    let usage: number | null = null;
+    let balance: number | null = configuredLimit;
+    let usagePercent: number | null = null;
+    let estimatedGenerationsRemaining: number | null = configuredLimit !== null ? Math.floor(configuredLimit / costPerGeneration) : null;
+    let lowBalanceAlert = false;
+    let criticalBalanceAlert = false;
+    let message = configuredLimit === null ? 'Configura un presupuesto mensual de Replicate para estimar saldo y generaciones restantes.' : 'Saldo estimado segun presupuesto mensual configurado.';
+
+    try {
+      const accountResponse = await fetch('https://api.replicate.com/v1/account', {
+        headers: {
+          Authorization: `Token ${apiToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (accountResponse.ok) {
+        const account = await accountResponse.json() as { username?: string; name?: string };
+        label = account.name || account.username || null;
+        status = 'ok';
+      }
+
+      const monthStart = new Date();
+      monthStart.setUTCDate(1);
+      monthStart.setUTCHours(0, 0, 0, 0);
+      let nextUrl: string | null = 'https://api.replicate.com/v1/predictions';
+      let pagesRead = 0;
+
+      while (nextUrl && pagesRead < 10) {
+        const predictionsResponse = await fetch(nextUrl, {
+          headers: {
+            Authorization: `Token ${apiToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!predictionsResponse.ok) break;
+        const payload = await predictionsResponse.json() as { results?: Array<{ created_at?: string | null }>; next?: string | null };
+        const results = Array.isArray(payload.results) ? payload.results : [];
+        let reachedOlderRecords = false;
+        for (const prediction of results) {
+          if (!prediction.created_at) continue;
+          const createdAt = new Date(prediction.created_at);
+          if (Number.isNaN(createdAt.getTime())) continue;
+          if (createdAt >= monthStart) monthPredictionCount += 1;
+          else reachedOlderRecords = true;
+        }
+        if (reachedOlderRecords) break;
+        nextUrl = payload.next || null;
+        pagesRead += 1;
+      }
+
+      usage = Number((monthPredictionCount * costPerGeneration).toFixed(2));
+      if (configuredLimit !== null) {
+        balance = Number(Math.max(configuredLimit - usage, 0).toFixed(2));
+        usagePercent = Number(Math.min((usage / configuredLimit) * 100, 100).toFixed(2));
+        estimatedGenerationsRemaining = Math.max(Math.floor(balance / costPerGeneration), 0);
+        lowBalanceAlert = balance <= configuredLimit * 0.25;
+        criticalBalanceAlert = balance <= configuredLimit * 0.1;
+        message = `Consumo estimado con ${monthPredictionCount.toLocaleString('es-CO')} predicciones de Replicate registradas este mes.`;
+      } else {
+        balance = null;
+        usagePercent = null;
+        estimatedGenerationsRemaining = null;
+        message = `Cuenta validada. Consumo estimado con ${monthPredictionCount.toLocaleString('es-CO')} predicciones del mes. Define un presupuesto mensual para calcular saldo restante.`;
+      }
+    } catch (providerError) {
+      console.error('Error consultando cuenta Replicate:', providerError);
+      if (configuredLimit !== null) {
+        message = 'No se pudo leer el historico de predicciones de Replicate. Se mantiene el presupuesto configurado como referencia.';
+      }
+    }
+
+    return res.status(200).json({ provider: 'replicate', status, configured: true, label, usage, limit: configuredLimit, balance, usage_percent: usagePercent, estimated_generations_remaining: estimatedGenerationsRemaining, cost_per_generation: costPerGeneration, low_balance_alert: lowBalanceAlert, critical_balance_alert: criticalBalanceAlert, can_top_up: true, settings_url: 'https://replicate.com/account/billing', message });
+  } catch (error: any) {
+    console.error('Error in getReplicateCredits:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener creditos de Replicate' });
+  }
+};
 import { FeedbackService } from '../services/feedback.service';
 const feedbackService = new FeedbackService();
 
@@ -1037,7 +1159,7 @@ export const getFeedbacks = async (req: any, res: Response) => {
 
 /**
  * GET /api/admin/feedback/stats
- * Estadísticas agrupadas por tipo de error
+ * EstadÃƒÂ­sticas agrupadas por tipo de error
  */
 export const getFeedbackStats = async (_req: any, res: Response) => {
   try {
@@ -1091,7 +1213,7 @@ export const getUnresolvedFeedbackCount = async (_req: any, res: Response) => {
 
 /**
  * POST /api/admin/brands/:id/send-reset-email
- * Envía email de recuperación de contraseña a una marca desde el panel admin
+ * EnvÃƒÂ­a email de recuperaciÃƒÂ³n de contraseÃƒÂ±a a una marca desde el panel admin
  */
 export const sendBrandResetEmail = async (req: any, res: Response) => {
   try {
@@ -1122,15 +1244,15 @@ export const sendBrandResetEmail = async (req: any, res: Response) => {
 
     await emailService.sendEmail({
       to: brand.email,
-      subject: 'Recuperación de contraseña — Lookitry',
+      subject: 'RecuperaciÃƒÂ³n de contraseÃƒÂ±a Ã¢â‚¬â€ Lookitry',
       html: `
         <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
-          <h2 style="color:#FF5C3A;margin-bottom:8px">Recuperación de contraseña</h2>
+          <h2 style="color:#FF5C3A;margin-bottom:8px">RecuperaciÃƒÂ³n de contraseÃƒÂ±a</h2>
           <p style="color:#6b7280;margin-bottom:24px">
-            Hola <strong>${brand.name}</strong>, recibiste este correo porque se solicitó un restablecimiento de contraseña para tu cuenta.
+            Hola <strong>${brand.name}</strong>, recibiste este correo porque se solicitÃƒÂ³ un restablecimiento de contraseÃƒÂ±a para tu cuenta.
           </p>
           <a href="${resetUrl}" style="display:inline-block;background:#FF5C3A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin-bottom:24px">
-            Restablecer contraseña
+            Restablecer contraseÃƒÂ±a
           </a>
           <p style="color:#9ca3af;font-size:13px">
             Este enlace expira en 1 hora. Si no solicitaste este cambio, puedes ignorar este correo.
@@ -1147,10 +1269,10 @@ export const sendBrandResetEmail = async (req: any, res: Response) => {
       details: { brand_email: brand.email },
     });
 
-    return res.status(200).json({ message: 'Email de recuperación enviado exitosamente' });
+    return res.status(200).json({ message: 'Email de recuperaciÃƒÂ³n enviado exitosamente' });
   } catch (error: any) {
     console.error('Error in sendBrandResetEmail:', error);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al enviar email de recuperación' });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al enviar email de recuperaciÃƒÂ³n' });
   }
 };
 
@@ -1185,7 +1307,7 @@ export const getPayments = async (req: any, res: Response) => {
 
 /**
  * GET /api/admin/woocommerce/brands-summary
- * Resumen de marcas con estado de integración WooCommerce.
+ * Resumen de marcas con estado de integraciÃƒÂ³n WooCommerce.
  */
 export const getWooBrandsSummary = async (_req: any, res: Response) => {
   try {
@@ -1245,7 +1367,7 @@ export const getWooBrandsSummary = async (_req: any, res: Response) => {
 
 /**
  * GET /api/admin/woocommerce/brands/:id/products
- * Productos de una marca para control de activación.
+ * Productos de una marca para control de activaciÃƒÂ³n.
  */
 export const getWooBrandProducts = async (req: any, res: Response) => {
   try {
@@ -1340,7 +1462,7 @@ export const getAllPromotions = async (req: any, res: Response) => {
 
 /**
  * POST /api/admin/promotions
- * Crear nueva promoción
+ * Crear nueva promociÃƒÂ³n
  */
 export const createPromotion = async (req: any, res: Response) => {
   try {
@@ -1374,13 +1496,13 @@ export const createPromotion = async (req: any, res: Response) => {
     return res.status(201).json({ ok: true, data });
   } catch (error: any) {
     console.error('Error in createPromotion:', error);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al crear promoción' });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al crear promociÃƒÂ³n' });
   }
 };
 
 /**
  * PUT /api/admin/promotions/:id
- * Actualizar promoción existente
+ * Actualizar promociÃƒÂ³n existente
  */
 export const updatePromotion = async (req: any, res: Response) => {
   try {
@@ -1415,13 +1537,13 @@ export const updatePromotion = async (req: any, res: Response) => {
     return res.json({ ok: true, data });
   } catch (error: any) {
     console.error('Error in updatePromotion:', error);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al actualizar promoción' });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al actualizar promociÃƒÂ³n' });
   }
 };
 
 /**
  * DELETE /api/admin/promotions/:id
- * Eliminar promoción
+ * Eliminar promociÃƒÂ³n
  */
 export const deletePromotion = async (req: any, res: Response) => {
   try {
@@ -1443,16 +1565,16 @@ export const deletePromotion = async (req: any, res: Response) => {
       });
     }
 
-    return res.json({ ok: true, message: 'Promoción eliminada' });
+    return res.json({ ok: true, message: 'PromociÃƒÂ³n eliminada' });
   } catch (error: any) {
     console.error('Error in deletePromotion:', error);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al eliminar promoción' });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al eliminar promociÃƒÂ³n' });
   }
 };
 
 /**
  * GET /api/admin/pricing
- * Obtener toda la configuración de precios
+ * Obtener toda la configuraciÃƒÂ³n de precios
  */
 export const getPricingConfig = async (req: any, res: Response) => {
   try {
@@ -1471,7 +1593,7 @@ export const getPricingConfig = async (req: any, res: Response) => {
 
 /**
  * PUT /api/admin/pricing
- * Actualizar una configuración de precio específica
+ * Actualizar una configuraciÃƒÂ³n de precio especÃƒÂ­fica
  */
 export const updatePricingConfig = async (req: any, res: Response) => {
   try {
