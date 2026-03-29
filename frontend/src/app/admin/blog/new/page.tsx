@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { adminCreatePost, fetchBlogCategories, BlogPost, BlogCategory } from '@/services/blog.service';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 
 export default function NewBlogPage() {
   const router = useRouter();
