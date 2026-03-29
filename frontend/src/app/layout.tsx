@@ -5,6 +5,14 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
+    ],
+    shortcut: ['/favicon.ico'],
+    apple: [{ url: '/icon.png', type: 'image/png', sizes: '180x180' }],
+  },
   title: {
     default: 'Lookitry — Probador virtual con IA para tu tienda online',
     template: '%s | Lookitry',

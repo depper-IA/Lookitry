@@ -48,7 +48,7 @@ export const blogSettingsController = {
 
       return res.json({
         ...data,
-        openrouter_article_model: data?.openrouter_article_model || 'openrouter/free',
+        openrouter_article_model: data?.openrouter_article_model || 'google/gemini-2.5-flash',
         image_generation_provider: data?.image_generation_provider || 'replicate',
         webhook_secret: undefined,
         has_webhook_secret: Boolean(data?.webhook_secret),
@@ -107,7 +107,7 @@ export const blogSettingsController = {
         message: 'Configuración actualizada',
         settings: {
           ...data,
-          openrouter_article_model: data?.openrouter_article_model || 'openrouter/free',
+          openrouter_article_model: data?.openrouter_article_model || 'google/gemini-2.5-flash',
           image_generation_provider: data?.image_generation_provider || 'replicate',
           webhook_secret: undefined,
           has_webhook_secret: Boolean(data?.webhook_secret),
@@ -152,7 +152,7 @@ export const blogSettingsController = {
         });
 
         const triggerResult = await triggerBlogWebhook(url, secret, 'admin_manual', {
-          openrouter_model: settings.openrouter_article_model || 'openrouter/free',
+          openrouter_model: settings.openrouter_article_model || 'google/gemini-2.5-flash',
           image_provider: settings.image_generation_provider || 'replicate',
         });
 
