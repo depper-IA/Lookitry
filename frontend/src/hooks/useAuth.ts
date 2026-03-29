@@ -27,8 +27,9 @@ export function useAuth() {
           localStorage.setItem('brand', JSON.stringify(currentBrand));
         }
       } catch {
-        if (!cancelled && !storedBrand) {
+        if (!cancelled) {
           setBrand(null);
+          localStorage.removeItem('brand');
         }
       } finally {
         if (!cancelled) {
