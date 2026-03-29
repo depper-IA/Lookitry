@@ -2,6 +2,15 @@ import { authService } from './auth.service';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
+function isAuthRoute(pathname: string): boolean {
+  return (
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/register') ||
+    pathname.startsWith('/auth/') ||
+    pathname.startsWith('/registro-pro')
+  );
+}
+
 // Wrapper que imita la interfaz de axios ({ data, status })
 async function apiFetch<T>(
   method: string,
@@ -29,8 +38,10 @@ async function apiFetch<T>(
     authService.logout();
     if (typeof window !== 'undefined') {
       const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-      const redirect = currentPath.startsWith('/') ? `?redirect=${encodeURIComponent(currentPath)}` : '';
-      window.location.href = `/login${redirect}`;
+      if (!isAuthRoute(window.location.pathname)) {
+        const redirect = currentPath.startsWith('/') ? `?redirect=${encodeURIComponent(currentPath)}` : '';
+        window.location.href = `/login${redirect}`;
+      }
     }
   }
 
