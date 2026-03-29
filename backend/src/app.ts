@@ -86,12 +86,24 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ── CORS Config ──────────────────────────────────────────────────────────────
+// publicCors: permite cualquier origen, usado en rutas públicas del plugin/widget.
+// Se registra ANTES del cors restrictivo global para que los preflights de dominios
+// externos (ej: tiendas WooCommerce) no sean rechazados por la whitelist.
 const publicCors = cors({ 
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'x-store-domain'],
   credentials: false
 });
+
+// ── Rutas Públicas — registradas ANTES del CORS restrictivo global ────────────
+// IMPORTANTE: estas rutas responden con CORS permisivo (origin: *) porque son
+// consumidas desde dominios externos (plugin WooCommerce, iframes, widgets).
+// La seguridad de acceso se valida internamente mediante API Key + dominio.
+app.use('/api/pruebalo', publicCors, pruebaloRoutes);
+app.use('/api/embed', publicCors, embedRoutes);
+app.post('/api/enterprise/sync-product', publicCors, syncProductWebhook);
+app.use('/api/reviews/public', publicCors, reviewsPublicRoutes);
 
 const corsOriginEnv = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
@@ -152,12 +164,6 @@ app.use(cors({
 app.use(globalRateLimiter);
 
 // ── Rutas ────────────────────────────────────────────────────────────────────
-
-// Rutas Públicas (CORS Permisivo)
-app.use('/api/pruebalo', publicCors, pruebaloRoutes);
-app.use('/api/embed', publicCors, embedRoutes);
-app.post('/api/enterprise/sync-product', publicCors, syncProductWebhook);
-app.use('/api/reviews/public', publicCors, reviewsPublicRoutes);
 
 // Rutas Estándar
 app.use('/api/auth', authRoutes);
