@@ -130,14 +130,14 @@ export default function PaymentSettingsPage() {
   ];
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl w-full">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0">
           <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-bold tracking-tight">Medios de pago</h1>
           <p style={{ color: 'var(--text-muted)' }} className="mt-1 text-sm">Configura los métodos de pago disponibles para tus clientes</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
           {saved && (
             <span className="flex items-center gap-1.5 text-sm text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -147,7 +147,7 @@ export default function PaymentSettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-2xl disabled:opacity-50 font-black uppercase tracking-widest transition-colors shadow-lg shadow-[#FF5C3A]/20"
+            className="flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-2.5 text-white rounded-2xl disabled:opacity-50 font-black uppercase tracking-widest transition-colors shadow-lg shadow-[#FF5C3A]/20"
             style={{ backgroundColor: '#FF5C3A' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e04e30')}
             onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FF5C3A')}
@@ -168,13 +168,13 @@ export default function PaymentSettingsPage() {
 
       {/* Tabs de métodos de pago */}
       <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] shadow-sm border overflow-hidden">
-        <div style={{ borderColor: 'var(--border-color)' }} className="flex border-b">
+        <div style={{ borderColor: 'var(--border-color)' }} className="flex overflow-x-auto border-b">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               style={activeTab === tab.id ? { color: '#FF5C3A' } : { color: 'var(--text-muted)' }}
-              className={`flex items-center gap-2 px-6 py-4 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              className={`flex shrink-0 items-center gap-2 px-4 py-4 sm:px-6 text-sm font-medium transition-colors border-b-2 -mb-px ${
                 activeTab === tab.id ? 'border-[#FF5C3A]' : 'border-transparent hover:opacity-80'
               }`}
             >
@@ -190,8 +190,8 @@ export default function PaymentSettingsPage() {
           {activeTab === 'wompi' && (
             <div className="space-y-6">
               {/* Header con toggle habilitado */}
-              <div style={{ borderColor: 'var(--border-color)' }} className="flex items-center justify-between pb-4 border-b">
-                <div>
+              <div style={{ borderColor: 'var(--border-color)' }} className="flex flex-col gap-4 pb-4 border-b sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
                   <h3 style={{ color: 'var(--text-primary)' }} className="font-semibold">Wompi (Colombia)</h3>
                   <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">Pasarela de pagos para Colombia. Acepta tarjetas, PSE, Nequi y más.</p>
                 </div>
@@ -201,7 +201,7 @@ export default function PaymentSettingsPage() {
               {settings.wompi_enabled && (
                 <>
                   {/* Selector de modo activo */}
-                  <div className="flex items-center gap-3 p-4 rounded-xl border" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-input)' }}>
+                  <div className="flex flex-col gap-3 p-4 rounded-xl border sm:flex-row sm:items-center" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-input)' }}>
                     <div className="flex-1">
                       <p style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">Modo activo</p>
                       <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
@@ -286,8 +286,8 @@ export default function PaymentSettingsPage() {
           {/* PAYPAL */}
           {activeTab === 'paypal' && (
             <div className="space-y-6">
-              <div style={{ borderColor: 'var(--border-color)' }} className="flex items-center justify-between pb-4 border-b">
-                <div>
+              <div style={{ borderColor: 'var(--border-color)' }} className="flex flex-col gap-4 pb-4 border-b sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
                   <h3 style={{ color: 'var(--text-primary)' }} className="font-semibold">PayPal</h3>
                   <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">Acepta pagos internacionales vía PayPal.</p>
                 </div>
@@ -297,7 +297,7 @@ export default function PaymentSettingsPage() {
               {settings.paypal_enabled && (
                 <>
                   {/* Selector de modo activo */}
-                  <div className="flex items-center gap-3 p-4 rounded-xl border" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-input)' }}>
+                  <div className="flex flex-col gap-3 p-4 rounded-xl border sm:flex-row sm:items-center" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-input)' }}>
                     <div className="flex-1">
                       <p style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">Modo activo</p>
                       <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
@@ -381,8 +381,8 @@ export default function PaymentSettingsPage() {
           {/* PAGO MANUAL */}
           {activeTab === 'manual' && (
             <div className="space-y-5">
-              <div style={{ borderColor: 'var(--border-color)' }} className="flex items-center justify-between pb-4 border-b">
-                <div>
+              <div style={{ borderColor: 'var(--border-color)' }} className="flex flex-col gap-4 pb-4 border-b sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
                   <h3 style={{ color: 'var(--text-primary)' }} className="font-semibold">Pago Manual</h3>
                   <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">El cliente paga por fuera y envía el comprobante. Tú confirmas manualmente.</p>
                 </div>
@@ -412,8 +412,8 @@ export default function PaymentSettingsPage() {
           {/* TRANSFERENCIA */}
           {activeTab === 'transfer' && (
             <div className="space-y-5">
-              <div style={{ borderColor: 'var(--border-color)' }} className="flex items-center justify-between pb-4 border-b">
-                <div>
+              <div style={{ borderColor: 'var(--border-color)' }} className="flex flex-col gap-4 pb-4 border-b sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
                   <h3 style={{ color: 'var(--text-primary)' }} className="font-semibold">Transferencia Bancaria</h3>
                   <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">Muestra los datos bancarios al cliente para que realice la transferencia.</p>
                 </div>

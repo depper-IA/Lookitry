@@ -264,7 +264,7 @@ export function AdminNotifications() {
         </button>
 
         {open && (
-          <div className="absolute right-0 top-full mt-2 w-96 rounded-xl shadow-xl border z-50 overflow-hidden"
+          <div className="absolute left-1/2 top-full mt-2 w-[min(24rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] -translate-x-1/2 rounded-xl shadow-xl border z-50 overflow-hidden sm:left-auto sm:right-0 sm:translate-x-0"
             style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
             <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }}>
               <div className="flex items-center gap-2">
@@ -367,8 +367,8 @@ export function AdminNotifications() {
 
       {/* Modal de detalle */}
       {selected && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40" onClick={() => setSelected(null)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-3 sm:p-4" onClick={() => setSelected(null)}>
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             {/* Header */}
             <div className="flex items-center gap-3 px-5 py-4 border-b" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }}>
               <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${SEVERITY_STYLES[selected.severity]}`}>

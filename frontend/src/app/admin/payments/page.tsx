@@ -13,7 +13,7 @@ interface Payment {
     name: string;
     email: string;
     slug: string;
-    plan: 'BASIC' | 'PRO';
+    plan: 'BASIC' | 'PRO' | 'TRIAL' | 'ENTERPRISE';
   };
   amount: number;
   amount_cop?: number;
@@ -25,6 +25,29 @@ interface Payment {
   status: 'completed' | 'pending' | 'failed' | 'refunded';
   notes: string | null;
   created_at: string;
+}
+
+function normalizePayment(raw: any): Payment {
+  return {
+    id: raw.id,
+    brand_id: raw.brand_id ?? raw.brandId ?? '',
+    brands: raw.brands ?? {
+      name: raw.brandName ?? '—',
+      email: raw.brandEmail ?? '—',
+      slug: raw.brandSlug ?? '',
+      plan: raw.brandPlan ?? 'BASIC',
+    },
+    amount: Number(raw.amount ?? 0),
+    amount_cop: raw.amount_cop ?? raw.amountCop ?? undefined,
+    amount_original: raw.amount_original ?? raw.amountOriginal ?? undefined,
+    currency: raw.currency ?? 'COP',
+    exchange_rate_used: raw.exchange_rate_used ?? raw.exchangeRateUsed ?? null,
+    payment_date: raw.payment_date ?? raw.paymentDate ?? raw.created_at ?? raw.createdAt ?? '',
+    payment_method: raw.payment_method ?? raw.paymentMethod ?? 'manual',
+    status: raw.status ?? 'pending',
+    notes: raw.notes ?? null,
+    created_at: raw.created_at ?? raw.createdAt ?? raw.payment_date ?? raw.paymentDate ?? '',
+  };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -106,6 +129,7 @@ export default function AdminPaymentsPage() {
   const fetchPayments = useCallback(async () => {
     setLoading(true);
     try {
+      setError('');
       const params = new URLSearchParams();
       if (methodFilter !== 'all') params.set('payment_method', methodFilter);
       if (statusFilter !== 'all') params.set('status', statusFilter);
@@ -116,9 +140,11 @@ export default function AdminPaymentsPage() {
       const res = await adminApi(`/admin/revenue/payments?${params}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error al cargar pagos');
-      setPayments(data.payments ?? []);
-      setTotalRevenue(data.stats?.total_revenue ?? 0);
-      setCompletedCount(data.stats?.completed_count ?? 0);
+      const normalizedPayments = Array.isArray(data.payments) ? data.payments.map(normalizePayment) : [];
+      const completedPayments = normalizedPayments.filter((payment) => payment.status === 'completed');
+      setPayments(normalizedPayments);
+      setTotalRevenue(data.stats?.total_revenue ?? completedPayments.reduce((sum, payment) => sum + (payment.amount_cop ?? payment.amount), 0));
+      setCompletedCount(data.stats?.completed_count ?? completedPayments.length);
     } catch (e: any) {
       setError(e.message);
     } finally {

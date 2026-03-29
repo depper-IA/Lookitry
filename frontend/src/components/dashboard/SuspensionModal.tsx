@@ -27,6 +27,7 @@ export function SuspensionModal({
   const glowColor = isTrialPending ? 'bg-blue-500' : isTrialExpired ? 'bg-amber-500' : 'bg-[#FF5C3A]';
   const whatsappUrl = useMemo(() => toWhatsAppUrl(support.whatsapp), [support.whatsapp]);
   const planPrice = formatCurrency(planPrices[plan as 'BASIC' | 'PRO'] ?? 0);
+  const shouldShowRecurringValue = !isTrialExpired && !isTrialPending;
 
   useEffect(() => {
     fetchPublicPlanPrices().then(setPlanPrices).catch(() => {});
@@ -78,7 +79,7 @@ export function SuspensionModal({
                   href="/dashboard/subscription"
                   className="group block w-full py-4 bg-[#FF5C3A] hover:bg-[#ff785c] active:scale-[0.98] text-white font-bold rounded-2xl transition-all shadow-[0_10px_20px_rgba(255,92,58,0.2)] text-[15px]"
                 >
-                  Continuar al pago
+                  {isTrialExpired ? 'Activar plan' : 'Continuar al pago'}
                   <span className="inline-block transition-transform group-hover:translate-x-1 ml-2">{'->'}</span>
                 </a>
               ) : (
@@ -113,10 +114,12 @@ export function SuspensionModal({
                 <span className="text-[13px] text-[#888]">Plan actual</span>
                 <span className="text-[13px] text-white font-medium px-2 py-1 bg-white/10 rounded-lg">{plan}</span>
               </div>
-              <div className="flex justify-between items-center gap-4 mt-3">
-                <span className="text-[13px] text-[#888]">Valor vigente</span>
-                <span className="text-[13px] text-white font-medium">{planPrice}/mes</span>
-              </div>
+              {shouldShowRecurringValue && (
+                <div className="flex justify-between items-center gap-4 mt-3">
+                  <span className="text-[13px] text-[#888]">Valor vigente</span>
+                  <span className="text-[13px] text-white font-medium">{planPrice}/mes</span>
+                </div>
+              )}
               {!!support.instructions && (
                 <p className="text-[12px] text-[#777] leading-relaxed mt-3">{support.instructions}</p>
               )}

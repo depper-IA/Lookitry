@@ -35,6 +35,7 @@ import { api } from '@/services/api';
 import { brandsService } from '@/services/brands.service';
 import { Spinner } from '@/components/ui/Spinner';
 import { formatCurrency } from '@/utils/currency';
+import { getSubscriptionDisplayState } from '@/lib/subscription-display';
 
 function formatDate(d?: string | null): string {
   if (!d) return '—';
@@ -66,6 +67,15 @@ type Tab = 'personal' | 'billing' | 'security';
 
 export default function ProfilePage() {
   const { brand, refreshBrand } = useAuth();
+  const subscriptionState = getSubscriptionDisplayState(brand);
+  const subscriptionToneClass =
+    subscriptionState.statusTone === 'emerald'
+      ? 'text-emerald-400'
+      : subscriptionState.statusTone === 'amber'
+        ? 'text-amber-400'
+        : subscriptionState.statusTone === 'rose'
+          ? 'text-rose-400'
+          : 'text-zinc-400';
   const [activeTab, setActiveTab] = useState<Tab>('personal');
   const [loading, setLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -302,14 +312,14 @@ export default function ProfilePage() {
                    </div>
                    <h3 className="text-4xl font-[950] tracking-tighter italic uppercase text-white leading-tight">
                       Lookitry<br/>
-                      <span className="text-[#FF5C3A]">{brand?.plan || 'BASIC'}</span>
+                      <span className="text-[#FF5C3A]">{subscriptionState.displayPlan}</span>
                    </h3>
                 </div>
 
                 <div className="flex items-end justify-between border-t border-white/10 pt-6">
                    <div className="space-y-1">
                       <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-30 italic">Estado</p>
-                      <p className="text-emerald-400 text-xs font-black uppercase tracking-widest">Activo</p>
+                      <p className={`text-xs font-black uppercase tracking-widest ${subscriptionToneClass}`}>{subscriptionState.statusLabel}</p>
                    </div>
                    <button 
                      onClick={() => (window.location.href = '/dashboard/subscription')} 
@@ -518,10 +528,10 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="space-y-3 text-center pt-20 pb-10">
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-4">Plan Activo</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] mb-4">Mi plan</p>
                     <div className="inline-block px-12 py-8 bg-zinc-50 rounded-[3rem] border border-zinc-200/60 shadow-deep">
-                      <span className="text-4xl font-[950] tracking-tighter italic uppercase text-zinc-800">Lookitry <span className="text-[#FF5C3A]">{brand?.plan}</span></span>
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mt-3">Próximo vencimiento: {formatDate(brand?.subscriptionEndDate)}</p>
+                      <span className="text-4xl font-[950] tracking-tighter italic uppercase text-zinc-800">Lookitry <span className="text-[#FF5C3A]">{subscriptionState.displayPlan}</span></span>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mt-3">{subscriptionState.renewalLabel}: {formatDate(subscriptionState.renewalDate)}</p>
                     </div>
                   </div>
 
