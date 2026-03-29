@@ -5,7 +5,7 @@ export interface Brand {
   password: string;
   name: string;
   slug: string;
-  plan: 'BASIC' | 'PRO';
+  plan: 'BASIC' | 'PRO' | 'ENTERPRISE' | 'TRIAL';
   logo: string | null;
   api_key: string | null; // Token para integraciones externas
   primary_color: string;
@@ -18,16 +18,56 @@ export interface Brand {
   // Campos de suscripción
   subscription_start_date: string | null;
   subscription_end_date: string | null;
-  subscription_status: 'active' | 'expiring_soon' | 'expired' | 'suspended' | null;
+  subscription_status: 'trial' | 'active' | 'expiring_soon' | 'expired' | 'suspended' | null;
   last_payment_date: string | null;
   next_payment_date: string | null;
   // Campos de período de prueba (Requirement 11 - Opción C)
   trial_end_date: string | null;
   trial_generations_limit: number;
   extra_credits_balance?: number;
+  review_prompt_shown_at?: string | null;
   created_at: string;
   updated_at: string;
   custom_domain: string | null;
+}
+
+export type ReviewStatus = 'pending' | 'approved' | 'rejected';
+
+export interface BrandReview {
+  id: string;
+  brand_id: string;
+  rating: number;
+  comment: string;
+  reviewer_name: string;
+  reviewer_plan: string;
+  status: ReviewStatus;
+  is_featured: boolean;
+  admin_note: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateReviewDto {
+  rating: number;
+  comment: string;
+}
+
+export interface UpdateReviewModerationDto {
+  status?: Exclude<ReviewStatus, 'pending'>;
+  is_featured?: boolean;
+  admin_note?: string | null;
+}
+
+export interface PublicReview {
+  id: string;
+  rating: number;
+  comment: string;
+  reviewer_name: string;
+  reviewer_plan: string;
+  is_featured: boolean;
+  created_at: string;
+  avatar_url: string | null;
 }
 
 export interface Product {
@@ -145,6 +185,7 @@ export interface CreatePaymentDto {
   notes?: string;
   months_paid?: number;
   reference?: string;
+  ledger_snapshot?: unknown;
 }
 
 // Notification Preferences

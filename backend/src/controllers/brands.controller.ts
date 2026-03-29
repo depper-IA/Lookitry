@@ -8,6 +8,7 @@ import { invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { createAdminNotification } from '../utils/adminNotifications';
 import { getWooProductSummary, getWooTelemetrySummary } from '../utils/wooTelemetry';
 import { sanitizeDomainList } from '../utils/storeDomain';
+import { buildLegalDataExport, createLegalRequest, getBrandSocialLinks, getLegalDataExports, getLegalRequests, recordTrialEvent } from '../utils/brandLifecycle';
 
 const brandsService = new BrandsService();
 
@@ -52,14 +53,30 @@ export class BrandsController {
         });
       }
 
-      const [productSummary, telemetrySummary] = await Promise.all([
+      const [brand, productSummary, telemetrySummary] = await Promise.all([
+        brandsService.getBrandById(req.brand.id),
         getWooProductSummary(req.brand.id),
         getWooTelemetrySummary(req.brand.id, 30),
       ]);
 
+      const socialLinks = ((brand as any)?.social_links || {}) as Record<string, any>;
+      const pluginValidatedAt =
+        typeof socialLinks.woo_plugin_validated_at === 'string'
+          ? socialLinks.woo_plugin_validated_at
+          : null;
+      const pluginStoreDomain =
+        typeof socialLinks.woo_plugin_store_domain === 'string'
+          ? socialLinks.woo_plugin_store_domain
+          : null;
+
       return res.status(200).json({
         products: productSummary,
         telemetry: telemetrySummary,
+        integration: {
+          pluginValidated: Boolean(pluginValidatedAt),
+          pluginValidatedAt,
+          pluginStoreDomain,
+        },
       });
     } catch (error: any) {
       console.error('Error en getWooCommerceMetrics:', error);
@@ -515,6 +532,192 @@ export class BrandsController {
     } catch (error: any) {
       console.error('Error en requestPlanChange:', error);
       return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al enviar la solicitud' });
+    }
+  }
+
+  async getLegalRequests(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand) {
+        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'No autenticado' });
+      }
+
+      const brand = await brandsService.getBrandById(req.brand.id);
+      if (!brand) {
+        return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+      }
+
+      return res.status(200).json({
+        requests: getLegalRequests(brand),
+        data_exports: getLegalDataExports(brand),
+      });
+    } catch (error: any) {
+      console.error('Error en getLegalRequests:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener solicitudes legales' });
+    }
+  }
+
+  async createLegalRequest(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand) {
+        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'No autenticado' });
+      }
+
+      const { type } = req.body || {};
+      const supportedTypes = ['customers/data_request', 'customers/redact', 'shop/redact', 'app/uninstalled'];
+      if (!supportedTypes.includes(type)) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Tipo de solicitud legal inválido' });
+      }
+
+      const brand = await brandsService.getBrandById(req.brand.id);
+      if (!brand) {
+        return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+      }
+
+      const requestRecord = await createLegalRequest(brand.id, {
+        type,
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+        source: 'dashboard_profile_modal',
+        summary: 'Solicitud creada desde autoservicio de perfil',
+      });
+      let socialLinks = getBrandSocialLinks(brand as any);
+      let updates: UpdateBrandDto = {};
+      let dataExport: Record<string, unknown> | null = null;
+      let dataExportRecord: ReturnType<typeof buildLegalDataExport> | null = null;
+
+      if (type === 'customers/data_request') {
+        dataExport = {
+          brand: {
+            id: brand.id,
+            name: brand.name,
+            email: brand.email,
+            slug: brand.slug,
+            plan: brand.plan,
+            subscription_status: (brand as any).subscription_status ?? null,
+            trial_end_date: (brand as any).trial_end_date ?? null,
+          },
+          billing: {
+            billing_email: (brand as any).billing_email ?? null,
+            nit: (brand as any).nit ?? null,
+            country: (brand as any).country ?? null,
+            city: (brand as any).city ?? null,
+          },
+          integration: {
+            plugin_validated_at: socialLinks.woo_plugin_validated_at ?? null,
+            plugin_store_domain: socialLinks.woo_plugin_store_domain ?? null,
+            website: socialLinks.website ?? null,
+          },
+        };
+        dataExportRecord = buildLegalDataExport(requestRecord.id, dataExport);
+      }
+
+      if (type === 'customers/redact') {
+        socialLinks = {
+          ...socialLinks,
+          customers_redacted_at: new Date().toISOString(),
+          marketing_blocked_at: socialLinks.marketing_blocked_at ?? new Date().toISOString(),
+        };
+        updates.social_links = socialLinks;
+      }
+
+      if (type === 'shop/redact') {
+        socialLinks = {
+          ...socialLinks,
+          shop_redacted_at: new Date().toISOString(),
+          website: null,
+          allowed_origins: [],
+          woo_plugin_validated_at: null,
+          woo_plugin_store_domain: null,
+          integration_paused_at: new Date().toISOString(),
+          marketing_blocked_at: socialLinks.marketing_blocked_at ?? new Date().toISOString(),
+        };
+        updates = {
+          ...updates,
+          name: 'Cuenta redactada',
+          phone: null as any,
+          contact_name: null as any,
+          address: null as any,
+          city: null as any,
+          country: null as any,
+          nit: null as any,
+          state_province: null as any,
+          postal_code: null as any,
+          billing_email: null as any,
+          custom_domain: null,
+          has_landing_page: false,
+          social_links: socialLinks,
+        };
+      }
+
+      if (type === 'app/uninstalled') {
+        socialLinks = {
+          ...socialLinks,
+          app_uninstalled_at: new Date().toISOString(),
+          integration_paused_at: new Date().toISOString(),
+          billing_paused_at: new Date().toISOString(),
+          credits_paused_at: new Date().toISOString(),
+          woo_plugin_validated_at: null,
+          woo_plugin_store_domain: null,
+          woo_plugin_validation_source: 'self_service_uninstall',
+        };
+        updates = {
+          ...updates,
+          has_landing_page: false,
+          social_links: socialLinks,
+        };
+      }
+
+      updates.social_links = {
+        ...(updates.social_links || socialLinks),
+        legal_requests: [...getLegalRequests({ ...(brand as any), social_links: updates.social_links || socialLinks } as any), requestRecord],
+        legal_data_exports: dataExportRecord
+          ? [dataExportRecord, ...getLegalDataExports({ ...(brand as any), social_links: updates.social_links || socialLinks } as any)].slice(0, 10)
+          : getLegalDataExports({ ...(brand as any), social_links: updates.social_links || socialLinks } as any),
+      };
+
+      const updatedBrand = await brandsService.updateBrand(req.brand.id, updates);
+
+      return res.status(201).json({
+        message: 'Solicitud legal registrada',
+        request: requestRecord,
+        requests: getLegalRequests(updatedBrand as any),
+        data: dataExport,
+        data_export: dataExportRecord,
+        data_exports: getLegalDataExports(updatedBrand as any),
+      });
+    } catch (error: any) {
+      console.error('Error en createLegalRequest:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al registrar la solicitud legal' });
+    }
+  }
+
+  async createTrialEvent(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand) {
+        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'No autenticado' });
+      }
+
+      const { eventName, metadata } = req.body || {};
+      const supportedEvents = [
+        'trial_started',
+        'trial_email_verified',
+        'first_product_created',
+        'first_generation_completed',
+        'checkout_viewed',
+        'trial_expiring',
+        'trial_expired',
+        'trial_converted',
+      ];
+
+      if (!supportedEvents.includes(eventName)) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Evento de trial inválido' });
+      }
+
+      await recordTrialEvent(req.brand.id, eventName as any, metadata && typeof metadata === 'object' ? metadata : {});
+      return res.status(201).json({ success: true });
+    } catch (error: any) {
+      console.error('Error en createTrialEvent:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al registrar el evento trial' });
     }
   }
 }

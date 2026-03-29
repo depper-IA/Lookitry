@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { SubscriptionBadge } from './SubscriptionBadge';
 import { OnboardingWizard } from './OnboardingWizard';
@@ -12,8 +14,6 @@ import { DashboardNotifications } from './DashboardNotifications';
 import { TrialBanner } from './TrialBanner';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { LookitryLogoText } from '@/components/mini-landing/shared';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, ChevronLeft, ChevronRight, LogOut, Building2 } from 'lucide-react';
 import { getProxiedUrl } from '@/utils/imageProxy';
 import type { Brand } from '@/types';
 
@@ -23,16 +23,17 @@ interface DashboardLayoutProps {
 }
 
 const navigation = [
-  { name: 'Inicio',         href: '/dashboard',              icon: HomeIcon },
-  { name: 'Productos',      href: '/dashboard/products',     icon: ProductsIcon },
-  { name: 'Generaciones',   href: '/dashboard/generations',  icon: GenerationsIcon },
-  { name: 'Mi página',      href: '/dashboard/mi-pagina',    icon: LandingIcon },
-  { name: 'Widget Probador',  href: '/dashboard/settings',     icon: SettingsIcon },
-  { name: 'Integraciones',  href: '/dashboard/integrations',     icon: EmbedIcon },
-  { name: 'Uso',            href: '/dashboard/usage',        icon: UsageIcon },
-  { name: 'Suscripción',    href: '/dashboard/subscription', icon: SubscriptionIcon },
-  { name: 'Analytics',      href: '/dashboard/analytics',    icon: AnalyticsIcon },
-  { name: 'Perfil',         href: '/dashboard/profile',      icon: ProfileIcon },
+  { name: 'Inicio', href: '/dashboard', icon: HomeIcon },
+  { name: 'Productos', href: '/dashboard/products', icon: ProductsIcon },
+  { name: 'Generaciones', href: '/dashboard/generations', icon: GenerationsIcon },
+  { name: 'Mi página', href: '/dashboard/mi-pagina', icon: LandingIcon },
+  { name: 'Mi opinión', href: '/dashboard/review', icon: ReviewIcon },
+  { name: 'Widget Probador', href: '/dashboard/settings', icon: SettingsIcon },
+  { name: 'Integraciones', href: '/dashboard/integrations', icon: EmbedIcon },
+  { name: 'Uso', href: '/dashboard/usage', icon: UsageIcon },
+  { name: 'Suscripción', href: '/dashboard/subscription', icon: SubscriptionIcon },
+  { name: 'Analytics', href: '/dashboard/analytics', icon: AnalyticsIcon },
+  { name: 'Perfil', href: '/dashboard/profile', icon: ProfileIcon },
 ];
 
 export function DashboardLayout({ children, brandOverride = null }: DashboardLayoutProps) {
@@ -45,13 +46,10 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
   const [resendSending, setResendSending] = useState(false);
   const [resendSent, setResendSent] = useState(false);
 
-  // Bloquear scroll del body cuando el drawer móvil está abierto
+  const visibleNavigation = navigation.filter((item) => !(item.href === '/dashboard/review' && currentBrand?.plan === 'TRIAL'));
+
   React.useEffect(() => {
-    if (sidebarOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = sidebarOpen ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
@@ -63,14 +61,11 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
     if (!currentBrand?.email) return;
     setResendSending(true);
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/auth/resend-verification`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: currentBrand.email }),
-        }
-      );
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentBrand.email }),
+      });
       setResendSent(true);
     } catch {
       // silencioso
@@ -80,50 +75,42 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-[var(--bg-sidebar)] transition-all duration-300">
-      {/* Logo Area */}
-      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} h-[80px] px-6 flex-shrink-0 bg-[var(--bg-sidebar)]`}>
-        <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 group-hover:border-[#FF5C3A]/50 transition-all duration-500 shadow-lg shrink-0">
-            <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain group-hover:rotate-12 transition-transform duration-500" priority />
+    <div className="flex h-full flex-col bg-[var(--bg-sidebar)] transition-all duration-300">
+      <div className={`flex h-[80px] flex-shrink-0 items-center bg-[var(--bg-sidebar)] px-6 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+        <Link href="/dashboard" className="group flex items-center gap-3">
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-lg transition-all duration-500 group-hover:border-[#FF5C3A]/50">
+            <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain transition-transform duration-500 group-hover:rotate-12" priority />
           </div>
           {!isCollapsed && (
-            <motion.div 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="block lg:hidden xl:block text-lg leading-none shrink-0"
-            >
+            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="block shrink-0 text-lg leading-none lg:hidden xl:block">
               <LookitryLogoText className="text-white" />
             </motion.div>
           )}
         </Link>
-        
-        {/* Toggle Collapse Desktop */}
+
         {!isCollapsed && (
           <button
             onClick={() => setIsCollapsed(true)}
-            className="hidden xl:flex p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-all"
+            className="hidden rounded-lg p-1.5 text-gray-500 transition-all hover:bg-white/5 hover:text-white xl:flex"
             title="Colapsar menú"
           >
             <ChevronLeft size={18} />
           </button>
         )}
-        
-        {/* Botón cerrar en móvil */}
+
         <button
-          className="lg:hidden p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+          className="rounded-xl p-2 text-gray-400 transition-all hover:bg-white/5 hover:text-white lg:hidden"
           onClick={() => setSidebarOpen(false)}
           aria-label="Cerrar menú"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
-      {/* Nav */}
-      <nav className={`flex-1 ${isCollapsed ? 'px-3' : 'px-4'} py-6 space-y-1.5 overflow-y-auto no-scrollbar`}>
-        {navigation.map((item) => {
+      <nav className={`no-scrollbar flex-1 space-y-1.5 overflow-y-auto py-6 ${isCollapsed ? 'px-3' : 'px-4'}`}>
+        {visibleNavigation.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
           return (
             <Link
@@ -131,19 +118,13 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
               href={item.href}
               onClick={() => setSidebarOpen(false)}
               title={isCollapsed ? item.name : ''}
-              className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-5'} py-3.5 rounded-2xl text-[12px] font-bold uppercase tracking-wider transition-all duration-300 group
-                ${isActive 
-                   ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' 
-                   : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
+              className={`group flex items-center rounded-2xl py-3.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                isCollapsed ? 'justify-center' : 'gap-3 px-5'
+              } ${isActive ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
             >
-              <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-600 group-hover:text-[#FF5C3A]'}`} />
+              <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-600 group-hover:text-[#FF5C3A]'}`} />
               {!isCollapsed && (
-                <motion.span 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="block lg:hidden xl:block leading-none"
-                >
+                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="block leading-none lg:hidden xl:block">
                   {item.name}
                 </motion.span>
               )}
@@ -152,18 +133,17 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         })}
       </nav>
 
-      {/* Brand info + logout section */}
-      <div className={`p-4 flex-shrink-0 transition-all duration-300`}>
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 p-3 rounded-[2.5rem] bg-white/5 border border-white/5'} shadow-inner group/profile transition-all duration-300`}>
-          <div className="w-11 h-11 rounded-2xl overflow-hidden flex items-center justify-center text-[13px] font-black text-white flex-shrink-0 bg-[#FF5C3A] shadow-lg group-hover/profile:scale-105 transition-all duration-500 border border-white/10">
+      <div className="flex-shrink-0 p-4 transition-all duration-300">
+        <div className={`group/profile flex items-center shadow-inner transition-all duration-300 ${isCollapsed ? 'justify-center' : 'gap-3 rounded-[2.5rem] border border-white/5 bg-white/5 p-3'}`}>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#FF5C3A] text-[13px] font-black text-white shadow-lg transition-all duration-500 group-hover/profile:scale-105">
             {currentBrand?.logo ? (
-              <img 
-                src={getProxiedUrl(currentBrand.logo)} 
-                alt={currentBrand.name} 
-                className="w-full h-full object-contain bg-white/5 p-1"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  (e.target as HTMLImageElement).parentElement!.innerHTML = currentBrand?.name?.charAt(0)?.toUpperCase() ?? 'M';
+              <img
+                src={getProxiedUrl(currentBrand.logo)}
+                alt={currentBrand.name}
+                className="h-full w-full object-contain bg-white/5 p-1"
+                onError={(event) => {
+                  (event.target as HTMLImageElement).style.display = 'none';
+                  (event.target as HTMLImageElement).parentElement!.innerHTML = currentBrand?.name?.charAt(0)?.toUpperCase() ?? 'M';
                 }}
               />
             ) : (
@@ -172,22 +152,18 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
           </div>
           {!isCollapsed && (
             <>
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="block lg:hidden xl:block flex-1 min-w-0"
-              >
-                <p className="text-[12px] font-semibold text-white truncate leading-tight tracking-tight">{currentBrand?.name}</p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <p className="text-[10px] truncate leading-none text-gray-500 font-bold uppercase tracking-tighter">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="block min-w-0 flex-1 lg:hidden xl:block">
+                <p className="truncate text-[12px] font-semibold leading-tight tracking-tight text-white">{currentBrand?.name}</p>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                  <p className="truncate text-[10px] font-bold uppercase leading-none tracking-tighter text-gray-500">
                     Plan {currentBrand?.plan}
                   </p>
                 </div>
               </motion.div>
               <button
                 onClick={logout}
-                className="flex lg:hidden xl:flex w-10 h-10 rounded-2xl transition-all items-center justify-center text-gray-600 hover:text-white hover:bg-white/10 group/logout shrink-0"
+                className="group/logout hidden h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-gray-600 transition-all hover:bg-white/10 hover:text-white lg:flex xl:flex"
                 title="Cerrar sesión"
               >
                 <LogOut size={18} className="transition-transform group-hover/logout:translate-x-0.5" />
@@ -195,15 +171,15 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
             </>
           )}
         </div>
-        
+
         {isCollapsed && (
-           <button
-             onClick={() => setIsCollapsed(false)}
-             className="w-11 h-11 mt-3 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-500 hover:text-white hover:bg-[#FF5C3A]/20 transition-all mx-auto"
-             title="Expandir menú"
-           >
-             <ChevronRight size={20} />
-           </button>
+          <button
+            onClick={() => setIsCollapsed(false)}
+            className="mx-auto mt-3 flex h-11 w-11 items-center justify-center rounded-2xl border border-white/5 bg-white/5 text-gray-500 transition-all hover:bg-[#FF5C3A]/20 hover:text-white"
+            title="Expandir menú"
+          >
+            <ChevronRight size={20} />
+          </button>
         )}
       </div>
     </div>
@@ -211,51 +187,39 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
-      {/* Overlay móvil */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      {sidebarOpen && <div className="fixed inset-0 z-30 bg-black/60 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
-      {/* Sidebar desktop (fijo) */}
-      <div className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 z-20 transition-all duration-300 ${isCollapsed ? 'lg:w-[88px] xl:w-[96px]' : 'lg:w-[96px] xl:w-[240px] 2xl:w-[280px]'}`}>
+      <div className={`hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-20 lg:flex lg:flex-col ${isCollapsed ? 'lg:w-[88px] xl:w-[96px]' : 'lg:w-[96px] xl:w-[240px] 2xl:w-[280px]'}`}>
         {sidebarContent}
       </div>
 
-      {/* Sidebar móvil (drawer) */}
-      <div
-        className={`fixed inset-y-0 left-0 w-[280px] z-40 transform transition-transform duration-300 ease-in-out lg:hidden ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
+      <div className={`fixed inset-y-0 left-0 z-40 w-[280px] transform transition-transform duration-300 ease-in-out lg:hidden ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {sidebarContent}
       </div>
 
-      {/* Contenido principal */}
-      <div className={`flex flex-col h-screen overflow-hidden transition-all duration-300 ${sidebarOpen ? 'blur-[2px]' : ''} ${isCollapsed ? 'lg:pl-[88px] xl:pl-[96px]' : 'lg:pl-[96px] xl:pl-[240px] 2xl:pl-[280px]'}`}>
-        {/* Banner de verificación de email — elegante y minimalista */}
+      <div className={`flex h-screen flex-col overflow-hidden transition-all duration-300 ${sidebarOpen ? 'blur-[2px]' : ''} ${isCollapsed ? 'lg:pl-[88px] xl:pl-[96px]' : 'lg:pl-[96px] xl:pl-[240px] 2xl:pl-[280px]'}`}>
         {showVerificationBanner && (
-          <div className="w-full border-b px-6 py-3 flex items-center justify-between gap-4 flex-shrink-0 animate-in fade-in slide-in-from-top duration-500" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center shrink-0">
-                <svg className="w-4 h-4 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <div className="flex w-full flex-shrink-0 items-center justify-between gap-4 border-b px-6 py-3 animate-in fade-in slide-in-from-top duration-500" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <div className="min-w-0 flex items-center gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FF5C3A]/10">
+                <svg className="h-4 w-4 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
               <p className="text-[13px] text-gray-300">
-                <span className="font-semibold text-white">Verifica tu cuenta:</span> Hemos enviado un correo a <span className="text-[#FF5C3A] font-medium">{currentBrand?.email}</span>.{' '}
+                <span className="font-semibold text-white">Verifica tu cuenta:</span> Hemos enviado un correo a <span className="font-medium text-[#FF5C3A]">{currentBrand?.email}</span>{' '}
                 {resendSent ? (
-                  <span className="text-emerald-400 font-medium ml-1 inline-flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                  <span className="ml-1 inline-flex items-center gap-1 font-medium text-emerald-400">
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
                     Reenviado con éxito
                   </span>
                 ) : (
                   <button
                     onClick={handleResendVerification}
                     disabled={resendSending}
-                    className="underline decoration-[#FF5C3A]/30 hover:decoration-[#FF5C3A] hover:text-white transition-all disabled:opacity-50 bg-transparent border-0 p-0 cursor-pointer text-gray-400 text-[13px] ml-1"
+                    className="ml-1 cursor-pointer border-0 bg-transparent p-0 text-[13px] text-gray-400 underline decoration-[#FF5C3A]/30 transition-all hover:text-white hover:decoration-[#FF5C3A] disabled:opacity-50"
                   >
                     {resendSending ? 'Enviando...' : '¿No lo recibiste? Reenviar ahora'}
                   </button>
@@ -264,43 +228,39 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
             </div>
             <button
               onClick={() => setVerificationBannerDismissed(true)}
-              className="p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
+              className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-white/5 hover:text-white"
               aria-label="Cerrar aviso"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
         )}
-        {/* Header */}
+
         <header
-          className="flex-shrink-0 flex items-center justify-between px-4 md:px-6 xl:px-8 h-16 md:h-20 border-b relative z-10"
+          className="relative z-10 flex h-16 flex-shrink-0 items-center justify-between border-b px-4 md:h-20 md:px-6 xl:px-8"
           style={{
             backgroundColor: 'var(--bg-header)',
             borderColor: 'var(--border-color)',
             boxShadow: 'var(--shadow-header)',
           }}
         >
-          {/* Hamburger móvil + Logo (Solo visible en mobile) */}
-          <div className="flex lg:hidden items-center gap-3">
+          <div className="flex items-center gap-3 lg:hidden">
             <button
-              className="p-2 rounded-xl bg-white/5 border border-white/5 text-[var(--text-secondary)] active:scale-95 transition-all"
+              className="rounded-xl border border-white/5 bg-white/5 p-2 text-[var(--text-secondary)] transition-all active:scale-95"
               onClick={() => setSidebarOpen(true)}
               aria-label="Abrir menú"
             >
               <Menu size={20} />
             </button>
-            <div className="w-8 h-8 flex items-center justify-center bg-white/5 rounded-xl border border-white/10 shrink-0">
-               <Image src="/logo.svg" alt="L" width={18} height={18} priority />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+              <Image src="/logo.svg" alt="L" width={18} height={18} priority />
             </div>
           </div>
 
-          <h2
-            className="hidden lg:block font-jakarta font-bold text-lg flex-shrink-0 tracking-tight opacity-80"
-            style={{ color: 'var(--text-primary)' }}
-          >
-            {navigation.find(n => n.href === pathname)?.name || 'Dashboard'}
+          <h2 className="hidden flex-shrink-0 font-jakarta text-lg font-bold tracking-tight opacity-80 lg:block" style={{ color: 'var(--text-primary)' }}>
+            {visibleNavigation.find((item) => item.href === pathname)?.name || 'Dashboard'}
           </h2>
 
           <div className="ml-auto flex items-center gap-2 md:gap-4">
@@ -312,21 +272,17 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
           </div>
         </header>
 
-        {/* Contenido de página */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 xl:p-8 xl:pt-10 scroll-smooth">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 scroll-smooth sm:p-4 md:p-6 xl:p-8 xl:pt-10">
           <OnboardingWizard />
           <DashboardNotifications />
           <TrialBanner />
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {children}
-          </div>
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">{children}</div>
         </main>
       </div>
     </div>
   );
 }
 
-/* ── Iconos ─────────────────────────────────────────────────────────────────── */
 function HomeIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -334,6 +290,7 @@ function HomeIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 function ProductsIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -341,6 +298,7 @@ function ProductsIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 function SettingsIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -349,6 +307,7 @@ function SettingsIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 function UsageIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -356,6 +315,7 @@ function UsageIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 function SubscriptionIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -363,6 +323,7 @@ function SubscriptionIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 function AnalyticsIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -371,6 +332,7 @@ function AnalyticsIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 function EmbedIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -378,6 +340,7 @@ function EmbedIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 function ProfileIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -385,6 +348,7 @@ function ProfileIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 function GenerationsIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -401,10 +365,10 @@ function LandingIcon({ className }: { className?: string }) {
   );
 }
 
-function AgencyIcon({ className }: { className?: string }) {
+function ReviewIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.63 8.41m5.96 5.96a14.96 14.96 0 01-5.96 5.96m5.96-5.96L9.63 8.41m0 0a14.98 14.98 0 00-6.16 12.12A14.98 14.98 0 0015.59 14.37m-5.96-5.96a14.96 14.96 0 015.96-5.96" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h7m-7 4h4m10-9a2 2 0 00-2-2H5a2 2 0 00-2 2v11l4-3h12a2 2 0 002-2V7z" />
     </svg>
   );
 }

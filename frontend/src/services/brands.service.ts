@@ -31,6 +31,7 @@ class BrandsService {
       nextPaymentDate: response.data.next_payment_date,
       trialEndDate: response.data.trial_end_date,
       trialGenerationsLimit: response.data.trial_generations_limit,
+      reviewPromptShownAt: response.data.review_prompt_shown_at,
       headerColor: response.data.header_color,
       emailVerified: response.data.email_verified,
       hasLandingPage: response.data.has_landing_page,
@@ -103,6 +104,7 @@ class BrandsService {
       nextPaymentDate: response.data.next_payment_date,
       trialEndDate: response.data.trial_end_date,
       trialGenerationsLimit: response.data.trial_generations_limit,
+      reviewPromptShownAt: response.data.review_prompt_shown_at,
       headerColor: response.data.header_color,
       emailVerified: response.data.email_verified,
       hasLandingPage: response.data.has_landing_page,
@@ -117,6 +119,20 @@ class BrandsService {
     };
     
     return brandData;
+  }
+
+  async getLegalRequests(): Promise<{ requests: any[]; data_exports?: any[] }> {
+    const response = await api.get<{ requests: any[]; data_exports?: any[] }>('/brands/me/legal-requests');
+    return response.data;
+  }
+
+  async createLegalRequest(type: string): Promise<{ request: any; requests: any[]; data?: any; data_export?: any; data_exports?: any[] }> {
+    const response = await api.post<{ request: any; requests: any[]; data?: any; data_export?: any; data_exports?: any[] }>('/brands/me/legal-requests', { type });
+    return response.data;
+  }
+
+  async createTrialEvent(eventName: string, metadata?: Record<string, unknown>): Promise<void> {
+    await api.post('/brands/me/trial-events', { eventName, metadata });
   }
 }
 

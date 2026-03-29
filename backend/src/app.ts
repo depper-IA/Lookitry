@@ -25,6 +25,9 @@ import embedRoutes from './routes/embed.routes';
 import imageRoutes from './routes/image.routes';
 import enterpriseRoutes from './routes/enterprise.routes';
 import blogRoutes from './routes/blog.routes';
+import reviewsRoutes from './routes/reviews.routes';
+import reviewsPublicRoutes from './routes/reviewsPublic.routes';
+import adminReviewsRoutes from './routes/adminReviews.routes';
 
 // Importación de controladores y middlewares
 import { syncProductWebhook } from './controllers/enterprise.controller';
@@ -154,6 +157,7 @@ app.use(globalRateLimiter);
 app.use('/api/pruebalo', publicCors, pruebaloRoutes);
 app.use('/api/embed', publicCors, embedRoutes);
 app.post('/api/enterprise/sync-product', publicCors, syncProductWebhook);
+app.use('/api/reviews/public', publicCors, reviewsPublicRoutes);
 
 // Rutas Estándar
 app.use('/api/auth', authRoutes);
@@ -172,6 +176,8 @@ app.use('/api/payments/paypal', paypalRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/trial', trialRoutes);
+app.use('/api/reviews', reviewsRoutes);
+app.use('/api/admin/reviews', adminReviewsRoutes);
 app.use('/api/admin/coupons', couponsRoutes);
 
 // Endpoints Sueltos
