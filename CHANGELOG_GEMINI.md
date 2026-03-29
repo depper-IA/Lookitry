@@ -1,5 +1,27 @@
 # Registro de Cambios — Lookitry (IA Gemini)
 
+## 29 de Marzo, 2026 — Auditoria y unificacion de trial en dashboards admin y usuario
+
+**Objetivo:**
+- Unificar la lectura de trial entre backend, admin y dashboard de usuario para que deje de depender de combinaciones fragiles entre `plan`, `subscription_status` y `trial_end_date`.
+- Evitar que cuentas legacy con `trial_end_date` vigente vuelvan a mostrarse como `BASIC` o desaparezcan de conversion, limites y estados visuales.
+
+**Cambios aplicados:**
+- **Backend (`backend/src/services/subscription.service.ts`, `backend/src/services/usage.service.ts`, `backend/src/services/products.service.ts`, `backend/src/controllers/subscription.controller.ts`):**
+  - La regla operativa quedo unificada como `trial activo = trial_end_date vigente y subscription_status != suspended`.
+  - Se corrigio la deteccion de trial para estado de suscripcion, limites de uso, limite de productos y listado admin de suscripciones.
+- **Backend (`backend/src/services/admin.service.ts`):**
+  - La clasificacion de planes del admin ahora sale de una sola pasada estable sobre marcas reales y separa `BASIC`, `PRO` y `TRIAL` sin depender de queries inconsistentes.
+  - `getTrialBrands()` excluye suspendidas para no inflar conversion ni tablas operativas.
+- **Frontend (`frontend/src/lib/subscription-display.ts`, `frontend/src/app/admin/dashboard/page.tsx`):**
+  - El dashboard de usuario ahora muestra trial activo o trial vencido con la misma interpretacion del backend.
+  - El dashboard admin ya expone `TRIAL` como bloque separado en la distribucion por plan.
+- **Tests (`frontend/src/__tests__/lib/subscription-display.test.ts`, `backend/src/services/__tests__/subscription.service.test.ts`):**
+  - Se actualizaron pruebas para cubrir cuentas legacy con `subscription_status = active` pero `trial_end_date` vigente, y para asegurar que suspendidas no se lean como trial.
+
+**Motivo:**
+- El error se repetia porque existian varias implementaciones distintas de "trial" dentro del proyecto. La auditoria dejo una sola fuente de verdad para prevenir regresiones entre admin y dashboard de usuario.
+
 ## 29 de Marzo, 2026 — Endurecimiento QA preproducción (backend + frontend)
 
 **Objetivo:**
@@ -1395,3 +1417,202 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 
 **Descripción:**
 - Se corrigió el casteo interno de `PricingConfig` al hidratar configuración dinámica desde Supabase, usando una conversión segura vía `unknown` para evitar que `next build` fallara en producción.
+## 29 de Marzo, 2026 â€” AuditorÃ­a y correcciones integrales de `/admin/*`
+
+**Archivos modificados:**
+- `backend/src/services/admin.service.ts`
+- `backend/src/controllers/admin.controller.ts`
+- `backend/src/routes/admin.routes.ts`
+- `frontend/src/app/admin/analytics/page.tsx`
+- `frontend/src/app/admin/conversion/page.tsx`
+- `frontend/src/app/admin/enterprise/page.tsx`
+- `frontend/src/app/admin/woocommerce/page.tsx`
+- `frontend/src/app/admin/configuracion/page.tsx`
+- `frontend/src/app/admin/pricing/page.tsx`
+- `frontend/src/app/admin/layout.tsx`
+- `frontend/src/app/admin/notifications/page.tsx`
+- `frontend/src/app/admin/feedback/page.tsx`
+- `frontend/src/app/admin/health/page.tsx`
+
+**DescripciÃ³n:**
+- Se reconstruyÃ³ `/admin/analytics` para normalizar `generationsByMonth`, tolerar datos vacÃ­os y mostrar un estado vacÃ­o amigable cuando no hay actividad.
+- Se corrigiÃ³ `/admin/conversion` para contar correctamente cuentas con `subscription_status = trial` y `trial_end_date` futura, y se agregÃ³ una tabla operativa de trials activos.
+- Se reordenÃ³ `/admin/enterprise` con la secuencia pedida: informaciÃ³n del cliente, calculadora de precios, estado de cuenta e historial de conexiones.
+- La calculadora enterprise dejÃ³ de vivir como secciÃ³n separada dentro de `/admin/pricing`; ahora queda consolidada en su secciÃ³n lÃ³gica de enterprise.
+- Se corrigiÃ³ `/admin/woocommerce` para mostrar solo marcas con conexiÃ³n realmente activa usando validaciÃ³n explÃ­cita del plugin y badge visual de estado.
+- Se ampliÃ³ `/admin/configuracion` en la pestaÃ±a `CrÃ©ditos IA` para manejar OpenRouter y Replicate por separado, con consultas independientes y fallback defensivo.
+- Se fusionaron rutas duplicadas u huÃ©rfanas:
+  - `/admin/feedback` ahora redirige a `/admin/notifications?tab=feedback`
+  - `/admin/health` ahora redirige a `/admin/configuracion?tab=health`
+  - la navegaciÃ³n principal renombrÃ³ `Notificaciones` a `Actividad` para reflejar la consolidaciÃ³n
+
+**VerificaciÃ³n:**
+- `backend npm.cmd test -- --runInBand`
+- `frontend npm.cmd run build`
+## 29 de Marzo, 2026 â€” NormalizaciÃ³n de planes trial histÃ³ricos
+
+**Archivos modificados:**
+- `backend/src/services/admin.service.ts`
+- `backend/src/services/subscription.service.ts`
+- `frontend/src/app/admin/brands/page.tsx`
+- `backend/src/scripts/normalize-trial-plans.sql`
+
+**DescripciÃ³n:**
+- La creaciÃ³n manual de marcas trial dejÃ³ de persistir `plan=BASIC`; ahora crea cuentas con `plan=TRIAL` desde origen.
+- La actualizaciÃ³n de suscripciones dejÃ³ de remapear `TRIAL` a `BASIC`, manteniendo `subscription_status='trial'` cuando corresponde.
+- Se agregÃ³ un script SQL seguro para normalizar datos histÃ³ricos que tienen `trial_end_date` pero quedaron guardados como `BASIC`.
+
+**VerificaciÃ³n:**
+- `backend npm.cmd test -- --runInBand`
+- `frontend npm.cmd run build`
+## 29 de Marzo, 2026 - Ajustes admin de trial, revenue, payments y analytics
+
+**Objetivo:**
+- Alinear la logica de trial con el esquema real de la base de datos y mejorar lectura administrativa.
+- Corregir errores de carga en `/admin/revenue` y `/admin/payments`.
+- Restaurar el conteo y grafico real de generaciones en `/admin/analytics`.
+- Formalizar la exigencia de responsive en wide, laptop, tablet y telefono.
+
+**Cambios aplicados:**
+- **Backend (`admin.service.ts`, `subscription.controller.ts`, `notifications.controller.ts`, `subscription.service.ts`):**
+  - Trial queda derivado por `trial_end_date` vigente y no por persistencia de `plan=TRIAL`, manteniendo compatibilidad con los enums actuales.
+  - Se excluyen trials vigentes de alertas de suscripciones por vencer y se exponen como `trial` en admin.
+- **Frontend (`admin/subscriptions`, `admin/brands`):**
+  - Se agregaron ordenamientos por `Dias` y `Estado` en suscripciones, y por `Email` en marcas.
+- **Backend/Frontend (`revenue.controller.ts`, `admin/revenue/page.tsx`, `admin/payments/page.tsx`):**
+  - Se unificaron filtros y contrato de respuestas para pagos globales.
+  - `revenue` y `payments` ahora consumen el cliente admin centralizado y toleran mejor diferencias de parametros.
+- **Backend (`admin.service.ts`) y Frontend (`admin/analytics/page.tsx`):**
+  - Se corrigio la agregacion mensual para usar `generated_at` real y poblar correctamente `Generaciones del mes` y el grafico de uso de IA.
+- **Reglas (`reglas_importantes.md`):**
+  - Nueva regla explicita de responsive obligatorio para pantallas wide, laptops, tablets y telefonos.
+## 29 de Marzo, 2026 - Endurecimiento contra esquemas legacy en revenue, payments y enterprise
+
+**Objetivo:**
+- Eliminar fallos por asumir columnas o relaciones que no existen en todos los entornos.
+- Volver robustas las vistas de ingresos, pagos y enterprise frente a variaciones reales del esquema de Supabase.
+
+**Cambios aplicados:**
+- **Backend (`revenue.controller.ts`, `admin.service.ts`):**
+  - Se eliminó la dependencia directa de la columna `subscription_payments.reference` en consultas de analytics financieras.
+  - Los cálculos siguen soportando referencia cuando exista, pero ya no rompen si el esquema solo expone `notes`.
+- **Backend (`enterprise.controller.ts`):**
+  - Se reemplazó el join implícito `brands(...)` por hidratación manual en dos pasos (`enterprise_sync_configs` + `brands`) para evitar fallos por relaciones ausentes o mal resueltas.
+- **Frontend (`admin/enterprise/page.tsx`):**
+  - La UI ahora muestra el error real devuelto por backend en lugar del mensaje genérico de carga.
+## 29 de Marzo, 2026 - Ajuste de conversion para trials vigentes
+
+**Objetivo:**
+- Alinear `/admin/conversion` con el modelo real de trial usado por la base de datos.
+
+**Cambios aplicados:**
+- **Backend (`admin.service.ts`):**
+  - `getTrialBrands()` y `getConversionStats()` ya no dependen de `subscription_status = trial`.
+  - Ahora consideran trial activo cualquier marca con `trial_end_date` futura, excluyendo solo suspendidas.
+
+## 29 de Marzo, 2026 - Ledger historico, privacidad operativa y autoservicio legal
+
+**Objetivo:**
+- Conservar el historico financiero aunque una marca cambie, se archive o se desinstale.
+- Añadir autoservicio legal para solicitudes de datos desde perfil.
+- Bloquear mini-landing para cuentas en trial y registrar eventos comerciales clave del trial.
+
+**Cambios aplicados:**
+- **Backend (`paymentLedger.ts`, `admin.service.ts`, `revenue.controller.ts`):**
+  - Se introdujo snapshot de ledger embebido en `notes` para clasificar pagos por `planPurchased`, `billingType` e `includesLanding` sin depender del plan vivo de `brands`.
+  - `admin/payments` y `admin/revenue` ahora pueden reconstruir mejor el historico aunque la marca cambie o quede archivada.
+  - El borrado operativo de marca desde admin pasa a archivo logico, sin eliminar pagos historicos.
+- **Backend (`brandLifecycle.ts`, `brands.controller.ts`, `brands.routes.ts`, `pruebalo.controller.ts`, `pruebalo.routes.ts`):**
+  - Se agregaron eventos de trial (`trial_started`, `trial_email_verified`, `first_product_created`, `first_generation_completed`, `trial_converted`) y endpoint para registrar `checkout_viewed`.
+  - Se agrego autoservicio legal para `customers/data_request`, `customers/redact`, `shop/redact` y `app/uninstalled`.
+  - `app/uninstalled` ahora pausa integracion/plugin, billing y creditos a nivel operativo.
+- **Frontend (`dashboard/profile/page.tsx`, `services/brands.service.ts`, `politicas-privacidad/page.tsx`):**
+  - Se agrego un modal de solicitudes legales en perfil.
+  - Se documentaron retencion, archivo, redaccion legal y autoservicio en la politica de privacidad.
+- **Restriccion trial (`wompi.controller.ts`, `paypal.controller.ts`, `auth-post-payment.controller.ts`, `admin.controller.ts`, `dashboard/checkout/page.tsx`, `dashboard/checkout-landing/page.tsx`):**
+  - Se bloquearon flujos de mini-landing para cuentas trial en backend y se empezo a reflejar la restriccion en checkout.
+## 29 de Marzo, 2026 â€” Tolerancia a esquema faltante en Admin Enterprise
+
+**Objetivo:**
+- Evitar que `/admin/enterprise` se caiga completa cuando la tabla `enterprise_sync_configs` no existe todavia en Supabase.
+- Mantener la pantalla operativa con estado vacio e informativo mientras el modulo enterprise no esta provisionado.
+
+**Cambios aplicados:**
+- **Backend (`backend/src/controllers/enterprise.controller.ts`):**
+  - Se centralizo la deteccion del error de tabla faltante para `enterprise_sync_configs`.
+  - `GET /api/admin/enterprise` ahora responde con `configs: []`, `moduleAvailable: false` y un mensaje claro en vez de devolver 500.
+  - Las acciones de guardar, disparar sync y actualizar estado ahora responden con mensaje controlado cuando el modulo no esta instalado.
+  - Los updates internos del webhook de sync quedaron protegidos para no romper si la tabla falta.
+- **Frontend (`frontend/src/app/admin/enterprise/page.tsx`):**
+  - La pantalla ahora consume `moduleAvailable` y `moduleMessage`.
+  - Se muestra una alerta informativa cuando el modulo enterprise no esta provisionado.
+  - Se deshabilita la creacion manual de conexiones y se bloquean acciones locales con mensaje claro en ese escenario.
+
+**Motivo:**
+- El error no venia de una configuracion puntual del cliente sino de una composicion fragil: la UI y el backend asumian que la tabla enterprise existia siempre. Con este ajuste, la ausencia del modulo deja de romper el panel completo.
+## 29 de Marzo, 2026 - Replicate con consumo estimado y cierre de brecha Enterprise
+
+**Objetivo:**
+- Hacer que la tarjeta de Replicate muestre valores operativos aunque solo exista API key configurada.
+- Cerrar la brecha entre la UI de Enterprise y la provision real de base de datos.
+
+**Cambios aplicados:**
+- **Backend (`backend/src/controllers/admin.controller.ts`, `backend/src/services/admin.service.ts`):**
+  - `Replicate` ahora toma `replicate_api_token`, `replicate_monthly_budget_usd` y `replicate_cost_per_generation_usd` desde `pricing_config.meta` si existen.
+  - El panel ya no depende solo de `REPLICATE_MONTHLY_BUDGET_USD`; estima consumo del mes recorriendo predicciones reales de Replicate y calcula saldo/porcentaje cuando hay presupuesto configurado.
+- **Frontend (`frontend/src/app/admin/configuracion/page.tsx`):**
+  - Se añadió presupuesto mensual de Replicate en la pestaña `Credito IA`.
+  - Ese presupuesto se guarda junto con la API key en `pricing_config.meta`.
+- **Base de datos / documentación (`supabase/migrations/20260329_enterprise_sync_setup.sql`, `backend/scripts/provision-enterprise-sync.js`, `docs/ENTERPRISE_SYNC_AUDIT_2026-03-29.md`):**
+  - Se creó la migración oficial que faltaba para `enterprise_sync_configs`.
+  - Se añadió script directo de provisión contra Supabase.
+  - Se documentó la causa real del estado incompleto de Enterprise: UI y controlador sí, migración oficial no.
+
+**Motivo:**
+- Enterprise se había dado por funcional con SQL suelto y fixes posteriores, pero sin migración oficial en `supabase/migrations`.
+- Replicate validaba cuenta, pero no tenía una fuente de presupuesto persistida en admin ni cálculo útil de uso mensual.
+
+## 29 de Marzo, 2026 - Sistema completo de reviews para marcas, landing y moderacion admin
+
+**Objetivo:**
+- Implementar un sistema end-to-end de reviews para marcas con persistencia en Supabase, APIs backend, captura desde dashboard, visualizacion publica en landing y moderacion desde el panel admin.
+- Respetar las reglas del producto: backend con `supabaseAdmin`, UI en espanol, diseno premium dark en dashboard/admin y fallback con mock reviews en la landing hasta alcanzar masa critica real.
+
+**Cambios aplicados:**
+- **Base de datos (`scripts/migrations/add_reviews.sql`):**
+  - Nueva tabla `brand_reviews` con `rating`, `comment`, `reviewer_name`, `reviewer_plan`, `status`, `is_featured`, `admin_note`, `avatar_url`, timestamps e indice unico por `brand_id`.
+  - Nueva columna `brands.review_prompt_shown_at` para seguimiento del prompt de review.
+- **Backend (`backend/src/controllers/reviewsController.ts`, `backend/src/routes/reviews.routes.ts`, `backend/src/routes/reviewsPublic.routes.ts`, `backend/src/routes/adminReviews.routes.ts`, `backend/src/app.ts`, `backend/src/types/index.ts`, `backend/src/middleware/adminAuth.ts`):**
+  - Nuevos endpoints para creacion, lectura propia, publicacion publica, marcado de prompt y moderacion admin.
+  - Validacion estricta en espanol para rating y comentario.
+  - Autopoblado de `reviewer_name`, `reviewer_plan` y `avatar_url` desde la marca autenticada.
+  - Bloqueo para cuentas trial en creacion, lectura propia y persistencia de prompt.
+  - Respuesta publica limitada a campos seguros y con `total_approved` para soportar mock/fallback en la landing.
+  - Moderacion admin con filtros, ordenamiento, paginacion fija de 10 y permiso admin reutilizando `brands`.
+- **Frontend compartido (`frontend/src/types/index.ts`, `frontend/src/services/brands.service.ts`, `frontend/src/services/reviews.service.ts`):**
+  - Nuevos tipos `ReviewStatus`, `PublicReview`, `MyReview`, `AdminReview`, DTOs y responses de reviews.
+  - Extension de `Brand` con `reviewPromptShownAt`.
+  - Nuevo servicio centralizado para consumir endpoints de reviews.
+- **Dashboard usuario (`frontend/src/components/dashboard/ReviewPromptModal.tsx`, `frontend/src/app/dashboard/review/page.tsx`, `frontend/src/app/dashboard/DashboardRouteShell.tsx`, `frontend/src/components/dashboard/DashboardLayout.tsx`):**
+  - Nuevo modal premium de opinion con estrellas, textarea, contador y confirmacion interna.
+  - Trigger automatico despues de 3 dias desde `subscriptionStartDate`, solo para no-trial, sin review previa y sin `reviewPromptShownAt`.
+  - La opcion "Quizas mas tarde" solo cierra el modal; la persistencia queda al enviar exitosamente la review.
+  - Nueva pagina `/dashboard/review` con formulario completo o vista read-only segun exista review.
+  - Acceso trial bloqueado con estado vacio y CTA a suscripcion.
+  - Sidebar del dashboard actualizado para ocultar `Mi opinion` en cuentas trial.
+- **Landing publica (`frontend/src/app/page.tsx`, `frontend/src/components/landing/LandingClient.tsx`, `frontend/src/components/landing/ReviewsSlider.tsx`, `frontend/src/data/mockReviews.ts`):**
+  - Fetch SSR de reviews aprobadas con `revalidate: 3600`.
+  - Fallback automatico a `MOCK_REVIEWS` mientras existan menos de 5 reviews reales aprobadas.
+  - Nuevo slider responsive sin librerias externas, con autoplay, pausa en hover, flechas, dots, badge de plan, fecha formateada en espanol y avatar real o iniciales.
+  - Indicador visible solo en desarrollo cuando se esta usando el mock.
+- **Admin (`frontend/src/app/admin/reviews/page.tsx`, `frontend/src/app/admin/layout.tsx`):**
+  - Nueva pantalla `/admin/reviews` con filtros deep-linkables (`search`, `status`, `rating`, `sort`, `page`).
+  - Tabla de moderacion con badges, truncado de comentario, aprobacion/rechazo con nota opcional, toggle de destacada y borrado permanente con confirmacion.
+  - Navegacion del panel admin actualizada para incluir `Reviews` y titulo contextual de la pagina.
+
+**Validacion:**
+- `backend/npm.cmd run build` -> compilacion TypeScript OK.
+- `frontend/npm.cmd run build` -> build de Next.js OK, incluyendo `/dashboard/review` y `/admin/reviews`.
+
+**Motivo:**
+- Se necesitaba cerrar el circuito completo de reviews para capturar prueba social real dentro del SaaS, moderarla desde admin y aprovecharla comercialmente en la landing sin depender de contenido manual desde el primer dia.

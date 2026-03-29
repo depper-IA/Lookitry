@@ -37,6 +37,7 @@ export interface Brand {
   trialPaymentStatus?: 'pending_payment' | 'completed' | 'failed' | null;
   trialPaymentMethod?: string | null;
   extraCreditsBalance?: number;
+  reviewPromptShownAt?: string | null;
   // Email verification
   emailVerified?: boolean;
   hasLandingPage?: boolean;
@@ -59,6 +60,51 @@ export interface Brand {
     allowed_origins?: string[];
     [key: string]: unknown;
   } | null;
+}
+
+export type ReviewStatus = 'pending' | 'approved' | 'rejected';
+
+export interface PublicReview {
+  id: string;
+  rating: number;
+  comment: string;
+  reviewer_name: string;
+  reviewer_plan: string;
+  is_featured: boolean;
+  created_at: string;
+  avatar_url: string | null;
+}
+
+export interface MyReview extends PublicReview {
+  brand_id: string;
+  status: ReviewStatus;
+  admin_note: string | null;
+  updated_at: string;
+}
+
+export interface AdminReview extends MyReview {}
+
+export interface CreateReviewDto {
+  rating: number;
+  comment: string;
+}
+
+export interface ModerateReviewDto {
+  status?: 'approved' | 'rejected';
+  is_featured?: boolean;
+  admin_note?: string | null;
+}
+
+export interface PublicReviewsResponse {
+  reviews: PublicReview[];
+  total_approved: number;
+}
+
+export interface AdminReviewsResponse {
+  reviews: AdminReview[];
+  total: number;
+  page: number;
+  totalPages: number;
 }
 
 export interface Product {

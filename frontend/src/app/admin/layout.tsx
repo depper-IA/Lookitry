@@ -38,6 +38,7 @@ const adminNav = [
     label: 'Contenido',
     items: [
       { href: '/admin/mini-landings', label: 'Mini-Landings', icon: MiniLandingIcon },
+      { href: '/admin/reviews',       label: 'Reviews',       icon: ReviewsIcon },
       { href: '/admin/blog',          label: 'Blog',          icon: BlogIcon },
     ],
   },
@@ -50,7 +51,7 @@ const adminNav = [
   {
     label: 'Sistema',
     items: [
-      { href: '/admin/notifications', label: 'Notificaciones',  icon: BellIcon },
+      { href: '/admin/notifications', label: 'Actividad',       icon: BellIcon },
       { href: '/admin/enterprise',    label: 'Enterprise Sync', icon: EnterpriseIcon },
       { href: '/admin/woocommerce',   label: 'WooCommerce',     icon: WooIcon },
       { href: '/admin/configuracion', label: 'Configuración',   icon: TrialIcon },
@@ -380,6 +381,7 @@ function PageTitle({ pathname }: { pathname: string }) {
     '/admin/analytics':            'Analytics',
     '/admin/conversion':           'Conversión',
     '/admin/mini-landings':        'Mini-Landings',
+    '/admin/reviews':              'Moderación de Reviews',
     '/admin/blog':                 'Blog',
     '/admin/marketing/promotions': 'Promociones',
     '/admin/notifications':        'Notificaciones',
@@ -447,4 +449,7 @@ function WooIcon({ className }: { className?: string }) {
 }
 function BlogIcon({ className }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10l4 4v10a2 2 0 01-2 2z" /><path strokeLinecap="round" strokeLinejoin="round" d="M14 3v5h5" /><path strokeLinecap="round" strokeLinejoin="round" d="M16 13H8" /><path strokeLinecap="round" strokeLinejoin="round" d="M16 17H8" /><path strokeLinecap="round" strokeLinejoin="round" d="M10 9H8" /></svg>;
+}
+function ReviewsIcon({ className }: { className?: string }) {
+  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h7m-7 4h4m10-9a2 2 0 00-2-2H5a2 2 0 00-2 2v11l4-3h12a2 2 0 002-2V7z" /><path strokeLinecap="round" strokeLinejoin="round" d="M17 4l1 2 2 .5-1.5 1.5.3 2-1.8-.9-1.8.9.3-2L14 6.5l2-.5 1-2z" /></svg>;
 }

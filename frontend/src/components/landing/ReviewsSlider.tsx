@@ -1,0 +1,154 @@
+'use client';
+
+import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import type { PublicReview } from '@/types';
+
+interface ReviewsSliderProps {
+  reviews: PublicReview[];
+  realReviewsCount: number;
+  usingMockReviews: boolean;
+}
+
+function formatDate(date: string): string {
+  return new Date(date).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((part) => part.trim().charAt(0))
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
+
+export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: ReviewsSliderProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const intervalRef = useRef<number | null>(null);
+  const slides = useMemo(() => reviews, [reviews]);
+
+  useEffect(() => {
+    if (slides.length <= 1 || paused) return;
+
+    intervalRef.current = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % slides.length);
+    }, 4000);
+
+    return () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+    };
+  }, [slides.length, paused]);
+
+  if (!slides.length) return null;
+
+  const goTo = (index: number) => {
+    if (index < 0) {
+      setActiveIndex(slides.length - 1);
+      return;
+    }
+    setActiveIndex(index % slides.length);
+  };
+
+  return (
+    <section className="bg-[#f5f2ee] px-6 py-16 md:px-8 md:py-20">
+      <div className="mx-auto max-w-[1180px]">
+        <div className="mb-10 text-center">
+          <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.12em] text-[#FF5C3A]">Reviews</p>
+          <h2 className="text-3xl font-bold tracking-tight text-[#0a0a0a] md:text-4xl">Lo que dicen nuestras marcas</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-[#666] md:text-base">
+            Opiniones reales de marcas que ya usan Lookitry
+          </p>
+        </div>
+
+        <div className="relative" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+          <button
+            type="button"
+            onClick={() => goTo(activeIndex - 1)}
+            className="absolute left-0 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#d7d0c7] bg-white/95 p-3 text-[#0a0a0a] shadow-lg transition-all hover:scale-105 md:flex"
+            aria-label="Ver review anterior"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+
+          <div className="overflow-hidden">
+            <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
+              {slides.map((_, slideIndex) => (
+                <div key={`slide-${slides[slideIndex].id}`} className="min-w-full">
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                    {[0, 1, 2].map((offset) => {
+                      const review = slides[(slideIndex + offset) % slides.length];
+                      return (
+                        <article
+                          key={`${review.id}-${offset}`}
+                          className={`${offset > 0 ? 'hidden md:flex' : 'flex'} h-full flex-col rounded-[28px] border border-[#e0dcd7] bg-white p-6 shadow-[0_20px_60px_rgba(15,15,15,0.06)]`}
+                        >
+                          <div className="mb-5 flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-1">
+                              {Array.from({ length: 5 }).map((__, starIndex) => (
+                                <Star key={`${review.id}-${starIndex}`} className={`h-4 w-4 ${starIndex < review.rating ? 'fill-[#FF5C3A] text-[#FF5C3A]' : 'text-[#e7dfd6]'}`} />
+                              ))}
+                            </div>
+                            <span className="rounded-full border border-[#f1d5cd] bg-[#fff4f1] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#FF5C3A]">
+                              {review.reviewer_plan}
+                            </span>
+                          </div>
+
+                          <p className="flex-1 text-[15px] leading-7 text-[#3f3a35]">“{review.comment}”</p>
+
+                          <div className="mt-6 flex items-center gap-3 border-t border-[#f0ebe5] pt-5">
+                            {review.avatar_url ? (
+                              <Image src={review.avatar_url} alt={review.reviewer_name} width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
+                            ) : (
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">
+                                {getInitials(review.reviewer_name)}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-semibold text-[#0a0a0a]">{review.reviewer_name}</p>
+                              <p className="text-xs uppercase tracking-[0.16em] text-[#8a8178]">{formatDate(review.created_at)}</p>
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => goTo(activeIndex + 1)}
+            className="absolute right-0 top-1/2 z-10 hidden translate-x-1/2 -translate-y-1/2 rounded-full border border-[#d7d0c7] bg-white/95 p-3 text-[#0a0a0a] shadow-lg transition-all hover:scale-105 md:flex"
+            aria-label="Ver siguiente review"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="mt-6 flex items-center justify-center gap-2">
+          {slides.map((review, index) => (
+            <button
+              key={`dot-${review.id}`}
+              type="button"
+              onClick={() => goTo(index)}
+              className={`h-2.5 rounded-full transition-all ${index === activeIndex ? 'w-8 bg-[#FF5C3A]' : 'w-2.5 bg-[#d1c8be]'}`}
+              aria-label={`Ir a la review ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        {process.env.NODE_ENV === 'development' && usingMockReviews && (
+          <p className="mt-4 text-center text-xs text-yellow-600">
+            [DEV] Mostrando mock reviews — faltan {Math.max(0, 5 - realReviewsCount)} reviews reales aprobadas
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
