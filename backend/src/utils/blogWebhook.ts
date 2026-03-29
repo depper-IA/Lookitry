@@ -7,6 +7,7 @@ type BlogWebhookAttempt = {
 
 type BlogTriggerResult = {
   attempt: string;
+  method: 'GET' | 'POST';
   status: number;
   data: unknown;
 };
@@ -117,32 +118,42 @@ export async function triggerBlogWebhook(
   };
 
   for (const attempt of attempts) {
-    const response = await axios.post(
-      url,
-      requestBody,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          ...attempt.headers,
-        },
-        timeout: 15000,
-        validateStatus: () => true,
-      }
-    );
+    for (const method of ['POST', 'GET'] as const) {
+      const response = method === 'POST'
+        ? await axios.post(
+            url,
+            requestBody,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                ...attempt.headers,
+              },
+              timeout: 15000,
+              validateStatus: () => true,
+            }
+          )
+        : await axios.get(url, {
+            headers: attempt.headers,
+            params: requestBody,
+            timeout: 15000,
+            validateStatus: () => true,
+          });
 
-    if (response.status >= 200 && response.status < 300) {
-      return {
-        attempt: attempt.label,
+      if (response.status >= 200 && response.status < 300) {
+        return {
+          attempt: attempt.label,
+          method,
+          status: response.status,
+          data: response.data,
+        };
+      }
+
+      failures.push({
+        label: `${attempt.label}:${method.toLowerCase()}`,
         status: response.status,
         data: response.data,
-      };
+      });
     }
-
-    failures.push({
-      label: attempt.label,
-      status: response.status,
-      data: response.data,
-    });
   }
 
   throw new Error(buildErrorMessage(failures));

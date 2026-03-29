@@ -5,6 +5,16 @@ import { v4 as uuidv4 } from 'uuid';
 
 const uploadService = new UploadService();
 
+async function resolveExpectedBlogSecret(): Promise<string> {
+  const { data } = await supabaseAdmin
+    .from('blog_settings')
+    .select('webhook_secret')
+    .eq('id', 1)
+    .single();
+
+  return data?.webhook_secret || process.env.BLOG_WEBHOOK_SECRET || '';
+}
+
 function toBaseSlug(value: string): string {
   return value
     .toLowerCase()
@@ -66,8 +76,8 @@ export const blogController = {
    */
   async webhookCreatePost(req: Request, res: Response) {
     try {
-      const secret = req.headers['x-blog-secret'];
-      const expectedSecret = process.env.BLOG_WEBHOOK_SECRET;
+      const secret = String(req.headers['x-blog-secret'] || '');
+      const expectedSecret = await resolveExpectedBlogSecret();
       
       if (!expectedSecret || secret !== expectedSecret) {
         return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Fallo de autenticación en el acceso al blog' });
@@ -326,8 +336,8 @@ export const blogController = {
    */
   async uploadBlogImage(req: Request, res: Response) {
     try {
-      const secret = req.headers['x-blog-secret'];
-      const expectedSecret = process.env.BLOG_WEBHOOK_SECRET;
+      const secret = String(req.headers['x-blog-secret'] || '');
+      const expectedSecret = await resolveExpectedBlogSecret();
 
       if (!expectedSecret || secret !== expectedSecret) {
         return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Fallo de autenticación en la subida de medios' });
@@ -346,6 +356,7 @@ export const blogController = {
           buffer: file.buffer,
           filename,
           temporary: false,
+          folder: 'web',
         });
         
         return res.status(200).json(result);
@@ -360,6 +371,7 @@ export const blogController = {
         image_base64,
         filename,
         temporary: false,
+        folder: 'web',
       });
 
       return res.status(200).json(result);
