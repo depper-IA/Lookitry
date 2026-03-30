@@ -132,11 +132,12 @@ export class ProductsService {
 
     // Trial activo = trial_end_date vigente y marca no suspendida.
     const isInTrial =
+      brand.plan === 'TRIAL' &&
       brand.subscription_status !== 'suspended' &&
       !!brand.trial_end_date &&
       new Date(brand.trial_end_date) > new Date();
 
-    const planKey = isInTrial ? 'TRIAL' : (brand.plan ?? 'BASIC');
+    const planKey = brand.plan ?? 'BASIC';
     const plan = PLANS[planKey] ?? PLANS['BASIC'];
     const currentCount = await this.countActiveProducts(brandId);
 

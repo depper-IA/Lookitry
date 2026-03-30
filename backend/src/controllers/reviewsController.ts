@@ -14,7 +14,7 @@ import type {
 const REVIEWS_PER_PAGE = 10;
 
 function isTrialBrand(brand: Pick<Brand, 'plan' | 'subscription_status'>): boolean {
-  return brand.plan === 'TRIAL' || brand.subscription_status === 'trial';
+  return brand.plan === 'TRIAL';
 }
 
 function parseRating(value: unknown): number | null {

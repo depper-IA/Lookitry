@@ -6,6 +6,7 @@ import { asyncHandler } from '../middleware/errorHandler';
 import { pricingService } from '../services/pricing.service';
 import { NotificationService } from '../services/notification.service';
 import { addonCreditsService } from '../services/addonCredits.service';
+import { planChangeService } from '../services/planChange.service';
 import { hasActivePaidSubscription, isTrialLandingBlocked } from '../utils/brandLifecycle';
 
 const subscriptionService = new SubscriptionService();
@@ -96,7 +97,7 @@ async function fulfillPaypalPayment(reference: string, orderId: string, amountUS
   if (isTrial && brandId) {
     await supabaseAdmin
       .from('brands')
-      .update({ trial_payment_status: 'active' })
+      .update({ plan: 'TRIAL', trial_payment_status: 'active' })
       .eq('id', brandId);
 
     await insertPaypalPaymentCompat({
@@ -182,23 +183,38 @@ async function fulfillPaypalPayment(reference: string, orderId: string, amountUS
   const isActualUpgrade =
     hasActivePaidSubscription(currentBrand) && currentBrand?.plan === 'BASIC' && String(plan).toUpperCase() === 'PRO';
 
-  await subscriptionService.renewSubscription(
-    brandId,
-    {
-      brand_id: brandId,
-      amount: amountUSD,
-      currency: 'USD',
-      payment_method: 'paypal',
-      status: 'completed',
-      months_paid: months,
-      payment_date: new Date().toISOString(),
-      notes: `${notesPrefix} orderId=${orderId}. Ref=${reference}. Plan=${plan}. Meses=${months}.${includesLanding ? ' Incluye Landing Page.' : ''}`,
-      reference,
-    },
-    months,
-    plan as string,
-    isActualUpgrade
-  );
+  try {
+    if (isActualUpgrade) {
+      await planChangeService.markProcessing(reference, amountUSD);
+    }
+
+    await subscriptionService.renewSubscription(
+      brandId,
+      {
+        brand_id: brandId,
+        amount: amountUSD,
+        currency: 'USD',
+        payment_method: 'paypal',
+        status: 'completed',
+        months_paid: months,
+        payment_date: new Date().toISOString(),
+        notes: `${notesPrefix} orderId=${orderId}. Ref=${reference}. Plan=${plan}. Meses=${months}.${includesLanding ? ' Incluye Landing Page.' : ''}`,
+        reference,
+      },
+      months,
+      plan as string,
+      isActualUpgrade
+    );
+
+    if (isActualUpgrade) {
+      await planChangeService.markCompleted(reference, amountUSD);
+    }
+  } catch (error) {
+    if (isActualUpgrade) {
+      await planChangeService.markFailed(reference, (error as Error)?.message || 'Error procesando upgrade PayPal');
+    }
+    throw error;
+  }
 
   if (includesLanding) {
     await supabaseAdmin
@@ -268,6 +284,22 @@ export class PaypalController {
       order_id: createdOrder.orderId,
       status: 'created',
     });
+
+    if (hasAuthenticatedBrand && planStr === 'PRO') {
+      const { data: currentBrand } = await supabaseAdmin.from('brands').select('plan, subscription_status, trial_end_date').eq('id', (req as any).brand.id).single();
+      if (hasActivePaidSubscription(currentBrand) && currentBrand?.plan === 'BASIC') {
+        await planChangeService.createPending({
+          brandId: (req as any).brand.id,
+          reference,
+          source: 'paypal',
+          fromPlan: currentBrand?.plan || null,
+          toPlan: 'PRO',
+          months: selectedMonths,
+          amountExpected: amountCOP,
+          metadata: { includesLanding: landing, amountUsdExpected: createdOrder.amountUSD },
+        });
+      }
+    }
 
     return res.status(200).json({ checkoutUrl: createdOrder.checkoutUrl, reference });
   });

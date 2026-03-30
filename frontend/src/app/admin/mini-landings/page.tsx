@@ -205,8 +205,8 @@ export default function AdminMiniLandingsPage() {
       const matchPlan = filterPlan === 'all'
         ? true
         : filterPlan === 'TRIAL'
-        ? b.is_in_trial === true
-        : b.plan === filterPlan && !b.is_in_trial;
+        ? b.plan === 'TRIAL'
+        : b.plan === filterPlan;
       return matchSearch && matchEstado && matchPlan;
     });
 
@@ -216,7 +216,7 @@ export default function AdminMiniLandingsPage() {
       if (sortField === 'name') {
         valA = a.name.toLowerCase(); valB = b.name.toLowerCase();
       } else if (sortField === 'plan') {
-        valA = a.is_in_trial ? 'TRIAL' : a.plan; valB = b.is_in_trial ? 'TRIAL' : b.plan;
+        valA = a.plan; valB = b.plan;
       } else if (sortField === 'estado') {
         const order = { activa: 0, suspendida: 1, inactiva: 2 };
         valA = order[getEstado(a)]; valB = order[getEstado(b)];
@@ -471,14 +471,14 @@ export default function AdminMiniLandingsPage() {
                       <span
                         className="px-2 py-0.5 rounded-full text-xs font-semibold"
                         style={
-                          brand.is_in_trial
+                          brand.plan === 'TRIAL'
                             ? { backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }
                             : brand.plan === 'PRO'
                             ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
                             : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }
                         }
                       >
-                        {brand.is_in_trial ? 'TRIAL' : brand.plan}
+                        {brand.plan}
                       </span>
                     </td>
 

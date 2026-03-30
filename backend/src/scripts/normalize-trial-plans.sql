@@ -1,7 +1,9 @@
 -- Normalización histórica de cuentas trial que quedaron persistidas como BASIC.
 -- Objetivo:
 -- 1. Corregir cuentas con rastro real de trial (`trial_end_date`) para que su plan base sea TRIAL.
--- 2. No tocar marcas con suscripción paga activa o por vencer.
+-- 2. No reintroducir `subscription_status = 'trial'`; el status persistido válido sigue siendo
+--    active | expiring_soon | expired | suspended | null.
+-- 3. No tocar marcas con suscripción paga activa o por vencer.
 --
 -- Uso recomendado:
 -- - Ejecutar primero los SELECT de diagnóstico.
@@ -32,8 +34,8 @@ UPDATE brands
 SET
   plan = 'TRIAL',
   subscription_status = CASE
-    WHEN trial_end_date > NOW() THEN 'trial'
-    WHEN COALESCE(subscription_status::text, '') IN ('', 'trial') THEN 'expired'
+    WHEN trial_end_date > NOW() AND COALESCE(subscription_status::text, '') IN ('', 'expired') THEN 'active'
+    WHEN trial_end_date <= NOW() AND COALESCE(subscription_status::text, '') IN ('', 'expired') THEN 'expired'
     ELSE subscription_status
   END
 WHERE COALESCE(plan, 'BASIC') = 'BASIC'

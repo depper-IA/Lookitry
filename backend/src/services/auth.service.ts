@@ -130,7 +130,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
     // Actualizar plan y fechas en la marca existente
     const months = pending.months || 1;
     const isTrial = (pending.plan || '').toUpperCase() === 'TRIAL';
-    const plan = isTrial ? 'BASIC' : (pending.plan || 'BASIC').toUpperCase();
+    const plan = isTrial ? 'TRIAL' : (pending.plan || 'BASIC').toUpperCase();
 
     const now = new Date();
     let endDate = new Date(now);
@@ -175,7 +175,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
     const hashedPassword = await bcrypt.hash(password, 10);
     const months = pending.months || 1;
     const isTrial = (pending.plan || '').toUpperCase() === 'TRIAL';
-    const plan = isTrial ? 'BASIC' : (pending.plan || 'BASIC').toUpperCase();
+    const plan = isTrial ? 'TRIAL' : (pending.plan || 'BASIC').toUpperCase();
 
     const now = new Date();
     let endDate = new Date(now);
@@ -358,7 +358,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
         slug: data.slug,
         contact_name: data.contact_name.trim(),
         phone: data.phone?.trim() || null,
-        plan: 'BASIC',
+        plan: trialEndDate ? 'TRIAL' : 'BASIC',
         trial_end_date: trialEndDate ? trialEndDate.toISOString() : null,
         trial_generations_limit: trialEndDate ? (campaign?.trial_generations_limit ?? 15) : 0,
         email_verified: false,

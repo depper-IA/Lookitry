@@ -69,6 +69,7 @@ export class UsageService {
     }
 
     const inTrial =
+      brand.plan === 'TRIAL' &&
       brand.subscription_status !== 'suspended' &&
       !!brand.trial_end_date &&
       new Date(brand.trial_end_date) > new Date();
@@ -142,6 +143,7 @@ export class UsageService {
     if (!brand) return false;
 
     const inTrial =
+      brand.plan === 'TRIAL' &&
       brand.subscription_status !== 'suspended' &&
       !!brand.trial_end_date &&
       new Date(brand.trial_end_date) > new Date();
