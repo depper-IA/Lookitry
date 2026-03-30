@@ -99,9 +99,9 @@ export default function AdminBrandsPage() {
         b.slug.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    if (filterPlan === 'TRIAL') filtered = filtered.filter(b => b.is_in_trial);
-    else if (filterPlan !== 'all') filtered = filtered.filter(b => b.plan === filterPlan && !b.is_in_trial);
-    if (filterTrial === 'trial') filtered = filtered.filter(b => b.is_in_trial);
+    if (filterPlan === 'TRIAL') filtered = filtered.filter(b => b.plan === 'TRIAL');
+    else if (filterPlan !== 'all') filtered = filtered.filter(b => b.plan === filterPlan);
+    if (filterTrial === 'trial') filtered = filtered.filter(b => b.plan === 'TRIAL');
     else if (filterTrial === 'active') filtered = filtered.filter(b => b.subscription_status === 'active' || b.subscription_status === 'expiring_soon');
     else if (filterTrial === 'suspended') filtered = filtered.filter(b => b.subscription_status === 'suspended' || b.subscription_status === 'expired');
     
@@ -424,7 +424,7 @@ export default function AdminBrandsPage() {
 
   if (error) return <div className="px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}>{error}</div>;
 
-  const trialCount = brands.filter(b => b.is_in_trial).length;
+  const trialCount = brands.filter(b => b.plan === 'TRIAL').length;
   const totalPages = Math.ceil(filteredBrands.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedBrands = filteredBrands.slice(startIndex, startIndex + itemsPerPage);
@@ -474,8 +474,8 @@ export default function AdminBrandsPage() {
             <div className="flex gap-2 flex-wrap">
               {([
                 { value: 'all',     label: `Todos (${brands.length})` },
-                { value: 'TRIAL',   label: `TRIAL (${brands.filter(b => b.is_in_trial).length})` },
-                { value: 'BASIC',   label: `BASIC (${brands.filter(b => b.plan === 'BASIC' && !b.is_in_trial).length})` },
+                { value: 'TRIAL',   label: `TRIAL (${brands.filter(b => b.plan === 'TRIAL').length})` },
+                { value: 'BASIC',   label: `BASIC (${brands.filter(b => b.plan === 'BASIC').length})` },
                 { value: 'PRO',     label: `PRO (${brands.filter(b => b.plan === 'PRO').length})` },
                 { value: 'LANDING', label: `LANDING (${brands.filter(b => b.plan === 'LANDING').length})` },
               ] as { value: FilterPlan; label: string }[]).map(({ value, label }) => (
@@ -605,7 +605,7 @@ export default function AdminBrandsPage() {
                 <td className="px-4 py-3.5 whitespace-nowrap">
                   <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
                     style={
-                      brand.is_in_trial
+                      brand.plan === 'TRIAL'
                         ? { backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }
                         : brand.plan === 'PRO'
                         ? { backgroundColor: 'rgba(168,85,247,0.12)', color: '#a855f7' }
@@ -613,10 +613,10 @@ export default function AdminBrandsPage() {
                         ? { backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }
                         : { backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }
                     }>
-                    {brand.is_in_trial ? 'TRIAL' : brand.plan}
+                    {brand.plan}
                   </span>
                   <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    {brand.is_in_trial
+                    {brand.plan === 'TRIAL'
                       ? 'Gratuito'
                       : brand.plan === 'PRO'
                       ? '$250.000/mes'
@@ -628,7 +628,7 @@ export default function AdminBrandsPage() {
                   </div>
                 </td>
                 <td className="px-4 py-3.5 whitespace-nowrap">
-                  {brand.is_in_trial ? (
+                  {brand.plan === 'TRIAL' ? (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }}>
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v10.5a3 3 0 006 0V3M6 3h12" /></svg>
                       Prueba — {brand.trial_days_remaining ?? 0}d
@@ -658,7 +658,7 @@ export default function AdminBrandsPage() {
                     <button onClick={() => handleViewProducts(brand)} className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-all duration-150" title="Ver productos">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                     </button>
-                    {brand.is_in_trial ? (
+                    {brand.plan === 'TRIAL' ? (
                       <button onClick={() => handleOpenActivate(brand)} className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 transition-all duration-150" title="Activar plan">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                       </button>
@@ -744,14 +744,14 @@ export default function AdminBrandsPage() {
             </div>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                {[['Email', selectedBrand.email], ['Slug', selectedBrand.slug], ['Plan', selectedBrand.is_in_trial ? 'TRIAL' : selectedBrand.plan],
+                {[['Email', selectedBrand.email], ['Slug', selectedBrand.slug], ['Plan', selectedBrand.plan],
                   ['Fecha de registro', new Date(selectedBrand.created_at).toLocaleDateString('es-ES')]].map(([label, value]) => (
                   <div key={label}>
                     <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{label}</p>
                     <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{value}</p>
                   </div>
                 ))}
-                {selectedBrand.is_in_trial && (
+                {selectedBrand.plan === 'TRIAL' && (
                   <div className="col-span-2">
                     <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Estado de prueba</p>
                     <p className="text-sm font-medium" style={{ color: '#3b82f6' }}>
@@ -922,6 +922,7 @@ export default function AdminBrandsPage() {
                   <select value={createForm.plan} onChange={e => setCreateForm(f => ({ ...f, plan: e.target.value }))}
                     className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
                     style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>
+                    <option value="TRIAL">TRIAL — 7 días</option>
                     <option value="BASIC">BASIC — $150.000/mes</option>
                     <option value="PRO">PRO — $250.000/mes</option>
                   </select>

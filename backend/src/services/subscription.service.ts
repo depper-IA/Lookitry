@@ -2,8 +2,13 @@
 import { Brand, SubscriptionPayment, CreatePaymentDto } from '../types';
 import { PaymentSettingsService } from './paymentSettings.service';
 import { getReportingTrm, normalizePaymentRecordToCop } from '../utils/paymentNormalization';
-import { attachLedgerSnapshotToNotes, type PaymentLedgerSnapshot } from '../utils/paymentLedger';
+import {
+  attachLedgerSnapshotToNotes,
+  parseLedgerSnapshotFromNotes,
+  type PaymentLedgerSnapshot,
+} from '../utils/paymentLedger';
 import { hasActivePaidSubscription, isTrialOperationalBrand, recordTrialEvent } from '../utils/brandLifecycle';
+import { pricingService } from './pricing.service';
 
 /**
  * SubscriptionService
@@ -57,7 +62,7 @@ export class SubscriptionService {
   async checkSubscriptionStatus(brandId: string): Promise<boolean> {
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .select('subscription_status, trial_end_date')
+      .select('plan, subscription_status, trial_end_date')
       .eq('id', brandId)
       .single();
 
@@ -69,13 +74,13 @@ export class SubscriptionService {
     if (
       data.subscription_status === 'active' ||
       data.subscription_status === 'expiring_soon' ||
-      data.subscription_status == null
+      (data.plan !== 'TRIAL' && data.subscription_status == null)
     ) {
       return true;
     }
 
     // Verificar período de prueba activo
-    if (data.trial_end_date) {
+    if (data.plan === 'TRIAL' && data.trial_end_date) {
       const trialEnd = new Date(data.trial_end_date);
       if (trialEnd > new Date()) {
         return true;
@@ -94,11 +99,11 @@ export class SubscriptionService {
   async isInTrial(brandId: string): Promise<boolean> {
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .select('trial_end_date, subscription_status')
+      .select('plan, trial_end_date, subscription_status')
       .eq('id', brandId)
       .single();
 
-    if (error || !data || !data.trial_end_date) {
+    if (error || !data || data.plan !== 'TRIAL' || !data.trial_end_date) {
       return false;
     }
 
@@ -118,11 +123,11 @@ export class SubscriptionService {
   async getTrialDaysRemaining(brandId: string): Promise<number | null> {
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .select('trial_end_date')
+      .select('plan, trial_end_date')
       .eq('id', brandId)
       .single();
 
-    if (error || !data || !data.trial_end_date) {
+    if (error || !data || data.plan !== 'TRIAL' || !data.trial_end_date) {
       return null;
     }
 
@@ -239,7 +244,7 @@ export class SubscriptionService {
     // Actualizar plan si se especificó uno válido
     if (plan && ['BASIC', 'PRO', 'ENTERPRISE', 'TRIAL'].includes(plan.toUpperCase())) {
       const planUpper = plan.toUpperCase();
-      updateData.plan = planUpper === 'TRIAL' ? 'BASIC' : planUpper;
+      updateData.plan = planUpper;
 
       if (planUpper === 'TRIAL') {
         const nowIso = new Date().toISOString();
@@ -259,7 +264,9 @@ export class SubscriptionService {
         updateData.trial_end_date = trialEndDate.toISOString();
         updateData.trial_payment_status = 'active';
         updateData.subscription_status = 'active';
+        updateData.subscription_start_date = now.toISOString();
         updateData.subscription_end_date = trialEndDate.toISOString();
+        updateData.next_payment_date = trialEndDate.toISOString();
       } else {
         updateData.trial_end_date = null;
         updateData.trial_payment_status = null;
@@ -401,45 +408,53 @@ export class SubscriptionService {
       .limit(1)
       .maybeSingle();
 
-    if (!lastPayment) {
-      const newEndDate = this.calculateExpirationDate(now, newMonths);
-      return {
-        daysRemaining,
-        basePlanTotal,
-        creditAmount: 0,
-        newPlanTotal: basePlanTotal,
-        amountToPay: basePlanTotal,
-        remainingCredit: 0,
-        newEndDate: newEndDate.toISOString(),
-        isFree: false,
-        creditLabel: 'Sin credito disponible',
-      };
-    }
-
-    const paymentMonths = lastPayment?.months_paid || 1;
+    const paymentMonths = lastPayment?.months_paid || Math.max(
+      1,
+      Math.round(
+        Math.max(
+          30,
+          (endDate.getTime() - (brand.subscription_start_date ? new Date(brand.subscription_start_date).getTime() : now.getTime())) /
+            (1000 * 60 * 60 * 24)
+        ) / 30
+      )
+    );
     const totalDays = Math.max(1, 30 * paymentMonths);
     const effectiveDaysRemaining = Math.min(daysRemaining, totalDays);
 
-    // BUG #2 FIX: El fallback debe ser el TOTAL del período, no el precio mensual.
-    // Si no hay lastPayment con amount > 0, estimamos el total multiplicando el precio
-    // mensual (currentPlanPriceTotalFallback) por la duración real del período actual.
     let currentPlanPriceTotal: number;
     if (lastPayment?.amount && lastPayment.amount > 0) {
       currentPlanPriceTotal = lastPayment.amount;
     } else {
-      // Obtener duración real del período desde las fechas de BD
       const startDate = brand.subscription_start_date ? new Date(brand.subscription_start_date) : now;
       const endDt = brand.subscription_end_date ? new Date(brand.subscription_end_date) : now;
-      const periodDays = Math.max(30, Math.round((endDt.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+      const periodDays = Math.max(
+        30,
+        Math.round((endDt.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+      );
       const estimatedMonths = Math.max(1, Math.round(periodDays / 30));
-      // currentPlanPriceTotalFallback es el precio MENSUAL → multiplicar por meses estimados
-      currentPlanPriceTotal = currentPlanPriceTotalFallback * estimatedMonths;
+
+      if (currentPlanPriceTotalFallback > 0) {
+        currentPlanPriceTotal = currentPlanPriceTotalFallback;
+      } else {
+        currentPlanPriceTotal = await pricingService.calculateTotal(
+          String(brand.plan || 'BASIC').toUpperCase(),
+          estimatedMonths,
+          false
+        );
+      }
+
       console.log(
-        `[Proration] Sin lastPayment: estimando total. periodDays=${periodDays} meses=${estimatedMonths} precioMensual=${currentPlanPriceTotalFallback} totalEstimado=${currentPlanPriceTotal}`
+        `[Proration] Sin lastPayment: usando total fallback/config. periodDays=${periodDays} meses=${estimatedMonths} totalUsado=${currentPlanPriceTotal}`
       );
     }
 
-    if (lastPayment?.notes?.includes('Incluye Landing Page')) {
+    const lastPaymentSnapshot = parseLedgerSnapshotFromNotes(lastPayment?.notes);
+    const includesLanding =
+      typeof lastPaymentSnapshot?.includesLanding === 'boolean'
+        ? lastPaymentSnapshot.includesLanding
+        : String(lastPayment?.notes || '').includes('Incluye Landing Page');
+
+    if (includesLanding) {
       try {
         const settingsService = new PaymentSettingsService();
         const settings = await settingsService.getSettings();
@@ -456,7 +471,7 @@ export class SubscriptionService {
     }
 
     console.log(
-      `[Proration] brandId=${brandId} lastPayment=${lastPayment?.amount} fallbackMensual=${currentPlanPriceTotalFallback} totalUsado=${currentPlanPriceTotal} totalDays=${totalDays} daysRemaining=${daysRemaining} effectiveDaysRemaining=${effectiveDaysRemaining}`
+      `[Proration] brandId=${brandId} lastPayment=${lastPayment?.amount} fallbackTotal=${currentPlanPriceTotalFallback} totalUsado=${currentPlanPriceTotal} totalDays=${totalDays} daysRemaining=${daysRemaining} effectiveDaysRemaining=${effectiveDaysRemaining}`
     );
 
     const pricePerDay = currentPlanPriceTotal / totalDays;
@@ -470,7 +485,14 @@ export class SubscriptionService {
     const remainingCredit = Math.max(0, creditAmount - basePlanTotal);
 
     const newEndDate = this.calculateExpirationDate(now, newMonths);
-    const currentPlanLabel = brand.plan === 'PRO' ? 'Plan Pro' : brand.plan === 'ENTERPRISE' ? 'Plan Enterprise' : 'Plan Básico';
+    const currentPlanLabel =
+      brand.plan === 'PRO'
+        ? 'Plan Pro'
+        : brand.plan === 'ENTERPRISE'
+          ? 'Plan Enterprise'
+          : brand.plan === 'TRIAL'
+            ? 'Plan Trial'
+            : 'Plan Básico';
 
     return {
       daysRemaining,
@@ -779,34 +801,31 @@ export class SubscriptionService {
     const sevenDaysFromNow = new Date();
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
 
-    // BUG #1 FIX: Solo expirar marcas con subscription_end_date definida (nunca NULL).
-    // Además, no expirar si trial_end_date aún está en el futuro (trial vigente).
+    const { data: expiredTrials } = await supabaseAdmin
+      .from('brands')
+      .update({ subscription_status: 'expired' })
+      .eq('plan', 'TRIAL')
+      .lte('trial_end_date', nowIso)
+      .not('trial_end_date', 'is', null)
+      .in('subscription_status', ['active', 'expiring_soon', 'expired'])
+      .select('id');
+
     const { data: expiredBrands } = await supabaseAdmin
       .from('brands')
       .update({ subscription_status: 'expired' })
+      .neq('plan', 'TRIAL')
       .lte('subscription_end_date', nowIso)
-      .not('subscription_end_date', 'is', null)                    // BUG #10 FIX
-      .in('subscription_status', ['active', 'expiring_soon'])
-      .or(`trial_end_date.is.null,trial_end_date.lte.${nowIso}`)  // BUG #1 FIX: proteger trials vigentes
-      .select('id');
-
-    // BUG #10 FIX: Expirar marcas cuyo TRIAL venció y nunca tuvieron suscripción de pago
-    const { data: expiredTrialBrands } = await supabaseAdmin
-      .from('brands')
-      .update({ subscription_status: 'expired' })
-      .lte('trial_end_date', nowIso)
-      .not('trial_end_date', 'is', null)
-      .is('subscription_end_date', null)  // Solo los que nunca tuvieron período pago
+      .not('subscription_end_date', 'is', null)
       .in('subscription_status', ['active', 'expiring_soon'])
       .select('id');
 
     const { data: expiringSoonBrands } = await supabaseAdmin
       .from('brands')
       .update({ subscription_status: 'expiring_soon' })
+      .neq('plan', 'TRIAL')
       .gt('subscription_end_date', nowIso)
       .lte('subscription_end_date', sevenDaysFromNow.toISOString())
       .eq('subscription_status', 'active')
-      .or(`trial_end_date.is.null,trial_end_date.lte.${nowIso}`)  // No marcar expiring_soon si trial aún activo
       .select('id');
 
     const { data: suspendedBrands } = await supabaseAdmin
@@ -815,16 +834,16 @@ export class SubscriptionService {
       .eq('subscription_status', 'expired')
       .select('id');
 
-    const totalExpired = (expiredBrands?.length || 0) + (expiredTrialBrands?.length || 0);
+    const totalExpired = (expiredBrands?.length || 0) + (expiredTrials?.length || 0);
     console.log(
-      `[Subscription Job] expired=${totalExpired} (subs=${expiredBrands?.length || 0} trials=${expiredTrialBrands?.length || 0}) expiringSoon=${expiringSoonBrands?.length || 0} suspended=${suspendedBrands?.length || 0}`
+      `[Subscription Job] expired=${totalExpired} (subs=${expiredBrands?.length || 0} trials=${expiredTrials?.length || 0}) expiringSoon=${expiringSoonBrands?.length || 0} suspended=${suspendedBrands?.length || 0}`
     );
 
     return {
       expired: totalExpired,
       expiringSoon: expiringSoonBrands?.length || 0,
       suspended: suspendedBrands?.length || 0,
-      trialExpired: expiredTrialBrands?.length || 0,
+      trialExpired: expiredTrials?.length || 0,
     };
   }
 
@@ -851,7 +870,7 @@ export class SubscriptionService {
           return existing as SubscriptionPayment;
         }
       } catch {
-        // Si el esquema no tiene `reference` en algún entorno legacy, seguimos sin idempotencia por reference.
+        console.warn('[Subscription] createPaymentRecord sin guard por reference: esquema legacy o error de consulta');
       }
     }
 

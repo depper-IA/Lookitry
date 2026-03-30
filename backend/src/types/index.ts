@@ -18,7 +18,7 @@ export interface Brand {
   // Campos de suscripción
   subscription_start_date: string | null;
   subscription_end_date: string | null;
-  subscription_status: 'trial' | 'active' | 'expiring_soon' | 'expired' | 'suspended' | null;
+  subscription_status: 'active' | 'expiring_soon' | 'expired' | 'suspended' | null;
   last_payment_date: string | null;
   next_payment_date: string | null;
   // Campos de período de prueba (Requirement 11 - Opción C)

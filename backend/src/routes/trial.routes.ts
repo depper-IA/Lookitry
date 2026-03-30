@@ -66,7 +66,7 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
   if (price === 0 || campaign?.require_card_verification === false) {
     await supabaseAdmin
       .from('brands')
-      .update({ trial_payment_status: 'active' })
+      .update({ plan: 'TRIAL', trial_payment_status: 'active' })
       .eq('id', brand.id);
     return res.json({ skipPayment: true, message: 'Trial activado directamente' });
   }

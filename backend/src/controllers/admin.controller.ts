@@ -703,6 +703,7 @@ export const getMiniLandingsAdmin = async (req: any, res: Response) => {
       }
       const trialEnd = b.trial_end_date ? new Date(b.trial_end_date) : null;
       const is_in_trial =
+        b.plan === 'TRIAL' &&
         trialEnd !== null &&
         trialEnd > now &&
         b.subscription_status !== 'active' &&

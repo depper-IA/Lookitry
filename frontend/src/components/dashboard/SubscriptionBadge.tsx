@@ -61,6 +61,7 @@ export function SubscriptionBadge() {
   const badgeColor = getBadgeColor();
 
   const trialExpired =
+    subscriptionInfo.plan === 'TRIAL' &&
     subscriptionInfo.trialEndDate !== null &&
     (trialDays === 0 || trialDays === null) &&
     subscriptionInfo.status !== 'active' &&
