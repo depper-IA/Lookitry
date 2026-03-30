@@ -919,9 +919,10 @@ export class AdminService {
       b.subscription_status !== 'suspended'
     );
 
-    // Marcas convertidas (tienen suscripción activa o por vencer)
+    // Marcas convertidas: solo planes pagos reales, excluyendo TRIAL.
     const converted = brands.filter(b =>
-      b.subscription_status === 'active' || b.subscription_status === 'expiring_soon'
+      b.plan !== 'TRIAL' &&
+      (b.subscription_status === 'active' || b.subscription_status === 'expiring_soon')
     );
 
     const totalBrands = brands.length;
