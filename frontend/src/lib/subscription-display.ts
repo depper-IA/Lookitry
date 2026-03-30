@@ -25,6 +25,10 @@ function getDaysDifference(date: string | null | undefined): number | null {
 }
 
 export function hasActivePaidSubscription(brand?: Partial<Brand> | null): boolean {
+  if (isTrialBrand(brand)) {
+    return false;
+  }
+
   return PAID_STATUSES.has(brand?.subscriptionStatus ?? '');
 }
 
