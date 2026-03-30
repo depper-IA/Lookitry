@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
-// ── Tipos ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Tipos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface Campaign {
   id: string;
@@ -15,6 +15,7 @@ interface Campaign {
   trial_generations_limit: number;
   ends_at: string | null;
   require_card_verification: boolean;
+  price_cop?: number;
   created_by: string;
   created_at: string;
 }
@@ -82,7 +83,7 @@ interface ContactMeta {
 
 type SysTab = 'trial' | 'debug' | 'contact' | 'credits' | 'ai' | 'health';
 
-// ── Iconos ────────────────────────────────────────────────────────────────────
+// â”€â”€ Iconos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function IconClock({ className }: { className?: string }) {
   return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
@@ -144,13 +145,13 @@ function IconCopy({ className }: { className?: string }) {
 const DEFAULT_BASE_PROMPT = `You are a professional virtual try-on AI specialized in fashion photography.
 Your task: generate a single photorealistic image of the person in the selfie wearing the exact product shown in the reference image.
 
-ABSOLUTE RULES — follow all of them without exception:
-[CLOTHING REPLACEMENT — MANDATORY]
+ABSOLUTE RULES â€” follow all of them without exception:
+[CLOTHING REPLACEMENT â€” MANDATORY]
 - Do NOT leave any clothing item from the original photo visible if the product replaces it.
 
 [COMPOSITION & FRAMING]
 - Maintain the exact same pose, body position, background, and spatial composition as the original photo.
-- Fill every pixel of the frame with the scene — no empty space.
+- Fill every pixel of the frame with the scene â€” no empty space.
 
 [OUTPUT DIMENSIONS]
 - The output image MUST match the EXACT aspect ratio of the input selfie.
@@ -161,11 +162,11 @@ ABSOLUTE RULES — follow all of them without exception:
 
 [PERSON & REALISM]
 - Keep the person's face, skin tone, hair, body proportions, and expression IDENTICAL to the selfie.
-- Photorealistic quality only — no illustrations, no stylization.
+- Photorealistic quality only â€” no illustrations, no stylization.
 
 Output: the final try-on image only. No text, no watermarks, no UI overlays.`;
 
-// ── Toggle switch ─────────────────────────────────────────────────────────────
+// â”€â”€ Toggle switch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Toggle({ value, onChange, disabled }: { value: boolean; onChange: () => void; disabled?: boolean }) {
   return (
@@ -180,7 +181,7 @@ function Toggle({ value, onChange, disabled }: { value: boolean; onChange: () =>
   );
 }
 
-// ── Badge campaña ─────────────────────────────────────────────────────────────
+// â”€â”€ Badge campaÃ±a â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function CampaignBadge({ active }: { active: boolean }) {
   return (
@@ -196,7 +197,7 @@ function CampaignBadge({ active }: { active: boolean }) {
   );
 }
 
-// ── Health helpers ────────────────────────────────────────────────────────────
+// â”€â”€ Health helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function HealthDot({ status }: { status: ServiceStatus }) {
   const colors: Record<ServiceStatus, string> = { ok: 'bg-emerald-500', degraded: 'bg-amber-500', down: 'bg-red-500', loading: 'bg-gray-400 animate-pulse' };
@@ -217,7 +218,7 @@ function formatUptime(s: number) {
   return `${m}m ${s % 60}s`;
 }
 
-// ── Sección wrapper ───────────────────────────────────────────────────────────
+// â”€â”€ SecciÃ³n wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -233,11 +234,11 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
   );
 }
 
-// ── Página principal ──────────────────────────────────────────────────────────
+// â”€â”€ PÃ¡gina principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function SystemConfigPage() {
   const searchParams = useSearchParams();
-  // Campañas
+  // CampaÃ±as
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [activeCampaign, setActiveCampaign] = useState<Campaign | null>(null);
   const [loadingCampaigns, setLoadingCampaigns] = useState(true);
@@ -248,9 +249,9 @@ export default function SystemConfigPage() {
   const [formGenerations, setFormGenerations] = useState(50);
   const [formEndsAt, setFormEndsAt] = useState('');
 
-  // Verificación de tarjeta
-  const [requireCard, setRequireCard] = useState(true);
-  const [savingCard, setSavingCard] = useState(false);
+  // VerificaciÃ³n de tarjeta
+  const [trialPaymentRequired, setTrialPaymentRequired] = useState(true);
+  const [savingTrialPayment, setSavingTrialPayment] = useState(false);
 
   // Bypass IP
   const [bypassIp, setBypassIp] = useState(false);
@@ -271,7 +272,7 @@ export default function SystemConfigPage() {
   const [landingOriginalPrice, setLandingOriginalPrice] = useState<number>(900000);
   const [savingPricingConfig, setSavingPricingConfig] = useState(false);
 
-  // Meta pricing_config (id='meta') — guardamos el objeto completo para no pisar campos al actualizar
+  // Meta pricing_config (id='meta') â€” guardamos el objeto completo para no pisar campos al actualizar
   const [pricingMeta, setPricingMeta] = useState<Record<string, any>>({});
 
   // Contacto y redes
@@ -285,7 +286,7 @@ export default function SystemConfigPage() {
   });
   const [savingContactConfig, setSavingContactConfig] = useState(false);
 
-  // TRM (USD/COP) — pricing_config.meta
+  // TRM (USD/COP) â€” pricing_config.meta
   const [trmAuto, setTrmAuto] = useState<boolean>(true);
   const [trmReferencia, setTrmReferencia] = useState<number>(4000);
   const [savingTrm, setSavingTrm] = useState(false);
@@ -307,7 +308,7 @@ export default function SystemConfigPage() {
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
   const [savingMaintenance, setSavingMaintenance] = useState(false);
 
-  // Créditos OpenRouter
+  // CrÃ©ditos OpenRouter
   const [openRouterCredits, setOpenRouterCredits] = useState<ProviderCredits | null>(null);
   const [replicateCredits, setReplicateCredits] = useState<ProviderCredits | null>(null);
   const [loadingCredits, setLoadingCredits] = useState(true);
@@ -320,7 +321,7 @@ export default function SystemConfigPage() {
 
   const headers = { 'Content-Type': 'application/json' };
 
-  // ── Loaders ────────────────────────────────────────────────────────────────
+  // â”€â”€ Loaders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const loadCampaigns = useCallback(async () => {
     setLoadingCampaigns(true);
@@ -332,8 +333,8 @@ export default function SystemConfigPage() {
       const active = data.activeCampaign ?? null;
       setActiveCampaign(active);
       const ref = active ?? list[0] ?? null;
-      if (ref) setRequireCard(ref.require_card_verification);
-    } catch { setError('Error al cargar campañas'); }
+      if (ref) setTrialPaymentRequired(ref.require_card_verification !== false && Number(ref.price_cop ?? 0) > 0);
+    } catch { setError('Error al cargar campaÃ±as'); }
     finally { setLoadingCampaigns(false); }
   }, []);
 
@@ -344,12 +345,12 @@ export default function SystemConfigPage() {
       setHealth(await res.json());
     } catch {
       setHealth({ status: 'down', timestamp: new Date().toISOString(), uptime: 0,
-        services: { 
-          supabase: { status: 'down', latency: 0 }, 
-          n8n: { status: 'down', latency: 0 }, 
+        services: {
+          supabase: { status: 'down', latency: 0 },
+          n8n: { status: 'down', latency: 0 },
           email: { status: 'down', latency: 0 },
           minio: { status: 'down', latency: 0 }
-        } 
+        }
       });
     } finally { setLoadingHealth(false); }
   }, []);
@@ -458,7 +459,7 @@ export default function SystemConfigPage() {
     else { setError(msg); setTimeout(() => setError(''), 4000); }
   }
 
-  // ── Acciones campañas ──────────────────────────────────────────────────────
+  // â”€â”€ Acciones campaÃ±as â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async function handleCreateCampaign(e: React.FormEvent) {
     e.preventDefault();
@@ -467,13 +468,13 @@ export default function SystemConfigPage() {
     try {
       const res = await fetch(`${API_URL}/api/admin/trial-campaign`, {
         method: 'POST', credentials: 'include', headers,
-        body: JSON.stringify({ name: formName, trial_days: formDays, trial_generations_limit: formGenerations, ends_at: formEndsAt || null, active: true, require_card_verification: requireCard }),
+        body: JSON.stringify({ name: formName, trial_days: formDays, trial_generations_limit: formGenerations, ends_at: formEndsAt || null, active: true, require_card_verification: trialPaymentRequired }),
       });
       if (!res.ok) throw new Error((await res.json()).message);
-      flash('Campaña creada y activada', 'ok');
+      flash('CampaÃ±a creada y activada', 'ok');
       setShowForm(false); setFormName(''); setFormDays(7); setFormGenerations(50); setFormEndsAt('');
       await loadCampaigns();
-    } catch (err: any) { flash(err.message || 'Error al crear campaña', 'err'); }
+    } catch (err: any) { flash(err.message || 'Error al crear campaÃ±a', 'err'); }
     finally { setSavingCampaign(false); }
   }
 
@@ -482,17 +483,17 @@ export default function SystemConfigPage() {
     try {
       const res = await fetch(`${API_URL}/api/admin/trial-campaign/${c.id}`, { method: 'PATCH', credentials: 'include', headers, body: JSON.stringify({ active: !c.active }) });
       if (!res.ok) throw new Error((await res.json()).message);
-      flash(c.active ? 'Campaña desactivada' : 'Campaña activada', 'ok');
+      flash(c.active ? 'CampaÃ±a desactivada' : 'CampaÃ±a activada', 'ok');
       await loadCampaigns();
     } catch (err: any) { flash(err.message, 'err'); }
     finally { setSavingCampaign(false); }
   }
 
-  // ── Verificación de tarjeta ────────────────────────────────────────────────
+  // â”€â”€ VerificaciÃ³n de tarjeta â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  async function handleToggleCard() {
-    const newVal = !requireCard;
-    setSavingCard(true);
+  async function handleToggleTrialPayment() {
+    const newVal = !trialPaymentRequired;
+    setSavingTrialPayment(true);
     try {
       const targets = campaigns.filter(c => c.active);
       if (targets.length > 0) {
@@ -500,14 +501,14 @@ export default function SystemConfigPage() {
           fetch(`${API_URL}/api/admin/trial-campaign/${c.id}`, { method: 'PATCH', credentials: 'include', headers, body: JSON.stringify({ require_card_verification: newVal }) })
         ));
       }
-      setRequireCard(newVal);
-      flash(newVal ? 'Verificación de tarjeta activada' : 'Verificación desactivada — modo test', 'ok');
+      setTrialPaymentRequired(newVal);
+      flash(newVal ? 'Pago por prueba activado' : 'Trial gratis activado', 'ok');
       await loadCampaigns();
     } catch (err: any) { flash(err.message, 'err'); }
-    finally { setSavingCard(false); }
+    finally { setSavingTrialPayment(false); }
   }
 
-  // ── Guardado Global / Específico ───────────────────────────────────────────
+  // â”€â”€ Guardado Global / EspecÃ­fico â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async function handleGlobalSave() {
     setSavingAIConfig(true);
@@ -561,7 +562,7 @@ export default function SystemConfigPage() {
       if (!settingsRes.ok) throw new Error((await settingsRes.json()).message || 'Error');
       if (!pricingRes.ok) throw new Error((await pricingRes.json()).error || 'Error al guardar redes');
       setPricingMeta(nextMeta);
-      flash('Configuración global guardada correctamente', 'ok');
+      flash('ConfiguraciÃ³n global guardada correctamente', 'ok');
     } catch (err: any) { flash(err.message || 'Error al guardar', 'err'); }
     finally {
       setSavingAIConfig(false);
@@ -583,7 +584,7 @@ export default function SystemConfigPage() {
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Error');
       setBypassIp(newVal);
-      flash(newVal ? 'Bypass IP activado — modo test' : 'Bypass IP desactivado', 'ok');
+      flash(newVal ? 'Bypass IP activado â€” modo test' : 'Bypass IP desactivado', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
     finally { setSavingBypass(false); }
   }
@@ -611,7 +612,7 @@ export default function SystemConfigPage() {
         }),
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Error');
-      flash('Configuración de landing guardada', 'ok');
+      flash('ConfiguraciÃ³n de landing guardada', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
     finally { setSavingPricingConfig(false); }
   }
@@ -700,7 +701,7 @@ export default function SystemConfigPage() {
     setSavingTrm(true);
     try {
       if (!trmAuto && !(trmReferencia > 0)) {
-        throw new Error('TRM de referencia inválida');
+        throw new Error('TRM de referencia invÃ¡lida');
       }
 
       const nextMeta = {
@@ -753,7 +754,7 @@ export default function SystemConfigPage() {
         }),
       });
       if (!res.ok) throw new Error((await res.json()).message || 'Error');
-      flash('Configuración de IA guardada', 'ok');
+      flash('ConfiguraciÃ³n de IA guardada', 'ok');
     } catch (err: any) { flash(err.message || 'Error al guardar', 'err'); }
     finally { setSavingAIConfig(false); }
   }
@@ -771,13 +772,13 @@ export default function SystemConfigPage() {
     return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const TABS: ReadonlyArray<{ id: SysTab; label: string; icon: React.ReactNode }> = [
     { id: 'trial',   label: 'Trial',        icon: <IconClock className="w-4 h-4" /> },
     { id: 'debug',   label: 'Debugging',    icon: <IconShield className="w-4 h-4" /> },
     { id: 'contact', label: 'Contacto y redes', icon: <IconExternalLink className="w-4 h-4" /> },
-    { id: 'credits', label: 'Créditos IA',  icon: <IconCreditCard className="w-4 h-4" /> },
+    { id: 'credits', label: 'CrÃ©ditos IA',  icon: <IconCreditCard className="w-4 h-4" /> },
     { id: 'ai',      label: 'Motor de IA',  icon: <IconBrain className="w-4 h-4" /> },
     { id: 'health',  label: 'Servicios',    icon: <IconServer className="w-4 h-4" /> },
   ];
@@ -790,8 +791,8 @@ export default function SystemConfigPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-bold">Configuración del sistema</h1>
-          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">Campañas, debugging, contacto oficial y estado de servicios.</p>
+          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-bold">ConfiguraciÃ³n del sistema</h1>
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">CampaÃ±as, debugging, contacto oficial y estado de servicios.</p>
         </div>
         <button
           onClick={handleGlobalSave}
@@ -829,9 +830,9 @@ export default function SystemConfigPage() {
       {/* Contenido por tab */}
       <div className="pt-2">
 
-      {/* ── TAB: Trial ── */}
+      {/* â”€â”€ TAB: Trial â”€â”€ */}
       {activeTab === 'trial' && (
-      <Section title="Campañas de trial" icon={<IconClock className="w-4 h-4" />}>
+      <Section title="CampaÃ±as de trial" icon={<IconClock className="w-4 h-4" />}>
         <div className="space-y-4">
           {/* Estado actual */}
           <div style={{ borderColor: activeCampaign ? '#10b981' : 'var(--border-color)', background: activeCampaign ? 'rgba(16,185,129,0.06)' : 'var(--bg-hover)' }} className="rounded-xl border-2 p-4">
@@ -844,11 +845,11 @@ export default function SystemConfigPage() {
                 {activeCampaign ? (
                   <p className="text-sm text-emerald-500 mt-0.5">
                     <span className="font-semibold">{activeCampaign.name}</span>
-                    {' — '}{activeCampaign.trial_days} días · {activeCampaign.trial_generations_limit} generaciones
-                    {activeCampaign.ends_at && ` · Vence: ${formatDate(activeCampaign.ends_at)}`}
+                    {' â€” '}{activeCampaign.trial_days} dÃ­as Â· {activeCampaign.trial_generations_limit} generaciones
+                    {activeCampaign.ends_at && ` Â· Vence: ${formatDate(activeCampaign.ends_at)}`}
                   </p>
                 ) : (
-                  <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">Sin campaña activa — nuevos registros sin período de prueba</p>
+                  <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">Sin campaÃ±a activa â€” nuevos registros sin perÃ­odo de prueba</p>
                 )}
               </div>
               <button onClick={() => setShowForm(v => !v)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF5C3A] text-white text-xs font-semibold hover:bg-[#e04e30] transition-colors">
@@ -857,16 +858,16 @@ export default function SystemConfigPage() {
             </div>
           </div>
 
-          {/* Formulario nueva campaña */}
+          {/* Formulario nueva campaÃ±a */}
           {showForm && (
             <form onSubmit={handleCreateCampaign} className="space-y-3 rounded-xl border p-4" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-hover)' }}>
-              <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">Nueva campaña</p>
-              <input type="text" value={formName} onChange={e => setFormName(e.target.value)} placeholder="Nombre de la campaña" required
+              <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">Nueva campaÃ±a</p>
+              <input type="text" value={formName} onChange={e => setFormName(e.target.value)} placeholder="Nombre de la campaÃ±a" required
                 style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-medium mb-1">Días</label>
+                  <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-medium mb-1">DÃ­as</label>
                   <input type="number" min={1} max={90} value={formDays} onChange={e => setFormDays(Number(e.target.value))}
                     style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                     className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
@@ -893,17 +894,17 @@ export default function SystemConfigPage() {
             </form>
           )}
 
-          {/* Tabla de campañas */}
+          {/* Tabla de campaÃ±as */}
           {loadingCampaigns ? (
             <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin border-[#FF5C3A]" /></div>
           ) : campaigns.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-6">No hay campañas creadas</p>
+            <p style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-6">No hay campaÃ±as creadas</p>
           ) : (
             <div className="overflow-x-auto rounded-xl border" style={{ borderColor: 'var(--border-color)' }}>
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="border-b">
-                    {['Nombre', 'Estado', 'Días', 'Gen.', 'Vence', 'Acción'].map(h => (
+                    {['Nombre', 'Estado', 'DÃ­as', 'Gen.', 'Vence', 'AcciÃ³n'].map(h => (
                       <th key={h} style={{ color: 'var(--text-muted)' }} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide">{h}</th>
                     ))}
                   </tr>
@@ -915,7 +916,7 @@ export default function SystemConfigPage() {
                       <td className="px-4 py-3"><CampaignBadge active={c.active} /></td>
                       <td style={{ color: 'var(--text-secondary)' }} className="px-4 py-3">{c.trial_days}d</td>
                       <td style={{ color: 'var(--text-secondary)' }} className="px-4 py-3">{c.trial_generations_limit}</td>
-                      <td style={{ color: 'var(--text-muted)' }} className="px-4 py-3">{c.ends_at ? formatDate(c.ends_at) : '—'}</td>
+                      <td style={{ color: 'var(--text-muted)' }} className="px-4 py-3">{c.ends_at ? formatDate(c.ends_at) : 'â€”'}</td>
                       <td className="px-4 py-3">
                         <button onClick={() => handleToggleCampaign(c)} disabled={savingCampaign}
                           className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ${c.active ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'}`}>
@@ -932,32 +933,32 @@ export default function SystemConfigPage() {
       </Section>
       )} {/* fin tab trial */}
 
-      {/* ── TAB: Debugging ── */}
+      {/* â”€â”€ TAB: Debugging â”€â”€ */}
       {activeTab === 'debug' && (
-      <Section title="Configuración de debugging" icon={<IconShield className="w-4 h-4" />}>
+      <Section title="ConfiguraciÃ³n de debugging" icon={<IconShield className="w-4 h-4" />}>
         <div className="space-y-4">
 
-          {/* Verificación de tarjeta */}
+          {/* Pago por prueba */}
           <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--border-color)' }}>
             <div className="flex-1">
-              <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">Verificación de tarjeta (trial)</p>
+              <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">Pago por prueba (trial)</p>
               <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
-                {requireCard
-                  ? 'Activa — el usuario debe tokenizar una tarjeta con Wompi para activar el trial'
-                  : 'Desactivada — modo test, el trial se activa sin requerir tarjeta'}
+                {trialPaymentRequired
+                  ? 'Activo - el usuario debe pagar el valor del trial para activar la prueba'
+                  : 'Desactivado - la campana activa el trial sin pago'}
               </p>
             </div>
-            <Toggle value={requireCard} onChange={handleToggleCard} disabled={savingCard} />
+            <Toggle value={trialPaymentRequired} onChange={handleToggleTrialPayment} disabled={savingTrialPayment} />
           </div>
 
           {/* Bypass IP */}
           <div className="flex items-start justify-between gap-4 py-3 border-b" style={{ borderColor: 'var(--border-color)' }}>
             <div className="flex-1">
-              <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">Bypass verificación de IP</p>
+              <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">Bypass verificaciÃ³n de IP</p>
               <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
                 {bypassIp
-                  ? 'Activo — se omite la verificación de IP para todos los registros de prueba'
-                  : 'Inactivo — verificación de IP habilitada en producción'}
+                  ? 'Activo â€” se omite la verificaciÃ³n de IP para todos los registros de prueba'
+                  : 'Inactivo â€” verificaciÃ³n de IP habilitada en producciÃ³n'}
               </p>
             </div>
             <Toggle value={bypassIp} onChange={handleToggleBypass} disabled={savingBypass} />
@@ -997,7 +998,7 @@ export default function SystemConfigPage() {
               <div className="flex-1">
                 <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">TRM (USD/COP) para PayPal</p>
                 <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
-                  Si está en automático, se usa la tasa del servicio externo con caché. Si lo desactivas, se usa la TRM de referencia que definas aquí.
+                  Si estÃ¡ en automÃ¡tico, se usa la tasa del servicio externo con cachÃ©. Si lo desactivas, se usa la TRM de referencia que definas aquÃ­.
                 </p>
               </div>
               <Toggle value={trmAuto} onChange={() => setTrmAuto(v => !v)} disabled={savingTrm} />
@@ -1017,7 +1018,7 @@ export default function SystemConfigPage() {
                   className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm disabled:opacity-60"
                   placeholder="4000"
                 />
-                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Solo aplica cuando TRM automático está desactivado.</p>
+                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Solo aplica cuando TRM automÃ¡tico estÃ¡ desactivado.</p>
               </div>
 
               <div className="flex items-end justify-end">
@@ -1042,13 +1043,13 @@ export default function SystemConfigPage() {
                 <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold">Modo Mantenimiento (Global)</p>
                 <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
                   {maintenanceMode
-                    ? 'ACTIVO — Los usuarios verán la página de mantenimiento. Los administradores aún pueden acceder.'
-                    : 'Inactivo — El sitio web funciona con normalidad.'}
+                    ? 'ACTIVO â€” Los usuarios verÃ¡n la pÃ¡gina de mantenimiento. Los administradores aÃºn pueden acceder.'
+                    : 'Inactivo â€” El sitio web funciona con normalidad.'}
                 </p>
               </div>
               <Toggle value={maintenanceMode} onChange={() => setMaintenanceMode(!maintenanceMode)} disabled={savingMaintenance} />
             </div>
-            
+
             <div className="mt-2">
               <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Mensaje de Mantenimiento</label>
               <textarea
@@ -1057,7 +1058,7 @@ export default function SystemConfigPage() {
                 rows={3}
                 style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
-                placeholder="Explica qué está sucediendo a los usuarios..."
+                placeholder="Explica quÃ© estÃ¡ sucediendo a los usuarios..."
               />
             </div>
           </div>
@@ -1066,14 +1067,14 @@ export default function SystemConfigPage() {
       </Section>
       )} {/* fin tab debug */}
 
-      {/* ── TAB: Landing ── */}
+      {/* â”€â”€ TAB: Landing â”€â”€ */}
       {activeTab === 'contact' && (
       <Section title="Contacto oficial y redes" icon={<IconExternalLink className="w-4 h-4" />}>
         <div className="space-y-6">
           <p style={{ color: 'var(--text-muted)' }} className="text-sm">
-            Ajusta aquí el WhatsApp, correo y perfiles sociales que deben aparecer en botones, banners, footers y modales de todo el proyecto.
+            Ajusta aquÃ­ el WhatsApp, correo y perfiles sociales que deben aparecer en botones, banners, footers y modales de todo el proyecto.
           </p>
-          
+
           <div
             style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}
             className="rounded-2xl border p-4 space-y-4"
@@ -1211,14 +1212,14 @@ export default function SystemConfigPage() {
       </Section>
       )} {/* fin tab landing */}
 
-      {/* ── TAB: Motor de IA ── */}
+      {/* â”€â”€ TAB: Motor de IA â”€â”€ */}
       {activeTab === 'ai' && (
       <div className="space-y-6">
-        <Section title="Configuración del Motor de IA" icon={<IconBrain className="w-4 h-4" />}>
+        <Section title="ConfiguraciÃ³n del Motor de IA" icon={<IconBrain className="w-4 h-4" />}>
           <div className="space-y-6">
             <p style={{ color: 'var(--text-muted)' }} className="text-sm">
-              Define las instrucciones globales que regirán el comportamiento de la IA en todas las generaciones. 
-              Estos prompts actúan como la &quot;personalidad&quot; y los &quot;límites&quot; del sistema.
+              Define las instrucciones globales que regirÃ¡n el comportamiento de la IA en todas las generaciones.
+              Estos prompts actÃºan como la &quot;personalidad&quot; y los &quot;lÃ­mites&quot; del sistema.
             </p>
 
             <div>
@@ -1232,7 +1233,7 @@ export default function SystemConfigPage() {
                 className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm resize-none"
               />
               <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-2">
-                Este prompt se envía siempre al inicio de cada petición a la IA. Define el tono, estilo y conocimientos base.
+                Este prompt se envÃ­a siempre al inicio de cada peticiÃ³n a la IA. Define el tono, estilo y conocimientos base.
               </p>
             </div>
 
@@ -1241,13 +1242,13 @@ export default function SystemConfigPage() {
               <textarea
                 value={aiPromptNegative}
                 onChange={e => setAiPromptNegative(e.target.value)}
-                placeholder="Ej: No uses lenguaje técnico aburrido. No menciones competidores..."
+                placeholder="Ej: No uses lenguaje tÃ©cnico aburrido. No menciones competidores..."
                 rows={4}
                 style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm resize-none"
               />
               <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-2">
-                Instrucciones explícitas sobre qué NO debe hacer la IA bajo ninguna circunstancia.
+                Instrucciones explÃ­citas sobre quÃ© NO debe hacer la IA bajo ninguna circunstancia.
               </p>
             </div>
 
@@ -1260,7 +1261,7 @@ export default function SystemConfigPage() {
                 {savingAIConfig
                   ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
                   : <IconCheck className="w-4 h-4" />}
-                Guardar configuración de IA
+                Guardar configuraciÃ³n de IA
               </button>
             </div>
           </div>
@@ -1269,11 +1270,11 @@ export default function SystemConfigPage() {
         <Section title="Prompt Base Predeterminado (Referencia)" icon={<IconShield className="w-4 h-4" />}>
           <div className="space-y-4">
             <p style={{ color: 'var(--text-muted)' }} className="text-sm">
-              Este es el prompt base inmutable que utiliza el backend para orquestar la generación. 
+              Este es el prompt base inmutable que utiliza el backend para orquestar la generaciÃ³n.
               Puedes copiarlo para usarlo como base en tu Master Prompt si deseas extenderlo.
             </p>
             <div className="relative group">
-              <pre 
+              <pre
                 style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
                 className="p-4 rounded-xl border text-xs font-mono overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-[400px]"
               >
@@ -1292,21 +1293,21 @@ export default function SystemConfigPage() {
       </div>
       )} {/* fin tab ai */}
 
-      {/* ── TAB: Créditos IA ── */}
+      {/* â”€â”€ TAB: CrÃ©ditos IA â”€â”€ */}
       {activeTab === 'credits' && (
-      <Section title="Créditos IA" icon={<IconCreditCard className="w-4 h-4" />}>
+      <Section title="CrÃ©ditos IA" icon={<IconCreditCard className="w-4 h-4" />}>
         <div className="space-y-4">
           {/* Alertas */}
           {credits?.critical_balance_alert && (
             <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30">
               <IconAlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
-              <p className="text-sm text-red-500 font-semibold">Balance crítico — menos de $5 USD disponibles. Recarga ahora para evitar interrupciones.</p>
+              <p className="text-sm text-red-500 font-semibold">Balance crÃ­tico â€” menos de $5 USD disponibles. Recarga ahora para evitar interrupciones.</p>
             </div>
           )}
           {!credits?.critical_balance_alert && credits?.low_balance_alert && (
             <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
               <IconAlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
-              <p className="text-sm text-amber-500 font-semibold">Balance bajo — queda menos del 20% del límite. Considera recargar pronto.</p>
+              <p className="text-sm text-amber-500 font-semibold">Balance bajo â€” queda menos del 20% del lÃ­mite. Considera recargar pronto.</p>
             </div>
           )}
 
@@ -1314,13 +1315,13 @@ export default function SystemConfigPage() {
             <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin border-[#FF5C3A]" /></div>
           ) : credits ? (
             <>
-              {/* Métricas principales */}
+              {/* MÃ©tricas principales */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: 'Balance disponible', value: credits.balance !== null ? `$${credits.balance.toFixed(2)}` : '—', sub: 'USD restantes', color: credits.critical_balance_alert ? 'text-red-500' : credits.low_balance_alert ? 'text-amber-500' : 'text-emerald-500' },
+                  { label: 'Balance disponible', value: credits.balance !== null ? `$${credits.balance.toFixed(2)}` : 'â€”', sub: 'USD restantes', color: credits.critical_balance_alert ? 'text-red-500' : credits.low_balance_alert ? 'text-amber-500' : 'text-emerald-500' },
                   { label: 'Uso acumulado', value: credits.usage !== null ? `$${credits.usage.toFixed(2)}` : 'No disponible', sub: 'USD gastados', color: 'var(--text-primary)' },
-                  { label: 'Límite total', value: credits.limit !== null ? `$${credits.limit.toFixed(2)}` : 'Sin límite', sub: 'USD comprados', color: 'var(--text-primary)' },
-                  { label: 'Generaciones restantes', value: credits.estimated_generations_remaining !== null ? credits.estimated_generations_remaining.toLocaleString() : '—', sub: `~$${credits.cost_per_generation}/gen`, color: 'var(--text-primary)' },
+                  { label: 'LÃ­mite total', value: credits.limit !== null ? `$${credits.limit.toFixed(2)}` : 'Sin lÃ­mite', sub: 'USD comprados', color: 'var(--text-primary)' },
+                  { label: 'Generaciones restantes', value: credits.estimated_generations_remaining !== null ? credits.estimated_generations_remaining.toLocaleString() : 'â€”', sub: `~$${credits.cost_per_generation}/gen`, color: 'var(--text-primary)' },
                 ].map(m => (
                   <div key={m.label} style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
                     <p style={{ color: 'var(--text-muted)' }} className="text-xs font-medium mb-1">{m.label}</p>
@@ -1334,7 +1335,7 @@ export default function SystemConfigPage() {
               {credits.usage_percent !== null && credits.limit !== null && (
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-medium">Uso del crédito comprado</p>
+                    <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-medium">Uso del crÃ©dito comprado</p>
                     <p style={{ color: 'var(--text-muted)' }} className="text-xs font-mono">{credits.usage_percent}%</p>
                   </div>
                   <div style={{ background: 'var(--bg-hover)' }} className="w-full h-2.5 rounded-full overflow-hidden">
@@ -1355,12 +1356,12 @@ export default function SystemConfigPage() {
                 <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-semibold uppercase tracking-wide mb-3">Referencia de escalabilidad</p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                   {[
-                    { escenario: '10 marcas × 50 gen/mes', costo: '$19.50/mes' },
-                    { escenario: '50 marcas × 50 gen/mes', costo: '$97.50/mes' },
-                    { escenario: '100 marcas × 50 gen/mes', costo: '$195/mes' },
-                    { escenario: '100 marcas × 100 gen/mes', costo: '$390/mes' },
-                    { escenario: '100 marcas × 200 gen/mes', costo: '$780/mes' },
-                    { escenario: 'Buffer recomendado', costo: '$50–100 extra' },
+                    { escenario: '10 marcas Ã— 50 gen/mes', costo: '$19.50/mes' },
+                    { escenario: '50 marcas Ã— 50 gen/mes', costo: '$97.50/mes' },
+                    { escenario: '100 marcas Ã— 50 gen/mes', costo: '$195/mes' },
+                    { escenario: '100 marcas Ã— 100 gen/mes', costo: '$390/mes' },
+                    { escenario: '100 marcas Ã— 200 gen/mes', costo: '$780/mes' },
+                    { escenario: 'Buffer recomendado', costo: '$50â€“100 extra' },
                   ].map(r => (
                     <div key={r.escenario} className="flex justify-between gap-2">
                       <span style={{ color: 'var(--text-muted)' }}>{r.escenario}</span>
@@ -1393,7 +1394,7 @@ export default function SystemConfigPage() {
               </div>
             </>
           ) : (
-            <p style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-6">No se pudo obtener información de créditos</p>
+            <p style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-6">No se pudo obtener informaciÃ³n de crÃ©ditos</p>
           )}
           <div className="border-t pt-4 space-y-4" style={{ borderColor: 'var(--border-color)' }}>
             <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
@@ -1411,7 +1412,7 @@ export default function SystemConfigPage() {
                     style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                   />
                   <p style={{ color: 'var(--text-muted)' }} className="mt-2 text-xs">
-                    Si la defines aquí, el panel de Crédito IA la usará directamente para validar la cuenta de Replicate sin depender solo de variables del servidor.
+                    Si la defines aquÃ­, el panel de CrÃ©dito IA la usarÃ¡ directamente para validar la cuenta de Replicate sin depender solo de variables del servidor.
                   </p>
                   <div className="mt-4">
                     <p style={{ color: 'var(--text-secondary)' }} className="text-xs font-semibold uppercase tracking-wide mb-2">
@@ -1447,7 +1448,7 @@ export default function SystemConfigPage() {
       </Section>
       )} {/* fin tab credits */}
 
-      {/* ── TAB: Servicios ── */}
+      {/* â”€â”€ TAB: Servicios â”€â”€ */}
       {activeTab === 'health' && (
       <div className="space-y-6">
         <Section title="Estado del servidor (Infraestructura)" icon={<IconServer className="w-4 h-4" />}>
@@ -1491,7 +1492,7 @@ export default function SystemConfigPage() {
 
                 {/* Barra de RAM */}
                 <div className="relative w-full h-4 bg-black/20 rounded-full overflow-hidden mb-4">
-                   <div 
+                   <div
                     className={`h-full transition-all duration-1000 ${systemStats.ram.percentage > 90 ? 'bg-red-500' : systemStats.ram.percentage > 75 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                     style={{ width: `${systemStats.ram.percentage}%` }}
                    />
@@ -1511,7 +1512,7 @@ export default function SystemConfigPage() {
                 {systemStats.ram.percentage > 90 && (
                   <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-bold uppercase tracking-wider">
                     <IconAlertTriangle className="w-3 h-3" />
-                    Uso crítico: El servidor podría experimentar lentitud o cierres inesperados.
+                    Uso crÃ­tico: El servidor podrÃ­a experimentar lentitud o cierres inesperados.
                   </div>
                 )}
               </div>
@@ -1553,7 +1554,7 @@ export default function SystemConfigPage() {
                         </div>
                         <div className="flex items-center justify-between mt-4">
                           <span className={`text-[10px] font-black uppercase tracking-widest ${svc.status === 'ok' ? 'text-emerald-500' : svc.status === 'degraded' ? 'text-amber-500' : 'text-red-500'}`}>
-                            {svc.status === 'ok' ? 'Operativo' : svc.status === 'degraded' ? 'Degradado' : 'Sin conexión'}
+                            {svc.status === 'ok' ? 'Operativo' : svc.status === 'degraded' ? 'Degradado' : 'Sin conexiÃ³n'}
                           </span>
                           {svc.latency > 0 && <span style={{ color: 'var(--text-muted)' }} className="text-[10px] font-mono font-bold">{svc.latency}ms</span>}
                         </div>
@@ -1613,7 +1614,7 @@ function CreditProviderCard({
   const providerName = providerKey === 'replicate' ? 'Replicate' : 'OpenRouter';
   const providerAction = providerKey === 'replicate'
     ? 'Ir a billing de Replicate'
-    : 'Ir a créditos de OpenRouter';
+    : 'Ir a crÃ©ditos de OpenRouter';
   const balanceColor = provider?.critical_balance_alert
     ? '#ef4444'
     : provider?.low_balance_alert
@@ -1626,7 +1627,7 @@ function CreditProviderCard({
         <div>
           <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#FF5C3A]">{providerName}</p>
           <h3 style={{ color: 'var(--text-primary)' }} className="mt-1 text-lg font-jakarta font-bold">
-            Crédito y consumo independiente
+            CrÃ©dito y consumo independiente
           </h3>
           {provider?.message && (
             <p style={{ color: 'var(--text-muted)' }} className="mt-2 text-sm">{provider.message}</p>
@@ -1675,7 +1676,7 @@ function CreditProviderCard({
               sub="USD usados"
             />
             <CreditMetric
-              label="Límite"
+              label="LÃ­mite"
               value={provider.limit !== null ? `$${provider.limit.toFixed(2)}` : 'No configurado'}
               sub="Presupuesto o cupo"
             />
@@ -1701,7 +1702,7 @@ function CreditProviderCard({
             </div>
           ) : (
             <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-muted)' }} className="rounded-xl border p-4 text-sm">
-              Este proveedor no está entregando porcentaje de uso consumible desde la API. El panel mantiene la tarjeta operativa y muestra el estado de configuración.
+              Este proveedor no estÃ¡ entregando porcentaje de uso consumible desde la API. El panel mantiene la tarjeta operativa y muestra el estado de configuraciÃ³n.
             </div>
           )}
 
@@ -1716,18 +1717,18 @@ function CreditProviderCard({
               )}
             </div>
             <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
-              <p style={{ color: 'var(--text-muted)' }} className="text-xs font-semibold uppercase tracking-wide">Configuración y recarga</p>
+              <p style={{ color: 'var(--text-muted)' }} className="text-xs font-semibold uppercase tracking-wide">ConfiguraciÃ³n y recarga</p>
               <p style={{ color: 'var(--text-primary)' }} className="mt-2 text-sm font-semibold">
-                {provider.can_top_up ? 'Listo para recarga o ajuste de límites' : 'Sin acción de recarga disponible'}
+                {provider.can_top_up ? 'Listo para recarga o ajuste de lÃ­mites' : 'Sin acciÃ³n de recarga disponible'}
               </p>
               <p style={{ color: 'var(--text-muted)' }} className="mt-1 text-xs">
-                Usa el acceso rápido para revisar billing, API key o presupuesto mensual.
+                Usa el acceso rÃ¡pido para revisar billing, API key o presupuesto mensual.
               </p>
             </div>
           </div>
         </div>
       ) : (
-        <p style={{ color: 'var(--text-muted)' }} className="py-6 text-sm text-center">No se pudo obtener información de este proveedor.</p>
+        <p style={{ color: 'var(--text-muted)' }} className="py-6 text-sm text-center">No se pudo obtener informaciÃ³n de este proveedor.</p>
       )}
     </div>
   );

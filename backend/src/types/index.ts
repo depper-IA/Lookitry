@@ -125,7 +125,7 @@ export interface AuthResponse {
     trialPaymentStatus?: string | null;
   };
   verificationToken?: string;
-  requireCardVerification?: boolean;
+  requiresTrialPayment?: boolean;
   isTrial?: boolean;
 }
 

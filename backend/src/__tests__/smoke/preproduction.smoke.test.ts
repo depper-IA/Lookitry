@@ -212,7 +212,7 @@ describe('Smoke preproducción HTTP', () => {
       token: 'smoke-jwt',
       brand: { id: 'brand-smoke', email: 'smoke@lookitry.com', name: 'Smoke', slug: 'smoke-brand', plan: 'BASIC' },
       verificationToken: 'verify-smoke',
-      requireCardVerification: false,
+      requiresTrialPayment: false,
     });
     mockLogin.mockRejectedValue(new Error('Credenciales inválidas'));
     mockGenerateReference.mockReturnValue('TRYON-visitor-smoke-M1-PBASIC-123');
