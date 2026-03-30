@@ -79,4 +79,11 @@ router.post('/admin/subscriptions/:brandId/payment', adminAuthMiddleware, (req, 
   subscriptionController.registerPayment(req, res)
 );
 
+/**
+ * POST /api/admin/subscriptions/reprocess-wompi/:reference
+ * Reprocessa un pago de Wompi que fue cobrado pero no activó la suscripción.
+ * Útil cuando el webhook falló silenciosamente. Requiere auth de admin.
+ */
+router.post('/admin/reprocess-wompi/:reference', adminAuthMiddleware, (req, res) => subscriptionController.reprocessWompiPayment(req, res));
+
 export default router;

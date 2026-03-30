@@ -177,6 +177,11 @@ async function fulfillPaypalPayment(reference: string, orderId: string, amountUS
     return;
   }
 
+  // BUG #3 FIX: Detectar si es un upgrade (BASIC → PRO) para pasar isUpgrade=true
+  // Esto activa la lógica de prorrateo en renewSubscription (newStartDate = now, no acumula)
+  const isActualUpgrade =
+    hasActivePaidSubscription(currentBrand) && currentBrand?.plan === 'BASIC' && String(plan).toUpperCase() === 'PRO';
+
   await subscriptionService.renewSubscription(
     brandId,
     {
@@ -192,7 +197,7 @@ async function fulfillPaypalPayment(reference: string, orderId: string, amountUS
     },
     months,
     plan as string,
-    hasActivePaidSubscription(currentBrand) && currentBrand?.plan === 'BASIC' && plan === 'PRO'
+    isActualUpgrade
   );
 
   if (includesLanding) {

@@ -147,7 +147,9 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       // El endDate de la suscripcion en si puede ser el mismo que trial o null
       endDate = tDate; 
     } else {
-      endDate.setMonth(endDate.getMonth() + months);
+      // BUG #7 FIX: Usar +30*months para ser consistente con calculateExpirationDate()
+      // Evita discrepancias de 1-3 días en meses con <31 días (ej. febrero).
+      endDate = new Date(now.getTime() + 30 * months * 24 * 60 * 60 * 1000);
     }
 
     await supabaseAdmin
@@ -189,7 +191,9 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       trialEndDate = tDate.toISOString();
       endDate = tDate;
     } else {
-      endDate.setMonth(endDate.getMonth() + months);
+      // BUG #7 FIX: Usar +30*months para ser consistente con calculateExpirationDate()
+      // Evita discrepancias de 1-3 días en meses con <31 días (ej. febrero).
+      endDate = new Date(now.getTime() + 30 * months * 24 * 60 * 60 * 1000);
     }
 
     const { data: newBrand, error: createError } = await supabaseAdmin
