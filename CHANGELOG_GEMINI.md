@@ -1626,3 +1626,16 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 
 **Motivo:**
 - Se necesitaba pausar el trabajo sin perder contexto tecnico ni el punto exacto del bloqueo actual del blog automatizado.
+
+## 30 de Marzo, 2026 - Unificación y saneamiento del contexto maestro de la IA
+
+**Archivos modificados:**
+- `REGLAS_IMPORTANTES.md` (y `.kiro/steering/REGLAS_IMPORTANTES.md`)
+- `LOOKITRY_MASTER_MEMORY.md` (Eliminado)
+- `lookitry_master_context.md` (Eliminado)
+
+**Descripción del cambio:**
+Se consolidó toda la información de arquitectura, endpoints, esquemas de bases de datos, flujos de pago (Wompi/PayPal) y reglas de UI en un único archivo maestro (`REGLAS_IMPORTANTES.md`). Se introdujo una sección crítica sobre "LIMITACIONES DE LA IA Y PITFALLS COMUNES" para advertir sobre el uso correcto de `supabaseAdmin`, problemas de CORS con n8n, manejo de moneda y prohibición de deploys manuales. Adicionalmente, se eliminaron archivos de contexto redundantes (`LOOKITRY_MASTER_MEMORY.md` y `lookitry_master_context.md`) para mantener una única fuente de la verdad.
+
+**Motivo:**
+Garantizar que futuros agentes de IA tengan un contexto técnico limpio, actualizado, seguro (sin secretos en texto plano) y consolidado, previniendo errores recurrentes relacionados con la arquitectura específica del proyecto Lookitry.
