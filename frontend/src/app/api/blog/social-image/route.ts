@@ -6,6 +6,10 @@ function isAllowedHostname(hostname: string): boolean {
   return allowed.some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
 }
 
+function toBinaryBody(buffer: Buffer): BodyInit {
+  return buffer as unknown as BodyInit;
+}
+
 export async function GET(req: NextRequest) {
   const src = req.nextUrl.searchParams.get('src');
 
@@ -41,7 +45,7 @@ export async function GET(req: NextRequest) {
           .jpeg({ quality: 88, mozjpeg: true, progressive: true })
           .toBuffer();
 
-    return new NextResponse(outputBuffer, {
+    return new Response(toBinaryBody(outputBuffer), {
       status: 200,
       headers: {
         'Content-Type': 'image/jpeg',
