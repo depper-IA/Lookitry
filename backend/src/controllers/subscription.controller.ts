@@ -334,4 +334,124 @@ export class SubscriptionController {
       });
     }
   }
+  /**
+   * POST /api/admin/subscriptions/reprocess-wompi/:reference
+   * BUG #6 FIX: Reprocessa un pago de Wompi que fue cobrado pero no activó la suscripción.
+   * Consulta la tabla subscription_payments con esa referencia y pending_registrations.
+   * Útil cuando el webhook falló silenciosamente y el usuario pagó pero no tiene plan activo.
+   */
+  async reprocessWompiPayment(req: AdminAuthRequest, res: Response): Promise<Response> {
+    try {
+      const { reference } = req.params;
+      if (!reference) {
+        return res.status(400).json({ error: 'BAD_REQUEST', message: 'Reference requerida' });
+      }
+
+      const { supabaseAdmin } = await import('../config/supabase');
+
+      // 1. Verificar que el pago existe en subscription_payments
+      const { data: existingPayment } = await supabaseAdmin
+        .from('subscription_payments')
+        .select('*')
+        .eq('reference', reference)
+        .maybeSingle();
+
+      if (existingPayment) {
+        return res.status(409).json({
+          error: 'ALREADY_PROCESSED',
+          message: 'Este pago ya fue procesado y registrado correctamente.',
+          payment: { id: existingPayment.id, brand_id: existingPayment.brand_id, amount: existingPayment.amount, status: existingPayment.status },
+        });
+      }
+
+      // 2. Buscar en pending_registrations
+      const { data: pending } = await supabaseAdmin
+        .from('pending_registrations')
+        .select('*')
+        .eq('reference', reference)
+        .maybeSingle();
+
+      if (!pending) {
+        return res.status(404).json({
+          error: 'NOT_FOUND',
+          message: 'No se encontró ningún pago pendiente con esa referencia.',
+        });
+      }
+
+      if (pending.status !== 'paid') {
+        return res.status(400).json({
+          error: 'NOT_PAID',
+          message: `El pago tiene status "${pending.status}", no es un pago confirmado.`,
+        });
+      }
+
+      // 3. Buscar la marca (brand_id desde pending o por email)
+      let brandId: string | null = (pending as any).brand_id || null;
+
+      if (!brandId) {
+        const { data: brand } = await supabaseAdmin
+          .from('brands')
+          .select('id')
+          .eq('email', pending.email)
+          .maybeSingle();
+        brandId = brand?.id || null;
+      }
+
+      if (!brandId) {
+        return res.status(404).json({
+          error: 'BRAND_NOT_FOUND',
+          message: 'No se encontró la marca asociada. El usuario puede necesitar completar el registro primero.',
+          pending: { email: pending.email, plan: pending.plan, status: pending.status },
+        });
+      }
+
+      // 4. Activar la suscripción manualmente
+      const months = pending.months || 1;
+      const plan = (pending.plan || 'BASIC').toUpperCase() === 'TRIAL' ? 'BASIC' : (pending.plan || 'BASIC').toUpperCase();
+      const amount = Number(pending.amount || 0);
+
+      await subscriptionService.renewSubscription(
+        brandId,
+        {
+          brand_id: brandId,
+          amount,
+          currency: 'COP',
+          payment_method: 'wompi',
+          status: 'completed',
+          months_paid: months,
+          payment_date: new Date().toISOString(),
+          notes: `[REPROCESS] Reactivado manualmente por admin. Referencia original: ${reference}. Admin: ${(req as AdminAuthRequest).admin?.email || 'unknown'}.`,
+          reference,
+        },
+        months,
+        plan,
+        false
+      );
+
+      // 5. Registrar en admin_notifications
+      await supabaseAdmin.from('admin_notifications').insert({
+        type: 'payment_reprocessed',
+        title: '✅ Pago reprocessado exitosamente',
+        message: `Pago ref ${reference} activado manualmente para brand ${brandId}.`,
+        severity: 'info',
+        brand_id: brandId,
+        metadata: { reference, plan, months, amount },
+      });
+
+      return res.json({
+        success: true,
+        message: 'Suscripción activada correctamente.',
+        brandId,
+        plan,
+        months,
+        reference,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        error: 'INTERNAL_ERROR',
+        message: error.message || 'Error al reprocessar el pago',
+      });
+    }
+  }
+
 }

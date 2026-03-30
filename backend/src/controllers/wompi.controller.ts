@@ -180,6 +180,20 @@ export class WompiController {
       res.status(200).json({ received: true });
     } catch (error) {
       console.error('[Wompi] Error procesando webhook:', error);
+      // BUG #5 FIX: Registrar notificación admin para que el equipo pueda reactivar manualmente
+      // si el webhook falló pero el pago fue cobrado en Wompi.
+      try {
+        const { supabaseAdmin } = await import('../config/supabase');
+        await supabaseAdmin.from('admin_notifications').insert({
+          type: 'webhook_error',
+          title: '⚠️ Error en webhook de Wompi',
+          message: `Fallo al procesar webhook. Error: ${(error as Error)?.message || 'Desconocido'}. Verificar si hay pagos aprobados sin activar.`,
+          severity: 'error',
+          metadata: { error: (error as Error)?.message },
+        });
+      } catch (notifError) {
+        console.error('[Wompi] No se pudo registrar notificación de error:', notifError);
+      }
       res.status(200).json({ received: true, error: 'Error interno' });
     }
   }
