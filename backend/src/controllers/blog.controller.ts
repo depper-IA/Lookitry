@@ -1,9 +1,16 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
-import { UploadService } from '../services/upload.service';
+import { UploadService, type UploadAssetType } from '../services/upload.service';
 import { v4 as uuidv4 } from 'uuid';
 
 const uploadService = new UploadService();
+
+function resolveBlogAssetType(raw: unknown): UploadAssetType {
+  const value = String(raw || '').trim().toLowerCase();
+  if (value === 'blog-social') return 'blog-social';
+  if (value === 'download-safe') return 'download-safe';
+  return 'blog-inline';
+}
 
 async function resolveExpectedBlogSecret(): Promise<string> {
   const { data } = await supabaseAdmin
@@ -351,18 +358,20 @@ export const blogController = {
           return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Campo "file" requerido' });
         }
         const filename = (req.body.filename as string) || file.originalname || 'blog-image.webp';
+        const assetType = resolveBlogAssetType(req.body.asset_type || req.body.assetType);
         
         const result = await uploadService.uploadImageBuffer({
           buffer: file.buffer,
           filename,
           temporary: false,
           folder: 'web',
+          assetType,
         });
         
         return res.status(200).json(result);
       }
 
-      const { image_base64, filename } = req.body;
+      const { image_base64, filename, asset_type, assetType } = req.body;
       if (!image_base64 || !filename) {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'image_base64 y filename requeridos' });
       }
@@ -372,6 +381,7 @@ export const blogController = {
         filename,
         temporary: false,
         folder: 'web',
+        assetType: resolveBlogAssetType(asset_type || assetType),
       });
 
       return res.status(200).json(result);

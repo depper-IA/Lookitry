@@ -7,6 +7,7 @@ export interface UploadImageDto {
   filename: string;
   temporary?: boolean;
   folder?: string;
+  assetType?: UploadAssetType;
 }
 
 export interface UploadImageBufferDto {
@@ -14,6 +15,7 @@ export interface UploadImageBufferDto {
   filename: string;
   temporary?: boolean;
   folder?: string;
+  assetType?: UploadAssetType;
 }
 
 export interface UploadResponse {
@@ -21,6 +23,12 @@ export interface UploadResponse {
   url: string;
   path?: string;
 }
+
+export type UploadAssetType =
+  | 'general'
+  | 'blog-inline'
+  | 'blog-social'
+  | 'download-safe';
 
 /**
  * Sube imágenes a MinIO usando la API S3-compatible con firma HMAC-SHA256.
@@ -43,12 +51,13 @@ export class UploadService {
       filename: data.filename,
       temporary: data.temporary,
       folder: data.folder,
+      assetType: data.assetType,
     });
   }
 
   async uploadImageBuffer(data: UploadImageBufferDto): Promise<UploadResponse> {
     try {
-      let { buffer, filename, temporary, folder } = data;
+      let { buffer, filename, temporary, folder, assetType } = data;
       
       // OPTIMIZACIÓN CON SHARP
       // Si no es temporal, optimizamos para producción (blog/productos)
@@ -56,20 +65,27 @@ export class UploadService {
         try {
           const image = sharp(buffer);
           const metadata = await image.metadata();
-          
-          let pipeline = image
-            .webp({ quality: 82, lossless: false, smartSubsample: true })
-            .rotate(); // Auto-rotate basado en EXIF
+
+          const targetAssetType = assetType || 'general';
+          let pipeline = image.rotate(); // Auto-rotate basado en EXIF
+          let targetExtension = filename.split('.').pop()?.toLowerCase() || 'jpg';
 
           // Redimensionar si es muy grande (max 1400px de ancho)
           if (metadata.width && metadata.width > 1400) {
             pipeline = pipeline.resize(1400, null, { withoutEnlargement: true });
           }
 
+          if (targetAssetType === 'blog-social' || targetAssetType === 'download-safe') {
+            pipeline = pipeline.jpeg({ quality: 86, mozjpeg: true, progressive: true });
+            targetExtension = 'jpg';
+          } else {
+            pipeline = pipeline.webp({ quality: 82, lossless: false, smartSubsample: true });
+            targetExtension = 'webp';
+          }
+
           buffer = await pipeline.toBuffer();
-          // Cambiar extensión a .webp en el nombre de destino
           const nameWithoutExt = filename.split('.').slice(0, -1).join('.') || 'image';
-          filename = `${nameWithoutExt}.webp`;
+          filename = `${nameWithoutExt}.${targetExtension}`;
         } catch (sharpError) {
           console.error('[Upload Service] Falló Sharp, subiendo original:', sharpError);
         }

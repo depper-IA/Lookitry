@@ -1,4 +1,5 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import sharp from 'sharp';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * GET /api/download?url=...&filename=...
@@ -13,16 +14,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'url requerida' }, { status: 400 });
   }
 
-  // Solo permitir URLs de dominios conocidos
   let parsed: URL;
   try {
     parsed = new URL(url);
   } catch {
-    return NextResponse.json({ error: 'URL inválida' }, { status: 400 });
+    return NextResponse.json({ error: 'URL invalida' }, { status: 400 });
   }
 
   const allowed = ['lookitry.com', 'wilkiedevs.com', 'supabase.co', 'supabase.in'];
-  const isAllowed = allowed.some(d => parsed.hostname === d || parsed.hostname.endsWith('.' + d));
+  const isAllowed = allowed.some((domain) => parsed.hostname === domain || parsed.hostname.endsWith(`.${domain}`));
   if (!isAllowed) {
     return NextResponse.json({ error: 'Dominio no permitido' }, { status: 403 });
   }
@@ -33,14 +33,22 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Error al obtener imagen' }, { status: 502 });
     }
 
-    const contentType = upstream.headers.get('content-type') || 'image/jpeg';
-    const buffer = await upstream.arrayBuffer();
+    const upstreamContentType = upstream.headers.get('content-type') || 'image/jpeg';
+    const inputBuffer = Buffer.from(await upstream.arrayBuffer());
+    const shouldConvertToJpeg = upstreamContentType.includes('image/webp');
+    const outputBuffer = shouldConvertToJpeg
+      ? await sharp(inputBuffer).rotate().jpeg({ quality: 90, mozjpeg: true, progressive: true }).toBuffer()
+      : inputBuffer;
+    const contentType = shouldConvertToJpeg ? 'image/jpeg' : upstreamContentType;
+    const safeFilename = shouldConvertToJpeg
+      ? filename.replace(/\.[^.]+$/u, '') + '.jpg'
+      : filename;
 
-    return new NextResponse(buffer, {
+    return new NextResponse(outputBuffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Disposition': `attachment; filename="${safeFilename}"`,
         'Cache-Control': 'no-store',
       },
     });

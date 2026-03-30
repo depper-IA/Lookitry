@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
-import { fetchBlogPostBySlug, getBlogFeaturedImage } from '@/services/blog.service';
+import { fetchBlogPostBySlug, getBlogFeaturedImage, getBlogShareImage } from '@/services/blog.service';
 import { Calendar, Tag, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -15,7 +15,7 @@ interface BlogPostPageProps {
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   const post = await fetchBlogPostBySlug(params.slug);
-  const socialImage = getBlogFeaturedImage(post);
+  const socialImage = getBlogShareImage(post);
   
   if (!post) {
     return {
@@ -33,6 +33,12 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       type: 'article',
       publishedTime: post.published_at || post.created_at,
     },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.meta_description || post.excerpt,
+      images: socialImage ? [socialImage] : [],
+    },
   };
 }
 
@@ -44,6 +50,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   }
 
   const heroImage = getBlogFeaturedImage(post);
+  const socialImage = getBlogShareImage(post);
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('es-ES', {
@@ -75,7 +82,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: post.title,
-    image: heroImage ? [heroImage] : [],
+    image: socialImage ? [socialImage] : heroImage ? [heroImage] : [],
     datePublished: post.published_at || post.created_at,
     dateModified: post.updated_at || post.published_at || post.created_at,
     author: {
