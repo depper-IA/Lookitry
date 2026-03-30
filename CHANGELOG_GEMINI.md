@@ -1650,3 +1650,14 @@ Se actualizaron todas las referencias al plan `TRIAL` en el documento maestro pa
 
 **Motivo:**
 Alinear la documentación técnica con la realidad comercial del producto SaaS (donde ya no existen planes gratuitos), evitando que la IA genere UIs o asuma lógicas de validación para un nivel de servicio gratuito inexistente.
+
+## 30 de Marzo, 2026 - Inclusión de Regla de Prohibición Estricta de Emojis
+
+**Archivos modificados:**
+- `REGLAS_IMPORTANTES.md` (y `.kiro/steering/REGLAS_IMPORTANTES.md`)
+
+**Descripción del cambio:**
+Se elevó la directiva de no usar emojis a nivel de **PROHIBICIÓN ESTRICTA**. Se actualizó el resumen rápido de reglas y la sección "Limitaciones de la IA y Pitfalls Comunes (Brand Guardian)" para detallar expresamente que está absolutamente prohibido el uso de emojis en cualquier parte de la UI o del código JSX, obligando sin excepción al uso de archivos SVG nativos o componentes de la librería `lucide-react`.
+
+**Motivo:**
+Garantizar la coherencia visual, profesionalismo y estética "Premium Dark" del proyecto. Las IAs recurrentemente tienden a usar emojis como placeholders rápidos para iconografía, lo cual rompe la identidad de la marca. Esta directiva estricta anula esa tendencia.
