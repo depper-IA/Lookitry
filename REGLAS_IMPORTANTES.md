@@ -10,7 +10,7 @@ RESPONDE SIEMPRE EN ESPAÑOL
 - Colores: `#FF5C3A` naranja, `#0a0a0a` negro base, `#141414` cards
 - Tipografía: Plus Jakarta Sans (títulos), DM Sans (cuerpo)
 - Texto mínimo: `#999` secundario, `#bbb` features — PROHIBIDO `#333`–`#555`
-- Sin emojis en UI — solo SVG / lucide-react
+- **PROHIBICIÓN ESTRICTA:** NUNCA usar EMOJIS en la UI. Siempre usar íconos SVG o la librería `lucide-react`.
 - Toggle activo: `#FF5C3A` (nunca `bg-blue-600`)
 - Logo: siempre SVG + texto `Look<span style="color:#FF5C3A">itry</span>`
 
@@ -1199,10 +1199,11 @@ Esta sección detalla los errores más comunes y limitaciones que las IAs pueden
 - **Referencia Obligatoria:** Revisar SIEMPRE `backend/src/services/subscription.service.ts` antes de tocar lógicas de pago.
 
 ### 9.7. Estética UI y "Brand Guardian"
-- **Pitfall Crítico:** Usar componentes estándar de Tailwind sin respetar la paleta oscura o crear diseños sin contraste.
-- **Limitación de IA:** Generar UIs "genéricas" (ej. fondo blanco, botones azules estándar).
+- **Pitfall Crítico:** Usar componentes estándar de Tailwind sin respetar la paleta oscura, usar Emojis o crear diseños sin contraste.
+- **Limitación de IA:** Generar UIs "genéricas" (ej. fondo blanco, botones azules estándar, uso de Emojis como íconos).
 - **La Realidad:** Lookitry usa un diseño Premium Dark.
 - **Solución Obligatoria:** Usar los colores del sistema (`--bg-base`, `--bg-card`), el color de acento (`#FF5C3A`), y evitar grises oscuros confusos (prohibidos `#333`, `#444`, `#555` para texto). Toda nueva vista debe estar 100% responsive.
+- **Regla de Iconos (PROHIBICIÓN ESTRICTA):** ESTÁ TOTALMENTE PROHIBIDO EL USO DE EMOJIS EN CUALQUIER PARTE DE LA UI O DEL CÓDIGO JSX. Si necesitas iconografía, DEBES usar siempre íconos SVG personalizados o los componentes de la librería `lucide-react`.
 
 ## 8. BLOG (MIGRACIÓN NATIVA)
 
