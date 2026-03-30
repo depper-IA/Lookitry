@@ -1,7 +1,7 @@
 <div align="center">
   <img src="./frontend/public/logo.svg" alt="Lookitry Logo" height="80"/>
 
-# Look<span style="color:#FF5C3A">itry</span> 👕✨
+# Look<span style="color:#FF5C3A">itry</span>
 
 **El Probador Virtual con Inteligencia Artificial para E-Commerce B2B en Latinoamérica**
 
@@ -20,7 +20,7 @@ _Permite a las marcas integrar un widget de prueba virtual en su tienda en minut
 
 ---
 
-## 🔒 Repositorio Privado y Confidencial
+## Repositorio Privado y Confidencial
 
 **Este repositorio es estrictamente privado y confidencial. No está a la venta ni es de dominio público.**
 
@@ -30,7 +30,7 @@ Esta documentación técnica se proporciona únicamente con fines informativos y
 
 ---
 
-## 🚀 Propuesta de Valor
+## Propuesta de Valor
 
 Look<span style="color:#FF5C3A">itry</span> es una plataforma SaaS B2B diseñada para revolucionar la forma en que se compra ropa, accesorios y calzado en línea. Mediante el uso de Inteligencia Artificial (impulsada por OpenRouter a través de n8n), los clientes finales pueden subir una selfie y visualizar cómo les quedaría un producto específico.
 
@@ -38,11 +38,11 @@ Nuestra solución se integra fácilmente a través de un **widget embebible** (i
 
 ---
 
-## 🛠️ Stack Tecnológico Premium
+## Stack Tecnológico Premium
 
 La arquitectura de Look<span style="color:#FF5C3A">itry</span> está construida para ser rápida, escalable y ofrecer una experiencia premium.
 
-### 🎨 Frontend
+### Frontend
 
 - **Framework:** Next.js 14 (App Router)
 - **Lenguaje:** TypeScript
@@ -50,43 +50,43 @@ La arquitectura de Look<span style="color:#FF5C3A">itry</span> está construida 
 - **Íconos:** Lucide React
 - **Despliegue:** VPS vía Docker
 
-### ⚙️ Backend
+### Backend
 
 - **Framework:** Node.js con Express
 - **Lenguaje:** TypeScript
 - **Autenticación:** Sistema JWT propio, sólido y seguro (No usamos Supabase Auth).
 - **Rate Limiting & Seguridad:** Cloudflare Turnstile integrado para antispam.
 
-### 💾 Base de Datos & Almacenamiento
+### Base de Datos & Almacenamiento
 
 - **Base de Datos:** Supabase (PostgreSQL). Uso estricto de `Service Role` en backend para bypass RLS.
 - **Almacenamiento (Storage):** MinIO autohosteado.
 
-### 🤖 IA & Workflows
+### IA & Workflows
 
 - **Orquestador:** n8n
 - **Modelos IA:** OpenRouter (para generación de imágenes y descripción de productos).
 
-### 💳 Pagos
+### Pagos
 
 - **Colombia (COP):** Wompi
 - **Internacional (USD):** PayPal (Conversión dinámica vía TRM configurable).
 
 ---
 
-## ✨ Características Principales
+## Características Principales
 
-- **🧑‍💻 Probador Virtual B2B:** Generación de imágenes IA de alta calidad donde el usuario ve la ropa aplicada a su cuerpo.
-- **🎨 Mini-Landings Personalizables:** Las marcas pueden tener su propia página de prueba con diferentes diseños.
-- **📊 Panel Administrativo (Dashboard):** CRUD completo de productos, análisis de uso, estado de suscripción y gestión de facturación.
-- **💳 Suscripciones Flexibles:**
+- **Probador Virtual B2B:** Generación de imágenes IA de alta calidad donde el usuario ve la ropa aplicada a su cuerpo.
+- **Mini-Landings Personalizables:** Las marcas pueden tener su propia página de prueba con diferentes diseños.
+- **Panel Administrativo (Dashboard):** CRUD completo de productos, análisis de uso, estado de suscripción y gestión de facturación.
+- **Suscripciones Flexibles:**
   - Sistema de prorrateo automático en upgrades de planes Básico a Pro.
   - Trial inicial guiado con límites de generación de IA.
-- **🤖 Flujos AI:** Workflows dedicados para el _Try-On_ principal, manejo de errores robusto y descriptor automático de productos.
+- **Flujos AI:** Workflows dedicados para el _Try-On_ principal, manejo de errores robusto y descriptor automático de productos.
 
 ---
 
-## 🏗️ Arquitectura del Sistema
+## Arquitectura del Sistema
 
 El ecosistema de Look<span style="color:#FF5C3A">itry</span> está diseñado para mantener una separación segura de responsabilidades:
 
@@ -109,7 +109,7 @@ graph TD;
 
 ---
 
-## 🎨 Identidad Visual y Reglas de Diseño (Brand Guardian)
+## Identidad Visual y Reglas de Diseño (Brand Guardian)
 
 - **Colores Principales:** `#FF5C3A` (Naranja Lookitry - Acento), `#0a0a0a` (Fondo Base), `#141414` (Fondo Cards).
 - **Tipografía:** _Plus Jakarta Sans_ para títulos, _DM Sans_ para el cuerpo del texto.
@@ -120,5 +120,5 @@ graph TD;
 ---
 
 <div align="center">
-  <p>Construido con ❤️ para revolucionar el comercio electrónico. <br/> <strong>© Lookitry. Todos los derechos reservados.</strong></p>
+  <p>Construido para revolucionar el comercio electrónico. <br/> <strong>© Lookitry. Todos los derechos reservados.</strong></p>
 </div>

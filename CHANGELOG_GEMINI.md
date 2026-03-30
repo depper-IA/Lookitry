@@ -1876,3 +1876,19 @@ Garantizar que futuros agentes de IA tengan un contexto técnico limpio, actuali
 **Motivo:**
 
 - El repositorio es estrictamente privado ("es mi bebé"). El README anterior exponía demasiada información operativa. Ahora cumple con el propósito de documentar el alto nivel técnico para el equipo interno, sin exponer las llaves del reino ni facilitar el robo de propiedad intelectual.
+
+## 30 de Marzo, 2026 - Limpieza de Emojis en el README
+
+**Objetivo:**
+
+- Eliminar todos los emojis del `README.md` para alinearse con la política estricta de "Cero emojis en la interfaz" y el diseño Premium Dark del proyecto.
+
+**Cambios aplicados:**
+
+- **Raíz (`README.md`):**
+  - Se eliminaron todos los emojis de los títulos (headers), viñetas de listas, párrafos y pies de página.
+  - La documentación ahora depende exclusivamente de su estructura tipográfica (Plus Jakarta Sans para títulos) y las insignias (badges) SVG para mantener un estilo profesional y minimalista.
+
+**Motivo:**
+
+- Reforzar la identidad visual "Premium" de la plataforma Lookitry, donde se prefieren íconos limpios (`lucide-react` en UI y SVG en documentación) por sobre los emojis genéricos, manteniendo la coherencia con las directrices de `REGLAS_IMPORTANTES.md`.
