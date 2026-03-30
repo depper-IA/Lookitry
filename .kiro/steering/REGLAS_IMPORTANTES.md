@@ -101,15 +101,11 @@ Tablas principales:
 - **Try-On**: `/pruebalo/[brandSlug]` -> Validación -> POST `/api/generations` -> n8n -> OpenRouter (IA) -> MinIO -> Resultado.
 - **Pago (Config Dinámica)**: `/checkout?plan=BASIC` lee `pricing_config`. Checkout genera URL Wompi -> Pago -> Webhook activa sub en `brands`.
 
-## 7. RESOLUCIÓN DE PROBLEMAS PREVIOS (Histórico)
-*Nota: Tareas antiguas como la falta de páginas en admin (`analytics`, `conversion`) ya fueron resueltas y el código existe correctamente. Menciones previas a "Mostrador" o "Virtual Try On" han sido erradicadas para la marca unificada **LOOKITRY**.*
-
+## 7. RESOLUCIÓN DE PROBLEMAS PREVIOS
 - **Checkout Landing Activo**: Para clientes con un plan PRO o BASIC, comprar la mini-landing individual NO procesa una mensualidad doble, logrando esto enviando `plan=NONE` a las APIs de Wompi / Paypal.
 - **Trial Landing Preview**: La vista previa gratuita es de 3 minutos guiados enteramente por el frontend local-storage (`MiniLanding.tsx`). No uses verificaciones basadas en `brand.created_at` ya que eso expira el tiempo sin que el usuario haya siquiera tocado la ruta pública.
-
-Si surge un bug visual en el Panel Admin (ej. fondos desfasados en modo oscuro `bg-white`), se debe siempre usar `var(--bg-card)` y variables CSS del sistema en lugar de clases Tailwind estáticas.
-
-
+- **Auto-vinculación de landing**: Al entrar a `/registro-pro?ref=...` con sesión activa, si el pending es tipo landing-only (`plan = NONE`) o el usuario no tiene plan, se hace auto-link. Si ya tiene plan y quiere cambiarlo, se muestra el formulario normal.
+- **Panel Admin**: Si surge un bug visual en el Panel Admin (ej. fondos desfasados en modo oscuro `bg-white`), se debe siempre usar `var(--bg-card)` y variables CSS del sistema en lugar de clases Tailwind estáticas.
 
 ## ARCHITECTURE ##
 ---
@@ -623,13 +619,14 @@ Base URL: `https://api.lookitry.com/api`
 
 ## Flujos Principales
 
-### Flujo de Registro
+### Flujo de Registro (Trial Pago)
 1. Usuario llena formulario en `/register`
 2. Cloudflare Turnstile valida que no es bot
-3. `POST /api/auth/register` crea la marca en `brands`
-4. Se envía email de verificación via SMTP
-5. Usuario verifica email en `/verify-email`
-6. Redirige a `/dashboard` con JWT
+3. `POST /api/auth/register` crea la marca en estado `pending_payment` en `brands`
+4. Usuario es redirigido a `/trial-checkout` para realizar el pago del Trial (20.000 COP)
+5. Tras el pago (con referencia `TRIAL-{brandId}-{ts}`), el webhook activa la cuenta
+6. Se envía email de Bienvenida via SMTP
+7. Usuario ingresa a su panel en `/dashboard`
 
 ### Flujo de Pago — Wompi (SOLO COP)
 > Wompi solo acepta COP. **No importa qué moneda muestre el frontend — el backend siempre envía COP.**
@@ -889,57 +886,6 @@ python scripts/_deploy_now.py --restart
 ```
 
 **IMPORTANTE**: nunca hacer deploy sin que el usuario lo pida explícitamente.
-
----
-
-## Historial de Cambios Importantes
-
-### Resolución de conflictos de merge Git (21/03/2026)
-El archivo `architecture.md` tenía marcadores de conflicto Git (`<<<<<<< HEAD`, `=======`, `>>>>>>>`) sin resolver. Limpiados y fusionados manualmente conservando la versión más completa (HEAD).
-
-### Correcciones de TypeScript (21/03/2026)
-| Archivo | Error | Fix |
-|---------|-------|-----|
-| `paypal.routes.ts` | `captureOrder` no existía | → `capturePayment` |
-| `payments.routes.ts` | `brandAuthMiddleware` no exportado | → `authMiddleware` |
-| `paypal.controller.ts` | `renewSubscription` firma incorrecta | → `(brandId, CreatePaymentDto, months, plan)` |
-| `paypal.service.ts` | Método `getOrder()` faltaba | → Añadido |
-| `admin/analytics/page.tsx` | `api.get()` retorna `{data, status}` | → `const { data } = await api.get<T>(...)` |
-| `admin/conversion/page.tsx` | Mismo problema | → Mismo fix |
-| `TemplateModerno.tsx` | Prop `initialProduct` no existe | → Eliminada |
-| `TemplateEditorial.tsx` | Mismo problema | → Eliminada |
-| `.eslintrc.json` | `"next/typescript"` no válido en Next.js 14 | → Removida |
-
-### Adición de PayPal (marzo 2026)
-- `PaypalService` — OAuth2, `createOrder`, `captureOrder`, `getOrder`
-- `PaypalController` — `getCheckoutUrl`, `capturePayment`
-- `paypal.routes.ts` + `payments.routes.ts`
-- `auth-post-payment.controller.ts` — activa suscripción post-pago PayPal para nuevos registros
-- Frontend: selector Wompi/PayPal en los 3 checkouts
-
-### Migración completa `supabase` anon → `supabaseAdmin` en el backend
-**Problema raíz:** El backend usa JWT propio (no Supabase Auth). RLS bloquea todas las consultas con anon key.
-**Solución:** Todos los servicios y controllers del backend usan `supabaseAdmin`.
-
-### Corrección del servicio de email (SMTP)
-- Transporter se crea fresco en cada llamada (no se cachea)
-- Puerto 465 fuerza `secure: true` automáticamente
-- Timeouts explícitos añadidos
-
-### Email de confirmación de compra en webhook Wompi
-Después de `renewSubscription()`, se consulta la marca actualizada y se llama a `notificationService.sendRenewalConfirmation()`.
-
-### Logo en templates de email
-El `baseTemplate` muestra el logo de Lookitry (`https://lookitry.com/logo.svg`) en el header de todos los emails.
-
-### Fix: Auto-vinculación de landing no sobreescribe plan (22/03/2026)
-- **Problema:** Al entrar a `/registro-pro?ref=TRYON-visitor_...` con sesión activa (plan BASIC/PRO), el backend tomaba `pending.plan = 'NONE'` y lo guardaba en la cuenta, rompiendo el plan del usuario.
-- **Fix en `auth-post-payment.controller.ts`:** Si `pending.plan` es `NONE` o vacío, se conserva el plan actual del usuario (`req.brand.plan`).
-- **Fix en `frontend/src/app/registro-pro/page.tsx`:** El auto-link solo se ejecuta si el pending es tipo landing-only (`plan = NONE`) o si el usuario no tiene plan activo. Si tiene plan activo y el pending quiere cambiar el plan, se muestra el formulario normal.
-
-### Nuevo email: Activación de Mini-landing (22/03/2026)
-- `landingActivatedEmail` en `email-templates.ts` — template con enlace a la landing y botones "Ver mi página" / "Personalizar".
-- `sendLandingActivatedEmail(brand)` en `notification.service.ts` — se dispara automáticamente cuando `has_landing_page` se activa en el flujo post-pago. No bloquea el flujo (catch silencioso). Aplica tanto a cuentas nuevas como a usuarios existentes que compran la landing por separado.
 
 
 ## BRAND ##
