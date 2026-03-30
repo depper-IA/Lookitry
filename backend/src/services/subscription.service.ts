@@ -3,7 +3,7 @@ import { Brand, SubscriptionPayment, CreatePaymentDto } from '../types';
 import { PaymentSettingsService } from './paymentSettings.service';
 import { getReportingTrm, normalizePaymentRecordToCop } from '../utils/paymentNormalization';
 import { attachLedgerSnapshotToNotes, type PaymentLedgerSnapshot } from '../utils/paymentLedger';
-import { isTrialOperationalBrand, recordTrialEvent } from '../utils/brandLifecycle';
+import { hasActivePaidSubscription, isTrialOperationalBrand, recordTrialEvent } from '../utils/brandLifecycle';
 
 /**
  * SubscriptionService
@@ -358,11 +358,28 @@ export class SubscriptionService {
   }> {
     const { data: brand, error } = await supabaseAdmin
       .from('brands')
-      .select('subscription_end_date, subscription_start_date, plan')
+      .select('subscription_end_date, subscription_start_date, subscription_status, trial_end_date, plan')
       .eq('id', brandId)
       .single();
 
     if (error || !brand) throw new Error('Marca no encontrada');
+
+    const basePlanTotal = Math.round(newPlanTotal);
+
+    if (!hasActivePaidSubscription(brand)) {
+      const newEndDate = this.calculateExpirationDate(new Date(), newMonths);
+      return {
+        daysRemaining: 0,
+        basePlanTotal,
+        creditAmount: 0,
+        newPlanTotal: basePlanTotal,
+        amountToPay: basePlanTotal,
+        remainingCredit: 0,
+        newEndDate: newEndDate.toISOString(),
+        isFree: false,
+        creditLabel: 'Sin credito disponible',
+      };
+    }
 
     const now = new Date();
     const endDate = brand.subscription_end_date ? new Date(brand.subscription_end_date) : now;
@@ -381,6 +398,21 @@ export class SubscriptionService {
       .order('payment_date', { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    if (!lastPayment) {
+      const newEndDate = this.calculateExpirationDate(now, newMonths);
+      return {
+        daysRemaining,
+        basePlanTotal,
+        creditAmount: 0,
+        newPlanTotal: basePlanTotal,
+        amountToPay: basePlanTotal,
+        remainingCredit: 0,
+        newEndDate: newEndDate.toISOString(),
+        isFree: false,
+        creditLabel: 'Sin credito disponible',
+      };
+    }
 
     const paymentMonths = lastPayment?.months_paid || 1;
     const totalDays = Math.max(1, 30 * paymentMonths);
@@ -417,7 +449,6 @@ export class SubscriptionService {
       Math.min(currentPlanPriceTotal, Math.round(pricePerDay * effectiveDaysRemaining))
     );
     const creditAmount = remainingPlanValue;
-    const basePlanTotal = Math.round(newPlanTotal);
 
     const amountToPay = Math.max(0, basePlanTotal - creditAmount);
     const remainingCredit = Math.max(0, creditAmount - basePlanTotal);
@@ -467,6 +498,8 @@ export class SubscriptionService {
         subscription_start_date: now.toISOString(),
         subscription_end_date: newEndDate.toISOString(),
         subscription_status: 'active',
+        trial_end_date: null,
+        trial_payment_status: null,
         last_payment_date: now.toISOString(),
         next_payment_date: newEndDate.toISOString(),
       })

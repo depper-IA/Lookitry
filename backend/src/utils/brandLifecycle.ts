@@ -64,6 +64,14 @@ export function isTrialOperationalBrand(brand: any): boolean {
   return !Number.isNaN(trialEnd.getTime()) && trialEnd > new Date();
 }
 
+export function hasActivePaidSubscription(brand: any): boolean {
+  if (isTrialOperationalBrand(brand)) {
+    return false;
+  }
+
+  return brand?.subscription_status === 'active' || brand?.subscription_status === 'expiring_soon';
+}
+
 export function isTrialLandingBlocked(brand: any): boolean {
   return isTrialOperationalBrand(brand);
 }

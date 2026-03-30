@@ -6,7 +6,7 @@ import { asyncHandler } from '../middleware/errorHandler';
 import { pricingService } from '../services/pricing.service';
 import { NotificationService } from '../services/notification.service';
 import { addonCreditsService } from '../services/addonCredits.service';
-import { isTrialLandingBlocked } from '../utils/brandLifecycle';
+import { hasActivePaidSubscription, isTrialLandingBlocked } from '../utils/brandLifecycle';
 
 const subscriptionService = new SubscriptionService();
 const notificationService = new NotificationService();
@@ -191,7 +191,8 @@ async function fulfillPaypalPayment(reference: string, orderId: string, amountUS
       reference,
     },
     months,
-    plan as string
+    plan as string,
+    hasActivePaidSubscription(currentBrand) && currentBrand?.plan === 'BASIC' && plan === 'PRO'
   );
 
   if (includesLanding) {

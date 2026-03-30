@@ -229,6 +229,58 @@ describe('SubscriptionService', () => {
   // ─── calculateUpgradeProration ────────────────────────────────────────────
 
   describe('calculateUpgradeProration', () => {
+    it('no debe dar crédito si la marca sigue en trial operativo', async () => {
+      const now = new Date();
+      const end = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      (supabaseAdmin.from as jest.Mock).mockReturnValueOnce(
+        mockSupabaseChain({
+          data: {
+            subscription_start_date: now.toISOString(),
+            subscription_end_date: end,
+            subscription_status: 'active',
+            trial_end_date: end,
+            plan: 'BASIC',
+          },
+          error: null,
+        })
+      );
+
+      const result = await service.calculateUpgradeProration('brand-1', 'PRO', 1, 250000, 150000);
+
+      expect(result.creditAmount).toBe(0);
+      expect(result.amountToPay).toBe(250000);
+      expect(result.isFree).toBe(false);
+    });
+
+    it('no debe dar crédito si no existe pago elegible previo', async () => {
+      const now = new Date();
+      const end = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000).toISOString();
+
+      (supabaseAdmin.from as jest.Mock)
+        .mockReturnValueOnce(
+          mockSupabaseChain({
+            data: {
+              subscription_start_date: now.toISOString(),
+              subscription_end_date: end,
+              subscription_status: 'active',
+              trial_end_date: null,
+              plan: 'BASIC',
+            },
+            error: null,
+          })
+        )
+        .mockReturnValueOnce(
+          mockSupabaseChain({ data: null, error: null })
+        );
+
+      const result = await service.calculateUpgradeProration('brand-1', 'PRO', 1, 250000, 150000);
+
+      expect(result.creditAmount).toBe(0);
+      expect(result.amountToPay).toBe(250000);
+      expect(result.isFree).toBe(false);
+    });
+
     it('debe aplicar crédito de pro a basic usando días remanentes', async () => {
       const now = new Date();
       const start = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString();
@@ -371,6 +423,35 @@ describe('SubscriptionService', () => {
       await expect(service.renewSubscription('brand-x', paymentData)).rejects.toThrow(
         'Marca no encontrada'
       );
+    });
+  });
+
+  describe('applyFreeUpgrade', () => {
+    it('debe respetar forcedEndDate y limpiar el estado trial', async () => {
+      const forcedEndDate = '2026-05-01T00:00:00.000Z';
+      const updatedBrand = {
+        id: 'brand-1',
+        plan: 'PRO',
+        subscription_status: 'active',
+        subscription_end_date: forcedEndDate,
+      };
+
+      (supabaseAdmin.from as jest.Mock)
+        .mockReturnValueOnce(mockSupabaseChain({ data: updatedBrand, error: null }))
+        .mockReturnValueOnce(mockSupabaseChain({ data: { id: 'pay-1' }, error: null }));
+
+      const result = await service.applyFreeUpgrade(
+        'brand-1',
+        'PRO',
+        1,
+        150000,
+        250000,
+        'FREE-UPGRADE-REF',
+        forcedEndDate
+      );
+
+      expect(result.subscription_end_date).toBe(forcedEndDate);
+      expect((supabaseAdmin.from as jest.Mock).mock.calls[0][0]).toBe('brands');
     });
   });
 
