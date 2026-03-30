@@ -147,7 +147,7 @@ describe('AuthController', () => {
         token: 'token-registrado',
         brand: { id: 'brand-1', email: 'qa@lookitry.com', name: 'Marca QA', slug: 'marca-qa', plan: 'BASIC' },
         verificationToken: 'verify-token',
-        requireCardVerification: false,
+        requiresTrialPayment: false,
       });
       const req = {
         body: {

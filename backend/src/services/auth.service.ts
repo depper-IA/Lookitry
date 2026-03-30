@@ -22,6 +22,15 @@ async function getActiveCampaign() {
   return data as { id: string; trial_days: number; trial_generations_limit: number; price_cop: number; require_card_verification: boolean } | null;
 }
 
+function campaignRequiresTrialPayment(campaign: {
+  price_cop?: number | null;
+  require_card_verification?: boolean | null;
+} | null): boolean {
+  if (!campaign) return false;
+  if (Number(campaign.price_cop || 0) <= 0) return false;
+  return campaign.require_card_verification !== false;
+}
+
 async function isTrialAbuse(ip: string, fingerprint: string | null): Promise<boolean> {
   // Verificar bypass y whitelist en payment_settings
   const { data: psData } = await supabaseAdmin
@@ -388,7 +397,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       email: newBrand.email,
     });
 
-    const requireCardVerification = !!(campaign && campaign.price_cop > 0) || !!(campaign?.require_card_verification === true);
+    const requiresTrialPayment = campaignRequiresTrialPayment(campaign);
 
     return {
       token,
@@ -401,7 +410,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
         api_key: newBrand.api_key,
       },
       verificationToken: newBrand.email_verification_token,
-      requireCardVerification,
+      requiresTrialPayment,
       isTrial: !!trialEndDate,
     };
   }

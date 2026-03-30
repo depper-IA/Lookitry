@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -27,6 +27,12 @@ interface ActiveTrialRow {
 interface ConversionStats {
   totalBrands: number;
   inTrial: number;
+  paidTrials: number;
+  trialRevenueCOP: number;
+  trialToBasic: number;
+  trialToPro: number;
+  trialToEnterprise: number;
+  trialToPaid: number;
   converted: number;
   conversionRate: number;
   trialRate: number;
@@ -41,6 +47,15 @@ function formatMonth(month: string) {
   const parsed = new Date(`${month}-01T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return month;
   return parsed.toLocaleDateString('es-CO', { month: 'short' });
+}
+
+function formatCop(value: number) {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value || 0);
 }
 
 function KpiCard({
@@ -136,22 +151,19 @@ export default function AdminConversionPage() {
           Embudo de conversión
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Seguimiento de trials activos, cuentas convertidas y crecimiento mensual del admin.
+          Trial como plan pago de entrada, más conversiones visibles a Basic, Pro y Enterprise.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <KpiCard label="Registros" value={stats.totalBrands} icon={<Users className="h-5 w-5" />} helper="Base total de marcas creadas" />
         <KpiCard label="Trials activos" value={stats.inTrial} icon={<Zap className="h-5 w-5" />} helper={`${stats.trialRate}% del total vigente`} accent />
-        <KpiCard label="Cuentas pagas" value={stats.converted} icon={<CreditCard className="h-5 w-5" />} helper="Marcas con suscripción activa o por renovar" />
-        <KpiCard label="Conversión" value={`${stats.conversionRate}%`} icon={<Percent className="h-5 w-5" />} helper="Porcentaje total de conversión" />
+        <KpiCard label="Trials pagados" value={stats.paidTrials} icon={<CreditCard className="h-5 w-5" />} helper={`Ingreso trial: ${formatCop(stats.trialRevenueCOP)}`} />
+        <KpiCard label="Conversión" value={`${stats.conversionRate}%`} icon={<Percent className="h-5 w-5" />} helper="Marcas hoy en planes pagos distintos de TRIAL" />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <section
-          className="rounded-[2rem] border p-6"
-          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
-        >
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <section className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <div className="flex items-center gap-3">
             <div className="rounded-2xl bg-[#FF5C3A]/10 p-3 text-[#FF5C3A]">
               <Target className="h-5 w-5" />
@@ -161,21 +173,22 @@ export default function AdminConversionPage() {
                 Lectura del embudo
               </h2>
               <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-                El filtro usa `plan = TRIAL` como fuente de verdad y `trial_end_date` solo para vigencia operativa.
+                `TRIAL` se mide como plan pago de entrada. Las subidas posteriores se separan por destino comercial.
               </p>
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <div className="mt-6 grid gap-4 md:grid-cols-4">
             {[
               { title: 'Entrada', value: stats.totalBrands, desc: 'Cuentas creadas' },
-              { title: 'Activación trial', value: stats.inTrial, desc: 'Trials vigentes hoy' },
-              { title: 'Pago', value: stats.converted, desc: 'Marcas convertidas' },
+              { title: 'Trial pagado', value: stats.paidTrials, desc: 'Pagos por prueba registrados' },
+              { title: 'Trial -> pago', value: stats.trialToPaid, desc: 'Cambios desde trial a planes superiores' },
+              { title: 'Pago activo', value: stats.converted, desc: 'Marcas hoy en plan pago' },
             ].map((step, index) => (
               <div
                 key={step.title}
                 className="rounded-[1.5rem] border p-5"
-                style={{ background: index === 2 ? 'rgba(255,92,58,0.08)' : 'var(--bg-base)', borderColor: index === 2 ? 'rgba(255,92,58,0.18)' : 'var(--border-color)' }}
+                style={{ background: index >= 2 ? 'rgba(255,92,58,0.08)' : 'var(--bg-base)', borderColor: index >= 2 ? 'rgba(255,92,58,0.18)' : 'var(--border-color)' }}
               >
                 <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
                   {step.title}
@@ -190,34 +203,27 @@ export default function AdminConversionPage() {
             ))}
           </div>
 
-          <div className="mt-6 grid gap-3 md:grid-cols-3">
+          <div className="mt-6 grid gap-3 md:grid-cols-4">
             <div className="rounded-[1.25rem] border p-4" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
-                Tasa trial
-              </p>
-              <p className="mt-2 text-2xl font-bold text-[#FF5C3A]">{stats.trialRate}%</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Trial {'->'} Basic</p>
+              <p className="mt-2 text-2xl font-bold text-[#FF5C3A]">{stats.trialToBasic}</p>
             </div>
             <div className="rounded-[1.25rem] border p-4" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
-                Drop-off
-              </p>
-              <p className="mt-2 text-2xl font-bold text-amber-400">{churnEstimate}%</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Trial {'->'} Pro</p>
+              <p className="mt-2 text-2xl font-bold text-[#22c55e]">{stats.trialToPro}</p>
             </div>
             <div className="rounded-[1.25rem] border p-4" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
-                Trials visibles
-              </p>
-              <p className="mt-2 text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-                {stats.activeTrials.length}
-              </p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Trial {'->'} Enterprise</p>
+              <p className="mt-2 text-2xl font-bold text-[#6366f1]">{stats.trialToEnterprise}</p>
+            </div>
+            <div className="rounded-[1.25rem] border p-4" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Ingreso trial</p>
+              <p className="mt-2 text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{formatCop(stats.trialRevenueCOP)}</p>
             </div>
           </div>
         </section>
 
-        <section
-          className="rounded-[2rem] border p-6"
-          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
-        >
+        <section className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <div className="flex items-center gap-3">
             <div className="rounded-2xl bg-[#FF5C3A]/10 p-3 text-[#FF5C3A]">
               <RefreshCcw className="h-5 w-5" />
@@ -227,7 +233,7 @@ export default function AdminConversionPage() {
                 Crecimiento mensual
               </h2>
               <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-                Nuevas cuentas convertidas durante los últimos 6 meses.
+                Conversiones desde trial durante los últimos 6 meses.
               </p>
             </div>
           </div>
@@ -253,10 +259,7 @@ export default function AdminConversionPage() {
         </section>
       </div>
 
-      <section
-        className="rounded-[2rem] border p-6"
-        style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
-      >
+      <section className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
@@ -287,7 +290,7 @@ export default function AdminConversionPage() {
                 <tr className="border-b" style={{ borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}>
                   <th className="py-3 text-left text-[11px] font-black uppercase tracking-[0.18em]">Marca</th>
                   <th className="py-3 text-left text-[11px] font-black uppercase tracking-[0.18em]">Estado</th>
-                  <th className="py-3 text-left text-[11px] font-black uppercase tracking-[0.18em]">Plan base</th>
+                  <th className="py-3 text-left text-[11px] font-black uppercase tracking-[0.18em]">Plan</th>
                   <th className="py-3 text-left text-[11px] font-black uppercase tracking-[0.18em]">Expira</th>
                   <th className="py-3 text-left text-[11px] font-black uppercase tracking-[0.18em]">Días restantes</th>
                 </tr>

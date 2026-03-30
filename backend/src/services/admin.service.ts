@@ -6,6 +6,7 @@ import {
   getPaymentDisplayBrand,
   inferBillingType,
   inferIncludesLanding,
+  inferPlanPurchased,
 } from '../utils/paymentLedger';
 import { getBrandSocialLinks } from '../utils/brandLifecycle';
 
@@ -903,11 +904,20 @@ export class AdminService {
   async getConversionStats() {
     const { data: brands, error } = await supabaseAdmin
       .from('brands')
-      .select('id, name, email, slug, plan, subscription_status, trial_end_date, created_at')
+      .select('id, name, email, slug, plan, subscription_status, trial_end_date, trial_payment_status, created_at, social_links')
       .order('created_at', { ascending: true });
 
     if (error || !brands) {
       throw new Error('Error al obtener datos de conversión: ' + error?.message);
+    }
+
+    const { data: completedPayments, error: paymentsError } = await supabaseAdmin
+      .from('subscription_payments')
+      .select('amount, currency, notes, reference, status')
+      .eq('status', 'completed');
+
+    if (paymentsError) {
+      throw new Error('Error al obtener pagos de trial: ' + paymentsError.message);
     }
 
     const now = new Date();
@@ -919,11 +929,45 @@ export class AdminService {
       b.subscription_status !== 'suspended'
     );
 
+    const paidTrialPayments = completedPayments || [];
+    const reportingTrm = await getReportingTrm();
+    const trmCache = new Map<string, number | null>();
+
+    const trialActivationPayments = paidTrialPayments.filter((payment) => {
+      const planPurchased = inferPlanPurchased(payment);
+      const billingType = inferBillingType(payment);
+      return planPurchased === 'TRIAL' || billingType === 'trial_activation';
+    });
+
+    let trialRevenueCOP = 0;
+    for (const payment of trialActivationPayments) {
+      const normalized = await normalizePaymentRecordToCop(payment, reportingTrm, trmCache);
+      trialRevenueCOP += normalized.amountCop;
+    }
+
     // Marcas convertidas: solo planes pagos reales, excluyendo TRIAL.
     const converted = brands.filter(b =>
       b.plan !== 'TRIAL' &&
       (b.subscription_status === 'active' || b.subscription_status === 'expiring_soon')
     );
+
+    const trialConversionEvents = brands.flatMap((brand) => {
+      const socialLinks = getBrandSocialLinks(brand);
+      const events = Array.isArray(socialLinks.trial_events) ? socialLinks.trial_events : [];
+
+      return events
+        .filter((event: any) => event?.type === 'trial_converted')
+        .map((event: any) => ({
+          brandId: brand.id,
+          created_at: event.created_at,
+          planPurchased: String(event?.payload?.planPurchased || '').toUpperCase(),
+        }));
+    });
+
+    const trialToBasic = trialConversionEvents.filter((event) => event.planPurchased === 'BASIC').length;
+    const trialToPro = trialConversionEvents.filter((event) => event.planPurchased === 'PRO').length;
+    const trialToEnterprise = trialConversionEvents.filter((event) => event.planPurchased === 'ENTERPRISE').length;
+    const trialToPaid = trialToBasic + trialToPro + trialToEnterprise;
 
     const totalBrands = brands.length;
     const conversionRate = totalBrands > 0
@@ -933,7 +977,7 @@ export class AdminService {
       ? Math.round((inTrial.length / totalBrands) * 100)
       : 0;
 
-    // Conversiones por mes (últimos 6 meses) — basado en created_at de marcas convertidas
+    // Conversiones desde trial por mes (ultimos 6 meses)
     const monthlyConversions: Record<string, number> = {};
     const sixMonthsAgo = new Date(now);
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
@@ -948,11 +992,10 @@ export class AdminService {
       monthlyConversions[key] = 0;
     }
 
-    // Contar conversiones por mes de registro de marcas convertidas
-    converted.forEach(b => {
-      const createdAt = new Date(b.created_at);
-      if (createdAt >= sixMonthsAgo) {
-        const key = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}`;
+    trialConversionEvents.forEach((event) => {
+      const eventDate = new Date(event.created_at);
+      if (eventDate >= sixMonthsAgo) {
+        const key = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}`;
         if (key in monthlyConversions) {
           monthlyConversions[key]++;
         }
@@ -987,6 +1030,12 @@ export class AdminService {
     return {
       totalBrands,
       inTrial: inTrial.length,
+      paidTrials: trialActivationPayments.length,
+      trialRevenueCOP: Math.round(trialRevenueCOP),
+      trialToBasic,
+      trialToPro,
+      trialToEnterprise,
+      trialToPaid,
       converted: converted.length,
       conversionRate,
       trialRate,
