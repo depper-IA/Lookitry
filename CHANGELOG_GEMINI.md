@@ -3,10 +3,12 @@
 ## 29 de Marzo, 2026 — Auditoria y unificacion de trial en dashboards admin y usuario
 
 **Objetivo:**
+
 - Unificar la lectura de trial entre backend, admin y dashboard de usuario para que deje de depender de combinaciones fragiles entre `plan`, `subscription_status` y `trial_end_date`.
 - Evitar que cuentas legacy con `trial_end_date` vigente vuelvan a mostrarse como `BASIC` o desaparezcan de conversion, limites y estados visuales.
 
 **Cambios aplicados:**
+
 - **Backend (`backend/src/services/subscription.service.ts`, `backend/src/services/usage.service.ts`, `backend/src/services/products.service.ts`, `backend/src/controllers/subscription.controller.ts`):**
   - La regla operativa quedo unificada como `trial activo = trial_end_date vigente y subscription_status != suspended`.
   - Se corrigio la deteccion de trial para estado de suscripcion, limites de uso, limite de productos y listado admin de suscripciones.
@@ -20,16 +22,19 @@
   - Se actualizaron pruebas para cubrir cuentas legacy con `subscription_status = active` pero `trial_end_date` vigente, y para asegurar que suspendidas no se lean como trial.
 
 **Motivo:**
+
 - El error se repetia porque existian varias implementaciones distintas de "trial" dentro del proyecto. La auditoria dejo una sola fuente de verdad para prevenir regresiones entre admin y dashboard de usuario.
 
 ## 29 de Marzo, 2026 — Endurecimiento QA preproducción (backend + frontend)
 
 **Objetivo:**
+
 - Auditar la cobertura existente antes de salida a producción y completar pruebas faltantes sobre validaciones críticas, pagos y helpers de pricing.
 - Corregir fallos de la infraestructura de testing para obtener resultados confiables de backend y frontend.
 - Resolver un bug real de mutación compartida en la configuración por defecto de precios del frontend.
 
 **Cambios aplicados:**
+
 - **Backend (`auth.controller.test.ts`, `payments.controller.test.ts`):**
   - Nuevos tests unitarios para validaciones de registro/login/reset de contraseña y para el flujo de compra de add-ons con y sin sesión.
 - **Backend (`preproduction.smoke.test.ts`, `package.json`):**
@@ -46,21 +51,26 @@
   - Guía rápida del alcance y ejecución del smoke preproducción.
 
 **Resultados de validación:**
+
 - Smoke backend: `npm run test:smoke` → **1 suite, 5 tests, todos pasando**.
 - Backend: `npm test -- --runInBand` → **13 suites, 140 tests, todos pasando**.
 - Frontend: `npx vitest run` → **4 suites, 12 tests, todos pasando**.
 
 **Motivo:**
+
 - El proyecto tenía cobertura relevante en backend, pero faltaban pruebas directas sobre validaciones de entrada y piezas críticas del frontend. Además, existía un bug silencioso en pricing que podía contaminar estados entre requests/tests y alterar precios renderizados.
 
 ---
+
 ## 28 de Marzo, 2026 — Corrección de Etiquetas Dinámicas (n8n) y Miniaturas de Blog
 
 **Objetivo:**
+
 - Resolver el fallo por el cual todos los artículos generados por n8n adoptaban la etiqueta "Inteligencia Artificial" (slug: `ia`).
 - Hacer funcionales las miniaturas en la tabla del panel administrativo del blog (`/admin/blog`).
 
 **Cambios aplicados:**
+
 - **Backend (`blog.controller.ts`):**
   - Se modificó la lógica de recepción de artículos para auto-crear categorías dinámicamente si n8n envía un slug que no existe en `blog_categories`. Esto soluciona el fallback silencioso que forzaba todas las publicaciones a la primera categoría disponible (`ia`).
 - **Frontend (`admin/blog/page.tsx`):**
@@ -68,17 +78,21 @@
   - Refinamiento UI del panel administrativo ajustándolo al diseño Lookitry premium (tipografía Jakarta uppercase y variables CSS consistentes).
 
 **Despliegue:**
+
 - Cambios locales comiteados y subidos a `main`. Se reiniciaron los contenedores en producción aplicando las actualizaciones del API y Frontend.
 
 ---
+
 ## 28 de Marzo, 2026 — Saneamiento de Autenticación y CORS (Producción)
 
 **Objetivo:**
+
 - Resolver el error "Failed to fetch" en el flujo de login de producción.
 - Asegurar la compatibilidad entre el dominio principal y la API mediante políticas CORS robustas.
 - Habilitar la persistencia de cookies de sesión cross-origin en navegadores modernos.
 
 **Cambios aplicados:**
+
 - **Backend (Express):**
   - `app.ts`: Ampliación de `allowedOrigins` para incluir todas las variantes de dominio de producción (`www`, `http/https`) y adición de cabeceras estándar para compatibilidad con preflights de navegadores.
   - `.env`: Cambio forzado de `NODE_ENV=production` para activar políticas de cookies seguras (`SameSite=None`, `Secure=true`).
@@ -89,6 +103,7 @@
   - Ejecución del script `_deploy_now.py --force` para aplicar los cambios de seguridad y variables de entorno en el VPS.
 
 **Motivo:**
+
 - Los navegadores bloquean cookies de terceros o cross-origin por defecto si no se configuran explícitamente con `SameSite=None` y `Secure=true`. El entorno previo en `development` impedía que el backend emitiera estas cabeceras correctamente.
 
 ---
@@ -96,10 +111,12 @@
 ## 27 de Marzo, 2026 — Migración Sistema de Blog Nativo (Supabase + MinIO)
 
 **Objetivo:**
+
 - Migrar el blog automatizado desde WordPress a una solución nativa integrada en Lookitry.
 - Eliminar dependencias externas y centralizar el almacenamiento de imágenes en MinIO.
 
 **Cambios aplicados:**
+
 - **Backend (Express):**
   - Nuevo controlador `blog.controller.ts` para gestionar artículos y carga de imágenes.
   - Endpoints: `POST /api/blog/webhook` (creación) y `POST /api/blog/upload` (subida a MinIO).
@@ -116,6 +133,7 @@
   - Nueva guía técnica: `n8n_guide.md`.
 
 **Motivo:**
+
 - Independencia tecnológica, mejora en el rendimiento de carga (Next.js nativo) y optimización SEO mediante sitemaps dinámicos controlados por el backend propio.
 
 ---
@@ -123,10 +141,12 @@
 ## 27 de Marzo, 2026 — Refactorización y Actualización de Reglas Críticas (Lookitry Master)
 
 **Objetivo:**
+
 - Consolidar la documentación en `.kiro/steering/REGLAS_IMPORTANTES.md` eliminando redundancias masivas (más de 1000 líneas duplicadas).
 - Sincronizar las reglas con el estado actual del producto (rebranding total a Lookitry).
 
 **Cambios aplicados:**
+
 - `REGLAS_IMPORTANTES.md`
   - Se eliminó toda mención a nombres antiguos ("Virtual Try On", "Mostrador").
   - Se erradicó la terminología sci-fi ("ADN", "Genoma", "Matriz") de todas las reglas y descripciones.
@@ -136,6 +156,7 @@
   - Se actualizaron todas las URLs de `pruebalo.wilkiedevs.com` a `lookitry.com`.
 
 **Motivo:**
+
 - Mantener un contexto limpio y libre de ruido para futuras sesiones de la IA, asegurando que las reglas críticas sean legibles y precisas.
 
 ---
@@ -143,10 +164,12 @@
 ## 26 de Marzo, 2026 — Fix de registro post-pago cuando el slug ya existe
 
 **Problema reportado:**
+
 - En el flujo de registro post-pago (`/register?ref=...`), el nombre/slug venían prellenados y bloqueados.
 - Si el slug ya existía en la base de datos, el usuario quedaba atascado sin opción de corrección.
 
 **Solución aplicada:**
+
 - `frontend/src/components/auth/RegisterForm.tsx`
   - Se habilitó edición del **nombre de marca** en flujo pagado (ya no queda bloqueado por prefill).
   - Se habilitó edición del **slug** en flujo pagado y se normaliza automáticamente al escribir.
@@ -155,6 +178,7 @@
   - Se mejoró microcopy para orientar al usuario en conflictos de slug.
 
 **Resultado:**
+
 - El usuario puede completar el registro incluso cuando intenta usar un nombre/slug previamente ocupado.
 
 ---
@@ -162,11 +186,13 @@
 ## 26 de Marzo, 2026 — Rediseño estético premium de páginas de confianza + ejemplos reales
 
 **Skills aplicadas:**
+
 - `.agent/skills/lookitry-brand-guardian/SKILL.md`
 - `.agent/skills/ui-ux-pro-max/SKILL.md`
 - Se ejecutó diseño base con `--design-system` para aterrizar lineamientos visuales.
 
 **Mejoras de UI/UX (premium dark, mayor densidad de valor):**
+
 - Rediseño visual y de contenido en:
   - `frontend/src/app/contacto/page.tsx`
   - `frontend/src/app/ayuda/page.tsx`
@@ -176,12 +202,14 @@
   - `frontend/src/app/aviso-legal/page.tsx`
 
 **Cambio solicitado por naming:**
+
 - Se creó página de enfoque práctico:
   - `frontend/src/app/aplicaciones/page.tsx`
 - Footer actualizado para usar:
   - `Aplicaciones reales` → `/aplicaciones`
 
 **Verificación de base de datos (generaciones exitosas):**
+
 - Se consultó `generations` (status `SUCCESS`) con relación de `products` usando credenciales locales del backend.
 - Se identificaron ejemplos reales para categorías:
   - Accesorios/cascos
@@ -191,6 +219,7 @@
 - Esos casos se incorporaron en `/aplicaciones` con imágenes reales de MinIO.
 
 **SEO / navegación:**
+
 - `frontend/src/app/sitemap.ts` actualizado para incluir `/aplicaciones` además de páginas públicas de confianza ya creadas.
 
 ---
@@ -198,15 +227,18 @@
 ## 26 de Marzo, 2026 — Footer de confianza + páginas públicas legales/comerciales
 
 **Objetivo:**
+
 - Reforzar credibilidad de marca en landing pública y cubrir vacíos legales/soporte para salida beta.
 
 **Cambios de copy (landing):**
+
 - `frontend/src/components/landing/LandingClient.tsx`
   - Se reemplazó el mensaje antiguo de trial:
     - De: `Requiere verificación de tarjeta · Cancela cuando quieras`
     - A: `Activa hoy tu prueba paga · Configuración en minutos`
 
 **Mejoras del footer:**
+
 - `frontend/src/components/landing/LandingFooter.tsx`
   - Cambio CTA en navegación de producto:
     - De: `Probar por $20.000`
@@ -220,6 +252,7 @@
     - `/contacto`, `/casos-de-exito`, `/ayuda`, `/estado`, `/politica-de-uso`, `/cookies`, `/aviso-legal`
 
 **Nuevas páginas públicas creadas:**
+
 - `frontend/src/app/contacto/page.tsx`
 - `frontend/src/app/casos-de-exito/page.tsx`
 - `frontend/src/app/ayuda/page.tsx`
@@ -229,10 +262,12 @@
 - `frontend/src/app/politica-de-uso/page.tsx`
 
 **SEO / indexación:**
+
 - `frontend/src/app/sitemap.ts`
   - Se añadieron las nuevas URLs públicas al sitemap.
 
 **Widget embebible (riesgo legal):**
+
 - `frontend/public/widget.js`
   - Se agregó aviso legal mínimo bajo el iframe con enlace directo a:
     - `/politica-de-uso`
@@ -243,15 +278,18 @@
 ## 26 de Marzo, 2026 — Auditoría Dashboard Beta y Corrección de PayPal Landing
 
 **Archivo leído obligatoriamente:**
+
 - `LOOKITRY_MASTER_MEMORY.md`
 
 **Verificación de estado (preexistente):**
+
 - `frontend/src/components/dashboard/OnboardingWizard.tsx`: CTA del paso 4 corregido a `/dashboard/integrations` (sin ruta rota).
 - `frontend/src/components/dashboard/DashboardLayout.tsx`: navegación activa en subrutas ya implementada (`pathname.startsWith(...)`).
 - `frontend/src/app/dashboard/integrations/docs/page.tsx` y `frontend/src/components/dashboard/ProductForm.tsx`: sin placeholders `href="#"` detectados.
 - `frontend/src/app/dashboard/page.tsx`: sin uso inválido de `border border(--border-color)`.
 
 **Cambio aplicado en esta sesión:**
+
 - `frontend/src/app/dashboard/checkout-landing/page.tsx`
   - Se eliminó el flujo simulado de PayPal por WhatsApp.
   - Se implementó flujo real con endpoint backend:
@@ -261,6 +299,7 @@
   - Al recibir `checkoutUrl`, se redirige al checkout real de PayPal.
 
 **Motivo:**
+
 - Dejar el dashboard realmente listo para beta cobrable, manteniendo PayPal activo y funcional en `checkout-landing` en lugar de un canal manual.
 
 ---
@@ -268,35 +307,36 @@
 ## 24 de Marzo, 2026 — Auditoría de Seguridad Completa (Backend & Frontend)
 
 **Archivos examinados:**
+
 - `backend/src/app.ts`, `auth.middleware.ts`, `auth.controller.ts`, `wompi.service.ts`
 - `frontend/src/middleware.ts`, `next.config.js`, `api.ts`
 - `LOOKITRY_MASTER_MEMORY.md` (Actualizado)
 
 **Hallazgos Clave:**
+
 - **Autenticación:** Confirmado uso seguro de cookies `HttpOnly`, `Secure` y `SameSite`. JWT protegidos.
 - **Webhooks:** Verificación de firmas de Wompi robusta con 3 variantes de validación.
 - **Infraestructura:** Ratelimiters globales y específicos operativos.
-- **Riesgos Identificados:** 
-    - El archivo `webhook_logs.txt` en el backend registra datos crudos de peticiones (Riesgo de exposición de datos).
-    - El uso de `supabaseAdmin` en el backend bypasea RLS (Se recomienda RLS como defensa en profundidad).
-- **Mejoras Implementadas:** 
-    - Actualización de la Memoria Maestra con los resultados de la auditoría.
-    - Generación de informe exhaustivo en español: `security_audit_report.md`.
-    - **Hardening:** Configuración de Helmet CSP (Backend), saneamiento de logs de Wompi y CSP estricta (Frontend y Widget).
-    - **Interoperabilidad:** Ajuste de CORS en `/api/embed` y `/api/pruebalo` para permitir el funcionamiento del plugin de WooCommerce en sitios externos.
-
-
+- **Riesgos Identificados:**
+  - El archivo `webhook_logs.txt` en el backend registra datos crudos de peticiones (Riesgo de exposición de datos).
+  - El uso de `supabaseAdmin` en el backend bypasea RLS (Se recomienda RLS como defensa en profundidad).
+- **Mejoras Implementadas:**
+  - Actualización de la Memoria Maestra con los resultados de la auditoría.
+  - Generación de informe exhaustivo en español: `security_audit_report.md`.
+  - **Hardening:** Configuración de Helmet CSP (Backend), saneamiento de logs de Wompi y CSP estricta (Frontend y Widget).
+  - **Interoperabilidad:** Ajuste de CORS en `/api/embed` y `/api/pruebalo` para permitir el funcionamiento del plugin de WooCommerce en sitios externos.
 
 **Motivo:** Asegurar la integridad de la plataforma y cumplir con la solicitud del usuario de una auditoría completa antes de nuevas implementaciones.
 
 ---
+
 ## 24 de Marzo, 2026 — Sprint Final: Rediseño Dashboard & Premium Branding (Fases 1-8)
 
-
 ### Paneles de Usuario (Dashboard)
+
 - **Suscripción & Perfil:** Eliminación masiva de terminología sci-fi ("ADN", "Orbital", "Galáctico", "Sincronizar", "Evolucionar"). Reemplazados por términos profesionales: "Plan", "Renovación", "Suscripción", "Contraseña", "Guardar Cambios".
 - **Integraciones:** Rediseño completo y limpieza de términos. "Red Neuronal" → "Integraciones", "Inyectar Matriz" → "Instalar Plugin".
-- **Productos:** 
+- **Productos:**
   - Badges de categoría y estado ("Nuevo", "Top", "Oferta") con fondo blanco/sólido para legibilidad total.
   - Tooltips migrados a formato "clic" para evitar ruido visual.
   - Descripción oculta en vista de cuadrícula para priorizar la estética visual.
@@ -307,20 +347,25 @@
 - **Mi Página:** Corregido error de previsualización (teléfono dentro de teléfono) y restaurado enlace de marketing bonus.
 
 ### Backend & Estabilidad
+
 - **Products Controller:** Corregido bug crítico en la actualización de productos (mapeo de `externalId`).
 - **Infraestructura:** Resolución de conflictos de puertos y verificación de API operativa.
 
 ### General
+
 - **Comunicación:** Configuración de idioma 100% en español para el agente y toda la documentación del proyecto.
 - **Documentación:** Actualización de memoria maestra y lista de tareas completada.
 
 ---
+
 ## 24 de Marzo, 2026 — Fase 6: Limpieza de Terminología en Panel de Integraciones
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/integrations/page.tsx`
 
 **Cambios (terminología reemplazada):**
+
 - H1: "Red Neuronal" → "Integraciones"
 - Subtítulo: "Conexión Headless y Puentes Nativos" → "Conecta tu tienda con el probador virtual"
 - Paso 1: "Inyectar Matriz" → "Instalar Plugin"
@@ -337,13 +382,16 @@
 **Motivo:** Eliminar jerga sci-fi del panel de integraciones. La audiencia son marcas de moda, no desarrolladores avanzados.
 
 ---
+
 ## 24 de Marzo, 2026 — Fase 5: Correcciones de UI en Configuración del Widget
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/SettingsForm.tsx`
 - `frontend/src/app/dashboard/settings/page.tsx`
 
 **Cambios:**
+
 - **URL del Widget:** Actualizada la URL de Acceso Directo en la previsualización de `pruebalo.wilkiedevs.com` → `lookitry.com`. Alineado con el nuevo dominio del producto.
 - **Terminología:** Eliminados todos los términos sci-fi/ADN del formulario de configuración. Reemplazos clave:
   - "Genoma de Marca" → "Identidad de Marca"
@@ -359,14 +407,15 @@
 
 ---
 
-
 **Archivos modificados:**
+
 - `backend/src/controllers/products.controller.ts`
 - `LOOKITRY_MASTER_MEMORY.md`
 - `.gemini/antigravity/brain/.../task.md`
 - `.gemini/antigravity/brain/.../implementation_plan.md`
 
 **Cambios:**
+
 - **Fix Backend (Productos):** Corregido error en `updateProduct` que causaba fallos al actualizar. Se añadió el mapeo obligatorio de `externalId` a `external_id` y se mejoró el manejo del campo `price` para evitar errores con valores vacíos o inválidos.
 - **Traducción de Proyecto:** Se tradujeron todos los artefactos de seguimiento (`task.md` e `implementation_plan.md`) al español para cumplir con la nueva directriz del usuario.
 - **Memoria Maestra:** Actualizado `LOOKITRY_MASTER_MEMORY.md` con la regla obligatoria de comunicación 100% en español.
@@ -379,9 +428,11 @@
 ## 24 de Marzo, 2026 — Refinamiento UI/UX: Panel de Generaciones (Lookitry Premium)
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/generations/page.tsx`
 
 **Cambios:**
+
 - **Estética de Tarjetas:** Reducido el redondeo extremo de las tarjetas de `rounded-[2.8rem]` a `rounded-3xl` para una apariencia más profesional y contemporánea.
 - **Optimización de Vista Media (Thumbnails):**
   - Reducido el espacio entre elementos (`gap`) de 3rem a 1rem-1.5rem, permitiendo una visualización más densa y elegante.
@@ -400,14 +451,16 @@
 ## 24 de Marzo, 2026 — Refinamiento UI/UX: Panel de Productos (Lookitry Premium)
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/ProductList.tsx`
 - `frontend/src/components/dashboard/ProductForm.tsx`
 - `frontend/src/app/dashboard/products/page.tsx`
 
 **Cambios:**
+
 - **Contraste de Badges:** La etiqueta de categoría (`CategoryBadge`) ahora usa un fondo blanco sólido con texto negro y borde sutil para asegurar visibilidad total sobre cualquier fondo de imagen de producto.
 - **Limpieza de Grid:** Eliminada la previsualización de la descripción en la vista de cuadrícula para un diseño más limpio y orientado a la imagen ("Premium Fashion").
-- **Tooltips Refinados:** 
+- **Tooltips Refinados:**
   - El tooltip de "Imagen del Producto" ahora es más claro y directo, enfocado en la calidad y formato (3:4) para el usuario.
   - Se agregó un nuevo tooltip de recomendación en el campo "Descripción", aconsejando no modificar el texto generado por IA para mejores resultados.
   - Ambos tooltips aparecen estrictamente al pasar el mouse por el icono de ayuda, evitando ruido visual.
@@ -420,9 +473,11 @@
 ## 24 de Marzo, 2026 — Historial de transacciones con hora exacta
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/subscription/page.tsx`
 
 **Cambios:**
+
 - Creada función `formatDateTime` para mostrar fecha y hora con formato `es-CO`.
 - Actualizada la tabla de historial de pagos en el dashboard de suscripción para mostrar la hora exacta de cada transacción, facilitando la verificación de pagos recientes.
 
@@ -431,10 +486,12 @@
 ## 24 de Marzo, 2026 — Roadmap: Planificación de Autenticación Social y Plugin WooCommerce
 
 **Archivos modificados:**
+
 - `LOOKITRY_MASTER_MEMORY.md`
 - `LOOKITRY_WOOCOMMERCE_PLUGIN_SPEC.md` (Nuevo archivo)
 
 **Cambios:**
+
 - Agregada la sección "8. PRÓXIMAS IMPLEMENTACIONES (Corto Plazo)" al documento de memoria maestra.
 - **Estrategia Lookitry for WooCommerce:** Definida la arquitectura técnica y de negocio para el plugin oficial.
 - **Estrategia de Conversión (Hook):** Implementación de un "Free Trial de 7 días" (1 slot de producto / 10-15 generaciones) para reducir fricción.
@@ -448,19 +505,21 @@
 ## 23 de Marzo, 2026 — Fix: SubscriptionBadge del navbar muestra nombre del plan activo
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/SubscriptionBadge.tsx`
 
 **Cambios:**
+
 - El badge del navbar ahora muestra "Plan Básico activo · 89D" en lugar de solo "89D restantes", alineado con la captura de referencia del usuario.
 
 ---
 
-
-
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/checkout/page.tsx`
 
 **Cambios:**
+
 - Corregido el fetch de `/api/payments/wompi/upgrade-preview`: ahora envía el header `Authorization: Bearer <token>` desde `localStorage`. Antes usaba solo `credentials: 'include'` (cookies), lo que hacía que el middleware `optionalAuth` del backend no encontrara el JWT y devolviera 401 silenciosamente. Resultado: `prorationPreview` quedaba `null` y el checkout mostraba el precio completo del plan sin aplicar el crédito proporcional.
 - Corregido el `currentPlanPriceTotal` del fallback: ahora usa `planInfo[currentPlan].price * selectedMonths` en lugar de solo `planInfo[currentPlan].price` (que era el precio mensual, no el total).
 
@@ -471,6 +530,7 @@
 ## 23 de Marzo, 2026 — Unificación de spinners en dashboard de usuario + datos dinámicos en checkout
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/checkout/page.tsx`
 - `frontend/src/app/dashboard/profile/page.tsx`
 
@@ -496,6 +556,7 @@
 ## 23 de Marzo, 2026 — Auditoría y corrección de datos dinámicos en checkout interno
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/checkout/page.tsx`
 
 **Bugs corregidos:**
@@ -513,6 +574,7 @@
    - Separado en dos efectos: uno con `[]` (solo al montar) para suscripción y precios, y otro con `[selectedPlan]` solo para verificar Wompi.
 
 **Datos dinámicos verificados como correctos:**
+
 - Precios BASIC/PRO: cargados desde `pricing_config` en Supabase con fallback estático ✅
 - Descuentos por duración: cargados desde `pricing_config.descuentos_duracion` ✅
 - Precio mini-landing: cargado desde `payment-settings/public` ✅
@@ -527,9 +589,11 @@
 ## 23 de Marzo, 2026 — Fix botones método de pago (v2) y prorrateo visible en resumen
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/checkout/page.tsx`
 
 **Cambios:**
+
 - Botones de método de pago rediseñados: layout horizontal con ícono lucide + texto en dos líneas, fondo `transparent` cuando no están activos y `rgba` sutil cuando sí. Sin fondos negros sólidos.
 - Resumen del prorrateo: ahora muestra un mini-panel con fondo `rgba(99,102,241,0.05)` que incluye precio bruto del plan, crédito en verde con días restantes, y subtotal del upgrade — todo visible antes del "Total a pagar" final.
 
@@ -538,9 +602,11 @@
 ## 23 de Marzo, 2026 — Fix prorrateo en resumen del checkout
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/checkout/page.tsx`
 
 **Cambios:**
+
 - El resumen del pedido (columna derecha) ahora muestra correctamente el desglose del prorrateo en upgrades: precio del plan PRO, crédito en verde con días restantes, y total final.
 - Mientras carga el prorrateo se muestra un spinner dentro del resumen en lugar de no mostrar nada.
 - Cuando `prorationPreview.isFree`, el total muestra "Sin costo" en verde en lugar del precio.
@@ -552,9 +618,11 @@
 ## 23 de Marzo, 2026 — Fix botones de método de pago en Checkout
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/checkout/page.tsx`
 
 **Cambios:**
+
 - Eliminados los `<img>` de logos SVG externos (wompi-logo.svg con `invert brightness-200` y PayPal.svg de Wikipedia) que eran invisibles en modo claro.
 - Reemplazados por wordmarks SVG inline (`<text>` SVG) con color dinámico según estado seleccionado.
 - Fondo del botón Wompi seleccionado cambiado de `rgba(255,92,58,0.06)` (casi blanco en light mode) a `#1f1008` (oscuro sólido).
@@ -567,9 +635,11 @@
 ## 23 de Marzo, 2026 — Rediseño UI del Checkout del Dashboard
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/checkout/page.tsx`
 
 **Cambios:**
+
 - Layout de dos columnas en desktop (configuración izquierda + resumen/pago sticky derecha), una columna en mobile.
 - Spinners reemplazados por animación de borde circular con color `#FF5C3A` (más premium).
 - Estados de éxito y error con círculo de fondo semitransparente alrededor del ícono.
@@ -587,46 +657,51 @@
 ## 23 de Marzo, 2026 — Rediseño de UpgradeModal y SubscriptionModal
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/UpgradeModal.tsx`
 - `frontend/src/components/dashboard/SubscriptionModal.tsx`
 
 **Cambios:**
+
 - `UpgradeModal`: header con precio destacado, features con iconos, botones con hover states, responsive en mobile/desktop. Vista trial con dos tarjetas de plan.
 - `SubscriptionModal`: rediseño completo usando variables CSS del sistema (`var(--bg-card)`, `var(--text-primary)`, etc.). Eliminados colores hardcoded (`bg-white`, `text-gray-900`, `bg-indigo-600`). Pill de estado con color semántico, filas con iconos, botón Cerrar en naranja Lookitry.
 - Ambos modales: overlay con `onClick` para cerrar, `stopPropagation` en el contenido, totalmente responsive.
 
 **Motivo:** El usuario solicitó mejorar ambos modales y verificar responsividad.
 
-
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/SettingsForm.tsx`
 
 **Cambios:**
+
 - Tab "Pro" movido al último lugar: General → Apariencia → Código Embed → Pro
 
 **Motivo:** El usuario solicitó que la opción Pro quede de último en el menú lateral de configuración.
 
-
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/EmbedSection.tsx`
 
 **Cambios:**
+
 - Texto del bloque iframe: `text-emerald-300` → `text-black`
 - Texto del bloque URL (Wix): `text-blue-300` → `text-black`
 - Bordes de ambos contenedores: `var(--border-color)` → `#000000`
 
 **Motivo:** El usuario solicitó que la letra del código sea negra y los bordes del bloque también negros.
 
-
 ## 23 de Marzo, 2026 — Migración nombre repo: virtual-tryon → Lookitry
 
 **Archivos modificados:**
+
 - `backend/.env`
 - `docker-compose.backend.yml`
 - `docker-compose.frontend.yml`
 - `scripts/_deploy_now.py` y todos los scripts en `scripts/*.py`
 
 **Descripción:**
+
 - Git remote local actualizado: `https://github.com/depper-IA/virtual-tryon.git` → `https://github.com/depper-IA/Lookitry.git`
 - Git remote del VPS actualizado al mismo URL
 - `GITHUB_REPO` en `backend/.env` y en `.env.production` del VPS actualizado
@@ -642,10 +717,12 @@
 ## 23 de Marzo, 2026 — Sincronización backend/.env con .env.production del VPS
 
 **Archivos modificados:**
+
 - `backend/.env`
 
 **Descripción:**
 Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregando todas las variables que existían en producción pero faltaban localmente:
+
 - `SUPABASE_DB_PASSWORD`
 - `JWT_SECRET` (actualizado al valor real de producción)
 - `JWT_EXPIRES_IN=30d`
@@ -665,9 +742,11 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 23 de Marzo, 2026 — Fix migración dominio: backend/.env
 
 **Archivos modificados:**
+
 - `backend/.env`
 
 **Descripción:**
+
 - `SMTP_USER`: `info@pruebalo.wilkiedevs.com` → `info@lookitry.com`
 - `FRONTEND_URL`: `https://pruebalo.wilkiedevs.com` → `https://lookitry.com`
 
@@ -678,6 +757,7 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 23 de Marzo, 2026 — Migración a lookitry.com y Health Check MinIO
 
 **Archivos modificados:**
+
 - Multiples archivos (script de búsqueda y reemplazo)
 - `docker-compose.frontend.yml` y `docker-compose.backend.yml`
 - `backend/src/controllers/health.controller.ts`
@@ -686,28 +766,33 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 - `frontend/package.json` y `backend/package.json`
 
 **Descripción:**
+
 - **Rebranding de Dominio**: Migrados todos los endpoints públicos y de API de `pruebalo.wilkiedevs.com` y `api.pruebalo.wilkiedevs.com` a `lookitry.com` y `api.lookitry.com` respectivamente, sin alterar la infraestructura para n8n o MinIO original.
 - **SSL y Traefik**: Limpiadas etiquetas de ruteo de Traefik para forzar la emisión de los nuevos certificados SSL bajo los nuevos dominios.
 - **Service Tags**: Los nombres de los paquetes de node fueron actualizados a `lookitry-frontend` y `lookitry-backend`.
 - **Health Checks Panel Administrativo**: Añadida la verificación del estado y latencia del servicio MinIO en tiempo real. Ahora el panel de administración (/admin/health y configuracion general) muestra si el servicio de almacenamiento de imágenes está operativo (`ok`, `degraded` o `down`).
 
 ---
+
 ## 22 de Marzo, 2026 — Fix código duplicado en subscription/page.tsx + precios dinámicos + borde sidebar
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/subscription/page.tsx`
 - `frontend/src/components/dashboard/DashboardLayout.tsx`
 
 **Descripción:**
+
 - Eliminado bloque JSX duplicado (~200 líneas) que quedó colgando después del cierre de la función `SubscriptionPage`, causando ~49 errores de TypeScript. El archivo fue reescrito limpiamente.
 - Los cards de planes ahora muestran precios dinámicos desde `pricing_config` (campo `data.precio_mensual_cop`), igual que el checkout.
 - Unificado el color del borde del logo del sidebar (`#1f1f1f` → `var(--border-color)`) para que coincida visualmente con el borde del header y eliminar el desajuste visual entre sidebar y header.
 
-
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/DashboardLayout.tsx`
 
 **Descripción:**
+
 - Eliminado `overflow-x-hidden` del contenedor `lg:pl-60` — estaba rompiendo el `sticky` del header (CSS: `overflow: hidden` en un ancestro cancela `position: sticky` en hijos).
 - El `overflow-x-hidden` se mantiene solo en el `<main>` para contener el desbordamiento del contenido sin afectar el navbar.
 
@@ -718,9 +803,11 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Fix overflow horizontal: DashboardLayout
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/DashboardLayout.tsx`
 
 **Descripción:**
+
 - Agregado `overflow-x-hidden` al contenedor principal `lg:pl-60` y al `<main>` del layout del dashboard.
 - Esto corta cualquier contenido que se desborde horizontalmente (como las plan cards de la página de suscripción que salían por la izquierda del viewport).
 
@@ -731,9 +818,11 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Fix Responsive: Dashboard Subscription — Layout y solapamiento
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/subscription/page.tsx`
 
 **Descripción:**
+
 - Grid principal: `lg:grid-cols-12` con `xl:col-span-7/5` → `lg:grid-cols-2` (más simple y estable en tablets)
 - Columna derecha: eliminado `lg:sticky lg:top-[80px]` que causaba solapamiento al hacer scroll
 - Plan cards: eliminado `scale-[1.02]` en la card activa (causaba overflow en mobile); `rounded-[2.5rem]` → `rounded-[2rem]`; `p-8` → `p-6`
@@ -746,9 +835,11 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Tarea 33: Admin Marketing/Promotions — Upgrade Visual
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/marketing/promotions/page.tsx`
 
 **Descripción:**
+
 - 33.1: `font-syne` ya no existía (corregido en sesión anterior). Sin cambios.
 - 33.2: H1 "Promociones" ya tenía `font-jakarta font-black uppercase italic tracking-tight text-2xl`. Sin cambios.
 - 33.3: Cards de formularios de promo/cupón: `rounded-xl` → `rounded-[2rem]`. Tablas de listado: `rounded-xl` → `rounded-[2rem]`. Estados vacíos: `rounded-xl` → `rounded-[2rem]`.
@@ -761,9 +852,11 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Fix visual: Dashboard Subscription — Hero sin morado/azul/verde
 
 **Archivos modificados:**
+
 - `frontend/src/app/dashboard/subscription/page.tsx`
 
 **Descripción:**
+
 - Reemplazados los gradientes y colores de acento por plan: BASIC (azul `#4f8ef7`) y PRO (violeta `#a78bfa`) y TRIAL (verde `#34d399`) → todos unificados a naranja `#FF5C3A` con gradiente negro `#0a0a0a → #141414`.
 - Botones primarios del hero: `color: '#08051e'` → `color: '#ffffff'` (texto blanco sobre naranja).
 - El hero card ahora es consistente con la identidad de marca Lookitry en todos los planes.
@@ -775,9 +868,11 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Tarea 30: Admin Analytics — Upgrade Visual
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/analytics/page.tsx`
 
 **Descripción:**
+
 - 30.1: Verificado — no existía `font-syne` en el archivo (sin cambios necesarios).
 - 30.2: H1 "Analíticas Globales" actualizado a `font-jakarta font-black uppercase italic tracking-tight text-2xl`.
 - 30.3: Secciones de charts (`rounded-2xl` → `rounded-[2rem]`); h3 "Uso de IA por Mes" y "Suscripciones" con `uppercase italic` añadidos.
@@ -790,9 +885,11 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Tarea 26: Admin Revenue — Upgrade Visual
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/revenue/page.tsx`
 
 **Descripción:**
+
 - 26.1: Reemplazado `font-syne` → `font-jakarta` en todo el archivo: `KpiCard` (valor principal), `ClientesCard` (número grande), `TabROI` (porcentaje meta, valores ROI, margen, proyecciones), `TabIngresos`.
 - 26.2: H1 "Ingresos y ROI" actualizado a `font-jakarta font-black uppercase italic tracking-tight text-2xl`.
 - 26.3: Tabs de navegación (Ingresos / ROI / Configuración) migrados al patrón pill: contenedor `flex gap-4 p-1.5 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] w-fit` con `overflow-x-auto` para mobile; tab activo `bg-[#FF5C3A] text-white rounded-xl shadow-lg font-black uppercase tracking-widest`; tab inactivo `text-gray-500 hover:text-gray-300 font-medium`.
@@ -809,9 +906,11 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Tarea 25: Admin Subscriptions — Upgrade Visual
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/subscriptions/page.tsx`
 
 **Descripción:**
+
 - 25.1: Verificado — no existía `font-syne` en el archivo (sin cambios necesarios).
 - 25.2: H1 "Suscripciones" actualizado a `font-jakarta font-black uppercase italic tracking-tight text-2xl`.
 - 25.3: Tabla wrapper: `rounded-2xl` → `rounded-[2rem]`.
@@ -828,9 +927,11 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## [Fecha actual] — Tarea 23: Admin Dashboard — Upgrade Visual Premium
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/dashboard/page.tsx`
 
 **Descripción:**
+
 - 23.1: Verificado — no existía `font-syne` en el archivo (sin cambios necesarios).
 - 23.2: H1 "Dashboard" actualizado a `font-jakarta font-black uppercase italic tracking-tight text-2xl`.
 - 23.3: Stat cards: `rounded-xl` → `rounded-[1.5rem]`, padding `p-4` → `p-5`.
@@ -844,11 +945,13 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Sort en Mini-Landings y Pagos + Fix OpenRouter
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/mini-landings/page.tsx`
 - `frontend/src/app/admin/payments/page.tsx`
 - `backend/.env`
 
 **Descripción:**
+
 - Mini-Landings: agregado sort por Marca (A-Z), Plan, Estado landing y Días para eliminación. Headers de tabla clickeables con `ArrowUpDown` de lucide-react, mismo patrón que `subscriptions/page.tsx`. Filtrado migrado a `useMemo` para incluir el sort.
 - Pagos: agregado sort por Marca, Monto, Fecha (default desc) y Estado. Headers clickeables con `ArrowUpDown`. Sort aplicado antes de paginar con `useMemo`.
 - `backend/.env`: agregada variable `OPENROUTER_API_KEY=` (vacía, pendiente de completar con la key real de openrouter.ai/keys para que funcione la pestaña Créditos IA).
@@ -860,6 +963,7 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Tasks 15–22: Admin Pages — Correcciones CSS Variables (Checkpoint)
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/payment-settings/page.tsx`
 - `frontend/src/app/admin/notifications/page.tsx`
 - `frontend/src/app/admin/brands/page.tsx`
@@ -868,6 +972,7 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 - `.kiro/specs/ui-ux-redesign/tasks.md`
 
 **Descripción:**
+
 - Task 16.1: Badges de métodos inactivos en `payment-settings` — `bg-gray-500/10 text-gray-400 border-gray-500/20` → inline style con `rgba(255,255,255,0.05)`, `var(--text-muted)`, `var(--border-color)`. Dot inactivo `bg-gray-400` → `backgroundColor: 'var(--text-muted)'`
 - Task 17.2: Botón cerrar modal en `notifications` — `hover:bg-white/10` → `hover:bg-[#ffffff]/10`
 - Task 18.2: Iconos de sort en `brands` — `text-gray-400` → `style={{ color: 'var(--text-muted)' }}` (condicional con `#FF5C3A` cuando activo)
@@ -883,9 +988,11 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Task 13: Admin Conversion — Rediseño Visual
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/conversion/page.tsx`
 
 **Descripción:**
+
 - 13.1: Error state `bg-red-50 border-red-200 text-red-700` → `bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444]`
 - 13.2: Cards del funnel (Step 1, 2, 3 y conectores de flecha) `bg-white dark:bg-zinc-900` → `style={{ backgroundColor: 'var(--bg-card)' }}`; `text-gray-300` en ArrowRight → `style={{ color: 'var(--text-muted)' }}`
 - 13.3: KPI rows `bg-gray-50 dark:bg-white/5` → `style={{ backgroundColor: 'var(--bg-hover)' }}` (3 filas: Tasa de Conversión, Drop-off Rate, LTV)
@@ -897,9 +1004,11 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Task 12: Admin Analytics — Rediseño Visual
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/analytics/page.tsx`
 
 **Descripción:**
+
 - 12.1: Error state `bg-red-50 border-red-200 text-red-700` → `bg-[#ef4444]/10 border-[#ef4444]/30 text-[#ef4444]`
 - 12.2: Barras del chart `bg-gray-100 dark:bg-gray-800/50` → `style={{ backgroundColor: 'var(--bg-hover)' }}`
 - 12.3: Barras de progreso `bg-gray-100 dark:bg-gray-800` → `style={{ backgroundColor: 'var(--bg-hover)' }}`
@@ -914,10 +1023,12 @@ Se sincronizó el `backend/.env` local con el `.env.production` del VPS, agregan
 ## 22 de Marzo, 2026 — Actualización tasks.md: Tareas Admin Rediseño
 
 **Archivos modificados:**
+
 - `.kiro/specs/ui-ux-redesign/tasks.md`
 
 **Descripción:**
 Reescritura completa del `tasks.md` para incluir las tareas de rediseño de todas las páginas del panel admin. Se mantuvieron las tareas anteriores (1–11) como completadas y se agregaron las tareas 12–22 cubriendo:
+
 - Task 12: `admin/analytics/page.tsx` — error state, barras chart, barras progreso, headings, stat cards con icono de fondo
 - Task 13: `admin/conversion/page.tsx` — error state, cards funnel, KPI rows
 - Task 14: `admin/subscriptions/page.tsx` — checkboxes, iconos sort, botón suspender
@@ -937,10 +1048,12 @@ Reescritura completa del `tasks.md` para incluir las tareas de rediseño de toda
 ## 22 de Marzo, 2026 — Rediseño Estético del Panel Admin
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/layout.tsx`
 - `frontend/src/app/admin/dashboard/page.tsx`
 
 **Admin Layout (`layout.tsx`):**
+
 - Sidebar refinado: altura de header unificada a 60px, badge pill "Admin" con borde naranja sutil, etiquetas de grupo con mayor contraste (`#3a3a3a`), hover states más definidos (`#161616`), user footer con card de fondo `#111`.
 - Nuevo componente `PageTitle` en el header que muestra el nombre de la sección activa dinámicamente según el pathname.
 - Estado de carga mejorado: spinner con label "Cargando" en uppercase tracking.
@@ -949,6 +1062,7 @@ Reescritura completa del `tasks.md` para incluir las tareas de rediseño de toda
 - Fuente `font-jakarta` aplicada al logo y título de página según brand guidelines.
 
 **Dashboard (`dashboard/page.tsx`):**
+
 - Stat cards rediseñadas: borde izquierdo de color por categoría (`borderLeft: 3px solid accent`) en lugar de icon backgrounds planos — patrón más limpio y profesional.
 - Icono de cada card alineado a la derecha con color del acento, sin fondo de color.
 - Mini-landing cards con el mismo patrón de borde izquierdo de color.
@@ -962,15 +1076,17 @@ Reescritura completa del `tasks.md` para incluir las tareas de rediseño de toda
 ## 22 de Marzo, 2026 — Fix Crítico: Auto-vinculación de Landing + Email de Activación
 
 **Problema 1 — Plan sobreescrito con `NONE` al vincular landing a cuenta existente:**
+
 - Al entrar a `/registro-pro?ref=TRYON-visitor_...` con sesión activa (plan BASIC/PRO), el backend tomaba `pending.plan = 'NONE'` y lo guardaba directamente en la cuenta, rompiendo el plan del usuario.
 - **Fix en `backend/src/controllers/auth-post-payment.controller.ts`:** Si `pending.plan` es `NONE` o está vacío, se conserva el plan actual del usuario (`req.brand.plan`) en lugar de sobreescribirlo.
 
 **Problema 2 — Bucle de auto-vinculación para usuarios con plan activo:**
+
 - El `useEffect` de auto-link en `/registro-pro` se disparaba para cualquier usuario autenticado con un `ref` pagado, sin importar si el pending era de otra persona o de un flujo de visitante con plan distinto.
 - **Fix en `frontend/src/app/registro-pro/page.tsx`:** El auto-link ahora solo se ejecuta si el pending es tipo landing-only (`plan = NONE`) o si el usuario no tiene plan activo. Si tiene plan activo y el pending quiere cambiar el plan, se muestra el formulario normal.
 
-
 **Nuevo email — Activación de Mini-landing:**
+
 - **`backend/src/templates/email-templates.ts`:** Nuevo template `landingActivatedEmail` con diseño premium, enlace directo a la mini-landing publicada y botones "Ver mi página" / "Personalizar".
 - **`backend/src/services/notification.service.ts`:** Nuevo método `sendLandingActivatedEmail(brand)` que se dispara automáticamente cuando `has_landing_page` se activa en el flujo post-pago. No bloquea el flujo (catch silencioso).
 - El email se envía tanto para cuentas nuevas como para usuarios existentes que compran la landing por separado.
@@ -980,11 +1096,13 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 ## 22 de Marzo, 2026 — Política de Cookies (GDPR/CCPA) y Precios Dinámicos
 
 **Precios Dinámicos en Notificaciones:**
+
 - **Problema:** El módulo de correos `notification.service.ts` utilizaba valores en formato "duro" (`150000` y `250000`) para cobrar en los correos de bienvenida, suspensión y recordatorio. Estaban desincronizados del panel Admin.
 - **Correcciones:** `getPlanAmount()` fue reestructurada para ser asíncrona y leer dinámicamente el precio estipulado en la base de datos `pricing_config`. Todos los emails automatizados reflejan ahora el valor fiel guardado en el backend.
 
 **Cumplimiento Legal (Manejo de Cookies):**
-- **Implementación:** Se incluyó un nuevo Global Banner (Componente `CookieConsent` en `layout.tsx`) con diseño premium responsivo y adaptativo. 
+
+- **Implementación:** Se incluyó un nuevo Global Banner (Componente `CookieConsent` en `layout.tsx`) con diseño premium responsivo y adaptativo.
 - **Privacidad y Auditoría:** Este banner informa clara y concisamente a los visitantes y usuarios sobre la naturaleza de las cookies empleadas durante la sesión y ofrece botones funcionales para aprobar y/o rechazar cookies no esenciales sin bloquear las JWT principales de autenticación (cumpliendo GDPR de Europa y CCPA de California).
 - **Backend Analytics:** En el backend no existen interceptores de third-party cookies ocultos o sin autorizar (el servicio se basaba principalmente en la JWT en `localStorage`). Las cookies aceptadas son delegadas al frontend mediante despachos de eventos DOM.
 
@@ -997,7 +1115,8 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 **Problema:** La lógica de suspensión de cuentas y caducidad de planes (`updateSubscriptionStatuses`) estaba desarrollada en los servicios, pero descubrí que faltaba anexarla al ciclo del motor maestro de Cron Jobs (`cleanup.job.ts`). Estaban corriendo todos los procesos de limpieza de imágenes y advertencias de landings, pero ninguna cuenta era marcada como inactiva ni suspendida de forma automatizada cuando pasaban sus límites.
 
 **Corrección:**
-- Se integró la función `subscriptionService.updateSubscriptionStatuses()` programada para las **2:00 AM** de todos los días. 
+
+- Se integró la función `subscriptionService.updateSubscriptionStatuses()` programada para las **2:00 AM** de todos los días.
 - La cascada de dependencias automáticas ahora es sólida:
   1. **2:00 AM**: Las suscripciones vencidas cambian de `active` a `expired` a `suspended`.
   2. **3:30 AM**: Las cuentas que ya cumplieron el periodo máximo de suspensión (90 días) son "soft-deleted" (sus datos cambian a `[ELIMINADA]`).
@@ -1011,6 +1130,7 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 **Problema:** Al procesar usuarios nuevos tras un pago, el endpoint `register-post-payment` enviaba un registro forzado de `amount: 0` al historial de pagos en DB. La base de datos rechazaba `$0` (o Wompi crasheaba internamente) lanzando una excepción. Como esta excepción ocurría **antes** de marcar la "Landing activa" en la base de datos (y afectaba el historial de meses de pago), el sistema atrapaba el error y abortaba silenciosamente. El usuario quedaba con Plan PRO (actualizado previamente) pero sin los meses en el recibo y sin su landing activa.
 
 **Correcciones:**
+
 - `backend/src/controllers/auth-post-payment.controller.ts`: Se refactorizó la validación de transacciones Wompi y PayPal para extraer dinámicamente el monto real cobrado al cliente (ej. `transaction.amount_in_cents / 100`).
 - Se introdujo la variable `paymentAmount` a lo largo del proceso.
 - En `subscriptionService.renewSubscription`, se reemplazó el `amount: 0` quemado en el `paymentData` por `paymentAmount`.
@@ -1023,6 +1143,7 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 **Problema:** El checkout público (`/checkout/page.tsx`) obligaba a los visitantes sin cuenta a procesar el pago de monto $0 con Wompi (lo que causaba error) e ignoraba la funcionalidad de activar planes gratis. Además, la creación de cuenta post-pago fallaba porque verificaba en Wompi el estado de transacciones gratuitas, que sólo existían localmente.
 
 **Correcciones:**
+
 - `frontend/src/app/checkout/page.tsx`: Si `totalPrice === 0` y no hay sesión, en lugar de mostrar error asume que el usuario quiere crear la cuenta. Envía el email del input al endpoint `free-checkout`. Al recibir la bandera `isVisitor: true` con la referencia única, redirecciona directo a `/registro-pro?ref=XYZ`.
 - `backend/src/controllers/wompi.controller.ts`: El endpoint `/api/payments/wompi/free-checkout` ahora permite operaciones sin JWT (visitantes). Guarda un "pedido fantasma" (`pending_registration`) en base de datos pre-marcado con `status: 'paid'` y con ID de pago `coupon_100_free_checkout`.
 - `backend/src/controllers/auth-post-payment.controller.ts`: En el endpoint `register-post-payment` de `/registro-pro`, la validación de finalización de pago ahora comprueba primero si el estado del `pending_registration` local ya es `'paid'`. Si es así, **omite la consulta REST a Wompi** y crea la cuenta automáticamente, finalizando existosamente el onboarding gratuito validando los cupones.
@@ -1032,9 +1153,11 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 ## 22 de Marzo, 2026 — Fix Email de Bienvenida + Sincronización Landing en Checkout Público
 
 ### Email de Bienvenida (nunca llegaba)
+
 **Root cause:** `sendWelcomeEmail` verificaba preferencias en la tabla `notification_preferences` antes de enviar. Para marcas recién creadas esta tabla está vacía, y el error al consultarla se propagaba silenciosamente abortando el envío.
 
 **Correcciones:**
+
 - `backend/src/services/notification.service.ts`: Se agregó el parámetro `skipPreferenceCheck = false` al método `sendWelcomeEmail`. Para registros nuevos se pasa `true` y la función omite la verificación de preferencias.
 - `getDaysRemaining` también puede fallar en Trial sin suscripción activa — se agregó un try/catch interno con fallback de 7 días para que no aborte el envío del email.
 - El `catch` final ya **no relanza** el error (`throw error` eliminado) — el email de bienvenida nunca debe bloquear el flujo de registro.
@@ -1042,6 +1165,7 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 - `backend/src/controllers/auth-post-payment.controller.ts`: Llamada en flujo post-pago actualizada a `sendWelcomeEmail(brand, true)`.
 
 ### Checkout Público (plan + landing + meses)
+
 **Root cause:** El controlador `auth-post-payment.controller.ts` sí guardaba `has_landing_page = true` en Supabase, pero **no lo incluía en el objeto `brand` retornado**. Al guardar la sesión en `localStorage`, el frontend inicializaba con `has_landing_page = false`.
 
 **Corrección:** El controlador ahora mutáta `(result.brand as any).has_landing_page = true` y `landing_suspended_at = null` antes de enviar la respuesta, sincronizando la sesión del frontend inmediatamente.
@@ -1051,6 +1175,7 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 ## [2026-03-22] - Corrección de Flujo de Checkout y Autenticación
 
 ### Fixed
+
 - **Frontend**: Se añadió el header `Authorization` en el checkout de la mini-landing para que el backend detecte correctamente al usuario logueado.
 - **Frontend**: En `/registro-pro`, se implementó la auto-vinculación de pagos para usuarios con sesión activa, evitando formularios innecesarios.
 - **Backend**: Se cambió la prioridad del `authMiddleware` para dar precedencia al header `Authorization` sobre las cookies, eliminando el bucle de "login requerido" tras registros exitosos.
@@ -1120,6 +1245,7 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 ## 21 de Marzo, 2026 — Rediseño Premium Editorial y Correcciones de Estabilidad
 
 ### ✅ Cambios Aplicados
+
 1. **Rediseño del Template Editorial:**
    - **Prioridad de Conversión:** Catálogo y Probador Virtual ahora son los protagonistas absolutos.
    - **Optimización de Espacio:** Sección de Información y Horarios reubicada debajo del catálogo en un formato **side-by-side** (izquierda/derecha) para eliminar espacio negativo.
@@ -1132,6 +1258,7 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
    - Verificado el comportamiento de los encabezados y pies de página en móviles, asegurando que los iconos sociales y el nombre de la marca se ajusten dinámicamente.
 
 ### ⏳ Tareas en Proceso / Pendientes
+
 - **Ejecución SQL:** Pendiente ejecutar `ALTER TABLE brands ADD COLUMN landing_font TEXT DEFAULT 'font-jakarta';` y `ALTER TABLE brands ADD COLUMN widget_bg_color TEXT DEFAULT '#0a0a0a';` en Supabase.
 - **Pruebas de PayPal:** Verificar el flujo completo de checkout con PayPal en producción.
 
@@ -1140,7 +1267,8 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 ## 19 de Marzo, 2026
 
 ### ✅ Cambios Aplicados
-1. **Restauración de Landing Principal:** 
+
+1. **Restauración de Landing Principal:**
    - Se fusionó el diseño y copy original de `templates-webs/LandingClient.tsx` con la lógica dinámica de precios.
    - La landing vuelve a tener la identidad visual de Lookitry pero con datos de base de datos.
 2. **Mejora del Panel Admin Pricing:**
@@ -1155,7 +1283,8 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
    - Añadidos breadcrumbs a la página de **Sobre Nosotros**.
 
 ---
-*Nota para la IA: Antes de empezar, lee este archivo y actualízalo al finalizar cada tarea.*
+
+_Nota para la IA: Antes de empezar, lee este archivo y actualízalo al finalizar cada tarea._
 
 ## 22 de Marzo, 2026 — UI/UX Redesign: Tareas 1–4 (Shared Components + Layouts)
 
@@ -1164,16 +1293,19 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 ### Tarea 1 — Shared UI Components (correcciones base)
 
 **`frontend/src/components/ui/Button.tsx`**
+
 - Confirmado: `cursor-pointer` y `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A]/50` ya presentes en la clase `base`.
 - Confirmado: `focus:outline-none` genérico eliminado, reemplazado por `focus-visible`.
 - Requirements: 1.3, 1.8, 7.1, 7.2, 7.8
 
 **`frontend/src/components/ui/Input.tsx`**
+
 - Confirmado: `backgroundColor` cambiado de `var(--bg-card)` → `var(--bg-input)` en el `style` del `<input>`.
 - Confirmado: `cursor-text` presente en el className del `<input>`.
 - Requirements: 1.1, 2.3, 8.3
 
 **`frontend/src/components/ui/Card.tsx`**
+
 - Confirmado: prop `interactive?: boolean` agregada a `CardProps`.
 - Confirmado: cuando `interactive=true`, aplica `cursor-pointer hover:border-[#FF5C3A]/40 hover:shadow-md transition-all duration-200 motion-safe:hover:scale-[1.01]`.
 - Requirements: 1.8, 7.1, 7.3, 7.7, 7.8
@@ -1185,6 +1317,7 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 ### Tarea 3 — DashboardLayout (correcciones de layout)
 
 **`frontend/src/components/dashboard/DashboardLayout.tsx`**
+
 - **3.1** Email verification banner: `bg-[#0a0a0a] border-[#1a1a1a]` → `style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}`. Requirements: 3.8, 8.1, 8.2
 - **3.2** Nav Links del sidebar: agregado `cursor-pointer` al className de cada `<Link>` en `sidebarContent`. Requirements: 3.13, 7.1
 - **3.3** Body scroll lock: agregado `useEffect` que aplica `document.body.style.overflow = 'hidden'` cuando `sidebarOpen = true` y lo limpia al cerrar o desmontar. Requirements: 3.12, 6.8
@@ -1192,6 +1325,7 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 ### Tarea 4 — AdminLayout (cursor-pointer en nav items)
 
 **`frontend/src/app/admin/layout.tsx`**
+
 - **4.1** Agregado `cursor-pointer` al className del `<Link>` dentro de `group.items.map(...)` en el nav del sidebar. Requirements: 5.7, 7.1
 
 **Verificación:** `getDiagnostics` en ambos archivos → sin errores.
@@ -1199,9 +1333,11 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 ## 22 de Marzo, 2026 — Task 14: Admin Subscriptions — Correcciones visuales
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/subscriptions/page.tsx`
 
 **Descripción:**
+
 - 14.1: Checkboxes (select-all en thead y por fila en tbody) — eliminado `border-gray-300`, agregado `style={{ borderColor: 'var(--border-color)' }}`
 - 14.2: Iconos `ArrowUpDown` de sort en columnas Marca, Plan y Vencimiento — reemplazado `text-gray-400` por `style={{ color: 'var(--text-muted)' }}` (activo sigue usando `#FF5C3A` via style inline)
 - 14.3: Botón suspender — `bg-red-500/10 text-red-500 hover:bg-red-500/20` → `bg-[#ef4444]/10 text-[#ef4444] hover:bg-[#ef4444]/20`
@@ -1213,6 +1349,7 @@ Este archivo documenta las mejoras técnicas, correcciones y tareas pendientes r
 ## 22 de Marzo, 2026 — Reescritura tasks 23–39: Upgrade Visual Admin Premium
 
 **Archivos modificados:**
+
 - `.kiro/specs/ui-ux-redesign/tasks.md`
 
 **Descripción:**
@@ -1228,15 +1365,16 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 
 **Motivo:** El usuario señaló que las tareas anteriores solo referenciaban `mi-pagina` y no incluían la corrección de fuentes incorrectas.
 
-
 ---
 
 ## 22 de Marzo, 2026 — Tarea 24: Admin Brands — Upgrade Visual Premium
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/brands/page.tsx`
 
 **Descripción:**
+
 - 24.1: Reemplazadas todas las ocurrencias de `font-syne` → `font-jakarta` en el archivo (6 ocurrencias: h3 "Estadísticas", valor numérico en stat cards del modal detalles, h2 modal productos, h2 modal crear marca, h2 modal activar plan, h2 modal configuración de modal).
 - 24.2: H1 "Gestión de Marcas" ya tenía `font-jakarta font-black uppercase italic tracking-tight text-2xl` — sin cambios adicionales.
 - 24.3: Panel de filtros ya tenía `rounded-[2rem]` — sin cambios adicionales.
@@ -1251,9 +1389,11 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 ## 22 de Marzo, 2026 — Fix definitivo navbar siempre visible: DashboardLayout
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/DashboardLayout.tsx`
 
 **Descripción:**
+
 - Cambio de arquitectura de scroll: el contenedor `lg:pl-60` ahora tiene `h-screen overflow-hidden` en lugar de `min-h-screen`.
 - El `<main>` ahora tiene `overflow-y-auto overflow-x-hidden` — el scroll ocurre dentro del main, no en el body.
 - El header ya no necesita `sticky top-0 z-10` — al estar fuera del área scrolleable, queda naturalmente fijo. Se cambió a `flex-shrink-0`.
@@ -1266,10 +1406,12 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 ## 22 de Marzo, 2026 — Fix header height + precios dinámicos en subscription
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/DashboardLayout.tsx`
 - `frontend/src/app/dashboard/subscription/page.tsx`
 
 **Descripción:**
+
 - `DashboardLayout`: header `h-14` → `h-16` para coincidir con la altura del logo del sidebar (`h-16`). Ahora sidebar y navbar están alineados visualmente.
 - `subscription/page.tsx`: corregido el fetch de `pricing_config` — el campo era `config` pero la tabla usa `data` (igual que en `checkout/page.tsx`). También corregido `select=id,config` → `select=id,data`.
 - Limpiados imports no usados: `ShoppingBag`, `api`, `PlanType`, variables `heroGlow` y `heroSubtitle`.
@@ -1281,6 +1423,7 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 ## 23 de Marzo, 2026 — Badge de suscripción: mostrar meses cuando quedan más de 30 días
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/SubscriptionBadge.tsx`
 
 **Descripción:** Cuando `daysRemaining > 30`, el badge del header ahora muestra el tiempo en meses (ej: "2 meses y 29d restantes") en lugar de días. Si los días son exactamente múltiplo de 30, muestra solo los meses (ej: "3 meses restantes"). En mobile muestra la versión corta: `2m` en lugar de `89d`. Por debajo de 30 días sigue mostrando días como antes.
@@ -1288,6 +1431,7 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 ## 23 de Marzo, 2026 — Badge de suscripción: rediseño estético y responsive
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/SubscriptionBadge.tsx`
 
 **Descripción:** Rediseño completo del badge del header. Se reemplazaron las clases Tailwind estáticas (`bg-green-100 text-green-800`) por un sistema de estilos con transparencia y backdrop-blur alineado al dark mode de Lookitry. Se eliminaron los SVG de íconos y se reemplazaron por un dot indicator animado (pulse en rojo/vencido). El responsive ahora muestra texto completo en `sm+` y solo el valor corto (`2m`, `15d`) en mobile, sin el hack de dos `<span>` con `hidden`. La lógica de meses/días se extrajo a una función `formatTimeRemaining` reutilizable.
@@ -1295,6 +1439,7 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 ## 23 de Marzo, 2026 — EmbedSection: rediseño para alinear estética con el resto de Settings
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/EmbedSection.tsx`
 
 **Descripción:** Rediseño completo de la sección "Código Embed" en `/dashboard/settings` para que sea visualmente consistente con las otras pestañas (General, Apariencia, Pro). Cambios principales: `rounded-2xl` → `rounded-[2.5rem]` en todas las cards; se crearon componentes internos `SectionCard` y `SectionHeader` que replican el patrón de ícono naranja + título italic uppercase + subtítulo tracking-widest; los bloques de código ahora tienen barra superior con dots decorativos y botón de copiar con estilo `bg-[#FF5C3A]/10` en lugar de `bg-gray-800`; los botones de plataforma usan `rounded-2xl`; los pasos usan `rounded-2xl` con el mismo `var(--bg-hover)`; los botones de ayuda usan `rounded-2xl` con borde naranja translúcido.
@@ -1302,6 +1447,7 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 ## 23 de Marzo, 2026 — Badge suscripción: formato compacto "3M 2D"
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/SubscriptionBadge.tsx`
 
 **Descripción:** Se simplificó el formato del tiempo restante. Antes mostraba "2 meses y 29d restantes", ahora muestra "3M 2D restantes" en desktop y "3M" en mobile.
@@ -1309,6 +1455,7 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 ## 23 de Marzo, 2026 — EmbedSection: pasos de plataforma en acordeón
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/EmbedSection.tsx`
 
 **Descripción:** Los pasos de instalación (WordPress, Wix, Shopify, Otro) ahora están colapsados por defecto. Al hacer click en una plataforma se expanden sus pasos con animación de chevron. Se fusionaron los pasos 1 y 2 en una sola card. El estado inicial es `null` (ninguna plataforma seleccionada). Hacer click en la plataforma activa la colapsa.
@@ -1316,6 +1463,7 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 ## 23 de Marzo, 2026 — EmbedSection: fix numeración pasos y color bloque código
 
 **Archivos modificados:**
+
 - `frontend/src/components/dashboard/EmbedSection.tsx`
 
 **Descripción:** Corregida la numeración de pasos (1 → plataforma, 2 → código, sin salto al 3). Reemplazado `rgba(0,0,0,0.4)` por `var(--bg-base)` en el fondo del bloque de código para mantener consistencia con el sistema de diseño en ambos modos (claro/oscuro).
@@ -1323,10 +1471,12 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 ## 27 de Marzo, 2026 — Refactor visual de `/admin/pricing` alineado a memoria maestra
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/pricing/page.tsx`
 - `CHANGELOG_GEMINI.md`
 
 **Descripción:**
+
 - Rediseño completo de la interfaz de `admin/pricing` para alinearla con la identidad visual oficial definida en `LOOKITRY_MASTER_MEMORY.md` y el skill `lookitry-brand-guardian`.
 - Reemplazadas superficies genéricas por paneles premium consistentes con el admin usando `var(--bg-card)`, `var(--bg-base)`, `var(--border-color)` y una jerarquía tipográfica apoyada en `font-jakarta`.
 - Nuevo bloque principal con contexto visual, métricas rápidas y tabs convertidos en botones tipo chips con el acento naranja `#FF5C3A`.
@@ -1338,11 +1488,13 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 - Limpieza de imports no usados y simplificación de la composición para que la página sea más mantenible.
 
 **Motivo:**
+
 - La versión anterior de `admin/pricing` se veía funcional pero visualmente desalineada con el sistema del panel: demasiada densidad plana, jerarquía débil y varios bloques con apariencia utilitaria en lugar del lenguaje premium de Lookitry.
 
 ## 27 de Marzo, 2026 — Corrección multi-divisa en admin y rediseño de `/admin/enterprise`
 
 **Archivos modificados:**
+
 - `backend/src/utils/paymentNormalization.ts`
 - `backend/src/services/admin.service.ts`
 - `backend/src/controllers/revenue.controller.ts`
@@ -1350,6 +1502,7 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 - `frontend/src/app/admin/enterprise/page.tsx`
 
 **Descripción:**
+
 - Se centralizó la conversión de pagos a COP usando la TRM efectiva del sistema para evitar que montos en USD quedaran sumados como si fueran COP en reportes y tablas administrativas.
 - Para pagos PayPal con referencia trazable, la conversión ahora usa la TRM histórica exacta guardada en `paypal_orders`; solo si esa traza no existe se usa la TRM efectiva actual como fallback.
 - El historial de pagos del admin ahora devuelve `amount_original`, `amount_cop` y `exchange_rate_used`, y la UI muestra tanto el monto reportado en COP como el valor original en USD cuando aplica.
@@ -1358,12 +1511,14 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 - Se rediseñó `admin/enterprise` con una interfaz premium consistente con la memoria maestra, explicando mejor qué hace la pestaña, cómo funciona el flujo y qué revisar cuando un sync falla.
 
 **Verificación:**
+
 - `npx eslint src/app/admin/payments/page.tsx src/app/admin/enterprise/page.tsx`
 - `npx eslint src/services/admin.service.ts src/controllers/revenue.controller.ts src/utils/paymentNormalization.ts`
 
 ## 29 de Marzo, 2026 — Correcciones QA de trial, revenue, payments y responsive admin/mobile
 
 **Archivos modificados:**
+
 - `frontend/src/lib/subscription-display.ts`
 - `frontend/src/__tests__/lib/subscription-display.test.ts`
 - `frontend/src/types/index.ts`
@@ -1379,6 +1534,7 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 - `frontend/src/components/admin/AdminNotifications.tsx`
 
 **Descripción:**
+
 - Se centralizó la lógica de visualización del estado de suscripción para evitar que cuentas `trial` aparecieran como `BASIC` en perfil, suscripción e integraciones cuando en base de datos conservan `plan=BASIC` durante la prueba.
 - La UI ahora deriva correctamente:
   - plan visible `TRIAL`
@@ -1393,33 +1549,41 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 - En `AdminNotifications` se ajustó el dropdown y el modal para que no se desborden en mobile.
 
 **Verificación:**
+
 - `npx vitest run` → `5 suites`, `15 tests`, todos pasando
 
 ## 29 de Marzo, 2026 — Hotfix de build para deploy en `main`
 
 **Archivos modificados:**
+
 - `frontend/src/app/admin/payments/page.tsx`
 - `frontend/src/app/dashboard/checkout/page.tsx`
 - `CHANGELOG_GEMINI.md`
 
 **Descripción:**
+
 - Se corrigió un error de tipado en `admin/payments` que rompía `next build` por inferencia implícita de `any` al normalizar pagos.
 - Se ajustó `dashboard/checkout` para tolerar correctamente `TRIAL` en la información de suscripción sin intentar asignarlo a estados que sólo aceptan planes pagables (`BASIC` / `PRO`).
 
 **Motivo:**
+
 - El deploy inicial a `main` dejó backend saludable, pero el rebuild del frontend se detuvo durante `next build` por incompatibilidades de tipos derivadas de la nueva lógica de trial.
 
 ## 29 de Marzo, 2026 — Hotfix adicional de tipado en pricing
 
 **Archivos modificados:**
+
 - `frontend/src/lib/pricing.ts`
 - `CHANGELOG_GEMINI.md`
 
 **Descripción:**
+
 - Se corrigió el casteo interno de `PricingConfig` al hidratar configuración dinámica desde Supabase, usando una conversión segura vía `unknown` para evitar que `next build` fallara en producción.
+
 ## 29 de Marzo, 2026 â€” AuditorÃ­a y correcciones integrales de `/admin/*`
 
 **Archivos modificados:**
+
 - `backend/src/services/admin.service.ts`
 - `backend/src/controllers/admin.controller.ts`
 - `backend/src/routes/admin.routes.ts`
@@ -1435,6 +1599,7 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 - `frontend/src/app/admin/health/page.tsx`
 
 **DescripciÃ³n:**
+
 - Se reconstruyÃ³ `/admin/analytics` para normalizar `generationsByMonth`, tolerar datos vacÃ­os y mostrar un estado vacÃ­o amigable cuando no hay actividad.
 - Se corrigiÃ³ `/admin/conversion` para contar correctamente cuentas con `subscription_status = trial` y `trial_end_date` futura, y se agregÃ³ una tabla operativa de trials activos.
 - Se reordenÃ³ `/admin/enterprise` con la secuencia pedida: informaciÃ³n del cliente, calculadora de precios, estado de cuenta e historial de conexiones.
@@ -1447,33 +1612,41 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
   - la navegaciÃ³n principal renombrÃ³ `Notificaciones` a `Actividad` para reflejar la consolidaciÃ³n
 
 **VerificaciÃ³n:**
+
 - `backend npm.cmd test -- --runInBand`
 - `frontend npm.cmd run build`
+
 ## 29 de Marzo, 2026 â€” NormalizaciÃ³n de planes trial histÃ³ricos
 
 **Archivos modificados:**
+
 - `backend/src/services/admin.service.ts`
 - `backend/src/services/subscription.service.ts`
 - `frontend/src/app/admin/brands/page.tsx`
 - `backend/src/scripts/normalize-trial-plans.sql`
 
 **DescripciÃ³n:**
+
 - La creaciÃ³n manual de marcas trial dejÃ³ de persistir `plan=BASIC`; ahora crea cuentas con `plan=TRIAL` desde origen.
 - La actualizaciÃ³n de suscripciones dejÃ³ de remapear `TRIAL` a `BASIC`, manteniendo `subscription_status='trial'` cuando corresponde.
 - Se agregÃ³ un script SQL seguro para normalizar datos histÃ³ricos que tienen `trial_end_date` pero quedaron guardados como `BASIC`.
 
 **VerificaciÃ³n:**
+
 - `backend npm.cmd test -- --runInBand`
 - `frontend npm.cmd run build`
+
 ## 29 de Marzo, 2026 - Ajustes admin de trial, revenue, payments y analytics
 
 **Objetivo:**
+
 - Alinear la logica de trial con el esquema real de la base de datos y mejorar lectura administrativa.
 - Corregir errores de carga en `/admin/revenue` y `/admin/payments`.
 - Restaurar el conteo y grafico real de generaciones en `/admin/analytics`.
 - Formalizar la exigencia de responsive en wide, laptop, tablet y telefono.
 
 **Cambios aplicados:**
+
 - **Backend (`admin.service.ts`, `subscription.controller.ts`, `notifications.controller.ts`, `subscription.service.ts`):**
   - Trial queda derivado por `trial_end_date` vigente y no por persistencia de `plan=TRIAL`, manteniendo compatibilidad con los enums actuales.
   - Se excluyen trials vigentes de alertas de suscripciones por vencer y se exponen como `trial` en admin.
@@ -1486,13 +1659,16 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
   - Se corrigio la agregacion mensual para usar `generated_at` real y poblar correctamente `Generaciones del mes` y el grafico de uso de IA.
 - **Reglas (`reglas_importantes.md`):**
   - Nueva regla explicita de responsive obligatorio para pantallas wide, laptops, tablets y telefonos.
+
 ## 29 de Marzo, 2026 - Endurecimiento contra esquemas legacy en revenue, payments y enterprise
 
 **Objetivo:**
+
 - Eliminar fallos por asumir columnas o relaciones que no existen en todos los entornos.
 - Volver robustas las vistas de ingresos, pagos y enterprise frente a variaciones reales del esquema de Supabase.
 
 **Cambios aplicados:**
+
 - **Backend (`revenue.controller.ts`, `admin.service.ts`):**
   - Se eliminó la dependencia directa de la columna `subscription_payments.reference` en consultas de analytics financieras.
   - Los cálculos siguen soportando referencia cuando exista, pero ya no rompen si el esquema solo expone `notes`.
@@ -1500,12 +1676,15 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
   - Se reemplazó el join implícito `brands(...)` por hidratación manual en dos pasos (`enterprise_sync_configs` + `brands`) para evitar fallos por relaciones ausentes o mal resueltas.
 - **Frontend (`admin/enterprise/page.tsx`):**
   - La UI ahora muestra el error real devuelto por backend en lugar del mensaje genérico de carga.
+
 ## 29 de Marzo, 2026 - Ajuste de conversion para trials vigentes
 
 **Objetivo:**
+
 - Alinear `/admin/conversion` con el modelo real de trial usado por la base de datos.
 
 **Cambios aplicados:**
+
 - **Backend (`admin.service.ts`):**
   - `getTrialBrands()` y `getConversionStats()` ya no dependen de `subscription_status = trial`.
   - Ahora consideran trial activo cualquier marca con `trial_end_date` futura, excluyendo solo suspendidas.
@@ -1513,11 +1692,13 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 ## 29 de Marzo, 2026 - Ledger historico, privacidad operativa y autoservicio legal
 
 **Objetivo:**
+
 - Conservar el historico financiero aunque una marca cambie, se archive o se desinstale.
 - Añadir autoservicio legal para solicitudes de datos desde perfil.
 - Bloquear mini-landing para cuentas en trial y registrar eventos comerciales clave del trial.
 
 **Cambios aplicados:**
+
 - **Backend (`paymentLedger.ts`, `admin.service.ts`, `revenue.controller.ts`):**
   - Se introdujo snapshot de ledger embebido en `notes` para clasificar pagos por `planPurchased`, `billingType` e `includesLanding` sin depender del plan vivo de `brands`.
   - `admin/payments` y `admin/revenue` ahora pueden reconstruir mejor el historico aunque la marca cambie o quede archivada.
@@ -1531,13 +1712,16 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
   - Se documentaron retencion, archivo, redaccion legal y autoservicio en la politica de privacidad.
 - **Restriccion trial (`wompi.controller.ts`, `paypal.controller.ts`, `auth-post-payment.controller.ts`, `admin.controller.ts`, `dashboard/checkout/page.tsx`, `dashboard/checkout-landing/page.tsx`):**
   - Se bloquearon flujos de mini-landing para cuentas trial en backend y se empezo a reflejar la restriccion en checkout.
+
 ## 29 de Marzo, 2026 â€” Tolerancia a esquema faltante en Admin Enterprise
 
 **Objetivo:**
+
 - Evitar que `/admin/enterprise` se caiga completa cuando la tabla `enterprise_sync_configs` no existe todavia en Supabase.
 - Mantener la pantalla operativa con estado vacio e informativo mientras el modulo enterprise no esta provisionado.
 
 **Cambios aplicados:**
+
 - **Backend (`backend/src/controllers/enterprise.controller.ts`):**
   - Se centralizo la deteccion del error de tabla faltante para `enterprise_sync_configs`.
   - `GET /api/admin/enterprise` ahora responde con `configs: []`, `moduleAvailable: false` y un mensaje claro en vez de devolver 500.
@@ -1549,14 +1733,18 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
   - Se deshabilita la creacion manual de conexiones y se bloquean acciones locales con mensaje claro en ese escenario.
 
 **Motivo:**
+
 - El error no venia de una configuracion puntual del cliente sino de una composicion fragil: la UI y el backend asumian que la tabla enterprise existia siempre. Con este ajuste, la ausencia del modulo deja de romper el panel completo.
+
 ## 29 de Marzo, 2026 - Replicate con consumo estimado y cierre de brecha Enterprise
 
 **Objetivo:**
+
 - Hacer que la tarjeta de Replicate muestre valores operativos aunque solo exista API key configurada.
 - Cerrar la brecha entre la UI de Enterprise y la provision real de base de datos.
 
 **Cambios aplicados:**
+
 - **Backend (`backend/src/controllers/admin.controller.ts`, `backend/src/services/admin.service.ts`):**
   - `Replicate` ahora toma `replicate_api_token`, `replicate_monthly_budget_usd` y `replicate_cost_per_generation_usd` desde `pricing_config.meta` si existen.
   - El panel ya no depende solo de `REPLICATE_MONTHLY_BUDGET_USD`; estima consumo del mes recorriendo predicciones reales de Replicate y calcula saldo/porcentaje cuando hay presupuesto configurado.
@@ -1569,16 +1757,19 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
   - Se documentó la causa real del estado incompleto de Enterprise: UI y controlador sí, migración oficial no.
 
 **Motivo:**
+
 - Enterprise se había dado por funcional con SQL suelto y fixes posteriores, pero sin migración oficial en `supabase/migrations`.
 - Replicate validaba cuenta, pero no tenía una fuente de presupuesto persistida en admin ni cálculo útil de uso mensual.
 
 ## 29 de Marzo, 2026 - Sistema completo de reviews para marcas, landing y moderacion admin
 
 **Objetivo:**
+
 - Implementar un sistema end-to-end de reviews para marcas con persistencia en Supabase, APIs backend, captura desde dashboard, visualizacion publica en landing y moderacion desde el panel admin.
 - Respetar las reglas del producto: backend con `supabaseAdmin`, UI en espanol, diseno premium dark en dashboard/admin y fallback con mock reviews en la landing hasta alcanzar masa critica real.
 
 **Cambios aplicados:**
+
 - **Base de datos (`scripts/migrations/add_reviews.sql`):**
   - Nueva tabla `brand_reviews` con `rating`, `comment`, `reviewer_name`, `reviewer_plan`, `status`, `is_featured`, `admin_note`, `avatar_url`, timestamps e indice unico por `brand_id`.
   - Nueva columna `brands.review_prompt_shown_at` para seguimiento del prompt de review.
@@ -1611,25 +1802,30 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
   - Navegacion del panel admin actualizada para incluir `Reviews` y titulo contextual de la pagina.
 
 **Validacion:**
+
 - `backend/npm.cmd run build` -> compilacion TypeScript OK.
 - `frontend/npm.cmd run build` -> build de Next.js OK, incluyendo `/dashboard/review` y `/admin/reviews`.
 
 **Motivo:**
+
 - Se necesitaba cerrar el circuito completo de reviews para capturar prueba social real dentro del SaaS, moderarla desde admin y aprovecharla comercialmente en la landing sin depender de contenido manual desde el primer dia.
 
 ## 2026-03-29 - Handoff temporal n8n blog automation
 
 **Cambios aplicados:**
+
 - Se creo `docs/HANDOFF_N8N_BLOG_2026-03-29.md` con el estado exacto de la investigacion del workflow de blog automatizado en `n8n`.
 - El handoff incluye: workflow activo e ID, ejecuciones probadas, nodos alcanzados, bloqueo actual en consolidacion de imagenes y pasos sugeridos para retomar.
 - Tambien se dejo documentada una seccion temporal con datos de conexion para `n8n` y `Supabase`, junto con la instruccion explicita de mover esos secretos al `.env` y eliminar la informacion critica del `.md` antes de versionar.
 
 **Motivo:**
+
 - Se necesitaba pausar el trabajo sin perder contexto tecnico ni el punto exacto del bloqueo actual del blog automatizado.
 
 ## 30 de Marzo, 2026 - Unificación y saneamiento del contexto maestro de la IA
 
 **Archivos modificados:**
+
 - `REGLAS_IMPORTANTES.md` (y `.kiro/steering/REGLAS_IMPORTANTES.md`)
 - `LOOKITRY_MASTER_MEMORY.md` (Eliminado)
 - `lookitry_master_context.md` (Eliminado)
@@ -1639,3 +1835,25 @@ Se consolidó toda la información de arquitectura, endpoints, esquemas de bases
 
 **Motivo:**
 Garantizar que futuros agentes de IA tengan un contexto técnico limpio, actualizado, seguro (sin secretos en texto plano) y consolidado, previniendo errores recurrentes relacionados con la arquitectura específica del proyecto Lookitry.
+
+## 30 de Marzo, 2026 - Epic README.md
+
+**Objetivo:**
+
+- Crear un `README.md` completo, atractivo y detallado en español que refleje la calidad y alcance del proyecto Lookitry.
+
+**Cambios aplicados:**
+
+- **Raíz (`README.md`):**
+  - Se reemplazó el contenido anterior con una versión "Epic".
+  - Se incluyó un encabezado con logo y badges de tecnologías (Next.js, Node.js, Supabase, Tailwind, n8n, Wompi, PayPal).
+  - Se detalló la propuesta de valor B2B y las características principales (Probador Virtual, Mini-Landings, Dashboard, Pagos, etc.).
+  - Se agregó una sección detallada del Stack Tecnológico y un diagrama de Arquitectura del Sistema usando Mermaid.
+  - Se actualizaron las instrucciones de Instalación y Desarrollo Local, incluyendo variables de entorno para frontend y backend.
+  - Se documentaron los endpoints principales de la API.
+  - Se incluyeron instrucciones seguras de despliegue usando el script `_deploy_now.py`.
+  - Se añadieron las reglas de diseño UI/UX (Brand Guardian) y un recordatorio sobre la persistencia de IA (Changelog).
+
+**Motivo:**
+
+- El repositorio necesitaba un punto de entrada profesional y completo que facilitara el onboarding de nuevos desarrolladores (o agentes de IA) y presentara adecuadamente el proyecto SaaS B2B.
