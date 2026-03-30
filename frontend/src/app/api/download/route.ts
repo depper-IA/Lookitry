@@ -1,6 +1,10 @@
 import sharp from 'sharp';
 import { NextRequest, NextResponse } from 'next/server';
 
+function toBinaryBody(buffer: Buffer): BodyInit {
+  return buffer as unknown as BodyInit;
+}
+
 /**
  * GET /api/download?url=...&filename=...
  * Proxy server-side para descargar imágenes externas sin problemas de CORS.
@@ -44,7 +48,7 @@ export async function GET(req: NextRequest) {
       ? filename.replace(/\.[^.]+$/u, '') + '.jpg'
       : filename;
 
-    return new NextResponse(outputBuffer, {
+    return new Response(toBinaryBody(outputBuffer), {
       status: 200,
       headers: {
         'Content-Type': contentType,
