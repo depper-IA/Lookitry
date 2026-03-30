@@ -45,7 +45,7 @@ export default function CheckoutLandingPage() {
   
   // Normalizar el plan para comparación insensible a mayúsculas
   const brandPlan = brand?.plan?.toUpperCase() || '';
-  const isTrial = Boolean(brand?.trialEndDate && new Date(brand.trialEndDate) > new Date());
+  const isTrial = Boolean(brand?.plan === 'TRIAL' && brand?.trialEndDate && new Date(brand.trialEndDate) > new Date());
   const hasActivePlan = brandPlan === 'BASIC' || brandPlan === 'PRO';
   
   // Derivamos si se incluye plan: obligatorio para Trial, prohibido para Activos

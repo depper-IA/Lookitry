@@ -161,7 +161,7 @@ export default function AdminConversionPage() {
                 Lectura del embudo
               </h2>
               <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-                El filtro ahora incluye correctamente cuentas con `subscription_status = trial` y expiración futura.
+                El filtro usa `plan = TRIAL` como fuente de verdad y `trial_end_date` solo para vigencia operativa.
               </p>
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function AdminConversionPage() {
                     </td>
                     <td className="py-4">
                       <span className="rounded-full bg-[#FF5C3A]/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#FF5C3A]">
-                        {trial.subscription_status || 'trial'}
+                        {trial.subscription_status || 'active'}
                       </span>
                     </td>
                     <td className="py-4" style={{ color: 'var(--text-secondary)' }}>{trial.plan}</td>

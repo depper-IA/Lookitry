@@ -101,6 +101,7 @@ export function DashboardRouteShell({
   }
 
   const trialExpired = !!(
+    brandData?.plan === 'TRIAL' &&
     brandData?.trialEndDate &&
     new Date(brandData.trialEndDate) <= new Date() &&
     brandData?.subscriptionStatus !== 'active' &&

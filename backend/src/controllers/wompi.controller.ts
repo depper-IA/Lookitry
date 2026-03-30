@@ -5,6 +5,7 @@ import { pricingService } from '../services/pricing.service';
 import { EmailService } from '../services/email.service';
 import { NotificationService } from '../services/notification.service';
 import { addonCreditsService } from '../services/addonCredits.service';
+import { planChangeService } from '../services/planChange.service';
 import { supabaseAdmin } from '../config/supabase';
 import { verifyEmailTemplate } from '../templates/email-templates';
 import { hasActivePaidSubscription, isTrialLandingBlocked } from '../utils/brandLifecycle';
@@ -104,7 +105,7 @@ export class WompiController {
       if (reference.startsWith('TRIAL-')) {
         const { data: updatedBrand } = await supabaseAdmin
           .from('brands')
-          .update({ trial_payment_status: 'active' })
+          .update({ plan: 'TRIAL', trial_payment_status: 'active' })
           .eq('id', brandId)
           .select('id, email, name, email_verification_token, email_verified')
           .single();
@@ -130,16 +131,27 @@ export class WompiController {
         const activateLanding = plan === 'LANDING' || includesLanding;
 
         if (plan === 'NONE') {
-          await supabaseAdmin.from('subscription_payments').insert({
-            brand_id: brandId,
-            amount: amountInCents / 100,
-            currency: 'COP',
-            payment_date: new Date().toISOString(),
-            payment_method: 'wompi',
-            status: 'completed',
-            months_paid: 0,
-            notes: `Pago automático Wompi. SOLO Landing Page. Ref: ${reference}. ID: ${transaction.id}`
-          });
+          const { data: existingLandingPayment } = await supabaseAdmin
+            .from('subscription_payments')
+            .select('id')
+            .eq('reference', reference)
+            .limit(1)
+            .maybeSingle();
+
+          if (!existingLandingPayment) {
+            await supabaseAdmin.from('subscription_payments').insert({
+              brand_id: brandId,
+              amount: amountInCents / 100,
+              currency: 'COP',
+              payment_date: new Date().toISOString(),
+              payment_method: 'wompi',
+              status: 'completed',
+              months_paid: 0,
+              reference,
+              notes: `Pago automático Wompi. SOLO Landing Page. Ref: ${reference}. ID: ${transaction.id}`
+            });
+          }
+
           if (activateLanding) {
             await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
           }
@@ -149,23 +161,39 @@ export class WompiController {
             hasActivePaidSubscription(currentBrand) &&
             currentBrand?.plan === 'BASIC' &&
             effectivePlan === 'PRO';
-          
-          await subscriptionService.renewSubscription(
-            brandId,
-            {
-              brand_id: brandId,
-              amount: amountInCents / 100,
-              currency: 'COP',
-              payment_date: new Date().toISOString(),
-              payment_method: 'wompi',
-              status: 'completed',
-              months_paid: months,
-              notes: `Pago automático Wompi. Ref: ${reference}. ID: ${transaction.id}.${activateLanding ? ' Incluye Landing Page.' : ''}`,
-            },
-            months,
-            effectivePlan,
-            isActualUpgrade
-          );
+
+          try {
+            if (isActualUpgrade) {
+              await planChangeService.markProcessing(reference, amountInCents / 100);
+            }
+
+            await subscriptionService.renewSubscription(
+              brandId,
+              {
+                brand_id: brandId,
+                amount: amountInCents / 100,
+                currency: 'COP',
+                payment_date: new Date().toISOString(),
+                payment_method: 'wompi',
+                status: 'completed',
+                months_paid: months,
+                notes: `Pago automático Wompi. Ref: ${reference}. ID: ${transaction.id}.${activateLanding ? ' Incluye Landing Page.' : ''}`,
+                reference,
+              },
+              months,
+              effectivePlan,
+              isActualUpgrade
+            );
+
+            if (isActualUpgrade) {
+              await planChangeService.markCompleted(reference, amountInCents / 100);
+            }
+          } catch (error) {
+            if (isActualUpgrade) {
+              await planChangeService.markFailed(reference, (error as Error)?.message || 'Error procesando upgrade Wompi');
+            }
+            throw error;
+          }
 
           if (activateLanding) {
             await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
@@ -214,7 +242,10 @@ export class WompiController {
         currentPlanPriceTotal,
       } = req.query;
       const resolvedNewPlanTotal = parseInt((newPlanTotal as string) || (newPlanPricePerMonth as string), 10);
-      const resolvedCurrentPlanFallback = parseInt((currentPlanPriceTotalFallback as string) || (currentPlanPriceTotal as string), 10) || 150000;
+      const resolvedCurrentPlanFallback = parseInt(
+        (currentPlanPriceTotal as string) || (currentPlanPriceTotalFallback as string),
+        10
+      ) || 0;
 
       if (!newPlan || !newMonths || !resolvedNewPlanTotal) {
         res.status(400).json({ error: 'Faltan parámetros' });
@@ -264,6 +295,16 @@ export class WompiController {
       }
 
       const reference = `FREE-UPGRADE-${brand.id}-${Date.now()}`;
+      await planChangeService.createPending({
+        brandId: brand.id,
+        reference,
+        source: 'free_upgrade',
+        fromPlan: currentBrand?.plan || null,
+        toPlan: String(newPlan).toUpperCase(),
+        months: parseInt(newMonths as string, 10),
+        amountExpected: 0,
+        metadata: { creditAmount, newPlanTotal, forcedEndDate: forcedEndDate || null },
+      });
       const updatedBrand = await subscriptionService.applyFreeUpgrade(
         brand.id,
         (newPlan as string).toUpperCase(),
@@ -273,6 +314,7 @@ export class WompiController {
         reference,
         forcedEndDate
       );
+      await planChangeService.markCompleted(reference, 0);
       res.json({ success: true, brand: updatedBrand });
     } catch (error) {
       console.error('[Wompi] Error en free upgrade:', error);
@@ -314,6 +356,7 @@ export class WompiController {
             status: 'completed',
             months_paid: monthsNum,
             notes: `Checkout gratuito. Plan: ${effectivePlan}. Ref: ${ref}${includes_landing ? '. Incluye Landing Page.' : ''}`,
+            reference: ref,
           },
           monthsNum,
           effectivePlan,
@@ -354,11 +397,8 @@ export class WompiController {
       if (brand?.id && planStr === 'PRO') {
         const { data: b } = await supabaseAdmin.from('brands').select('plan, subscription_status, trial_end_date').eq('id', brand.id).single();
         if (hasActivePaidSubscription(b) && b?.plan === 'BASIC') {
-          const configRows = await pricingService.getPricingConfig();
-          const basicPrice = configRows.find(c => c.id.toLowerCase() === 'basic')?.data?.precio_mensual_cop || 150000;
-          const proPrice = configRows.find(c => c.id.toLowerCase() === 'pro')?.data?.precio_mensual_cop || 250000;
-          
-          const preview = await subscriptionService.calculateUpgradeProration(brand.id, 'PRO', monthsNum, proPrice, basicPrice);
+          const proPlanTotal = await pricingService.calculateTotal('PRO', monthsNum, false);
+          const preview = await subscriptionService.calculateUpgradeProration(brand.id, 'PRO', monthsNum, proPlanTotal, 0);
           amountCOP = preview.amountToPay;
           if (isLandingPurchase) {
              const onlyLanding = await pricingService.calculateTotal('NONE', 0, true);
@@ -415,10 +455,8 @@ export class WompiController {
       if (brand?.id && planStr === 'PRO') {
         const { data: b } = await supabaseAdmin.from('brands').select('plan, subscription_status, trial_end_date').eq('id', brand.id).single();
         if (hasActivePaidSubscription(b) && b?.plan === 'BASIC') {
-          const configRows = await pricingService.getPricingConfig();
-          const basicPrice = configRows.find(c => c.id.toLowerCase() === 'basic')?.data?.precio_mensual_cop || 150000;
-          const proPrice = configRows.find(c => c.id.toLowerCase() === 'pro')?.data?.precio_mensual_cop || 250000;
-          const preview = await subscriptionService.calculateUpgradeProration(brand.id, 'PRO', monthsNum, proPrice, basicPrice);
+          const proPlanTotal = await pricingService.calculateTotal('PRO', monthsNum, false);
+          const preview = await subscriptionService.calculateUpgradeProration(brand.id, 'PRO', monthsNum, proPlanTotal, 0);
           amountCOP = preview.amountToPay;
           if (isLandingPurchase) {
             const onlyLanding = await pricingService.calculateTotal('NONE', 0, true);
@@ -453,7 +491,22 @@ export class WompiController {
       }
 
       const checkoutUrl = await wompiService.getCheckoutUrl(brandId, amountCOP, `${frontendUrl}${successPath}`, false, monthsNum, planStr, reference);
-      res.json({ checkoutUrl });
+      if (brand?.id && planStr === 'PRO') {
+        const { data: currentBrand } = await supabaseAdmin.from('brands').select('plan, subscription_status, trial_end_date').eq('id', brand.id).single();
+        if (hasActivePaidSubscription(currentBrand) && currentBrand?.plan === 'BASIC') {
+          await planChangeService.createPending({
+            brandId: brand.id,
+            reference,
+            source: 'wompi',
+            fromPlan: currentBrand?.plan || null,
+            toPlan: 'PRO',
+            months: monthsNum,
+            amountExpected: amountCOP,
+            metadata: { includesLanding: isLandingPurchase },
+          });
+        }
+      }
+      res.json({ checkoutUrl, reference });
     } catch (error) {
       console.error('[Wompi] Error en getCheckoutUrl:', error);
       res.status(500).json({ error: 'Error interno' });

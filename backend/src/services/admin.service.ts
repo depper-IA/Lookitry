@@ -415,6 +415,7 @@ export class AdminService {
         const trialEnd = brand.trial_end_date ? new Date(brand.trial_end_date) : null;
         const now = new Date();
         const isInTrial =
+          brand.plan === 'TRIAL' &&
           trialEnd !== null &&
           trialEnd > now &&
           brand.subscription_status !== 'suspended';
@@ -471,13 +472,14 @@ export class AdminService {
     // Leer fechas actuales para no pisarlas si ya existen
     const { data: current } = await supabaseAdmin
       .from('brands')
-      .select('subscription_start_date, subscription_end_date, subscription_status, trial_end_date')
+      .select('plan, subscription_start_date, subscription_end_date, subscription_status, trial_end_date')
       .eq('id', brandId)
       .single();
 
     const updatePayload: Record<string, any> = { plan: newPlan };
     const now = new Date();
     const hasActiveTrial =
+      current?.plan === 'TRIAL' &&
       !!current?.trial_end_date &&
       new Date(current.trial_end_date).getTime() > now.getTime() &&
       current?.subscription_status !== 'active' &&
@@ -561,14 +563,11 @@ export class AdminService {
 
     const brandsByPlan = (brandsForPlanStats || []).reduce(
       (acc, brand) => {
-        const inTrial =
-          !!brand.trial_end_date &&
-          new Date(brand.trial_end_date) > now &&
-          brand.subscription_status !== 'suspended';
-
-        if (inTrial) {
+        if (brand.plan === 'TRIAL') {
           acc.TRIAL += 1;
         } else if (brand.plan === 'PRO') {
+          acc.PRO += 1;
+        } else if (brand.plan === 'ENTERPRISE') {
           acc.PRO += 1;
         } else {
           acc.BASIC += 1;
@@ -773,6 +772,8 @@ export class AdminService {
         subscription_status: 'active',
         subscription_start_date: now.toISOString(),
         subscription_end_date: endDate.toISOString(),
+        trial_end_date: null,
+        trial_payment_status: null,
         last_payment_date: now.toISOString(),
         next_payment_date: endDate.toISOString(),
       })
@@ -842,7 +843,6 @@ export class AdminService {
     const trialEndDate = new Date();
     trialEndDate.setDate(trialEndDate.getDate() + trialDays);
     const requestedPlan = String(data.plan || 'TRIAL').toUpperCase();
-    const persistedPlan = requestedPlan === 'TRIAL' ? 'BASIC' : requestedPlan;
 
     const { data: newBrand, error } = await supabaseAdmin
       .from('brands')
@@ -851,7 +851,7 @@ export class AdminService {
         password: hashedPassword,
         name: data.name,
         slug: data.slug,
-        plan: persistedPlan,
+        plan: requestedPlan,
         phone: data.phone || null,
         contact_name: data.contact_name || null,
         subscription_status: null,
@@ -879,6 +879,7 @@ export class AdminService {
     const { data, error } = await supabaseAdmin
       .from('brands')
       .select('id, name, email, slug, plan, trial_end_date, subscription_status, created_at')
+      .eq('plan', 'TRIAL')
       .gt('trial_end_date', now)
       .neq('subscription_status', 'suspended')
       .order('trial_end_date', { ascending: true });
@@ -911,13 +912,12 @@ export class AdminService {
 
     const now = new Date();
 
-    // Marcas en trial activo: el modelo real se deriva por trial_end_date vigente.
-    const inTrial = brands.filter(b => {
-      if (!b.trial_end_date) return false;
-      const trialEnd = new Date(b.trial_end_date);
-      if (trialEnd <= now) return false;
-      return b.subscription_status !== 'suspended';
-    });
+    const inTrial = brands.filter(b =>
+      b.plan === 'TRIAL' &&
+      !!b.trial_end_date &&
+      new Date(b.trial_end_date) > now &&
+      b.subscription_status !== 'suspended'
+    );
 
     // Marcas convertidas (tienen suscripción activa o por vencer)
     const converted = brands.filter(b =>

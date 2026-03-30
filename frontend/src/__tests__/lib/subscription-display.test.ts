@@ -7,13 +7,13 @@ describe('subscription-display', () => {
     vi.setSystemTime(new Date('2026-03-29T12:00:00.000Z'));
 
     const state = getSubscriptionDisplayState({
-      plan: 'BASIC',
+      plan: 'TRIAL',
       trialEndDate: '2026-04-01T12:00:00.000Z',
       subscriptionStatus: 'expired',
     });
 
     expect(isTrialBrand({
-      plan: 'BASIC',
+      plan: 'TRIAL',
       trialEndDate: '2026-04-01T12:00:00.000Z',
       subscriptionStatus: 'expired',
     })).toBe(true);
@@ -24,23 +24,24 @@ describe('subscription-display', () => {
     vi.useRealTimers();
   });
 
-  it('mantiene como trial una cuenta legacy con trial_end_date vigente aunque el status siga en active', () => {
+  it('mantiene como trial una cuenta persistida con plan TRIAL aunque el status siga en active', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-03-29T12:00:00.000Z'));
 
     const state = getSubscriptionDisplayState({
-      plan: 'BASIC',
+      plan: 'TRIAL',
       trialEndDate: '2026-04-02T12:00:00.000Z',
       subscriptionStatus: 'active',
       subscriptionEndDate: '2026-05-02T12:00:00.000Z',
     });
 
     expect(hasActivePaidSubscription({
+      plan: 'TRIAL',
       subscriptionStatus: 'active',
       trialEndDate: '2026-04-02T12:00:00.000Z',
     })).toBe(false);
     expect(isTrialBrand({
-      plan: 'BASIC',
+      plan: 'TRIAL',
       trialEndDate: '2026-04-02T12:00:00.000Z',
       subscriptionStatus: 'active',
     })).toBe(true);
@@ -56,7 +57,7 @@ describe('subscription-display', () => {
     vi.setSystemTime(new Date('2026-03-29T12:00:00.000Z'));
 
     const state = getSubscriptionDisplayState({
-      plan: 'BASIC',
+      plan: 'TRIAL',
       trialEndDate: '2026-03-20T12:00:00.000Z',
       subscriptionStatus: 'expired',
     });

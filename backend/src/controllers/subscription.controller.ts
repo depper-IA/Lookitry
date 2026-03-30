@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { SubscriptionService } from '../services/subscription.service';
 import { NotificationService } from '../services/notification.service';
 import { auditService } from '../services/audit.service';
+import { planChangeService } from '../services/planChange.service';
 import { AuthRequest } from '../middleware/auth';
 import { CreatePaymentDto } from '../types';
 
@@ -94,6 +95,7 @@ export class SubscriptionController {
           const daysRemaining = await subscriptionService.getDaysRemaining(brand.id);
           const trialEnd = brand.trial_end_date ? new Date(brand.trial_end_date) : null;
           const is_in_trial =
+            brand.plan === 'TRIAL' &&
             trialEnd !== null &&
             trialEnd > now &&
             brand.subscription_status !== 'suspended';
@@ -102,7 +104,6 @@ export class SubscriptionController {
             : null;
           return {
             ...brand,
-            subscription_status: is_in_trial ? 'trial' : brand.subscription_status,
             daysRemaining,
             is_in_trial,
             trial_days_remaining,
@@ -407,7 +408,7 @@ export class SubscriptionController {
 
       // 4. Activar la suscripción manualmente
       const months = pending.months || 1;
-      const plan = (pending.plan || 'BASIC').toUpperCase() === 'TRIAL' ? 'BASIC' : (pending.plan || 'BASIC').toUpperCase();
+      const plan = (pending.plan || 'BASIC').toUpperCase();
       const amount = Number(pending.amount || 0);
 
       await subscriptionService.renewSubscription(
@@ -427,6 +428,8 @@ export class SubscriptionController {
         plan,
         false
       );
+
+      await planChangeService.markCompleted(reference, amount).catch(() => {});
 
       // 5. Registrar en admin_notifications
       await supabaseAdmin.from('admin_notifications').insert({

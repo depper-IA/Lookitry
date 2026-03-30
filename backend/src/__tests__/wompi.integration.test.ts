@@ -291,6 +291,7 @@ describe('WompiController.handleWebhook', () => {
           currency: 'COP',
           payment_method: 'wompi',
           status: 'completed',
+          reference,
         }),
         expect.any(Number),
         expect.any(String),

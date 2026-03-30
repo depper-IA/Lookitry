@@ -15,7 +15,7 @@ interface Subscription {
   is_in_trial?: boolean;
   trial_end_date?: string | null;
   trial_days_remaining?: number | null;
-  subscription_status: 'active' | 'expiring_soon' | 'expired' | 'suspended' | 'trial';
+  subscription_status: 'active' | 'expiring_soon' | 'expired' | 'suspended' | null;
   subscription_start_date: string | null;
   subscription_end_date: string | null;
   last_payment_date: string | null;
@@ -53,7 +53,7 @@ function DaysChip({ days }: { days: number }) {
 }
 
 function PlanBadge({ plan, isInTrial }: { plan: string; isInTrial?: boolean }) {
-  if (isInTrial) {
+  if (plan === 'TRIAL') {
     return (
       <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
         style={{ backgroundColor: 'rgba(107,114,128,0.15)', color: '#6b7280' }}>
@@ -86,22 +86,21 @@ function PlanBadge({ plan, isInTrial }: { plan: string; isInTrial?: boolean }) {
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status }: { status: string | null }) {
   const map: Record<string, { bg: string; color: string }> = {
     active:        { bg: 'rgba(16,185,129,0.12)',  color: '#10b981' },
     expiring_soon: { bg: 'rgba(245,158,11,0.12)',  color: '#f59e0b' },
     expired:       { bg: 'rgba(239,68,68,0.12)',   color: '#ef4444' },
     suspended:     { bg: 'rgba(107,114,128,0.12)', color: '#6b7280' },
-    trial:         { bg: 'rgba(99,102,241,0.12)',  color: '#6366f1' },
   };
   const labels: Record<string, string> = {
-    active: 'Activa', expiring_soon: 'Por vencer', expired: 'Vencida', suspended: 'Suspendida', trial: 'Trial',
+    active: 'Activa', expiring_soon: 'Por vencer', expired: 'Vencida', suspended: 'Suspendida',
   };
-  const style = map[status] ?? { bg: 'rgba(107,114,128,0.12)', color: '#6b7280' };
+  const style = (status ? map[status] : undefined) ?? { bg: 'rgba(107,114,128,0.12)', color: '#6b7280' };
   return (
     <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
       style={{ backgroundColor: style.bg, color: style.color }}>
-      {labels[status] ?? status}
+      {status ? (labels[status] ?? status) : 'Sin estado'}
     </span>
   );
 }
@@ -158,7 +157,7 @@ function RenewModal({
   const baseAmount = brand.plan === 'PRO' ? 250000 : 150000;
   const [months, setMonths] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState<'BASIC' | 'PRO'>(
-    brand.is_in_trial ? 'BASIC' : (brand.plan as 'BASIC' | 'PRO')
+    brand.plan === 'TRIAL' ? 'BASIC' : (brand.plan as 'BASIC' | 'PRO')
   );
   const [form, setForm] = useState({
     payment_date: new Date().toISOString().split('T')[0],
@@ -202,7 +201,7 @@ function RenewModal({
         <div style={{ borderColor: 'var(--border-color)' }} className="px-6 py-5 border-b">
           <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold tracking-tight text-lg">Registrar pago - {brand.name}</h3>
           <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">
-            {brand.is_in_trial ? 'Plan Trial' : `Plan ${brand.plan}`} · {brand.is_in_trial ? formatPlanPrice('BASIC') : formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes
+            {brand.plan === 'TRIAL' ? 'Plan Trial' : `Plan ${brand.plan}`} · {brand.plan === 'TRIAL' ? formatPlanPrice('BASIC') : formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes
           </p>
         </div>
         <div className="px-6 py-5 space-y-4">
@@ -325,7 +324,7 @@ function ChangePlanModal({
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
-    if (brand.is_in_trial) {
+    if (brand.plan === 'TRIAL') {
       setError('Para convertir un Trial en Basic o Pro primero debes registrar el pago desde "Renovar / Registrar pago".');
       return;
     }
@@ -362,10 +361,10 @@ function ChangePlanModal({
           <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border px-4 py-3">
             <p style={{ color: 'var(--text-muted)' }} className="text-xs mb-0.5">Plan actual</p>
             <p style={{ color: 'var(--text-primary)' }} className="font-semibold">
-              {brand.is_in_trial ? 'TRIAL' : brand.plan}
-              {!brand.is_in_trial && brand.plan !== 'LANDING' && ` — ${formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes`}
-              {!brand.is_in_trial && brand.plan === 'LANDING' && ' — Pago único'}
-              {brand.is_in_trial && ` — ${brand.trial_days_remaining ?? '?'} días restantes`}
+              {brand.plan}
+              {brand.plan !== 'TRIAL' && brand.plan !== 'LANDING' && ` — ${formatPlanPrice(brand.plan as 'BASIC' | 'PRO')}/mes`}
+              {brand.plan === 'LANDING' && ' — Pago único'}
+              {brand.plan === 'TRIAL' && ` — ${brand.trial_days_remaining ?? '?'} días restantes`}
             </p>
           </div>
           <div>
@@ -391,7 +390,7 @@ function ChangePlanModal({
             disabled={
               loading ||
               newPlan === brand.plan ||
-              brand.is_in_trial ||
+              brand.plan === 'TRIAL' ||
               brand.subscription_status === 'suspended' ||
               brand.subscription_status === 'expired'
             }
@@ -520,7 +519,7 @@ export default function AdminSubscriptionsPage() {
     const matchStatus = filter === 'all'
       ? true
       : filter === 'trial'
-      ? s.is_in_trial === true
+      ? s.plan === 'TRIAL'
       : s.subscription_status === filter;
     const q = search.toLowerCase();
     const matchSearch = !q || s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q) || s.slug.toLowerCase().includes(q);
@@ -542,11 +541,11 @@ export default function AdminSubscriptionsPage() {
       valA = new Date(a.subscription_end_date || 0).getTime();
       valB = new Date(b.subscription_end_date || 0).getTime();
     } else if (sortField === 'dias') {
-      valA = a.is_in_trial ? (a.trial_days_remaining ?? 9999) : a.daysRemaining;
-      valB = b.is_in_trial ? (b.trial_days_remaining ?? 9999) : b.daysRemaining;
+      valA = a.plan === 'TRIAL' ? (a.trial_days_remaining ?? 9999) : a.daysRemaining;
+      valB = b.plan === 'TRIAL' ? (b.trial_days_remaining ?? 9999) : b.daysRemaining;
     } else if (sortField === 'estado') {
       const normalizeStatus = (subscription: Subscription) =>
-        subscription.is_in_trial ? 'trial' : (subscription.subscription_status || '');
+        subscription.plan === 'TRIAL' ? 'trial' : (subscription.subscription_status || '');
       valA = normalizeStatus(a);
       valB = normalizeStatus(b);
     }
@@ -565,11 +564,11 @@ export default function AdminSubscriptionsPage() {
     expiring_soon: subscriptions.filter(s => s.subscription_status === 'expiring_soon').length,
     expired: subscriptions.filter(s => s.subscription_status === 'expired').length,
     suspended: subscriptions.filter(s => s.subscription_status === 'suspended').length,
-    trial: subscriptions.filter(s => s.is_in_trial === true).length,
+    trial: subscriptions.filter(s => s.plan === 'TRIAL').length,
   };
 
   const expiringSoon = subscriptions.filter(s =>
-    !s.is_in_trial &&
+    s.plan !== 'TRIAL' &&
     s.daysRemaining !== null &&
     s.daysRemaining >= 0 &&
     s.daysRemaining <= 7
@@ -715,16 +714,16 @@ export default function AdminSubscriptionsPage() {
                   <td className="px-5 py-3.5">
                     <PlanBadge plan={s.plan} isInTrial={s.is_in_trial} />
                     <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">
-                      {s.is_in_trial
+                      {s.plan === 'TRIAL'
                         ? `${s.trial_days_remaining ?? '?'} días restantes`
                         : s.plan === 'LANDING' ? 'Pago único' : formatPlanPrice(s.plan as 'BASIC' | 'PRO')}
                     </p>
                   </td>
                   <td style={{ color: 'var(--text-secondary)' }} className="px-5 py-3.5">
-                    {formatDate(s.is_in_trial ? (s.trial_end_date ?? s.subscription_end_date) : s.subscription_end_date)}
+                    {formatDate(s.plan === 'TRIAL' ? (s.trial_end_date ?? s.subscription_end_date) : s.subscription_end_date)}
                   </td>
                   <td className="px-5 py-3.5">
-                    <DaysChip days={s.is_in_trial ? (s.trial_days_remaining ?? 0) : s.daysRemaining} />
+                    <DaysChip days={s.plan === 'TRIAL' ? (s.trial_days_remaining ?? 0) : s.daysRemaining} />
                   </td>
                   <td className="px-5 py-3.5"><StatusBadge status={s.subscription_status} /></td>
                   <td className="px-5 py-3.5">
@@ -808,7 +807,7 @@ export default function AdminSubscriptionsPage() {
           title={confirmAction.action === 'suspend' ? `Suspender ${confirmAction.brand.name}` : `Reactivar ${confirmAction.brand.name}`}
           message={confirmAction.action === 'suspend'
             ? 'La marca perderá acceso al dashboard y al probador público.'
-            : confirmAction.brand.is_in_trial
+            : confirmAction.brand.plan === 'TRIAL'
               ? 'Se restaurará solo el Trial restante. Esta acción no cobra ni cambia el plan. Si quieres pasarla a un plan pago, usa "Renovar / Registrar pago".'
               : 'Solo se reactivará el acceso si la marca todavía tiene un período pago vigente. Esta acción no cobra ni cambia el plan.'}
           confirmLabel={confirmAction.action === 'suspend' ? 'Suspender' : 'Reactivar'}
