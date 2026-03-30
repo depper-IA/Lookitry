@@ -162,7 +162,7 @@ inclusion: always
 |---------|-------|
 | VPS IP | `31.220.18.39` |
 | VPS user | `root` |
-| VPS pass | `Travis18456916#` |
+| VPS pass | `********` |
 | Docker project | `virtual-tryon` |
 | Supabase project ID | `vkdooutklowctuudjnkl` |
 | GitHub repo | `https://github.com/depper-IA/virtual-tryon.git` |
@@ -738,7 +738,7 @@ SUPABASE_SERVICE_KEY=eyJ...   # NUNCA exponer en frontend
 JWT_SECRET=...
 N8N_WEBHOOK_URL=https://n8n.wilkiedevs.com/webhook/tryon
 N8N_API_KEY=eyJ...
-N8N_BEARER_TOKEN=Travis2305**
+N8N_BEARER_TOKEN=*********
 WOMPI_PUBLIC_KEY=pub_test_...
 WOMPI_PRIVATE_KEY=prv_test_...
 WOMPI_EVENTS_SECRET=test_events_...
@@ -749,15 +749,15 @@ TURNSTILE_ENABLED=true
 SMTP_HOST=smtp.hostinger.com
 SMTP_PORT=465
 SMTP_USER=info@lookitry.com
-SMTP_PASS=Travis2305*
+SMTP_PASS=********
 MINIO_ENDPOINT=https://minio.wilkiedevs.com
 MINIO_BUCKET=images
 MINIO_ACCESS_KEY=Wilkiedevs
-MINIO_SECRET_KEY=Travis2305*
+MINIO_SECRET_KEY=********
 FRONTEND_URL=https://lookitry.com
 VPS_HOST=31.220.18.39
 VPS_USER=root
-VPS_PASS=Travis18456916#
+VPS_PASS=********
 GITHUB_TOKEN=ghp_...
 ```
 
@@ -851,7 +851,7 @@ Excepciones permitidas que usan `supabase` anon:
 | Feedback embedding | `47RcLopJB6M82b0k` | Flujo4 | Embeddings de feedback |
 | Descriptor IA | `ZjVTV3QxoPEi60GX` | — | Describe productos con IA |
 
-Todos tienen el tag `SaaS`. Bearer token: `Travis2305**`.
+Todos tienen el tag `SaaS`. Bearer token: `*********`.
 
 ---
 
@@ -1200,3 +1200,78 @@ python scripts/_deploy_now.py --frontend   # solo frontend
 - Frontend: https://lookitry.com
 - Backend API: https://api.lookitry.com
 - Health check: https://api.lookitry.com/health
+
+---
+
+## 9. LIMITACIONES DE LA IA Y PITFALLS COMUNES (¡LEER CON ATENCIÓN!)
+
+Esta sección detalla los errores más comunes y limitaciones que las IAs pueden tener al trabajar con la base de código de Lookitry. **DEBES** revisar esta sección antes de realizar cambios estructurales o lógicos importantes.
+
+### 9.1. Manejo de Supabase (Backend vs Frontend)
+- **Pitfall Crítico:** Intentar usar `supabase` (Anon Key) en el backend para operaciones de lectura/escritura de datos de usuarios.
+- **Limitación de IA:** Las IAs suelen asumir que la Anon Key es suficiente si hay RLS configurado.
+- **La Realidad:** En Lookitry, **el backend usa un sistema JWT propio, NO usa Supabase Auth**. Por lo tanto, cualquier petición desde el backend con la Anon Key será bloqueada por RLS (porque no hay sesión de usuario válida en el contexto de Supabase).
+- **Solución Obligatoria:** En TODO el backend (controllers, services, jobs), se DEBE usar **`supabaseAdmin`** (Service Role Key) para realizar operaciones en la base de datos, bypaseando RLS. El frontend, por otro lado, solo debe usar la Anon Key y leer tablas públicas (como `pricing_config` o `promotions`). NUNCA expongas la Service Role Key en el frontend.
+
+### 9.2. Lógica de Pagos y Monedas (Wompi vs PayPal)
+- **Pitfall Crítico:** Enviar montos en USD a la pasarela Wompi o procesar respuestas asumiendo una moneda incorrecta.
+- **Limitación de IA:** Las IAs pueden confundirse al ver un selector de moneda en el frontend (COP/USD) y enviar el monto convertido a la pasarela equivocada.
+- **La Realidad:**
+    - **Wompi SOLO procesa en COP (Pesos Colombianos).** No importa si el frontend muestra USD al usuario; el monto enviado a la API de Wompi (backend) SIEMPRE debe ser en COP.
+    - **PayPal procesa en USD.** El backend debe convertir el monto de COP a USD utilizando el TRM (`payment_settings.trm`) antes de crear la orden de PayPal.
+- **Verificación Constante:** Siempre verifica que el valor `amount` enviado desde el frontend en llamadas relacionadas con Wompi corresponda al precio base en COP sin conversiones a USD, incluso si el UI estaba en USD.
+
+### 9.3. Integración con n8n (CORS y Endpoints)
+- **Pitfall Crítico:** Llamar a webhooks de n8n directamente desde el navegador (frontend).
+- **Limitación de IA:** Simplificar la arquitectura haciendo llamadas directas a APIs de terceros desde el cliente.
+- **La Realidad:** El dominio de n8n (`n8n.wilkiedevs.com`) suele tener políticas estrictas de CORS. Las llamadas directas desde `lookitry.com` o `localhost` fallarán por bloqueos CORS.
+- **Solución Obligatoria:** TODAS las interacciones con n8n (Try-On, Descriptor de IA, etc.) deben pasar a través de **proxies en el backend de Lookitry** (ej. `/api/pruebalo/:slug/generate` o `/api/products/describe-ai`). El backend actúa como intermediario seguro, inyecta los Bearer Tokens necesarios (`*********`) y evita problemas de CORS.
+
+### 9.4. Despliegues (Deployments) y Git
+- **Pitfall Crítico:** Sugerir usar SSH directo al VPS para hacer un `git pull` manual o ejecutar comandos `docker compose restart`.
+- **Limitación de IA:** Las IAs suelen proponer métodos manuales de administración de servidores cuando detectan que hay un VPS.
+- **La Realidad:** Existe un script automatizado y seguro para esto: `python scripts/_deploy_now.py`.
+- **Procedimiento Estricto:** **NUNCA** utilices conexiones SSH directas desde la terminal para hacer despliegues o modificar el servidor si no es estrictamente necesario o pedido por el usuario. El flujo correcto es:
+  1. Integrar cambios (`git pull origin main --rebase`).
+  2. Hacer push (`git push origin main`).
+  3. Ejecutar el script localmente: `python scripts/_deploy_now.py --backend --frontend --no-cache`.
+
+### 9.5. Persistencia de Archivos y "Placeholders"
+- **Pitfall Crítico:** Escribir código con comentarios tipo `// TODO: Implementar lógica de pago aquí` o funciones vacías.
+- **Limitación de IA:** Las IAs a veces abrevian el código en respuestas largas para ahorrar tokens.
+- **La Realidad:** Lookitry es un producto en producción. El código debe ser completamente funcional, "premium" y listo para producción desde el primer commit.
+- **Solución Obligatoria:** Prohibido usar placeholders. Si te falta contexto para completar una función, debes revisar el código existente (ej. buscar cómo se hace en otros controladores) o pedir más información, pero NO debes commitear código incompleto.
+
+### 9.6. Prorrateo y Upgrades de Planes
+- **Pitfall Crítico:** Asumir que al cambiar de plan (ej. BASIC a PRO) el usuario paga el 100% de la nueva mensualidad y se le suman los días restantes.
+- **Limitación de IA:** Lógicas de facturación complejas pueden ser malinterpretadas.
+- **La Realidad:**
+    - El upgrade (BASIC -> PRO) implica **Prorrateo**: Se calcula el valor de los días no usados de BASIC y se descuenta del precio de PRO.
+    - La suscripción PRO **inicia hoy**, no se suma al final del ciclo anterior.
+    - Si el crédito supera el costo del plan, el costo es 0 (Free Upgrade), se registran los meses correspondientes, pero NUNCA hay devoluciones monetarias (refunds).
+    - Un "Downgrade" (PRO -> BASIC) es diferido: El usuario sigue siendo PRO hasta que finalice su ciclo actual, y luego cambia a BASIC.
+- **Referencia Obligatoria:** Revisar SIEMPRE `backend/src/services/subscription.service.ts` antes de tocar lógicas de pago.
+
+### 9.7. Estética UI y "Brand Guardian"
+- **Pitfall Crítico:** Usar componentes estándar de Tailwind sin respetar la paleta oscura o crear diseños sin contraste.
+- **Limitación de IA:** Generar UIs "genéricas" (ej. fondo blanco, botones azules estándar).
+- **La Realidad:** Lookitry usa un diseño Premium Dark.
+- **Solución Obligatoria:** Usar los colores del sistema (`--bg-base`, `--bg-card`), el color de acento (`#FF5C3A`), y evitar grises oscuros confusos (prohibidos `#333`, `#444`, `#555` para texto). Toda nueva vista debe estar 100% responsive.
+
+## 8. BLOG (MIGRACIÓN NATIVA)
+
+El blog ha sido migrado de WordPress a un sistema nativo integrado en Lookitry.
+
+### Endpoints del Blog (Backend)
+- `POST /api/blog/webhook`: Ingesta de artículos (JSON).
+- `POST /api/blog/upload`: Subida de imágenes a MinIO (Multipart).
+- **Seguridad**: Ambas requieren el header `x-blog-secret`.
+
+### Almacenamiento
+- Las imágenes se guardan en MinIO (`images` bucket) bajo la carpeta `blog/`.
+- URLs generadas: `https://minio.wilkiedevs.com/images/blog/filename.webp`.
+
+### Frontend
+- Ruta pública: `/blog` y `/blog/[slug]`.
+- Panel Admin: `/admin/blog` (Gestión de artículos).
+- Sitemap: Se actualiza dinámicamente consultando la tabla `blogs`.
