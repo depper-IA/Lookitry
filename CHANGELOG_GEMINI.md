@@ -1639,3 +1639,14 @@ Se consolidó toda la información de arquitectura, endpoints, esquemas de bases
 
 **Motivo:**
 Garantizar que futuros agentes de IA tengan un contexto técnico limpio, actualizado, seguro (sin secretos en texto plano) y consolidado, previniendo errores recurrentes relacionados con la arquitectura específica del proyecto Lookitry.
+
+## 30 de Marzo, 2026 - Corrección de Precios del Plan Trial en Documentación
+
+**Archivos modificados:**
+- `REGLAS_IMPORTANTES.md` (y `.kiro/steering/REGLAS_IMPORTANTES.md`)
+
+**Descripción del cambio:**
+Se actualizaron todas las referencias al plan `TRIAL` en el documento maestro para reflejar su modelo de negocio actual. Se eliminaron las menciones de "Gratis" o "Gratuito" y se explicitó en las tablas de precios, en la lógica de negocio y en la sección de planes que el Trial tiene un costo de **20.000 COP**.
+
+**Motivo:**
+Alinear la documentación técnica con la realidad comercial del producto SaaS (donde ya no existen planes gratuitos), evitando que la IA genere UIs o asuma lógicas de validación para un nivel de servicio gratuito inexistente.

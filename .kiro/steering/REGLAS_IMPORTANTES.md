@@ -65,7 +65,7 @@ URLs de Producción:
 
 ## 3. LÓGICAS DE NEGOCIO Y PAGOS
 - **Planes**: 
-  - `TRIAL`: Prueba temporal.
+  - `TRIAL`: Prueba de pago temporal (20.000 COP).
   - `BASIC` ($150.000 COP/mes): 5 productos activos, 400 gen/mes.
   - `PRO` ($250.000 COP/mes): 15 productos activos, 1200 gen/mes.
   - `LANDING`: Pago único $650.000 COP (requiere plan BASIC o PRO).
@@ -103,7 +103,7 @@ Tablas principales:
 
 ## 7. RESOLUCIÓN DE PROBLEMAS PREVIOS
 - **Checkout Landing Activo**: Para clientes con un plan PRO o BASIC, comprar la mini-landing individual NO procesa una mensualidad doble, logrando esto enviando `plan=NONE` a las APIs de Wompi / Paypal.
-- **Trial Landing Preview**: La vista previa gratuita es de 3 minutos guiados enteramente por el frontend local-storage (`MiniLanding.tsx`). No uses verificaciones basadas en `brand.created_at` ya que eso expira el tiempo sin que el usuario haya siquiera tocado la ruta pública.
+- **Trial Landing Preview**: La vista previa promocional es de 3 minutos guiados enteramente por el frontend local-storage (`MiniLanding.tsx`). No uses verificaciones basadas en `brand.created_at` ya que eso expira el tiempo sin que el usuario haya siquiera tocado la ruta pública.
 - **Auto-vinculación de landing**: Al entrar a `/registro-pro?ref=...` con sesión activa, si el pending es tipo landing-only (`plan = NONE`) o el usuario no tiene plan, se hace auto-link. Si ya tiene plan y quiere cambiarlo, se muestra el formulario normal.
 - **Panel Admin**: Si surge un bug visual en el Panel Admin (ej. fondos desfasados en modo oscuro `bg-white`), se debe siempre usar `var(--bg-card)` y variables CSS del sistema en lugar de clases Tailwind estáticas.
 
@@ -777,7 +777,7 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAACsmy7e_yL9iyAXM
 - Un usuario en **TRIAL** puede previsualizar la landing en el dashboard, pero para activarla públicamente debe adquirir un plan junto con el pago único de la landing.
 
 #### Planes
-- `TRIAL`: período de prueba temporal, badge violeta `#6366f1`, independiente de BASIC/PRO.
+- `TRIAL`: Prueba de pago (20.000 COP) temporal, badge violeta `#6366f1`, independiente de BASIC/PRO.
 - `BASIC`: $150.000 COP/mes, 5 productos activos, 400 generaciones/mes.
 - `PRO`: $250.000 COP/mes, 15 productos activos, 1.200 generaciones/mes.
 - `LANDING`: pago único $650.000 COP, requiere plan BASIC o PRO activo.
@@ -974,7 +974,7 @@ var(--shadow-header)    /* Sombra del header */
 
 | Plan    | Precio           | Descripción                                      |
 |---------|------------------|--------------------------------------------------|
-| TRIAL   | Gratis temporal  | Badge violeta `#6366f1`. Independiente de BASIC. |
+| TRIAL   | 20.000 COP       | Badge violeta `#6366f1`. Independiente de BASIC. |
 | BASIC   | $150.000 COP/mes | 5 productos, 400 generaciones/mes                |
 | PRO     | $250.000 COP/mes | 15 productos, 1.200 generaciones/mes             |
 | LANDING | Pago único       | Mini-landing personalizada                       |
