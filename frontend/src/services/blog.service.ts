@@ -62,6 +62,18 @@ export function getBlogFeaturedImage(
   return post.featured_image || extractFirstImageFromContent(post.content);
 }
 
+export function getBlogShareImage(
+  post?: {
+    featured_image?: string | null;
+    content?: string | null;
+  } | null,
+): string | null {
+  const image = getBlogFeaturedImage(post);
+  if (!image) return null;
+
+  return `${appBaseUrl}/api/blog/social-image?src=${encodeURIComponent(image)}`;
+}
+
 export async function fetchBlogCategories(): Promise<BlogCategory[]> {
   try {
     const response = await fetch('/api/blog/categories');
