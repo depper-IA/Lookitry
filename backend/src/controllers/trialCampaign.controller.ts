@@ -2,10 +2,10 @@ import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 
 /**
- * Gestión de campañas de trial gratuito.
+ * Gestion de campanas de trial.
  *
- * Una campaña activa permite que nuevos registros reciban 7 días de trial.
- * Sin campaña activa, el registro crea la cuenta sin trial (pago desde el día 1).
+ * Una campana activa define los dias, precio y condiciones del trial.
+ * Si el precio es mayor a cero, el trial se activa via pago por prueba.
  *
  * Además se registra IP + fingerprint para evitar abuso de múltiples trials.
  */
@@ -154,15 +154,23 @@ export const getTrialStatus = async (_req: Request, res: Response) => {
     const campaign = await getActiveCampaign();
 
     return res.json({
+      active: !!campaign,
       trialAvailable: !!campaign,
       trialDays: campaign?.trial_days ?? 0,
       priceCOP: campaign?.price_cop ?? 0,
       campaignName: campaign?.name ?? null,
       endsAt: campaign?.ends_at ?? null,
+      requiresTrialPayment: Number(campaign?.price_cop ?? 0) > 0 && campaign?.require_card_verification !== false,
     });
   } catch (err: any) {
     console.error('[TrialCampaign] getTrialStatus:', err);
-    // En caso de error, asumir que no hay trial disponible
-    return res.json({ trialAvailable: false, trialDays: 0, campaignName: null, endsAt: null });
+    return res.json({
+      active: false,
+      trialAvailable: false,
+      trialDays: 0,
+      campaignName: null,
+      endsAt: null,
+      requiresTrialPayment: false,
+    });
   }
 };

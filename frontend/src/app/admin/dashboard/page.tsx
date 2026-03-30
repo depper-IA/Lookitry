@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, TrendingUp, UserCheck, BarChart2, Image, Package, Globe, PauseCircle, MinusCircle } from 'lucide-react';
+import { Users, TrendingUp, UserCheck, BarChart2, Image, Package, Globe, PauseCircle, MinusCircle, CreditCard, Building2 } from 'lucide-react';
 
 interface GlobalStats {
   totalBrands: number; totalProducts: number; totalGenerations: number;
@@ -9,7 +9,7 @@ interface GlobalStats {
   landingStats: { active: number; suspended: number; inactive: number };
 }
 interface ConversionStats {
-  totalBrands: number; inTrial: number; converted: number; conversionRate: number;
+  totalBrands: number; inTrial: number; paidTrials: number; trialToBasic: number; trialToPro: number; trialToEnterprise: number; converted: number; conversionRate: number;
   conversionsByMonth: { month: string; count: number }[];
 }
 
@@ -24,10 +24,10 @@ function formatMonth(key: string) {
 }
 
 export default function AdminDashboardPage() {
-  const [global, setGlobal]       = useState<GlobalStats | null>(null);
+  const [global, setGlobal] = useState<GlobalStats | null>(null);
   const [conversion, setConversion] = useState<ConversionStats | null>(null);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -59,36 +59,30 @@ export default function AdminDashboardPage() {
   const maxCount = Math.max(...conversion.conversionsByMonth.map(m => m.count), 1);
 
   const topCards = [
-    { label: 'Total marcas',         value: global.totalBrands,               icon: <Users className="w-4 h-4" />,      accent: '#3b82f6' },
-    { label: 'Productos activos',     value: global.totalProducts,             icon: <Package className="w-4 h-4" />,    accent: '#10b981' },
-    { label: 'Generaciones totales',  value: global.totalGenerations,          icon: <Image className="w-4 h-4" />,      accent: '#8b5cf6' },
-    { label: 'Generaciones este mes', value: global.generationsThisMonth,      icon: <BarChart2 className="w-4 h-4" />,  accent: '#FF5C3A' },
-    { label: 'En período de prueba',  value: conversion.inTrial,               icon: <BarChart2 className="w-4 h-4" />,  accent: '#f59e0b' },
-    { label: 'Convertidas a pago',    value: conversion.converted,             icon: <UserCheck className="w-4 h-4" />,  accent: '#14b8a6' },
-    { label: 'Tasa de conversión',    value: `${conversion.conversionRate}%`,  icon: <TrendingUp className="w-4 h-4" />, accent: '#6366f1' },
-    { label: 'Tasa de éxito IA',      value: `${Math.round(global.successRate)}%`, icon: <TrendingUp className="w-4 h-4" />, accent: '#ec4899' },
+    { label: 'Total marcas', value: global.totalBrands, icon: <Users className="w-4 h-4" />, accent: '#3b82f6' },
+    { label: 'Productos activos', value: global.totalProducts, icon: <Package className="w-4 h-4" />, accent: '#10b981' },
+    { label: 'Generaciones totales', value: global.totalGenerations, icon: <Image className="w-4 h-4" />, accent: '#8b5cf6' },
+    { label: 'Generaciones este mes', value: global.generationsThisMonth, icon: <BarChart2 className="w-4 h-4" />, accent: '#FF5C3A' },
+    { label: 'Trials activos', value: conversion.inTrial, icon: <BarChart2 className="w-4 h-4" />, accent: '#f59e0b' },
+    { label: 'Trials pagados', value: conversion.paidTrials, icon: <CreditCard className="w-4 h-4" />, accent: '#f97316' },
+    { label: 'Trial -> Basic', value: conversion.trialToBasic, icon: <TrendingUp className="w-4 h-4" />, accent: '#0ea5e9' },
+    { label: 'Trial -> Pro', value: conversion.trialToPro, icon: <TrendingUp className="w-4 h-4" />, accent: '#22c55e' },
+    { label: 'Trial -> Enterprise', value: conversion.trialToEnterprise, icon: <Building2 className="w-4 h-4" />, accent: '#6366f1' },
+    { label: 'Convertidas a pago', value: conversion.converted, icon: <UserCheck className="w-4 h-4" />, accent: '#14b8a6' },
+    { label: 'Tasa de conversión', value: `${conversion.conversionRate}%`, icon: <TrendingUp className="w-4 h-4" />, accent: '#6366f1' },
+    { label: 'Tasa de éxito IA', value: `${Math.round(global.successRate)}%`, icon: <TrendingUp className="w-4 h-4" />, accent: '#ec4899' },
   ];
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
       <div>
         <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Métricas globales y seguimiento de conversiones</p>
       </div>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {topCards.map(c => (
-          <div
-            key={c.label}
-            className="rounded-[1.5rem] p-5 transition-all duration-200"
-            style={{
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderLeft: '3px solid #FF5C3A',
-            }}
-          >
+          <div key={c.label} className="rounded-[1.5rem] p-5 transition-all duration-200" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '3px solid #FF5C3A' }}>
             <div className="flex items-start justify-between mb-3">
               <p className="text-xs leading-snug pr-2" style={{ color: 'var(--text-secondary)' }}>{c.label}</p>
               <div className="flex-shrink-0 mt-0.5" style={{ color: c.accent }}>{c.icon}</div>
@@ -98,15 +92,13 @@ export default function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Distribution + chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Plan distribution */}
         <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <h2 className="font-jakarta font-bold text-sm mb-5" style={{ color: 'var(--text-primary)' }}>Distribución por plan</h2>
           <div className="space-y-4">
             {[
               { label: 'Plan Basic', count: global.brandsByPlan.BASIC, color: '#64748b' },
-              { label: 'Plan Pro',   count: global.brandsByPlan.PRO,   color: '#FF5C3A' },
+              { label: 'Plan Pro', count: global.brandsByPlan.PRO, color: '#FF5C3A' },
               { label: 'Plan Trial', count: global.brandsByPlan.TRIAL, color: '#f59e0b' },
             ].map(p => {
               const pct = global.totalBrands > 0 ? Math.round((p.count / global.totalBrands) * 100) : 0;
@@ -133,10 +125,9 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Conversions chart */}
         <div className="lg:col-span-2 rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <h2 className="font-jakarta font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Conversiones por mes</h2>
-          <p className="text-xs mb-5 mt-0.5" style={{ color: 'var(--text-secondary)' }}>Marcas que pasaron a suscripción activa</p>
+          <p className="text-xs mb-5 mt-0.5" style={{ color: 'var(--text-secondary)' }}>Cambios desde trial a planes superiores</p>
           <div className="flex items-end gap-2 h-36">
             {conversion.conversionsByMonth.map(m => {
               const heightPct = (m.count / maxCount) * 100;
@@ -146,10 +137,7 @@ export default function AdminDashboardPage() {
                     {m.count > 0 ? m.count : ''}
                   </span>
                   <div className="w-full rounded-t relative" style={{ height: '100px', backgroundColor: 'var(--border-color)' }}>
-                    <div
-                      className="absolute bottom-0 left-0 right-0 rounded-t transition-all duration-700"
-                      style={{ height: `${heightPct}%`, backgroundColor: '#FF5C3A', opacity: heightPct > 0 ? 1 : 0 }}
-                    />
+                    <div className="absolute bottom-0 left-0 right-0 rounded-t transition-all duration-700" style={{ height: `${heightPct}%`, backgroundColor: '#FF5C3A', opacity: heightPct > 0 ? 1 : 0 }} />
                   </div>
                   <span className="text-[10px] whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{formatMonth(m.month)}</span>
                 </div>
@@ -162,21 +150,16 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Mini-landings */}
       {global.landingStats && (
         <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <h2 className="font-jakarta font-bold tracking-tight text-sm mb-4" style={{ color: 'var(--text-primary)' }}>Mini-landings</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { label: 'Activas',     value: global.landingStats.active,    icon: <Globe className="w-4 h-4" />,       accent: '#10b981' },
+              { label: 'Activas', value: global.landingStats.active, icon: <Globe className="w-4 h-4" />, accent: '#10b981' },
               { label: 'Suspendidas', value: global.landingStats.suspended, icon: <PauseCircle className="w-4 h-4" />, accent: '#f59e0b' },
-              { label: 'Sin activar', value: global.landingStats.inactive,  icon: <MinusCircle className="w-4 h-4" />, accent: '#64748b' },
+              { label: 'Sin activar', value: global.landingStats.inactive, icon: <MinusCircle className="w-4 h-4" />, accent: '#64748b' },
             ].map(c => (
-              <div
-                key={c.label}
-                className="rounded-lg p-4 flex items-center gap-3"
-                style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-color)', borderLeft: `3px solid ${c.accent}` }}
-              >
+              <div key={c.label} className="rounded-lg p-4 flex items-center gap-3" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-color)', borderLeft: `3px solid ${c.accent}` }}>
                 <div style={{ color: c.accent }}>{c.icon}</div>
                 <div>
                   <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{c.label}</p>
@@ -188,7 +171,6 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      {/* Monthly detail table */}
       <div className="rounded-[2rem] overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
           <h2 className="font-jakarta font-bold tracking-tight text-sm" style={{ color: 'var(--text-primary)' }}>Detalle mensual de conversiones</h2>
@@ -205,9 +187,7 @@ export default function AdminDashboardPage() {
               {[...conversion.conversionsByMonth].reverse().map((m) => (
                 <tr key={m.month} style={{ borderTop: '1px solid var(--border-color)' }}>
                   <td className="px-5 py-3 capitalize" style={{ color: 'var(--text-secondary)' }}>{formatMonth(m.month)}</td>
-                  <td className="px-5 py-3 text-right font-semibold tabular-nums" style={{ color: m.count > 0 ? '#FF5C3A' : 'var(--text-muted)' }}>
-                    {m.count}
-                  </td>
+                  <td className="px-5 py-3 text-right font-semibold tabular-nums" style={{ color: m.count > 0 ? '#FF5C3A' : 'var(--text-muted)' }}>{m.count}</td>
                 </tr>
               ))}
             </tbody>

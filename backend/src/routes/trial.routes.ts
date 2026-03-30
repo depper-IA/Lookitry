@@ -24,15 +24,25 @@ router.get('/status', asyncHandler(async (req, res) => {
     .single();
 
   if (!data) {
-    return res.json({ trialAvailable: false, trialDays: 0, campaignName: null, endsAt: null, requireCardVerification: false, priceCOP: 0 });
+    return res.json({
+      active: false,
+      trialAvailable: false,
+      trialDays: 0,
+      campaignName: null,
+      endsAt: null,
+      requiresTrialPayment: false,
+      priceCOP: 0,
+    });
   }
+  const requiresTrialPayment = Number(data.price_cop ?? 0) > 0 && data.require_card_verification !== false;
   return res.json({
+    active: true,
     trialAvailable: true,
     trialDays: data.trial_days,
     priceCOP: data.price_cop ?? 20000,
     campaignName: data.name ?? null,
     endsAt: data.ends_at ?? null,
-    requireCardVerification: data.require_card_verification === true,
+    requiresTrialPayment,
   });
 }));
 
@@ -62,7 +72,7 @@ router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
 
   const price = campaign?.price_cop ?? 20000;
 
-  // 2. Si el costo es 0 (o require_card_verification=false), activar trial directamente
+  // 2. Si la campana no requiere pago por prueba, activar trial directamente
   if (price === 0 || campaign?.require_card_verification === false) {
     await supabaseAdmin
       .from('brands')
