@@ -35,7 +35,10 @@ describe('subscription-display', () => {
       subscriptionEndDate: '2026-05-02T12:00:00.000Z',
     });
 
-    expect(hasActivePaidSubscription({ subscriptionStatus: 'active' })).toBe(true);
+    expect(hasActivePaidSubscription({
+      subscriptionStatus: 'active',
+      trialEndDate: '2026-04-02T12:00:00.000Z',
+    })).toBe(false);
     expect(isTrialBrand({
       plan: 'BASIC',
       trialEndDate: '2026-04-02T12:00:00.000Z',

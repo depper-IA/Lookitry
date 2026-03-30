@@ -14,6 +14,7 @@ import { formatCurrency, formatPrice } from '@/utils/currency';
 import { Spinner } from '@/components/ui/Spinner';
 import type { PlanType } from '@/types';
 import type { WompiWidgetResult } from '@/types/wompi';
+import { hasActivePaidSubscription, isTrialBrand } from '@/lib/subscription-display';
 
 type CheckoutPlan = Exclude<PlanType, 'ENTERPRISE'>;
 
@@ -290,9 +291,9 @@ function CheckoutContent() {
   const [applyingFreeUpgrade, setApplyingFreeUpgrade] = useState(false);
 
   // Lógica de suscripción
-  const isUpgrade   = hasActiveSub && currentPlan?.toUpperCase() === 'BASIC' && selectedPlan.toUpperCase() === 'PRO';
-  const isDowngrade = hasActiveSub && currentPlan?.toUpperCase() === 'PRO'   && selectedPlan.toUpperCase() === 'BASIC';
-  const isRenewal   = hasActiveSub && currentPlan?.toUpperCase() === selectedPlan.toUpperCase();
+  const isUpgrade = hasActiveSub && currentPlan?.toUpperCase() === 'BASIC' && selectedPlan.toUpperCase() === 'PRO';
+  const isDowngrade = hasActiveSub && currentPlan?.toUpperCase() === 'PRO' && selectedPlan.toUpperCase() === 'BASIC';
+  const isRenewal = hasActiveSub && currentPlan?.toUpperCase() === selectedPlan.toUpperCase();
 
   const monthDiscount = monthDiscounts.find(d => d.months === selectedMonths) ?? monthDiscounts[0];
   const planTotal  = Math.round(planInfo[selectedPlan].price * selectedMonths * (1 - monthDiscount.pct / 100));
@@ -331,11 +332,17 @@ function CheckoutContent() {
   useEffect(() => {
     subscriptionService.getSubscriptionInfo().then((info) => {
       if (info) {
+        const brandSubscriptionState = {
+          plan: info.plan,
+          subscriptionStatus: info.status,
+          trialEndDate: info.trialEndDate,
+        };
+
         setCurrentPlan(info.plan === 'PRO' ? 'PRO' : info.plan === 'BASIC' ? 'BASIC' : null);
-        setHasActiveSub(info.status === 'active' || info.status === 'expiring_soon');
+        setHasActiveSub(hasActivePaidSubscription(brandSubscriptionState));
         setHasLandingPage(info.hasLandingPage);
         setDaysRemaining(info.daysRemaining);
-        setIsOperationalTrial(Boolean((info as any).isInTrial));
+        setIsOperationalTrial(isTrialBrand(brandSubscriptionState));
       }
       setLoadingInfo(false);
     });

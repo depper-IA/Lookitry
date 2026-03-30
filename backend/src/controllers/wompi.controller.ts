@@ -7,7 +7,7 @@ import { NotificationService } from '../services/notification.service';
 import { addonCreditsService } from '../services/addonCredits.service';
 import { supabaseAdmin } from '../config/supabase';
 import { verifyEmailTemplate } from '../templates/email-templates';
-import { isTrialLandingBlocked } from '../utils/brandLifecycle';
+import { hasActivePaidSubscription, isTrialLandingBlocked } from '../utils/brandLifecycle';
 
 const subscriptionService = new SubscriptionService();
 const emailService = new EmailService();
@@ -144,8 +144,11 @@ export class WompiController {
             await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
           }
         } else {
-          const { data: currentBrand } = await supabaseAdmin.from('brands').select('plan, name').eq('id', brandId).single();
-          const isActualUpgrade = currentBrand?.plan === 'BASIC' && effectivePlan === 'PRO';
+          const { data: currentBrand } = await supabaseAdmin.from('brands').select('plan, name, subscription_status, trial_end_date').eq('id', brandId).single();
+          const isActualUpgrade =
+            hasActivePaidSubscription(currentBrand) &&
+            currentBrand?.plan === 'BASIC' &&
+            effectivePlan === 'PRO';
           
           await subscriptionService.renewSubscription(
             brandId,
@@ -225,11 +228,27 @@ export class WompiController {
         res.status(401).json({ error: 'No autenticado' });
         return;
       }
-      const { newPlan, newMonths, creditAmount, newPlanTotal } = req.body;
+      const { newPlan, newMonths, creditAmount, newPlanTotal, forcedEndDate } = req.body;
       if (!newPlan || !newMonths || creditAmount === undefined || newPlanTotal === undefined) {
         res.status(400).json({ error: 'Faltan parámetros' });
         return;
       }
+      const { data: currentBrand } = await supabaseAdmin
+        .from('brands')
+        .select('plan, subscription_status, trial_end_date')
+        .eq('id', brand.id)
+        .single();
+
+      const isActualUpgrade =
+        hasActivePaidSubscription(currentBrand) &&
+        currentBrand?.plan === 'BASIC' &&
+        String(newPlan).toUpperCase() === 'PRO';
+
+      if (!isActualUpgrade) {
+        res.status(400).json({ error: 'FREE_UPGRADE_NOT_ALLOWED' });
+        return;
+      }
+
       const reference = `FREE-UPGRADE-${brand.id}-${Date.now()}`;
       const updatedBrand = await subscriptionService.applyFreeUpgrade(
         brand.id,
@@ -237,7 +256,8 @@ export class WompiController {
         parseInt(newMonths as string, 10),
         parseFloat(creditAmount),
         parseFloat(newPlanTotal),
-        reference
+        reference,
+        forcedEndDate
       );
       res.json({ success: true, brand: updatedBrand });
     } catch (error) {
@@ -283,7 +303,7 @@ export class WompiController {
           },
           monthsNum,
           effectivePlan,
-          currentBrand.plan === 'BASIC' && effectivePlan === 'PRO'
+          hasActivePaidSubscription(currentBrand) && currentBrand.plan === 'BASIC' && effectivePlan === 'PRO'
         );
       }
 
@@ -318,8 +338,8 @@ export class WompiController {
         : await pricingService.calculateExternalCheckoutTotal(planStr, monthsNum, isLandingPurchase);
 
       if (brand?.id && planStr === 'PRO') {
-        const { data: b } = await supabaseAdmin.from('brands').select('plan').eq('id', brand.id).single();
-        if (b?.plan === 'BASIC') {
+        const { data: b } = await supabaseAdmin.from('brands').select('plan, subscription_status, trial_end_date').eq('id', brand.id).single();
+        if (hasActivePaidSubscription(b) && b?.plan === 'BASIC') {
           const configRows = await pricingService.getPricingConfig();
           const basicPrice = configRows.find(c => c.id.toLowerCase() === 'basic')?.data?.precio_mensual_cop || 150000;
           const proPrice = configRows.find(c => c.id.toLowerCase() === 'pro')?.data?.precio_mensual_cop || 250000;
@@ -379,8 +399,8 @@ export class WompiController {
         : await pricingService.calculateExternalCheckoutTotal(planStr, monthsNum, isLandingPurchase);
 
       if (brand?.id && planStr === 'PRO') {
-        const { data: b } = await supabaseAdmin.from('brands').select('plan').eq('id', brand.id).single();
-        if (b?.plan === 'BASIC') {
+        const { data: b } = await supabaseAdmin.from('brands').select('plan, subscription_status, trial_end_date').eq('id', brand.id).single();
+        if (hasActivePaidSubscription(b) && b?.plan === 'BASIC') {
           const configRows = await pricingService.getPricingConfig();
           const basicPrice = configRows.find(c => c.id.toLowerCase() === 'basic')?.data?.precio_mensual_cop || 150000;
           const proPrice = configRows.find(c => c.id.toLowerCase() === 'pro')?.data?.precio_mensual_cop || 250000;
