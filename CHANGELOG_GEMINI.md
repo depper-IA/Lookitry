@@ -1857,3 +1857,22 @@ Garantizar que futuros agentes de IA tengan un contexto técnico limpio, actuali
 **Motivo:**
 
 - El repositorio necesitaba un punto de entrada profesional y completo que facilitara el onboarding de nuevos desarrolladores (o agentes de IA) y presentara adecuadamente el proyecto SaaS B2B.
+
+## 30 de Marzo, 2026 - README Confidencial y Correcciones Arquitectónicas
+
+**Objetivo:**
+
+- Modificar el `README.md` para proteger la privacidad del código fuente, corregir errores de sintaxis en el diagrama de arquitectura y aplicar las reglas de marca estrictas de Lookitry.
+
+**Cambios aplicados:**
+
+- **Raíz (`README.md`):**
+  - Se eliminaron por completo las instrucciones de instalación, clonación y configuración de variables de entorno para evitar facilitar la replicación externa del proyecto.
+  - Se añadió una sección prominente ("Repositorio Privado y Confidencial") advirtiendo que el código no está a la venta y es solo para visualización interna de la estructura técnica.
+  - Se corrigió el diagrama Mermaid de arquitectura (añadiendo comillas a los nodos con espacios/caracteres especiales) para resolver los errores de renderizado.
+  - Se actualizó la marca en todo el documento para utilizar el formato oficial `Look<span style="color:#FF5C3A">itry</span>` y se ajustó la posición/tamaño del logotipo principal según las guías estéticas de `REGLAS_IMPORTANTES.md`.
+  - Se removieron URLs y nombres de host específicos de las integraciones de IA y bases de datos para mantener los detalles de infraestructura ocultos.
+
+**Motivo:**
+
+- El repositorio es estrictamente privado ("es mi bebé"). El README anterior exponía demasiada información operativa. Ahora cumple con el propósito de documentar el alto nivel técnico para el equipo interno, sin exponer las llaves del reino ni facilitar el robo de propiedad intelectual.
