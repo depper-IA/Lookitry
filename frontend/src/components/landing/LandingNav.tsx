@@ -13,6 +13,7 @@ interface LandingNavProps {
 
 export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
   const [trialActive, setTrialActive] = useState(false);
+  const [ctaReady, setCtaReady] = useState(false); // evita parpadeo del botón
   const [session, setSession] = useState<{ name: string; email: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
@@ -24,11 +25,20 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
     if (saved) setCurrency(saved);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    if (!apiUrl) return;
+    if (!apiUrl) {
+      setCtaReady(true);
+      return;
+    }
     fetch(`${apiUrl}/api/trial/status`)
       .then(r => r.json())
-      .then(d => setTrialActive(d.trialAvailable === true || d.active === true))
-      .catch(() => setTrialActive(false));
+      .then(d => {
+        setTrialActive(d.trialAvailable === true || d.active === true);
+        setCtaReady(true);
+      })
+      .catch(() => {
+        setTrialActive(false);
+        setCtaReady(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -70,7 +80,8 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
   }
 
   const resolvedCtaHref = ctaHref ?? (trialActive ? '/register' : '/planes');
-  const resolvedCtaLabel = ctaLabel ?? (trialActive ? 'Prueba $20.000' : 'Contratar ahora');
+  // Copy de alto impacto: genera urgencia y curiosidad sin mencionar precio en modo no-trial
+  const resolvedCtaLabel = ctaLabel ?? (trialActive ? '✦ Empieza hoy — $20.000' : 'Ver planes →');
 
   const initials = session?.name
     ? session.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
@@ -180,8 +191,11 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
           </Link>
         )}
 
-        {!session && (
-          <Link href={resolvedCtaHref} className="hidden sm:block text-[13px] font-medium bg-[#FF5C3A] hover:bg-[#e84d2c] text-white px-3 md:px-4 py-1.5 rounded-md transition-colors">
+        {!session && ctaReady && (
+          <Link
+            href={resolvedCtaHref}
+            className="hidden sm:flex items-center gap-1.5 text-[13px] font-semibold bg-[#FF5C3A] hover:bg-[#e84d2c] active:scale-95 text-white px-4 py-1.5 rounded-md transition-all duration-150"
+          >
             {resolvedCtaLabel}
           </Link>
         )}
