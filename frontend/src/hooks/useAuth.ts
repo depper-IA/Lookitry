@@ -86,10 +86,10 @@ export function useAuth() {
     }
   };
 
-  const logout = () => {
-    authService.logout();
+  const logout = async () => {
+    await authService.logout();
     setBrand(null);
-    router.push('/login');
+    window.location.href = '/login';
   };
 
   const refreshBrand = async () => {

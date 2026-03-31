@@ -399,8 +399,8 @@ function CheckoutContent() {
     }
   };
 
-  const handleLogoutAndGoToTrial = () => {
-    authService.logout();
+  const handleLogoutAndGoToTrial = async () => {
+    await authService.logout();
     clearCheckoutDraft(CHECKOUT_DRAFT_KEY);
     window.location.href = '/trial-checkout';
   };

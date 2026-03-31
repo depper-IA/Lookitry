@@ -538,7 +538,11 @@ export class WompiController {
         successPath = `/registro-pro?ref=${reference}`;
       }
 
-      const checkoutUrl = await wompiService.getCheckoutUrl(brandId, amountCOP, `${frontendUrl}${successPath}`, false, monthsNum, planStr, reference);
+      let productName = `Plan ${planStr} Lookitry`;
+      if (planStr === 'NONE') productName = `Mini-Landing Lookitry (Pago único)`;
+      if (isLandingPurchase && planStr !== 'NONE') productName += ` + Mini-Landing`;
+
+      const checkoutUrl = await wompiService.getCheckoutUrl(brandId, amountCOP, `${frontendUrl}${successPath}`, false, monthsNum, planStr, reference, productName);
       
       if (brand?.id && planStr === 'PRO') {
         const { data: currentBrand } = await supabaseAdmin.from('brands').select('plan, subscription_status, trial_end_date').eq('id', brand.id).single();
