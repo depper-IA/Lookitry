@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
+import { StepProgress } from '@/components/payments/StepProgress';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -86,6 +87,7 @@ function RegistroProContent() {
     name: '',
     slug: '',
     password: '',
+    confirmPassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -268,7 +270,8 @@ function RegistroProContent() {
     if (!form.contact_name.trim() || form.contact_name.trim().length < 3) e.contact_name = 'Mínimo 3 caracteres';
     if (!form.name.trim() || form.name.trim().length < 2) e.name = 'Mínimo 2 caracteres';
     if (!/^[a-z0-9-]{3,}$/.test(form.slug)) e.slug = 'Solo minúsculas, números y guiones (mín. 3 caracteres)';
-    if (form.password.length < 6) e.password = 'Mínimo 6 caracteres';
+    if (form.password.length < 8) e.password = 'La contraseña debe tener al menos 8 caracteres';
+    if (form.password !== form.confirmPassword) e.confirmPassword = 'Las contraseñas no coinciden';
     if (showAltEmail) {
       if (!altEmail.trim()) { setAltEmailError('Ingresa el correo electrónico'); return false; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(altEmail.trim())) { setAltEmailError('Formato de correo inválido'); return false; }
@@ -332,11 +335,16 @@ function RegistroProContent() {
           </Link>
         </div>
 
+        {/* Progress Bar (Step 4: Activation) */}
+        <div className="mb-12">
+          <StepProgress currentStep={4} />
+        </div>
+
         <Alert 
           type="success"
-          title="Pago recibido correctamente"
-          message={`Crea tu cuenta para activar tu Plan ${pendingData ? pendingData.plan : 'Pro'} por ${pendingData ? pendingData.months : months} ${(!pendingData && months === 1) || pendingData?.months === 1 ? 'mes' : 'meses'}${pendingData?.includes_landing ? ' + Mini-landing' : ''}.`}
-          className="mb-6"
+          title="Pago validado correctamente"
+          message={`Tu cuenta está lista para ser activada. Completa estos datos finales para activar tu Plan ${pendingData ? pendingData.plan : 'Pro'} por ${pendingData ? pendingData.months : months} ${(!pendingData && months === 1) || pendingData?.months === 1 ? 'mes' : 'meses'}${pendingData?.includes_landing ? ' + Mini-landing' : ''}.`}
+          className="mb-6 shadow-[0_0_20px_rgba(34,197,94,0.1)] border-green-500/20"
         />
 
         {pendingData?.status && pendingData.status !== 'paid' && pendingData.status !== 'used' && (
@@ -375,7 +383,13 @@ function RegistroProContent() {
             </button>
             {pendingData?.status && (
               <span className="text-[10px] text-white/30 font-mono uppercase tracking-widest">
-                Estado: {String(pendingData.status)}
+                Estado: {{
+                  'paid': 'Pagado',
+                  'confirmed': 'Confirmado',
+                  'used': 'Completado',
+                  'expired': 'Expirado',
+                  'pending_activation': 'Pendiente de activación'
+                }[pendingData.status] || pendingData.status}
               </span>
             )}
           </div>
@@ -434,22 +448,36 @@ function RegistroProContent() {
               <p className="text-[10px] text-[#444] mt-2 italic">Podrás cambiarlo después desde tu panel.</p>
             </div>
 
-            <div>
-              <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">Contraseña</label>
-              <div className="relative">
-                <input
-                  name="password" type={showPassword ? 'text' : 'password'} value={form.password}
-                  onChange={handleChange} placeholder="Mínimo 6 caracteres" required minLength={6}
-                  className={`w-full bg-[#0d0d0d] border ${errors.password ? 'border-red-500/50' : 'border-[#222]'} rounded-xl px-4 py-3 pr-12 text-[14px] text-white placeholder-[#2a2a2a] focus:outline-none focus:border-[#FF5C3A] transition-all`}
-                />
-                <button
-                  type="button" onClick={() => setShowPassword(v => !v)} tabIndex={-1}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#FF5C3A] transition-colors"
-                >
-                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">Contraseña</label>
+                <div className="relative">
+                  <input
+                    name="password" type={showPassword ? 'text' : 'password'} value={form.password}
+                    onChange={handleChange} placeholder="8+ caracteres" required minLength={8}
+                    className={`w-full bg-[#0d0d0d] border ${errors.password ? 'border-red-500/50' : 'border-[#222]'} rounded-xl px-4 py-3 pr-12 text-[14px] text-white placeholder-[#2a2a2a] focus:outline-none focus:border-[#FF5C3A] transition-all`}
+                  />
+                  <button
+                    type="button" onClick={() => setShowPassword(v => !v)} tabIndex={-1}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#FF5C3A] transition-colors"
+                  >
+                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                  </button>
+                </div>
+                {errors.password && <p className="text-[11px] text-red-500 mt-1.5">{errors.password}</p>}
               </div>
-              {errors.password && <p className="text-[11px] text-red-500 mt-1.5">{errors.password}</p>}
+
+              <div>
+                <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">Confirmar</label>
+                <div className="relative">
+                  <input
+                    name="confirmPassword" type={showPassword ? 'text' : 'password'} value={form.confirmPassword}
+                    onChange={handleChange} placeholder="Repite contraseña" required minLength={8}
+                    className={`w-full bg-[#0d0d0d] border ${errors.confirmPassword ? 'border-red-500/50' : 'border-[#222]'} rounded-xl px-4 py-3 pr-12 text-[14px] text-white placeholder-[#2a2a2a] focus:outline-none focus:border-[#FF5C3A] transition-all`}
+                  />
+                </div>
+                {errors.confirmPassword && <p className="text-[11px] text-red-500 mt-1.5">{errors.confirmPassword}</p>}
+              </div>
             </div>
 
             <button
@@ -471,7 +499,7 @@ function RegistroProContent() {
         {ref && (
           <div className="mt-8 text-center">
             <span className="inline-block px-3 py-1 bg-[#111] rounded-full border border-[#222] text-[10px] text-[#444] font-mono tracking-widest uppercase">
-              Ref: {ref}
+              Código de activación: {ref}
             </span>
           </div>
         )}

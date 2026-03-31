@@ -26,14 +26,10 @@ export class WompiController {
         ? req.body.toString('utf8')
         : (typeof req.body === 'object' ? JSON.stringify(req.body) : String(req.body));
 
-      // --- LOG DE SEGURIDAD (Redactado) ---
       console.log(`[Wompi Webhook] Recibido. Checksum: ${checksum || 'NINGUNO'}. Body length: ${rawBody.length}`);
-      // -------------------------
-
 
       const firmaValida = await wompiService.verifyWebhookSignature(rawBody, checksum);
 
-      
       if (!checksum || !firmaValida) {
         console.warn(`[Wompi] Firma inválida detectada para checksum: ${checksum}`);
         res.status(401).json({ error: 'Firma inválida' });
@@ -111,11 +107,9 @@ export class WompiController {
           .single();
 
         if (updatedBrand) {
-          // 1. Siempre enviar confirmación/bienvenida de trial
           notificationService.sendWelcomeEmail(updatedBrand as any, true)
             .catch(err => console.error('[Wompi] Error email bienvenida trial:', err));
 
-          // 2. Si no está verificado, enviar también el link de verificación
           if (!updatedBrand.email_verified && updatedBrand.email_verification_token) {
             const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
             const verifyUrl = `${frontendUrl}/auth/verify?token=${updatedBrand.email_verification_token}`;
@@ -208,10 +202,7 @@ export class WompiController {
       res.status(200).json({ received: true });
     } catch (error) {
       console.error('[Wompi] Error procesando webhook:', error);
-      // BUG #5 FIX: Registrar notificación admin para que el equipo pueda reactivar manualmente
-      // si el webhook falló pero el pago fue cobrado en Wompi.
       try {
-        const { supabaseAdmin } = await import('../config/supabase');
         await supabaseAdmin.from('admin_notifications').insert({
           type: 'webhook_error',
           title: '⚠️ Error en webhook de Wompi',
@@ -325,23 +316,51 @@ export class WompiController {
   async freeCheckout(req: Request, res: Response): Promise<void> {
     try {
       const brand = (req as any).brand;
+      const { plan, months, includes_landing, reference: reqRef, email } = req.body;
+      
+      const effectivePlan = (plan === 'LANDING' ? 'BASIC' : plan).toUpperCase();
+      const parsedMonths = Number.parseInt(months as string, 10);
+      const monthsNum = Number.isNaN(parsedMonths) ? 1 : parsedMonths;
+
       if (!brand?.id) {
-        res.status(401).json({ error: 'No autenticado' });
+        if (!email) {
+          res.status(401).json({ error: 'No autenticado ni email proporcionado' });
+          return;
+        }
+
+        const ref = reqRef || `FREE-visitor-${Date.now()}`;
+        
+        const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({ 
+          email, 
+          reference: ref, 
+          plan: effectivePlan, 
+          months: monthsNum, 
+          amount: 0,
+          includes_landing: !!includes_landing,
+          status: 'paid',
+        });
+
+        if (insertError) {
+          console.error('[Wompi] Error al insertar registro pendiente gratuito:', insertError);
+          res.status(500).json({ error: 'Error al procesar registro gratuito' });
+          return;
+        }
+
+        res.json({ success: true, isVisitor: true, reference: ref });
         return;
       }
-      const { plan, months, includes_landing, reference: reqRef } = req.body;
+
       const { data: currentBrand } = await supabaseAdmin.from('brands').select('*').eq('id', brand.id).single();
       if (!currentBrand) {
         res.status(404).json({ error: 'Marca no encontrada' });
         return;
       }
-      const effectivePlan = (plan === 'LANDING' ? 'BASIC' : plan).toUpperCase();
+
       if (includes_landing && isTrialLandingBlocked(currentBrand) && effectivePlan === 'NONE') {
         res.status(403).json({ error: 'TRIAL_LANDING_BLOCKED', message: 'La mini-landing requiere primero activar un plan pago.' });
         return;
       }
-      const parsedMonths = Number.parseInt(months as string, 10);
-      const monthsNum = Number.isNaN(parsedMonths) ? 1 : parsedMonths;
+
       const ref = reqRef || `FREE-${brand.id}-${Date.now()}`;
 
       if (effectivePlan !== 'NONE') {
@@ -367,6 +386,7 @@ export class WompiController {
       if (includes_landing) {
         await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brand.id);
       }
+      
       const { data: updatedBrand } = await supabaseAdmin.from('brands').select('*').eq('id', brand.id).single();
       res.json({ success: true, brand: updatedBrand });
     } catch (error) {
@@ -382,6 +402,7 @@ export class WompiController {
       const planStr = (plan as string)?.toUpperCase() || 'BASIC';
       const monthsNum = months ? parseInt(months as string, 10) : 1;
       const isLandingPurchase = (req.query.includes_landing as string) === 'true';
+
       if (brand?.id && isLandingPurchase && planStr === 'NONE') {
         const { data: currentBrand } = await supabaseAdmin.from('brands').select('*').eq('id', brand.id).single();
         if (currentBrand && isTrialLandingBlocked(currentBrand)) {
@@ -440,6 +461,7 @@ export class WompiController {
       const monthsNum = months ? parseInt(months as string, 10) : 1;
       const planStr = (plan as string)?.toUpperCase() || 'BASIC';
       const isLandingPurchase = (req.query.includes_landing as string) === 'true';
+
       if (brand?.id && isLandingPurchase && planStr === 'NONE') {
         const { data: currentBrand } = await supabaseAdmin.from('brands').select('*').eq('id', brand.id).single();
         if (currentBrand && isTrialLandingBlocked(currentBrand)) {
@@ -491,6 +513,7 @@ export class WompiController {
       }
 
       const checkoutUrl = await wompiService.getCheckoutUrl(brandId, amountCOP, `${frontendUrl}${successPath}`, false, monthsNum, planStr, reference);
+      
       if (brand?.id && planStr === 'PRO') {
         const { data: currentBrand } = await supabaseAdmin.from('brands').select('plan, subscription_status, trial_end_date').eq('id', brand.id).single();
         if (hasActivePaidSubscription(currentBrand) && currentBrand?.plan === 'BASIC') {

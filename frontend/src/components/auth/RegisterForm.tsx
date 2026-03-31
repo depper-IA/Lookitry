@@ -4,25 +4,19 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-
-function EyeIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-    </svg>
-  );
-}
-
-function EyeOffIcon() {
-  return (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-    </svg>
-  );
-}
+import { 
+  Eye, 
+  EyeOff, 
+  Check, 
+  AlertCircle, 
+  ShieldCheck, 
+  Rocket, 
+  Store, 
+  User as UserIcon, 
+  Globe, 
+  Mail,
+  Loader2
+} from 'lucide-react';
 
 async function getFingerprint(): Promise<string | null> {
   try {
@@ -53,12 +47,19 @@ async function getFingerprint(): Promise<string | null> {
 
 export default function RegisterForm() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', contact_name: '', email: '', password: '', slug: '' });
+  const [form, setForm] = useState({ 
+    name: '', 
+    contact_name: '', 
+    email: '', 
+    password: '', 
+    confirmPassword: '',
+    slug: '' 
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [trialActive, setTrialActive] = useState<boolean | null>(null);
+  const [trialActive, setTrialActive] = useState<boolean>(true);
   const [trialDays, setTrialDays] = useState(7);
   const [fingerprint, setFingerprint] = useState<string | null>(null);
   const [prefilledFields, setPrefilledFields] = useState<Record<string, boolean>>({});
@@ -77,37 +78,26 @@ export default function RegisterForm() {
 
   const suggestAlternativeSlug = () => {
     const base = (form.slug || slugify(form.name) || 'mi-marca').replace(/-+$/g, '');
-    const suffix = Math.floor(100 + Math.random() * 900); // 3 dígitos
+    const suffix = Math.floor(100 + Math.random() * 900);
     setForm(prev => ({ ...prev, slug: `${base}-${suffix}` }));
     setError('');
   };
 
   useEffect(() => {
-    // 1. Verificar si viene de un pago exitoso (funnel invertido)
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
-    const isTrialParam = params.get('isTrial') === 'true';
 
     if (ref) {
       setPaymentRef(ref);
       setIsPaidFlow(true);
-      setLoadingStep('Verificando tu pago...');
+      setLoadingStep('Verificando tu acceso...');
 
-      // Cargar datos desde el registro pendiente
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/pending-registration/${ref}`)
         .then(r => r.json())
         .then(data => {
           if (data.email) {
             const brandName = data.brand_name || '';
-            const slug = (data as any).slug || (brandName
-              ? brandName
-                .toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-z0-9\s-]/g, '')
-                .trim()
-                .replace(/\s+/g, '-')
-              : '');
+            const slug = (data as any).slug || (brandName ? slugify(brandName) : '');
 
             setForm(prev => ({
               ...prev,
@@ -116,7 +106,6 @@ export default function RegisterForm() {
               slug: slug || prev.slug
             }));
 
-            // Marcar campos como pre-rellenados si traen datos
             setPrefilledFields({
               email: !!data.email,
               name: !!brandName,
@@ -126,61 +115,51 @@ export default function RegisterForm() {
           setLoadingStep('');
         })
         .catch(err => {
-          console.error('Error fetching pending registration:', err);
+          console.error('[Register] Error fetching pending:', err);
           setLoadingStep('');
         });
+    } else {
+      // Si no hay referencia de pago, redirigir al checkout unificado para comprar el TRIAL
+      router.push('/checkout?plan=TRIAL');
     }
 
-    // 2. Fingerprint
     getFingerprint().then(setFingerprint);
-
-    // 3. Status del trial (solo si no es flow pagado)
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`)
-      .then((r) => r.json())
-      .then((d) => {
-        const isActive = d.trialAvailable === true || d.active === true;
-
-        // MARKETING OPTIMIZATION: Si no hay trial gratuito y no viene de un pago,
-        // redirigimos al checkout de pago para que el usuario no se detenga.
-        if (!isActive && !ref) {
-          router.push('/trial-checkout');
-          return;
-        }
-
-        // Si es flujo pagado, forzamos trialActive a true para que no muestre el bloqueo
-        setTrialActive(ref ? true : isActive);
-        if (isActive || ref) {
-          setTrialDays(d.trialDays ?? d.trial_days ?? 7);
-        }
-      })
-      .catch(() => {
-        if (!ref) {
-          router.push('/trial-checkout');
-        } else {
-          setTrialActive(true);
-        }
-      });
   }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === 'name') {
       const newSlug = slugify(value);
-      setForm((prev) => ({ ...prev, name: value, slug: prev.slug ? prev.slug : newSlug }));
+      setForm((prev) => ({ 
+        ...prev, 
+        name: value, 
+        slug: prev.slug && prefilledFields.slug ? prev.slug : newSlug 
+      }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
 
+  const isPasswordValid = form.password.length >= 8;
+  const passwordsMatch = form.password === form.confirmPassword;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isPasswordValid) {
+      setError('La contraseña debe tener al menos 8 caracteres');
+      return;
+    }
+    if (!passwordsMatch) {
+      setError('Las contraseñas no coinciden');
+      return;
+    }
+
     setError('');
     setLoading(true);
 
     try {
-      setLoadingStep('Creando tu cuenta...');
+      setLoadingStep('Configurando tu espacio...');
 
-      // Si es flujo pagado, usamos el endpoint post-pago que no tiene Turnstile ni validaciones de abuso
       const endpoint = isPaidFlow ? '/api/auth/register-post-payment' : '/api/auth/register';
       const body = isPaidFlow ? { ...form, ref: paymentRef } : { ...form, fingerprint };
 
@@ -193,180 +172,125 @@ export default function RegisterForm() {
 
       if (!res.ok) {
         if (data.error === 'TRIAL_ABUSE') {
-          setError('Ya existe una cuenta de prueba registrada desde este dispositivo o red. Puedes contratar un plan directamente.');
+          setError('Ya existe una cuenta desde este dispositivo. Elige un plan para continuar.');
         } else {
-          setError(data.message || data.error || 'Error al registrar');
+          setError(data.message || data.error || 'Error al completar el registro');
         }
+        setLoading(false);
         return;
       }
 
-      // Guardar token
       localStorage.setItem('token', data.token);
       localStorage.setItem('brandToken', data.token);
 
-      // Si ya pagó, va directo al dashboard. Si no, va al checkout.
-      if (isPaidFlow) {
-        setLoadingStep('¡Listo! Entrando al sistema...');
-        router.push('/dashboard');
-      } else {
-        setLoadingStep('Redirigiendo al checkout...');
-        router.push('/trial-checkout');
-      }
+      setLoadingStep('¡Configuración lista! Entrando...');
+      router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Error de conexión. Intenta de nuevo.');
-    } finally {
       setLoading(false);
-      setLoadingStep('');
     }
   };
 
-  // ── Cargando estado del trial ──────────────────────────────────────────────
   if (trialActive === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0a0a0a' }}>
-        <div className="w-6 h-6 border-2 border-[#FF5C3A] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#050505]">
+        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
       </div>
     );
   }
 
-  // ── Sin trial activo ───────────────────────────────────────────────────────
-  if (trialActive === false) {
-    return (
-      <div
-        className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]"
-      >
-        <div className="w-full max-w-md">
-          <div className="flex justify-center mb-8">
-            <Link href="/" className="flex items-center gap-2.5">
-              <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-              <span className="font-syne font-extrabold text-xl text-white tracking-tight">
-                Look<span className="text-[#FF5C3A]">itry</span>
-              </span>
-            </Link>
-          </div>
-          <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8 text-center">
-            <div className="w-14 h-14 rounded-full bg-[#1f1f1f] flex items-center justify-center mx-auto mb-5">
-              <svg className="w-7 h-7 text-[#FF5C3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
-              </svg>
-            </div>
-            <h1 className="font-syne font-bold text-[20px] text-white mb-2">
-              No hay prueba activa
-            </h1>
-            <p className="text-[13px] text-[#555] mb-7 leading-relaxed">
-              En este momento no hay campañas de prueba disponibles.<br />
-              Elige un plan para comenzar a usar tu probador virtual.
-            </p>
-            <Link
-              href="/planes"
-              className="block w-full text-center py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-medium rounded-lg transition-colors mb-3"
-            >
-              Ver planes y precios
-            </Link>
-            <p className="text-center text-[13px] text-[#444] mt-4">
-              ¿Ya tienes cuenta?{' '}
-              <Link href="/login" className="text-[#FF5C3A] hover:text-[#e84d2c] transition-colors">
-                Inicia sesión
-              </Link>
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Formulario de registro ─────────────────────────────────────────────────
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]"
-    >
-      <div className="w-full max-w-md">
-
-        <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-            <span className="font-syne font-extrabold text-xl text-white tracking-tight">
-              Look<span className="text-[#FF5C3A]">itry</span>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#050505] selection:bg-indigo-500/30">
+      <div className="w-full max-w-lg">
+        
+        <div className="flex flex-col items-center mb-10">
+          <Link href="/" className="flex items-center gap-3 group mb-4">
+            <Image src="/logo.svg" alt="Lookitry" width={32} height={32} className="group-hover:rotate-12 transition-transform duration-500" priority />
+            <span className="font-syne font-extrabold text-2xl text-white tracking-tighter">
+              Look<span className="text-indigo-500">itry</span>
             </span>
           </Link>
+          <div className="h-1 w-12 bg-gradient-to-r from-transparent via-indigo-500 to-transparent rounded-full" />
         </div>
 
-        <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8">
-          <h1 className="font-syne font-bold text-[22px] text-white mb-1">
-            {isPaidFlow ? '¡Pago confirmado!' : 'Crear cuenta'}
-          </h1>
-          <p className="text-[13px] text-[#FF5C3A] mb-6">
-            {isPaidFlow
-              ? 'Completa estos últimos datos para entrar a tu dashboard'
-              : `Prueba por $20.000 COP — ${trialDays} días`}
-          </p>
+        <div className="bg-[#0a0a0a] border border-gray-800/50 rounded-3xl p-8 md:p-10 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
+          
+          <div className="mb-10 text-center">
+            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20`}>
+              {isPaidFlow ? 'Paso Final: Activación' : 'Inicia tu prueba'}
+            </div>
+            <h1 className="text-3xl font-syne font-bold text-white tracking-tight mb-2">
+              {isPaidFlow ? '¡Te damos la bienvenida!' : 'Crea tu cuenta'}
+            </h1>
+            <p className="text-sm text-gray-500 max-w-xs mx-auto leading-relaxed">
+              {isPaidFlow 
+                ? 'El pago fue exitoso. Define tu contraseña para empezar a usar tu probador.'
+                : `Prueba Lookitry por ${trialDays} días y transforma tu tienda.`}
+            </p>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Nombre de la marca */}
-            <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">
-                Nombre de la marca
-              </label>
-              <input
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                required
-                placeholder="Mi Marca"
-                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
-              />
-              {isPaidFlow && (
-                <p className="text-[11px] text-[#555] mt-1 italic">Puedes ajustar el nombre de marca si ya existe una similar.</p>
-              )}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Brand Name */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                  <Store className="w-3 h-3 text-indigo-500" /> Marca
+                </label>
+                <input
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                  placeholder="Ej: Velvet Studio"
+                  className="w-full bg-[#050505] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-indigo-500 outline-none transition-all shadow-inner"
+                />
+              </div>
+
+              {/* Contact Name */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                  <UserIcon className="w-3 h-3 text-indigo-500" /> Responsable
+                </label>
+                <input
+                  name="contact_name"
+                  value={form.contact_name}
+                  onChange={handleChange}
+                  required
+                  placeholder="Tu nombre completo"
+                  className="w-full bg-[#050505] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-indigo-500 outline-none transition-all shadow-inner"
+                />
+              </div>
             </div>
 
-            {/* Nombre Completo */}
-            <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">
-                Nombre completo (Responsable)
+            {/* Slug UI */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                <Globe className="w-3 h-3 text-indigo-500" /> URL del probador
               </label>
-              <input
-                name="contact_name"
-                value={form.contact_name}
-                onChange={handleChange}
-                required
-                placeholder="Juan Pérez"
-                className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
-              />
-            </div>
-
-            {/* Slug */}
-            <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">
-                Slug (URL del probador)
-              </label>
-              <div className={`flex items-center bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg overflow-hidden transition-colors ${isPaidFlow ? 'border-[#333]' : 'focus-within:border-[#FF5C3A]'}`}>
-                <span className="px-3 py-2.5 text-[#333] text-[13px] border-r border-[#2a2a2a] whitespace-nowrap">
-                  /sitio/
-                </span>
+              <div className="flex items-center bg-[#050505] border border-gray-800 rounded-xl overflow-hidden focus-within:border-indigo-500 transition-all shadow-inner px-1">
+                <span className="pl-3 py-3 text-gray-600 text-xs font-medium select-none">lookitry.com/sitio/</span>
                 <input
                   name="slug"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })}
-                  placeholder="mi-marca"
-                  className="flex-1 px-3 py-2.5 text-[13px] text-white bg-transparent focus:outline-none placeholder-[#333]"
+                  className="flex-1 px-1 py-3 text-sm text-white bg-transparent focus:outline-none placeholder-gray-700"
                 />
-              </div>
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-[11px] text-[#555]">Si está ocupado, prueba con una variación.</p>
                 <button
                   type="button"
                   onClick={suggestAlternativeSlug}
-                  className="text-[11px] text-[#FF5C3A] hover:text-[#e84d2c] transition-colors"
+                  className="mr-1 h-8 px-2.5 text-[9px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-tighter transition-colors"
                 >
-                  Sugerir otro
+                  Sugerir
                 </button>
               </div>
             </div>
 
             {/* Email */}
-            <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">Email</label>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                <Mail className="w-3 h-3 text-indigo-500" /> Email corporativo
+              </label>
               <input
                 name="email"
                 type="email"
@@ -374,88 +298,94 @@ export default function RegisterForm() {
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
                 readOnly={isPaidFlow && prefilledFields.email}
-                placeholder="hola@mimarca.com"
-                className={`w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors ${isPaidFlow && prefilledFields.email ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`w-full bg-[#050505] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none transition-all shadow-inner ${isPaidFlow && prefilledFields.email ? 'opacity-50 grayscale' : ''}`}
               />
             </div>
 
-            {/* Contraseña */}
-            <div>
-              <label className="block text-[13px] font-medium text-[#888] mb-1.5">Contraseña</label>
-              <div className="relative">
+            {/* Password Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                  <ShieldCheck className="w-3 h-3 text-indigo-500" /> Contraseña
+                </label>
+                <div className="relative">
+                  <input
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                    placeholder="Mín. 8 caracteres"
+                    className={`w-full bg-[#050505] border ${form.password ? (isPasswordValid ? 'border-emerald-500/50' : 'border-amber-500/50') : 'border-gray-800'} rounded-xl px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none transition-all shadow-inner pr-10`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                   Confirmar
+                </label>
                 <input
-                  name="password"
+                  name="confirmPassword"
                   type={showPassword ? 'text' : 'password'}
-                  value={form.password}
+                  value={form.confirmPassword}
                   onChange={handleChange}
                   required
-                  minLength={6}
-                  placeholder="Mínimo 6 caracteres"
-                  className="w-full bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg px-3 py-2.5 pr-10 text-[13px] text-white placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
+                  className={`w-full bg-[#050505] border ${form.confirmPassword ? (passwordsMatch ? 'border-emerald-500/50' : 'border-red-500/50') : 'border-gray-800'} rounded-xl px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none transition-all shadow-inner`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#888] focus:outline-none transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
               </div>
             </div>
 
-
             {error && (
-              <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[13px] px-4 py-3 rounded-lg">
-                {error}
-                {error.toLowerCase().includes('slug ya está en uso') && (
-                  <div className="mt-2">
-                    <button
-                      type="button"
-                      onClick={suggestAlternativeSlug}
-                      className="text-[#FF5C3A] underline font-medium"
-                    >
-                      Generar slug alternativo
-                    </button>
-                  </div>
-                )}
-                {error.includes('dispositivo') && (
-                  <div className="mt-2">
-                    <Link href="/planes" className="text-[#FF5C3A] underline font-medium">
-                      Ver planes disponibles
-                    </Link>
-                  </div>
-                )}
+              <div className="bg-red-500/5 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-start gap-3 animate-in shake duration-300">
+                <AlertCircle className="w-4 h-4 mt-0.5" />
+                <p className="text-[11px] font-bold uppercase tracking-tight leading-normal">{error}</p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#FF5C3A] hover:bg-[#e84d2c] disabled:opacity-50 text-white font-medium py-2.5 rounded-lg text-[13px] transition-colors mt-2 flex items-center justify-center gap-2"
+              className="w-full relative group bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold h-14 rounded-2xl transition-all shadow-xl shadow-indigo-600/20 active:scale-95 overflow-hidden"
             >
-              {loading ? (
-                <>
-                  <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  {loadingStep || 'Procesando...'}
-                </>
-              ) : (
-                `Empezar prueba de ${trialDays} días`
-              )}
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex items-center justify-center gap-3">
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span className="text-xs uppercase tracking-widest">{loadingStep || 'Activando...'}</span>
+                  </>
+                ) : (
+                  <>
+                    <Rocket className={`w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ${isPaidFlow ? 'text-white' : 'text-indigo-200'}`} />
+                    <span className="text-[13px] uppercase tracking-[0.2em] font-black">
+                      {isPaidFlow ? 'Activar Mi Acceso' : 'Empezar ahora'}
+                    </span>
+                  </>
+                )}
+              </div>
             </button>
           </form>
 
-          <p className="text-center text-[13px] text-[#444] mt-6">
+          <p className="text-center text-xs text-gray-500 mt-8">
             ¿Ya tienes cuenta?{' '}
-            <Link href="/login" className="text-[#FF5C3A] hover:text-[#e84d2c] transition-colors">
+            <Link href="/login" className="text-indigo-400 hover:text-indigo-300 font-bold tracking-tight border-b border-transparent hover:border-indigo-400 transition-all ml-1">
               Inicia sesión
             </Link>
           </p>
         </div>
 
+        <div className="mt-8 flex justify-center items-center gap-6 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+           <Image src="/logo.svg" alt="SSL" width={20} height={20} className="invert brightness-0" />
+           <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acceso Encriptado de Punto a Punto</p>
+        </div>
       </div>
     </div>
   );
