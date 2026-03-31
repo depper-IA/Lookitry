@@ -24,10 +24,12 @@ Evitar que cambios diferidos o limpiezas técnicas queden en el aire entre sesio
 - **Pantalla de espera más útil**: `frontend/src/app/registro-pro/page.tsx` mejoró el copy visual del estado de carga post-pago, añadió ayuda contextual y muestra acciones de recuperación si la sincronización tarda más de lo normal.
 - **Reintento automático de referencia**: `frontend/src/app/registro-pro/page.tsx` ya no intenta resolver el `id` de Wompi una sola vez; ahora reintenta varias veces antes de dar por fallida la recuperación de la referencia.
 - **Upgrade PayPal alineado con prorrateo**: `backend/src/controllers/paypal.controller.ts` ahora calcula el total real del upgrade `Basic -> Pro` con el mismo prorrateo que ve el usuario en el checkout, evitando que PayPal genere órdenes por el valor completo cuando debía cobrar solo la diferencia.
+- **Verificación con contexto visible**: `frontend/src/app/dashboard/checkout/page.tsx` ahora muestra en estados de verificación, éxito y error el plan, método, monto y referencia del cobro cuando están disponibles, junto con una guía breve de qué esperar tras pagar.
 
 ### Archivos Modificados
 - `backend/src/controllers/auth-post-payment.controller.ts`
 - `backend/src/controllers/paypal.controller.ts`
+- `frontend/src/app/dashboard/checkout/page.tsx`
 - `frontend/src/app/registro-pro/page.tsx`
 - `CHANGELOG_GEMINI.md`
 
