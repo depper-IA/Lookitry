@@ -15,6 +15,29 @@
 Evitar que cambios diferidos o limpiezas técnicas queden en el aire entre sesiones, y dejar un mecanismo permanente de continuidad además del changelog.
 
 ---
+## [2026-03-31] - Bloqueo de creditos/widget por verificacion y limpieza de uso trial
+
+### Cambios Realizados
+- **Registro post-pago ya no auto-verifica**: `backend/src/services/auth.service.ts` ahora crea cuentas post-pago con `email_verified: false`, genera o reutiliza `email_verification_token` y devuelve `verificationToken` para que el flujo nuevo envíe el correo real de confirmación.
+- **Bloqueo del probador antes de verificar correo**: `backend/src/controllers/pruebalo.controller.ts` ahora rechaza nuevas generaciones cuando la marca no confirmó correo, con un mensaje claro orientado a habilitar créditos y uso del widget.
+- **Tipos backend alineados**: `backend/src/types/index.ts` se amplió con `email_verified`, `email_verification_token` y `trial_payment_status` para que la lógica nueva compile y quede tipada correctamente.
+- **Uso del dashboard adaptado a trial**: `frontend/src/components/dashboard/UsageStats.tsx` fue reescrito para dejar de mostrar “próximo ciclo de facturación” en cuentas trial y mostrar en su lugar el fin del período de prueba y el contexto correcto de consumo.
+- **Mensajería de verificación más precisa**: `frontend/src/app/dashboard/usage/page.tsx` ahora comunica explícitamente que sin verificar correo no se pueden consumir créditos ni usar el probador virtual.
+- **Créditos extra bloqueados de forma lógica**: `frontend/src/app/dashboard/subscription/page.tsx` ahora detecta cuentas trial o sin verificar y muestra un aviso de bloqueo funcional en lugar de presentar la compra de créditos extra como si estuviera disponible.
+
+### Archivos Modificados
+- `backend/src/controllers/pruebalo.controller.ts`
+- `backend/src/services/auth.service.ts`
+- `backend/src/types/index.ts`
+- `frontend/src/app/dashboard/subscription/page.tsx`
+- `frontend/src/app/dashboard/usage/page.tsx`
+- `frontend/src/components/dashboard/UsageStats.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Hacer coherente el nuevo flujo `pago -> activación -> verificación -> uso`, evitar que una cuenta trial se vea como una suscripción mensual activa, y bloquear correctamente el consumo de créditos mientras el correo siga sin confirmar.
+
+---
 ## [2026-03-31] - Avisos de verificación integrados en consumo y suscripción
 
 ### Cambios Realizados

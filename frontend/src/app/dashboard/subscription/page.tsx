@@ -231,6 +231,9 @@ export default function SubscriptionPage() {
     ? formatUsd(addonPriceUsd)
     : formatCurrency(addonPriceCop);
   const needsEmailVerification = info?.brand?.emailVerified === false;
+  const addonLockedForTrial = inTrial;
+  const addonLockedForVerification = needsEmailVerification;
+  const addonLocked = addonLockedForTrial || addonLockedForVerification;
 
   const planFeatures = {
     BASIC: [
@@ -322,7 +325,7 @@ export default function SubscriptionPage() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-2">
               <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#FF5C3A]">Verificación pendiente</p>
-              <h3 className="text-xl font-jakarta font-bold text-[var(--text-primary)]">Confirma tu correo para dejar tu cuenta completamente validada</h3>
+              <h3 className="text-xl font-jakarta font-bold text-[var(--text-primary)]">Confirma tu correo para habilitar creditos y uso del widget</h3>
               <p className="text-[13px] leading-relaxed text-[var(--text-muted)]">
                 Ya puedes revisar tu plan y tus créditos, pero conviene verificar <span className="font-semibold text-[var(--text-primary)]">{info?.brand?.email}</span> para completar la activación y evitar fricción en compras, recuperación y cambios futuros.
               </p>
@@ -641,6 +644,25 @@ export default function SubscriptionPage() {
                      </div>
                   </div>
 
+                  {addonLocked && (
+                    <div className="rounded-2xl border border-[#FF5C3A]/20 bg-[#FF5C3A]/6 p-5">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#FF5C3A]">
+                        {addonLockedForTrial ? 'Creditos extra no disponibles en trial' : 'Verificacion requerida'}
+                      </p>
+                      <p className="mt-2 text-sm font-bold text-[var(--text-primary)]">
+                        {addonLockedForTrial
+                          ? 'Activa un plan pago para habilitar paquetes de creditos extra.'
+                          : 'Confirma tu correo para habilitar compra y consumo de creditos.'}
+                      </p>
+                      <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+                        {addonLockedForTrial
+                          ? 'Durante el trial usas unicamente los creditos incluidos en tu prueba. Los paquetes adicionales aparecen cuando tu cuenta tenga un plan activo.'
+                          : `En cuanto confirmes ${info?.brand?.email}, el sistema habilitara los creditos extra y el probador volvera a quedar disponible.`}
+                      </p>
+                    </div>
+                  )}
+
+                  {!addonLocked && (
                   <div className="rounded-2xl border border-[#FF5C3A]/15 bg-[#FF5C3A]/5 p-4">
                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#FF5C3A]">Paquete sugerido</p>
                      <div className="mt-2 flex items-end justify-between gap-4">
@@ -662,8 +684,9 @@ export default function SubscriptionPage() {
                         </div>
                      </div>
                   </div>
+                  )}
 
-                  {(wompiAvailable || paypalAvailable) && (
+                  {!addonLocked && (wompiAvailable || paypalAvailable) && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {wompiAvailable && (
                         <button
@@ -698,8 +721,8 @@ export default function SubscriptionPage() {
 
                   <button
                     onClick={handleBuyAddon}
-                    disabled={buyingAddon || (!wompiAvailable && !paypalAvailable)}
-                    className="w-full flex items-center justify-center gap-3 py-4 bg-[#FF5C3A] text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:brightness-110 active:scale-95 transition-all disabled:opacity-60"
+                    disabled={addonLocked || buyingAddon || (!wompiAvailable && !paypalAvailable)}
+                    className={`${addonLocked ? 'hidden ' : ''}w-full flex items-center justify-center gap-3 py-4 bg-[#FF5C3A] text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:brightness-110 active:scale-95 transition-all disabled:opacity-60`}
                   >
                     {buyingAddon ? 'Redirigiendo...' : `Comprar 500 créditos extra con ${selectedAddonGateway === 'paypal' ? 'PayPal' : 'Wompi'}`}
                   </button>

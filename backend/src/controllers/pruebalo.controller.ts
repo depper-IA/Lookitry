@@ -201,6 +201,12 @@ export class PruebaloController {
       throw new NotFoundError('Marca no encontrada');
     }
 
+    if (brand.email_verified === false) {
+      throw new ValidationError(
+        'Debes confirmar el correo de esta cuenta para habilitar los créditos y usar el probador virtual.'
+      );
+    }
+
     // 2. Validar producto existe y pertenece a la marca
     const product = await productsService.getProductById(productId);
     if (!product) {
