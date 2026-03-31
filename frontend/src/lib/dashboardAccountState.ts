@@ -93,9 +93,9 @@ export function deriveDashboardAccountState(params: {
   const widgetInstalled = Boolean(pluginValidated || hasApiKey);
 
   // Integración WooCommerce es exclusiva del Plan PRO
-  // Solo mostrar pasos de tienda/widget si el usuario es PRO, o si ya tiene una conexión activa
   const isPro = String(brand?.plan || '').toUpperCase() === 'PRO';
-  const showIntegrationSteps = isPro || storeConnected || widgetInstalled;
+  // Solo mostrar pasos de tienda/widget si el usuario es PRO, o si ya tiene una conexión validada real
+  const showIntegrationSteps = isPro || pluginValidated;
 
   const checklist: ChecklistItem[] = [
     {
