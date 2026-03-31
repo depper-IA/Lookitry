@@ -182,7 +182,7 @@ function RegistroProContent() {
       const data = await res.json();
       if (res.ok) {
         localStorage.setItem('brand', JSON.stringify(data.brand));
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
       } else {
         setApiError(data.message || 'No se pudo vincular la compra automáticamente.');
         setAutoLinking(false);
@@ -314,7 +314,7 @@ function RegistroProContent() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('brandToken', data.token);
       localStorage.setItem('brand', JSON.stringify(data.brand));
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } catch {
       setApiError('Error de conexión. Intenta de nuevo.');
     } finally {
@@ -440,7 +440,7 @@ function RegistroProContent() {
                 <span className="inline-flex items-center px-4 text-[#444] text-[13px] border-r border-[#222] font-mono">/sitio/</span>
                 <input
                   name="slug" type="text" value={form.slug} onChange={handleChange}
-                  placeholder="mi-tienda" required
+                  placeholder="mi-tienda" required autoComplete="off"
                   className="flex-1 px-4 py-3 text-[14px] text-white bg-transparent focus:outline-none placeholder-[#2a2a2a]"
                 />
               </div>
