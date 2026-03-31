@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/depper-IA/Lookitry/main/frontend/public/logo.svg" alt="Lookitry Logo" width="150"/>
 
-# Lookitry
+# Lookitry 👕✨
 
 **El Probador Virtual con Inteligencia Artificial para E-Commerce B2B en Latinoamérica**
 
@@ -14,94 +14,100 @@
 [![Wompi](https://img.shields.io/badge/Wompi-Pagos%20COP-blue)](#)
 [![PayPal](https://img.shields.io/badge/PayPal-Pagos%20USD-00457C?logo=paypal)](https://paypal.com/)
 
-Permite a las marcas integrar un widget de prueba virtual en su tienda en minutos, reduciendo devoluciones y aumentando la conversión. "Pruébalo antes de comprarlo".
+_Permite a las marcas integrar un widget de prueba virtual en su tienda en minutos, reduciendo devoluciones y aumentando la conversión. "Pruébalo antes de comprarlo"._
 
-[Ver Demo](https://lookitry.com) · [Reportar Bug](https://github.com/depper-IA/Lookitry/issues) · [Solicitar Feature](https://github.com/depper-IA/Lookitry/issues)
+[Ver Demo (Próximamente)](https://lookitry.com) · [Reportar Bug](https://github.com/depper-IA/Lookitry/issues) · [Solicitar Feature](https://github.com/depper-IA/Lookitry/issues)
 
 </div>
 
 ---
 
-## Propuesta de Valor
+## 🚀 Propuesta de Valor
 
-**Lookitry** es una plataforma SaaS B2B diseñada para transformar la compra de ropa, accesorios y calzado en línea. Mediante el uso de Inteligencia Artificial a través de n8n y OpenRouter, los clientes finales pueden subir una selfie y visualizar cómo les quedaría un producto específico antes de comprar.
+**Lookitry** es una plataforma SaaS B2B diseñada para revolucionar la forma en que se compra ropa, accesorios y calzado en línea. Mediante el uso de Inteligencia Artificial (impulsada por OpenRouter a través de n8n), los clientes finales pueden subir una selfie y visualizar cómo les quedaría un producto específico.
 
-La solución se integra mediante un widget embebible o una mini-landing personalizada, orientada a marcas de moda en Colombia y otros mercados de Latinoamérica.
+Nuestra solución se integra fácilmente a través de un **widget embebible** (iframe) o una **mini-landing page** personalizada, ideal para marcas en Colombia, México, Argentina, Chile y Perú.
 
 ---
 
-## Stack Tecnológico
+## 🛠️ Stack Tecnológico Premium
 
-### Frontend
+La arquitectura de Lookitry está construida para ser rápida, escalable y ofrecer una experiencia premium.
+
+### 🎨 Frontend
 
 - **Framework:** Next.js 14 (App Router)
 - **Lenguaje:** TypeScript
-- **Estilos:** Tailwind CSS
-- **Iconografía:** Lucide React
-- **Despliegue:** Docker en VPS
+- **Estilos:** Tailwind CSS (Sistema de diseño Dark/Premium)
+- **Íconos:** Lucide React (Sin emojis en UI)
+- **Despliegue:** VPS vía Docker
 
-### Backend
+### ⚙️ Backend
 
 - **Framework:** Node.js con Express
 - **Lenguaje:** TypeScript
-- **Autenticación:** JWT propio
-- **Seguridad:** Cloudflare Turnstile, middleware de administración y validaciones de backend
+- **Autenticación:** Sistema JWT propio, sólido y seguro (No usamos Supabase Auth).
+- **Rate Limiting & Seguridad:** Cloudflare Turnstile integrado para antispam.
 
-### Base de Datos y Almacenamiento
+### 💾 Base de Datos & Almacenamiento
 
-- **Base de Datos:** Supabase PostgreSQL
-- **Storage:** MinIO autohosteado
+- **Base de Datos:** Supabase (PostgreSQL). Uso estricto de `Service Role` en backend para bypass RLS.
+- **Almacenamiento (Storage):** MinIO autohosteado (`minio.wilkiedevs.com`).
 
-### IA y Automatización
+### 🤖 IA & Workflows
 
-- **Orquestador:** n8n
-- **Modelos:** OpenRouter
+- **Orquestador:** n8n (`n8n.wilkiedevs.com`)
+- **Modelos IA:** OpenRouter (para generación de imágenes y descripción de productos).
 
-### Pagos
+### 💳 Pagos
 
-- **Colombia:** Wompi (COP)
-- **Internacional:** PayPal (USD)
-
----
-
-## Capacidades Principales
-
-- Probador virtual B2B para catálogos de moda.
-- Mini-landings personalizables por marca.
-- Dashboard para gestión de productos, analítica, suscripción y configuración.
-- Planes `TRIAL`, `BASIC`, `PRO` y flujos manuales para `ENTERPRISE`.
-- Integración de pagos con Wompi y PayPal.
-- Workflows n8n para generación de contenido y procesos operativos.
-- Sistema antiabuso para trial y registro.
+- **Colombia (COP):** Wompi
+- **Internacional (USD):** PayPal (Conversión dinámica vía TRM configurable).
 
 ---
 
-## Arquitectura del Sistema
+## ✨ Características Principales
+
+- **🧑‍💻 Probador Virtual B2B:** Generación de imágenes IA de alta calidad donde el usuario ve la ropa aplicada a su cuerpo.
+- **🎨 Mini-Landings Personalizables:** Las marcas pueden tener su propia página de prueba con diseños como `classic`, `editorial`, `probador` y `moderno`.
+- **📊 Panel Administrativo (Dashboard):** CRUD completo de productos, análisis de uso, estado de suscripción y gestión de facturación.
+- **💳 Suscripciones Flexibles:**
+  - **TRIAL:** Prueba inicial guiada para captar marcas.
+  - **BASIC:** 5 productos activos, 400 generaciones/mes.
+  - **PRO:** 15 productos activos, 1200 generaciones/mes.
+  - _Sistema de prorrateo automático en upgrades de BASIC a PRO._
+- **🤖 Flujos AI (n8n):** Workflows dedicados para el _Try-On_ principal, manejo de errores robusto (Error Handler) y descriptor automático de productos.
+- **🛡️ Sistema Anti-Spam:** Cloudflare Turnstile protege el registro y previene abusos del periodo Trial.
+
+---
+
+## 🏗️ Arquitectura del Sistema
 
 ```mermaid
 graph TD;
     A[Cliente / E-commerce] -->|Iframe / Enlace| B(Frontend: Next.js)
-    B -->|API REST / JWT| C(Backend: Express)
-    C <-->|PostgreSQL| D[(Supabase)]
-    C -->|Storage| E[(MinIO)]
+    B -->|API Rest / JWT| C(Backend: Express Node.js)
+    C <-->|PostgreSQL (Admin Key)| D[(Supabase)]
+    C -->|Subida de Imágenes| E[(MinIO Storage)]
     C -->|Webhook Seguro| F(n8n Workflows)
-    F <-->|API| G(OpenRouter)
-    C <-->|Pagos COP| H(Wompi)
-    C <-->|Pagos USD| I(PayPal)
+    F <-->|API| G(OpenRouter / Modelos IA)
+    F -->|Imágenes Generadas| E
+    C <-->|Cobros COP| H(Wompi)
+    C <-->|Cobros USD| I(PayPal)
 ```
 
-El detalle operativo completo del sistema vive en `REGLAS_IMPORTANTES.md`.
+_(El flujo exacto y detallado se encuentra en la documentación interna de la IA y `REGLAS_IMPORTANTES.md`)_
 
 ---
 
-## Instalación y Desarrollo Local
+## 💻 Instalación y Desarrollo Local
 
 ### Requisitos Previos
 
-- Node.js 18 o superior
-- Proyecto Supabase configurado
-- Instancia de n8n configurada
-- MinIO y SMTP disponibles si vas a probar flujos completos
+- [Node.js](https://nodejs.org/) (v18 o superior)
+- Cuenta de [Supabase](https://supabase.com/) configurada con las tablas base.
+- Instancia de [n8n](https://n8n.io/) configurada.
+- Instancia de MinIO y servidor SMTP.
 
 ### 1. Clonar el repositorio
 
@@ -110,45 +116,45 @@ git clone https://github.com/depper-IA/Lookitry.git
 cd Lookitry
 ```
 
-### 2. Configurar el backend
+### 2. Configurar el Backend
 
 ```bash
 cd backend
 npm install
 ```
 
-Crea `.env` a partir de `.env.example` y completa las variables necesarias.
+Crea un archivo `.env` basado en `.env.example` y rellena las variables de entorno (ver sección Variables de Entorno).
 
 ```bash
 npm run dev
 ```
 
-La API quedará disponible en `http://localhost:3001`.
+La API estará corriendo en `http://localhost:3001`.
 
-### 3. Configurar el frontend
+### 3. Configurar el Frontend
 
-En otra terminal:
+Abre otra terminal:
 
 ```bash
 cd frontend
 npm install
 ```
 
-Crea `.env.local` a partir de `.env.example`.
+Crea un archivo `.env.local` basado en `.env.example`.
 
 ```bash
 npm run dev
 ```
 
-La app quedará disponible en `http://localhost:3000`.
+La aplicación estará disponible en `http://localhost:3000`.
 
 ---
 
-## Variables de Entorno
+## 🔐 Variables de Entorno
 
 ### Backend (`backend/.env`)
 
-No expongas `SUPABASE_SERVICE_KEY` en frontend.
+_Nota: Nunca expongas la `SUPABASE_SERVICE_KEY` en el frontend._
 
 ```env
 PORT=3001
@@ -189,55 +195,65 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAACsmy7e_yL9iyAXM
 
 ---
 
-## Resumen de API
+## 📚 Documentación de API (Resumen)
 
-| Método | Endpoint | Autenticación | Descripción |
-| ------ | -------- | ------------- | ----------- |
-| `POST` | `/api/auth/register` | Público | Registro de marca |
-| `POST` | `/api/auth/login` | Público | Login y generación de JWT |
-| `GET` | `/api/products` | JWT | Listar productos de la marca |
-| `POST` | `/api/generations` | JWT | Iniciar un try-on |
-| `GET` | `/api/pruebalo/:slug` | Público | Configuración pública del widget |
-| `GET` | `/api/payments/wompi/checkout-url` | Público/JWT | Crear checkout Wompi |
-| `POST` | `/api/payments/wompi/webhook` | Firma Wompi | Confirmar pagos Wompi |
+| Método | Endpoint                           | Autenticación | Descripción                               |
+| ------ | ---------------------------------- | ------------- | ----------------------------------------- |
+| `POST` | `/api/auth/register`               | Público       | Registro de marca (Usa Turnstile)         |
+| `POST` | `/api/auth/login`                  | Público       | Login y generación de JWT                 |
+| `GET`  | `/api/products`                    | JWT           | Listar productos del catálogo de la marca |
+| `POST` | `/api/generations`                 | JWT           | Iniciar un Try-On (Envía webhook a n8n)   |
+| `GET`  | `/api/pruebalo/:slug`              | Público       | Obtener config pública del widget B2B     |
+| `GET`  | `/api/payments/wompi/checkout-url` | Público/JWT   | Generar URL de pago en Wompi (COP)        |
+| `POST` | `/api/payments/wompi/webhook`      | HMAC Wompi    | Webhook asíncrono para confirmar pagos    |
 
-Revisa `backend/src/controllers` y `backend/src/routes` para el detalle completo.
+_(Consulta los controladores en `backend/src/controllers` para ver todos los endpoints)_
 
 ---
 
-## Deploy
+## 🚢 Despliegue (Deploy)
 
-Lookitry se despliega a un VPS usando Docker Compose y el script `scripts/_deploy_now.py`.
+Lookitry cuenta con un sistema de despliegue automatizado hacia un VPS (Hostinger) utilizando Docker Compose.
 
-No hagas deploy sin autorización explícita.
+**NUNCA realices un deploy sin autorización explícita.**
+
+Para desplegar desde la raíz del proyecto (requiere Python configurado con las librerías del script):
 
 ```bash
+# Integrar últimos cambios (Importante)
 git pull origin main --rebase
 git push origin main
 
+# Desplegar todo (Backend y Frontend)
 python scripts/_deploy_now.py --no-cache
+
+# Desplegar solo frontend o backend
 python scripts/_deploy_now.py --frontend
 python scripts/_deploy_now.py --backend
+
+# Reiniciar servicios sin reconstruir
 python scripts/_deploy_now.py --restart
 ```
 
 ---
 
-## Diseño y Gobernanza
+## 🎨 Reglas de Diseño UI/UX (Brand Guardian)
 
-- Color principal: `#FF5C3A`
-- Fondo base: `#0a0a0a`
-- Cards: `#141414`
-- Tipografías: Plus Jakarta Sans y DM Sans
-- Sin emojis en UI
-- Logo siempre en SVG con la marca Lookitry
-
-Consulta `REGLAS_IMPORTANTES.md` para lineamientos completos de arquitectura, branding, pagos, trial, deploy y operación.
+- **Colores Principales:** `#FF5C3A` (Naranja Lookitry - Acento), `#0a0a0a` (Fondo Base), `#141414` (Fondo Cards).
+- **Tipografía:** _Plus Jakarta Sans_ para títulos, _DM Sans_ para el cuerpo del texto.
+- **Grises (Textos):** Mínimo `#999` para legibilidad. Prohibido usar grises oscuros como `#333`, `#444`, `#555`.
+- **Iconografía:** Uso exclusivo de `lucide-react`. Cero emojis en la interfaz.
+- **Logotipo:** Siempre en formato SVG acompañado del texto estilizado `Look<span className="text-[#FF5C3A]">itry</span>`.
 
 ---
 
-## Persistencia y Changelog
+## 📝 Registro de Cambios y Persistencia de IA
 
-Cualquier cambio realizado en el proyecto debe quedar documentado en `CHANGELOG_GEMINI.md`.
+Cualquier agente de IA trabajando en este repositorio **ESTÁ OBLIGADO** a leer el archivo `LOOKITRY_MASTER_MEMORY.md` y `REGLAS_IMPORTANTES.md` al iniciar.
+Toda modificación realizada al código debe documentarse en `CHANGELOG_GEMINI.md` antes de finalizar la tarea.
 
-Los agentes que trabajen sobre este repositorio deben revisar `REGLAS_IMPORTANTES.md` antes de intervenir el sistema.
+---
+
+<div align="center">
+  <p>Construido con ❤️ para revolucionar el comercio electrónico. <br/> <strong>© Lookitry. Todos los derechos reservados.</strong></p>
+</div>
