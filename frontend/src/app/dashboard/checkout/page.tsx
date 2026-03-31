@@ -121,7 +121,7 @@ function PaymentSection({
       <div className="px-5 py-4 space-y-4">
         {/* Selector de método */}
         <div className="grid grid-cols-2 gap-2">
-          {currency === 'COP' && (
+          {wompiEnabled !== false && (
             <button
               onClick={() => setPaymentMethod('wompi')}
               className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all cursor-pointer"
@@ -452,10 +452,10 @@ function CheckoutContent() {
   // Moneda desde localStorage
   useEffect(() => {
     const saved = localStorage.getItem('currency') as 'COP' | 'USD';
-    if (saved) { setCurrency(saved); if (saved === 'USD') setPaymentMethod('paypal'); }
+    if (saved) { setCurrency(saved); }
     const handler = () => {
       const cur = localStorage.getItem('currency') as 'COP' | 'USD';
-      if (cur) { setCurrency(cur); if (cur === 'USD') setPaymentMethod('paypal'); }
+      if (cur) { setCurrency(cur); }
     };
     window.addEventListener('currencyChange', handler);
     return () => window.removeEventListener('currencyChange', handler);
