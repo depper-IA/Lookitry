@@ -1857,3 +1857,21 @@ Garantizar que futuros agentes de IA tengan un contexto técnico limpio, actuali
 **Motivo:**
 
 - El repositorio necesitaba un punto de entrada profesional y completo que facilitara el onboarding de nuevos desarrolladores (o agentes de IA) y presentara adecuadamente el proyecto SaaS B2B.
+
+## 30 de Marzo, 2026 - Blog n8n: source_url y estado real en panel admin
+
+**Archivos modificados:**
+
+- `frontend/src/app/admin/blog/page.tsx`
+- `supabase/migrations/20260330_add_source_url_to_blog_topics.sql`
+- `templates-webs/flujo-blog-mejorado.json`
+- `REGLAS_IMPORTANTES.md`
+
+**Descripción del cambio:**
+Se corrigió el panel de administración del blog para que no marque la ejecución como fallo definitivo cuando n8n tarda en reportar el resultado, manteniendo una espera activa hasta recibir `success` o `error` reales desde `/api/blog/execution-status`. Además, se añadió la migración que crea `blog_topics.source_url`, alineando la base de datos con el workflow nuevo de n8n (`flujo-blog-mejorado.json`), que ya lee y persiste esa columna para la investigación editorial. También se resolvió el conflicto pendiente en `REGLAS_IMPORTANTES.md`, conservando la sección de flujo de registro con trial pago.
+
+**Motivo:**
+
+- El panel `/admin/blog` mostraba un error genérico engañoso aunque n8n pudiera reportar el estado real más tarde.
+- El workflow nuevo de blog dependía de `blog_topics.source_url`, pero la tabla no tenía esa columna.
+- El repositorio necesitaba quedar sin conflictos para permitir commit y push limpios.
