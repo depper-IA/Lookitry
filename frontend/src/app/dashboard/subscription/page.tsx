@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { subscriptionService } from '@/services/subscription.service';
 import { usageService } from '@/services/usage.service';
 import { paymentsService } from '@/services/payments.service';
+import { authService } from '@/services/auth.service';
 import { formatCurrency } from '@/utils/currency';
 import type { SubscriptionPayment } from '@/types';
 import type { SubscriptionInfo } from '@/services/subscription.service';
@@ -136,6 +137,8 @@ export default function SubscriptionPage() {
   const [buyingAddon, setBuyingAddon] = useState(false);
   const [addonError, setAddonError] = useState('');
   const [selectedAddonGateway, setSelectedAddonGateway] = useState<'wompi' | 'paypal'>('wompi');
+  const [resendSending, setResendSending] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
 
   // Filtros y paginación
   const [searchTerm, setSearchTerm] = useState('');
@@ -227,6 +230,7 @@ export default function SubscriptionPage() {
   const addonDisplayPrice = selectedAddonGateway === 'paypal'
     ? formatUsd(addonPriceUsd)
     : formatCurrency(addonPriceCop);
+  const needsEmailVerification = info?.brand?.emailVerified === false;
 
   const planFeatures = {
     BASIC: [
@@ -280,6 +284,19 @@ export default function SubscriptionPage() {
     }
   };
 
+  const handleResendVerification = async () => {
+    if (!info?.brand?.email || resendSending) return;
+    try {
+      setResendSending(true);
+      await authService.resendVerification(info.brand.email);
+      setResendSent(true);
+    } catch (error: any) {
+      setAddonError(error?.message || 'No se pudo reenviar el correo de verificación');
+    } finally {
+      setResendSending(false);
+    }
+  };
+
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Spinner size="lg" /></div>;
 
   return (
@@ -299,6 +316,27 @@ export default function SubscriptionPage() {
           <p className="text-[11px] font-bold tracking-wider text-[var(--text-muted)] uppercase opacity-60">Gestión de plan y pagos</p>
         </div>
       </motion.header>
+
+      {needsEmailVerification && (
+        <motion.div variants={itemVariants} className="rounded-[2rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/6 p-6 shadow-lg shadow-[#FF5C3A]/5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#FF5C3A]">Verificación pendiente</p>
+              <h3 className="text-xl font-jakarta font-bold text-[var(--text-primary)]">Confirma tu correo para dejar tu cuenta completamente validada</h3>
+              <p className="text-[13px] leading-relaxed text-[var(--text-muted)]">
+                Ya puedes revisar tu plan y tus créditos, pero conviene verificar <span className="font-semibold text-[var(--text-primary)]">{info?.brand?.email}</span> para completar la activación y evitar fricción en compras, recuperación y cambios futuros.
+              </p>
+            </div>
+            <button
+              onClick={handleResendVerification}
+              disabled={resendSending}
+              className="inline-flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-6 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-[#FF5C3A]/25 transition-all hover:brightness-110 disabled:opacity-60"
+            >
+              {resendSending ? 'Enviando...' : resendSent ? 'Correo reenviado' : 'Reenviar correo'}
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* ══ HERO CARD ══ */}
       <motion.div 

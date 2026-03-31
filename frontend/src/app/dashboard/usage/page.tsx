@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UsageStats } from '@/components/dashboard/UsageStats';
 import { Spinner } from '@/components/ui/Spinner';
 import { usageService } from '@/services/usage.service';
+import { brandsService } from '@/services/brands.service';
+import { authService } from '@/services/auth.service';
 import type { UsageStats as UsageStatsType } from '@/types';
 import { Activity, AlertCircle, TrendingUp, Sparkles, ChevronRight, Zap, Target } from 'lucide-react';
 
@@ -27,21 +29,43 @@ const itemVariants = {
 
 export default function UsagePage() {
   const [stats, setStats] = useState<UsageStatsType | null>(null);
+  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
+  const [brandEmail, setBrandEmail] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [resendSending, setResendSending] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
 
   useEffect(() => { loadStats(); }, []);
 
   const loadStats = async () => {
     try {
       setIsLoading(true);
-      const data = await usageService.getUsageStats();
+      const [data, brand] = await Promise.all([
+        usageService.getUsageStats(),
+        brandsService.getCurrentBrand(),
+      ]);
       setStats(data);
+      setEmailVerified(brand.emailVerified ?? null);
+      setBrandEmail(brand.email ?? '');
       setError(null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al cargar estadísticas');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!brandEmail || resendSending) return;
+    try {
+      setResendSending(true);
+      await authService.resendVerification(brandEmail);
+      setResendSent(true);
+    } catch (err: any) {
+      setError(err?.message || 'No se pudo reenviar el correo de verificación');
+    } finally {
+      setResendSending(false);
     }
   };
 
@@ -80,6 +104,27 @@ export default function UsagePage() {
            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Ciclo Actual de Facturación</span>
         </div>
       </motion.header>
+
+      {emailVerified === false && (
+        <motion.div variants={itemVariants} className="rounded-[2.5rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/6 p-6 md:p-8 shadow-xl shadow-[#FF5C3A]/5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#FF5C3A]">Cuenta pendiente de verificación</p>
+              <h3 className="text-2xl font-[950] tracking-tight text-[var(--text-primary)] font-jakarta">Tu consumo ya está visible, pero falta validar tu correo</h3>
+              <p className="max-w-2xl text-[13px] font-bold leading-relaxed text-[var(--text-muted)]">
+                Confirmar <span className="text-[var(--text-primary)]">{brandEmail}</span> deja tu acceso completamente validado y evita fricción en compras, recuperación y cambios posteriores.
+              </p>
+            </div>
+            <button
+              onClick={handleResendVerification}
+              disabled={resendSending}
+              className="inline-flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-6 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-[#FF5C3A]/25 transition-all hover:brightness-110 disabled:opacity-60"
+            >
+              {resendSending ? 'Enviando...' : resendSent ? 'Correo reenviado' : 'Reenviar correo'}
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {error && (
         <motion.div variants={itemVariants} className="flex items-center gap-4 p-8 rounded-[3rem] border border-rose-500/20 bg-rose-500/5 text-rose-500 text-[10px] font-black uppercase tracking-widest shadow-2xl">

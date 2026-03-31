@@ -48,6 +48,10 @@ class SubscriptionService {
       nextPaymentDate: rawBrand.next_payment_date,
       trialEndDate: rawBrand.trial_end_date,
       trialGenerationsLimit: rawBrand.trial_generations_limit,
+      trialPaymentStatus: rawBrand.trial_payment_status,
+      extraCreditsBalance: rawBrand.extra_credits_balance,
+      emailVerified: rawBrand.email_verified,
+      hasLandingPage: rawBrand.has_landing_page,
     };
 
     const subscriptionResponse = await api.get<SubscriptionResponse>('/brands/subscription');
