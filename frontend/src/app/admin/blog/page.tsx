@@ -34,7 +34,33 @@ const OPENROUTER_IMAGE_MODELS = [
   { value: '__custom__', label: 'Otro' },
 ];
 
+function sanitizeExecutionMessage(message: string | null | undefined, status: 'error' | 'success' | 'running' | 'idle') {
+  const normalized = message?.trim();
+  const looksTechnical = normalized
+    ? /x-n8n-secret|http\s*\d+|metodo:|método:|webhook|execution-status|n8n/i.test(normalized)
+    : false;
+
+  if (normalized && !looksTechnical) {
+    return normalized;
+  }
+
+  if (status === 'error') {
+    return 'No pudimos completar la generación del artículo. Revisa la última ejecución del flujo o vuelve a intentarlo.';
+  }
+
+  if (status === 'success') {
+    return 'La ejecución terminó correctamente. El panel ya refleja el resultado más reciente del flujo editorial.';
+  }
+
+  if (status === 'running') {
+    return 'Estamos preparando el artículo. Este proceso puede tardar varios minutos mientras investigamos, redactamos y generamos las imágenes.';
+  }
+
+  return 'Aquí verás el progreso real del flujo editorial y cualquier novedad importante de la publicación automática.';
+}
+
 export default function AdminBlogPage() {
+  type SortKey = 'title' | 'category' | 'status' | 'created_at';
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -49,6 +75,9 @@ export default function AdminBlogPage() {
   const [isCustomArticleModelSelected, setIsCustomArticleModelSelected] = useState(false);
   const [customImageModel, setCustomImageModel] = useState('');
   const [isCustomImageModelSelected, setIsCustomImageModelSelected] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>('created_at');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [currentPage, setCurrentPage] = useState(1);
   const [confirmState, setConfirmState] = useState<
     | null
     | {
@@ -64,6 +93,10 @@ export default function AdminBlogPage() {
     loadPosts();
     loadSettings();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sortKey, sortDirection, posts.length]);
 
   useEffect(() => {
     if (!pendingExecutionStartedAt) return;
@@ -90,7 +123,7 @@ export default function AdminBlogPage() {
       if (latestSettings?.execution_status === 'error') {
         setExecutionNotice('');
         setTriggerMessage('');
-        setError(latestSettings.execution_message || 'n8n reportÃ³ un fallo en la ejecuciÃ³n del blog.');
+        setError(sanitizeExecutionMessage(latestSettings.execution_message, 'error'));
         setIsMonitoringRun(false);
         setPendingExecutionStartedAt(null);
         return;
@@ -99,7 +132,7 @@ export default function AdminBlogPage() {
       if (latestSettings?.execution_status === 'success') {
         setExecutionNotice('');
         setError('');
-        setTriggerMessage(latestSettings.execution_message || 'n8n terminÃ³ la ejecuciÃ³n correctamente.');
+        setTriggerMessage(sanitizeExecutionMessage(latestSettings.execution_message, 'success'));
         setIsMonitoringRun(false);
         setPendingExecutionStartedAt(null);
       }
@@ -109,6 +142,16 @@ export default function AdminBlogPage() {
   }, [pendingExecutionStartedAt]);
 
   const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+
+  const toggleSort = (nextKey: SortKey) => {
+    if (sortKey === nextKey) {
+      setSortDirection((prev) => prev === 'asc' ? 'desc' : 'asc');
+      return;
+    }
+
+    setSortKey(nextKey);
+    setSortDirection(nextKey === 'created_at' ? 'desc' : 'asc');
+  };
 
   const loadSettings = async () => {
     const data = await fetchBlogSettings();
@@ -448,6 +491,36 @@ export default function AdminBlogPage() {
     : executionNotice
       ? executionNotice
       : executionMessage;
+  const postsPerPage = 6;
+  const sortedPosts = [...posts].sort((a, b) => {
+    const direction = sortDirection === 'asc' ? 1 : -1;
+
+    if (sortKey === 'title') {
+      return a.title.localeCompare(b.title, 'es', { sensitivity: 'base' }) * direction;
+    }
+
+    if (sortKey === 'category') {
+      const categoryA = a.category?.name || 'IA & Moda';
+      const categoryB = b.category?.name || 'IA & Moda';
+      return categoryA.localeCompare(categoryB, 'es', { sensitivity: 'base' }) * direction;
+    }
+
+    if (sortKey === 'status') {
+      return a.status.localeCompare(b.status, 'es', { sensitivity: 'base' }) * direction;
+    }
+
+    return (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * direction;
+  });
+  const totalPages = Math.max(1, Math.ceil(sortedPosts.length / postsPerPage));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedPosts = sortedPosts.slice(
+    (safeCurrentPage - 1) * postsPerPage,
+    safeCurrentPage * postsPerPage,
+  );
+  const sortIndicator = (key: SortKey) => {
+    if (sortKey !== key) return '↕';
+    return sortDirection === 'asc' ? '↑' : '↓';
+  };
 
   return (
     <div className="space-y-6">
@@ -683,15 +756,35 @@ export default function AdminBlogPage() {
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
               <tr style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }} className="border-b">
-                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>Artículo</th>
-                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>Clasificación</th>
-                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>Visibilidad</th>
-                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>Registro</th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>
+                  <button type="button" onClick={() => toggleSort('title')} className="inline-flex items-center gap-2 hover:text-[#FF5C3A] transition-colors">
+                    <span>Artículo</span>
+                    <span>{sortIndicator('title')}</span>
+                  </button>
+                </th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>
+                  <button type="button" onClick={() => toggleSort('category')} className="inline-flex items-center gap-2 hover:text-[#FF5C3A] transition-colors">
+                    <span>Clasificación</span>
+                    <span>{sortIndicator('category')}</span>
+                  </button>
+                </th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>
+                  <button type="button" onClick={() => toggleSort('status')} className="inline-flex items-center gap-2 hover:text-[#FF5C3A] transition-colors">
+                    <span>Visibilidad</span>
+                    <span>{sortIndicator('status')}</span>
+                  </button>
+                </th>
+                <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>
+                  <button type="button" onClick={() => toggleSort('created_at')} className="inline-flex items-center gap-2 hover:text-[#FF5C3A] transition-colors">
+                    <span>Registro</span>
+                    <span>{sortIndicator('created_at')}</span>
+                  </button>
+                </th>
                 <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 text-right transition-colors" style={{ color: 'var(--text-primary)' }}>Control</th>
               </tr>
             </thead>
             <tbody className="divide-y" style={{ borderColor: 'var(--border-color)' }}>
-              {posts.map((post) => (
+              {paginatedPosts.map((post) => (
                 <tr key={post.id} className="group hover:bg-black/5 dark:hover:bg-white/[0.03] transition-colors">
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-4">
@@ -771,6 +864,46 @@ export default function AdminBlogPage() {
               ))}
             </tbody>
           </table>
+          {posts.length > 0 && (
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-6 py-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="text-[11px] font-bold opacity-70" style={{ color: 'var(--text-primary)' }}>
+                Mostrando {(safeCurrentPage - 1) * postsPerPage + 1}-{Math.min(safeCurrentPage * postsPerPage, sortedPosts.length)} de {sortedPosts.length}
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={safeCurrentPage === 1}
+                  className="px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border disabled:opacity-40"
+                  style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
+                >
+                  Anterior
+                </button>
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => setCurrentPage(page)}
+                    className={`min-w-[40px] px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-colors ${
+                      page === safeCurrentPage ? 'bg-[#FF5C3A] text-white border-[#FF5C3A]' : ''
+                    }`}
+                    style={page === safeCurrentPage ? undefined : { color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={safeCurrentPage === totalPages}
+                  className="px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border disabled:opacity-40"
+                  style={{ color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          )}
           {posts.length === 0 && (
             <div className="py-24 flex flex-col items-center justify-center text-center px-6">
               <div className="w-20 h-20 rounded-[1.5rem] bg-black/5 dark:bg-white/5 flex items-center justify-center mb-5 border border-black/10 dark:border-white/10 shadow-sm">
