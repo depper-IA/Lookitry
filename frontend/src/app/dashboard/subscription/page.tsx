@@ -154,7 +154,7 @@ export default function SubscriptionPage() {
           subscriptionService.getPayments(),
           usageService.getUsageStats(),
           fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/payment-settings/public`).then(r => r.ok ? r.json() : null),
-          fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?id=in.(basic,pro)&select=id,data`, {
+          fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/pricing_config?id=in.(basic,pro,trial)&select=id,data`, {
             headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}` },
           }).then(r => r.ok ? r.json() : null),
         ]);
@@ -163,7 +163,7 @@ export default function SubscriptionPage() {
         if (usageResult.status === 'fulfilled') setUsage(usageResult.value);
         if (settingsResult.status === 'fulfilled') setPaySettings(settingsResult.value);
         if (pricingResult.status === 'fulfilled' && Array.isArray(pricingResult.value)) {
-          const prices = { BASIC: 150000, PRO: 250000, TRIAL: 0 };
+          const prices = { BASIC: 150000, PRO: 250000, TRIAL: 20000 };
           const gens = { BASIC: 400, PRO: 1200 };
           pricingResult.value.forEach((row: any) => {
             if (row.id === 'basic') {
@@ -177,6 +177,9 @@ export default function SubscriptionPage() {
               if (row.data.generaciones_mensuales || row.data.generaciones_mes) {
                 gens.PRO = row.data.generaciones_mensuales || row.data.generaciones_mes;
               }
+            }
+            if (row.id === 'trial') {
+              prices.TRIAL = row.data.precio_mensual_cop || row.data.precio_cop || 20000;
             }
           });
           setDynamicPrices(prices);
