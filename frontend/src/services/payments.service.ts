@@ -15,6 +15,13 @@ class PaymentsService {
 
     return response.data;
   }
+
+  async verifyAddon(reference: string) {
+    const response = await api.post<{ status: string; message?: string }>('/payments/verify-addon', {
+      reference,
+    });
+    return response.data;
+  }
 }
 
 export const paymentsService = new PaymentsService();
