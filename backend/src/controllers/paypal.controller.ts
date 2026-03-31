@@ -243,9 +243,38 @@ export class PaypalController {
     }
 
     const hasAuthenticatedBrand = Boolean((req as any).brand?.id);
-    const amountCOP = hasAuthenticatedBrand
+    let amountCOP = hasAuthenticatedBrand
       ? await pricingService.calculateTotal(planStr, selectedMonths, landing)
       : await pricingService.calculateExternalCheckoutTotal(planStr, selectedMonths, landing);
+
+    if (hasAuthenticatedBrand && planStr === 'PRO') {
+      const { data: currentBrand } = await supabaseAdmin
+        .from('brands')
+        .select('plan, subscription_status, trial_end_date')
+        .eq('id', (req as any).brand.id)
+        .single();
+
+      const isActualUpgrade =
+        hasActivePaidSubscription(currentBrand) &&
+        currentBrand?.plan === 'BASIC';
+
+      if (isActualUpgrade) {
+        const planOnlyTotal = await pricingService.calculateTotal(planStr, selectedMonths, false);
+        const preview = await subscriptionService.calculateUpgradeProration(
+          (req as any).brand.id,
+          'PRO',
+          selectedMonths,
+          planOnlyTotal,
+          0
+        );
+
+        const landingAmount = landing
+          ? await pricingService.calculateTotal(planStr, selectedMonths, true) - planOnlyTotal
+          : 0;
+
+        amountCOP = Math.max(0, preview.amountToPay + landingAmount);
+      }
+    }
 
     const overrideTrm = trm ? parseFloat(trm as string) : undefined;
     const { trm: currentTrm, source } = await pricingService.getEffectiveTrm(overrideTrm);
