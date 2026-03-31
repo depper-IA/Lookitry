@@ -129,7 +129,7 @@ export default function DashboardPage() {
       <motion.section
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-[2.2rem] border border-[#FF5C3A]/15 bg-[linear-gradient(135deg,rgba(255,92,58,0.10),rgba(20,20,20,0.96)_28%,rgba(10,10,10,1)_100%)] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.28)] md:p-10"
+        className="relative overflow-hidden rounded-[2.2rem] border border-[#FF5C3A]/20 bg-[linear-gradient(135deg,rgba(255,92,58,0.08),var(--bg-card)_28%,var(--bg-card)_100%)] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.1)] md:p-10 dark:border-[#FF5C3A]/15 dark:bg-[linear-gradient(135deg,rgba(255,92,58,0.10),rgba(20,20,20,0.96)_28%,rgba(10,10,10,1)_100%)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.28)]"
       >
         <div className="absolute right-0 top-0 h-36 w-36 rounded-full bg-[#FF5C3A]/10 blur-3xl" />
         <div className="relative grid gap-8 lg:grid-cols-[1.35fr_0.95fr]">
@@ -138,34 +138,34 @@ export default function DashboardPage() {
               <span className="rounded-full border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">
                 Estado de tu cuenta
               </span>
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-white">
+              <span className="rounded-full border border-[var(--border-color)] bg-[var(--bg-input)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-[var(--text-primary)]">
                 Plan {planLabel}
               </span>
             </div>
 
             <div className="space-y-3">
-              <h1 className="font-jakarta text-3xl font-bold tracking-tight text-white md:text-5xl">
+              <h1 className="font-jakarta text-3xl font-bold tracking-tight text-[var(--text-primary)] md:text-5xl">
                 {accountState.statusTitle}
               </h1>
-              <p className="max-w-2xl text-sm font-medium leading-relaxed text-[#bbb] md:text-base">
+              <p className="max-w-2xl text-sm font-medium leading-relaxed text-[var(--text-muted)] md:text-base">
                 {accountState.statusDescription}
               </p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
-              <div className="rounded-[1.8rem] border border-white/10 bg-black/20 p-5 backdrop-blur-sm">
+              <div className="rounded-[1.8rem] border border-[var(--border-color)] bg-[var(--bg-input)]/40 p-5 backdrop-blur-sm dark:border-white/10 dark:bg-black/20">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#999]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">
                       Siguiente acción
                     </p>
-                    <h2 className="mt-2 text-xl font-bold tracking-tight text-white">
+                    <h2 className="mt-2 text-xl font-bold tracking-tight text-[var(--text-primary)]">
                       {accountState.nextAction.title}
                     </h2>
                   </div>
                   <Sparkles className="h-5 w-5 text-[#FF5C3A]" />
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-[#bbb]">
+                <p className="mt-3 text-sm leading-relaxed text-[var(--text-muted)]">
                   {accountState.nextAction.description}
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
@@ -180,7 +180,7 @@ export default function DashboardPage() {
                     href={showcaseUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-white transition-all hover:border-[#FF5C3A]/30 hover:bg-white/10"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-[var(--text-primary)] transition-all hover:border-[#FF5C3A]/30 hover:bg-[var(--bg-input)]/80 dark:border-white/10 dark:bg-white/5"
                   >
                     {showcaseLabel}
                     <ExternalLink size={14} />
@@ -188,41 +188,41 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="rounded-[1.8rem] border border-white/10 bg-black/20 p-5 backdrop-blur-sm">
+              <div className="rounded-[1.8rem] border border-[var(--border-color)] bg-[var(--bg-input)]/40 p-5 backdrop-blur-sm dark:border-white/10 dark:bg-black/20">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#999]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">
                       Progreso del flujo
                     </p>
-                    <p className="mt-2 text-3xl font-black tracking-tight text-white">
+                    <p className="mt-2 text-3xl font-black tracking-tight text-[var(--text-primary)]">
                       {accountState.progressPercent}%
                     </p>
                   </div>
                   <Gauge className="h-5 w-5 text-[#FF5C3A]" />
                 </div>
-                <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="mt-5 h-2 overflow-hidden rounded-full bg-[var(--bg-input)] dark:bg-white/10">
                   <div
                     className="h-full rounded-full bg-[#FF5C3A] transition-all"
                     style={{ width: `${accountState.progressPercent}%` }}
                   />
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-[#bbb]">
+                <p className="mt-3 text-sm leading-relaxed text-[var(--text-muted)]">
                   {accountState.completedSteps} de {accountState.totalSteps} hitos ya están resueltos.
                 </p>
-                <p className="mt-4 text-[11px] font-black uppercase tracking-[0.18em] text-[#999]">
+                <p className="mt-4 text-[11px] font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
                   Estado comercial: {revenueView}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-[rgba(20,20,20,0.92)] p-6">
+          <div className="rounded-[2rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 dark:border-white/10 dark:bg-[rgba(20,20,20,0.92)]">
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#999]">
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--text-muted)]">
                   Checklist visible
                 </p>
-                <h2 className="mt-2 text-xl font-bold tracking-tight text-white">
+                <h2 className="mt-2 text-xl font-bold tracking-tight text-[var(--text-primary)]">
                   Qué ya quedó y qué falta
                 </h2>
               </div>
@@ -234,19 +234,19 @@ export default function DashboardPage() {
                 <Link
                   key={item.id}
                   href={item.href}
-                  className="flex items-start gap-4 rounded-[1.4rem] border border-white/8 bg-white/[0.03] px-4 py-4 transition-all hover:border-[#FF5C3A]/25 hover:bg-white/[0.05]"
+                  className="flex items-start gap-4 rounded-[1.4rem] border border-[var(--border-color)] bg-[var(--bg-input)]/50 px-4 py-4 transition-all hover:border-[#FF5C3A]/25 hover:bg-[var(--bg-input)] dark:border-white/8 dark:bg-white/[0.03] dark:hover:bg-white/[0.05]"
                 >
-                  <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl ${item.done ? 'bg-[#FF5C3A]/14 text-[#FF5C3A]' : 'bg-white/5 text-[#999]'}`}>
+                  <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl ${item.done ? 'bg-[#FF5C3A]/14 text-[#FF5C3A]' : 'bg-[var(--bg-input)] text-[var(--text-muted)] dark:bg-white/5'}`}>
                     {item.done ? <CheckCircle2 size={16} /> : <CircleDashed size={16} />}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                      <h3 className="text-sm font-bold tracking-tight text-white">{item.title}</h3>
-                      <span className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.18em] ${item.done ? 'bg-[#FF5C3A]/12 text-[#FF5C3A]' : 'bg-white/5 text-[#999]'}`}>
+                      <h3 className="text-sm font-bold tracking-tight text-[var(--text-primary)]">{item.title}</h3>
+                      <span className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.18em] ${item.done ? 'bg-[#FF5C3A]/12 text-[#FF5C3A]' : 'bg-[var(--bg-input)] text-[var(--text-muted)] dark:bg-white/5'}`}>
                         {item.stateLabel}
                       </span>
                     </div>
-                    <p className="mt-1 text-xs leading-relaxed text-[#bbb]">{item.description}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-[var(--text-muted)]">{item.description}</p>
                   </div>
                 </Link>
               ))}
