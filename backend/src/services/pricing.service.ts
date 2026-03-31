@@ -2,8 +2,6 @@ import { supabaseAdmin } from '../config/supabase';
 import { PaymentSettingsService } from './paymentSettings.service';
 import { TrmService } from '../utils/trm';
 
-const settingsService = new PaymentSettingsService();
-
 export interface PricingConfig {
   id: string;
   data: any;
@@ -107,6 +105,8 @@ export class PricingService {
     // 3. Sumar landing page si aplica
     let landingTotal = 0;
     if (includesLanding) {
+      // El servicio se instancia localmente para evitar dependencia circular extrema
+      const settingsService = new PaymentSettingsService();
       const settings = await settingsService.getSettings();
       landingTotal = settings.landing_price || 650000;
     }
@@ -136,6 +136,8 @@ export class PricingService {
 
     let landingTotal = 0;
     if (includesLanding) {
+      // El servicio se instancia localmente para evitar dependencia circular extrema
+      const settingsService = new PaymentSettingsService();
       const settings = await settingsService.getSettings();
       landingTotal = settings.landing_price || 650000;
     }
