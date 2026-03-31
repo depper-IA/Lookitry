@@ -91,6 +91,10 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
   });
   }
 
+function createEmailVerificationToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
   export class AuthService {
   /**
   * Registro seguro después de un pago confirmado (Wompi o PayPal).
@@ -128,6 +132,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
   const { data: existingBrand } = await supabaseAdmin.from('brands').select('*').eq('email', pending.email).single();
   
   let targetBrandId: string;
+  let verificationToken: string | undefined;
 
   if (existingBrand) {
     // Si la marca ya existe, verificar la contraseña para vincular el pago
@@ -164,6 +169,10 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       endDate = new Date(now.getTime() + 30 * months * 24 * 60 * 60 * 1000);
     }
 
+    if (!existingBrand.email_verified) {
+      verificationToken = existingBrand.email_verification_token || createEmailVerificationToken();
+    }
+
     await supabaseAdmin
       .from('brands')
       .update({
@@ -176,6 +185,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
         trial_payment_status: isTrial ? 'active' : null,
         has_landing_page: pending.includes_landing || existingBrand.has_landing_page || false,
         last_payment_date: now.toISOString(),
+        email_verification_token: existingBrand.email_verified ? null : verificationToken,
       })
       .eq('id', targetBrandId);
 
@@ -209,6 +219,8 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       endDate = new Date(now.getTime() + 30 * months * 24 * 60 * 60 * 1000);
     }
 
+    verificationToken = createEmailVerificationToken();
+
     const { data: newBrand, error: createError } = await supabaseAdmin
       .from('brands')
       .insert({
@@ -225,7 +237,8 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
         trial_generations_limit: trialLimit,
         trial_payment_status: isTrial ? 'active' : null,
         has_landing_page: pending.includes_landing || false,
-        email_verified: true,
+        email_verified: false,
+        email_verification_token: verificationToken,
       })
       .select()
       .single();
@@ -313,6 +326,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       plan: finalBrand.plan,
       api_key: finalBrand.api_key,
     },
+    verificationToken,
     isTrial: isTrialReference || (pending.plan || '').toUpperCase() === 'TRIAL',
   };
   }  async register(data: RegisterBrandDto & { ip?: string; fingerprint?: string }): Promise<AuthResponse> {
