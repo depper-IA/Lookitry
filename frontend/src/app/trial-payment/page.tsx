@@ -14,13 +14,13 @@ export default function TrialPaymentPage() {
   const [prodLimit, setProdLimit] = useState(1);
 
   useEffect(() => {
-    // Verificar que hay sesiÃ³n activa
+    // Verificar que hay sesión activa
     const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
     if (!token) {
       router.push('/register');
       return;
     }
-    // Obtener dÃ­as del trial
+    // Obtener días del trial
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/trial/status`)
       .then(r => r.json())
       .then(d => {
@@ -50,7 +50,7 @@ export default function TrialPaymentPage() {
       // Redirigir a Wompi
       window.location.href = data.checkoutUrl;
     } catch {
-      setError('Error de conexiÃ³n. Intenta de nuevo.');
+      setError('Error de conexión. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -79,18 +79,18 @@ export default function TrialPaymentPage() {
             Activa tu prueba
           </h1>
           <p className="text-[13px] text-[#555] mb-6 text-center leading-relaxed">
-            Para activar tu prueba de {trialDays} dÃ­as, el costo es de{' '}
+            Para activar tu prueba de {trialDays} días, el costo es de{' '}
             <span className="text-white font-medium">${priceCOP.toLocaleString()} COP</span>.
-            {priceCOP === 0 && " Esta campaÃ±a activa la prueba sin pago."}
+            {priceCOP === 0 && " Esta campaña activa la prueba sin pago."}
           </p>
 
           {/* Beneficios */}
           <div className="space-y-2.5 mb-6">
             {[
-              `${trialDays} dÃ­as de acceso`,
+              `${trialDays} días de acceso`,
               `${genLimit} generaciones incluidas`,
               `${prodLimit} producto activo en el probador`,
-              priceCOP > 0 ? 'Acceso inmediato tras el pago de prueba' : 'ActivaciÃ³n inmediata sin pago',
+              priceCOP > 0 ? 'Acceso inmediato tras el pago de prueba' : 'Activación inmediata sin pago',
             ].map(item => (
               <div key={item} className="flex items-center gap-2.5">
                 <div className="w-4 h-4 rounded-full bg-[rgba(255,92,58,0.13)] flex items-center justify-center flex-shrink-0">

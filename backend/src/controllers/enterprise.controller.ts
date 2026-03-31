@@ -28,7 +28,7 @@ function isMissingEnterpriseSyncTableError(error: any) {
 }
 
 function getEnterpriseModuleUnavailableMessage() {
-  return 'El mÃ³dulo enterprise aÃºn no estÃ¡ provisionado en esta base de datos. Falta la tabla enterprise_sync_configs.';
+  return 'El módulo enterprise aún no está provisionado en esta base de datos. Falta la tabla enterprise_sync_configs.';
 }
 
 async function safeUpdateEnterpriseConfig(brandId: string, payload: Record<string, any>) {
@@ -44,7 +44,7 @@ async function safeUpdateEnterpriseConfig(brandId: string, payload: Record<strin
   return { missingTable: false, error: response.error };
 }
 
-// GET /admin/enterprise â€” Listar todas las configs de sync Enterprise
+// GET /admin/enterprise — Listar todas las configs de sync Enterprise
 export const listEnterpriseSyncConfigs = async (req: Request, res: Response) => {
   try {
     const { data, error } = await supabaseAdmin
@@ -92,7 +92,7 @@ export const listEnterpriseSyncConfigs = async (req: Request, res: Response) => 
   }
 };
 
-// POST /admin/enterprise/:brandId/sync-config â€” Crear o actualizar config de sync
+// POST /admin/enterprise/:brandId/sync-config — Crear o actualizar config de sync
 export const upsertEnterpriseSyncConfig = async (req: Request, res: Response) => {
   const { brandId } = req.params;
   const { sync_type, source_url, api_key, field_map, active, notes } = req.body;
@@ -102,7 +102,7 @@ export const upsertEnterpriseSyncConfig = async (req: Request, res: Response) =>
   }
 
   if (!['csv', 'api', 'woocommerce'].includes(sync_type || 'csv')) {
-    return res.status(400).json({ error: 'sync_type invÃ¡lido. Valores: csv, api, woocommerce' });
+    return res.status(400).json({ error: 'sync_type inválido. Valores: csv, api, woocommerce' });
   }
 
   try {
@@ -147,7 +147,7 @@ export const upsertEnterpriseSyncConfig = async (req: Request, res: Response) =>
     }
 
     return res.json({
-      message: 'ConfiguraciÃ³n de sync guardada exitosamente',
+      message: 'Configuración de sync guardada exitosamente',
       config: data,
     });
   } catch (err: any) {
@@ -155,7 +155,7 @@ export const upsertEnterpriseSyncConfig = async (req: Request, res: Response) =>
   }
 };
 
-// POST /admin/enterprise/:brandId/trigger-sync â€” Disparo manual desde el panel
+// POST /admin/enterprise/:brandId/trigger-sync — Disparo manual desde el panel
 export const triggerEnterpriseSync = async (req: Request, res: Response) => {
   const { brandId } = req.params;
 
@@ -172,12 +172,12 @@ export const triggerEnterpriseSync = async (req: Request, res: Response) => {
 
     if (error || !config) {
       return res.status(404).json({
-        error: 'No existe configuraciÃ³n de sync para esta marca. ConfigÃºrala primero.',
+        error: 'No existe configuración de sync para esta marca. Configúrala primero.',
       });
     }
 
     if (!config.active) {
-      return res.status(400).json({ error: 'La sincronizaciÃ³n estÃ¡ pausada para esta marca.' });
+      return res.status(400).json({ error: 'La sincronización está pausada para esta marca.' });
     }
 
     // Disparar el webhook de n8n para este cliente
@@ -218,13 +218,13 @@ export const triggerEnterpriseSync = async (req: Request, res: Response) => {
       })
       .eq('brand_id', brandId);
 
-    return res.json({ message: 'Sync disparado exitosamente. n8n procesarÃ¡ los productos en breve.' });
+    return res.json({ message: 'Sync disparado exitosamente. n8n procesará los productos en breve.' });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
 };
 
-// POST /api/enterprise/sync-product â€” Webhook interno llamado por n8n para cada producto
+// POST /api/enterprise/sync-product — Webhook interno llamado por n8n para cada producto
 // Protegido por ENTERPRISE_SYNC_TOKEN (Bearer token secreto compartido con n8n)
 export const syncProductWebhook = async (req: Request, res: Response) => {
   // Verificar token secreto
@@ -242,7 +242,7 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
     category,
     image_url,  // URL ya procesada (background removed, en MinIO)
     price,
-    external_id, // ID del producto en el sistema del cliente (para deduplicaciÃ³n)
+    external_id, // ID del producto en el sistema del cliente (para deduplicación)
   } = req.body;
 
   if (!brand_id || !name || !image_url) {
@@ -297,7 +297,7 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
         price: price || null,
       };
 
-      // AÃ±adir external_id solo si la columna existe
+      // Añadir external_id solo si la columna existe
       if (external_id) {
         insertPayload.external_id = external_id;
       }
@@ -341,12 +341,12 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
   }
 };
 
-// PATCH /admin/enterprise/:brandId/sync-status â€” Actualizar estado del Ãºltimo sync (llamado por n8n al terminar)
+// PATCH /admin/enterprise/:brandId/sync-status — Actualizar estado del último sync (llamado por n8n al terminar)
 export const updateSyncStatus = async (req: Request, res: Response) => {
   const { brandId } = req.params;
   const { status, message, products_synced_count } = req.body;
 
-  // Verificar token secreto (tambiÃ©n puede ser llamado por n8n)
+  // Verificar token secreto (también puede ser llamado por n8n)
   const authHeader = req.headers.authorization || '';
   const adminHeader = (req as any).admin; // set by adminAuthMiddleware
   const expectedToken = process.env.ENTERPRISE_SYNC_TOKEN;
@@ -384,11 +384,11 @@ export const updateSyncStatus = async (req: Request, res: Response) => {
   }
 };
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 // POST /admin/enterprise/create-client
 // Alta completa de un cliente Enterprise: crea la marca con plan ENTERPRISE,
-// activa la suscripciÃ³n, registra el pago y genera la notificaciÃ³n de admin.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// activa la suscripción, registra el pago y genera la notificación de admin.
+// ─────────────────────────────────────────────────────────────────────────────
 export const createEnterpriseClient = async (req: Request, res: Response) => {
   const {
     name,
@@ -403,15 +403,15 @@ export const createEnterpriseClient = async (req: Request, res: Response) => {
     months_paid,        // Meses del contrato (1, 3, 6, 12...)
     payment_method,     // 'transfer', 'efectivo', 'wompi', 'otro'
     notes,              // Notas internas del contrato
-    products_limit,     // MÃ¡ximo de productos activos (default 50)
+    products_limit,     // Máximo de productos activos (default 50)
     generations_limit,  // Generaciones por mes (default 2000)
   } = req.body;
 
-  // â”€â”€ Validaciones bÃ¡sicas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Validaciones básicas ──────────────────────────────────────────────────
   if (!name || !email || !password || !slug) {
     return res.status(400).json({
       error: 'VALIDATION_ERROR',
-      message: 'nombre, email, contraseÃ±a y slug son requeridos',
+      message: 'nombre, email, contraseña y slug son requeridos',
     });
   }
   if (!monthly_amount || Number(monthly_amount) <= 0) {
@@ -423,43 +423,43 @@ export const createEnterpriseClient = async (req: Request, res: Response) => {
   if (!/^[a-z0-9-]+$/.test(slug)) {
     return res.status(400).json({
       error: 'VALIDATION_ERROR',
-      message: 'El slug solo puede contener letras minÃºsculas, nÃºmeros y guiones',
+      message: 'El slug solo puede contener letras minúsculas, números y guiones',
     });
   }
 
   try {
-    // 1. Verificar email Ãºnico
+    // 1. Verificar email único
     const { data: existingEmail } = await supabaseAdmin
       .from('brands')
       .select('id')
       .eq('email', email)
       .maybeSingle();
     if (existingEmail) {
-      return res.status(409).json({ error: 'CONFLICT', message: 'El email ya estÃ¡ registrado' });
+      return res.status(409).json({ error: 'CONFLICT', message: 'El email ya está registrado' });
     }
 
-    // 2. Verificar slug Ãºnico
+    // 2. Verificar slug único
     const { data: existingSlug } = await supabaseAdmin
       .from('brands')
       .select('id')
       .eq('slug', slug)
       .maybeSingle();
     if (existingSlug) {
-      return res.status(409).json({ error: 'CONFLICT', message: 'El slug ya estÃ¡ en uso' });
+      return res.status(409).json({ error: 'CONFLICT', message: 'El slug ya está en uso' });
     }
 
-    // 3. Hash de contraseÃ±a
+    // 3. Hash de contraseña
     const bcrypt = await import('bcryptjs');
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 4. Calcular fechas de suscripciÃ³n
+    // 4. Calcular fechas de suscripción
     const now = new Date();
     const contractMonths = Number(months_paid) || 1;
     const normalizedSourcePlan = ['TRIAL', 'BASIC', 'PRO'].includes(String(source_plan || '').toUpperCase()) ? String(source_plan).toUpperCase() : 'NONE';
     const endDate = new Date(now);
     endDate.setMonth(endDate.getMonth() + contractMonths);
 
-    // 5. Crear la marca con plan ENTERPRISE y suscripciÃ³n activa inmediata
+    // 5. Crear la marca con plan ENTERPRISE y suscripción activa inmediata
     const { data: newBrand, error: createError } = await supabaseAdmin
       .from('brands')
       .insert({
@@ -475,7 +475,7 @@ export const createEnterpriseClient = async (req: Request, res: Response) => {
         subscription_end_date: endDate.toISOString(),
         last_payment_date: now.toISOString(),
         next_payment_date: endDate.toISOString(),
-        email_verified: true, // El admin es responsable de la verificaciÃ³n
+        email_verified: true, // El admin es responsable de la verificación
         trial_generations_limit: Number(generations_limit) || 2000,
         social_links: normalizedSourcePlan !== 'NONE' ? { acquisition_source_plan: normalizedSourcePlan, enterprise_created_at: now.toISOString() } : { enterprise_created_at: now.toISOString() },
       })
@@ -513,14 +513,14 @@ export const createEnterpriseClient = async (req: Request, res: Response) => {
       months_paid: contractMonths,
       notes: notes
         ? `[ENTERPRISE] ${notes}`
-        : `Alta Enterprise â€” $${Number(monthly_amount).toLocaleString('es-CO')} COP/mes Ã— ${contractMonths} mes(es) + Setup $${totalSetup.toLocaleString('es-CO')} COP`,
+        : `Alta Enterprise — $${Number(monthly_amount).toLocaleString('es-CO')} COP/mes × ${contractMonths} mes(es) + Setup $${totalSetup.toLocaleString('es-CO')} COP`,
     });
 
-    // 7. NotificaciÃ³n de admin
+    // 7. Notificación de admin
     await supabaseAdmin.from('admin_notifications').insert({
       type: 'new_enterprise_client',
       title: 'Nuevo cliente Enterprise activado',
-      message: `${name} (${email}) dado de alta como cliente Enterprise â€” ${contractMonths} mes(es) de contrato.`,
+      message: `${name} (${email}) dado de alta como cliente Enterprise — ${contractMonths} mes(es) de contrato.`,
       severity: 'success',
       brand_id: newBrand.id,
       metadata: {
@@ -536,7 +536,7 @@ export const createEnterpriseClient = async (req: Request, res: Response) => {
       },
     });
 
-    // 8. AuditorÃ­a
+    // 8. Auditoría
     const adminReq = req as any;
     console.log(`[Enterprise] Alta por ${adminReq.admin?.email || 'admin'}: ${name} (${email}) hasta ${endDate.toISOString()}`);
 
