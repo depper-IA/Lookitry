@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface FormData {
   // Cliente
   name: string;
@@ -20,7 +20,7 @@ interface FormData {
   months_paid: string;
   payment_method: string;
   notes: string;
-  // LÃ­mites
+  // Límites
   generations_limit: string;
   products_limit: string;
 }
@@ -62,7 +62,7 @@ function formatCOP(value: string): string {
   return num.toLocaleString('es-CO');
 }
 
-// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function CreateEnterpriseClientPage() {
   const router = useRouter();
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
@@ -74,7 +74,7 @@ export default function CreateEnterpriseClientPage() {
   } | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  // â”€â”€ Derivados del formulario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Derivados del formulario ─────────────────────────────────────────────
   const monthlyAmount = Number(form.monthly_amount.replace(/\D/g, '')) || 0;
   const setupAmount = Number(form.setup_amount.replace(/\D/g, '')) || 0;
   const contractMonths = Number(form.months_paid) || 1;
@@ -86,7 +86,7 @@ export default function CreateEnterpriseClientPage() {
     return d.toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
   })();
 
-  // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Handlers ─────────────────────────────────────────────────────────────
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const { name, value } = e.target;
@@ -169,7 +169,7 @@ export default function CreateEnterpriseClientPage() {
     }
   };
 
-  // â”€â”€ Success screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Success screen ────────────────────────────────────────────────────────
   if (success) {
     return (
       <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center p-6">
@@ -185,7 +185,7 @@ export default function CreateEnterpriseClientPage() {
 
           <div className="bg-[#13131a] border border-emerald-500/20 rounded-2xl p-8 text-center">
             <h1 className="text-2xl font-bold text-white mb-2">Cliente Enterprise activado</h1>
-            <p className="text-slate-400 mb-8">El acceso estÃ¡ listo. Comparte las credenciales de forma segura.</p>
+            <p className="text-slate-400 mb-8">El acceso está listo. Comparte las credenciales de forma segura.</p>
 
             {/* Datos de acceso */}
             <div className="bg-[#0a0a0f] rounded-xl p-5 text-left mb-6 space-y-3">
@@ -201,7 +201,7 @@ export default function CreateEnterpriseClientPage() {
                   target="_blank"
                   className="text-indigo-400 text-sm hover:text-indigo-300"
                 >
-                  lookitry.com/login â†—
+                  lookitry.com/login ↗
                 </a>
               </div>
               <div className="flex justify-between items-center">
@@ -211,7 +211,7 @@ export default function CreateEnterpriseClientPage() {
                   target="_blank"
                   className="text-indigo-400 text-sm hover:text-indigo-300"
                 >
-                  /{success.brand.slug} â†—
+                  /{success.brand.slug} ↗
                 </a>
               </div>
               <div className="flex justify-between items-center">
@@ -233,7 +233,7 @@ export default function CreateEnterpriseClientPage() {
               </div>
               {success.contract.setup_amount > 0 && (
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-400 text-sm">Setup (Ãºnico)</span>
+                  <span className="text-slate-400 text-sm">Setup (único)</span>
                   <span className="text-white text-sm">${success.contract.setup_amount.toLocaleString('es-CO')} COP</span>
                 </div>
               )}
@@ -263,7 +263,7 @@ export default function CreateEnterpriseClientPage() {
     );
   }
 
-  // â”€â”€ Main Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Main Form ─────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#0a0a0f] py-8 px-4">
       <div className="max-w-4xl mx-auto">
@@ -287,19 +287,19 @@ export default function CreateEnterpriseClientPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-white">Alta de cliente Enterprise</h1>
-              <p className="text-slate-400 text-sm mt-1">Crea y activa la cuenta completa con suscripciÃ³n y registro de pago</p>
+              <p className="text-slate-400 text-sm mt-1">Crea y activa la cuenta completa con suscripción y registro de pago</p>
             </div>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* â”€â”€ SecciÃ³n 1: Datos del cliente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* ── Sección 1: Datos del cliente ─────────────────────────────── */}
           <section className="bg-[#13131a] border border-white/5 rounded-2xl p-6">
             <h2 className="text-white font-semibold mb-1 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-indigo-600/30 text-indigo-400 text-xs flex items-center justify-center font-bold">1</span>
               Datos del cliente
             </h2>
-            <p className="text-slate-500 text-sm mb-6 ml-8">InformaciÃ³n de acceso y contacto</p>
+            <p className="text-slate-500 text-sm mb-6 ml-8">Información de acceso y contacto</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
@@ -309,7 +309,7 @@ export default function CreateEnterpriseClientPage() {
                   name="name"
                   value={form.name}
                   onChange={handleNameChange}
-                  placeholder="Ej: Boutique Ã‰lite"
+                  placeholder="Ej: Boutique Élite"
                   required
                   className="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors text-sm"
                 />
@@ -347,14 +347,14 @@ export default function CreateEnterpriseClientPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">ContraseÃ±a inicial *</label>
+                <label className="block text-sm text-slate-400 mb-1.5">Contraseña inicial *</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     name="password"
                     value={form.password}
                     onChange={handleChange}
-                    placeholder="MÃ­nimo 8 caracteres"
+                    placeholder="Mínimo 8 caracteres"
                     required
                     minLength={8}
                     className="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors text-sm"
@@ -386,13 +386,13 @@ export default function CreateEnterpriseClientPage() {
                   name="contact_name"
                   value={form.contact_name}
                   onChange={handleChange}
-                  placeholder="MarÃ­a GarcÃ­a"
+                  placeholder="María García"
                   className="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors text-sm"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">TelÃ©fono</label>
+                <label className="block text-sm text-slate-400 mb-1.5">Teléfono</label>
                 <input
                   type="tel"
                   name="phone"
@@ -405,13 +405,13 @@ export default function CreateEnterpriseClientPage() {
             </div>
           </section>
 
-          {/* â”€â”€ SecciÃ³n 2: Contrato â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* ── Sección 2: Contrato ───────────────────────────────────────── */}
           <section className="bg-[#13131a] border border-white/5 rounded-2xl p-6">
             <h2 className="text-white font-semibold mb-1 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-indigo-600/30 text-indigo-400 text-xs flex items-center justify-center font-bold">2</span>
-              Contrato y facturaciÃ³n
+              Contrato y facturación
             </h2>
-            <p className="text-slate-500 text-sm mb-6 ml-8">Define los tÃ©rminos econÃ³micos del acuerdo</p>
+            <p className="text-slate-500 text-sm mb-6 ml-8">Define los términos económicos del acuerdo</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
@@ -431,7 +431,7 @@ export default function CreateEnterpriseClientPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">Setup / incorporaciÃ³n (COP)</label>
+                <label className="block text-sm text-slate-400 mb-1.5">Setup / incorporación (COP)</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
                   <input
@@ -478,7 +478,7 @@ export default function CreateEnterpriseClientPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">MÃ©todo de pago</label>
+                <label className="block text-sm text-slate-400 mb-1.5">Método de pago</label>
                 <select
                   name="payment_method"
                   value={form.payment_method}
@@ -497,7 +497,7 @@ export default function CreateEnterpriseClientPage() {
                   name="notes"
                   value={form.notes}
                   onChange={handleChange}
-                  placeholder="TÃ©rminos especiales, descuentos adicionales, observaciones del acuerdo..."
+                  placeholder="Términos especiales, descuentos adicionales, observaciones del acuerdo..."
                   rows={3}
                   className="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition-colors text-sm resize-none"
                 />
@@ -505,13 +505,13 @@ export default function CreateEnterpriseClientPage() {
             </div>
           </section>
 
-          {/* â”€â”€ SecciÃ³n 3: LÃ­mites de plan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* ── Sección 3: Límites de plan ───────────────────────────────── */}
           <section className="bg-[#13131a] border border-white/5 rounded-2xl p-6">
             <h2 className="text-white font-semibold mb-1 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-indigo-600/30 text-indigo-400 text-xs flex items-center justify-center font-bold">3</span>
-              LÃ­mites del plan
+              Límites del plan
             </h2>
-            <p className="text-slate-500 text-sm mb-6 ml-8">Personaliza los lÃ­mites de uso segÃºn lo acordado</p>
+            <p className="text-slate-500 text-sm mb-6 ml-8">Personaliza los límites de uso según lo acordado</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
@@ -529,7 +529,7 @@ export default function CreateEnterpriseClientPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-slate-400 mb-1.5">Productos activos mÃ¡x.</label>
+                <label className="block text-sm text-slate-400 mb-1.5">Productos activos máx.</label>
                 <input
                   type="number"
                   name="products_limit"
@@ -543,7 +543,7 @@ export default function CreateEnterpriseClientPage() {
             </div>
           </section>
 
-          {/* â”€â”€ Resumen financiero en tiempo real â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* ── Resumen financiero en tiempo real ────────────────────────── */}
           {monthlyAmount > 0 && (
             <section className="bg-gradient-to-br from-indigo-900/20 to-purple-900/20 border border-indigo-500/20 rounded-2xl p-6">
               <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
@@ -558,12 +558,12 @@ export default function CreateEnterpriseClientPage() {
                   <span className="text-white">${monthlyAmount.toLocaleString('es-CO')} COP</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Ã— {contractMonths} mes{contractMonths > 1 ? 'es' : ''}</span>
+                  <span className="text-slate-400">× {contractMonths} mes{contractMonths > 1 ? 'es' : ''}</span>
                   <span className="text-white">${(monthlyAmount * contractMonths).toLocaleString('es-CO')} COP</span>
                 </div>
                 {setupAmount > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Setup (Ãºnico)</span>
+                    <span className="text-slate-400">Setup (único)</span>
                     <span className="text-white">+ ${setupAmount.toLocaleString('es-CO')} COP</span>
                   </div>
                 )}
@@ -572,7 +572,7 @@ export default function CreateEnterpriseClientPage() {
                   <span className="text-indigo-400 font-bold text-base">${totalContract.toLocaleString('es-CO')} COP</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500 text-xs">SuscripciÃ³n activa hasta</span>
+                  <span className="text-slate-500 text-xs">Suscripción activa hasta</span>
                   <span className="text-slate-400 text-xs">{endDate}</span>
                 </div>
               </div>
@@ -589,7 +589,7 @@ export default function CreateEnterpriseClientPage() {
             </div>
           )}
 
-          {/* BotÃ³n submit */}
+          {/* Botón submit */}
           <div className="flex gap-4">
             <Link
               href="/admin/enterprise"
