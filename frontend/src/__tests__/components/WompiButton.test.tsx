@@ -3,11 +3,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import WompiButton from '@/components/payments/WompiButton';
 
 const mockGetWidgetConfig = vi.fn();
+const mockGetCheckoutUrl = vi.fn();
 const mockOpen = vi.fn();
+const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null);
 
 vi.mock('@/services/wompi.service', () => ({
   wompiService: {
     getWidgetConfig: (...args: unknown[]) => mockGetWidgetConfig(...args),
+    getCheckoutUrl: (...args: unknown[]) => mockGetCheckoutUrl(...args),
   },
 }));
 
@@ -55,6 +58,7 @@ describe('WompiButton', () => {
 
     expect(onSuccess).toHaveBeenCalledWith({ transaction: { status: 'APPROVED' } });
     expect(onError).not.toHaveBeenCalled();
+    expect(mockGetCheckoutUrl).not.toHaveBeenCalled();
   });
 
   it('reporta pagos pendientes por onError', async () => {
@@ -83,16 +87,23 @@ describe('WompiButton', () => {
     expect(onError).toHaveBeenCalledWith('Estamos verificando tu pago con Wompi.');
   });
 
-  it('reporta fallo si el script no carga', async () => {
+  it('usa checkout hospedado si el script no carga', async () => {
     const onError = vi.fn();
+    mockGetCheckoutUrl.mockResolvedValue({
+      checkoutUrl: 'https://checkout.wompi.co/l/test-link',
+      reference: 'TRYON-2',
+    });
 
     render(<WompiButton plan="BASIC" onSuccess={vi.fn()} onError={onError} />);
 
     const script = document.querySelector('script[src="https://checkout.wompi.co/widget.js"]') as HTMLScriptElement;
     script.dispatchEvent(new Event('error'));
 
-    await waitFor(() =>
-      expect(onError).toHaveBeenCalledWith('No se pudo cargar el widget de Wompi')
-    );
+    const button = await screen.findByRole('button', { name: /pagar con wompi/i });
+    fireEvent.click(button);
+
+    await waitFor(() => expect(mockGetCheckoutUrl).toHaveBeenCalledWith('BASIC', 1, undefined, false));
+    expect(openSpy).toHaveBeenCalledWith('https://checkout.wompi.co/l/test-link', '_self');
+    expect(onError).not.toHaveBeenCalled();
   });
 });

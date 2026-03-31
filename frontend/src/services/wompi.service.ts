@@ -22,6 +22,19 @@ class WompiService {
     const response = await api.get<WompiWidgetConfig>(url);
     return response.data;
   }
+
+  async getCheckoutUrl(
+    plan: 'BASIC' | 'PRO',
+    months: number = 1,
+    amount?: number,
+    includesLanding: boolean = false
+  ): Promise<{ checkoutUrl: string; reference: string }> {
+    let url = `/payments/wompi/checkout-url?plan=${plan}&months=${months}`;
+    if (amount) url += `&amount=${amount}`;
+    if (includesLanding) url += `&includes_landing=true`;
+    const response = await api.get<{ checkoutUrl: string; reference: string }>(url);
+    return response.data;
+  }
 }
 
 export const wompiService = new WompiService();

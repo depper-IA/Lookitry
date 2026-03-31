@@ -51,23 +51,36 @@ export default function WompiButton({
 }: WompiButtonProps) {
   const [loading, setLoading] = useState(false);
   const [scriptReady, setScriptReady] = useState(false);
+  const [scriptFailed, setScriptFailed] = useState(false);
 
   useEffect(() => {
     loadWompiScript()
-      .then(() => setScriptReady(true))
-      .catch((err) => onError?.(err.message));
-  }, [onError]);
+      .then(() => {
+        setScriptReady(true);
+        setScriptFailed(false);
+      })
+      .catch(() => {
+        setScriptReady(false);
+        setScriptFailed(true);
+      });
+  }, []);
+
+  const redirectToHostedCheckout = useCallback(async () => {
+    const checkout = await wompiService.getCheckoutUrl(plan, months, amount, includesLanding);
+    window.open(checkout.checkoutUrl, '_self');
+  }, [plan, months, amount, includesLanding]);
 
   const handleClick = useCallback(async () => {
-    if (!scriptReady || loading) return;
+    if (loading) return;
     setLoading(true);
 
     try {
-      const config = await wompiService.getWidgetConfig(plan, months, amount, includesLanding);
-
-      if (!window.WidgetCheckout) {
-        throw new Error('El widget de Wompi no está disponible');
+      if (!scriptReady || scriptFailed || !window.WidgetCheckout) {
+        await redirectToHostedCheckout();
+        return;
       }
+
+      const config = await wompiService.getWidgetConfig(plan, months, amount, includesLanding);
 
       const widget = new window.WidgetCheckout({
         currency: config.currency,
@@ -79,24 +92,26 @@ export default function WompiButton({
 
       widget.open((result: WompiWidgetResult) => {
         setLoading(false);
-        if (result.transaction.status === 'APPROVED') {
+        const status = result.transaction?.status;
+
+        if (status === 'APPROVED') {
           onSuccess(result);
-        } else if (result.transaction.status === 'PENDING') {
+        } else if (status === 'PENDING') {
           onError?.('Estamos verificando tu pago con Wompi.');
         } else {
-          onError?.(`Pago ${result.transaction.status === 'DECLINED' ? 'rechazado' : 'fallido'}. Intenta de nuevo.`);
+          onError?.(`Pago ${status === 'DECLINED' ? 'rechazado' : 'fallido'}. Intenta de nuevo.`);
         }
       });
     } catch (err: any) {
       setLoading(false);
       onError?.(err.message ?? 'Error al iniciar el pago');
     }
-  }, [scriptReady, loading, plan, months, amount, includesLanding, onSuccess, onError]);
+  }, [scriptReady, scriptFailed, loading, plan, months, amount, includesLanding, onSuccess, onError, redirectToHostedCheckout]);
 
   return (
     <button
       onClick={handleClick}
-      disabled={disabled || loading || !scriptReady}
+      disabled={disabled || loading}
       className={className}
       style={style}
     >

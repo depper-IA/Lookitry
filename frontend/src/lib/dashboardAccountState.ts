@@ -115,8 +115,8 @@ export function deriveDashboardAccountState(params: {
       id: 'store',
       title: 'Tienda conectada',
       description: storeConnected
-        ? 'Detectamos una señal de dominio, tienda o conector vinculado.'
-        : 'Todavía no vemos una tienda enlazada o un dominio configurado.',
+        ? 'Tu tienda o dominio ya estan vinculados para seguir con la activacion.'
+        : 'Aun falta enlazar tu tienda o configurar el dominio donde vivira el probador.',
       href: '/dashboard/integrations',
       done: storeConnected,
       stateLabel: storeConnected ? 'Conectada' : 'Sin conectar',
@@ -125,8 +125,8 @@ export function deriveDashboardAccountState(params: {
       id: 'widget',
       title: 'Widget instalado',
       description: widgetInstalled
-        ? (pluginValidated ? 'El plugin ya fue validado por Lookitry.' : 'La API está configurada, pero aún falta validar la instalación final.')
-        : 'Falta instalar o configurar el widget en tu tienda.',
+        ? (pluginValidated ? 'Tu probador ya quedo listo para instalarse o usarse en tienda.' : 'La conexion ya empezo, pero todavia falta terminar la instalacion.')
+        : 'Todavia falta instalar o configurar el probador en tu tienda.',
       href: '/dashboard/integrations',
       done: widgetInstalled,
       stateLabel: pluginValidated ? 'Operativo' : widgetInstalled ? 'Configuración en curso' : 'No instalado',
@@ -145,8 +145,8 @@ export function deriveDashboardAccountState(params: {
       id: 'tryons',
       title: 'Primeras pruebas recibidas',
       description: hasTryOns
-        ? 'Tu cuenta ya empezó a recibir interacción real o pruebas internas.'
-        : 'Aún no hay pruebas registradas. Comparte el probador para activarlo.',
+        ? 'Tu cuenta ya empezo a recibir actividad y pruebas del probador.'
+        : 'Todavia no hay pruebas registradas. Comparte el probador para ponerlo en marcha.',
       href: '/dashboard/integrations',
       done: hasTryOns,
       stateLabel: hasTryOns ? 'En marcha' : 'Sin actividad',
@@ -159,7 +159,7 @@ export function deriveDashboardAccountState(params: {
 
   let nextAction: NextAction = {
     title: 'Cuenta en funcionamiento',
-    description: 'Tu configuración base ya está resuelta. Ahora conviene revisar rendimiento y optimizar productos.',
+    description: 'Tu cuenta ya quedo lista en lo esencial. Ahora conviene revisar resultados y mejorar productos.',
     href: '/dashboard/analytics',
     cta: 'Ver resultados',
   };
@@ -167,21 +167,21 @@ export function deriveDashboardAccountState(params: {
   if (!emailVerified) {
     nextAction = {
       title: 'Confirma tu acceso',
-      description: 'Verifica tu correo para evitar bloqueos de recuperación, alertas y facturación.',
+      description: 'Confirma tu correo para dejar la cuenta lista y evitar bloqueos de acceso o avisos.',
       href: '/dashboard/profile',
       cta: 'Revisar perfil',
     };
   } else if (!hasActivePlan) {
     nextAction = {
       title: 'Activa tu plan',
-      description: 'El siguiente paso del flujo es dejar la suscripción activa para continuar la implementación.',
+      description: 'Activa tu plan para poder terminar la configuracion y empezar a operar sin fricciones.',
       href: '/dashboard/subscription',
       cta: 'Ir a suscripción',
     };
   } else if (!storeConnected || !widgetInstalled) {
     nextAction = {
       title: 'Conecta tu tienda',
-      description: 'Ya pagaste o activaste tu cuenta. Lo que falta ahora es enlazar la tienda e instalar el widget.',
+      description: 'Tu cuenta ya avanzo. Lo que falta ahora es conectar la tienda y dejar el probador publicado.',
       href: '/dashboard/integrations',
       cta: 'Conectar tienda',
     };
@@ -195,7 +195,7 @@ export function deriveDashboardAccountState(params: {
   } else if (!hasTryOns) {
     nextAction = {
       title: 'Lanza tu probador',
-      description: 'Comparte el enlace o instala el widget en producción para empezar a recibir pruebas reales.',
+      description: 'Comparte el enlace o termina la instalacion para empezar a recibir pruebas reales.',
       href: '/dashboard/integrations',
       cta: 'Compartir probador',
     };
@@ -208,10 +208,10 @@ export function deriveDashboardAccountState(params: {
       : 'Tu cuenta está operativa';
 
   const statusDescription = completedSteps <= 2
-    ? 'Primero necesitas cerrar la activación comercial y técnica para que el cliente entienda claramente que ya puede usar Lookitry.'
+    ? 'Todavia faltan algunos pasos clave para dejar tu cuenta lista y empezar a compartir el probador.'
     : completedSteps < totalSteps
-      ? 'La parte crítica ya existe. Falta terminar instalación, contenido o lanzamiento para que el flujo quede completo.'
-      : 'El flujo de registro, pago y acceso ya tiene continuidad hasta el dashboard. Ahora la prioridad es rendimiento y crecimiento.';
+      ? 'La base ya esta resuelta. Falta terminar instalacion, contenido o lanzamiento para quedar operando.'
+      : 'Tu cuenta ya tiene continuidad desde el registro hasta el uso. Ahora la prioridad es crecer y optimizar resultados.';
 
   const systemChecks: DashboardAccountState['systemChecks'] = [
     {
@@ -230,10 +230,10 @@ export function deriveDashboardAccountState(params: {
       id: 'integration',
       label: 'Integración',
       value: pluginValidated
-        ? 'Plugin validado'
+        ? 'Probador listo'
         : widgetInstalled
-          ? 'API configurada'
-          : 'Sin instalación detectada',
+          ? 'Conexion iniciada'
+          : 'Sin instalacion detectada',
       tone: pluginValidated ? 'ok' : widgetInstalled ? 'warn' : 'muted',
     },
     {
@@ -247,15 +247,15 @@ export function deriveDashboardAccountState(params: {
       label: 'Actividad',
       value: hasTryOns
         ? `${analytics?.totalGenerations ?? 0} pruebas registradas`
-        : 'Sin pruebas todavía',
+        : 'Sin pruebas todavia',
       tone: hasTryOns ? 'ok' : 'muted',
     },
     {
       id: 'sync',
-      label: 'Última sincronización',
+      label: 'Ultima actividad',
       value: wooMetrics?.telemetry?.lastSyncAt
         ? new Date(wooMetrics.telemetry.lastSyncAt).toLocaleString('es-CO')
-        : 'Sin sincronización detectada',
+        : 'Sin actividad reciente',
       tone: wooMetrics?.telemetry?.lastSyncAt ? 'ok' : 'muted',
     },
   ];
