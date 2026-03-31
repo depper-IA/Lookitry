@@ -159,7 +159,7 @@ export class AddonCreditsService {
       currency: paymentMethod === 'wompi' ? 'COP' : 'USD',
       payment_method: paymentMethod,
       status: 'completed',
-      months_paid: 0,
+      months_paid: 1, // Fix: Debe ser >= 1 por check constraint en DB
       reference,
       notes: `Compra add-on ${addonPackage.id}. +${addonPackage.credits_amount} créditos extra. TxId: ${transactionId}`,
     });
