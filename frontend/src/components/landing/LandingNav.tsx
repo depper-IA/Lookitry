@@ -70,9 +70,9 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
     window.dispatchEvent(new Event('currencyChange'));
   };
 
-  function handleLogout() {
+  async function handleLogout() {
     // Limpiar localStorage Y cookie HTTP-Only del backend
-    authService.logout();
+    await authService.logout();
     setSession(null);
     setDropdownOpen(false);
     // Hard redirect para forzar limpieza completa de estado React
