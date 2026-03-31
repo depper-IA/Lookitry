@@ -64,10 +64,6 @@ export class UsageService {
       throw new Error('Marca no encontrada');
     }
 
-    if (!brand.email_verified) {
-      throw new Error('EMAIL_NOT_VERIFIED');
-    }
-
     const inTrial =
       brand.plan === 'TRIAL' &&
       brand.subscription_status !== 'suspended' &&
