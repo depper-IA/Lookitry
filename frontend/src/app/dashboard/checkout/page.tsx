@@ -258,6 +258,10 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const planParam = (searchParams.get('plan') ?? 'BASIC').toUpperCase();
   const initialPlan: CheckoutPlan = planParam === 'PRO' ? 'PRO' : 'BASIC';
+  const returnMethod = searchParams.get('method');
+  const returnRef = searchParams.get('ref');
+  const paypalToken = searchParams.get('token');
+  const returnMonths = Number(searchParams.get('months') || 1);
 
   const [selectedPlan, setSelectedPlan] = useState<CheckoutPlan>(initialPlan);
   const [selectedMonths, setSelectedMonths] = useState(1);
@@ -556,6 +560,66 @@ function CheckoutContent() {
     setErrorMsg(msg);
     setState('error');
   };
+
+  useEffect(() => {
+    if (!returnMethod) return;
+    if (state === 'verifying' || state === 'success') return;
+
+    const summary: PendingPaymentSummary = {
+      method: returnMethod === 'paypal' ? 'paypal' : 'wompi',
+      amount: totalPrice,
+      plan: selectedPlan,
+      months: returnMonths,
+      reference: returnRef || undefined,
+    };
+
+    if (returnMethod === 'wompi') {
+      setPendingPaymentSummary(summary);
+      setErrorMsg('');
+      setState('verifying');
+      return;
+    }
+
+    if (returnMethod === 'paypal' && paypalToken) {
+      let cancelled = false;
+
+      const capturePayment = async () => {
+        try {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+          setPendingPaymentSummary(summary);
+          setErrorMsg('');
+
+          const res = await fetch(`${apiUrl}/api/payments/paypal/capture`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId: paypalToken, reference: returnRef }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || data.message || 'No se pudo confirmar el pago con PayPal');
+          }
+          if (!cancelled) {
+            setPendingPaymentSummary((prev) => ({
+              ...(prev || summary),
+              reference: data.reference || prev?.reference,
+            }));
+            setState('verifying');
+          }
+        } catch (error: any) {
+          if (!cancelled) {
+            setErrorMsg(error.message || 'No se pudo confirmar el pago con PayPal');
+            setState('error');
+          }
+        }
+      };
+
+      capturePayment();
+      return () => {
+        cancelled = true;
+      };
+    }
+  }, [paypalToken, returnMethod, returnMonths, returnRef, selectedPlan, state, totalPrice]);
 
   useEffect(() => {
     if (state !== 'verifying') return;

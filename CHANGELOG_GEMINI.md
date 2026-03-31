@@ -1,6 +1,24 @@
 # Changelog - Lookitry (AI Assisted)
 
 
+## [2026-03-31] - Retorno del pago interno al dashboard con verificacion real
+
+### Cambios Realizados
+- **PayPal autenticado vuelve al dashboard**: `backend/src/controllers/paypal.controller.ts` ahora genera `return_url` y `cancel_url` hacia `/dashboard/checkout` para compras internas, en lugar de reutilizar la pantalla publica `/pago-exitoso`.
+- **Wompi autenticado deja de usar confirmacion publica**: `backend/src/controllers/wompi.controller.ts` ahora devuelve al checkout interno del dashboard cuando la compra pertenece a una marca autenticada.
+- **Captura y verificacion dentro del checkout interno**: `frontend/src/app/dashboard/checkout/page.tsx` ahora procesa `method/ref/token` al volver de la pasarela, captura PayPal dentro del flujo autenticado y solo muestra estados de verificacion/exito/error ligados a la actualizacion real de la suscripcion.
+
+### Archivos Modificados
+- `backend/src/controllers/paypal.controller.ts`
+- `backend/src/controllers/wompi.controller.ts`
+- `frontend/src/app/dashboard/checkout/page.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+El checkout interno estaba reutilizando la pagina publica de confirmacion, lo que producia una UX equivocada y una falsa sensacion de exito incluso cuando el plan no se habia actualizado todavia. Ahora el retorno interno se valida dentro del dashboard contra el estado real de la cuenta.
+
+---
+
 ## [2026-03-31] - Blindaje del trial publico contra sesiones activas
 
 ### Cambios Realizados
