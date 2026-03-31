@@ -193,7 +193,7 @@ export class AdminService {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
     let newPassword = '';
     for (let i = 0; i < 12; i++) {
-      newPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      newPassword += chars.charAt(crypto.randomInt(0, chars.length));
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);

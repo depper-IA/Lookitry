@@ -1,4 +1,4 @@
-?import { Response } from 'express';
+import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { AdminService } from '../services/admin.service';
 import { notificationService } from '../services/notification.service';
@@ -250,8 +250,8 @@ export const adminLogout = async (_req: any, res: Response) => {
 
     // Audit log (optional, if admin ID is available from middleware)
     // auditService.log({
-    //   admin_id: _req.admin?.id ? 'unknown',
-    //   admin_email: _req.admin?.email ? 'unknown',
+    //   admin_id: _req.admin?.id || 'unknown',
+    //   admin_email: _req.admin?.email || 'unknown',
     //   action: 'admin.logout',
     // });
 
@@ -307,8 +307,8 @@ export const changeBrandPlan = async (req: any, res: Response) => {
 
     // Auditoría
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'brand.plan_change',
       target_brand_id: id,
       details: { new_plan: plan },
@@ -429,8 +429,8 @@ export const createBrand = async (req: any, res: Response) => {
 
     // Auditoría
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'brand.create',
       target_brand_id: newBrand.id,
       details: { name: newBrand.name, email: newBrand.email, plan: newBrand.plan },
@@ -477,8 +477,8 @@ export const deleteBrand = async (req: any, res: Response) => {
     await adminService.deleteBrand(id);
 
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'brand.delete',
       target_brand_id: id,
     });
@@ -554,8 +554,8 @@ export const activateBrandPlan = async (req: any, res: Response) => {
 
     // Auditoría
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'brand.plan_activate',
       target_brand_id: id,
       details: { plan: plan || 'BASIC', amount, payment_method },
@@ -621,8 +621,8 @@ export const toggleLandingPage = async (req: any, res: Response) => {
     }
 
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'brand.landing_page_toggle',
       target_brand_id: id,
       details: { has_landing_page },
@@ -663,8 +663,8 @@ export const updateModalConfig = async (req: any, res: Response) => {
     }
 
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'brand.modal_config_update' as any,
       target_brand_id: id,
       details: { modal_title, modal_description },
@@ -735,8 +735,8 @@ export const suspendMiniLanding = async (req: any, res: Response) => {
     if (error || !data) return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
 
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'brand.landing_suspend',
       target_brand_id: id,
     });
@@ -765,8 +765,8 @@ export const restoreMiniLanding = async (req: any, res: Response) => {
     if (error || !data) return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
 
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'brand.landing_restore',
       target_brand_id: id,
     });
@@ -889,8 +889,8 @@ export const sendAdminCredentials = async (req: any, res: Response) => {
     }).catch(err => console.error('[sendAdminCredentials] Error enviando email:', err));
 
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'admin.send_credentials',
       details: { target_admin_id: id, target_email: admin.email },
     });
@@ -967,8 +967,8 @@ export const changeAdminPassword = async (req: any, res: Response) => {
     }
     await adminService.changeAdminPassword(id, newPassword);
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'admin.change_password',
       details: { target_admin_id: id },
     });
@@ -999,10 +999,10 @@ export const getOpenRouterCredits = async (_req: any, res: Response) => {
     }
 
     const json = await response.json() as { data?: any };
-    const data = json.data ? {};
+    const data = json.data || {};
 
-    const limit: number | null = data.limit ? null;
-    const usage: number = data.usage ? 0;
+    const limit: number | null = data.limit || null;
+    const usage: number = data.usage || 0;
     const balance = limit !== null ? Math.max(0, limit - usage) : null;
 
     // Costo estimado por generación con gemini-2.5-flash-image
@@ -1011,12 +1011,12 @@ export const getOpenRouterCredits = async (_req: any, res: Response) => {
     const usagePercent = limit ? Math.min(100, Math.round((usage / limit) * 100)) : null;
 
     return res.status(200).json({
-      label: data.label ? null,
+      label: data.label || null,
       usage: parseFloat(usage.toFixed(4)),
       limit,
       balance: balance !== null ? parseFloat(balance.toFixed(4)) : null,
-      is_free_tier: data.is_free_tier ? false,
-      rate_limit: data.rate_limit ? null,
+      is_free_tier: data.is_free_tier || false,
+      rate_limit: data.rate_limit || null,
       usage_percent: usagePercent,
       estimated_generations_remaining: estimatedGenerations,
       cost_per_generation: COST_PER_GEN,
@@ -1175,7 +1175,7 @@ export const getFeedbackStats = async (_req: any, res: Response) => {
 export const resolveFeedback = async (req: any, res: Response) => {
   try {
     const { id } = req.params;
-    await feedbackService.resolveFeedback(id, req.admin?.email ? 'admin');
+    await feedbackService.resolveFeedback(id, req.admin?.email || 'admin');
     return res.status(200).json({ message: 'Feedback marcado como resuelto' });
   } catch (error: any) {
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
@@ -1260,8 +1260,8 @@ export const sendBrandResetEmail = async (req: any, res: Response) => {
     });
 
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'brand.send_reset_email',
       target_brand_id: id,
       details: { brand_email: brand.email },
@@ -1435,8 +1435,8 @@ export const setWooProductActive = async (req: any, res: Response) => {
     }
 
     auditService.log({
-      admin_id: req.admin?.id ? 'unknown',
-      admin_email: req.admin?.email ? 'unknown',
+      admin_id: req.admin?.id || 'unknown',
+      admin_email: req.admin?.email || 'unknown',
       action: 'brand.woo_product_toggle' as any,
       target_brand_id: id,
       details: { product_id: productId, is_active },
@@ -1487,8 +1487,8 @@ export const createPromotion = async (req: any, res: Response) => {
       .insert({
         type,
         name,
-        config: config ? {},
-        active: active ? false,
+        config: config || {},
+        active: active || false,
         starts_at: starts_at || null,
         ends_at: ends_at || null
       })
@@ -1525,8 +1525,8 @@ export const updatePromotion = async (req: any, res: Response) => {
       .update({
         type,
         name,
-        config: config ? {},
-        active: active ? false,
+        config: config || {},
+        active: active || false,
         starts_at: starts_at || null,
         ends_at: ends_at || null
       })
