@@ -152,23 +152,47 @@ export class AddonCreditsService {
     const { brandId, packageId } = this.parseAddonReference(reference);
     const addonPackage = await this.getPackageById(packageId);
 
-    const { data, error } = await supabaseAdmin.rpc('apply_addon_credit_purchase', {
-      p_brand_id: brandId,
-      p_reference: reference,
-      p_credits: addonPackage.credits_amount,
-      p_amount: amount,
-      p_currency: paymentMethod === 'wompi' ? 'COP' : 'USD',
-      p_payment_method: paymentMethod,
-      p_transaction_id: transactionId,
-      p_notes: `Compra add-on ${addonPackage.id}. +${addonPackage.credits_amount} créditos extra.`,
+    // 1. Insertar el pago (la llave única en reference actúa como bloqueo atómico)
+    const { error: insertError } = await supabaseAdmin.from('subscription_payments').insert({
+      brand_id: brandId,
+      amount: amount,
+      currency: paymentMethod === 'wompi' ? 'COP' : 'USD',
+      payment_method: paymentMethod,
+      status: 'completed',
+      months_paid: 0,
+      reference,
+      notes: `Compra add-on ${addonPackage.id}. +${addonPackage.credits_amount} créditos extra. TxId: ${transactionId}`,
     });
 
-    if (error) {
-      throw new Error(`No se pudo aplicar la compra del add-on: ${error.message}`);
+    if (insertError) {
+      // Idempotencia: Si ya existe el registro, ignoramos la compra y retornamos
+      if (insertError.message.toLowerCase().includes('unique') || insertError.code === '23505') {
+        return;
+      }
+      throw new Error(`No se pudo registrar el pago del add-on: ${insertError.message}`);
     }
 
-    if (data === false) {
-      return;
+    // 2. Consultar el saldo actual para sumarle el nuevo
+    const { data: brand, error: brandQueryErr } = await supabaseAdmin
+      .from('brands')
+      .select('extra_credits_balance')
+      .eq('id', brandId)
+      .single();
+
+    if (brandQueryErr || !brand) {
+      console.error(`[AddonCredits] Pago insertado pero no se pudo consultar saldo marca ${brandId}`);
+      return; 
+    }
+
+    // 3. Actualizar la cuenta de extra credits
+    const newBalance = (brand.extra_credits_balance || 0) + addonPackage.credits_amount;
+    const { error: updateErr } = await supabaseAdmin
+      .from('brands')
+      .update({ extra_credits_balance: newBalance })
+      .eq('id', brandId);
+
+    if (updateErr) {
+      console.error(`[AddonCredits] Error sumando créditos a marca ${brandId}:`, updateErr.message);
     }
   }
 }
