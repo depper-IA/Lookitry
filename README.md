@@ -120,5 +120,5 @@ graph TD;
 ---
 
 <div align="center">
-  <p>Construido para revolucionar el comercio electrónico. <br/> <strong>© Lookitry. Todos los derechos reservados.</strong></p>
+  <p>Construido con ❤️ para revolucionar el comercio electrónico.<br/> <strong>© Lookitry. Todos los derechos reservados.</strong></p>
 </div>
