@@ -1,8 +1,6 @@
 import LandingClient from '@/components/landing/LandingClient';
-import { PromoBanner } from '@/components/landing/PromoBanner';
 import { PromoModal } from '@/components/landing/PromoModal';
 import { getPricingConfig } from '@/lib/pricing';
-import { MOCK_REVIEWS } from '@/data/mockReviews';
 import type { PublicReviewsResponse } from '@/types';
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
@@ -29,9 +27,9 @@ async function fetchPublicReviews(): Promise<PublicReviewsResponse> {
 export default async function HomePage() {
   const pricing = await getPricingConfig();
   const publicReviews = await fetchPublicReviews();
-  const MIN_REVIEWS_TO_SHOW_REAL = 5;
-  const usingMockReviews = publicReviews.reviews.length < MIN_REVIEWS_TO_SHOW_REAL;
-  const reviewsToShow = usingMockReviews ? MOCK_REVIEWS : publicReviews.reviews;
+  const MIN_REVIEWS_TO_SHOW = 3;
+  const hasEnoughReviews = publicReviews.reviews.length >= MIN_REVIEWS_TO_SHOW;
+  const reviewsToShow = hasEnoughReviews ? publicReviews.reviews : [];
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -147,12 +145,11 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <PromoBanner />
       <LandingClient
         pricing={pricing}
         reviews={reviewsToShow}
         realReviewsCount={publicReviews.total_approved}
-        usingMockReviews={usingMockReviews}
+        usingMockReviews={!hasEnoughReviews}
       />
       <PromoModal />
     </>
