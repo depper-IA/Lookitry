@@ -6,6 +6,7 @@ import { X, Calendar, CreditCard, Clock, CheckCircle, AlertTriangle, XCircle, Za
 import type { SubscriptionInfo } from '@/services/subscription.service';
 import { formatCurrency } from '@/utils/currency';
 import { fetchPublicPaymentSettings, fetchPublicPlanPrices } from '@/services/public-config.service';
+import { getSubscriptionDisplayState } from '@/lib/subscription-display';
 
 interface SubscriptionModalProps {
   isOpen: boolean;
@@ -36,6 +37,8 @@ export function SubscriptionModal({ isOpen, onClose, subscriptionInfo }: Subscri
   if (!isOpen || !mounted) return null;
 
   const { brand, daysRemaining, status, isInTrial, trialDaysRemaining, trialEndDate } = subscriptionInfo;
+  const displayState = getSubscriptionDisplayState(brand);
+  const showTrialState = isInTrial || displayState.isTrial || displayState.displayPlan === 'TRIAL';
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return 'N/A';
@@ -47,8 +50,8 @@ export function SubscriptionModal({ isOpen, onClose, subscriptionInfo }: Subscri
   };
 
   const getStatusConfig = () => {
-    if (isInTrial) {
-      return { label: 'Período de prueba', color: '#6366f1', bg: 'rgba(99,102,241,0.1)', Icon: Clock };
+    if (showTrialState) {
+      return { label: 'Período trial', color: '#FF5C3A', bg: 'rgba(255,92,58,0.12)', Icon: Clock };
     }
 
     switch (status) {
@@ -67,14 +70,13 @@ export function SubscriptionModal({ isOpen, onClose, subscriptionInfo }: Subscri
 
   const statusCfg = getStatusConfig();
   const StatusIcon = statusCfg.Icon;
-
   const rows: { label: string; value: React.ReactNode; icon: React.ElementType }[] = [];
 
-  if (isInTrial && trialEndDate) {
-    rows.push({ label: 'Fin del trial', value: formatDate(trialEndDate), icon: Calendar });
+  if (showTrialState && (trialEndDate || displayState.renewalDate)) {
+    rows.push({ label: 'Fin del trial', value: formatDate(trialEndDate ?? displayState.renewalDate), icon: Calendar });
   }
 
-  if (!isInTrial) {
+  if (!showTrialState) {
     rows.push({
       label: 'Días restantes',
       value: `${daysRemaining} ${daysRemaining === 1 ? 'día' : 'días'}`,
@@ -92,7 +94,7 @@ export function SubscriptionModal({ isOpen, onClose, subscriptionInfo }: Subscri
     }
   }
 
-  const showWarning = !isInTrial && (status === 'expiring_soon' || status === 'expired' || status === 'suspended');
+  const showWarning = !showTrialState && (status === 'expiring_soon' || status === 'expired' || status === 'suspended');
   const warningMsg =
     status === 'suspended' || status === 'expired'
       ? 'Tu suscripción requiere atención. Contáctanos para renovarla.'
@@ -127,10 +129,10 @@ export function SubscriptionModal({ isOpen, onClose, subscriptionInfo }: Subscri
               </div>
               <div className="min-w-0">
                 <h2 className="font-jakarta text-lg font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
-                  {isInTrial ? 'Período de prueba' : 'Tu suscripción'}
+                  {showTrialState ? 'Período trial' : 'Tu suscripción'}
                 </h2>
                 <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-                  Plan {brand.plan}
+                  Plan {showTrialState ? 'TRIAL' : brand.plan}
                 </p>
               </div>
             </div>
@@ -153,16 +155,16 @@ export function SubscriptionModal({ isOpen, onClose, subscriptionInfo }: Subscri
               {statusCfg.label}
             </div>
 
-            {isInTrial && (
+            {showTrialState && (
               <div
                 className="mt-4 rounded-2xl p-4 text-sm leading-relaxed"
                 style={{
-                  background: 'rgba(99,102,241,0.08)',
-                  color: '#6366f1',
-                  border: '1px solid rgba(99,102,241,0.2)',
+                  background: 'rgba(255,92,58,0.08)',
+                  color: '#FF5C3A',
+                  border: '1px solid rgba(255,92,58,0.2)',
                 }}
               >
-                <strong>{trialDaysRemaining} {trialDaysRemaining === 1 ? 'día' : 'días'} restantes</strong> en tu período de prueba.
+                <strong>{trialDaysRemaining ?? displayState.daysUntilTrialEnd ?? 0} {(trialDaysRemaining ?? displayState.daysUntilTrialEnd ?? 0) === 1 ? 'día' : 'días'} restantes</strong> en tu período trial.
                 {' '}Activa un plan para continuar sin interrupciones.
               </div>
             )}

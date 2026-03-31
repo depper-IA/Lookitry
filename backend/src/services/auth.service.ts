@@ -98,6 +98,8 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
   */
   async registerPostPayment(data: RegisterBrandDto & { ref: string; fingerprint?: string }): Promise<AuthResponse> {
   const { ref, name, slug, password, contact_name, fingerprint } = data;
+  const normalizedReference = String(ref || '').toUpperCase();
+  const isTrialReference = normalizedReference.startsWith('TRIAL-') || normalizedReference.startsWith('GUEST-TRIAL-');
 
   // 1. Validar referencia en pending_registrations
   const { data: pending, error: pendingError } = await supabaseAdmin
@@ -139,7 +141,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
     
     // Actualizar plan y fechas en la marca existente
     const months = pending.months || 1;
-    const isTrial = (pending.plan || '').toUpperCase() === 'TRIAL';
+    const isTrial = isTrialReference || (pending.plan || '').toUpperCase() === 'TRIAL';
     const plan = isTrial ? 'TRIAL' : (pending.plan || 'BASIC').toUpperCase();
 
     const now = new Date();
@@ -171,6 +173,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
         subscription_end_date: endDate.toISOString(),
         trial_end_date: trialEndDate,
         trial_generations_limit: trialLimit,
+        trial_payment_status: isTrial ? 'active' : null,
         has_landing_page: pending.includes_landing || existingBrand.has_landing_page || false,
         last_payment_date: now.toISOString(),
       })
@@ -184,7 +187,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const months = pending.months || 1;
-    const isTrial = (pending.plan || '').toUpperCase() === 'TRIAL';
+    const isTrial = isTrialReference || (pending.plan || '').toUpperCase() === 'TRIAL';
     const plan = isTrial ? 'TRIAL' : (pending.plan || 'BASIC').toUpperCase();
 
     const now = new Date();
@@ -220,6 +223,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
         subscription_end_date: endDate.toISOString(),
         trial_end_date: trialEndDate,
         trial_generations_limit: trialLimit,
+        trial_payment_status: isTrial ? 'active' : null,
         has_landing_page: pending.includes_landing || false,
         email_verified: true,
       })
@@ -271,7 +275,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       brandEmail: finalBrand?.email || pending.email || null,
       brandSlug: finalBrand?.slug || slug || null,
       planPurchased: String(pending.plan || 'BASIC').toUpperCase(),
-      billingType: String(pending.plan || '').toUpperCase() === 'TRIAL' ? 'trial_activation' : 'subscription',
+      billingType: isTrialReference || String(pending.plan || '').toUpperCase() === 'TRIAL' ? 'trial_activation' : 'subscription',
       includesLanding: Boolean(pending.includes_landing),
       brandPlanBefore: existingBrand?.plan || null,
       brandPlanAfter: finalBrand?.plan || null,
@@ -290,7 +294,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
     throw new Error('Error al registrar el pago: ' + paymentInsertError.message);
   }
 
-  if ((pending.plan || '').toUpperCase() === 'TRIAL' && finalBrand.trial_end_date) {
+  if ((isTrialReference || (pending.plan || '').toUpperCase() === 'TRIAL') && finalBrand.trial_end_date) {
     await recordTrialEvent(finalBrand.id, 'trial_started', {
       source: 'post_payment_registration',
       trialEndDate: finalBrand.trial_end_date,
@@ -309,7 +313,7 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       plan: finalBrand.plan,
       api_key: finalBrand.api_key,
     },
-    isTrial: (pending.plan || '').toUpperCase() === 'TRIAL',
+    isTrial: isTrialReference || (pending.plan || '').toUpperCase() === 'TRIAL',
   };
   }  async register(data: RegisterBrandDto & { ip?: string; fingerprint?: string }): Promise<AuthResponse> {
     // Validar que el email no exista — supabaseAdmin para bypassear RLS

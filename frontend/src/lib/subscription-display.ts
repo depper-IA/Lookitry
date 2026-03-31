@@ -15,6 +15,10 @@ export interface SubscriptionDisplayState {
 
 const PAID_STATUSES = new Set(['active', 'expiring_soon']);
 
+function hasTrialSignal(brand?: Partial<Brand> | null): boolean {
+  return brand?.plan === 'TRIAL' || brand?.trialPaymentStatus === 'active';
+}
+
 function getDaysDifference(date: string | null | undefined): number | null {
   if (!date) return null;
 
@@ -33,7 +37,7 @@ export function hasActivePaidSubscription(brand?: Partial<Brand> | null): boolea
 }
 
 export function isTrialBrand(brand?: Partial<Brand> | null): boolean {
-  if (brand?.plan !== 'TRIAL' || !brand?.trialEndDate || brand?.subscriptionStatus === 'suspended') {
+  if (!hasTrialSignal(brand) || !brand?.trialEndDate || brand?.subscriptionStatus === 'suspended') {
     return false;
   }
 
@@ -49,7 +53,7 @@ export function getSubscriptionDisplayState(brand?: Partial<Brand> | null): Subs
   const fallbackPlan = (brand?.plan ?? 'BASIC') as BrandPlan;
   const daysUntilTrialEnd = getDaysDifference(brand?.trialEndDate);
   const trial = isTrialBrand(brand);
-  const trialExpired = brand?.plan === 'TRIAL' && !trial && !hasActivePaidSubscription(brand) && daysUntilTrialEnd !== null && daysUntilTrialEnd < 0;
+  const trialExpired = hasTrialSignal(brand) && !trial && !hasActivePaidSubscription(brand) && daysUntilTrialEnd !== null && daysUntilTrialEnd < 0;
 
   if (trial || trialExpired) {
     return {

@@ -62,12 +62,16 @@ export class SubscriptionService {
   async checkSubscriptionStatus(brandId: string): Promise<boolean> {
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .select('plan, subscription_status, trial_end_date')
+      .select('plan, subscription_status, trial_end_date, trial_payment_status')
       .eq('id', brandId)
       .single();
 
     if (error || !data) {
       return false;
+    }
+
+    if (isTrialOperationalBrand(data)) {
+      return true;
     }
 
     // Suscripción activa o por vencer
@@ -80,7 +84,7 @@ export class SubscriptionService {
     }
 
     // Verificar período de prueba activo
-    if (data.plan === 'TRIAL' && data.trial_end_date) {
+    if ((data.plan === 'TRIAL' || data.trial_payment_status === 'active') && data.trial_end_date) {
       const trialEnd = new Date(data.trial_end_date);
       if (trialEnd > new Date()) {
         return true;
@@ -99,19 +103,15 @@ export class SubscriptionService {
   async isInTrial(brandId: string): Promise<boolean> {
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .select('plan, trial_end_date, subscription_status')
+      .select('plan, trial_end_date, subscription_status, trial_payment_status')
       .eq('id', brandId)
       .single();
 
-    if (error || !data || data.plan !== 'TRIAL' || !data.trial_end_date) {
+    if (error || !data || !data.trial_end_date) {
       return false;
     }
 
-    if (data.subscription_status === 'suspended') {
-      return false;
-    }
-
-    return new Date(data.trial_end_date) > new Date();
+    return isTrialOperationalBrand(data);
   }
 
   /**
@@ -123,11 +123,11 @@ export class SubscriptionService {
   async getTrialDaysRemaining(brandId: string): Promise<number | null> {
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .select('plan, trial_end_date')
+      .select('plan, trial_end_date, trial_payment_status, subscription_status')
       .eq('id', brandId)
       .single();
 
-    if (error || !data || data.plan !== 'TRIAL' || !data.trial_end_date) {
+    if (error || !data || !data.trial_end_date || !isTrialOperationalBrand(data)) {
       return null;
     }
 

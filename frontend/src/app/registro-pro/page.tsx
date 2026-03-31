@@ -99,7 +99,15 @@ function RegistroProContent() {
   const [showAltEmail, setShowAltEmail] = useState(false);
   const [altEmail, setAltEmail] = useState('');
   const [altEmailError, setAltEmailError] = useState('');
-  const [pendingData, setPendingData] = useState<{ plan: string; months: number; includes_landing: boolean; status: string } | null>(null);
+  const [pendingData, setPendingData] = useState<{
+    plan: string;
+    months: number;
+    includes_landing: boolean;
+    status: string;
+    reference?: string;
+    normalized_reference?: string;
+    brand_name?: string;
+  } | null>(null);
   const [fetchingPending, setFetchingPending] = useState(true);
   const [recheckingPending, setRecheckingPending] = useState(false);
   const { brand, isAuthenticated } = useAuth();
@@ -127,23 +135,31 @@ function RegistroProContent() {
     }
   }, [ref, wompiId, months, router]);
 
-  async function fetchPending() {
-    if (!ref) return;
+  async function fetchPending(retries = 0): Promise<boolean> {
+    if (!ref) return false;
     try {
       const res = await fetch(`${API_URL}/api/auth/pending-registration/${ref}`);
       const data = await res.json();
       if (data && !data.error) {
         setPendingData(data);
+        return true;
       }
     } catch {
       // noop
     }
+
+    if (retries > 0) {
+      await new Promise((resolve) => window.setTimeout(resolve, 1200));
+      return fetchPending(retries - 1);
+    }
+
+    return false;
   }
 
   useEffect(() => {
     if (ref) {
       setFetchingPending(true);
-      fetchPending()
+      fetchPending(2)
         .finally(() => setFetchingPending(false));
     } else {
       setFetchingPending(false);
@@ -200,10 +216,10 @@ function RegistroProContent() {
       <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-t-transparent border-[#FF5C3A] rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-white font-syne text-xl">
+          <h2 className="text-white font-jakarta text-xl">
             {recoveringRef ? 'Recuperando tu pago...' : autoLinking ? 'Vinculando compra a tu cuenta...' : 'Cargando detalles...'}
           </h2>
-          <p className="text-[#666] text-sm mt-2">
+          <p className="text-[#999] text-sm mt-2">
             {recoveringRef ? 'Estamos verificando la transacción.' : autoLinking ? `Detectamos tu sesión activa como ${brand?.name || 'marca'}.` : 'Preparando tu cuenta.'}
           </p>
         </div>
@@ -221,7 +237,7 @@ function RegistroProContent() {
           <div className="flex justify-center mb-8">
             <Link href="/" className="flex items-center gap-2.5">
               <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-              <span className="font-syne font-extrabold text-xl text-white tracking-tight">
+              <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
                 Look<span className="text-[#FF5C3A]">itry</span>
               </span>
             </Link>
@@ -329,7 +345,7 @@ function RegistroProContent() {
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-            <span className="font-syne font-extrabold text-xl text-white tracking-tight">
+            <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
@@ -337,14 +353,14 @@ function RegistroProContent() {
 
         {/* Progress Bar (Step 4: Activation) */}
         <div className="mb-12">
-          <StepProgress currentStep={4} />
+          <StepProgress currentStep={4} maxNavigableStep={4} lockedAfterPayment />
         </div>
 
         <Alert 
           type="success"
           title="Pago validado correctamente"
           message={`Tu cuenta está lista para ser activada. Completa estos datos finales para activar tu Plan ${pendingData ? pendingData.plan : 'Pro'} por ${pendingData ? pendingData.months : months} ${(!pendingData && months === 1) || pendingData?.months === 1 ? 'mes' : 'meses'}${pendingData?.includes_landing ? ' + Mini-landing' : ''}.`}
-          className="mb-6 shadow-[0_0_20px_rgba(34,197,94,0.1)] border-green-500/20"
+          className="mb-6 shadow-[0_0_20px_rgba(255,92,58,0.12)] border-[#FF5C3A]/20"
         />
 
         {pendingData?.status && pendingData.status !== 'paid' && pendingData.status !== 'used' && (
@@ -360,8 +376,8 @@ function RegistroProContent() {
           {/* Subtle background glow */}
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF5C3A] rounded-full blur-[100px] opacity-10 pointer-events-none" />
           
-          <h1 className="font-syne font-bold text-[24px] text-white mb-1 tracking-tight">Crea tu cuenta</h1>
-          <p className="text-[13px] text-[#666] mb-8">Estás a un paso de activar tu probador virtual.</p>
+          <h1 className="font-jakarta font-bold text-[24px] text-white mb-1 tracking-tight">Activa tu acceso</h1>
+          <p className="text-[13px] text-[#999] mb-8">Tu pago ya fue localizado. Completa estos datos finales para entrar a Lookitry.</p>
 
           {apiError && (
             <Alert type="error" message={apiError} className="mb-6" />
@@ -373,7 +389,7 @@ function RegistroProContent() {
               onClick={async () => {
                 if (!ref) return;
                 setRecheckingPending(true);
-                await fetchPending();
+                await fetchPending(1);
                 setRecheckingPending(false);
               }}
               className="px-4 py-2 rounded-xl border border-[#222] bg-[#0d0d0d] hover:bg-[#141414] text-[12px] text-white/80 font-bold transition-all disabled:opacity-50"
@@ -407,7 +423,7 @@ function RegistroProContent() {
                 className={`w-full bg-[#050505] border ${altEmailError ? 'border-red-500/50' : 'border-[#333]'} rounded-xl px-4 py-3 text-[14px] text-white placeholder-[#444] focus:outline-none focus:border-[#FF5C3A] transition-all`}
               />
               {altEmailError && <p className="text-[11px] text-red-500 mt-1.5">{altEmailError}</p>}
-              <p className="text-[11px] text-[#555] mt-2 leading-relaxed">
+              <p className="text-[11px] text-[#999] mt-2 leading-relaxed">
                 Este correo se usará para iniciar sesión. El plan se activará en esta nueva cuenta.
               </p>
             </div>
@@ -415,7 +431,7 @@ function RegistroProContent() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">Nombre del responsable</label>
+              <label className="block text-[13px] font-semibold text-[#888] mb-2 font-jakarta uppercase tracking-wider">Nombre del responsable</label>
               <input
                 name="contact_name" type="text" value={form.contact_name} onChange={handleChange}
                 placeholder="Nombre y Apellido" required minLength={3}
@@ -425,7 +441,7 @@ function RegistroProContent() {
             </div>
 
             <div>
-              <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">Nombre de tu marca</label>
+              <label className="block text-[13px] font-semibold text-[#888] mb-2 font-jakarta uppercase tracking-wider">Nombre de tu marca</label>
               <input
                 name="name" type="text" value={form.name} onChange={handleChange}
                 placeholder="Ej. Glow Fashion" required
@@ -435,7 +451,7 @@ function RegistroProContent() {
             </div>
 
             <div>
-              <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">URL de tu sitio</label>
+              <label className="block text-[13px] font-semibold text-[#888] mb-2 font-jakarta uppercase tracking-wider">URL de tu sitio</label>
               <div className={`flex bg-[#0d0d0d] border ${errors.slug ? 'border-red-500/50' : 'border-[#222]'} rounded-xl overflow-hidden focus-within:border-[#FF5C3A] transition-all`}>
                 <span className="inline-flex items-center px-4 text-[#444] text-[13px] border-r border-[#222] font-mono">/sitio/</span>
                 <input
@@ -450,7 +466,7 @@ function RegistroProContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">Contraseña</label>
+                <label className="block text-[13px] font-semibold text-[#888] mb-2 font-jakarta uppercase tracking-wider">Contraseña</label>
                 <div className="relative">
                   <input
                     name="password" type={showPassword ? 'text' : 'password'} value={form.password}
@@ -458,7 +474,7 @@ function RegistroProContent() {
                     className={`w-full bg-[#0d0d0d] border ${errors.password ? 'border-red-500/50' : 'border-[#222]'} rounded-xl px-4 py-3 pr-12 text-[14px] text-white placeholder-[#2a2a2a] focus:outline-none focus:border-[#FF5C3A] transition-all`}
                   />
                   <button
-                    type="button" onClick={() => setShowPassword(v => !v)} tabIndex={-1}
+                    type="button" onClick={() => setShowPassword(v => !v)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#FF5C3A] transition-colors"
                   >
                     {showPassword ? <EyeOffIcon /> : <EyeIcon />}
@@ -468,7 +484,7 @@ function RegistroProContent() {
               </div>
 
               <div>
-                <label className="block text-[13px] font-semibold text-[#888] mb-2 font-syne uppercase tracking-wider">Confirmar</label>
+                <label className="block text-[13px] font-semibold text-[#888] mb-2 font-jakarta uppercase tracking-wider">Confirmar</label>
                 <div className="relative">
                   <input
                     name="confirmPassword" type={showPassword ? 'text' : 'password'} value={form.confirmPassword}
@@ -489,7 +505,7 @@ function RegistroProContent() {
           </form>
 
           <div className="mt-8 border-t border-[#222] pt-6 text-center">
-            <p className="text-[12px] text-[#555]">
+            <p className="text-[12px] text-[#999]">
               ¿Ya tienes cuenta activa?{' '}
               <Link href="/login" className="text-white hover:text-[#FF5C3A] transition-colors font-bold underline underline-offset-4 decoration-[#FF5C3A]/30">Ingresa aquí</Link>
             </p>

@@ -98,6 +98,8 @@ export const verifyEmailTemplate = (brand: BrandInfo, verifyUrl: string): string
  * Email de bienvenida al registrarse
  */
 export const welcomeEmail = (brand: BrandInfo, plan: string, amount: string, daysRemaining: number): string => {
+  const normalizedPlan = String(plan || '').toUpperCase();
+  const isTrial = normalizedPlan === 'TRIAL';
   const content = `
     <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Bienvenido a LOOKITRY</h2>
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
@@ -107,19 +109,23 @@ export const welcomeEmail = (brand: BrandInfo, plan: string, amount: string, day
       Gracias por registrarte en LOOKITRY. Tu cuenta ha sido creada exitosamente.
     </p>
     <div style="background-color: #f5f2ee; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${ACCENT_COLOR};">
-      <h3 style="color: #0a0a0a; margin-top: 0; font-size: 15px;">Detalles de tu plan:</h3>
-      <p style="color: #555; margin: 6px 0;"><strong>Plan:</strong> ${plan}</p>
+      <h3 style="color: #0a0a0a; margin-top: 0; font-size: 15px;">${isTrial ? 'Detalles de tu prueba' : 'Detalles de tu plan'}</h3>
+      <p style="color: #555; margin: 6px 0;"><strong>Plan:</strong> ${normalizedPlan || plan}</p>
       <p style="color: #555; margin: 6px 0;"><strong>Email:</strong> ${brand.email}</p>
-      <p style="color: #555; margin: 6px 0;"><strong>Monto mensual:</strong> ${amount}</p>
-      <p style="color: #555; margin: 6px 0;"><strong>Días restantes:</strong> ${daysRemaining}</p>
+      <p style="color: #555; margin: 6px 0;"><strong>${isTrial ? 'Pago de activacion' : 'Monto mensual'}:</strong> ${amount}</p>
+      <p style="color: #555; margin: 6px 0;"><strong>${isTrial ? 'Días de prueba restantes' : 'Días restantes'}:</strong> ${daysRemaining}</p>
     </div>
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
-      Ahora puedes comenzar a configurar tu probador virtual y agregar productos.
+      ${isTrial
+        ? 'Tu periodo de prueba ya está activo. Ahora puedes configurar tu probador, subir tu primer producto y validar el flujo completo.'
+        : 'Ahora puedes comenzar a configurar tu probador virtual y agregar productos.'}
     </p>
     <div style="background-color: #fff8f6; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${ACCENT_COLOR};">
       <p style="color: #c0392b; margin: 0; font-size: 14px;">
-        <strong>Instrucciones de pago:</strong><br>
-        Para renovar tu suscripción cuando venza, puedes hacerlo directamente desde el dashboard o contactándonos.
+        <strong>${isTrial ? 'Siguiente paso' : 'Instrucciones de pago'}:</strong><br>
+        ${isTrial
+          ? 'Aprovecha tu periodo de prueba para configurar tu marca y validar la experiencia. Cuando termine, podrás continuar desde el dashboard con un plan pago.'
+          : 'Para renovar tu suscripción cuando venza, puedes hacerlo directamente desde el dashboard o contactándonos.'}
       </p>
     </div>
     <div style="text-align: center; margin: 30px 0;">

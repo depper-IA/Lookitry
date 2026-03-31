@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, TrendingUp, UserCheck, BarChart2, Image, Package, Globe, PauseCircle, MinusCircle, CreditCard, Building2 } from 'lucide-react';
+import { Users, TrendingUp, UserCheck, BarChart2, Image as ImageIcon, Package, Globe, PauseCircle, MinusCircle, CreditCard, Building2 } from 'lucide-react';
 
 interface GlobalStats {
   totalBrands: number; totalProducts: number; totalGenerations: number;
@@ -64,7 +64,7 @@ export default function AdminDashboardPage() {
   const topCards = [
     { label: 'Total marcas', value: global?.totalBrands || 0, icon: <Users className="w-4 h-4" />, accent: '#3b82f6' },
     { label: 'Productos activos', value: global?.totalProducts || 0, icon: <Package className="w-4 h-4" />, accent: '#10b981' },
-    { label: 'Generaciones totales', value: global?.totalGenerations || 0, icon: <Image className="w-4 h-4" />, accent: '#8b5cf6' },
+    { label: 'Generaciones totales', value: global?.totalGenerations || 0, icon: <ImageIcon className="w-4 h-4" />, accent: '#8b5cf6' },
     { label: 'Generaciones este mes', value: global?.generationsThisMonth || 0, icon: <BarChart2 className="w-4 h-4" />, accent: '#FF5C3A' },
     { label: 'Trials activos', value: conversion?.inTrial || 0, icon: <BarChart2 className="w-4 h-4" />, accent: '#f59e0b' },
     { label: 'Trials pagados', value: conversion?.paidTrials || 0, icon: <CreditCard className="w-4 h-4" />, accent: '#f97316' },

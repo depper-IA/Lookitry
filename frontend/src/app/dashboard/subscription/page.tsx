@@ -202,10 +202,10 @@ export default function SubscriptionPage() {
     }
   }, [paySettings]);
 
-  const planKey = (info?.brand?.plan ?? 'BASIC') as keyof typeof DESIGN_SYSTEM;
-  const inTrial = info?.isInTrial ?? false;
-  const currentDesign = inTrial ? DESIGN_SYSTEM.TRIAL : DESIGN_SYSTEM[planKey];
   const subscriptionState = getSubscriptionDisplayState(info?.brand);
+  const inTrial = (info?.isInTrial ?? false) || subscriptionState.isTrial || subscriptionState.displayPlan === 'TRIAL';
+  const planKey = (subscriptionState.displayPlan ?? info?.brand?.plan ?? 'BASIC') as keyof typeof DESIGN_SYSTEM;
+  const currentDesign = inTrial ? DESIGN_SYSTEM.TRIAL : DESIGN_SYSTEM[planKey];
   const planStatus = inTrial
     ? {
         label: subscriptionState.statusLabel,
