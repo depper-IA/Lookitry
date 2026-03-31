@@ -289,6 +289,13 @@ export class PaypalController {
 
     const brandId = (req as any).brand?.id || `visitor_${Date.now()}`;
     const reference = `PAYPAL-${brandId}-M${selectedMonths}-P${planStr}${landing ? '-LANDING' : ''}-${Date.now()}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
+    const returnUrl = hasAuthenticatedBrand
+      ? `${frontendUrl}/dashboard/checkout?plan=${planStr}&months=${selectedMonths}&method=paypal&ref=${encodeURIComponent(reference)}`
+      : undefined;
+    const cancelUrl = hasAuthenticatedBrand
+      ? `${frontendUrl}/dashboard/checkout?plan=${planStr}`
+      : undefined;
 
     if (email) {
       const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({
@@ -307,7 +314,7 @@ export class PaypalController {
       }
     }
 
-    const createdOrder = await paypalService.createOrder(amountCOP, currentTrm, reference);
+    const createdOrder = await paypalService.createOrder(amountCOP, currentTrm, reference, returnUrl, cancelUrl);
     await paypalService.recordOrder({
       reference,
       brand_id: (req as any).brand?.id || null,
