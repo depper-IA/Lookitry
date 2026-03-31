@@ -188,6 +188,30 @@ async function fulfillPaypalPayment(reference: string, orderId: string, amountUS
       await planChangeService.markProcessing(reference, amountUSD);
     }
 
+    if (isActualUpgrade && amountUSD <= PAYPAL_AMOUNT_TOLERANCE && !includesLanding) {
+      const newPlanTotal = await pricingService.calculateTotal('PRO', months, false);
+      const preview = await subscriptionService.calculateUpgradeProration(
+        brandId,
+        'PRO',
+        months,
+        newPlanTotal,
+        0
+      );
+
+      await subscriptionService.applyFreeUpgrade(
+        brandId,
+        'PRO',
+        months,
+        preview.creditAmount,
+        preview.newPlanTotal,
+        reference,
+        preview.newEndDate
+      );
+
+      await planChangeService.markCompleted(reference, 0);
+      return;
+    }
+
     await subscriptionService.renewSubscription(
       brandId,
       {
