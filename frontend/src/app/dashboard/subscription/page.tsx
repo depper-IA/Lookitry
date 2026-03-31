@@ -205,6 +205,18 @@ export default function SubscriptionPage() {
     }
   }, [paySettings]);
 
+  // Verificar pago de créditos adicionales si volvemos desde Wompi o PayPal
+  useEffect(() => {
+    const status = searchParams.get('addon');
+    const ref = searchParams.get('ref');
+    if (status === 'success' && ref) {
+      paymentsService.verifyAddon(ref).then(() => {
+        // Recargar stats de uso silenciosamente por si se acaban de aplicar
+        usageService.getUsageStats().then(setUsage).catch(() => {});
+      }).catch(console.error);
+    }
+  }, [searchParams]);
+
   const subscriptionState = getSubscriptionDisplayState(info?.brand);
   const inTrial = (info?.isInTrial ?? false) || subscriptionState.isTrial || subscriptionState.displayPlan === 'TRIAL';
   const planKey = (subscriptionState.displayPlan ?? info?.brand?.plan ?? 'BASIC') as keyof typeof DESIGN_SYSTEM;
