@@ -256,6 +256,41 @@ describe('SubscriptionService', () => {
     });
   });
 
+  describe('applyFreeUpgrade', () => {
+    it('aplica el cambio de plan sin insertar un pago de monto cero', async () => {
+      const updatedBrand = {
+        id: 'brand-1',
+        name: 'Brand',
+        email: 'brand@test.com',
+        slug: 'brand',
+        plan: 'PRO',
+        subscription_status: 'active',
+      };
+
+      (supabaseAdmin.from as jest.Mock).mockImplementation((table: string) => {
+        if (table === 'brands') {
+          return buildChain({ data: updatedBrand, error: null });
+        }
+        if (table === 'subscription_payments') {
+          throw new Error('No debe intentar insertar payment record para upgrade gratis');
+        }
+        return buildChain({ data: null, error: null });
+      });
+
+      const result = await service.applyFreeUpgrade(
+        'brand-1',
+        'PRO',
+        1,
+        513000,
+        350000,
+        'FREE-UPGRADE-brand-1-123'
+      );
+
+      expect(result.plan).toBe('PRO');
+      expect((supabaseAdmin.from as jest.Mock).mock.calls.some((call) => call[0] === 'subscription_payments')).toBe(false);
+    });
+  });
+
   describe('updateSubscriptionStatuses', () => {
     it('protege trials activos y expira trials vencidos sin subscription_end_date', async () => {
       const expiredTrials = buildSelectTerminalChain({ data: [{ id: 'trial-expired' }], error: null });
