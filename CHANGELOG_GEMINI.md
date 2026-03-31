@@ -25,10 +25,12 @@ Evitar que cambios diferidos o limpiezas técnicas queden en el aire entre sesio
 - **Reintento automático de referencia**: `frontend/src/app/registro-pro/page.tsx` ya no intenta resolver el `id` de Wompi una sola vez; ahora reintenta varias veces antes de dar por fallida la recuperación de la referencia.
 - **Upgrade PayPal alineado con prorrateo**: `backend/src/controllers/paypal.controller.ts` ahora calcula el total real del upgrade `Basic -> Pro` con el mismo prorrateo que ve el usuario en el checkout, evitando que PayPal genere órdenes por el valor completo cuando debía cobrar solo la diferencia.
 - **Verificación con contexto visible**: `frontend/src/app/dashboard/checkout/page.tsx` ahora muestra en estados de verificación, éxito y error el plan, método, monto y referencia del cobro cuando están disponibles, junto con una guía breve de qué esperar tras pagar.
+- **Trazabilidad no bloqueante en upgrades**: `backend/src/services/planChange.service.ts` ahora degrada con `warn` si la tabla `plan_change_requests` no existe en producción, evitando que la ausencia de esa tabla tumbe los botones de upgrade gratis o pagado.
 
 ### Archivos Modificados
 - `backend/src/controllers/auth-post-payment.controller.ts`
 - `backend/src/controllers/paypal.controller.ts`
+- `backend/src/services/planChange.service.ts`
 - `frontend/src/app/dashboard/checkout/page.tsx`
 - `frontend/src/app/registro-pro/page.tsx`
 - `CHANGELOG_GEMINI.md`
