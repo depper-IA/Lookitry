@@ -67,7 +67,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const articuloCompleto = $input.first().json.data || $input.first().json || '';\nconst temaActual = $('Loop Temas Pendientes').item.json;\n\nconst textoLimpio = typeof articuloCompleto === 'string' ? articuloCompleto.substring(0, 15000) : 'Sin información adicional.';\n\nreturn [{\n  json: {\n    ...temaActual,\n    investigacion_profunda: textoLimpio\n  }\n}];"
+        "jsCode": "let articuloCompleto = '';\ntry {\n  articuloCompleto = $input.first().json.data || $input.first().json || '';\n} catch(e) {\n  articuloCompleto = 'No se pudo acceder a la noticia completa. Basate únicamente en el titular y el resumen proporcionado.';\n}\n\nconst temaActual = $('Loop Temas Pendientes').item.json;\nconst textoLimpio = typeof articuloCompleto === 'string' ? articuloCompleto.substring(0, 15000) : 'Sin información adicional.';\n\nreturn [{\n  json: {\n    ...temaActual,\n    investigacion_profunda: textoLimpio\n  }\n}];"
       },
       "id": "ec2d0e0a-a754-4e1b-8dbc-5b63cdad4280",
       "name": "Adjuntar Investigación",
@@ -81,6 +81,15 @@
     {
       "parameters": {
         "url": "={{ $json.source_url ? 'https://r.jina.ai/' + $json.source_url : 'https://r.jina.ai/https://lookitry.com' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer jina_96124a0c401a47afa44fdb5a3c669d16YETHc9iUQn3qq93gWcU24efhtAMc"
+            }
+          ]
+        },
         "options": {
           "redirect": {
             "redirect": {
@@ -94,9 +103,11 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        98288,
+        98304,
         36272
-      ]
+      ],
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -123,9 +134,9 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ ({\n  model: \"meta-llama/llama-3.3-70b-instruct\",\n  messages: [{\n    role: \"user\",\n    content: [\n      \"Eres el Editor Jefe de Estrategia para Lookitry, el SaaS líder en probadores virtuales de moda con IA en COLOMBIA.\",\n      \"Tu objetivo es generar 3 ideas de artículos ÚNICOS, VARIADOS y DINÁMICOS para nuestro blog, enfocados 100% en el mercado COLOMBIANO.\",\n      \"\",\n      $json.contextNoticias,\n      \"\",\n      \"CRITERIOS DE CREACIÓN:\",\n      \"1. NO HAGAS SOLO NOTICIAS. Genera exactamente:\",\n      \"   - 1 Tema de Noticias/Tendencias (basado en el RSS).\",\n      \"   - 1 Tema de Entretenimiento / Moda y Estilo (tips, curiosidades).\",\n      \"   - 1 Tema Comercial / Ofertas / Estrategia (cómo vender más).\",\n      \"2. Enfoque hiper-local colombiano.\",\n      \"3. Asigna SIEMPRE una de las 'URL' proporcionadas al campo 'source_url' de cada tema.\",\n      \"\",\n      \"CATEGORÍAS PERMITIDAS: 'ecommerce', 'ia', 'moda-y-estilo', 'negocios-y-saas'\",\n      \"\",\n      \"RESPUESTA: Devuelve SOLO un array JSON válido. Sin markdown.\",\n      \"Formato exacto:\",\n      \"[\\n  {\\\"title\\\": \\\"...\\\", \\\"keywords\\\": \\\"...\\\", \\\"category_slug\\\": \\\"ecommerce\\\", \\\"source_url\\\": \\\"https://ejemplo.com/noticia\\\"}\\n]\"\n    ].join('\\n')\n  }],\n  temperature: 0.8,\n  max_tokens: 1500\n}) }}",
+        "jsonBody": "={{ ({\n  model: \"meta-llama/llama-3.3-70b-instruct\",\n  messages: [{\n    role: \"user\",\n    content: [\n      \"Eres el Editor Jefe de Estrategia para Lookitry, el SaaS líder en probadores virtuales de moda con IA en COLOMBIA.\",\n      \"Tu objetivo es generar 3 ideas de artículos ÚNICOS, VARIADOS y DINÁMICOS para nuestro blog, enfocados 100% en el mercado COLOMBIANO.\",\n      \"\",\n      $json.contextNoticias,\n      \"\",\n      \"CRITERIOS DE CREACIÓN:\",\n      \"1. NO HAGAS SOLO NOTICIAS. Genera exactamente:\",\n      \"   - 1 Tema de Noticias/Tendencias (basado en el RSS).\",\n      \"   - 1 Tema de Entretenimiento / Moda y Estilo (tips, curiosidades).\",\n      \"   - 1 Tema Comercial / Ofertas / Estrategia (cómo vender más).\",\n      \"2. Enfoque hiper-local colombiano.\",\n      \"3. Asigna SIEMPRE una de las 'URL' proporcionadas al campo 'source_url' de cada tema.\",\n      \"\",\n      \"CATEGORÍAS PERMITIDAS: 'ecommerce', 'ia', 'moda-y-estilo', 'negocios-y-saas'\",\n      \"\",\n      \"RESPUESTA: Devuelve SOLO un array JSON válido. Sin markdown.\",\n      \"Formato exacto:\",\n      \"[\\n  {\\\"title\\\": \\\"...\\\", \\\"keywords\\\": \\\"...\\\", \\\"category_slug\\\": \\\"ecommerce\\\", \\\"source_url\\\": \\\"https://ejemplo.com/noticia\\\"}\\n]\"\n    ].join('\\n')\n  }],\n  temperature: 0.8,\n  max_tokens: 4000\n}) }}",
         "options": {
-          "timeout": 60000
+          "timeout": 120000
         }
       },
       "id": "3944f78a-027a-4fed-b79e-7cd947600ba2",
@@ -136,6 +147,8 @@
         93600,
         36528
       ],
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
       "credentials": {
         "httpBearerAuth": {
           "id": "zoSkapW7VQMaPW6Y",
@@ -158,7 +171,7 @@
     },
     {
       "parameters": {
-        "url": "https://news.google.com/rss/search?q=(ecommerce+OR+retail+OR+\"inteligencia+artificial\"+OR+\"probador+virtual\")+moda+(colombia+OR+colombiano)&hl=es-419&gl=CO&ceid=CO:es-419",
+        "url": "https://news.google.com/rss/search?q=(ecommerce+OR+retail+OR+\"inteligencia+artificial\"+OR+\"probador+virtual\")+moda+(colombia+OR+LATAM)&hl=es-419&gl=CO&ceid=CO:es-419",
         "options": {}
       },
       "id": "55ca9561-4c44-4cae-b90b-76a0cdc63e34",
@@ -532,7 +545,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        96912,
+        96688,
         36576
       ],
       "credentials": {
@@ -551,7 +564,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        97504,
+        97376,
         36576
       ]
     },
@@ -697,7 +710,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const enlaces = $input.first().json.enlacesBlogs || [];\n\nlet imagenes = {};\ntry { \n  imagenes = $('Consolidar URLs Imágenes').first().json || {}; \n} catch(error) {\n  console.log(\"Advertencia: No se encontraron datos de imágenes en este ciclo.\");\n}\n\nlet tema = {};\ntry {\n\n  tema = $('Loop Temas Pendientes').item.json || {};\n} catch(error) {\n\n  tema = $('Loop Temas Pendientes').first().json || {};\n}\n\nreturn [{\n  json: {\n    ...tema,\n    enlacesBlogs: enlaces,\n    imagen_destacada_url: imagenes.imagen_destacada?.url || '',\n    imagen_body1_url:     imagenes.imagen_body1?.url     || '',\n    imagen_body2_url:     imagenes.imagen_body2?.url     || '',\n    imagen_destacada_id:  imagenes.imagen_destacada?.id  || null,\n    imagen_body1_id:      imagenes.imagen_body1?.id      || null,\n    imagen_body2_id:      imagenes.imagen_body2?.id      || null\n  }\n}];"
+        "jsCode": "const enlaces = Array.isArray($input.first().json.enlacesBlogs) ? $input.first().json.enlacesBlogs : [];\n\nlet imagenes = {};\ntry {\n  imagenes = $('Consolidar URLs Im?genes').first().json || {};\n} catch (error) {\n  console.log('Advertencia: No se encontraron datos de im?genes en este ciclo.');\n}\n\nlet tema = {};\ntry {\n  tema = $('Loop Temas Pendientes').item.json || {};\n} catch (error) {\n  tema = $('Loop Temas Pendientes').first().json || {};\n}\n\nreturn [{\n  json: {\n    ...tema,\n    enlacesBlogs: enlaces,\n    imagen_destacada_url: imagenes.imagen_destacada?.url || '',\n    imagen_body1_url: imagenes.imagen_body1?.url || '',\n    imagen_body2_url: imagenes.imagen_body2?.url || '',\n    imagen_destacada_id: imagenes.imagen_destacada?.id || null,\n    imagen_body1_id: imagenes.imagen_body1?.id || null,\n    imagen_body2_id: imagenes.imagen_body2?.id || null,\n  },\n}];"
       },
       "id": "7b4607ee-f3f9-4a29-92ea-17608bb07d7b",
       "name": "Obtener Info Consolidada",
@@ -781,9 +794,9 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ ({\n  model: ($json.openrouter_model || 'meta-llama/llama-3.3-70b-instruct'),\n  messages: [{\n    role: 'user',\n    content: [\n      'Eres un consultor experto en ecommerce y director de Lookitry. Tu misión es escribir un artículo de blog orientado a SEO, pero con un tono 100% HUMANO, EMPÁTICO y CONVERSACIONAL para Colombia.',\n      '# DATOS DE ENTRADA',\n      '- Tema: ' + ($json.title || ''),\n      '- INVESTIGACIÓN PROFUNDA (Noticia/Contexto): ' + ($json.investigacion_profunda || 'Usa tu conocimiento general'),\n      '- Categoria: ' + ($json.category_slug || 'ia'),\n      '- Keywords: ' + ($json.keywords || ''),\n      '- Blogs internos relacionados: ' + JSON.stringify($json.enlacesBlogs || []),\n      '',\n      '# REGLAS CRITICAS',\n      '1. Devuelve SOLO un objeto JSON valido.',\n      '2. El campo content debe ser HTML completo en una sola linea.',\n      '3. Usa EXACTAMENTE dos figuras dentro del HTML (imagen_body1_url e imagen_body2_url).',\n      '4. PROHIBIDO usar la etiqueta <p> dentro del bloque final de CTA.',\n      '',\n      '# ESTRUCTURA HTML OBLIGATORIA',\n      '- Usa EXACTAMENTE este codigo HTML para el cierre (copialo tal cual sin agregar nada extra): <div data-blog-cta=\"final\" style=\"text-align: center; padding: 40px; background: #0A0A0A; border-radius: 30px; margin: 50px 0;\"><h3 style=\"color: #FFFFFF; margin-bottom: 20px;\">¿Listo para transformar tu tienda y ver resultados reales?</h3><a href=\"https://lookitry.com/trial-checkout\" style=\"background: #FF5C3A; color: white; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; display: inline-block;\">Probar Lookitry Gratis</a></div>',\n      '',\n      '# FORMATO DE SALIDA',\n      '{\"title\":\"...\",\"content\":\"...\",\"excerpt\":\"...\",\"tags\":[\"...\",\"...\",\"...\"]}'\n    ].join('\\n')\n  }],\n  temperature: 0.5,\n  max_tokens: 4000\n}) }}",
+        "jsonBody": "={{ ({\n  model: ($json.openrouter_model || 'meta-llama/llama-3.3-70b-instruct'),\n  messages: [{\n    role: 'user',\n    content: [\n      'Eres un consultor experto en ecommerce y director de LOOKITRY. Tu misión es escribir un artículo de blog orientado a SEO moderno (2026), con un tono 100% humano, empático y conversacional para Colombia.',\n      '# DATOS DE ENTRADA',\n      '- Tema: ' + ($json.title || ''),\n      '- Investigación profunda (noticia/contexto): ' + ($json.investigacion_profunda || 'Usa tu conocimiento general'),\n      '- Categoría: ' + ($json.category_slug || 'ia'),\n      '- Keywords principales y LSI: ' + ($json.keywords || ''),\n      '- Blogs internos relacionados (usalos de verdad): ' + JSON.stringify($json.enlacesBlogs || []),\n      '- URL imagen cuerpo 1: ' + ($json.imagen_body1_url || ''),\n      '- URL imagen cuerpo 2: ' + ($json.imagen_body2_url || ''),\n      '',\n      '# REGLAS DE SEO 2026 Y MAQUETACION (CRITICO)',\n      '- Todo el contenido debe ir envuelto en una etiqueta <article>.',\n      '- Parrafos muy cortos (maximo 3 lineas) para facilitar la lectura en moviles.',\n      '- Usa la etiqueta <strong> de forma natural para resaltar ideas importantes, dolores del cliente y variaciones de tus palabras clave.',\n      '- Jerarquia estricta: usa <h2> para titulos principales y <h3> para subtemas.',\n      '- Usa al menos una lista <ul> o <ol> para hacer el texto escaneable.',\n      '- Inserta exactamente 2 backlinks internos hacia articulos del blog de LOOKITRY usando URLs de la lista Blogs internos relacionados.',\n      '- Cada backlink debe usar la URL exacta proporcionada y un anchor contextual, nunca la home.',\n      '- Debes usar exactamente las URLs de imagen entregadas en las dos etiquetas <img> del cuerpo.',\n      '- Esta prohibido devolver cualquier etiqueta <img> con src vacio.',\n      '- Las 3 imagenes del articulo deben ser distintas: portada, cuerpo 1 y cuerpo 2 no pueden repetir URL.',\n      '',\n      '# RESTRICCIONES TECNICAS',\n      '1. Devuelve solo un objeto JSON valido. Sin markdown, sin explicaciones extra.',\n      '2. El campo content debe ser HTML completo en una sola linea.',\n      '3. Prohibido envolver el CTA final en etiquetas <p>.',\n      '4. El CTA suave debe enlazar a https://lookitry.com/trial-checkout.',\n      '5. El CTA final debe enlazar a https://lookitry.com/trial-checkout.',\n      '',\n      '# ESTRUCTURA HTML ESTRICTA Y CALL TO ACTIONS (CTAs)',\n      '<article>',\n      '  <div data-blog-intro=\"lead\">[Parrafo de apertura super empatico que toque el dolor del cliente. Resalta algo en <strong>].</div>',\n      '  <h2>[Titulo atractivo seccion 1]</h2>',\n      '  <p>...[3-4 parrafos cortos desarrollando el tema]...</p>',\n      '  <p class=\"soft-cta\" style=\"background:#f9f9f9; padding:15px; border-left:4px solid #FF5C3A; font-style:italic;\"><strong>Te identificas con este problema?</strong> Descubre como LOOKITRY ayuda a las tiendas de moda a <a href=\"https://lookitry.com/trial-checkout\" style=\"color:#FF5C3A;\">activar una prueba paga y reducir devoluciones con IA</a>.</p>',\n      '  <figure><img src=\"' + ($json.imagen_body1_url || '') + '\" alt=\"Escena editorial relacionada con el articulo\" /><figcaption>[Descripcion corta]</figcaption></figure>',\n      '  <h2>[Titulo seccion 2]</h2>',\n      '  <p>...[Desarrollo con ejemplos de Colombia e integracion natural de 2 backlinks internos]...</p>',\n      '  <h3>[Subseccion de beneficios]</h3>',\n      '  <ul>[Lista de 3 a 5 puntos clave con negritas]</ul>',\n      '  <figure><img src=\"' + ($json.imagen_body2_url || '') + '\" alt=\"Tecnologia LOOKITRY aplicada al ecommerce de moda\" /><figcaption>[Descripcion corta]</figcaption></figure>',\n      '  <h2>[Conclusion motivadora]</h2>',\n      '  <p>...[Cierre]...</p>',\n      '  <div data-blog-cta=\"final\" style=\"text-align: center; padding: 40px; background: #0A0A0A; border-radius: 30px; margin: 50px 0;\"><h3 style=\"color: #FFFFFF; margin-bottom: 20px;\">Listo para ver como funcionaria LOOKITRY en tu tienda?</h3><a href=\"https://lookitry.com/trial-checkout\" style=\"background: #FF5C3A; color: white; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; display: inline-block;\">Iniciar prueba de LOOKITRY</a></div>',\n      '</article>',\n      '',\n      '# FORMATO DE SALIDA',\n      '{\"title\":\"...\",\"content\":\"...\",\"excerpt\":\"...\",\"tags\":[\"...\",\"...\",\"...\"]}'\n    ].join('\\n')\n  }],\n  temperature: 0.5,\n  max_tokens: 6000\n}) }}",
         "options": {
-          "timeout": 120000
+          "timeout": 240000
         }
       },
       "id": "c00dde00-a97a-4968-80a8-b5608f13db29",
@@ -812,13 +825,13 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        98720,
+        98736,
         36272
       ]
     },
     {
       "parameters": {
-        "jsCode": "const article = $input.first().json;\nlet ctx = {};\ntry { ctx = $('Preparar Contexto Editorial').first().json || {}; } catch(e) {}\n\nconst rawTags = article.tags || article.Tags || ctx.Tags || [];\nconst tagsArray = Array.isArray(rawTags) ? rawTags.map(t=>String(t||'').trim()).filter(Boolean) : String(rawTags||'').split(',').map(t=>t.trim()).filter(Boolean);\n\nconst categorySlug = String(article.category_slug || ctx.category_slug || 'ia').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'ia';\n\nconst excerpt = (article.excerpt || '').substring(0,157) + ((article.excerpt||'').length > 157 ? '...' : '');\nconst meta_description = (article.meta_description || article.excerpt || '').substring(0,157) + '...';\n\nconst wpBody = {\n  title: article.title,\n  excerpt,\n  content: article.content,\n  status: 'published',\n  category_slug: categorySlug,\n  tags: tagsArray,\n  featured_image: ctx.imagen_destacada_url || '',\n  meta_description,\n  topic_id: ctx.topic_id || '',\n  author_id: 'LOOKITRY Editorial' \n};\n\nreturn [{ json: { wpBody, ...ctx, tags: tagsArray, category_slug: categorySlug, title: article.title, excerpt, content: article.content, meta_description } }];"
+        "jsCode": "const article = $input.first().json;\nlet ctx = {};\ntry {\n  ctx = $('Preparar Contexto Editorial').first().json || {};\n} catch (e) {}\n\nconst rawTags = article.tags || article.Tags || ctx.Tags || [];\nconst tagsArray = Array.isArray(rawTags)\n  ? rawTags.map((tag) => String(tag || '').trim()).filter(Boolean)\n  : String(rawTags || '').split(',').map((tag) => tag.trim()).filter(Boolean);\n\nconst categorySlug = String(article.category_slug || ctx.category_slug || 'ia')\n  .toLowerCase()\n  .normalize('NFD')\n  .replace(/[\\u0300-\\u036f]/g, '')\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-+|-+$/g, '') || 'ia';\n\nconst excerptSource = String(article.excerpt || article.meta_description || '');\nconst excerpt = excerptSource.length > 157 ? excerptSource.substring(0, 157) + '...' : excerptSource;\nconst metaSource = String(article.meta_description || article.excerpt || excerptSource || '');\nconst meta_description = metaSource.length > 157 ? metaSource.substring(0, 157) + '...' : metaSource;\n\nconst featuredImage = String(ctx.imagen_destacada_url || '').trim();\nconst bodyImage1 = String(ctx.imagen_body1_url || '').trim();\nconst bodyImage2 = String(ctx.imagen_body2_url || '').trim();\nif (!featuredImage || !bodyImage1 || !bodyImage2) {\n  throw new Error('Faltan imagenes generadas para publicar el articulo.');\n}\nif (new Set([featuredImage, bodyImage1, bodyImage2]).size < 3) {\n  throw new Error('Las imagenes generadas no son unicas. Deben existir portada, cuerpo 1 y cuerpo 2 distintas.');\n}\n\nlet content = String(article.content || '').trim();\nif (!content) {\n  throw new Error('El articulo no devolvio contenido HTML.');\n}\n\nconst figureRegex = /<figure>[\\s\\S]*?<img[^>]*>[\\s\\S]*?<\\/figure>/gi;\nconst figures = content.match(figureRegex) || [];\nif (figures.length < 2) {\n  throw new Error('El articulo debe incluir exactamente dos imagenes dentro del cuerpo.');\n}\nconst forcedFigures = [bodyImage1, bodyImage2];\nlet figureIndex = 0;\ncontent = content.replace(figureRegex, (figureHtml) => {\n  const targetImage = forcedFigures[figureIndex++];\n  if (!targetImage || figureIndex > 2) {\n    return figureHtml;\n  }\n  if (figureHtml.includes('<figcaption>')) {\n    return figureHtml.replace(/<img[^>]*>/i, '<img src=\"' + targetImage + '\" alt=\"Imagen editorial de LOOKITRY para ecommerce de moda\" />');\n  }\n  return '<figure><img src=\"' + targetImage + '\" alt=\"Imagen editorial de LOOKITRY para ecommerce de moda\" /></figure>';\n});\n\nconst emptyImages = content.match(/<img[^>]+src=[\"']\\s*[\"'][^>]*>/gi) || [];\nif (emptyImages.length > 0) {\n  throw new Error('El articulo quedo con imagenes vacias.');\n}\n\nconst bodyImages = Array.from(content.matchAll(/<img[^>]+src=[\"']([^\"']+)[\"'][^>]*>/gi)).map((match) => String(match[1] || '').trim());\nif (bodyImages.length < 2 || bodyImages[0] !== bodyImage1 || bodyImages[1] !== bodyImage2) {\n  throw new Error('El cuerpo del articulo no quedo con las dos imagenes correctas.');\n}\nif (bodyImages.includes(featuredImage)) {\n  throw new Error('La portada no puede repetirse dentro del cuerpo del articulo.');\n}\n\nconst normalizeSlug = (value) => String(value || '')\n  .toLowerCase()\n  .normalize('NFD')\n  .replace(/[\\u0300-\\u036f]/g, '')\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-+|-+$/g, '');\nconst currentSlug = normalizeSlug(article.title);\nconst relatedLinks = Array.isArray(ctx.enlacesBlogs)\n  ? ctx.enlacesBlogs.filter((link) => {\n      const url = String(link?.url || '').trim();\n      return url && !url.endsWith('/' + currentSlug);\n    }).slice(0, 2)\n  : [];\n\nconst internalLinks = content.match(/https:\\/\\/lookitry\\.com\\/blog\\/[^\"'\\s<]+/gi) || [];\nif (internalLinks.length < 2) {\n  if (relatedLinks.length < 2) {\n    throw new Error('No hay suficientes backlinks internos para publicar el articulo.');\n  }\n\n  const backlinksBlock = '<div data-blog-block=\"impact\"><h3>Sigue aprendiendo con LOOKITRY</h3><ul>' + relatedLinks.map((link) => '<li><a href=\"' + String(link.url).trim() + '\">' + String(link.titulo || 'Articulo relacionado de LOOKITRY').trim() + '</a></li>').join('') + '</ul></div>';\n  if (content.includes('data-blog-cta=\"final\"')) {\n    content = content.replace(/<div data-blog-cta=\"final\"/i, backlinksBlock + '<div data-blog-cta=\"final\"');\n  } else {\n    content += backlinksBlock;\n  }\n}\n\nconst softCta = '<p class=\"soft-cta\" style=\"background:#f9f9f9; padding:15px; border-left:4px solid #FF5C3A; font-style:italic;\"><strong>Te identificas con este reto?</strong> Descubre como LOOKITRY ayuda a las tiendas de moda a <a href=\"https://lookitry.com/trial-checkout\" style=\"color:#FF5C3A;\">activar una prueba paga y mejorar la conversion con IA</a>.</p>';\nif (/<p class=\"soft-cta\"[\\s\\S]*?<\\/p>/i.test(content)) {\n  content = content.replace(/<p class=\"soft-cta\"[\\s\\S]*?<\\/p>/i, softCta);\n} else {\n  content = content.replace(/(<h2[^>]*>)/i, softCta + '$1');\n}\n\nconst finalCta = '<div data-blog-cta=\"final\" style=\"text-align: center; padding: 40px; background: #0A0A0A; border-radius: 30px; margin: 50px 0;\"><h3 style=\"color: #FFFFFF; margin-bottom: 20px;\">Quieres ver como funcionaria LOOKITRY en tu tienda?</h3><a href=\"https://lookitry.com/trial-checkout\" style=\"background: #FF5C3A; color: white; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; display: inline-block;\">Iniciar prueba de LOOKITRY</a></div>';\nif (/<div data-blog-cta=\"final\"[\\s\\S]*?<\\/div>/i.test(content)) {\n  content = content.replace(/<div data-blog-cta=\"final\"[\\s\\S]*?<\\/div>/i, finalCta);\n} else {\n  content += finalCta;\n}\n\nconst wpBody = {\n  title: article.title,\n  excerpt,\n  content,\n  status: 'published',\n  category_slug: categorySlug,\n  tags: tagsArray,\n  featured_image: featuredImage,\n  meta_description,\n  topic_id: ctx.topic_id || '',\n  author_id: 'LOOKITRY Editorial',\n};\n\nreturn [{\n  json: {\n    wpBody,\n    ...ctx,\n    tags: tagsArray,\n    category_slug: categorySlug,\n    title: article.title,\n    excerpt,\n    content,\n    meta_description,\n  },\n}];"
       },
       "id": "b830a7ae-bc56-4bdf-a242-7aaee9d06954",
       "name": "Preparar JSON Lookitry",
@@ -853,6 +866,7 @@
           "response": {
             "response": {
               "fullResponse": true,
+              "neverError": true,
               "responseFormat": "json"
             }
           }
@@ -936,8 +950,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        99680,
-        36256
+        99440,
+        36112
       ],
       "alwaysOutputData": true
     },
@@ -950,8 +964,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        99488,
-        36752
+        99664,
+        36288
       ]
     },
     {
@@ -963,8 +977,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        99680,
-        36960
+        99664,
+        36112
       ]
     },
     {
@@ -1003,7 +1017,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ ({\n  model: \"meta-llama/llama-3.3-70b-instruct\",\n  messages: [{\n    role: \"user\",\n    content: [\n      \"Eres el director de arte de Lookitry Editorial. Debes generar prompts de imagen editoriales que representen el tema elegido con precisión.\",\n      \"\",\n      \"IDENTIDAD VISUAL DE LOOKITRY:\",\n      \"- Paleta guía: naranja principal (#FF5C3A), blanco, negro, grises tecnológicos.\",\n      \"- Estilo: editorial premium, ecommerce de moda, tecnología aplicada a retail, fotografía realista.\",\n      \"\",\n      \"DATOS DEL ARTÍCULO:\",\n      \"- Tema: \" + ($('Loop Temas Pendientes').item.json.title || ''),\n      \"- Categoría: \" + ($('Loop Temas Pendientes').item.json.category_slug || 'ia'),\n      \"- Keywords: \" + ($('Loop Temas Pendientes').item.json.keywords || ''),\n      \"\",\n      \"REGLAS:\",\n      \"- Todas las imágenes deben ser horizontales 16:9, fotorrealistas, sin texto, sin logos, sin marcas de agua.\",\n      \"- Escenas específicas al tema, no genéricas.\"\n    ].join('\\n')\n  }],\n  temperature: 0.7,\n  max_tokens: 1000\n}) }}",
+        "jsonBody": "={{ ({\n  model: \"meta-llama/llama-3.3-70b-instruct\",\n  messages: [{\n    role: \"user\",\n    content: [\n      \"Eres el Director de Fotografía de Lookitry Editorial. Tu misión es escribir 3 'prompts' (instrucciones visuales para una IA generadora de imágenes) hiper-realistas.\",\n      \"\",\n      \"DATOS DEL ARTÍCULO:\",\n      \"- Tema: \" + ($('Loop Temas Pendientes').item.json.title || ''),\n      \"- Categoría: \" + ($('Loop Temas Pendientes').item.json.category_slug || 'ia'),\n      \"\",\n      \"REGLAS ESTRICTAS PARA LAS FOTOS:\",\n      \"1. ESCRIBE LOS PROMPTS EN INGLÉS (las IA de imágenes entienden mucho mejor el inglés).\",\n      \"2. NO uses conceptos abstractos (como 'comercio electrónico', 'pagos', 'tecnología abstracta'). Describe ESCENAS FÍSICAS (ej. a beautiful young woman in a boutique looking at her smartphone, fashion studio lighting, elegant clothing on a rack).\",\n      \"3. PROHIBIDO incluir texto, logos, tarjetas de crédito, marcas de agua, ilustraciones o gráficos. Solo FOTOGRAFÍA REALISTA (Photorealistic, 8k, editorial fashion photography).\",\n      \"4. Usa la paleta de colores de Lookitry de forma sutil: orange, white, black, gray.\",\n      \"\",\n      \"FORMATO DE SALIDA OBLIGATORIO (Devuelve SOLO estas 3 líneas numeradas, sin introducciones):\",\n      \"A) [Prompt en inglés describiendo la imagen de portada]\",\n      \"B) [Prompt en inglés describiendo una foto de apoyo para el cuerpo del texto]\",\n      \"C) [Prompt en inglés describiendo otra foto de apoyo o detalle]\"\n    ].join('\\n')\n  }],\n  temperature: 0.6,\n  max_tokens: 1000\n}) }}",
         "options": {
           "timeout": 60000
         }
@@ -1498,24 +1512,12 @@
     },
     "Log Error Publicación": {
       "main": [
-        [
-          {
-            "node": "Loop Temas Pendientes",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Log Éxito": {
       "main": [
-        [
-          {
-            "node": "Loop Temas Pendientes",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "NoOp Trend Insertado": {

@@ -47,7 +47,7 @@ export default function NewBlogPage() {
 
   const handleCreate = async () => {
     if (!post.title || !post.content) {
-      setError('El tÃ­tulo y contenido son obligatorios');
+      setError('El título y el contenido son obligatorios');
       return;
     }
 
@@ -60,7 +60,7 @@ export default function NewBlogPage() {
       return;
     }
 
-    setError('Error al crear el artÃ­culo');
+    setError('Error al crear el artículo');
     setSaving(false);
   };
 
@@ -88,7 +88,7 @@ export default function NewBlogPage() {
           </Link>
           <div>
             <h1 className="font-jakarta font-extrabold text-3xl tracking-tight" style={{ color: 'var(--text-primary)' }}>
-              Nuevo ArtÃ­culo
+              Nuevo Artículo
             </h1>
             <p className="text-xs font-medium mt-1" style={{ color: 'var(--text-muted)' }}>
               Crea contenido de alto valor de forma manual
@@ -107,7 +107,7 @@ export default function NewBlogPage() {
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                Crear ArtÃ­culo
+                Crear Artículo
               </>
             )}
           </button>
@@ -127,7 +127,7 @@ export default function NewBlogPage() {
 
             <div className="space-y-3">
               <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--text-muted)' }}>
-                TÃ­tulo del ArtÃ­culo
+                Título del artículo
               </label>
               <input
                 type="text"
@@ -136,7 +136,7 @@ export default function NewBlogPage() {
                 onChange={handleChange}
                 className="w-full px-6 py-4 rounded-[1.5rem] border text-xl font-bold transition-all placeholder:opacity-50 outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
                 style={fieldStyle}
-                placeholder="Introduzca el tÃ­tulo..."
+                placeholder="Introduce el título..."
               />
             </div>
 
@@ -150,7 +150,7 @@ export default function NewBlogPage() {
                 onChange={handleChange}
                 className="w-full h-[500px] px-8 py-8 rounded-[2rem] border text-[13px] font-mono overflow-y-auto transition-all leading-relaxed no-scrollbar outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
                 style={fieldStyle}
-                placeholder="Pega el cÃ³digo HTML aquÃ­..."
+                placeholder="Pega el código HTML aquí..."
               />
             </div>
           </div>
@@ -160,7 +160,7 @@ export default function NewBlogPage() {
           <div className="rounded-[2.5rem] border p-8 space-y-6 shadow-xl" style={panelStyle}>
             <h3 className="text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]"></div>
-              PublicaciÃ³n
+              Publicación
             </h3>
 
             <div className="space-y-4">
@@ -182,7 +182,7 @@ export default function NewBlogPage() {
 
               <div className="space-y-2">
                 <label className="text-[9px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>
-                  CategorÃ­a
+                  Categoría
                 </label>
                 <select
                   name="category_id"
@@ -191,7 +191,7 @@ export default function NewBlogPage() {
                   className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
                   style={fieldStyle}
                 >
-                  <option value="" style={optionStyle}>Sin CategorÃ­a</option>
+                  <option value="" style={optionStyle}>Sin categoría</option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.id} style={optionStyle}>
                       {cat.name}
