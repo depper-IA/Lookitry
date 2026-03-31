@@ -38,10 +38,12 @@ export default function AdminBlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [executionNotice, setExecutionNotice] = useState('');
   const [triggerMessage, setTriggerMessage] = useState('');
   const [settings, setSettings] = useState<BlogSettings | null>(null);
   const [isTriggering, setIsTriggering] = useState(false);
   const [isMonitoringRun, setIsMonitoringRun] = useState(false);
+  const [pendingExecutionStartedAt, setPendingExecutionStartedAt] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [customArticleModel, setCustomArticleModel] = useState('');
   const [isCustomArticleModelSelected, setIsCustomArticleModelSelected] = useState(false);
@@ -62,6 +64,49 @@ export default function AdminBlogPage() {
     loadPosts();
     loadSettings();
   }, []);
+
+  useEffect(() => {
+    if (!pendingExecutionStartedAt) return;
+
+    const intervalId = window.setInterval(async () => {
+      const [latestSettings, latestPosts] = await Promise.all([
+        fetchBlogSettings(),
+        adminFetchPosts(),
+      ]);
+
+      if (latestSettings) {
+        setSettings(latestSettings);
+      }
+      setPosts(latestPosts);
+
+      const latestExecutionAt = latestSettings?.execution_updated_at
+        ? new Date(latestSettings.execution_updated_at).getTime()
+        : null;
+
+      if (!latestExecutionAt || latestExecutionAt < pendingExecutionStartedAt) {
+        return;
+      }
+
+      if (latestSettings?.execution_status === 'error') {
+        setExecutionNotice('');
+        setTriggerMessage('');
+        setError(latestSettings.execution_message || 'n8n reportÃ³ un fallo en la ejecuciÃ³n del blog.');
+        setIsMonitoringRun(false);
+        setPendingExecutionStartedAt(null);
+        return;
+      }
+
+      if (latestSettings?.execution_status === 'success') {
+        setExecutionNotice('');
+        setError('');
+        setTriggerMessage(latestSettings.execution_message || 'n8n terminÃ³ la ejecuciÃ³n correctamente.');
+        setIsMonitoringRun(false);
+        setPendingExecutionStartedAt(null);
+      }
+    }, 15000);
+
+    return () => window.clearInterval(intervalId);
+  }, [pendingExecutionStartedAt]);
 
   const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
@@ -257,6 +302,7 @@ export default function AdminBlogPage() {
 
   const monitorTriggeredRun = async (triggerStartedAt: Date, baselinePostIds: Set<string>) => {
     const startedAtMs = triggerStartedAt.getTime();
+    setPendingExecutionStartedAt(startedAtMs);
 
     for (let attempt = 0; attempt < 24; attempt += 1) {
       await sleep(5000);
@@ -274,14 +320,19 @@ export default function AdminBlogPage() {
       const latestExecutionAt = latestSettings?.execution_updated_at ? new Date(latestSettings.execution_updated_at).getTime() : null;
       if (latestSettings?.execution_status === 'error' && latestExecutionAt && latestExecutionAt >= startedAtMs) {
         setTriggerMessage('');
+        setExecutionNotice('');
         setError(latestSettings.execution_message || 'n8n reportó un fallo en la ejecución del blog.');
         setIsMonitoringRun(false);
+        setPendingExecutionStartedAt(null);
         return;
       }
 
       if (latestSettings?.execution_status === 'success' && latestExecutionAt && latestExecutionAt >= startedAtMs) {
+        setExecutionNotice('');
+        setError('');
         setTriggerMessage(latestSettings.execution_message || 'n8n terminó la ejecución correctamente.');
         setIsMonitoringRun(false);
+        setPendingExecutionStartedAt(null);
         return;
       }
 
@@ -291,20 +342,25 @@ export default function AdminBlogPage() {
       });
 
       if (newPost) {
+        setExecutionNotice('');
+        setError('');
         setTriggerMessage(`Artículo generado correctamente: ${newPost.title}`);
         setIsMonitoringRun(false);
+        setPendingExecutionStartedAt(null);
         return;
       }
     }
 
+    setError('');
     setTriggerMessage('');
-    setError('n8n no confirmó el resultado del flujo a tiempo. Revisa la ejecución fallida y asegúrate de reportar `success` o `error` al endpoint `/api/blog/execution-status` para que el panel muestre el fallo real.');
+    setExecutionNotice('n8n aún no confirmó el resultado del flujo. El panel seguirá consultando automáticamente hasta recibir `success` o `error` desde `/api/blog/execution-status`.');
     setIsMonitoringRun(false);
   };
 
   const handleTriggerNow = async () => {
     setIsTriggering(true);
     setError('');
+    setExecutionNotice('');
     setTriggerMessage('');
     const triggerStartedAt = new Date();
     const baselinePostIds = new Set(posts.map((post) => post.id));
@@ -319,6 +375,7 @@ export default function AdminBlogPage() {
       setIsMonitoringRun(true);
       await monitorTriggeredRun(triggerStartedAt, baselinePostIds);
     } else {
+      setPendingExecutionStartedAt(null);
       setError(result.message);
     }
 
@@ -343,7 +400,11 @@ export default function AdminBlogPage() {
   const selectedArticleModel = settings?.openrouter_article_model || 'google/gemini-2.5-flash';
   const hasUnknownSavedModel = !OPENROUTER_ARTICLE_MODELS.some((model) => model.value === selectedArticleModel);
   const articleModelSelectValue = (isCustomArticleModelSelected || hasUnknownSavedModel) ? '__custom__' : selectedArticleModel;
-  const executionStatus = error ? 'error' : (isMonitoringRun ? 'running' : (settings?.execution_status || 'idle'));
+  const executionStatus = error
+    ? 'error'
+    : (isMonitoringRun || pendingExecutionStartedAt)
+      ? 'running'
+      : (settings?.execution_status || 'idle');
   const executionTitle = error
     ? 'La ejecución falló'
     : triggerMessage
@@ -376,6 +437,17 @@ export default function AdminBlogPage() {
       : executionStatus === 'running'
         ? 'En curso'
         : 'Sin señal';
+
+  const effectiveExecutionTitle = error
+    ? executionTitle
+    : executionNotice
+      ? 'Esperando confirmacion del flujo'
+      : executionTitle;
+  const effectiveExecutionMessage = error
+    ? executionMessage
+    : executionNotice
+      ? executionNotice
+      : executionMessage;
 
   return (
     <div className="space-y-6">
@@ -537,10 +609,10 @@ export default function AdminBlogPage() {
                     Estado del Flujo
                   </div>
                   <div className="mt-1 text-base font-bold tracking-tight">
-                    {executionTitle}
+                    {effectiveExecutionTitle}
                   </div>
                   <div className="mt-2 text-xs leading-relaxed opacity-90 font-medium">
-                    {executionMessage}
+                    {effectiveExecutionMessage}
                   </div>
                 </div>
                 <div className={`inline-flex shrink-0 items-center justify-center rounded-2xl px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${executionBadgeClasses}`}>

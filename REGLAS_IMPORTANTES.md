@@ -627,7 +627,6 @@ Base URL: `https://api.lookitry.com/api`
 5. Tras el pago (con referencia `TRIAL-{brandId}-{ts}`), el webhook activa la cuenta
 6. Se envía email de Bienvenida via SMTP
 7. Usuario ingresa a su panel en `/dashboard`
-
 ### Flujo de Pago — Wompi (SOLO COP)
 > Wompi solo acepta COP. **No importa qué moneda muestre el frontend — el backend siempre envía COP.**
 
