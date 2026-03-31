@@ -46,7 +46,13 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
   const [resendSent, setResendSent] = useState(false);
   const isDashboardHome = pathname === '/dashboard';
 
-  const visibleNavigation = navigation.filter((item) => !(item.href === '/dashboard/review' && currentBrand?.plan === 'TRIAL'));
+  const isPro = currentBrand?.plan === 'PRO';
+  const visibleNavigation = navigation.filter((item) => {
+    if (item.href === '/dashboard/review' && currentBrand?.plan === 'TRIAL') return false;
+    if (item.href === '/dashboard/integrations' && !isPro) return false;
+    return true;
+  });
+
 
   React.useEffect(() => {
     document.body.style.overflow = sidebarOpen ? 'hidden' : '';

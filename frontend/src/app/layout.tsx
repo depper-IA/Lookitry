@@ -112,6 +112,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta property="og:site_name" content="Lookitry" />
         <meta property="og:locale" content="es_CO" />
         <meta name="twitter:site" content="@lookitry" />
+        {/* Script de tema bloqueante: aplica dark/light ANTES del primer paint para evitar flash */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body className="font-sans">
         {children}
@@ -120,3 +126,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+

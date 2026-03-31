@@ -92,6 +92,11 @@ export function deriveDashboardAccountState(params: {
   const storeConnected = Boolean(pluginValidated || wooMetrics?.integration?.pluginStoreDomain || allowedOriginsCount > 0 || hasDomain);
   const widgetInstalled = Boolean(pluginValidated || hasApiKey);
 
+  // Integración WooCommerce es exclusiva del Plan PRO
+  // Solo mostrar pasos de tienda/widget si el usuario es PRO, o si ya tiene una conexión activa
+  const isPro = String(brand?.plan || '').toUpperCase() === 'PRO';
+  const showIntegrationSteps = isPro || storeConnected || widgetInstalled;
+
   const checklist: ChecklistItem[] = [
     {
       id: 'account',
@@ -111,26 +116,28 @@ export function deriveDashboardAccountState(params: {
       done: hasActivePlan,
       stateLabel: hasActivePlan ? (isTrial ? 'Trial habilitado' : 'Pago confirmado') : 'Pendiente de activación',
     },
-    {
-      id: 'store',
-      title: 'Tienda conectada',
-      description: storeConnected
-        ? 'Tu tienda o dominio ya estan vinculados para seguir con la activacion.'
-        : 'Aun falta enlazar tu tienda o configurar el dominio donde vivira el probador.',
-      href: '/dashboard/integrations',
-      done: storeConnected,
-      stateLabel: storeConnected ? 'Conectada' : 'Sin conectar',
-    },
-    {
-      id: 'widget',
-      title: 'Widget instalado',
-      description: widgetInstalled
-        ? (pluginValidated ? 'Tu probador ya quedo listo para instalarse o usarse en tienda.' : 'La conexion ya empezo, pero todavia falta terminar la instalacion.')
-        : 'Todavia falta instalar o configurar el probador en tu tienda.',
-      href: '/dashboard/integrations',
-      done: widgetInstalled,
-      stateLabel: pluginValidated ? 'Operativo' : widgetInstalled ? 'Configuración en curso' : 'No instalado',
-    },
+    ...(showIntegrationSteps ? [
+      {
+        id: 'store',
+        title: 'Tienda conectada',
+        description: storeConnected
+          ? 'Tu tienda o dominio ya estan vinculados para seguir con la activacion.'
+          : 'Aun falta enlazar tu tienda o configurar el dominio donde vivira el probador.',
+        href: '/dashboard/integrations',
+        done: storeConnected,
+        stateLabel: storeConnected ? 'Conectada' : 'Sin conectar',
+      },
+      {
+        id: 'widget',
+        title: 'Widget instalado',
+        description: widgetInstalled
+          ? (pluginValidated ? 'Tu probador ya quedo listo para instalarse o usarse en tienda.' : 'La conexion ya empezo, pero todavia falta terminar la instalacion.')
+          : 'Todavia falta instalar o configurar el probador en tu tienda.',
+        href: '/dashboard/integrations',
+        done: widgetInstalled,
+        stateLabel: pluginValidated ? 'Operativo' : widgetInstalled ? 'Configuración en curso' : 'No instalado',
+      },
+    ] as typeof checklist : []),
     {
       id: 'product',
       title: 'Primer producto listo',
@@ -178,7 +185,7 @@ export function deriveDashboardAccountState(params: {
       href: '/dashboard/subscription',
       cta: 'Ir a suscripción',
     };
-  } else if (!storeConnected || !widgetInstalled) {
+  } else if (showIntegrationSteps && (!storeConnected || !widgetInstalled)) {
     nextAction = {
       title: 'Conecta tu tienda',
       description: 'Tu cuenta ya avanzo. Lo que falta ahora es conectar la tienda y dejar el probador publicado.',
@@ -264,7 +271,7 @@ export function deriveDashboardAccountState(params: {
     progressPercent,
     completedSteps,
     totalSteps,
-    isActivationFocused: !hasTryOns || !hasProducts || !storeConnected || !widgetInstalled,
+    isActivationFocused: !hasTryOns || !hasProducts || (showIntegrationSteps && (!storeConnected || !widgetInstalled)),
     statusTitle,
     statusDescription,
     nextAction,

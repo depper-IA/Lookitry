@@ -368,10 +368,13 @@ export default function DashboardPage() {
 
             <div className="mt-6 space-y-3">
               <QuickAction href="/dashboard/subscription" icon={<Sparkles size={16} />} title="Plan y facturación" description="Centraliza renovaciones, upgrades y pagos en una sola pantalla." />
-              <QuickAction href="/dashboard/integrations" icon={<PlugZap size={16} />} title="Conectar tienda" description="Instala el plugin, valida WooCommerce y termina la activación técnica." />
+              {(brand?.plan === 'PRO' || accountState.checklist.some(i => i.id === 'store')) && (
+                <QuickAction href="/dashboard/integrations" icon={<PlugZap size={16} />} title="Conectar tienda" description="Instala el plugin, valida WooCommerce y termina la activación técnica." />
+              )}
               <QuickAction href="/dashboard/products" icon={<Package size={16} />} title="Gestionar productos" description="Carga catálogo, activa prendas y prepara el primer lanzamiento." />
               <QuickAction href="/dashboard/mi-pagina" icon={<LayoutTemplate size={16} />} title="Sitio de marca" description="Ajusta landing, dominio y la experiencia pública del probador." />
             </div>
+
           </div>
         </motion.section>
       </div>
