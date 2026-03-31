@@ -514,7 +514,9 @@ export class WompiController {
       const brandId = brand?.id ?? `visitor_${Date.now()}`;
       const reference = wompiService.generateReference(brandId, monthsNum, planStr, isLandingPurchase);
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-      let successPath = brand?.id ? `/pago-exitoso?plan=${planStr}&months=${monthsNum}` : `/registro-pro?plan=${planStr}&months=${monthsNum}`;
+      let successPath = brand?.id
+        ? `/dashboard/checkout?plan=${planStr}&months=${monthsNum}&method=wompi&ref=${encodeURIComponent(reference)}`
+        : `/registro-pro?plan=${planStr}&months=${monthsNum}`;
 
       if (!brand?.id && email) {
         const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({ 
