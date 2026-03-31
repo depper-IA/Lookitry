@@ -66,6 +66,8 @@ Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 50
 2. **Registro de Cambios (Changelog):** Sin excepción, TODOS los cambios realizados por cualquier editor (IA o humano) deben quedar reflejados en `CHANGELOG_GEMINI.md`. Cada entrada debe ser detallada y referenciar los archivos modificados.
 3. **No Placeholders:** Prohibido dejar comentarios `// TODO` o placeholders. El código debe ser funcional y premium desde la primera versión.
 
+4. **Pendientes vivos:** Al iniciar cada tarea, la IA debe leer tambiÃ©n `pendientes_por_hacer.md` si existe. Si durante una tarea se deja una deuda tÃ©cnica, seguimiento o limpieza pendiente, debe registrarse ahÃ­ para que no quede sin ejecutar en sesiones futuras.
+
 ## 1. SKILLS & PROCEDIMIENTOS OBLIGATORIOS
 - **Diseño UI/UX (Pro Max)**: Aplicar SIEMPRE (`.agent/skills/ui-ux-pro-max/SKILL.md`) a cualquier componente frontend. Lookitry debe sentirse premium.
 - **Testing & QA**: Referir a (`.gemini/skills/testing/SKILL.md`) al tocar lógicas de pago (Wompi) o Try-On (n8n).

@@ -25,14 +25,14 @@ interface DashboardLayoutProps {
 const navigation = [
   { name: 'Inicio', href: '/dashboard', icon: HomeIcon },
   { name: 'Productos', href: '/dashboard/products', icon: ProductsIcon },
-  { name: 'Generaciones', href: '/dashboard/generations', icon: GenerationsIcon },
+  { name: 'Pruebas IA', href: '/dashboard/generations', icon: GenerationsIcon },
   { name: 'Mi página', href: '/dashboard/mi-pagina', icon: LandingIcon },
   { name: 'Mi opinión', href: '/dashboard/review', icon: ReviewIcon },
-  { name: 'Widget Probador', href: '/dashboard/settings', icon: SettingsIcon },
-  { name: 'Integraciones', href: '/dashboard/integrations', icon: EmbedIcon },
-  { name: 'Uso', href: '/dashboard/usage', icon: UsageIcon },
+  { name: 'Probador y diseño', href: '/dashboard/settings', icon: SettingsIcon },
+  { name: 'Conectar tienda', href: '/dashboard/integrations', icon: EmbedIcon },
+  { name: 'Consumo', href: '/dashboard/usage', icon: UsageIcon },
   { name: 'Suscripción', href: '/dashboard/subscription', icon: SubscriptionIcon },
-  { name: 'Analytics', href: '/dashboard/analytics', icon: AnalyticsIcon },
+  { name: 'Resultados', href: '/dashboard/analytics', icon: AnalyticsIcon },
   { name: 'Perfil', href: '/dashboard/profile', icon: ProfileIcon },
 ];
 
@@ -45,6 +45,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
   const [verificationBannerDismissed, setVerificationBannerDismissed] = useState(false);
   const [resendSending, setResendSending] = useState(false);
   const [resendSent, setResendSent] = useState(false);
+  const isDashboardHome = pathname === '/dashboard';
 
   const visibleNavigation = navigation.filter((item) => !(item.href === '/dashboard/review' && currentBrand?.plan === 'TRIAL'));
 
@@ -273,9 +274,9 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         </header>
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 scroll-smooth sm:p-4 md:p-6 xl:p-8 xl:pt-10">
-          <OnboardingWizard />
-          <DashboardNotifications />
-          <TrialBanner />
+          {!isDashboardHome && <OnboardingWizard />}
+          {!isDashboardHome && <DashboardNotifications />}
+          {!isDashboardHome && <TrialBanner />}
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">{children}</div>
         </main>
       </div>

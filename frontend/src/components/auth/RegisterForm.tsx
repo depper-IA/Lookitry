@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { StepProgress } from '@/components/payments/StepProgress';
 import { 
   Eye, 
   EyeOff, 
-  Check, 
   AlertCircle, 
   ShieldCheck, 
   Rocket, 
@@ -59,8 +59,8 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [trialActive, setTrialActive] = useState<boolean>(true);
-  const [trialDays, setTrialDays] = useState(7);
+  const trialActive = true;
+  const trialDays = 7;
   const [fingerprint, setFingerprint] = useState<string | null>(null);
   const [prefilledFields, setPrefilledFields] = useState<Record<string, boolean>>({});
 
@@ -194,38 +194,44 @@ export default function RegisterForm() {
   if (trialActive === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505]">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#FF5C3A] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#050505] selection:bg-indigo-500/30">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#050505] selection:bg-[#FF5C3A]/30">
       <div className="w-full max-w-lg">
         
         <div className="flex flex-col items-center mb-10">
           <Link href="/" className="flex items-center gap-3 group mb-4">
             <Image src="/logo.svg" alt="Lookitry" width={32} height={32} className="group-hover:rotate-12 transition-transform duration-500" priority />
-            <span className="font-syne font-extrabold text-2xl text-white tracking-tighter">
-              Look<span className="text-indigo-500">itry</span>
+            <span className="font-jakarta font-extrabold text-2xl text-white tracking-tighter">
+              Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
-          <div className="h-1 w-12 bg-gradient-to-r from-transparent via-indigo-500 to-transparent rounded-full" />
+          <div className="h-1 w-12 rounded-full bg-[#FF5C3A]" />
         </div>
 
-        <div className="bg-[#0a0a0a] border border-gray-800/50 rounded-3xl p-8 md:p-10 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
+        {isPaidFlow && (
+          <div className="mb-8">
+            <StepProgress currentStep={4} maxNavigableStep={4} lockedAfterPayment />
+          </div>
+        )}
+
+        <div className="relative overflow-hidden rounded-3xl border border-[#FF5C3A]/12 bg-[#0a0a0a] p-8 shadow-2xl md:p-10">
+          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#FF5C3A]/50 to-transparent" />
           
           <div className="mb-10 text-center">
-            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20`}>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20">
               {isPaidFlow ? 'Paso Final: Activación' : 'Inicia tu prueba'}
             </div>
-            <h1 className="text-3xl font-syne font-bold text-white tracking-tight mb-2">
-              {isPaidFlow ? '¡Te damos la bienvenida!' : 'Crea tu cuenta'}
+            <h1 className="text-3xl font-jakarta font-bold text-white tracking-tight mb-2">
+              {isPaidFlow ? 'Activa tu acceso' : 'Crea tu cuenta'}
             </h1>
-            <p className="text-sm text-gray-500 max-w-xs mx-auto leading-relaxed">
+            <p className="text-sm text-[#999] max-w-xs mx-auto leading-relaxed">
               {isPaidFlow 
-                ? 'El pago fue exitoso. Define tu contraseña para empezar a usar tu probador.'
+                ? 'Tu pago fue confirmado. Define tu contraseña y entra a tu probador.'
                 : `Prueba Lookitry por ${trialDays} días y transforma tu tienda.`}
             </p>
           </div>
@@ -234,8 +240,8 @@ export default function RegisterForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Brand Name */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  <Store className="w-3 h-3 text-indigo-500" /> Marca
+                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                  <Store className="w-3 h-3 text-[#FF5C3A]" /> Marca
                 </label>
                 <input
                   name="name"
@@ -243,14 +249,14 @@ export default function RegisterForm() {
                   onChange={handleChange}
                   required
                   placeholder="Ej: Velvet Studio"
-                  className="w-full bg-[#050505] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-indigo-500 outline-none transition-all shadow-inner"
+                  className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
                 />
               </div>
 
               {/* Contact Name */}
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  <UserIcon className="w-3 h-3 text-indigo-500" /> Responsable
+                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                  <UserIcon className="w-3 h-3 text-[#FF5C3A]" /> Responsable
                 </label>
                 <input
                   name="contact_name"
@@ -258,28 +264,28 @@ export default function RegisterForm() {
                   onChange={handleChange}
                   required
                   placeholder="Tu nombre completo"
-                  className="w-full bg-[#050505] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-indigo-500 outline-none transition-all shadow-inner"
+                  className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
                 />
               </div>
             </div>
 
             {/* Slug UI */}
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                <Globe className="w-3 h-3 text-indigo-500" /> URL del probador
+              <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                <Globe className="w-3 h-3 text-[#FF5C3A]" /> URL del probador
               </label>
-              <div className="flex items-center bg-[#050505] border border-gray-800 rounded-xl overflow-hidden focus-within:border-indigo-500 transition-all shadow-inner px-1">
-                <span className="pl-3 py-3 text-gray-600 text-xs font-medium select-none">lookitry.com/sitio/</span>
+              <div className="flex items-center overflow-hidden rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-1 shadow-inner transition-all focus-within:border-[#FF5C3A]">
+                <span className="select-none py-3 pl-3 text-xs font-medium text-[#666]">lookitry.com/sitio/</span>
                 <input
                   name="slug"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })}
-                  className="flex-1 px-1 py-3 text-sm text-white bg-transparent focus:outline-none placeholder-gray-700"
+                  className="flex-1 bg-transparent px-1 py-3 text-sm text-white placeholder-[#666] focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={suggestAlternativeSlug}
-                  className="mr-1 h-8 px-2.5 text-[9px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-tighter transition-colors"
+                  className="mr-1 h-8 px-2.5 text-[9px] font-black text-[#FF5C3A] hover:text-[#ff7a5f] uppercase tracking-tighter transition-colors"
                 >
                   Sugerir
                 </button>
@@ -288,8 +294,8 @@ export default function RegisterForm() {
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                <Mail className="w-3 h-3 text-indigo-500" /> Email corporativo
+              <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                <Mail className="w-3 h-3 text-[#FF5C3A]" /> Email corporativo
               </label>
               <input
                 name="email"
@@ -298,15 +304,15 @@ export default function RegisterForm() {
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
                 readOnly={isPaidFlow && prefilledFields.email}
-                className={`w-full bg-[#050505] border border-gray-800 rounded-xl px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none transition-all shadow-inner ${isPaidFlow && prefilledFields.email ? 'opacity-50 grayscale' : ''}`}
+                className={`w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white outline-none transition-all shadow-inner focus:border-[#FF5C3A] ${isPaidFlow && prefilledFields.email ? 'opacity-50 grayscale' : ''}`}
               />
             </div>
 
             {/* Password Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  <ShieldCheck className="w-3 h-3 text-indigo-500" /> Contraseña
+                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                  <ShieldCheck className="w-3 h-3 text-[#FF5C3A]" /> Contraseña
                 </label>
                 <div className="relative">
                   <input
@@ -316,12 +322,12 @@ export default function RegisterForm() {
                     onChange={handleChange}
                     required
                     placeholder="Mín. 8 caracteres"
-                    className={`w-full bg-[#050505] border ${form.password ? (isPasswordValid ? 'border-emerald-500/50' : 'border-amber-500/50') : 'border-gray-800'} rounded-xl px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none transition-all shadow-inner pr-10`}
+                    className={`w-full rounded-xl border ${form.password && !isPasswordValid ? 'border-red-500/40' : 'border-[rgba(255,255,255,0.08)]'} bg-[#050505] px-4 py-3 pr-10 text-sm text-white outline-none transition-all shadow-inner focus:border-[#FF5C3A]`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666] transition-colors hover:text-white"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -329,7 +335,7 @@ export default function RegisterForm() {
               </div>
               
               <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
                    Confirmar
                 </label>
                 <input
@@ -338,7 +344,7 @@ export default function RegisterForm() {
                   value={form.confirmPassword}
                   onChange={handleChange}
                   required
-                  className={`w-full bg-[#050505] border ${form.confirmPassword ? (passwordsMatch ? 'border-emerald-500/50' : 'border-red-500/50') : 'border-gray-800'} rounded-xl px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none transition-all shadow-inner`}
+                  className={`w-full rounded-xl border ${form.confirmPassword && !passwordsMatch ? 'border-red-500/40' : 'border-[rgba(255,255,255,0.08)]'} bg-[#050505] px-4 py-3 text-sm text-white outline-none transition-all shadow-inner focus:border-[#FF5C3A]`}
                 />
               </div>
             </div>
@@ -353,9 +359,9 @@ export default function RegisterForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full relative group bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold h-14 rounded-2xl transition-all shadow-xl shadow-indigo-600/20 active:scale-95 overflow-hidden"
+              className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[#FF5C3A] font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all active:scale-95 hover:bg-[#ff6c4d] disabled:opacity-50"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#FF5C3A] to-[#ff7a5f] opacity-100 transition-opacity" />
               <div className="relative flex items-center justify-center gap-3">
                 {loading ? (
                   <>
@@ -364,7 +370,7 @@ export default function RegisterForm() {
                   </>
                 ) : (
                   <>
-                    <Rocket className={`w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform ${isPaidFlow ? 'text-white' : 'text-indigo-200'}`} />
+                    <Rocket className="w-5 h-5 text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                     <span className="text-[13px] uppercase tracking-[0.2em] font-black">
                       {isPaidFlow ? 'Activar Mi Acceso' : 'Empezar ahora'}
                     </span>
@@ -374,9 +380,9 @@ export default function RegisterForm() {
             </button>
           </form>
 
-          <p className="text-center text-xs text-gray-500 mt-8">
+          <p className="text-center text-xs text-[#999] mt-8">
             ¿Ya tienes cuenta?{' '}
-            <Link href="/login" className="text-indigo-400 hover:text-indigo-300 font-bold tracking-tight border-b border-transparent hover:border-indigo-400 transition-all ml-1">
+            <Link href="/login" className="text-[#FF5C3A] hover:text-[#ff7a5f] font-bold tracking-tight border-b border-transparent hover:border-[#FF5C3A] transition-all ml-1">
               Inicia sesión
             </Link>
           </p>
@@ -384,7 +390,7 @@ export default function RegisterForm() {
 
         <div className="mt-8 flex justify-center items-center gap-6 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
            <Image src="/logo.svg" alt="SSL" width={20} height={20} className="invert brightness-0" />
-           <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Acceso Encriptado de Punto a Punto</p>
+           <p className="text-[10px] font-black text-[#999] uppercase tracking-widest">Acceso Encriptado de Punto a Punto</p>
         </div>
       </div>
     </div>

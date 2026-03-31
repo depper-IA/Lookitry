@@ -298,7 +298,11 @@ export async function getPendingRegistration(req: Request, res: Response) {
     }
 
     // Compat: normalizar estado legacy "confirmed" a "paid" para el frontend
-    const normalized = { ...pending } as any;
+    const normalized = {
+      ...pending,
+      reference: ref,
+      normalized_reference: ref,
+    } as any;
     if (String(normalized.status || '').toLowerCase() === 'confirmed') {
       normalized.status = 'paid';
     }

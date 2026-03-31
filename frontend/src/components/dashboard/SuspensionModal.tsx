@@ -22,9 +22,9 @@ export function SuspensionModal({
   const [planPrices, setPlanPrices] = useState({ BASIC: 150000, PRO: 250000 });
   const [support, setSupport] = useState<{ whatsapp?: string; email?: string; instructions?: string }>({});
 
-  const accentColor = isTrialPending ? 'text-blue-500' : isTrialExpired ? 'text-amber-500' : 'text-[#FF5C3A]';
-  const bgColor = isTrialPending ? 'bg-blue-500/10 border-blue-500/20' : isTrialExpired ? 'bg-amber-500/10 border-amber-500/20' : 'bg-[#FF5C3A]/10 border-[#FF5C3A]/20';
-  const glowColor = isTrialPending ? 'bg-blue-500' : isTrialExpired ? 'bg-amber-500' : 'bg-[#FF5C3A]';
+  const accentColor = isTrialPending ? 'text-[#FF5C3A]' : isTrialExpired ? 'text-amber-500' : 'text-[#FF5C3A]';
+  const bgColor = isTrialPending ? 'bg-[#FF5C3A]/10 border-[#FF5C3A]/20' : isTrialExpired ? 'bg-amber-500/10 border-amber-500/20' : 'bg-[#FF5C3A]/10 border-[#FF5C3A]/20';
+  const glowColor = isTrialPending ? 'bg-[#FF5C3A]' : isTrialExpired ? 'bg-amber-500' : 'bg-[#FF5C3A]';
   const whatsappUrl = useMemo(() => toWhatsAppUrl(support.whatsapp), [support.whatsapp]);
   const planPrice = formatCurrency(planPrices[plan as 'BASIC' | 'PRO'] ?? 0);
   const shouldShowRecurringValue = !isTrialExpired && !isTrialPending;
@@ -84,7 +84,7 @@ export function SuspensionModal({
                 </a>
               ) : (
                 <div className="py-4 px-6 bg-white/5 border border-white/10 text-white rounded-2xl text-[14px] flex items-center justify-center gap-3">
-                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-[#FF5C3A] border-t-transparent rounded-full animate-spin" />
                   Esperando confirmacion...
                 </div>
               )}

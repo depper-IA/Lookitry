@@ -59,7 +59,12 @@ export function isArchivedBrand(brand: any): boolean {
 }
 
 export function isTrialOperationalBrand(brand: any): boolean {
-  if (brand?.plan !== 'TRIAL' || !brand?.trial_end_date || brand?.subscription_status === 'suspended') return false;
+  const hasTrialSignal =
+    brand?.plan === 'TRIAL' ||
+    brand?.trial_payment_status === 'active' ||
+    brand?.trialPaymentStatus === 'active';
+
+  if (!hasTrialSignal || !brand?.trial_end_date || brand?.subscription_status === 'suspended') return false;
   const trialEnd = new Date(brand.trial_end_date);
   return !Number.isNaN(trialEnd.getTime()) && trialEnd > new Date();
 }

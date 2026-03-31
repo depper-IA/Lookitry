@@ -7,6 +7,9 @@ export type Step = 1 | 2 | 3 | 4;
 
 interface StepProgressProps {
   currentStep: Step;
+  maxNavigableStep?: Step;
+  onStepChange?: (step: Step) => void;
+  lockedAfterPayment?: boolean;
 }
 
 const steps = [
@@ -16,16 +19,21 @@ const steps = [
   { id: 4, name: 'Acceso', icon: Rocket },
 ];
 
-export const StepProgress: React.FC<StepProgressProps> = ({ currentStep }) => {
+export const StepProgress: React.FC<StepProgressProps> = ({
+  currentStep,
+  maxNavigableStep = currentStep,
+  onStepChange,
+  lockedAfterPayment = false,
+}) => {
   return (
     <div className="w-full max-w-3xl mx-auto px-4 py-8">
       <nav aria-label="Progress">
-        <ol role="list" className="flex items-center justify-between pointer-events-none">
+        <ol role="list" className="flex items-center justify-between">
           {steps.map((step, index) => {
             const isCompleted = step.id < currentStep;
             const isCurrent = step.id === currentStep;
-            const isPending = step.id > currentStep;
             const Icon = step.icon;
+            const isClickable = !lockedAfterPayment && !!onStepChange && step.id <= maxNavigableStep;
 
             return (
               <li key={step.id} className="relative flex flex-col items-center flex-1">
@@ -43,20 +51,19 @@ export const StepProgress: React.FC<StepProgressProps> = ({ currentStep }) => {
                 )}
 
                 {/* Círculo del paso */}
-                <div className="relative z-10 flex flex-col items-center">
+                <button
+                  type="button"
+                  className="relative z-10 flex flex-col items-center disabled:cursor-default"
+                  onClick={() => isClickable && onStepChange(step.id as Step)}
+                  disabled={!isClickable}
+                  aria-current={isCurrent ? 'step' : undefined}
+                  aria-label={`Ir al paso ${step.name}`}
+                >
                   <div
                     className="flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300"
                     style={{
-                      backgroundColor: isCompleted
-                        ? '#FF5C3A'
-                        : isCurrent
-                        ? '#0a0a0a'
-                        : '#0a0a0a',
-                      borderColor: isCompleted
-                        ? '#FF5C3A'
-                        : isCurrent
-                        ? '#FF5C3A'
-                        : '#2a2a2a',
+                      backgroundColor: isCompleted ? '#FF5C3A' : '#0a0a0a',
+                      borderColor: isCompleted || isCurrent ? '#FF5C3A' : '#2a2a2a',
                       boxShadow: isCurrent ? '0 0 0 4px rgba(255,92,58,0.15)' : 'none',
                     }}
                   >
@@ -71,17 +78,13 @@ export const StepProgress: React.FC<StepProgressProps> = ({ currentStep }) => {
                     )}
                   </div>
 
-                  {/* Etiqueta */}
                   <span
-                    className="mt-3 text-[10px] font-bold uppercase tracking-wider"
-                    style={{
-                      color:
-                        isCurrent || isCompleted ? '#FF5C3A' : '#444',
-                    }}
+                    className="mt-3 text-[10px] font-bold uppercase tracking-wider transition-colors"
+                    style={{ color: isCurrent || isCompleted ? '#FF5C3A' : '#444' }}
                   >
                     {step.name}
                   </span>
-                </div>
+                </button>
               </li>
             );
           })}
