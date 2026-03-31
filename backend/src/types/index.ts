@@ -24,6 +24,9 @@ export interface Brand {
   // Campos de período de prueba (Requirement 11 - Opción C)
   trial_end_date: string | null;
   trial_generations_limit: number;
+  trial_payment_status?: 'pending_payment' | 'completed' | 'active' | 'failed' | null;
+  email_verified?: boolean;
+  email_verification_token?: string | null;
   extra_credits_balance?: number;
   review_prompt_shown_at?: string | null;
   created_at: string;

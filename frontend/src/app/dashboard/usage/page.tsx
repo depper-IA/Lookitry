@@ -1,69 +1,70 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Activity, AlertCircle, ChevronRight, Sparkles, Target, Zap } from 'lucide-react';
 import { UsageStats } from '@/components/dashboard/UsageStats';
 import { Spinner } from '@/components/ui/Spinner';
 import { usageService } from '@/services/usage.service';
 import { brandsService } from '@/services/brands.service';
 import { authService } from '@/services/auth.service';
-import type { UsageStats as UsageStatsType } from '@/types';
-import { Activity, AlertCircle, TrendingUp, Sparkles, ChevronRight, Zap, Target } from 'lucide-react';
+import type { Brand, UsageStats as UsageStatsType } from '@/types';
+import { getSubscriptionDisplayState } from '@/lib/subscription-display';
 
 const containerVariants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { 
+    transition: {
       duration: 0.7,
-      staggerChildren: 0.1
-    }
-  }
+      staggerChildren: 0.1,
+    },
+  },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 }
+  visible: { opacity: 1, y: 0 },
 };
 
 export default function UsagePage() {
   const [stats, setStats] = useState<UsageStatsType | null>(null);
-  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
-  const [brandEmail, setBrandEmail] = useState('');
+  const [brand, setBrand] = useState<Brand | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [resendSending, setResendSending] = useState(false);
   const [resendSent, setResendSent] = useState(false);
 
-  useEffect(() => { loadStats(); }, []);
+  useEffect(() => {
+    void loadStats();
+  }, []);
 
   const loadStats = async () => {
     try {
       setIsLoading(true);
-      const [data, brand] = await Promise.all([
+      const [usageData, currentBrand] = await Promise.all([
         usageService.getUsageStats(),
         brandsService.getCurrentBrand(),
       ]);
-      setStats(data);
-      setEmailVerified(brand.emailVerified ?? null);
-      setBrandEmail(brand.email ?? '');
+      setStats(usageData);
+      setBrand(currentBrand);
       setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al cargar estadísticas');
+      setError(err?.response?.data?.message || 'Error al cargar las estadisticas de uso');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResendVerification = async () => {
-    if (!brandEmail || resendSending) return;
+    if (!brand?.email || resendSending) return;
     try {
       setResendSending(true);
-      await authService.resendVerification(brandEmail);
+      await authService.resendVerification(brand.email);
       setResendSent(true);
     } catch (err: any) {
-      setError(err?.message || 'No se pudo reenviar el correo de verificación');
+      setError(err?.message || 'No se pudo reenviar el correo de verificacion');
     } finally {
       setResendSending(false);
     }
@@ -71,48 +72,70 @@ export default function UsagePage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6">
         <Spinner size="lg" />
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)] animate-pulse">Sincronizando Cuotas...</p>
+        <p className="animate-pulse text-[10px] font-black uppercase tracking-[0.4em] text-[var(--text-muted)]">
+          Sincronizando cuotas...
+        </p>
       </div>
     );
   }
 
-  return (
-    <motion.div 
-      initial="hidden" animate="visible" variants={containerVariants}
-      className="max-w-5xl mx-auto space-y-12 xl:space-y-16 pb-32 px-4 xl:px-0 relative"
-    >
-      {/* 🔮 ORBES DE FONDO 🔮 */}
-      <div className="absolute top-0 -left-20 w-80 h-80 bg-[#FF5C3A]/5 blur-[120px] rounded-full -z-10" />
-      <div className="absolute bottom-20 -right-20 w-[400px] h-[400px] bg-indigo-500/5 blur-[150px] rounded-full -z-10" />
+  const subscriptionState = getSubscriptionDisplayState(brand);
+  const isTrialAccount = subscriptionState.isTrial || subscriptionState.displayPlan === 'TRIAL';
+  const needsEmailVerification = brand?.emailVerified === false;
 
-      {/* ══ HEADER ORBITAL ══ */}
-      <motion.header variants={itemVariants} className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 border-b border-[var(--border-color)] pb-10 xl:pb-12">
+  return (
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      className="relative mx-auto max-w-5xl space-y-12 px-4 pb-32 xl:space-y-16 xl:px-0"
+    >
+      <div className="absolute -left-20 top-0 -z-10 h-80 w-80 rounded-full bg-[#FF5C3A]/5 blur-[120px]" />
+      <div className="absolute -right-20 bottom-20 -z-10 h-[400px] w-[400px] rounded-full bg-[#FF5C3A]/4 blur-[150px]" />
+
+      <motion.header
+        variants={itemVariants}
+        className="flex flex-col justify-between gap-8 border-b border-[var(--border-color)] pb-10 lg:flex-row lg:items-end xl:pb-12"
+      >
         <div className="space-y-4">
           <div className="flex items-center gap-3 md:gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center border border-[#FF5C3A]/10 shadow-inner">
-              <Activity className="w-6 h-6 text-[#FF5C3A]" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[#FF5C3A]/10 bg-[#FF5C3A]/10 shadow-inner">
+              <Activity className="h-6 w-6 text-[#FF5C3A]" />
             </div>
-            <h1 className="text-3xl md:text-4xl xl:text-5xl font-[950] tracking-tighter text-[var(--text-primary)] italic uppercase leading-none font-jakarta">Consumo Vital</h1>
+            <h1 className="font-jakarta text-3xl font-[950] uppercase italic leading-none tracking-tighter text-[var(--text-primary)] md:text-4xl xl:text-5xl">
+              Consumo vital
+            </h1>
           </div>
-          <p className="text-[11px] font-black tracking-[0.3em] text-[var(--text-muted)] uppercase opacity-60 italic">Monitor de Energía y Límites de Red</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.3em] text-[var(--text-muted)] opacity-60 italic">
+            Monitor de capacidad y creditos
+          </p>
         </div>
 
-        <div className="flex items-center gap-4 px-6 py-3 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-xl">
-           <Target size={14} className="text-[#FF5C3A]" />
-           <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">Ciclo Actual de Facturación</span>
+        <div className="flex items-center gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] px-6 py-3 shadow-xl">
+          <Target size={14} className="text-[#FF5C3A]" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-primary)]">
+            {isTrialAccount ? 'Estado del periodo trial' : 'Ciclo actual de facturacion'}
+          </span>
         </div>
       </motion.header>
 
-      {emailVerified === false && (
-        <motion.div variants={itemVariants} className="rounded-[2.5rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/6 p-6 md:p-8 shadow-xl shadow-[#FF5C3A]/5">
+      {needsEmailVerification && (
+        <motion.div
+          variants={itemVariants}
+          className="rounded-[2.5rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/6 p-6 shadow-xl shadow-[#FF5C3A]/5 md:p-8"
+        >
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#FF5C3A]">Cuenta pendiente de verificación</p>
-              <h3 className="text-2xl font-[950] tracking-tight text-[var(--text-primary)] font-jakarta">Tu consumo ya está visible, pero falta validar tu correo</h3>
+              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-[#FF5C3A]">
+                Verificacion pendiente
+              </p>
+              <h3 className="font-jakarta text-2xl font-[950] tracking-tight text-[var(--text-primary)]">
+                Confirma tu correo para habilitar el uso de creditos y del widget
+              </h3>
               <p className="max-w-2xl text-[13px] font-bold leading-relaxed text-[var(--text-muted)]">
-                Confirmar <span className="text-[var(--text-primary)]">{brandEmail}</span> deja tu acceso completamente validado y evita fricción en compras, recuperación y cambios posteriores.
+                Mientras <span className="text-[var(--text-primary)]">{brand?.email}</span> siga sin confirmar, tu cuenta no puede consumir creditos ni permitir nuevas pruebas en el probador virtual.
               </p>
             </div>
             <button
@@ -127,75 +150,92 @@ export default function UsagePage() {
       )}
 
       {error && (
-        <motion.div variants={itemVariants} className="flex items-center gap-4 p-8 rounded-[3rem] border border-rose-500/20 bg-rose-500/5 text-rose-500 text-[10px] font-black uppercase tracking-widest shadow-2xl">
-          <AlertCircle className="w-6 h-6 shrink-0" />
+        <motion.div
+          variants={itemVariants}
+          className="flex items-center gap-4 rounded-[3rem] border border-rose-500/20 bg-rose-500/5 p-8 text-[10px] font-black uppercase tracking-widest text-rose-500 shadow-2xl"
+        >
+          <AlertCircle className="h-6 w-6 shrink-0" />
           {error}
         </motion.div>
       )}
 
       {stats && (
         <motion.div variants={itemVariants} className="space-y-12">
-          {/* USAGE COMPONENT (Already highly stylized but can be improved in its own file if needed) */}
-          <div className="bg-[var(--bg-card)] rounded-[2.5rem] xl:rounded-[4rem] border border-[var(--border-color)] p-6 md:p-8 xl:p-12 shadow-4xl relative overflow-hidden group">
-             <div className="absolute top-0 right-0 p-12 opacity-5 translate-x-10 translate-y-[-10px] group-hover:scale-110 transition-transform duration-1000">
-                <Target size={200} strokeWidth={1} />
-             </div>
-             <UsageStats stats={stats} />
+          <div className="group relative overflow-hidden rounded-[2.5rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-4xl xl:rounded-[4rem] xl:p-12">
+            <div className="absolute right-0 top-0 translate-x-10 translate-y-[-10px] p-12 opacity-5 transition-transform duration-1000 group-hover:scale-110">
+              <Target size={200} strokeWidth={1} />
+            </div>
+            <UsageStats
+              stats={stats}
+              isTrial={isTrialAccount}
+              trialEndsAt={brand?.trialEndDate ?? null}
+            />
           </div>
         </motion.div>
       )}
 
-      {/* Sugerencia de Plan — VANGUARDISTA LOOK */}
-      {stats && stats.currentMonth.generationsUsed >= stats.currentMonth.generationsLimit * 0.8 && (
-        <motion.div 
+      {stats && !isTrialAccount && stats.currentMonth.generationsUsed >= stats.currentMonth.generationsLimit * 0.8 && (
+        <motion.div
           variants={itemVariants}
-          className="bg-[var(--bg-card)] p-6 md:p-8 xl:p-12 rounded-[2.5rem] xl:rounded-[4rem] border border-[var(--border-color)] shadow-4xl relative overflow-hidden group"
+          className="group relative overflow-hidden rounded-[2.5rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-4xl xl:rounded-[4rem] xl:p-12"
         >
-           {/* GLOWING ORBS */}
-           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#FF5C3A] blur-[100px] opacity-10 -translate-y-1/2 translate-x-1/4" />
-           <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo-500 blur-[80px] opacity-10 translate-y-1/2 -translate-x-1/4" />
+          <div className="absolute right-0 top-0 h-[400px] w-[400px] translate-x-1/4 -translate-y-1/2 bg-[#FF5C3A] opacity-10 blur-[100px]" />
+          <div className="absolute bottom-0 left-0 h-[300px] w-[300px] -translate-x-1/4 translate-y-1/2 bg-[#FF5C3A] opacity-10 blur-[80px]" />
 
-           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
+          <div className="relative z-10 flex flex-col justify-between gap-10 md:flex-row md:items-center">
             <div className="space-y-4">
-              <div className="w-fit px-4 py-1.5 bg-[#FF5C3A]/10 rounded-full border border-[#FF5C3A]/20 flex items-center gap-3">
-                 <div className="w-2 h-2 rounded-full bg-[#FF5C3A] animate-pulse" />
-                 <p className="text-[9px] font-black text-[#FF5C3A] uppercase tracking-[0.3em] italic">Prioridad Alta: Alerta de Límites</p>
+              <div className="flex w-fit items-center gap-3 rounded-full border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 px-4 py-1.5">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-[#FF5C3A]" />
+                <p className="text-[9px] font-black uppercase tracking-[0.3em] italic text-[#FF5C3A]">
+                  Prioridad alta: alerta de limites
+                </p>
               </div>
-              <h3 className="text-4xl font-[950] italic uppercase tracking-tighter leading-none text-[var(--text-primary)]">¿Expandir tu Universo?</h3>
-              <p className="text-[var(--text-muted)] text-xs font-bold max-w-md uppercase tracking-tight leading-relaxed">
-                Estás al límite de tu capacidad operativa. Evoluciona a <span className="text-[var(--text-primary)]">Plan PRO</span> para obtener <span className="text-[#FF5C3A]">1,200 Generaciones</span> y <span className="text-[var(--text-primary)]">15 Productos</span>.
+              <h3 className="text-4xl font-[950] uppercase italic leading-none tracking-tighter text-[var(--text-primary)]">
+                Expandir tu capacidad?
+              </h3>
+              <p className="max-w-md text-xs font-bold uppercase leading-relaxed tracking-tight text-[var(--text-muted)]">
+                Estas al limite de tu capacidad operativa. Evoluciona a <span className="text-[var(--text-primary)]">Plan PRO</span> para obtener <span className="text-[#FF5C3A]">1,200 generaciones</span> y <span className="text-[var(--text-primary)]">15 productos</span>.
               </p>
             </div>
-            <button 
-              onClick={() => window.location.href='/dashboard/subscription'}
-              className="px-10 py-5 bg-[#FF5C3A] text-white rounded-2xl font-[950] uppercase tracking-widest text-[10px] hover:scale-105 active:scale-95 transition-all shadow-4xl flex items-center gap-3"
+            <button
+              onClick={() => { window.location.href = '/dashboard/subscription'; }}
+              className="flex items-center gap-3 rounded-2xl bg-[#FF5C3A] px-10 py-5 text-[10px] font-[950] uppercase tracking-widest text-white shadow-4xl transition-all hover:scale-105 active:scale-95"
             >
-              Evolucionar ADN <ChevronRight size={14} />
+              Evolucionar plan <ChevronRight size={14} />
             </button>
           </div>
         </motion.div>
       )}
 
-      {/* INFO EXTRA */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-         <div className="p-10 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] flex gap-6 items-start shadow-xl">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/10 shrink-0">
-               <Zap className="w-6 h-6 text-emerald-500" />
-            </div>
-            <div className="space-y-2">
-               <h4 className="text-sm font-[950] text-[var(--text-primary)] italic uppercase tracking-tight italic">Reset de Energía</h4>
-               <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-tight opacity-60 leading-relaxed">Tus cuotas de generación se reinician automáticamente el primer día de cada mes.</p>
-            </div>
-         </div>
-         <div className="p-10 rounded-[3rem] bg-[var(--bg-card)] border border-[var(--border-color)] flex gap-6 items-start shadow-xl">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/10 shrink-0">
-               <Sparkles className="w-6 h-6 text-amber-500" />
-            </div>
-            <div className="space-y-2">
-               <h4 className="text-sm font-[950] text-[var(--text-primary)] italic uppercase tracking-tight italic">Optimización de ADN</h4>
-               <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-tight opacity-60 leading-relaxed">Solo se descuentan las pruebas exitosas del sistema. Los errores no consumen tus créditos.</p>
-            </div>
-         </div>
+      <motion.div variants={itemVariants} className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div className="flex items-start gap-6 rounded-[3rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-10 shadow-xl">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-emerald-500/10 bg-emerald-500/10">
+            <Zap className="h-6 w-6 text-emerald-500" />
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-sm font-[950] uppercase tracking-tight text-[var(--text-primary)] italic">
+              {isTrialAccount ? 'Estado del trial' : 'Reset de energia'}
+            </h4>
+            <p className="text-[10px] font-bold uppercase leading-relaxed tracking-tight text-[var(--text-muted)] opacity-60">
+              {isTrialAccount
+                ? 'Durante el trial usas un cupo fijo de prueba. Los ciclos mensuales aparecen cuando activas un plan pago.'
+                : 'Tus cuotas de generacion se reinician automaticamente el primer dia de cada mes.'}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-start gap-6 rounded-[3rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-10 shadow-xl">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-amber-500/10 bg-amber-500/10">
+            <Sparkles className="h-6 w-6 text-amber-500" />
+          </div>
+          <div className="space-y-2">
+            <h4 className="text-sm font-[950] uppercase tracking-tight text-[var(--text-primary)] italic">
+              Regla de consumo
+            </h4>
+            <p className="text-[10px] font-bold uppercase leading-relaxed tracking-tight text-[var(--text-muted)] opacity-60">
+              Solo se descuentan las pruebas exitosas del sistema. Los errores no consumen tus creditos.
+            </p>
+          </div>
+        </div>
       </motion.div>
     </motion.div>
   );
