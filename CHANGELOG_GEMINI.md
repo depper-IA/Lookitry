@@ -1,6 +1,24 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-03-31] - Corrección de Marca y Flujo Post-Registro
+
+### Cambios Realizados
+- **`checkout/page.tsx`**: Eliminado plan ENTERPRISE del selector público. Solo quedan TRIAL, BASIC, PRO y LANDING. Paleta de colores migrada de indigo/violet a naranja institucional `#FF5C3A`. Corrección de grises (secundarios `#555`–`#999`).
+- **`StepProgress.tsx`**: Reescritura completa usando `#FF5C3A` para pasos activos/completados, eliminando todas las clases `indigo-*`.
+- **`registro-pro/page.tsx`**: Fix crítico de UX — cambiado `router.push('/dashboard')` por `window.location.href='/dashboard'` para forzar recarga completa y asegurar que el JWT en localStorage sea leído antes de la verificación de auth. Añadido `autoComplete="off"` al campo slug para prevenir autofill de email del navegador.
+
+### Archivos Modificados
+- `frontend/src/app/checkout/page.tsx`
+- `frontend/src/components/payments/StepProgress.tsx`
+- `frontend/src/app/registro-pro/page.tsx`
+
+### Motivo
+Corrección de incumplimiento de las reglas de diseño (#FF5C3A como único acento cromático), eliminación del plan Enterprise del flujo público, y fix del flujo post-registro que enviaba al login en vez del dashboard.
+
+---
+
 ## [2026-03-31] - Cierre de Auditoría de Registro y Pago
+
 
 ### Cambios Realizados
 - **Frontend**:
