@@ -1890,3 +1890,17 @@ Se corrigieron las referencias del `README.md` que todavía apuntaban al reposit
 
 - El `README.md` publicado seguía mostrando enlaces viejos del repo anterior.
 - La sección del flujo Trial Pago no había quedado persistida en `origin/main` tras el rebase anterior.
+
+## 30 de Marzo, 2026 - README limpio sin emojis y con branding corregido
+
+**Archivos modificados:**
+
+- `README.md`
+- `CHANGELOG_GEMINI.md`
+
+**Descripción del cambio:**
+Se reemplazó el README épico anterior por una versión limpia y seria, sin emojis decorativos, conservando el contenido operativo clave del proyecto. Se mantuvo el logo cargado desde el repositorio correcto `depper-IA/Lookitry`, se dejaron los enlaces al repo actual y se reorganizó el documento para que sirva como entrada técnica clara del producto.
+
+**Motivo:**
+
+- El README publicado no coincidía con la línea editorial esperada y seguía mostrando una versión con emojis y tono visual que el usuario no quería mantener.
