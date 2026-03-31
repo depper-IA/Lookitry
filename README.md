@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/depper-IA/virtual-tryon/main/frontend/public/logo.svg" alt="Lookitry Logo" height="80"/>
+  <img src="https://lookitry.com/logo.svg" alt="Lookitry Logo" height="80"/>
 
 # Lookitry
 
