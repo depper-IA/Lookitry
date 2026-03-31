@@ -322,6 +322,14 @@ export class WompiController {
       const parsedMonths = Number.parseInt(months as string, 10);
       const monthsNum = Number.isNaN(parsedMonths) ? 1 : parsedMonths;
 
+      if (brand?.id && effectivePlan === 'TRIAL') {
+        res.status(409).json({
+          error: 'AUTHENTICATED_TRIAL_DISABLED',
+          message: 'El trial solo puede comprarse sin una sesion activa. Cierra sesion y usa /trial-checkout.',
+        });
+        return;
+      }
+
       if (!brand?.id) {
         if (!email) {
           res.status(401).json({ error: 'No autenticado ni email proporcionado' });
@@ -403,6 +411,14 @@ export class WompiController {
       const monthsNum = months ? parseInt(months as string, 10) : 1;
       const isLandingPurchase = (req.query.includes_landing as string) === 'true';
 
+      if (brand?.id && planStr === 'TRIAL') {
+        res.status(409).json({
+          error: 'AUTHENTICATED_TRIAL_DISABLED',
+          message: 'El trial solo puede comprarse sin una sesion activa. Cierra sesion y usa /trial-checkout.',
+        });
+        return;
+      }
+
       if (brand?.id && isLandingPurchase && planStr === 'NONE') {
         const { data: currentBrand } = await supabaseAdmin.from('brands').select('*').eq('id', brand.id).single();
         if (currentBrand && isTrialLandingBlocked(currentBrand)) {
@@ -461,6 +477,14 @@ export class WompiController {
       const monthsNum = months ? parseInt(months as string, 10) : 1;
       const planStr = (plan as string)?.toUpperCase() || 'BASIC';
       const isLandingPurchase = (req.query.includes_landing as string) === 'true';
+
+      if (brand?.id && planStr === 'TRIAL') {
+        res.status(409).json({
+          error: 'AUTHENTICATED_TRIAL_DISABLED',
+          message: 'El trial solo puede comprarse sin una sesion activa. Cierra sesion y usa /trial-checkout.',
+        });
+        return;
+      }
 
       if (brand?.id && isLandingPurchase && planStr === 'NONE') {
         const { data: currentBrand } = await supabaseAdmin.from('brands').select('*').eq('id', brand.id).single();

@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { StepProgress, Step } from '@/components/payments/StepProgress';
 import { clearCheckoutDraft, loadCheckoutDraft, saveCheckoutDraft } from '@/lib/checkoutDraft';
 import { formatCop, formatUsd, priceInUsd } from '@/lib/paymentDisplay';
+import { authService } from '@/services/auth.service';
 import { 
   Check, 
   ChevronLeft, 
@@ -130,6 +131,7 @@ function CheckoutContent() {
   } | null>(null);
 
   const [activePromos, setActivePromos] = useState<any[]>([]);
+  const trialBlockedBySession = hasSession && selectedPlan === 'TRIAL';
 
   // ── Ciclo de vida ──────────────────────────────────────────────────────────
 
@@ -334,6 +336,10 @@ function CheckoutContent() {
     setLoading(true);
     setError('');
     try {
+      if (trialBlockedBySession) {
+        throw new Error('El trial solo puede comprarse sin una sesion activa. Cierra sesion y continua desde el checkout de trial.');
+      }
+
       if (totalPrice === 0) {
         const planToSend = isLanding ? subPlan : selectedPlan;
         const res = await fetch(`${API_URL}/api/payments/wompi/free-checkout`, {
@@ -393,6 +399,12 @@ function CheckoutContent() {
     }
   };
 
+  const handleLogoutAndGoToTrial = () => {
+    authService.logout();
+    clearCheckoutDraft(CHECKOUT_DRAFT_KEY);
+    window.location.href = '/trial-checkout';
+  };
+
   const planNames: Record<PlanKey, string> = {
     BASIC: 'Plan Básico',
     PRO: 'Plan Pro',
@@ -444,13 +456,43 @@ function CheckoutContent() {
                 </div>
 
                 {/* Plan Cards — solo TRIAL, BASIC, PRO, LANDING */}
+                {trialBlockedBySession && (
+                  <div className="mb-8 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
+                    <p className="text-sm font-bold text-amber-300">La sesion activa bloquea compras de trial.</p>
+                    <p className="mt-2 text-sm text-[#d6d6d6]">
+                      El trial publico debe comprarse sin una cuenta abierta. Asi evitamos que el pago se aplique sobre tu marca actual.
+                    </p>
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                      <button
+                        onClick={handleLogoutAndGoToTrial}
+                        className="rounded-xl bg-[#FF5C3A] px-5 py-3 text-sm font-bold text-white transition-all"
+                      >
+                        Cerrar sesion y seguir con trial
+                      </button>
+                      <Link
+                        href="/dashboard"
+                        className="rounded-xl border border-[#2a2a2a] px-5 py-3 text-sm font-bold text-white transition-all hover:bg-white/5"
+                      >
+                        Volver al dashboard
+                      </Link>
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
                   {(['TRIAL', 'BASIC', 'PRO', 'LANDING'] as PlanKey[]).map(p => {
                     const isSelected = selectedPlan === p;
                     return (
                       <button
                         key={p}
-                        onClick={() => setSelectedPlan(p)}
+                        onClick={() => {
+                          if (p === 'TRIAL' && !hasSession) {
+                            clearCheckoutDraft(CHECKOUT_DRAFT_KEY);
+                            window.location.href = '/trial-checkout';
+                            return;
+                          }
+                          setSelectedPlan(p);
+                          if (p !== 'TRIAL') setError('');
+                        }}
                         className={`relative text-left rounded-2xl border-2 p-5 transition-all duration-300`}
                         style={{
                           borderColor: isSelected ? OA : '#1f1f1f',
