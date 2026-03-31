@@ -172,8 +172,8 @@ export default function LandingClient({
     <main className="min-h-screen bg-[#f5f2ee]">
       <LandingNav />
       <div className="overflow-x-hidden">
-      {/* HERO */}
-      <section className="bg-[#0a0a0a] px-6 md:px-8 pt-16 md:pt-20 pb-16 md:pb-20 text-center relative overflow-hidden">
+        {/* HERO */}
+        <section className="bg-[#0a0a0a] px-6 md:px-8 pt-16 md:pt-20 pb-16 md:pb-20 text-center relative overflow-hidden">
           <p className="sr-only">
             Lookitry es un probador virtual con inteligencia artificial para tiendas de ropa, accesorios y calzado en Latinoamérica.
           </p>
@@ -195,26 +195,17 @@ export default function LandingClient({
               tu producto <span className="text-[#FF5C3A]">antes de comprar</span>
             </h1>
             <p className="text-[#bbb] text-base max-w-md mx-auto mb-3 leading-relaxed font-light">
-              Para tiendas de ropa, accesorios y calzado en Latinoamérica. Intégralo en tu tienda en 10 minutos. Sin apps, sin desarrollo.
+              Para tiendas de moda, calzado y accesorios. Intégralo en 10 minutos sin programar.
             </p>
-            <p className="text-[#666] text-sm max-w-lg mx-auto mb-8 leading-relaxed">
-              El widget de probador virtual IA Latam más fácil de integrar. Prueba ropa online con inteligencia artificial y aumenta tus conversiones.
-            </p>
-            <div className="flex gap-3 justify-center flex-wrap mb-3">
-              <Link
-                href="/trial-checkout"
-                className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-sm font-medium px-7 py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
-              >
-                Prueba $20.000 — 7 días
-              </Link>
+            <div className="flex gap-3 justify-center flex-wrap mb-8">
               <Link
                 href="/planes"
-                className="text-[#aaa] hover:text-white text-sm px-7 py-3 rounded-lg border border-[#333] hover:border-[#555] transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-[#FF5C3A]"
+                className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-sm font-semibold px-8 py-3.5 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex items-center gap-2 shadow-lg shadow-[#FF5C3A]/20"
               >
                 Ver planes <IconArrow />
               </Link>
             </div>
-            <p className="text-[12px] text-[#666]">Activa hoy tu prueba paga · Configuración en minutos</p>
+            <p className="text-[12px] text-[#666]">Configuración en pocos minutos · Soporte en español</p>
           </div>
         </section>
 
@@ -229,42 +220,42 @@ export default function LandingClient({
                 lookitry.com/mi-marca
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 mb-5">
               <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3.5">
                 <p className="text-[10px] text-[#aaa] font-bold uppercase tracking-widest mb-2.5">Tu foto</p>
                 <div className="bg-[#333] border-2 border-dashed border-[#444] rounded-lg h-28 flex flex-col items-center justify-center gap-1.5 text-[#888] text-[11px]">
                   <div className="w-7 h-7 bg-[#444] rounded-full flex items-center justify-center">
                     <IconUser />
                   </div>
-                  <span className="font-medium">Sube una selfie</span>
+                  <span className="font-medium text-center">Sube una selfie</span>
                 </div>
               </div>
               <div className="bg-[#262626] border border-[#3a3a3a] rounded-xl p-3.5">
                 <p className="text-[10px] text-[#aaa] font-bold uppercase tracking-widest mb-2.5">Elige producto</p>
                 <div className="flex flex-col gap-1.5">
-                  {PRODUCTS.map(p => (
+                  {PRODUCTS.slice(0, 2).map((p, idx) => (
                     <div
                       key={p.name}
-                      className={`rounded-lg p-2 flex items-center gap-2 border ${p.active ? 'border-[#FF5C3A] bg-[#2d1f1a]' : 'border-[#3a3a3a] bg-[#333]'}`}
+                      className={`rounded-lg p-2 flex items-center gap-2 border ${idx === 0 ? 'border-[#FF5C3A] bg-[#2d1f1a]' : 'border-[#3a3a3a] bg-[#333]'}`}
                     >
                       <div className="w-8 h-8 rounded-md flex-shrink-0 relative overflow-hidden" aria-hidden="true">
                         <Image src={p.img} alt={p.name} fill className="object-cover" sizes="32px" />
                       </div>
-                      <div>
-                        <div className={`text-[11px] leading-tight font-medium ${p.active ? 'text-white' : 'text-[#bbb]'}`}>{p.name}</div>
+                      <div className="min-w-0">
+                        <div className={`text-[11px] leading-tight font-medium truncate ${idx === 0 ? 'text-white' : 'text-[#bbb]'}`}>{p.name}</div>
                         <div className="text-[10px] text-[#888]">{p.price}</div>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-              <Link 
-                href="/planes" 
-                className="col-span-2 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-bold py-2.5 rounded-lg text-center transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#FF5C3A]/20"
-              >
-                Generar prueba virtual
-              </Link>
             </div>
+            <Link 
+              href="/planes" 
+              className="block w-full bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-[13px] font-bold py-2.5 rounded-xl text-center transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[#FF5C3A]/20"
+            >
+              Generar prueba virtual
+            </Link>
           </div>
         </section>
 
