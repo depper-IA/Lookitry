@@ -48,6 +48,14 @@ Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 50
 4. **Verificación Pre-Deploy**:
    - Siempre correr `scripts/check_integrity.py` (si existe) y verificar que el código compile localmente antes de subir cambios.
 
+5. **Gestión de Dependencias y Arquitectura (Backend)**:
+   - **Prohibido el require/import dinámico**: Todas las librerías externas (ej: `jsonwebtoken`) deben importarse en el nivel superior (`top-level`). El uso de `require()` dentro de funciones asíncronas causa errores de resolución en el entorno de producción (Docker).
+   - **Prevención de Dependencias Circulares**: Prohibido instanciar servicios de forma cruzada en el constructor o a nivel global. Un servicio `A` no debe referenciar a `B` si `B` ya referencia a `A` en su inicialización. Si la dependencia es necesaria, instanciar el servicio localmente dentro del método que lo use (ej: `const paymentService = new PaymentSettingsService()`).
+
+6. **Seguridad de Integraciones Externas**:
+   - **Zero API Key Exposure**: NUNCA inyectar API Keys estáticas en el frontend, plugins de WordPress o widgets públicos.
+   - **Session Tokens Efímeros**: Usar obligatoriamente el sistema de **Session Tokens (JWT)** para autorizar operaciones desde el navegador. Los tokens deben expirar en 1 hora y ser solicitados desde el backend mediante `/session-token`.
+
 
 # LOOKITRY — MASTER MEMORY CONTEXT
 

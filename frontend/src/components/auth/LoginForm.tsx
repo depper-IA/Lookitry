@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { authService } from '@/services/auth.service';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -29,6 +30,9 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState<string | null>(null);
+  const [showResendBtn, setShowResendBtn] = useState(false);
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -45,7 +49,31 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    try { await login(formData, redirectTo); } catch {}
+    setResendSuccess(null);
+    setShowResendBtn(false);
+    try { 
+      await login(formData, redirectTo); 
+    } catch (err: any) {
+      const msg = err.message || '';
+      if (msg.includes('verificar') || msg.includes('EMAIL_NOT_VERIFIED')) {
+        setShowResendBtn(true);
+      }
+    }
+  };
+
+  const handleResend = async () => {
+    if (!formData.email) return;
+    setResending(true);
+    setResendSuccess(null);
+    try {
+      const res = await authService.resendVerification(formData.email);
+      setResendSuccess(res.message);
+      setShowResendBtn(false);
+    } catch (err: any) {
+      setResendSuccess('Error al reenviar. Intenta de nuevo.');
+    } finally {
+      setResending(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,23 +99,39 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
         </div>
 
         <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8">
-          <h2 className="font-syne font-bold text-[22px] text-white mb-1">
+          <h2 className="font-syne font-bold text-[22px] text-white mb-1 uppercase tracking-tight">
             Iniciar sesión
           </h2>
-          <p className="text-[13px] text-[#555] mb-7">
-            Accede a tu dashboard de probador virtual
+          <p className="text-[13px] text-[#555] mb-7 font-medium">
+            Accede a tu dashboard de probador virtual profesional
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[13px] px-4 py-3 rounded-lg">
-                {error}
+              <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[13px] px-4 py-3 rounded-lg flex flex-col gap-2">
+                <p>{error}</p>
+                {showResendBtn && (
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={resending}
+                    className="text-left text-white/90 underline hover:text-white font-bold disabled:opacity-50 transition-colors"
+                  >
+                    {resending ? 'Enviando...' : 'Reenviar email de verificación'}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {resendSuccess && (
+              <div className="bg-green-500/10 border border-green-500/30 text-green-500 text-[13px] px-4 py-3 rounded-lg font-medium">
+                {resendSuccess}
               </div>
             )}
 
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-[13px] font-medium text-[#888] mb-1.5">
+              <label htmlFor="email" className="block text-[11px] font-bold text-[#888] mb-1.5 uppercase tracking-widest">
                 Email
               </label>
               <input
@@ -96,25 +140,25 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                 type="email"
                 autoComplete="email"
                 required
-                className={`block w-full px-3 py-2.5 bg-[#0f0f0f] border ${
-                  validationErrors.email ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'
-                } rounded-lg text-white text-[13px] placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
-                placeholder="tu@email.com"
+                className={`block w-full px-4 py-3 bg-[#0f0f0f] border ${
+                  validationErrors.email ? 'border-red-900/50' : 'border-[#2a2a2a]'
+                } rounded-lg text-white text-[14px] placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
+                placeholder="tu@tienda.com"
                 value={formData.email}
                 onChange={handleChange}
               />
               {validationErrors.email && (
-                <p className="mt-1 text-[11px] text-[#ff6b6b]">{validationErrors.email}</p>
+                <p className="mt-1 text-[11px] text-red-500">{validationErrors.email}</p>
               )}
             </div>
 
             {/* Contraseña */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="password" className="block text-[13px] font-medium text-[#888]">
+                <label htmlFor="password" className="block text-[11px] font-bold text-[#888] uppercase tracking-widest">
                   Contraseña
                 </label>
-                <Link href={`/auth/forgot-password${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[12px] text-[#555] hover:text-[#FF5C3A] transition-colors">
+                <Link href={`/auth/forgot-password${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[11px] text-[#555] hover:text-[#FF5C3A] transition-colors">
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
@@ -125,39 +169,39 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   required
-                  className={`block w-full px-3 py-2.5 pr-10 bg-[#0f0f0f] border ${
-                    validationErrors.password ? 'border-[#5a1a1a]' : 'border-[#2a2a2a]'
-                  } rounded-lg text-white text-[13px] placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
-                  placeholder="Contraseña"
+                  className={`block w-full px-4 py-3 pr-10 bg-[#0f0f0f] border ${
+                    validationErrors.password ? 'border-red-900/50' : 'border-[#2a2a2a]'
+                  } rounded-lg text-white text-[14px] placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
+                  placeholder="********"
                   value={formData.password}
                   onChange={handleChange}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#888] focus:outline-none transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#FF5C3A] focus:outline-none transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
               </div>
               {validationErrors.password && (
-                <p className="mt-1 text-[11px] text-[#ff6b6b]">{validationErrors.password}</p>
+                <p className="mt-1 text-[11px] text-red-500">{validationErrors.password}</p>
               )}
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-medium rounded-lg transition-colors mt-2"
+              className="w-full py-4 bg-[#FF5C3A] hover:bg-[#ff785c] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[14px] font-bold rounded-lg transition-all shadow-lg hover:shadow-[#FF5C3A]/20 mt-4 uppercase tracking-wider"
             >
               {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
           </form>
 
-          <p className="text-center text-[13px] text-[#444] mt-6">
+          <p className="text-center text-[13px] text-[#444] mt-8">
             ¿No tienes cuenta?{' '}
-            <Link href={`/register${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[#FF5C3A] hover:text-[#e84d2c] transition-colors">
+            <Link href={`/register${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[#FF5C3A] hover:text-white transition-colors font-bold">
               Regístrate aquí
             </Link>
           </p>
