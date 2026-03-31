@@ -2,6 +2,18 @@ import { supabaseAdmin } from '../config/supabase';
 
 export type PlanChangeStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
+function isMissingPlanChangeTable(error: { message?: string } | null | undefined): boolean {
+  const message = String(error?.message || '').toLowerCase();
+  return (
+    message.includes('plan_change_requests') &&
+    (
+      message.includes('does not exist') ||
+      message.includes('relation') ||
+      message.includes('schema cache')
+    )
+  );
+}
+
 export class PlanChangeService {
   async createPending(payload: {
     brandId: string;
@@ -30,6 +42,10 @@ export class PlanChangeService {
     });
 
     if (error) {
+      if (isMissingPlanChangeTable(error)) {
+        console.warn('[PlanChangeService] Tabla plan_change_requests no disponible. Se omite trazabilidad de upgrade.', error.message);
+        return;
+      }
       throw new Error(`No se pudo persistir plan_change_request: ${error.message}`);
     }
   }
@@ -45,6 +61,10 @@ export class PlanChangeService {
       .in('status', ['pending', 'failed']);
 
     if (error) {
+      if (isMissingPlanChangeTable(error)) {
+        console.warn('[PlanChangeService] Tabla plan_change_requests no disponible. No se pudo marcar processing.', error.message);
+        return;
+      }
       throw new Error(`No se pudo marcar plan_change_request en processing: ${error.message}`);
     }
   }
@@ -59,6 +79,10 @@ export class PlanChangeService {
       .eq('reference', reference);
 
     if (error) {
+      if (isMissingPlanChangeTable(error)) {
+        console.warn('[PlanChangeService] Tabla plan_change_requests no disponible. No se pudo marcar completed.', error.message);
+        return;
+      }
       throw new Error(`No se pudo completar plan_change_request: ${error.message}`);
     }
   }
@@ -70,6 +94,10 @@ export class PlanChangeService {
       .eq('reference', reference);
 
     if (error) {
+      if (isMissingPlanChangeTable(error)) {
+        console.warn('[PlanChangeService] Tabla plan_change_requests no disponible. No se pudo marcar failed.', error.message);
+        return;
+      }
       throw new Error(`No se pudo marcar plan_change_request como failed: ${error.message}`);
     }
   }
