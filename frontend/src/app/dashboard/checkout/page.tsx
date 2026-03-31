@@ -16,7 +16,7 @@ import type { PlanType } from '@/types';
 import type { WompiWidgetResult } from '@/types/wompi';
 import { hasActivePaidSubscription, isTrialBrand } from '@/lib/subscription-display';
 
-type CheckoutPlan = Exclude<PlanType, 'ENTERPRISE'>;
+type CheckoutPlan = Exclude<PlanType, 'ENTERPRISE'> | 'NONE';
 type PaymentFlowMethod = 'wompi' | 'paypal' | 'credit_proration';
 type PendingPaymentSummary = {
   method: PaymentFlowMethod;
@@ -257,7 +257,7 @@ function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planParam = (searchParams.get('plan') ?? 'BASIC').toUpperCase();
-  const initialPlan: CheckoutPlan = planParam === 'PRO' ? 'PRO' : 'BASIC';
+  const initialPlan: CheckoutPlan = planParam === 'PRO' ? 'PRO' : planParam === 'NONE' ? 'NONE' : 'BASIC';
   const returnMethod = searchParams.get('method');
   const returnRef = searchParams.get('ref');
   const paypalToken = searchParams.get('token');
@@ -315,14 +315,17 @@ function CheckoutContent() {
   const isRenewal = hasActiveSub && currentPlan?.toUpperCase() === selectedPlan.toUpperCase();
 
   const monthDiscount = monthDiscounts.find(d => d.months === selectedMonths) ?? monthDiscounts[0];
-  const planTotal  = Math.round(planInfo[selectedPlan].price * selectedMonths * (1 - monthDiscount.pct / 100));
+  const planTotal  = selectedPlan === 'NONE' ? 0 : Math.round(planInfo[selectedPlan as PlanType].price * selectedMonths * (1 - monthDiscount.pct / 100));
 
   // Cálculo del total final: 
   // 1. Si es Upgrade, usar el prorrateo (crédito).
   // 2. Si es Renovación o Downgrade diferido, cobrar el monto completo.
+  // 3. Si es la landing, el precio es el de la landing.
   const totalPrice = isUpgrade && prorationPreview
     ? Math.max(0, prorationPreview.amountToPay + (includeLanding ? miniLandingPrice : 0))
-    : (planTotal + (includeLanding ? miniLandingPrice : 0));
+    : selectedPlan === 'NONE'
+      ? miniLandingPrice
+      : (planTotal + (includeLanding ? miniLandingPrice : 0));
 
   const handlePagarPaypal = async () => {
     setRedirecting(true);
@@ -701,7 +704,9 @@ function CheckoutContent() {
             <div className="flex items-center justify-between gap-3 text-sm">
               <span style={{ color: 'var(--text-muted)' }}>Plan</span>
               <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-                {planInfo[pendingPaymentSummary.plan].name} · {pendingPaymentSummary.months} {pendingPaymentSummary.months === 1 ? 'mes' : 'meses'}
+                {pendingPaymentSummary.plan === 'NONE'
+                  ? 'Mini-Landing (Pago Único)'
+                  : `${planInfo[pendingPaymentSummary.plan as PlanType]?.name || pendingPaymentSummary.plan} · ${pendingPaymentSummary.months} ${pendingPaymentSummary.months === 1 ? 'mes' : 'meses'}`}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3 text-sm">
@@ -767,7 +772,9 @@ function CheckoutContent() {
             <div className="flex items-center justify-between gap-3 text-sm">
               <span style={{ color: 'var(--text-muted)' }}>Plan</span>
               <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-                {planInfo[pendingPaymentSummary.plan].name} · {pendingPaymentSummary.months} {pendingPaymentSummary.months === 1 ? 'mes' : 'meses'}
+                {pendingPaymentSummary.plan === 'NONE'
+                  ? 'Mini-Landing (Pago Único)'
+                  : `${planInfo[pendingPaymentSummary.plan as PlanType]?.name || pendingPaymentSummary.plan} · ${pendingPaymentSummary.months} ${pendingPaymentSummary.months === 1 ? 'mes' : 'meses'}`}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3 text-sm">
@@ -840,7 +847,9 @@ function CheckoutContent() {
             <div className="flex items-center justify-between gap-3 text-sm">
               <span style={{ color: 'var(--text-muted)' }}>Plan</span>
               <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-                {planInfo[pendingPaymentSummary.plan].name} · {pendingPaymentSummary.months} {pendingPaymentSummary.months === 1 ? 'mes' : 'meses'}
+                {pendingPaymentSummary.plan === 'NONE'
+                  ? 'Mini-Landing (Pago Único)'
+                  : `${planInfo[pendingPaymentSummary.plan as PlanType]?.name || pendingPaymentSummary.plan} · ${pendingPaymentSummary.months} ${pendingPaymentSummary.months === 1 ? 'mes' : 'meses'}`}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3 text-sm">
@@ -893,8 +902,8 @@ function CheckoutContent() {
     : isDowngrade ? 'Cambiar a Plan Básico'
     : 'Renovar plan';
 
-  const savingsAmount = monthDiscount.pct > 0
-    ? Math.ceil(planInfo[selectedPlan].price * selectedMonths * (monthDiscount.pct / 100))
+  const savingsAmount = monthDiscount.pct > 0 && selectedPlan !== 'NONE'
+    ? Math.ceil(planInfo[selectedPlan as PlanType].price * selectedMonths * (monthDiscount.pct / 100))
     : 0;
 
   // Badge del plan activo para el header
@@ -1029,7 +1038,7 @@ function CheckoutContent() {
               </p>
             </div>
             <div className="p-4 grid grid-cols-2 gap-3">
-              {(['BASIC', 'PRO'] as CheckoutPlan[]).map((p) => {
+              {(['BASIC', 'PRO'] as Array<'BASIC' | 'PRO'>).map((p) => {
                 const info       = planInfo[p];
                 const isSelected = selectedPlan === p;
                 const isCurrent  = hasActiveSub && p === currentPlan;
@@ -1242,13 +1251,15 @@ function CheckoutContent() {
             <div className="px-5 py-4 space-y-2.5">
 
               {/* Features del plan seleccionado */}
-              <ul className="space-y-1.5 pb-3 border-b" style={{ borderColor: 'var(--border-color)' }}>
-                {planInfo[selectedPlan].features.map((f: string) => (
-                  <li key={f} className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />{f}
-                  </li>
-                ))}
-              </ul>
+              {selectedPlan !== 'NONE' && (
+                <ul className="space-y-1.5 pb-3 border-b" style={{ borderColor: 'var(--border-color)' }}>
+                  {planInfo[selectedPlan as PlanType].features.map((f: string) => (
+                    <li key={f} className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />{f}
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               {/* Desglose de cambio con prorrateo (SOLO UPGRADES) */}
               {isUpgrade ? (
@@ -1267,7 +1278,7 @@ function CheckoutContent() {
                   >
                     <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-muted)' }}>
                       <span>
-                        {planInfo[selectedPlan].name} · {selectedMonths} {selectedMonths === 1 ? 'mes' : 'meses'}
+                        {planInfo[selectedPlan as PlanType]?.name ?? 'Plan'} · {selectedMonths} {selectedMonths === 1 ? 'mes' : 'meses'}
                       </span>
                       <span>{formatPrice(prorationPreview.basePlanTotal, paymentMethod, trm)}</span>
                     </div>
@@ -1296,10 +1307,14 @@ function CheckoutContent() {
                 ) : null
               ) : (
                 <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
-                  <span>
-                    {planInfo[selectedPlan].name} · {selectedMonths} {selectedMonths === 1 ? 'mes' : 'meses'}
-                    {monthDiscount.pct > 0 ? ` (−${monthDiscount.pct}%)` : ''}
-                  </span>
+                  {selectedPlan === 'NONE' ? (
+                    <span>Solo Mini-landing (Pago Único)</span>
+                  ) : (
+                    <span>
+                      {planInfo[selectedPlan as PlanType].name} · {selectedMonths} {selectedMonths === 1 ? 'mes' : 'meses'}
+                      {monthDiscount.pct > 0 ? ` (−${monthDiscount.pct}%)` : ''}
+                    </span>
+                  )}
                   <span>{formatPrice(planTotal, paymentMethod, trm)}</span>
                 </div>
               )}
