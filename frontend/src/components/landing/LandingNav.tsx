@@ -79,9 +79,8 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
     window.location.href = '/login';
   }
 
-  const resolvedCtaHref = ctaHref ?? (trialActive ? '/register' : '/planes');
-  // Copy de alto impacto: genera urgencia y curiosidad sin mencionar precio en modo no-trial
-  const resolvedCtaLabel = ctaLabel ?? (trialActive ? '✦ Empieza hoy — $20.000' : 'Ver planes →');
+  const resolvedCtaHref = ctaHref ?? '/planes';
+  const resolvedCtaLabel = ctaLabel ?? 'Ver planes →';
 
   const initials = session?.name
     ? session.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
