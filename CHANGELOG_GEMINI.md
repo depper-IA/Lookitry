@@ -1904,3 +1904,17 @@ Se reemplazó el README épico anterior por una versión limpia y seria, sin emo
 **Motivo:**
 
 - El README publicado no coincidía con la línea editorial esperada y seguía mostrando una versión con emojis y tono visual que el usuario no quería mantener.
+
+## 30 de Marzo, 2026 - Restauración del README de Jules con enlaces corregidos
+
+**Archivos modificados:**
+
+- `README.md`
+- `CHANGELOG_GEMINI.md`
+
+**Descripción del cambio:**
+Se restauró la versión del README generada originalmente por Jules tomando como base el commit `486c4fc`, manteniendo su estructura, tono y contenido. Solo se corrigieron el logo y las referencias del repositorio para que apunten a `depper-IA/Lookitry` en lugar del repo legacy.
+
+**Motivo:**
+
+- El usuario pidió recuperar específicamente el README creado por Jules, pero con el branding y los enlaces del repositorio actual funcionando correctamente.
