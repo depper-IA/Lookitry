@@ -1858,6 +1858,39 @@ Garantizar que futuros agentes de IA tengan un contexto técnico limpio, actuali
 
 - El repositorio necesitaba un punto de entrada profesional y completo que facilitara el onboarding de nuevos desarrolladores (o agentes de IA) y presentara adecuadamente el proyecto SaaS B2B.
 
+## 30 de Marzo, 2026 - Rediseño editorial del detalle de blog con autor, share rail y últimos artículos
+
+**Archivos modificados:**
+
+- `frontend/src/app/blog/[slug]/page.tsx`
+- `frontend/src/services/blog.service.ts`
+- `frontend/src/components/blog/BlogShareRail.tsx`
+
+**Descripción del cambio:**
+Se rediseñó la página de detalle del blog para que todos los enlaces accionables se identifiquen visualmente en naranja, se añadió una barra lateral fija de compartir con acceso a Facebook, X, LinkedIn y copiado de enlace, y se incorporó un bloque de autor institucional `Lookitry Editorial` con branding propio al final del artículo. Además, el detalle ahora carga los últimos artículos publicados desde servidor y los presenta como una sección editorial al final del post.
+
+**Motivo:**
+
+- El post necesitaba una jerarquía visual más clara para distinguir enlaces accionables.
+- Faltaba visibilidad del autor editorial y una forma más útil de compartir el contenido.
+- Era necesario extender la navegación al final del artículo para favorecer descubrimiento de posts recientes y mejorar la experiencia editorial.
+
+## 30 de Marzo, 2026 - Blindaje del blog para LOOKITRY y corrección de imágenes repetidas
+
+**Archivos modificados:**
+
+- `frontend/src/app/blog/[slug]/page.tsx`
+- `templates-webs/flujo-blog-mejorado.json`
+
+**Descripción del cambio:**
+Se corrigió el render del post público para que la llamada final del artículo use branding de `LOOKITRY` y para que la metadata canonical del artículo apunte al slug correcto. También se endureció el workflow `flujo-blog-mejorado.json` para obligar tres imágenes distintas por artículo: una portada y dos imágenes internas diferentes, rechazando publicaciones que repitan la portada dentro del cuerpo, que dejen imágenes vacías o que no incluyan backlinks internos mínimos. Además, el copy de CTAs y bloques relacionados quedó normalizado al naming correcto de `LOOKITRY`.
+
+**Motivo:**
+
+- Los artículos del blog estaban publicándose con la portada repetida en el cuerpo, incluso cuando el flujo generaba imágenes de apoyo diferentes.
+- El CTA público del post seguía mostrando texto genérico de `try-on virtual` en lugar del branding correcto de `LOOKITRY`.
+- Era necesario evitar que n8n volviera a publicar artículos con imágenes duplicadas, CTAs inconsistentes o branding legacy.
+
 ## 30 de Marzo, 2026 - Blog n8n: source_url y estado real en panel admin
 
 **Archivos modificados:**

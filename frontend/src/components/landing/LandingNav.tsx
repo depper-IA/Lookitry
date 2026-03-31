@@ -102,7 +102,7 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
       </div>
 
       <div className="flex items-center gap-1 md:gap-2">
-        {/* Selector mÃ³vil */}
+        {/* Selector móvil */}
         <button
           onClick={toggleCurrency}
           className="sm:hidden flex items-center justify-center w-8 h-8 rounded-lg border border-[#2a2a2a] bg-[#141414] text-[10px] font-bold text-[#FF5C3A]"
@@ -167,14 +167,14 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  Cerrar sesiÃ³n
+                  Cerrar sesión
                 </button>
               </div>
             )}
           </div>
         ) : (
           <Link href="/login" className="text-[13px] bg-[#FF5C3A] sm:bg-transparent text-white sm:text-[#888] sm:hover:text-white font-medium sm:font-normal px-4 sm:px-3.5 py-1.5 rounded-md transition-colors">
-            Iniciar sesiÃ³n
+            Iniciar sesión
           </Link>
         )}
 

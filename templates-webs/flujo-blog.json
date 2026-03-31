@@ -1,1549 +1,1494 @@
 {
-    "nodes": [
-        {
-            "parameters": {
-                "promptType": "define",
-                "text": "=# ROL\nEres el Director de Estrategia de Contenido para \"Lookitry\", la plataforma líder de probador virtual con IA en Latinoamérica (lookitry.com).\n\n# OBJETIVO\nGenerar un array de 15 ideas de temas para artículos de blog. Las ideas deben estar orientadas a la CONVERSIÓN (generar ventas del SaaS) y el POSICIONAMIENTO SEO. Deben despertar en el dueño de una tienda de moda (ecommerce) la necesidad imperativa de implementar un probador virtual para reducir devoluciones y aumentar ventas.\n\n# INSTRUCCIONES CLAVE\n1.  **Enfoque en ROI y Conversión:** Los temas deben abordar problemas reales de los ecommerce de moda: \"tasa de devolución alta\", \"baja conversión en fichas de producto\", \"falta de confianza del cliente al elegir talla\".\n2.  **Variedad de Formatos:** Genera una mezcla equilibrada de:\n    * `\"Tutorial Práctico\"`: Cómo implementar Lookitry o mejorar el SEO de una tienda de ropa.\n    * `\"Análisis de Negocio\"`: Datos sobre cómo la IA aumenta el ticket promedio.\n    * `\"Caso de Éxito/Inspiración\"`: Por qué las grandes marcas usan probadores virtuales.\n3.  **Ángulo de Venta Lookitry:** Cada tema debe posicionar a Lookitry como la solución definitiva. Ejemplo: \"Cómo reducir el 30% de tus devoluciones con IA\".\n4.  **Tags (Regla Estricta):** Usa un máximo de 3 tags por tema, seleccionados de esta lista o similares orientados a retail: `ecommerce moda`, `IA para ropa`, `probador virtual`, `vender más online`, `marketing para moda`, `shopify moda`, `woocommerce`, `tecnología retail`, `reducción de devoluciones`.\n\n# FORMATO DE SALIDA\nDevuelve ÚNICAMENTE un array JSON válido.\n- `tema`: El título atractivo.\n- `formato`: Uno de los tres tipos.\n- `palabras`: Keywords SEO de alta intención comercial.\n- `categoria`: Slug de la categoría (ej: 'ia', 'marketing', 'ecommerce').\n- `meta_descripcion`: Máximo 110 caracteres.\n- `tags`: Array de 1 a 3 tags.\n\n# EJEMPLO\n{\n  \"tema\": \"5 Razones por las que tu Tienda de Ropa pierde ventas sin un Probador Virtual\",\n  \"palabras\": \"probador virtual roral, aumentar ventas ecommerce moda\",\n  \"categoria\": \"ecommerce\",\n  \"tags\": [\"ecommerce moda\", \"probador virtual\"]\n}",
-                "options": {}
-            },
-            "type": "@n8n/n8n-nodes-langchain.agent",
-            "typeVersion": 2.2,
-            "position": [
-                6112,
-                1952
-            ],
-            "id": "82c8e270-554b-4442-a5c3-70ef6745cf5c",
-            "name": "AI Agent"
-        },
-        {
-            "parameters": {
-                "triggerTimes": {
-                    "item": [
-                        {
-                            "mode": "everyMonth"
-                        }
-                    ]
-                }
-            },
-            "id": "28ec2d50-3ecf-4878-8394-afe14d564c06",
-            "name": "Schedule Trigger1",
-            "type": "n8n-nodes-base.cron",
-            "typeVersion": 1,
-            "position": [
-                5920,
-                1952
-            ]
-        },
-        {
-            "parameters": {
-                "options": {}
-            },
-            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-            "typeVersion": 1,
-            "position": [
-                6048,
-                2192
-            ],
-            "id": "9381f529-5ad1-4aab-9a26-09f29ea967dc",
-            "name": "Google Gemini Chat Model",
-            "credentials": {
-                "googlePalmApi": {
-                    "id": "t38zPMWleOvlSpPc",
-                    "name": "Que movida cu"
-                }
-            }
-        },
-        {
-            "parameters": {
-                "dataTableId": {
-                    "__rl": true,
-                    "value": "7JcERYGdRj0XYuYL",
-                    "mode": "list",
-                    "cachedResultName": "temas",
-                    "cachedResultUrl": "/projects/ZwHHlnZoKhyDqulQ/datatables/7JcERYGdRj0XYuYL"
-                },
-                "columns": {
-                    "mappingMode": "defineBelow",
-                    "value": {
-                        "tema": "={{ $json.tema }}",
-                        "palabras": "={{ $json.palabras }}",
-                        "categoria": "={{ $json.categoria }}",
-                        "Meta_descripcion": "={{ $json.Meta_descripcion }}",
-                        "Tags": "={{ $json.Tags }}",
-                        "Estado": "Pendiente"
-                    },
-                    "matchingColumns": [],
-                    "schema": [
-                        {
-                            "id": "tema",
-                            "displayName": "tema",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": false
-                        },
-                        {
-                            "id": "palabras",
-                            "displayName": "palabras",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": false
-                        },
-                        {
-                            "id": "categoria",
-                            "displayName": "categoria",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": false
-                        },
-                        {
-                            "id": "Meta_descripcion",
-                            "displayName": "Meta_descripcion",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": false
-                        },
-                        {
-                            "id": "Estado",
-                            "displayName": "Estado",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": false
-                        },
-                        {
-                            "id": "Tags",
-                            "displayName": "Tags",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": false
-                        }
-                    ],
-                    "attemptToConvertTypes": false,
-                    "convertFieldsToString": false
-                },
-                "options": {}
-            },
-            "type": "n8n-nodes-base.dataTable",
-            "typeVersion": 1,
-            "position": [
-                6800,
-                1952
-            ],
-            "id": "4fbfb872-2884-4389-9731-eebdb6847d30",
-            "name": "Insert row"
-        },
-        {
-            "parameters": {
-                "jsCode": "const results = [];\nfor (const inputItem of $input.all()) {\n  let ideas = inputItem.json.output || inputItem.json.content;\n  if (typeof ideas === 'string') {\n    ideas = ideas.replace(/```json\\s*/gi, '').replace(/```\\s*/g, '').trim();\n    ideas = JSON.parse(ideas);\n  }\n  for (const idea of ideas) {\n    results.push({ json: { tema: idea.tema || '', palabras: idea.palabras || '', categoria: idea.categoria || '', Meta_descripcion: idea.meta_descripcion || idea.Meta_descripcion || '', tags: idea.tags || idea.Tags || [] } });\n  }\n}\nreturn results;"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                6416,
-                1952
-            ],
-            "id": "c59c78f7-b483-460c-9c1a-f81b771f84f1",
-            "name": "formatear"
-        },
-        {
-            "parameters": {
-                "jsCode": "return $input.all().map(item => ({ json: { ...item.json, Estado: \"Pendiente\", Tags: Array.isArray(item.json.tags) ? item.json.tags.join(', ') : (item.json.tags || '') } }));"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                6624,
-                1952
-            ],
-            "id": "2c080467-fdcd-4456-b2aa-ce495614a9ea",
-            "name": "traducir tags"
-        },
-        {
-            "parameters": {
-                "httpMethod": "POST",
-                "path": "trigger-blog-generation",
-                "authentication": "headerAuth",
-                "options": {}
-            },
-            "id": "f7271ca3-9316-4fe1-badb-b06132b450b3",
-            "name": "Webhook Trigger",
-            "type": "n8n-nodes-base.webhook",
-            "typeVersion": 2,
-            "position": [
-                5008,
-                1744
-            ],
-            "webhookId": "1270505d-fcc9-49ed-9360-018f97d71fbc",
-            "credentials": {
-                "httpHeaderAuth": {
-                    "id": "lU8GncdQbT8nLleA",
-                    "name": "pruebalo.wilkiedevs"
-                }
-            }
-        },
-        {
-            "parameters": {
-                "triggerTimes": {
-                    "item": [
-                        {}
-                    ]
-                }
-            },
-            "id": "f2b762ca-241d-44bb-97c6-3b27f1a41eaa",
-            "name": "Schedule Trigger",
-            "type": "n8n-nodes-base.cron",
-            "typeVersion": 1,
-            "position": [
-                5536,
-                2016
-            ]
-        },
-        {
-            "parameters": {
-                "keepOnlySet": true,
-                "values": {
-                    "string": [
-                        {
-                            "name": "title",
-                            "value": "={{ $json.title }}"
-                        },
-                        {
-                            "name": "content",
-                            "value": "={{ $json.content }}"
-                        },
-                        {
-                            "name": "excerpt",
-                            "value": "={{ $json.excerpt }}"
-                        },
-                        {
-                            "name": "categories",
-                            "value": "14"
-                        },
-                        {
-                            "name": "Author",
-                            "value": "1"
-                        },
-                        {
-                            "name": "Tags",
-                            "value": "={{ $json.Tags }}"
-                        }
-                    ],
-                    "number": [
-                        {
-                            "name": "featured_media",
-                            "value": "={{ $json.featured_media }}"
-                        }
-                    ]
-                },
-                "options": {}
-            },
-            "id": "3c39173c-4349-4839-a689-db76e0e47cee",
-            "name": "Prepare Post",
-            "type": "n8n-nodes-base.set",
-            "typeVersion": 1,
-            "position": [
-                9280,
-                1712
-            ]
-        },
-        {
-            "parameters": {
-                "operation": "update",
-                "dataTableId": {
-                    "__rl": true,
-                    "value": "7JcERYGdRj0XYuYL",
-                    "mode": "list",
-                    "cachedResultName": "temas",
-                    "cachedResultUrl": "/projects/ZwHHlnZoKhyDqulQ/datatables/7JcERYGdRj0XYuYL"
-                },
-                "filters": {
-                    "conditions": [
-                        {
-                            "keyValue": "={{ $json.id }}"
-                        }
-                    ]
-                },
-                "columns": {
-                    "mappingMode": "defineBelow",
-                    "value": {
-                        "Estado": "publicado"
-                    },
-                    "matchingColumns": [],
-                    "schema": [
-                        {
-                            "id": "tema",
-                            "displayName": "tema",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": true
-                        },
-                        {
-                            "id": "palabras",
-                            "displayName": "palabras",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": true
-                        },
-                        {
-                            "id": "categoria",
-                            "displayName": "categoria",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": true
-                        },
-                        {
-                            "id": "Meta_descripcion",
-                            "displayName": "Meta_descripcion",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": true
-                        },
-                        {
-                            "id": "Estado",
-                            "displayName": "Estado",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": false
-                        },
-                        {
-                            "id": "Tags",
-                            "displayName": "Tags",
-                            "required": false,
-                            "defaultMatch": false,
-                            "display": true,
-                            "type": "string",
-                            "readOnly": false,
-                            "removed": false
-                        }
-                    ],
-                    "attemptToConvertTypes": false,
-                    "convertFieldsToString": false
-                },
-                "options": {}
-            },
-            "type": "n8n-nodes-base.dataTable",
-            "typeVersion": 1,
-            "position": [
-                9872,
-                1712
-            ],
-            "id": "4f9c8d79-2d50-4467-b29a-fd0edc1ce1d7",
-            "name": "Actualizar tablas"
-        },
-        {
-            "parameters": {
-                "jsCode": "const source = $input.item.json;\n\n// 1. Extraer el texto crudo de la respuesta de OpenRouter\nlet rawText = '';\nif (typeof source?.choices?.[0]?.message?.content === 'string') {\n  rawText = source.choices[0].message.content;\n} else if (Array.isArray(source?.choices?.[0]?.message?.content)) {\n  rawText = source.choices[0].message.content\n    .map((part) => (typeof part === 'string' ? part : part?.text || ''))\n    .join('');\n} else if (source?.content?.parts?.[0]?.text) {\n  rawText = source.content.parts[0].text;\n} else if (typeof source === 'string') {\n  rawText = source;\n} else {\n  rawText = JSON.stringify(source);\n}\n\n// 2. Limpiar markdown fences\nrawText = rawText\n  .replace(/```json\\s*/gi, '')\n  .replace(/```\\s*/g, '')\n  .trim();\n\n// 3. Intentar parsear el JSON directamente primero\nlet parsed = null;\ntry {\n  parsed = JSON.parse(rawText);\n} catch (_) {}\n\n// 4. Si falla, buscar el primer objeto JSON válido dentro del texto\nif (!parsed) {\n  function extractFirstJsonObject(text) {\n    const start = text.indexOf('{');\n    if (start === -1) return null;\n    let depth = 0, inString = false, escape = false;\n    for (let i = start; i < text.length; i++) {\n      const ch = text[i];\n      if (escape) { escape = false; continue; }\n      if (ch === '\\\\') { escape = true; continue; }\n      if (ch === '\"') { inString = !inString; continue; }\n      if (inString) continue;\n      if (ch === '{') depth++;\n      if (ch === '}') depth--;\n      if (depth === 0) return text.slice(start, i + 1);\n    }\n    return null;\n  }\n\n  const jsonString = extractFirstJsonObject(rawText);\n  if (!jsonString) {\n    throw new Error('No se encontró JSON válido. Respuesta: ' + rawText.substring(0, 700));\n  }\n  try {\n    parsed = JSON.parse(jsonString);\n  } catch (e) {\n    throw new Error('Parse fallido: ' + e.message + '. Texto: ' + rawText.substring(0, 700));\n  }\n}\n\n// 5. Validar que los campos críticos están presentes\nconst missing = ['title', 'excerpt', 'content'].filter(f => !parsed[f]);\nif (missing.length > 0) {\n  throw new Error(\n    `El modelo no devolvió los campos: ${missing.join(', ')}. ` +\n    `Respuesta parseada: ${JSON.stringify(parsed).substring(0, 500)}`\n  );\n}\n\nreturn [{ json: parsed }];"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                8896,
-                1712
-            ],
-            "id": "8fb7ab62-4d77-446f-ac8e-87660c511345",
-            "name": "traductor"
-        },
-        {
-            "parameters": {
-                "assignments": {
-                    "assignments": [
-                        {
-                            "id": "b7309d54-d275-4146-9bee-f82c9298f9f5",
-                            "name": "Enlaces_Blogs",
-                            "value": "={{ $json.enlacesBlogs }}",
-                            "type": "string"
-                        }
-                    ]
-                },
-                "includeOtherFields": true,
-                "options": {}
-            },
-            "type": "n8n-nodes-base.set",
-            "typeVersion": 3.4,
-            "position": [
-                8368,
-                1712
-            ],
-            "id": "ad0609b0-9bd2-43d5-b153-77bdd5d98bfe",
-            "name": "Preparar contexto editorial"
-        },
-        {
-            "parameters": {
-                "method": "POST",
-                "url": "https://openrouter.ai/api/v1/chat/completions",
-                "authentication": "genericCredentialType",
-                "genericAuthType": "httpBearerAuth",
-                "sendHeaders": true,
-                "headerParameters": {
-                    "parameters": [
-                        {
-                            "name": "Content-Type",
-                            "value": "application/json"
-                        },
-                        {
-                            "name": "HTTP-Referer",
-                            "value": "https://lookitry.com"
-                        },
-                        {
-                            "name": "X-Title",
-                            "value": "Lookitry Blog Automation"
-                        }
-                    ]
-                },
-                "sendBody": true,
-                "specifyBody": "json",
-                "jsonBody": "={{ ({\n  model: $json.openrouter_model || 'google/gemini-2.5-flash',\n  messages: [\n    {\n      role: 'user',\n      content: [\n        'Eres Lookitry Editorial. Escribe un articulo SEO people-first para ecommerce de moda.',\n        '',\n        '# DATOS DE ENTRADA',\n        '- Tema: ' + ($json.tema || ''),\n        '- Categoria: ' + ($json.categoria || 'ia'),\n        '- Keywords: ' + ($json.palabras || ''),\n        '- Meta descripcion: ' + ($json.meta_descripcion || $json.meta_description || ''),\n        '- Imagen destacada URL: ' + ($json.imagen_destacada_url || ''),\n        '- Imagen body1 URL: ' + ($json.imagen_body1_url || ''),\n        '- Imagen body2 URL: ' + ($json.imagen_body2_url || ''),\n        '',\n        '# OBJETIVO',\n        'Genera un articulo de 1200-1500 palabras, persuasivo, claro y orientado a conversion.',\n        'La estructura debe sentirse como un editorial premium de Lookitry, no como un post generico.',\n        '',\n        '# REGLAS CRITICAS',\n        '1. Devuelve SOLO un objeto JSON valido.',\n        '2. No uses markdown ni code fences.',\n        '3. No incluyas texto fuera del JSON.',\n        '4. NO incluyas el campo featured_media.',\n        '5. El campo content debe ser HTML completo en una sola linea.',\n        '6. Debes usar EXACTAMENTE dos imagenes dentro del HTML del articulo:',\n        '   - una figura usando ' + ($json.imagen_body1_url || ''),\n        '   - una segunda figura usando ' + ($json.imagen_body2_url || ''),\n        '7. La imagen destacada ' + ($json.imagen_destacada_url || '') + ' NO debe ir dentro del content; se usa como miniatura o hero externo.',\n        '8. No inventes categorias ni tags: el tema, categoria y keywords deben estar alineados entre si.',\n        '',\n        '# ESTRUCTURA HTML OBLIGATORIA',\n        '- <div data-blog-intro=\"lead\"> con un parrafo de apertura fuerte',\n        '- primer <h2> con un parrafo',\n        '- <section data-blog-block=\"impact\"> con subtitulo y lista o puntos concretos de impacto de negocio',\n        '- primer <figure> con la imagen body1 y <figcaption>',\n        '- segundo <h2> con 2 parrafos',\n        '- segundo <figure> con la imagen body2 y <figcaption>',\n        '- tercer <h2> con cierre',\n        '- <div data-blog-cta=\"final\"> con CTA final a https://lookitry.com/trial-checkout',\n        '',\n        '# ENFOQUE EDITORIAL',\n        '- La apertura debe parecerse a una pieza premium: directa, clara y con tension de negocio.',\n        '- El bloque de impacto debe verse consultivo y accionable.',\n        '- Las imagenes deben quedar integradas en momentos logicos del articulo.',\n        '- El CTA final debe cerrar la historia y empujar conversion.',\n        '',\n        '# FORMATO DE SALIDA',\n        '{',\n        '  \"title\": \"[Titulo SEO]\",',\n        '  \"content\": \"[HTML completo en una linea con la estructura pedida y las dos figuras indicadas]\",',\n        '  \"excerpt\": \"[Resumen enganchador]\"',\n        '}'\n      ].join('\\n')\n    }\n  ],\n  temperature: 0.2,\n  max_tokens: 3500,\n}) }}",
-                "options": {
-                    "timeout": 120000
-                }
-            },
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.2,
-            "position": [
-                8624,
-                1712
-            ],
-            "id": "e8b6087d-6c87-4b1e-8f39-17c861c31324",
-            "name": "redactor",
-            "credentials": {
-                "httpBearerAuth": {
-                    "id": "zfUV46xyt3CLaLh8",
-                    "name": "OpenRouter"
-                }
-            }
-        },
-        {
-            "parameters": {
-                "jsCode": "const data = $input.first().json;\nconst rawTags = data.tags || data.Tags || [];\nconst tagsArray = Array.isArray(rawTags)\n  ? rawTags.map(t => String(t || '').trim()).filter(Boolean)\n  : String(rawTags || '').split(',').map(t => t.trim()).filter(Boolean);\nconst categorySlug = String(data.categoria || data.category_slug || 'ia')\n  .toLowerCase()\n  .normalize('NFD')\n  .replace(/[\\u0300-\\u036f]/g, '')\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-+|-+$/g, '') || 'ia';\nconst wpBody = { title: data.title, excerpt: data.excerpt, content: data.content, status: 'published', category_slug: categorySlug, tags: tagsArray, featured_image: data.imagen_destacada_url, meta_description: data.meta_description || data.meta_descripcion || data.excerpt.substring(0, 160) };\nreturn { json: { wpBody, ...data, tags: tagsArray, category_slug: categorySlug } };"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                9472,
-                1712
-            ],
-            "id": "46d26443-bc53-429e-95ec-d0fbc0095fba",
-            "name": "Preparar JSON para Lookitry"
-        },
-        {
-            "parameters": {
-                "method": "POST",
-                "url": "https://api.lookitry.com/api/blog/webhook",
-                "sendHeaders": true,
-                "headerParameters": {
-                    "parameters": [
-                        {
-                            "name": "Content-Type",
-                            "value": "application/json"
-                        },
-                        {
-                            "name": "x-blog-secret",
-                            "value": "Travis2305**_blog_live"
-                        }
-                    ]
-                },
-                "sendBody": true,
-                "specifyBody": "json",
-                "jsonBody": "={{ JSON.stringify($json.wpBody) }}",
-                "options": {}
-            },
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.2,
-            "position": [
-                9680,
-                1712
-            ],
-            "id": "bb4729a2-c8e5-4ee4-b2f8-3f83f55f3a8f",
-            "name": "Publicar en Lookitry"
-        },
-        {
-            "parameters": {
-                "jsCode": "const item = $input.all()[0];\nlet content = item.json;\n\nif (typeof content === 'string') {\n  try {\n    content = JSON.parse(content);\n  } catch (e) {\n    throw new Error(`Parse error: ${e.message}`);\n  }\n}\n\nlet editorialContext = {};\ntry {\n  editorialContext = $('Preparar contexto editorial').first().json || {};\n} catch (e) {}\n\nif (!content.Tags) {\n  for (const i of $input.all()) {\n    if (i.json.Tags) {\n      content.Tags = i.json.Tags;\n      break;\n    }\n  }\n\n  if (!content.Tags && editorialContext.Tags) {\n    content.Tags = editorialContext.Tags;\n  }\n}\n\ncontent.categoria = content.categoria || editorialContext.categoria || 'ia';\ncontent.imagen_destacada_url = content.imagen_destacada_url || editorialContext.imagen_destacada_url || editorialContext.featured_image || '';\ncontent.imagen_body1_url = content.imagen_body1_url || editorialContext.imagen_body1_url || '';\ncontent.imagen_body2_url = content.imagen_body2_url || editorialContext.imagen_body2_url || '';\n\nconst missing = ['title', 'excerpt', 'content'].filter((f) => !content[f]);\nif (missing.length > 0) {\n  throw new Error(`Campos faltantes: ${missing.join(', ')}`);\n}\n\nif (!content.featured_media) content.featured_media = 1;\n\nif (!content.meta_description?.trim()) {\n  content.meta_description = editorialContext.meta_descripcion || content.excerpt.substring(0, 160);\n}\n\nif (content.excerpt?.length > 160) {\n  content.excerpt = content.excerpt.substring(0, 157) + '...';\n}\n\nif (content.meta_description?.length > 160) {\n  content.meta_description = content.meta_description.substring(0, 157) + '...';\n}\n\nreturn { json: content };\n"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                9088,
-                1712
-            ],
-            "id": "16dfece1-65a7-4619-9e0e-3e0045338777",
-            "name": "Preparador"
-        },
-        {
-            "parameters": {
-                "url": "https://lookitry.com/api/blog",
-                "options": {}
-            },
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.2,
-            "position": [
-                7792,
-                1408
-            ],
-            "id": "8132a63c-4af9-46b9-949f-bd6d191d576d",
-            "name": "conseguir Blogs"
-        },
-        {
-            "parameters": {
-                "jsCode": "const rawItems = $input.all();\nconst source = rawItems.length === 1 && Array.isArray(rawItems[0].json?.data) ? rawItems[0].json.data : rawItems.map(i => i.json);\nconst enlacesBlogs = source.map(post => ({ titulo: post.title, url: `https://lookitry.com/blog/${post.slug}` }));\nreturn [{ json: { enlacesBlogs } }];"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                7952,
-                1408
-            ],
-            "id": "6211cbdc-f0a1-433f-96aa-8027a2c8ce3b",
-            "name": "conseguir link blogs"
-        },
-        {
-            "parameters": {
-                "numberInputs": 3
-            },
-            "type": "n8n-nodes-base.merge",
-            "typeVersion": 3.2,
-            "position": [
-                7952,
-                1696
-            ],
-            "id": "a0abf64b-36f8-43f6-8812-d9c7f0f6f633",
-            "name": "Merge"
-        },
-        {
-            "parameters": {
-                "jsCode": "const allItems = $input.all();\nconst datosFinales = {};\nconst t = allItems.find(i => i.json.tema && i.json.palabras);\nif (t) Object.keys(t.json).forEach(k => { datosFinales[k] = t.json[k]; });\nconst img = allItems.find(i => i.json.imagen_destacada);\nif (img) {\n  ['imagen_destacada','imagen_body1','imagen_body2'].forEach(k => {\n    datosFinales[k] = img.json[k];\n    datosFinales[`${k}_url`] = img.json[k]?.url;\n    datosFinales[`${k}_id`] = img.json[k]?.id;\n  });\n}\nconst e = allItems.find(i => Array.isArray(i.json.enlacesBlogs));\nif (e) datosFinales.enlacesBlogs = e.json.enlacesBlogs;\nif (datosFinales.Tags) {\n  if (typeof datosFinales.Tags === 'string') datosFinales.Tags = datosFinales.Tags.split(',').map(t => t.trim()).filter(Boolean);\n  else if (Array.isArray(datosFinales.Tags)) datosFinales.Tags = datosFinales.Tags.filter(Boolean);\n}\nreturn [{ json: datosFinales }];"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                8160,
-                1712
-            ],
-            "id": "19490473-4be6-4459-a7ab-9dcbf76c26f5",
-            "name": "Obtener Info"
-        },
-        {
-            "parameters": {
-                "jsCode": "const imgs = $input.first().json;\nconst orig = $('Obtener Temas').first().json;\nreturn { json: { tema: orig.tema, palabras: orig.palabras, categoria: orig.categoria || 'ia', meta_descripcion: orig.Meta_descripcion || orig.meta_descripcion || '', Tags: orig.Tags || orig.tags || [], imagen_destacada_url: imgs.imagen_destacada.url, imagen_destacada_id: imgs.imagen_destacada.id, imagen_body1_url: imgs.imagen_body1.url, imagen_body1_id: imgs.imagen_body1.id, imagen_body2_url: imgs.imagen_body2.url, imagen_body2_id: imgs.imagen_body2.id } };"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                7600,
-                1408
-            ],
-            "id": "c69c8f0e-5813-4ae6-8225-6575a87947a0",
-            "name": "recuperar datos"
-        },
-        {
-            "parameters": {
-                "jsCode": "const items = $input.all().sort((a, b) => (a.json.orden || 0) - (b.json.orden || 0));\nif (items.length < 3) {\n  throw new Error(`Filtrado recibi? ${items.length} im?genes; se esperaban 3.`);\n}\nconst mapImg = (item) => ({ id: item?.json?.id, url: item?.json?.file_url || item?.json?.url || item?.json?.source_url || null });\nreturn [{ json: { imagen_destacada: mapImg(items[0]), imagen_body1: mapImg(items[1]), imagen_body2: mapImg(items[2]) } }];"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                7600,
-                992
-            ],
-            "id": "9671772a-37cc-443e-9585-1d8cef0c0732",
-            "name": "Filtrado"
-        },
-        {
-            "parameters": {
-                "modelId": {
-                    "__rl": true,
-                    "value": "models/gemini-2.5-flash",
-                    "mode": "list",
-                    "cachedResultName": "models/gemini-2.5-flash"
-                },
-                "messages": {
-                    "values": [
-                        {
-                            "content": "=Eres el director de arte de Lookitry Editorial. Debes generar prompts de imagen editoriales que sí representen el tema elegido, no imágenes genéricas.\\n\\nIDENTIDAD VISUAL DE LOOKITRY:\\n- Paleta guía: naranja principal (#FF5C3A), blanco, negro, grises tecnológicos.\\n- Estilo: editorial premium, ecommerce de moda, tecnología aplicada a retail, fotografía realista.\\n\\nDATOS DEL ARTÍCULO:\\n- Tema: \\\"{{ $('Obtener Temas').first().json.tema }}\\\"\\n- Categoría: \\\"{{ $('Obtener Temas').first().json.categoria || 'ia' }}\\\"\\n- Keywords: \\\"{{ $('Obtener Temas').first().json.palabras || '' }}\\\"\\n\\nREGLAS GENERALES:\\n- Todas las imágenes deben ser horizontales 16:9, fotorrealistas, sin texto, sin logos, sin marcas de agua.\\n- Si aparecen personas: manos correctas, anatomía natural, ropa coherente, iluminación profesional.\\n- Cada prompt debe mostrar una escena distinta y útil para ese slot del artículo.\\n- Evita imágenes abstractas si el tema pide negocio, ecommerce, devoluciones, conversión, tallas o experiencia de compra.\\n- Prioriza escenas que expliquen visualmente el problema o la solución del tema.",
-                            "role": "model"
-                        },
-                        {
-                            "content": "=Transform the following blog topic into THREE distinct image prompts in English. Return ONLY in this exact format:\\n\\n(A) [First prompt here]\\n(B) [Second prompt here]\\n(C) [Third prompt here]\\n\\nTopic: \\\"{{ $('Obtener Temas').item.json.tema }}\\\"\\nCategory: \\\"{{ $('Obtener Temas').item.json.categoria || 'ia' }}\\\"\\nKeywords: \\\"{{ $('Obtener Temas').item.json.palabras || '' }}\\\"\\n\\nPrompt goals by slot:\\n(A) Featured image: create the main editorial hero for the article's central promise or tension.\\n(B) Body image 1: illustrate the pain point, friction, cost, returns problem, sizing issue, or business impact described in the article.\\n(C) Body image 2: illustrate the solution, implementation, virtual try-on experience, AI recommendation flow, or positive outcome.\\n\\nEnsure each prompt is specific to the topic, includes fashion ecommerce context when relevant, and feels like a premium magazine-style campaign image.\\nReturn EXACTLY three lines and nothing else:\\n(A) ...\\n(B) ...\\n(C) ...\\nDo not add intro text, explanations, markdown, bullets, or code fences.\n"
-                        }
-                    ]
-                },
-                "options": {
-                    "maxOutputTokens": 250
-                }
-            },
-            "type": "@n8n/n8n-nodes-langchain.googleGemini",
-            "typeVersion": 1,
-            "position": [
-                5488,
-                1088
-            ],
-            "id": "cd94c327-8a56-4b9a-be3b-13ec55dce11b",
-            "name": "mejorar prompt",
-            "credentials": {
-                "googlePalmApi": {
-                    "id": "ZYbXBAz7cxAnp7Co",
-                    "name": "samu.wilkie"
-                }
-            }
-        },
-        {
-            "parameters": {
-                "jsCode": "const raw =\n  $input.first()?.json?.content?.parts?.[0]?.text ||\n  $input.first()?.json?.choices?.[0]?.message?.content ||\n  $input.first()?.json?.text ||\n  '';\n\nif (!raw || typeof raw !== 'string') {\n  throw new Error('El nodo generador no devolvió texto utilizable para extraer prompts.');\n}\n\nconst text = raw.replace(/\\r/g, '').trim();\n\nfunction cleanPrompt(value) {\n  return (value || '')\n    .replace(/^[\"'`]+|[\"'`]+$/g, '')\n    .replace(/\\n+/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\nfunction extractLabeled(label, nextLabels = []) {\n  const nextPart = nextLabels.length ? `(?=\\\\(${nextLabels.join('|')}\\\\)|$)` : '$';\n  const regex = new RegExp(`\\\\(${label}\\\\)\\\\s*([\\\\s\\\\S]+?)${nextPart}`, 'i');\n  return cleanPrompt(text.match(regex)?.[1] || '');\n}\n\nlet promptA = extractLabeled('A', ['B', 'C']);\nlet promptB = extractLabeled('B', ['C']);\nlet promptC = extractLabeled('C', []);\n\nconst bulletLines = text\n  .split('\\n')\n  .map((line) => cleanPrompt(line.replace(/^[-*•\\d.)\\s]+/, '')))\n  .filter(Boolean);\n\nif (!promptA && bulletLines[0]) promptA = bulletLines[0];\nif (!promptB && bulletLines[1]) promptB = bulletLines[1];\nif (!promptC && bulletLines[2]) promptC = bulletLines[2];\n\n// Fallback: si solo llegó un prompt válido, derivar variantes sin romper el flujo\nif (promptA && !promptB) {\n  promptB = `${promptA}, editorial lifestyle scene, supporting in-article visual, different composition`;\n}\nif (promptA && !promptC) {\n  promptC = `${promptA}, secondary supporting visual, alternate camera angle, contextual ecommerce detail`;\n}\n\n// Si no vino A, intentar usar cualquier texto completo razonable\nif (!promptA && text.length > 20) {\n  promptA = cleanPrompt(text);\n  promptB = promptB || `${promptA}, editorial lifestyle scene, supporting in-article visual`;\n  promptC = promptC || `${promptA}, alternate composition, ecommerce context`;\n}\n\nif (!promptA || !promptB || !promptC) {\n  throw new Error(\n    `Prompts no extraídos. A:${!!promptA} B:${!!promptB} C:${!!promptC}. Texto recibido: ${text.substring(0, 800)}`\n  );\n}\n\nreturn [\n  {\n    json: {\n      prompt: promptA,\n      tipo: 'destacada',\n      orden: 1,\n    },\n  },\n  {\n    json: {\n      prompt: promptB,\n      tipo: 'body1',\n      orden: 2,\n    },\n  },\n  {\n    json: {\n      prompt: promptC,\n      tipo: 'body2',\n      orden: 3,\n    },\n  },\n];\n"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                5808,
-                1088
-            ],
-            "id": "34a30259-98b2-4fb3-9211-19091e76ca26",
-            "name": "Extraer Prompts"
-        },
-        {
-            "parameters": {
-                "operation": "get",
-                "dataTableId": {
-                    "__rl": true,
-                    "value": "7JcERYGdRj0XYuYL",
-                    "mode": "list",
-                    "cachedResultName": "temas",
-                    "cachedResultUrl": "/projects/ZwHHlnZoKhyDqulQ/datatables/7JcERYGdRj0XYuYL"
-                },
-                "filters": {
-                    "conditions": [
-                        {
-                            "keyName": "Estado",
-                            "keyValue": "Pendiente"
-                        }
-                    ]
-                },
-                "limit": 1
-            },
-            "type": "n8n-nodes-base.dataTable",
-            "typeVersion": 1,
-            "position": [
-                5536,
-                1744
-            ],
-            "id": "f4979896-9ecf-43bd-b636-113e122f81f2",
-            "name": "Obtener Temas"
-        },
-        {
-            "parameters": {
-                "rules": {
-                    "values": [
-                        {
-                            "conditions": {
-                                "options": {
-                                    "caseSensitive": true,
-                                    "leftValue": "",
-                                    "typeValidation": "strict",
-                                    "version": 2
-                                },
-                                "conditions": [
-                                    {
-                                        "leftValue": true,
-                                        "rightValue": "",
-                                        "operator": {
-                                            "type": "boolean",
-                                            "operation": "true",
-                                            "singleValue": true
-                                        },
-                                        "id": "bbd49596-5cf5-449d-93ab-6cf6d90b4bde"
-                                    }
-                                ],
-                                "combinator": "and"
-                            },
-                            "renameOutput": true,
-                            "outputKey": "Replicate (Testing)"
-                        },
-                        {
-                            "conditions": {
-                                "options": {
-                                    "caseSensitive": true,
-                                    "leftValue": "",
-                                    "typeValidation": "strict",
-                                    "version": 2
-                                },
-                                "conditions": [
-                                    {
-                                        "id": "920381c6-aa55-4da9-8682-46db9d432346",
-                                        "leftValue": false,
-                                        "rightValue": "",
-                                        "operator": {
-                                            "type": "boolean",
-                                            "operation": "false",
-                                            "singleValue": true
-                                        }
-                                    }
-                                ],
-                                "combinator": "and"
-                            },
-                            "renameOutput": true,
-                            "outputKey": "OpenRouter (Produccion)"
-                        }
-                    ]
-                },
-                "options": {}
-            },
-            "type": "n8n-nodes-base.switch",
-            "typeVersion": 3.3,
-            "position": [
-                6096,
-                1376
-            ],
-            "id": "35ed003b-d736-44c5-8e44-2c1cb0db2a9a",
-            "name": "tester"
-        },
-        {
-            "parameters": {
-                "method": "POST",
-                "url": "https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions",
-                "sendHeaders": true,
-                "headerParameters": {
-                    "parameters": [
-                        {
-                            "name": "Authorization",
-                            "value": "Bearer r8_D4VY9Ay3avB9k5qMARUTqD09qIaiTne3TKVu0"
-                        },
-                        {
-                            "name": "Content-Type",
-                            "value": "application/json"
-                        },
-                        {
-                            "name": "Prefer",
-                            "value": "wait=10"
-                        }
-                    ]
-                },
-                "sendBody": true,
-                "specifyBody": "json",
-                "jsonBody": "={\n  \"input\": {\n    \"prompt\": \"{{ $json.prompt }}\",\n    \"aspect_ratio\": \"16:9\",\n    \"output_format\": \"png\",\n    \"output_quality\": 90,\n    \"num_inference_steps\": 4,\n    \"go_fast\": true,\n    \"megapixels\": \"1\"\n  }\n}",
-                "options": {
-                    "timeout": 120000
-                }
-            },
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.2,
-            "position": [
-                6432,
-                1184
-            ],
-            "id": "c05907b2-3019-4391-a3fd-e5c25a4653b4",
-            "name": "Replicate FLUX Schnell"
-        },
-        {
-            "parameters": {
-                "jsCode": "const response = $input.item.json;\nconst currentItem = $('Loop Imagenes Replicate').first().json;\nconst token = 'r8_D4VY9Ay3avB9k5qMARUTqD09qIaiTne3TKVu0';\n\nasync function sleep(ms) {\n  return new Promise((resolve) => setTimeout(resolve, ms));\n}\n\nasync function getPrediction(url) {\n  const res = await fetch(url, {\n    headers: {\n      Authorization: `Bearer ${token}`,\n      'Content-Type': 'application/json',\n    },\n  });\n\n  if (!res.ok) {\n    const body = await res.text();\n    throw new Error(`Replicate lookup failed (${res.status}): ${body}`);\n  }\n\n  return await res.json();\n}\n\nasync function resolvePrediction(prediction) {\n  let current = prediction;\n\n  for (let i = 0; i < 24; i++) {\n    if (current?.error) {\n      throw new Error(`Replicate error en ${currentItem.tipo}: ${current.error}`);\n    }\n\n    if (current?.status === 'failed' || current?.status === 'canceled') {\n      throw new Error(`Replicate termin? en ${current.status}. ID: ${current.id}`);\n    }\n\n    if (current?.status === 'succeeded' && current?.output) {\n      const imageUrl = Array.isArray(current.output) ? current.output[0] : current.output;\n      return [{\n        json: {\n          ...currentItem,\n          imageUrl,\n          predictionId: current.id,\n          predictionStatus: current.status,\n        },\n      }];\n    }\n\n    const pollUrl = current?.urls?.get;\n    if (!pollUrl) {\n      throw new Error(`Replicate no devolvi? output ni poll URL. Status: ${current?.status || 'unknown'}`);\n    }\n\n    await sleep(5000);\n    current = await getPrediction(pollUrl);\n  }\n\n  throw new Error(`Replicate no termin? a tiempo para ${currentItem.tipo}`);\n}\n\nreturn await resolvePrediction(response);"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                6640,
-                1184
-            ],
-            "id": "074f5d09-6f15-43ee-b53f-f3f1ca95977a",
-            "name": "Replicate - Extraer URL"
-        },
-        {
-            "parameters": {
-                "url": "={{ $json.imageUrl }}",
-                "options": {
-                    "response": {
-                        "response": {
-                            "responseFormat": "file"
-                        }
-                    }
-                }
-            },
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.2,
-            "position": [
-                6848,
-                1184
-            ],
-            "id": "fd1c1a6a-b5c7-43ea-8065-b6ef25047a9c",
-            "name": "Replicate - Descargar PNG"
-        },
-        {
-            "parameters": {
-                "mode": "runOnceForEachItem",
-                "jsCode": "const item = $input.item;\nconst tipo = item.json.tipo || 'imagen';\nconst orden = item.json.orden || 1;\n\nif (item.binary?.data) {\n  item.binary.data.fileName = `${tipo}.png`;\n  item.binary.data.mimeType = 'image/png';\n}\n\nreturn {\n  json: {\n    ...item.json,\n    tipo,\n    orden,\n  },\n  binary: item.binary,\n};"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                7056,
-                1184
-            ],
-            "id": "7db1c9f4-e2a5-4bc1-bffa-f7b2820c0bee",
-            "name": "renombrar Replicate"
-        },
-        {
-            "parameters": {
-                "method": "POST",
-                "url": "https://api.lookitry.com/api/blog/upload",
-                "sendHeaders": true,
-                "headerParameters": {
-                    "parameters": [
-                        {
-                            "name": "x-blog-secret",
-                            "value": "Travis2305**_blog_live"
-                        }
-                    ]
-                },
-                "sendBody": true,
-                "contentType": "multipart-form-data",
-                "bodyParameters": {
-                    "parameters": [
-                        {
-                            "parameterType": "formBinaryData",
-                            "name": "file",
-                            "inputDataFieldName": "data"
-                        },
-                        {
-                            "name": "filename",
-                            "value": "={{ $('renombrar Replicate').item.binary.data.fileName }}"
-                        }
-                    ]
-                },
-                "options": {}
-            },
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.2,
-            "position": [
-                7312,
-                1184
-            ],
-            "id": "20270c88-09d5-46c9-8662-63c97fa4b745",
-            "name": "Uploader Replicate"
-        },
-        {
-            "parameters": {
-                "method": "POST",
-                "url": "https://openrouter.ai/api/v1/chat/completions",
-                "authentication": "genericCredentialType",
-                "genericAuthType": "httpBearerAuth",
-                "sendBody": true,
-                "specifyBody": "json",
-                "jsonBody": "={\n  \"model\": \"openai/gpt-5-image-mini\",\n  \"messages\": [{ \"role\": \"user\", \"content\": \"{{ $json.prompt.replace(/\\\"/g, '\\\\\\\"') }}\" }],\n  \"image_generation\": { \"n\": 1, \"size\": \"1792x1024\", \"output_format\": \"png\", \"quality\": \"hd\", \"style\": \"natural\" }\n}",
-                "options": {}
-            },
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.2,
-            "position": [
-                6432,
-                1568
-            ],
-            "id": "28f45af3-7f01-47cb-8c04-6484026b0b4e",
-            "name": "OpenRouter",
-            "credentials": {
-                "httpBearerAuth": {
-                    "id": "zfUV46xyt3CLaLh8",
-                    "name": "OpenRouter"
-                }
-            }
-        },
-        {
-            "parameters": {
-                "mode": "runOnceForEachItem",
-                "jsCode": "const response = $input.item.json;\nconst inputData = $('Extraer Prompts').item.json;\nif (response.error) throw new Error(`Error OpenRouter '${inputData.tipo}': ${response.error.message}`);\nconst url = response.choices?.[0]?.message?.images?.[0]?.image_url?.url;\nif (!url) { console.log('Respuesta:', JSON.stringify(response, null, 2)); throw new Error(`No hay URL de imagen para '${inputData.tipo}'.`); }\nconst base64Data = url.split('base64,')[1];\nif (!base64Data) throw new Error(`No se pudo extraer base64 para '${inputData.tipo}'.`);\nconsole.log(`✓ OpenRouter ${inputData.tipo}: ${base64Data.length} chars`);\nreturn { json: { ...inputData, base64: base64Data } };"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                6656,
-                1568
-            ],
-            "id": "4495cc5f-e1c1-4a79-b2a3-aedb970ebb2c",
-            "name": "extraer imagenes"
-        },
-        {
-            "parameters": {
-                "operation": "toBinary",
-                "sourceProperty": "base64",
-                "options": {
-                    "fileName": "=data",
-                    "mimeType": "image/png"
-                }
-            },
-            "type": "n8n-nodes-base.convertToFile",
-            "typeVersion": 1.1,
-            "position": [
-                6864,
-                1568
-            ],
-            "id": "cc54e934-345a-4530-a898-a6354e1cd2b0",
-            "name": "Traductor"
-        },
-        {
-            "parameters": {
-                "method": "POST",
-                "url": "http://image-converter:3000/convert-to-webp",
-                "sendHeaders": true,
-                "headerParameters": {
-                    "parameters": [
-                        {
-                            "name": "Content-Type",
-                            "value": "multipart/form-data"
-                        }
-                    ]
-                },
-                "sendBody": true,
-                "contentType": "multipart-form-data",
-                "bodyParameters": {
-                    "parameters": [
-                        {
-                            "parameterType": "formBinaryData",
-                            "name": "file",
-                            "inputDataFieldName": "data"
-                        }
-                    ]
-                },
-                "options": {}
-            },
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.2,
-            "position": [
-                7056,
-                1568
-            ],
-            "id": "265dd085-2bac-4b50-a7a9-f1aeddb556e9",
-            "name": "convert to WEBP"
-        },
-        {
-            "parameters": {
-                "mode": "runOnceForEachItem",
-                "jsCode": "const item = $input.item;\nconst itemIndex = $itemIndex;\nlet tipo, orden;\ntry { const d = $('Extraer Prompts').all()[itemIndex]?.json; if (d?.tipo) { tipo = d.tipo; orden = d.orden; } } catch(e) {}\nif (!tipo) { tipo = item.json.tipo || 'imagen'; orden = item.json.orden || itemIndex + 1; }\nif (item.binary?.data) { item.binary.data.fileName = `${tipo}.webp`; item.binary.data.mimeType = 'image/webp'; }\nconsole.log(`OpenRouter renombrado: ${tipo}.webp`);\nreturn { json: { ...item.json, tipo, orden }, binary: item.binary };"
-            },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
-            "position": [
-                7344,
-                1568
-            ],
-            "id": "90ad0769-d7a6-4f36-8dca-e486fc679d56",
-            "name": "renombrar OpenRouter"
-        },
-        {
-            "parameters": {
-                "method": "POST",
-                "url": "https://api.lookitry.com/api/blog/upload",
-                "sendHeaders": true,
-                "headerParameters": {
-                    "parameters": [
-                        {
-                            "name": "x-blog-secret",
-                            "value": "Travis2305**_blog_live"
-                        }
-                    ]
-                },
-                "sendBody": true,
-                "contentType": "multipart-form-data",
-                "bodyParameters": {
-                    "parameters": [
-                        {
-                            "parameterType": "formBinaryData",
-                            "name": "file",
-                            "inputDataFieldName": "data"
-                        },
-                        {
-                            "name": "filename",
-                            "value": "={{ $('renombrar OpenRouter').item.binary.data.fileName }}"
-                        }
-                    ]
-                },
-                "options": {}
-            },
-            "type": "n8n-nodes-base.httpRequest",
-            "typeVersion": 4.2,
-            "position": [
-                7584,
-                1680
-            ],
-            "id": "193abe55-3f4a-4245-9b9e-c867192eee6c",
-            "name": "Uploader OpenRouter"
-        },
-        {
-            "parameters": {
-                "options": {}
-            },
-            "id": "8fda7d2e-3d1e-4d09-9d12-a2bf650b53c0",
-            "name": "Loop Imagenes Replicate",
-            "type": "n8n-nodes-base.splitInBatches",
-            "typeVersion": 3,
-            "position": [
-                6064,
-                1008
-            ]
-        },
-        {
-            "parameters": {
-                "amount": 12
-            },
-            "id": "fdf86c40-1b35-4eb0-a8f8-6768df8bfffa",
-            "name": "Wait Replicate 12s",
-            "type": "n8n-nodes-base.wait",
-            "typeVersion": 1.1,
-            "position": [
-                7600,
-                1184
-            ],
-            "webhookId": "ed6ce2ba-d14a-45fe-b7b3-a53e3008aea5"
-        }
-    ],
-    "connections": {
-        "AI Agent": {
-            "main": [
-                [
-                    {
-                        "node": "formatear",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Schedule Trigger1": {
-            "main": [
-                [
-                    {
-                        "node": "AI Agent",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Google Gemini Chat Model": {
-            "ai_languageModel": [
-                [
-                    {
-                        "node": "AI Agent",
-                        "type": "ai_languageModel",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "formatear": {
-            "main": [
-                [
-                    {
-                        "node": "traducir tags",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "traducir tags": {
-            "main": [
-                [
-                    {
-                        "node": "Insert row",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Webhook Trigger": {
-            "main": [
-                [
-                    {
-                        "node": "Obtener Temas",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Schedule Trigger": {
-            "main": [
-                [
-                    {
-                        "node": "Obtener Temas",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Prepare Post": {
-            "main": [
-                [
-                    {
-                        "node": "Preparar JSON para Lookitry",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "traductor": {
-            "main": [
-                [
-                    {
-                        "node": "Preparador",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Preparar contexto editorial": {
-            "main": [
-                [
-                    {
-                        "node": "redactor",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "redactor": {
-            "main": [
-                [
-                    {
-                        "node": "traductor",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Preparar JSON para Lookitry": {
-            "main": [
-                [
-                    {
-                        "node": "Publicar en Lookitry",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Publicar en Lookitry": {
-            "main": [
-                [
-                    {
-                        "node": "Actualizar tablas",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Preparador": {
-            "main": [
-                [
-                    {
-                        "node": "Prepare Post",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "conseguir Blogs": {
-            "main": [
-                [
-                    {
-                        "node": "conseguir link blogs",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "conseguir link blogs": {
-            "main": [
-                [
-                    {
-                        "node": "Merge",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Merge": {
-            "main": [
-                [
-                    {
-                        "node": "Obtener Info",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Obtener Info": {
-            "main": [
-                [
-                    {
-                        "node": "Preparar contexto editorial",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "recuperar datos": {
-            "main": [
-                [
-                    {
-                        "node": "Merge",
-                        "type": "main",
-                        "index": 1
-                    },
-                    {
-                        "node": "conseguir Blogs",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Filtrado": {
-            "main": [
-                [
-                    {
-                        "node": "recuperar datos",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "mejorar prompt": {
-            "main": [
-                [
-                    {
-                        "node": "Extraer Prompts",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Extraer Prompts": {
-            "main": [
-                [
-                    {
-                        "node": "Loop Imagenes Replicate",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Obtener Temas": {
-            "main": [
-                [
-                    {
-                        "node": "mejorar prompt",
-                        "type": "main",
-                        "index": 0
-                    },
-                    {
-                        "node": "Merge",
-                        "type": "main",
-                        "index": 2
-                    }
-                ]
-            ]
-        },
-        "tester": {
-            "main": [
-                [
-                    {
-                        "node": "Replicate FLUX Schnell",
-                        "type": "main",
-                        "index": 0
-                    }
-                ],
-                [
-                    {
-                        "node": "OpenRouter",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Replicate FLUX Schnell": {
-            "main": [
-                [
-                    {
-                        "node": "Replicate - Extraer URL",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Replicate - Extraer URL": {
-            "main": [
-                [
-                    {
-                        "node": "Replicate - Descargar PNG",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Replicate - Descargar PNG": {
-            "main": [
-                [
-                    {
-                        "node": "renombrar Replicate",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "renombrar Replicate": {
-            "main": [
-                [
-                    {
-                        "node": "Uploader Replicate",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Uploader Replicate": {
-            "main": [
-                [
-                    {
-                        "node": "Wait Replicate 12s",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "OpenRouter": {
-            "main": [
-                [
-                    {
-                        "node": "extraer imagenes",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "extraer imagenes": {
-            "main": [
-                [
-                    {
-                        "node": "Traductor",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Traductor": {
-            "main": [
-                [
-                    {
-                        "node": "convert to WEBP",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "convert to WEBP": {
-            "main": [
-                [
-                    {
-                        "node": "renombrar OpenRouter",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "renombrar OpenRouter": {
-            "main": [
-                [
-                    {
-                        "node": "Uploader OpenRouter",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Uploader OpenRouter": {
-            "main": [
-                [
-                    {
-                        "node": "Wait Replicate 12s",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Loop Imagenes Replicate": {
-            "main": [
-                [
-                    {
-                        "node": "Filtrado",
-                        "type": "main",
-                        "index": 0
-                    }
-                ],
-                [
-                    {
-                        "node": "tester",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Wait Replicate 12s": {
-            "main": [
-                [
-                    {
-                        "node": "Loop Imagenes Replicate",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        }
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# ROL\nEres el Director de Estrategia de Contenido para \"Lookitry\", la plataforma líder de probador virtual con IA en Latinoamérica (lookitry.com).\n\n# OBJETIVO\nGenerar un array de 15 ideas de temas para artículos de blog. Las ideas deben estar orientadas a la CONVERSIÓN (generar ventas del SaaS) y el POSICIONAMIENTO SEO. Deben despertar en el dueño de una tienda de moda (ecommerce) la necesidad imperativa de implementar un probador virtual para reducir devoluciones y aumentar ventas.\n\n# INSTRUCCIONES CLAVE\n1.  **Enfoque en ROI y Conversión:** Los temas deben abordar problemas reales de los ecommerce de moda: \"tasa de devolución alta\", \"baja conversión en fichas de producto\", \"falta de confianza del cliente al elegir talla\".\n2.  **Variedad de Formatos:** Genera una mezcla equilibrada de:\n    * `\"Tutorial Práctico\"`: Cómo implementar Lookitry o mejorar el SEO de una tienda de ropa.\n    * `\"Análisis de Negocio\"`: Datos sobre cómo la IA aumenta el ticket promedio.\n    * `\"Caso de Éxito/Inspiración\"`: Por qué las grandes marcas usan probadores virtuales.\n3.  **Ángulo de Venta Lookitry:** Cada tema debe posicionar a Lookitry como la solución definitiva. Ejemplo: \"Cómo reducir el 30% de tus devoluciones con IA\".\n4.  **Tags (Regla Estricta):** Usa un máximo de 3 tags por tema, seleccionados de esta lista o similares orientados a retail: `ecommerce moda`, `IA para ropa`, `probador virtual`, `vender más online`, `marketing para moda`, `shopify moda`, `woocommerce`, `tecnología retail`, `reducción de devoluciones`.\n\n# FORMATO DE SALIDA\nDevuelve ÚNICAMENTE un array JSON válido.\n- `tema`: El título atractivo.\n- `formato`: Uno de los tres tipos.\n- `palabras`: Keywords SEO de alta intención comercial.\n- `categoria`: Slug de la categoría (ej: 'ia', 'marketing', 'ecommerce').\n- `meta_descripcion`: Máximo 110 caracteres.\n- `tags`: Array de 1 a 3 tags.\n\n# EJEMPLO\n{\n  \"tema\": \"5 Razones por las que tu Tienda de Ropa pierde ventas sin un Probador Virtual\",\n  \"palabras\": \"probador virtual roral, aumentar ventas ecommerce moda\",\n  \"categoria\": \"ecommerce\",\n  \"tags\": [\"ecommerce moda\", \"probador virtual\"]\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        4336,
+        4128
+      ],
+      "id": "817c3fe9-1fbd-4ce0-ad67-79da6ebd2013",
+      "name": "AI Agent"
     },
-    "pinData": {
-        "Webhook Trigger": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
             {
-                "headers": {
-                    "host": "n8n.wilkiedevs.com",
-                    "user-agent": "axios/1.13.6",
-                    "content-length": "97",
-                    "accept": "application/json, text/plain, */*",
-                    "accept-encoding": "gzip, compress, deflate, br",
-                    "content-type": "application/json",
-                    "x-forwarded-for": "181.234.173.255",
-                    "x-forwarded-host": "n8n.wilkiedevs.com",
-                    "x-forwarded-port": "443",
-                    "x-forwarded-proto": "https",
-                    "x-forwarded-server": "05d31d08392c",
-                    "x-n8n-secret": "Travis2305**_blog_n8n",
-                    "x-real-ip": "181.234.173.255"
-                },
-                "params": {},
-                "query": {},
-                "body": {
-                    "triggered_by": "admin_manual",
-                    "openrouter_model": "openrouter/free",
-                    "image_provider": "replicate"
-                },
-                "webhookUrl": "https://n8n.wilkiedevs.com/webhook/trigger-blog-generation",
-                "executionMode": "production"
+              "mode": "everyMonth"
             }
-        ],
-        "redactor": [
-            {
-                "id": "gen-1774729786-C3D5RDhFtjio8GA2Sd2o",
-                "object": "chat.completion",
-                "created": 1774729786,
-                "model": "stepfun/step-3.5-flash:free",
-                "provider": "StepFun",
-                "system_fingerprint": null,
-                "choices": [
-                    {
-                        "index": 0,
-                        "logprobs": null,
-                        "finish_reason": "length",
-                        "native_finish_reason": "length",
-                        "message": {
-                            "role": "assistant",
-                            "content": null,
-                            "refusal": null,
-                            "reasoning": "Primero, necesito entender el tema y los requisitos. El artículo debe ser sobre cómo reducir la tasa de devoluciones en un ecommerce de moda usando IA, con un enfoque en persuasión, claridad y conversión. Las palabras clave son \"reducir devoluciones ecommerce\", \"probador virtual IA\", y \"rentabilidad tienda online\". Debo generar un artículo de 1200-1500 palabras, pero como el contenido debe ser HTML en una sola línea, probablemente tendré que escribir el texto dentro de las etiquetas HTML.\n\nLa estructura obligatoria del HTML es:\n\n1. Bloque de intro destacado (probablemente un párrafo introductorio llamativo).\n\n2. Primer h2 con un párrafo.\n\n3. Bloque \"Impacto en tu Negocio\" (esto podría ser un subencabezado o una sección, pero en la estructura dice \"bloque Impacto en tu Negocio\", así que tal vez sea un h2 o un div con ese título).\n\n4. Primer <figure> con la imagen body1 URL: https://minio.wilkiedevs.com/images/products/1774729760257-59840ffbaccc.png\n\n5. Segundo h2 con 2 párrafos.\n\n6. Segundo <figure> con la imagen body2 URL: https://minio.wilkiedevs.com/images/products/1774729774352-66b8e77842fb.png\n\n7. Tercer h2 con cierre (probablemente un párrafo de conclusión).\n\n8. CTA final a https://lookitry.com/register\n\nAdemás, debo usar exactamente dos imágenes dentro del HTML del artículo, que son las body1 y body2. La imagen destacada no debe ir en el content.\n\nEl campo \"content\" debe ser HTML completo en una sola línea, sin saltos de línea. Eso significa que todo el HTML debe estar en una cadena continua.\n\nEl JSON debe tener \"title\", \"content\", y \"excerpt\". No incluir \"featured_media\".\n\nPara el título, debo crear un título SEO atractivo que incluya las palabras clave. Algo como: \"Cómo Reducir las Devoluciones en tu Ecommerce de Moda hasta un 40% con IA: Guía Definitiva\"\n\nPara el excerpt, un resumen enganchador que invite a leer el artículo.\n\nAhora, planificar el contenido del artículo. Dado que debe ser persuasivo y orientado a conversión, debo presentar el problema (devoluciones altas), la solución (probador virtual IA), los beneficios (rentabilidad), y luego un llamado a la acción.\n\nEstructura detallada:\n\n- Bloque de intro destacado: Introducir el problema de las devoluciones en moda online y cómo la IA puede ayudar. Usar un tono urgente y beneficioso.\n\n- Primer h2: Podría ser \"El Problema de las Devoluciones en Moda Online\" con un párrafo explicando el impacto.\n\n- Bloque \"Impacto en tu Negocio\": Esto podría ser un subencabezado o una sección. En la estructura, dice \"bloque Impacto en tu Negocio\", así que tal vez sea un h2 o un div. Pero en la lista, después del primer h2, dice \"bloque Impacto en tu Negocio\", luego el primer figure. Así que probablemente \"Impacto en tu Negocio\" sea un encabezado o un párrafo destacado. Para ser preciso, seguiré la estructura literal: después del primer h2 con párrafo, viene \"bloque Impacto en tu Negocio\". Podría ser un párrafo o un div con ese texto. Pero como es HTML, puedo hacerlo un h2 o un párrafo fuerte. Dado que luego hay \"primer h2\" y \"segundo h2\", tal vez \"bloque Impacto en tu Negocio\" sea una sección sin encabezado, pero para claridad, lo haré un h2 o un párrafo con clase. Sin embargo, la estructura dice \"bloque Impacto en tu Negocio\" como un elemento separado. Para cumplir, pondré un párrafo con ese texto en negrita o algo, pero en HTML simple. Mejor usar un h2 para \"Impacto en tu Negocio\" para que sea claro.\n\nReleer la estructura:\n\n- bloque de intro destacado\n\n- primer h2 con parrafo\n\n- bloque Impacto en tu Negocio\n\n- primer <figure> con la imagen body1\n\n- segundo h2 con 2 parrafos\n\n- segundo <figure> con la imagen body2\n\n- tercer h2 con cierre\n\n- CTA final\n\nEntonces, \"bloque Impacto en tu Negocio\" es distinto de los h2. Podría ser un div o un párrafo. Para mantenerlo simple, haré un párrafo con el texto \"Impacto en tu Negocio\" en negrita o como un subtítulo. Pero en HTML, puedo usar <strong> o <h3>. Sin embargo, la estructura no especifica la etiqueta, solo dice \"bloque\". Para ser seguro, usaré un párrafo con una clase o simplemente texto. Pero como es HTML en una línea, puedo usar <p><strong>Impacto en tu Negocio</strong></p> o algo así.\n\nPara cumplir con la estructura, interpretaré:\n\n1. Bloque de intro destacado: un párrafo introductorio.\n\n2. Primer h2: un encabezado de nivel 2 con un párrafo después.\n\n3. Bloque Impacto en tu Negocio: probablemente un párrafo o sección que discute el impacto. Lo haré un párrafo con un encabezado interno, pero para no confundir con los h2, usaré un <div> o <p> con texto en negrita.\n\n4. Primer figure: con la imagen body1.\n\n5. Segundo h2: otro encabezado h2 con dos párrafos.\n\n6. Segundo figure: con la imagen body2.\n\n7. Tercer h2: encabezado h3 o h2? Dice \"tercer h2\", así que otro h2, pero con cierre. Tal vez sea el encabezado de conclusión.\n\n8. CTA final: un enlace o botón.\n\nAdemás, el contenido total debe ser de 1200-1500 palabras. Eso es mucho texto para una sola línea HTML, pero puedo escribir párrafos extensos.\n\nAhora, escribir el contenido.\n\nPrimero, el título SEO: \"Cómo Reducir las Devoluciones de tu Ecommerce de Moda hasta un 40% con IA: Aumenta tu Rentabilidad\"\n\nExcerpt: \"Descubre cómo el probador virtual con IA puede reducir las devoluciones en tu tienda online de moda, mejorando la rentabilidad y la satisfacción del cliente. ¡Transforma tu negocio hoy!\"\n\nPara el HTML, necesito empaquetar todo en una sola línea. Eso significa que no puede haber saltos de línea en la cadena. Así que escribiré el HTML sin espacios innecesarios, pero para legibilidad en mi pensamiento, lo escribiré con formato y luego lo compactaré.\n\nEstructura del HTML:\n\n- Empezar con un párrafo de intro destacado. Usar <p> con una clase o estilo, pero como no se especifica, usaré HTML simple.\n\n- Luego <h2> para el primer encabezado, seguido de <p>.\n\n- Luego el bloque \"Impacto en tu Negocio\": usaré <h3> o <p><strong>Impacto en tu Negocio</strong></p>. Pero para mantener la jerarquía, después de un h2, un h3 sería apropiado. Sin embargo, la estructura dice \"bloque Impacto en tu Negocio\" sin especificar etiqueta. Para ser consistente, usaré <h2> para todos los encabezados? No, dice \"primer h2\", \"segundo h2\", \"tercer h2\", así que tres h2. Pero \"bloque Impacto en tu Negocio\" no es un h2, es un bloque separado. Entonces, entre el primer h2 y el primer figure, hay \"bloque Impacto en tu Negocio\". Así que después del primer párrafo bajo el primer h2, pongo el bloque Impacto.\n\nPara simplificar, haré:\n\n<p>[intro]</p>\n\n<h2>[primer h2]</h2>\n\n<p>[primer párrafo]</p>\n\n<p><strong>Impacto en tu Negocio</strong></p>  <!-- o <h3> -->\n\n<figure><img src=\"url_body1\" alt=\"Descripción\"></figure>\n\n<h2>[segundo h2]</h2>\n\n<p>[primer párrafo del segundo h2]</p>\n\n<p>[segundo párrafo del segundo h2]</p>\n\n<figure><img src=\"url_body2\" alt=\"Descripción\"></figure>\n\n<h2>[tercer h2]</h2>\n\n<p>[cierre]</p>\n\n<a href=\"https://lookitry.com/register\">CTA</a>\n\nPero el CTA final debe ser parte del contenido, así que lo incluiré al final.\n\nAhora, para el texto, necesito escribir persuasivamente. Enfocarme en los beneficios de la IA, específicamente el probador virtual, para reducir devoluciones.\n\nPalabras clave: reducir devoluciones ecommerce, probador virtual IA, rentabilidad tienda online. Integrarlas naturalmente.\n\nContenido aproximado:\n\n- Intro: Estadísticas de devoluciones en moda online, problema costoso, solución con IA.\n\n- Primer h2: \"¿Por qué las devoluciones son un dolor de cabeza para tu ecommerce de moda?\" con párrafo explicando costos, impacto ambiental, etc.\n\n- Bloque Impacto en tu Negocio: detallar cómo afecta la rentabilidad, inventario, etc.\n\n- Primer figure: imagen body1, con un pie de foto descriptivo.\n\n- Segundo h2: \"La Revolución del Probador Virtual con IA\" con dos párrafos: cómo funciona y beneficios.\n\n- Segundo figure: imagen body2, con pie de foto.\n\n- Tercer h2: \"Cómo Implementar esta Tecnología y Ver Resultados\" con cierre, hablando de Lookitry o la solución.\n\n- CTA: \"Regístrate ahora para reducir tus devoluciones\" enlazando a lookitry.com/register.\n\nPero el tema es \"¿Cómo reducir la tasa de devoluciones de tu ecommerce de moda hasta un 40% con IA?\" así que el artículo debe responder eso.\n\nPara el tercer h2, podría ser \"Pasos para Reducir Devoluciones con IA\" o \"El Futuro de la Moda Online sin Devoluciones\".\n\nAsegurarme de que el CTA sea claro.\n\nAhora, escribir el texto completo.\n\nPrimero, el título: \"Cómo Reducir las Devoluciones de tu Ecommerce de Moda hasta un 40% con IA: Guía para Aumentar la Rentabilidad\"\n\nExcerpt: \"Aprende a utilizar el probador virtual con IA para disminuir las devoluciones en tu tienda online de moda, optimizando costos y mejorando la experiencia del cliente. ¡Descubre el método probado!\"\n\nPara el HTML, en una sola línea. Escribiré el HTML con todos los elementos.\n\nDefinir las imágenes:\n\n- body1: https://minio.wilkiedevs.com/images/products/1774729760257-59840ffbaccc.png\n\n- body2: https://minio.wilkiedevs.com/images/products/1774729774352-66b8e77842fb.png\n\nPara los alt de las imágenes, usar descripciones relevantes, como \"Probador virtual en acción\" o \"Interfaz del probador virtual IA\".\n\nAhora, el contenido en HTML.\n\nEmpezar:\n\n<p>¿Sabías que hasta el 40% de las compras de moda online son devueltas? Este problema no solo erosiona tus márgenes de ganancia, sino que también afecta la sostenibilidad y la confianza del cliente. Pero hay esperanza: la Inteligencia Artificial está revolucionando la forma en que los compradores interactúan con la ropa en línea, y con ella, puedes reducir drásticamente las devoluciones. En este artículo, te mostramos cómo un probador virtual con IA puede transformar tu ecommerce de moda, mejorando la rentabilidad y la satisfacción del cliente.</p>\n\n<h2>El Costo Oculto de las Devoluciones en Moda Online</h2>\n\n<p>Las devoluciones son más que un simple inconveniente logístico. Cada devolución genera costos de envío, manipulación, reembolso y, a menudo, la imposibilidad de revender el producto como nuevo. En el sector de la moda, donde las tallas y el ajuste son críticos, las devoluciones pueden alcanzar tasas alarmantes. Esto no solo reduce tu rentabilidad tienda online, sino que también satura tu inventario y aumenta la huella de carbono. Para los ecommerce de moda, abordar este problema es esencial para la supervivencia a largo plazo.</p>\n\n<p><strong>Impacto en tu Negocio</strong></p>  <!-- Esto es el bloque Impacto en tu Negocio -->\n\n<figure><img src=\"https://minio.wilkiedevs.com/images/products/1774729760257-59840ffbaccc.png\" alt=\"Gráfico mostrando el impacto financiero de las devoluciones en ecommerce de moda\"></figure>\n\n<h2>Cómo el Probador Virtual con IA Cambia las Reglas del Juego</h2>\n\n<p>Un probador virtual con IA utiliza algoritmos avanzados y datos de tallas para predecir cómo una prenda se ajustará a un cliente específico. Al analizar medidas corporales, historial de compras y preferencias, el sistema recomienda la talla ideal y muestra una simulación realista del producto en el usuario. Esto elimina las conjeturas, reduce la incertidumbre y aumenta la confianza en la compra.</p>\n\n<p>Los beneficios son tangibles: estudios muestran que los probadores virtuales pueden reducir las devoluciones hasta en un 40%, ya que los clientes reciben productos que realmente les quedan. Además, mejoran la experiencia de compra, aumentan la conversión y fidelizan a los clientes. Para tu ecommerce, esto se traduce en mayor rentabilidad tienda online y una operación más eficiente.</p>\n\n<figure><img src=\"https://minio.wilkiedevs.com/images/products/1774729774352-66b8e77842fb.png\" alt=\"Interfaz de usuario del probador virtual IA en un dispositivo móvil\"></figure>\n\n<h2>Implementa la IA y Observa la Transformación</h2>\n\n<p>Integrar un probador virtual en tu tienda online es más sencillo de lo que crees. Plataformas como Lookitry ofrecen soluciones listas para usar que se adaptan a tu catálogo y se integran con tu sitio web en minutos. No se requiere experiencia técnica avanzada. Al adoptar esta tecnología, no solo reduces devoluciones, sino que también posicionas tu marca como innovadora y centrada en el cliente.</p>\n\n<p>No esperes más: la IA es la clave para optimizar tu ecommerce de moda. Con un probador virtual, puedes reducir devoluciones ecommerce, aumentar la satisfacción y impulsar la rentabilidad. Da el primer paso hoy y descubre cómo un simple cambio tecnológico puede revolucionar tus resultados.</p>\n\n<a href=\"https://lookitry.com/register\">¡Regí",
-                            "reasoning_details": [
-                                {
-                                    "type": "reasoning.text",
-                                    "text": "Primero, necesito entender el tema y los requisitos. El artículo debe ser sobre cómo reducir la tasa de devoluciones en un ecommerce de moda usando IA, con un enfoque en persuasión, claridad y conversión. Las palabras clave son \"reducir devoluciones ecommerce\", \"probador virtual IA\", y \"rentabilidad tienda online\". Debo generar un artículo de 1200-1500 palabras, pero como el contenido debe ser HTML en una sola línea, probablemente tendré que escribir el texto dentro de las etiquetas HTML.\n\nLa estructura obligatoria del HTML es:\n\n1. Bloque de intro destacado (probablemente un párrafo introductorio llamativo).\n\n2. Primer h2 con un párrafo.\n\n3. Bloque \"Impacto en tu Negocio\" (esto podría ser un subencabezado o una sección, pero en la estructura dice \"bloque Impacto en tu Negocio\", así que tal vez sea un h2 o un div con ese título).\n\n4. Primer <figure> con la imagen body1 URL: https://minio.wilkiedevs.com/images/products/1774729760257-59840ffbaccc.png\n\n5. Segundo h2 con 2 párrafos.\n\n6. Segundo <figure> con la imagen body2 URL: https://minio.wilkiedevs.com/images/products/1774729774352-66b8e77842fb.png\n\n7. Tercer h2 con cierre (probablemente un párrafo de conclusión).\n\n8. CTA final a https://lookitry.com/register\n\nAdemás, debo usar exactamente dos imágenes dentro del HTML del artículo, que son las body1 y body2. La imagen destacada no debe ir en el content.\n\nEl campo \"content\" debe ser HTML completo en una sola línea, sin saltos de línea. Eso significa que todo el HTML debe estar en una cadena continua.\n\nEl JSON debe tener \"title\", \"content\", y \"excerpt\". No incluir \"featured_media\".\n\nPara el título, debo crear un título SEO atractivo que incluya las palabras clave. Algo como: \"Cómo Reducir las Devoluciones en tu Ecommerce de Moda hasta un 40% con IA: Guía Definitiva\"\n\nPara el excerpt, un resumen enganchador que invite a leer el artículo.\n\nAhora, planificar el contenido del artículo. Dado que debe ser persuasivo y orientado a conversión, debo presentar el problema (devoluciones altas), la solución (probador virtual IA), los beneficios (rentabilidad), y luego un llamado a la acción.\n\nEstructura detallada:\n\n- Bloque de intro destacado: Introducir el problema de las devoluciones en moda online y cómo la IA puede ayudar. Usar un tono urgente y beneficioso.\n\n- Primer h2: Podría ser \"El Problema de las Devoluciones en Moda Online\" con un párrafo explicando el impacto.\n\n- Bloque \"Impacto en tu Negocio\": Esto podría ser un subencabezado o una sección. En la estructura, dice \"bloque Impacto en tu Negocio\", así que tal vez sea un h2 o un div. Pero en la lista, después del primer h2, dice \"bloque Impacto en tu Negocio\", luego el primer figure. Así que probablemente \"Impacto en tu Negocio\" sea un encabezado o un párrafo destacado. Para ser preciso, seguiré la estructura literal: después del primer h2 con párrafo, viene \"bloque Impacto en tu Negocio\". Podría ser un párrafo o un div con ese texto. Pero como es HTML, puedo hacerlo un h2 o un párrafo fuerte. Dado que luego hay \"primer h2\" y \"segundo h2\", tal vez \"bloque Impacto en tu Negocio\" sea una sección sin encabezado, pero para claridad, lo haré un h2 o un párrafo con clase. Sin embargo, la estructura dice \"bloque Impacto en tu Negocio\" como un elemento separado. Para cumplir, pondré un párrafo con ese texto en negrita o algo, pero en HTML simple. Mejor usar un h2 para \"Impacto en tu Negocio\" para que sea claro.\n\nReleer la estructura:\n\n- bloque de intro destacado\n\n- primer h2 con parrafo\n\n- bloque Impacto en tu Negocio\n\n- primer <figure> con la imagen body1\n\n- segundo h2 con 2 parrafos\n\n- segundo <figure> con la imagen body2\n\n- tercer h2 con cierre\n\n- CTA final\n\nEntonces, \"bloque Impacto en tu Negocio\" es distinto de los h2. Podría ser un div o un párrafo. Para mantenerlo simple, haré un párrafo con el texto \"Impacto en tu Negocio\" en negrita o como un subtítulo. Pero en HTML, puedo usar <strong> o <h3>. Sin embargo, la estructura no especifica la etiqueta, solo dice \"bloque\". Para ser seguro, usaré un párrafo con una clase o simplemente texto. Pero como es HTML en una línea, puedo usar <p><strong>Impacto en tu Negocio</strong></p> o algo así.\n\nPara cumplir con la estructura, interpretaré:\n\n1. Bloque de intro destacado: un párrafo introductorio.\n\n2. Primer h2: un encabezado de nivel 2 con un párrafo después.\n\n3. Bloque Impacto en tu Negocio: probablemente un párrafo o sección que discute el impacto. Lo haré un párrafo con un encabezado interno, pero para no confundir con los h2, usaré un <div> o <p> con texto en negrita.\n\n4. Primer figure: con la imagen body1.\n\n5. Segundo h2: otro encabezado h2 con dos párrafos.\n\n6. Segundo figure: con la imagen body2.\n\n7. Tercer h2: encabezado h3 o h2? Dice \"tercer h2\", así que otro h2, pero con cierre. Tal vez sea el encabezado de conclusión.\n\n8. CTA final: un enlace o botón.\n\nAdemás, el contenido total debe ser de 1200-1500 palabras. Eso es mucho texto para una sola línea HTML, pero puedo escribir párrafos extensos.\n\nAhora, escribir el contenido.\n\nPrimero, el título SEO: \"Cómo Reducir las Devoluciones de tu Ecommerce de Moda hasta un 40% con IA: Aumenta tu Rentabilidad\"\n\nExcerpt: \"Descubre cómo el probador virtual con IA puede reducir las devoluciones en tu tienda online de moda, mejorando la rentabilidad y la satisfacción del cliente. ¡Transforma tu negocio hoy!\"\n\nPara el HTML, necesito empaquetar todo en una sola línea. Eso significa que no puede haber saltos de línea en la cadena. Así que escribiré el HTML sin espacios innecesarios, pero para legibilidad en mi pensamiento, lo escribiré con formato y luego lo compactaré.\n\nEstructura del HTML:\n\n- Empezar con un párrafo de intro destacado. Usar <p> con una clase o estilo, pero como no se especifica, usaré HTML simple.\n\n- Luego <h2> para el primer encabezado, seguido de <p>.\n\n- Luego el bloque \"Impacto en tu Negocio\": usaré <h3> o <p><strong>Impacto en tu Negocio</strong></p>. Pero para mantener la jerarquía, después de un h2, un h3 sería apropiado. Sin embargo, la estructura dice \"bloque Impacto en tu Negocio\" sin especificar etiqueta. Para ser consistente, usaré <h2> para todos los encabezados? No, dice \"primer h2\", \"segundo h2\", \"tercer h2\", así que tres h2. Pero \"bloque Impacto en tu Negocio\" no es un h2, es un bloque separado. Entonces, entre el primer h2 y el primer figure, hay \"bloque Impacto en tu Negocio\". Así que después del primer párrafo bajo el primer h2, pongo el bloque Impacto.\n\nPara simplificar, haré:\n\n<p>[intro]</p>\n\n<h2>[primer h2]</h2>\n\n<p>[primer párrafo]</p>\n\n<p><strong>Impacto en tu Negocio</strong></p>  <!-- o <h3> -->\n\n<figure><img src=\"url_body1\" alt=\"Descripción\"></figure>\n\n<h2>[segundo h2]</h2>\n\n<p>[primer párrafo del segundo h2]</p>\n\n<p>[segundo párrafo del segundo h2]</p>\n\n<figure><img src=\"url_body2\" alt=\"Descripción\"></figure>\n\n<h2>[tercer h2]</h2>\n\n<p>[cierre]</p>\n\n<a href=\"https://lookitry.com/register\">CTA</a>\n\nPero el CTA final debe ser parte del contenido, así que lo incluiré al final.\n\nAhora, para el texto, necesito escribir persuasivamente. Enfocarme en los beneficios de la IA, específicamente el probador virtual, para reducir devoluciones.\n\nPalabras clave: reducir devoluciones ecommerce, probador virtual IA, rentabilidad tienda online. Integrarlas naturalmente.\n\nContenido aproximado:\n\n- Intro: Estadísticas de devoluciones en moda online, problema costoso, solución con IA.\n\n- Primer h2: \"¿Por qué las devoluciones son un dolor de cabeza para tu ecommerce de moda?\" con párrafo explicando costos, impacto ambiental, etc.\n\n- Bloque Impacto en tu Negocio: detallar cómo afecta la rentabilidad, inventario, etc.\n\n- Primer figure: imagen body1, con un pie de foto descriptivo.\n\n- Segundo h2: \"La Revolución del Probador Virtual con IA\" con dos párrafos: cómo funciona y beneficios.\n\n- Segundo figure: imagen body2, con pie de foto.\n\n- Tercer h2: \"Cómo Implementar esta Tecnología y Ver Resultados\" con cierre, hablando de Lookitry o la solución.\n\n- CTA: \"Regístrate ahora para reducir tus devoluciones\" enlazando a lookitry.com/register.\n\nPero el tema es \"¿Cómo reducir la tasa de devoluciones de tu ecommerce de moda hasta un 40% con IA?\" así que el artículo debe responder eso.\n\nPara el tercer h2, podría ser \"Pasos para Reducir Devoluciones con IA\" o \"El Futuro de la Moda Online sin Devoluciones\".\n\nAsegurarme de que el CTA sea claro.\n\nAhora, escribir el texto completo.\n\nPrimero, el título: \"Cómo Reducir las Devoluciones de tu Ecommerce de Moda hasta un 40% con IA: Guía para Aumentar la Rentabilidad\"\n\nExcerpt: \"Aprende a utilizar el probador virtual con IA para disminuir las devoluciones en tu tienda online de moda, optimizando costos y mejorando la experiencia del cliente. ¡Descubre el método probado!\"\n\nPara el HTML, en una sola línea. Escribiré el HTML con todos los elementos.\n\nDefinir las imágenes:\n\n- body1: https://minio.wilkiedevs.com/images/products/1774729760257-59840ffbaccc.png\n\n- body2: https://minio.wilkiedevs.com/images/products/1774729774352-66b8e77842fb.png\n\nPara los alt de las imágenes, usar descripciones relevantes, como \"Probador virtual en acción\" o \"Interfaz del probador virtual IA\".\n\nAhora, el contenido en HTML.\n\nEmpezar:\n\n<p>¿Sabías que hasta el 40% de las compras de moda online son devueltas? Este problema no solo erosiona tus márgenes de ganancia, sino que también afecta la sostenibilidad y la confianza del cliente. Pero hay esperanza: la Inteligencia Artificial está revolucionando la forma en que los compradores interactúan con la ropa en línea, y con ella, puedes reducir drásticamente las devoluciones. En este artículo, te mostramos cómo un probador virtual con IA puede transformar tu ecommerce de moda, mejorando la rentabilidad y la satisfacción del cliente.</p>\n\n<h2>El Costo Oculto de las Devoluciones en Moda Online</h2>\n\n<p>Las devoluciones son más que un simple inconveniente logístico. Cada devolución genera costos de envío, manipulación, reembolso y, a menudo, la imposibilidad de revender el producto como nuevo. En el sector de la moda, donde las tallas y el ajuste son críticos, las devoluciones pueden alcanzar tasas alarmantes. Esto no solo reduce tu rentabilidad tienda online, sino que también satura tu inventario y aumenta la huella de carbono. Para los ecommerce de moda, abordar este problema es esencial para la supervivencia a largo plazo.</p>\n\n<p><strong>Impacto en tu Negocio</strong></p>  <!-- Esto es el bloque Impacto en tu Negocio -->\n\n<figure><img src=\"https://minio.wilkiedevs.com/images/products/1774729760257-59840ffbaccc.png\" alt=\"Gráfico mostrando el impacto financiero de las devoluciones en ecommerce de moda\"></figure>\n\n<h2>Cómo el Probador Virtual con IA Cambia las Reglas del Juego</h2>\n\n<p>Un probador virtual con IA utiliza algoritmos avanzados y datos de tallas para predecir cómo una prenda se ajustará a un cliente específico. Al analizar medidas corporales, historial de compras y preferencias, el sistema recomienda la talla ideal y muestra una simulación realista del producto en el usuario. Esto elimina las conjeturas, reduce la incertidumbre y aumenta la confianza en la compra.</p>\n\n<p>Los beneficios son tangibles: estudios muestran que los probadores virtuales pueden reducir las devoluciones hasta en un 40%, ya que los clientes reciben productos que realmente les quedan. Además, mejoran la experiencia de compra, aumentan la conversión y fidelizan a los clientes. Para tu ecommerce, esto se traduce en mayor rentabilidad tienda online y una operación más eficiente.</p>\n\n<figure><img src=\"https://minio.wilkiedevs.com/images/products/1774729774352-66b8e77842fb.png\" alt=\"Interfaz de usuario del probador virtual IA en un dispositivo móvil\"></figure>\n\n<h2>Implementa la IA y Observa la Transformación</h2>\n\n<p>Integrar un probador virtual en tu tienda online es más sencillo de lo que crees. Plataformas como Lookitry ofrecen soluciones listas para usar que se adaptan a tu catálogo y se integran con tu sitio web en minutos. No se requiere experiencia técnica avanzada. Al adoptar esta tecnología, no solo reduces devoluciones, sino que también posicionas tu marca como innovadora y centrada en el cliente.</p>\n\n<p>No esperes más: la IA es la clave para optimizar tu ecommerce de moda. Con un probador virtual, puedes reducir devoluciones ecommerce, aumentar la satisfacción y impulsar la rentabilidad. Da el primer paso hoy y descubre cómo un simple cambio tecnológico puede revolucionar tus resultados.</p>\n\n<a href=\"https://lookitry.com/register\">¡Regí",
-                                    "format": "unknown",
-                                    "index": 0
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "usage": {
-                    "prompt_tokens": 578,
-                    "completion_tokens": 3500,
-                    "total_tokens": 4078,
-                    "cost": 0,
-                    "is_byok": false,
-                    "prompt_tokens_details": {
-                        "cached_tokens": 0,
-                        "cache_write_tokens": 0,
-                        "audio_tokens": 0,
-                        "video_tokens": 0
-                    },
-                    "cost_details": {
-                        "upstream_inference_cost": 0,
-                        "upstream_inference_prompt_cost": 0,
-                        "upstream_inference_completions_cost": 0
-                    },
-                    "completion_tokens_details": {
-                        "reasoning_tokens": 3393,
-                        "image_tokens": 0,
-                        "audio_tokens": 0
-                    }
-                }
-            }
-        ]
+          ]
+        }
+      },
+      "id": "a310e517-c170-436f-a0e9-f8f04cd2794a",
+      "name": "Schedule Trigger1",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        4144,
+        4128
+      ]
     },
-    "meta": {
-        "templateCredsSetupCompleted": true,
-        "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5519e0d30f"
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        4272,
+        4368
+      ],
+      "id": "e933c9ac-fb11-49ef-a8b7-bb3c9822f7e4",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "t38zPMWleOvlSpPc",
+          "name": "Que movida cu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "7JcERYGdRj0XYuYL",
+          "mode": "list",
+          "cachedResultName": "temas",
+          "cachedResultUrl": "/projects/ZwHHlnZoKhyDqulQ/datatables/7JcERYGdRj0XYuYL"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "tema": "={{ $json.tema }}",
+            "palabras": "={{ $json.palabras }}",
+            "categoria": "={{ $json.categoria }}",
+            "Meta_descripcion": "={{ $json.Meta_descripcion }}",
+            "Tags": "={{ $json.Tags }}",
+            "Estado": "Pendiente"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tema",
+              "displayName": "tema",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "palabras",
+              "displayName": "palabras",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "categoria",
+              "displayName": "categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Meta_descripcion",
+              "displayName": "Meta_descripcion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Tags",
+              "displayName": "Tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        5024,
+        4128
+      ],
+      "id": "6fcebdaf-844e-4525-ab4c-0e00273fe39c",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\nfor (const inputItem of $input.all()) {\n  let ideas = inputItem.json.output || inputItem.json.content;\n  if (typeof ideas === 'string') {\n    ideas = ideas.replace(/```json\\s*/gi, '').replace(/```\\s*/g, '').trim();\n    ideas = JSON.parse(ideas);\n  }\n  for (const idea of ideas) {\n    results.push({ json: { tema: idea.tema || '', palabras: idea.palabras || '', categoria: idea.categoria || '', Meta_descripcion: idea.meta_descripcion || idea.Meta_descripcion || '', tags: idea.tags || idea.Tags || [] } });\n  }\n}\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4640,
+        4128
+      ],
+      "id": "af08b839-8ac5-4b6d-92a8-d1ad889c0b0c",
+      "name": "formatear"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => ({ json: { ...item.json, Estado: \"Pendiente\", Tags: Array.isArray(item.json.tags) ? item.json.tags.join(', ') : (item.json.tags || '') } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4848,
+        4128
+      ],
+      "id": "39a1c9c4-b253-42ed-a50e-859bfa7074ed",
+      "name": "traducir tags"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "trigger-blog-generation",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "id": "30d43319-8be4-4c03-a0af-05847947cabb",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        3232,
+        3920
+      ],
+      "webhookId": "1270505d-fcc9-49ed-9360-018f97d71fbc",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "lU8GncdQbT8nLleA",
+          "name": "pruebalo.wilkiedevs"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {}
+          ]
+        }
+      },
+      "id": "89348110-27ce-45f0-9e20-ec87cea96659",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        3760,
+        4192
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "title",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.content }}"
+            },
+            {
+              "name": "excerpt",
+              "value": "={{ $json.excerpt }}"
+            },
+            {
+              "name": "categories",
+              "value": "14"
+            },
+            {
+              "name": "Author",
+              "value": "1"
+            },
+            {
+              "name": "Tags",
+              "value": "={{ $json.Tags }}"
+            }
+          ],
+          "number": [
+            {
+              "name": "featured_media",
+              "value": "={{ $json.featured_media }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b6472a1f-0c22-4f3d-9594-30f09ff667f3",
+      "name": "Prepare Post",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        7504,
+        3888
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "7JcERYGdRj0XYuYL",
+          "mode": "list",
+          "cachedResultName": "temas",
+          "cachedResultUrl": "/projects/ZwHHlnZoKhyDqulQ/datatables/7JcERYGdRj0XYuYL"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado": "publicado"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tema",
+              "displayName": "tema",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "palabras",
+              "displayName": "palabras",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "categoria",
+              "displayName": "categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Meta_descripcion",
+              "displayName": "Meta_descripcion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Tags",
+              "displayName": "Tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        8096,
+        3888
+      ],
+      "id": "6d32cf8b-2fcc-4754-9504-afd0c96cc8e2",
+      "name": "Actualizar tablas"
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $input.item.json;\n\n// 1. Extraer el texto crudo de la respuesta de OpenRouter\nlet rawText = '';\nif (typeof source?.choices?.[0]?.message?.content === 'string') {\n  rawText = source.choices[0].message.content;\n} else if (Array.isArray(source?.choices?.[0]?.message?.content)) {\n  rawText = source.choices[0].message.content\n    .map((part) => (typeof part === 'string' ? part : part?.text || ''))\n    .join('');\n} else if (source?.content?.parts?.[0]?.text) {\n  rawText = source.content.parts[0].text;\n} else if (typeof source === 'string') {\n  rawText = source;\n} else {\n  rawText = JSON.stringify(source);\n}\n\n// 2. Limpiar markdown fences\nrawText = rawText\n  .replace(/```json\\s*/gi, '')\n  .replace(/```\\s*/g, '')\n  .trim();\n\n// 3. Intentar parsear el JSON directamente primero\nlet parsed = null;\ntry {\n  parsed = JSON.parse(rawText);\n} catch (_) {}\n\n// 4. Si falla, buscar el primer objeto JSON válido dentro del texto\nif (!parsed) {\n  function extractFirstJsonObject(text) {\n    const start = text.indexOf('{');\n    if (start === -1) return null;\n    let depth = 0, inString = false, escape = false;\n    for (let i = start; i < text.length; i++) {\n      const ch = text[i];\n      if (escape) { escape = false; continue; }\n      if (ch === '\\\\') { escape = true; continue; }\n      if (ch === '\"') { inString = !inString; continue; }\n      if (inString) continue;\n      if (ch === '{') depth++;\n      if (ch === '}') depth--;\n      if (depth === 0) return text.slice(start, i + 1);\n    }\n    return null;\n  }\n\n  const jsonString = extractFirstJsonObject(rawText);\n  if (!jsonString) {\n    throw new Error('No se encontró JSON válido. Respuesta: ' + rawText.substring(0, 700));\n  }\n  try {\n    parsed = JSON.parse(jsonString);\n  } catch (e) {\n    throw new Error('Parse fallido: ' + e.message + '. Texto: ' + rawText.substring(0, 700));\n  }\n}\n\n// 5. Validar que los campos críticos están presentes\nconst missing = ['title', 'excerpt', 'content'].filter(f => !parsed[f]);\nif (missing.length > 0) {\n  throw new Error(\n    `El modelo no devolvió los campos: ${missing.join(', ')}. ` +\n    `Respuesta parseada: ${JSON.stringify(parsed).substring(0, 500)}`\n  );\n}\n\nreturn [{ json: parsed }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7120,
+        3888
+      ],
+      "id": "0ba3802e-be87-4e15-9ff7-69d38fc9f126",
+      "name": "traductor"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b7309d54-d275-4146-9bee-f82c9298f9f5",
+              "name": "Enlaces_Blogs",
+              "value": "={{ $json.enlacesBlogs }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        6592,
+        3888
+      ],
+      "id": "8ba811ee-f56d-41af-b78a-daad9276a24e",
+      "name": "Preparar contexto editorial"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "HTTP-Referer",
+              "value": "https://lookitry.com"
+            },
+            {
+              "name": "X-Title",
+              "value": "Lookitry Blog Automation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({\n  model: $json.openrouter_model || 'google/gemini-2.5-flash',\n  messages: [\n    {\n      role: 'user',\n      content: [\n        'Eres Lookitry Editorial. Escribe un articulo SEO people-first para ecommerce de moda.',\n        '',\n        '# DATOS DE ENTRADA',\n        '- Tema: ' + ($json.tema || ''),\n        '- Categoria: ' + ($json.categoria || 'ia'),\n        '- Keywords: ' + ($json.palabras || ''),\n        '- Meta descripcion: ' + ($json.meta_descripcion || $json.meta_description || ''),\n        '- Imagen destacada URL: ' + ($json.imagen_destacada_url || ''),\n        '- Imagen body1 URL: ' + ($json.imagen_body1_url || ''),\n        '- Imagen body2 URL: ' + ($json.imagen_body2_url || ''),\n        '',\n        '# OBJETIVO',\n        'Genera un articulo de 1200-1500 palabras, persuasivo, claro y orientado a conversion.',\n        'La estructura debe sentirse como un editorial premium de Lookitry, no como un post generico.',\n        '',\n        '# REGLAS CRITICAS',\n        '1. Devuelve SOLO un objeto JSON valido.',\n        '2. No uses markdown ni code fences.',\n        '3. No incluyas texto fuera del JSON.',\n        '4. NO incluyas el campo featured_media.',\n        '5. El campo content debe ser HTML completo en una sola linea.',\n        '6. Debes usar EXACTAMENTE dos imagenes dentro del HTML del articulo:',\n        '   - una figura usando ' + ($json.imagen_body1_url || ''),\n        '   - una segunda figura usando ' + ($json.imagen_body2_url || ''),\n        '7. La imagen destacada ' + ($json.imagen_destacada_url || '') + ' NO debe ir dentro del content; se usa como miniatura o hero externo.',\n        '8. No inventes categorias ni tags: el tema, categoria y keywords deben estar alineados entre si.',\n        '',\n        '# ESTRUCTURA HTML OBLIGATORIA',\n        '- <div data-blog-intro=\"lead\"> con un parrafo de apertura fuerte',\n        '- primer <h2> con un parrafo',\n        '- <section data-blog-block=\"impact\"> con subtitulo y lista o puntos concretos de impacto de negocio',\n        '- primer <figure> con la imagen body1 y <figcaption>',\n        '- segundo <h2> con 2 parrafos',\n        '- segundo <figure> con la imagen body2 y <figcaption>',\n        '- tercer <h2> con cierre',\n        '- <div data-blog-cta=\"final\"> con CTA final a https://lookitry.com/trial-checkout',\n        '',\n        '# ENFOQUE EDITORIAL',\n        '- La apertura debe parecerse a una pieza premium: directa, clara y con tension de negocio.',\n        '- El bloque de impacto debe verse consultivo y accionable.',\n        '- Las imagenes deben quedar integradas en momentos logicos del articulo.',\n        '- El CTA final debe cerrar la historia y empujar conversion.',\n        '',\n        '# FORMATO DE SALIDA',\n        '{',\n        '  \"title\": \"[Titulo SEO]\",',\n        '  \"content\": \"[HTML completo en una linea con la estructura pedida y las dos figuras indicadas]\",',\n        '  \"excerpt\": \"[Resumen enganchador]\"',\n        '}'\n      ].join('\\n')\n    }\n  ],\n  temperature: 0.2,\n  max_tokens: 3500,\n}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6848,
+        3888
+      ],
+      "id": "4a991315-855e-45ee-ab46-d7d8b077fc82",
+      "name": "redactor",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "zfUV46xyt3CLaLh8",
+          "name": "OpenRouter"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst rawTags = data.tags || data.Tags || [];\nconst tagsArray = Array.isArray(rawTags)\n  ? rawTags.map(t => String(t || '').trim()).filter(Boolean)\n  : String(rawTags || '').split(',').map(t => t.trim()).filter(Boolean);\nconst categorySlug = String(data.categoria || data.category_slug || 'ia')\n  .toLowerCase()\n  .normalize('NFD')\n  .replace(/[\\u0300-\\u036f]/g, '')\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-+|-+$/g, '') || 'ia';\nconst wpBody = { title: data.title, excerpt: data.excerpt, content: data.content, status: 'published', category_slug: categorySlug, tags: tagsArray, featured_image: data.imagen_destacada_url, meta_description: data.meta_description || data.meta_descripcion || data.excerpt.substring(0, 160) };\nreturn { json: { wpBody, ...data, tags: tagsArray, category_slug: categorySlug } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7696,
+        3888
+      ],
+      "id": "9326afee-958b-49da-a8c9-663429326f48",
+      "name": "Preparar JSON para Lookitry"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/blog/webhook",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-blog-secret",
+              "value": "Travis2305**_blog_live"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.wpBody) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        7904,
+        3888
+      ],
+      "id": "4e75b505-7e6c-4cc0-b957-e15eed7e8adb",
+      "name": "Publicar en Lookitry"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.all()[0];\nlet content = item.json;\n\nif (typeof content === 'string') {\n  try {\n    content = JSON.parse(content);\n  } catch (e) {\n    throw new Error(`Parse error: ${e.message}`);\n  }\n}\n\nlet editorialContext = {};\ntry {\n  editorialContext = $('Preparar contexto editorial').first().json || {};\n} catch (e) {}\n\nif (!content.Tags) {\n  for (const i of $input.all()) {\n    if (i.json.Tags) {\n      content.Tags = i.json.Tags;\n      break;\n    }\n  }\n\n  if (!content.Tags && editorialContext.Tags) {\n    content.Tags = editorialContext.Tags;\n  }\n}\n\ncontent.categoria = content.categoria || editorialContext.categoria || 'ia';\ncontent.imagen_destacada_url = content.imagen_destacada_url || editorialContext.imagen_destacada_url || editorialContext.featured_image || '';\ncontent.imagen_body1_url = content.imagen_body1_url || editorialContext.imagen_body1_url || '';\ncontent.imagen_body2_url = content.imagen_body2_url || editorialContext.imagen_body2_url || '';\n\nconst missing = ['title', 'excerpt', 'content'].filter((f) => !content[f]);\nif (missing.length > 0) {\n  throw new Error(`Campos faltantes: ${missing.join(', ')}`);\n}\n\nif (!content.featured_media) content.featured_media = 1;\n\nif (!content.meta_description?.trim()) {\n  content.meta_description = editorialContext.meta_descripcion || content.excerpt.substring(0, 160);\n}\n\nif (content.excerpt?.length > 160) {\n  content.excerpt = content.excerpt.substring(0, 157) + '...';\n}\n\nif (content.meta_description?.length > 160) {\n  content.meta_description = content.meta_description.substring(0, 157) + '...';\n}\n\nreturn { json: content };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7312,
+        3888
+      ],
+      "id": "038da26f-b2da-4372-b805-3ec2bd391cf7",
+      "name": "Preparador"
+    },
+    {
+      "parameters": {
+        "url": "https://lookitry.com/api/blog",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6016,
+        3584
+      ],
+      "id": "aa1ec3d2-cfc3-4dc9-89c0-2e6d54bbf3fd",
+      "name": "conseguir Blogs"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawItems = $input.all();\nconst source = rawItems.length === 1 && Array.isArray(rawItems[0].json?.data) ? rawItems[0].json.data : rawItems.map(i => i.json);\nconst enlacesBlogs = source.map(post => ({ titulo: post.title, url: `https://lookitry.com/blog/${post.slug}` }));\nreturn [{ json: { enlacesBlogs } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6176,
+        3584
+      ],
+      "id": "185fdf67-6cf9-4fc6-afcf-db37c5ffdc26",
+      "name": "conseguir link blogs"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        6176,
+        3872
+      ],
+      "id": "fa1463db-cfd2-46fa-b454-6f3ff7911218",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allItems = $input.all();\nconst datosFinales = {};\nconst t = allItems.find(i => i.json.tema && i.json.palabras);\nif (t) Object.keys(t.json).forEach(k => { datosFinales[k] = t.json[k]; });\nconst img = allItems.find(i => i.json.imagen_destacada);\nif (img) {\n  ['imagen_destacada','imagen_body1','imagen_body2'].forEach(k => {\n    datosFinales[k] = img.json[k];\n    datosFinales[`${k}_url`] = img.json[k]?.url;\n    datosFinales[`${k}_id`] = img.json[k]?.id;\n  });\n}\nconst e = allItems.find(i => Array.isArray(i.json.enlacesBlogs));\nif (e) datosFinales.enlacesBlogs = e.json.enlacesBlogs;\nif (datosFinales.Tags) {\n  if (typeof datosFinales.Tags === 'string') datosFinales.Tags = datosFinales.Tags.split(',').map(t => t.trim()).filter(Boolean);\n  else if (Array.isArray(datosFinales.Tags)) datosFinales.Tags = datosFinales.Tags.filter(Boolean);\n}\nreturn [{ json: datosFinales }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6384,
+        3888
+      ],
+      "id": "a7d54eaf-d2ef-4528-89c8-19dcb1a08f75",
+      "name": "Obtener Info"
+    },
+    {
+      "parameters": {
+        "jsCode": "const imgs = $input.first().json;\nconst orig = $('Obtener Temas').first().json;\nreturn { json: { tema: orig.tema, palabras: orig.palabras, categoria: orig.categoria || 'ia', meta_descripcion: orig.Meta_descripcion || orig.meta_descripcion || '', Tags: orig.Tags || orig.tags || [], imagen_destacada_url: imgs.imagen_destacada.url, imagen_destacada_id: imgs.imagen_destacada.id, imagen_body1_url: imgs.imagen_body1.url, imagen_body1_id: imgs.imagen_body1.id, imagen_body2_url: imgs.imagen_body2.url, imagen_body2_id: imgs.imagen_body2.id } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5824,
+        3584
+      ],
+      "id": "6f40b929-010f-44ee-a75d-8cc7aaa4f0b1",
+      "name": "recuperar datos"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all().sort((a, b) => (a.json.orden || 0) - (b.json.orden || 0));\nif (items.length < 3) {\n  throw new Error(`Filtrado recibi? ${items.length} im?genes; se esperaban 3.`);\n}\nconst mapImg = (item) => ({ id: item?.json?.id, url: item?.json?.file_url || item?.json?.url || item?.json?.source_url || null });\nreturn [{ json: { imagen_destacada: mapImg(items[0]), imagen_body1: mapImg(items[1]), imagen_body2: mapImg(items[2]) } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5824,
+        3168
+      ],
+      "id": "efd924db-3fb9-437e-b607-40e4cb41028d",
+      "name": "Filtrado"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Eres el director de arte de Lookitry Editorial. Debes generar prompts de imagen editoriales que sí representen el tema elegido, no imágenes genéricas.\\n\\nIDENTIDAD VISUAL DE LOOKITRY:\\n- Paleta guía: naranja principal (#FF5C3A), blanco, negro, grises tecnológicos.\\n- Estilo: editorial premium, ecommerce de moda, tecnología aplicada a retail, fotografía realista.\\n\\nDATOS DEL ARTÍCULO:\\n- Tema: \\\"{{ $('Obtener Temas').first().json.tema }}\\\"\\n- Categoría: \\\"{{ $('Obtener Temas').first().json.categoria || 'ia' }}\\\"\\n- Keywords: \\\"{{ $('Obtener Temas').first().json.palabras || '' }}\\\"\\n\\nREGLAS GENERALES:\\n- Todas las imágenes deben ser horizontales 16:9, fotorrealistas, sin texto, sin logos, sin marcas de agua.\\n- Si aparecen personas: manos correctas, anatomía natural, ropa coherente, iluminación profesional.\\n- Cada prompt debe mostrar una escena distinta y útil para ese slot del artículo.\\n- Evita imágenes abstractas si el tema pide negocio, ecommerce, devoluciones, conversión, tallas o experiencia de compra.\\n- Prioriza escenas que expliquen visualmente el problema o la solución del tema.",
+              "role": "model"
+            },
+            {
+              "content": "=Transform the following blog topic into THREE distinct image prompts in English. Return ONLY in this exact format:\\n\\n(A) [First prompt here]\\n(B) [Second prompt here]\\n(C) [Third prompt here]\\n\\nTopic: \\\"{{ $('Obtener Temas').item.json.tema }}\\\"\\nCategory: \\\"{{ $('Obtener Temas').item.json.categoria || 'ia' }}\\\"\\nKeywords: \\\"{{ $('Obtener Temas').item.json.palabras || '' }}\\\"\\n\\nPrompt goals by slot:\\n(A) Featured image: create the main editorial hero for the article's central promise or tension.\\n(B) Body image 1: illustrate the pain point, friction, cost, returns problem, sizing issue, or business impact described in the article.\\n(C) Body image 2: illustrate the solution, implementation, virtual try-on experience, AI recommendation flow, or positive outcome.\\n\\nEnsure each prompt is specific to the topic, includes fashion ecommerce context when relevant, and feels like a premium magazine-style campaign image.\\nReturn EXACTLY three lines and nothing else:\\n(A) ...\\n(B) ...\\n(C) ...\\nDo not add intro text, explanations, markdown, bullets, or code fences.\n"
+            }
+          ]
+        },
+        "options": {
+          "maxOutputTokens": 250
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        3712,
+        3264
+      ],
+      "id": "3115a4f2-0ec9-4947-b92a-4d2287b3a98e",
+      "name": "mejorar prompt",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZYbXBAz7cxAnp7Co",
+          "name": "samu.wilkie"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw =\n  $input.first()?.json?.content?.parts?.[0]?.text ||\n  $input.first()?.json?.choices?.[0]?.message?.content ||\n  $input.first()?.json?.text ||\n  '';\n\nif (!raw || typeof raw !== 'string') {\n  throw new Error('El nodo generador no devolvió texto utilizable para extraer prompts.');\n}\n\nconst text = raw.replace(/\\r/g, '').trim();\n\nfunction cleanPrompt(value) {\n  return (value || '')\n    .replace(/^[\"'`]+|[\"'`]+$/g, '')\n    .replace(/\\n+/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\nfunction extractLabeled(label, nextLabels = []) {\n  const nextPart = nextLabels.length ? `(?=\\\\(${nextLabels.join('|')}\\\\)|$)` : '$';\n  const regex = new RegExp(`\\\\(${label}\\\\)\\\\s*([\\\\s\\\\S]+?)${nextPart}`, 'i');\n  return cleanPrompt(text.match(regex)?.[1] || '');\n}\n\nlet promptA = extractLabeled('A', ['B', 'C']);\nlet promptB = extractLabeled('B', ['C']);\nlet promptC = extractLabeled('C', []);\n\nconst bulletLines = text\n  .split('\\n')\n  .map((line) => cleanPrompt(line.replace(/^[-*•\\d.)\\s]+/, '')))\n  .filter(Boolean);\n\nif (!promptA && bulletLines[0]) promptA = bulletLines[0];\nif (!promptB && bulletLines[1]) promptB = bulletLines[1];\nif (!promptC && bulletLines[2]) promptC = bulletLines[2];\n\n// Fallback: si solo llegó un prompt válido, derivar variantes sin romper el flujo\nif (promptA && !promptB) {\n  promptB = `${promptA}, editorial lifestyle scene, supporting in-article visual, different composition`;\n}\nif (promptA && !promptC) {\n  promptC = `${promptA}, secondary supporting visual, alternate camera angle, contextual ecommerce detail`;\n}\n\n// Si no vino A, intentar usar cualquier texto completo razonable\nif (!promptA && text.length > 20) {\n  promptA = cleanPrompt(text);\n  promptB = promptB || `${promptA}, editorial lifestyle scene, supporting in-article visual`;\n  promptC = promptC || `${promptA}, alternate composition, ecommerce context`;\n}\n\nif (!promptA || !promptB || !promptC) {\n  throw new Error(\n    `Prompts no extraídos. A:${!!promptA} B:${!!promptB} C:${!!promptC}. Texto recibido: ${text.substring(0, 800)}`\n  );\n}\n\nreturn [\n  {\n    json: {\n      prompt: promptA,\n      tipo: 'destacada',\n      orden: 1,\n    },\n  },\n  {\n    json: {\n      prompt: promptB,\n      tipo: 'body1',\n      orden: 2,\n    },\n  },\n  {\n    json: {\n      prompt: promptC,\n      tipo: 'body2',\n      orden: 3,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4032,
+        3264
+      ],
+      "id": "7a75ccd0-453b-4c42-b29b-4e8a2cad36e0",
+      "name": "Extraer Prompts"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "7JcERYGdRj0XYuYL",
+          "mode": "list",
+          "cachedResultName": "temas",
+          "cachedResultUrl": "/projects/ZwHHlnZoKhyDqulQ/datatables/7JcERYGdRj0XYuYL"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Estado",
+              "keyValue": "Pendiente"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        3760,
+        3920
+      ],
+      "id": "1bf82a66-709d-4cba-810e-ff71aab3d050",
+      "name": "Obtener Temas"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": true,
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "bbd49596-5cf5-449d-93ab-6cf6d90b4bde"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Replicate (Testing)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "920381c6-aa55-4da9-8682-46db9d432346",
+                    "leftValue": false,
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OpenRouter (Produccion)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        4320,
+        3552
+      ],
+      "id": "0fd62e42-8ca8-48e7-84af-768f08864285",
+      "name": "tester"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer r8_D4VY9Ay3avB9k5qMARUTqD09qIaiTne3TKVu0"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait=10"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"input\": {\n    \"prompt\": \"{{ $json.prompt }}\",\n    \"aspect_ratio\": \"16:9\",\n    \"output_format\": \"png\",\n    \"output_quality\": 90,\n    \"num_inference_steps\": 4,\n    \"go_fast\": true,\n    \"megapixels\": \"1\"\n  }\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4656,
+        3360
+      ],
+      "id": "429e9c24-0de7-4bce-81b8-1451f87d0425",
+      "name": "Replicate FLUX Schnell"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst currentItem = $('Loop Imagenes Replicate').first().json;\nconst token = 'r8_D4VY9Ay3avB9k5qMARUTqD09qIaiTne3TKVu0';\n\nasync function sleep(ms) {\n  return new Promise((resolve) => setTimeout(resolve, ms));\n}\n\nasync function getPrediction(url) {\n  const res = await fetch(url, {\n    headers: {\n      Authorization: `Bearer ${token}`,\n      'Content-Type': 'application/json',\n    },\n  });\n\n  if (!res.ok) {\n    const body = await res.text();\n    throw new Error(`Replicate lookup failed (${res.status}): ${body}`);\n  }\n\n  return await res.json();\n}\n\nasync function resolvePrediction(prediction) {\n  let current = prediction;\n\n  for (let i = 0; i < 24; i++) {\n    if (current?.error) {\n      throw new Error(`Replicate error en ${currentItem.tipo}: ${current.error}`);\n    }\n\n    if (current?.status === 'failed' || current?.status === 'canceled') {\n      throw new Error(`Replicate termin? en ${current.status}. ID: ${current.id}`);\n    }\n\n    if (current?.status === 'succeeded' && current?.output) {\n      const imageUrl = Array.isArray(current.output) ? current.output[0] : current.output;\n      return [{\n        json: {\n          ...currentItem,\n          imageUrl,\n          predictionId: current.id,\n          predictionStatus: current.status,\n        },\n      }];\n    }\n\n    const pollUrl = current?.urls?.get;\n    if (!pollUrl) {\n      throw new Error(`Replicate no devolvi? output ni poll URL. Status: ${current?.status || 'unknown'}`);\n    }\n\n    await sleep(5000);\n    current = await getPrediction(pollUrl);\n  }\n\n  throw new Error(`Replicate no termin? a tiempo para ${currentItem.tipo}`);\n}\n\nreturn await resolvePrediction(response);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4864,
+        3360
+      ],
+      "id": "08356892-88f6-4247-98e5-f67fcdf5e504",
+      "name": "Replicate - Extraer URL"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.imageUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5072,
+        3360
+      ],
+      "id": "bfcd2159-f878-458f-8893-29e17292d467",
+      "name": "Replicate - Descargar PNG"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst tipo = item.json.tipo || 'imagen';\nconst orden = item.json.orden || 1;\n\nif (item.binary?.data) {\n  item.binary.data.fileName = `${tipo}.png`;\n  item.binary.data.mimeType = 'image/png';\n}\n\nreturn {\n  json: {\n    ...item.json,\n    tipo,\n    orden,\n  },\n  binary: item.binary,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5280,
+        3360
+      ],
+      "id": "b0be0471-0a28-4729-84ef-92f0d2eb2f22",
+      "name": "renombrar Replicate"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/blog/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-blog-secret",
+              "value": "Travis2305**_blog_live"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "filename",
+              "value": "={{ $('renombrar Replicate').item.binary.data.fileName }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5536,
+        3360
+      ],
+      "id": "f2c56ed9-81f1-42c8-9b3b-33c58a7d1dda",
+      "name": "Uploader Replicate"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openai/gpt-5-image-mini\",\n  \"messages\": [{ \"role\": \"user\", \"content\": \"{{ $json.prompt.replace(/\\\"/g, '\\\\\\\"') }}\" }],\n  \"image_generation\": { \"n\": 1, \"size\": \"1792x1024\", \"output_format\": \"png\", \"quality\": \"hd\", \"style\": \"natural\" }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4656,
+        3744
+      ],
+      "id": "c01f8043-6967-46fb-9b04-d3c549da041e",
+      "name": "OpenRouter",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "zfUV46xyt3CLaLh8",
+          "name": "OpenRouter"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const response = $input.item.json;\nconst inputData = $('Extraer Prompts').item.json;\nif (response.error) throw new Error(`Error OpenRouter '${inputData.tipo}': ${response.error.message}`);\nconst url = response.choices?.[0]?.message?.images?.[0]?.image_url?.url;\nif (!url) { console.log('Respuesta:', JSON.stringify(response, null, 2)); throw new Error(`No hay URL de imagen para '${inputData.tipo}'.`); }\nconst base64Data = url.split('base64,')[1];\nif (!base64Data) throw new Error(`No se pudo extraer base64 para '${inputData.tipo}'.`);\nconsole.log(`✓ OpenRouter ${inputData.tipo}: ${base64Data.length} chars`);\nreturn { json: { ...inputData, base64: base64Data } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4880,
+        3744
+      ],
+      "id": "994c5248-17b3-4824-86b0-3f8b0a9bb0a9",
+      "name": "extraer imagenes"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base64",
+        "options": {
+          "fileName": "=data",
+          "mimeType": "image/png"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        5088,
+        3744
+      ],
+      "id": "aeeb3ace-e79c-4087-a4e1-b6ab8e2570a2",
+      "name": "Traductor"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://image-converter:3000/convert-to-webp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "multipart/form-data"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5280,
+        3744
+      ],
+      "id": "b82471d3-26d1-438a-bd4f-96f4c43a641e",
+      "name": "convert to WEBP"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst itemIndex = $itemIndex;\nlet tipo, orden;\ntry { const d = $('Extraer Prompts').all()[itemIndex]?.json; if (d?.tipo) { tipo = d.tipo; orden = d.orden; } } catch(e) {}\nif (!tipo) { tipo = item.json.tipo || 'imagen'; orden = item.json.orden || itemIndex + 1; }\nif (item.binary?.data) { item.binary.data.fileName = `${tipo}.webp`; item.binary.data.mimeType = 'image/webp'; }\nconsole.log(`OpenRouter renombrado: ${tipo}.webp`);\nreturn { json: { ...item.json, tipo, orden }, binary: item.binary };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5568,
+        3744
+      ],
+      "id": "3173095e-ede9-4e45-9db1-7ff63def5f68",
+      "name": "renombrar OpenRouter"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/blog/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-blog-secret",
+              "value": "Travis2305**_blog_live"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "filename",
+              "value": "={{ $('renombrar OpenRouter').item.binary.data.fileName }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5808,
+        3856
+      ],
+      "id": "8db36675-845b-43de-982a-d4077b31a79b",
+      "name": "Uploader OpenRouter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "7c71bdcb-9cab-4704-a230-609faf8a6fde",
+      "name": "Loop Imagenes Replicate",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4288,
+        3184
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 12
+      },
+      "id": "9633150f-9a42-4e36-b515-d585fb4c5253",
+      "name": "Wait Replicate 12s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5824,
+        3360
+      ],
+      "webhookId": "ed6ce2ba-d14a-45fe-b7b3-a53e3008aea5"
     }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "formatear",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "formatear": {
+      "main": [
+        [
+          {
+            "node": "traducir tags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "traducir tags": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Obtener Temas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Obtener Temas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Post": {
+      "main": [
+        [
+          {
+            "node": "Preparar JSON para Lookitry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "traductor": {
+      "main": [
+        [
+          {
+            "node": "Preparador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar contexto editorial": {
+      "main": [
+        [
+          {
+            "node": "redactor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "redactor": {
+      "main": [
+        [
+          {
+            "node": "traductor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar JSON para Lookitry": {
+      "main": [
+        [
+          {
+            "node": "Publicar en Lookitry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publicar en Lookitry": {
+      "main": [
+        [
+          {
+            "node": "Actualizar tablas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparador": {
+      "main": [
+        [
+          {
+            "node": "Prepare Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "conseguir Blogs": {
+      "main": [
+        [
+          {
+            "node": "conseguir link blogs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "conseguir link blogs": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Obtener Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Info": {
+      "main": [
+        [
+          {
+            "node": "Preparar contexto editorial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "recuperar datos": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "conseguir Blogs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrado": {
+      "main": [
+        [
+          {
+            "node": "recuperar datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mejorar prompt": {
+      "main": [
+        [
+          {
+            "node": "Extraer Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Prompts": {
+      "main": [
+        [
+          {
+            "node": "Loop Imagenes Replicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Temas": {
+      "main": [
+        [
+          {
+            "node": "mejorar prompt",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "tester": {
+      "main": [
+        [
+          {
+            "node": "Replicate FLUX Schnell",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replicate FLUX Schnell": {
+      "main": [
+        [
+          {
+            "node": "Replicate - Extraer URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replicate - Extraer URL": {
+      "main": [
+        [
+          {
+            "node": "Replicate - Descargar PNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replicate - Descargar PNG": {
+      "main": [
+        [
+          {
+            "node": "renombrar Replicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "renombrar Replicate": {
+      "main": [
+        [
+          {
+            "node": "Uploader Replicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Uploader Replicate": {
+      "main": [
+        [
+          {
+            "node": "Wait Replicate 12s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "extraer imagenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "extraer imagenes": {
+      "main": [
+        [
+          {
+            "node": "Traductor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traductor": {
+      "main": [
+        [
+          {
+            "node": "convert to WEBP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "convert to WEBP": {
+      "main": [
+        [
+          {
+            "node": "renombrar OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "renombrar OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "Uploader OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Uploader OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "Wait Replicate 12s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Imagenes Replicate": {
+      "main": [
+        [
+          {
+            "node": "Filtrado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "tester",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Replicate 12s": {
+      "main": [
+        [
+          {
+            "node": "Loop Imagenes Replicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Webhook Trigger": [
+      {
+        "headers": {
+          "host": "n8n.wilkiedevs.com",
+          "user-agent": "axios/1.13.6",
+          "content-length": "97",
+          "accept": "application/json, text/plain, */*",
+          "accept-encoding": "gzip, compress, deflate, br",
+          "content-type": "application/json",
+          "x-forwarded-for": "181.234.173.255",
+          "x-forwarded-host": "n8n.wilkiedevs.com",
+          "x-forwarded-port": "443",
+          "x-forwarded-proto": "https",
+          "x-forwarded-server": "05d31d08392c",
+          "x-n8n-secret": "Travis2305**_blog_n8n",
+          "x-real-ip": "181.234.173.255"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "triggered_by": "admin_manual",
+          "openrouter_model": "openrouter/free",
+          "image_provider": "replicate"
+        },
+        "webhookUrl": "https://n8n.wilkiedevs.com/webhook/trigger-blog-generation",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5519e0d30f"
+  }
 }

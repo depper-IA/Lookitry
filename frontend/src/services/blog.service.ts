@@ -88,8 +88,9 @@ export async function fetchBlogCategories(): Promise<BlogCategory[]> {
 
 export async function fetchBlogPosts(categoryId?: string): Promise<BlogPost[]> {
   try {
-    const url = categoryId ? `/api/blog?category_id=${encodeURIComponent(categoryId)}` : '/api/blog';
-    const response = await fetch(url);
+    const path = categoryId ? `/api/blog?category_id=${encodeURIComponent(categoryId)}` : '/api/blog';
+    const url = typeof window === 'undefined' ? `${appBaseUrl}${path}` : path;
+    const response = await fetch(url, typeof window === 'undefined' ? { next: { revalidate: 60 } } : undefined);
     if (!response.ok) return [];
     const payload = await response.json();
     return Array.isArray(payload?.data) ? payload.data : [];
@@ -97,6 +98,18 @@ export async function fetchBlogPosts(categoryId?: string): Promise<BlogPost[]> {
     console.error('Error fetching blog posts:', error);
     return [];
   }
+}
+
+export async function fetchRecentBlogPosts(limit = 3, excludeSlug?: string): Promise<BlogPost[]> {
+  const posts = await fetchBlogPosts();
+  return posts
+    .filter((post) => post.status === 'published' && (!excludeSlug || post.slug !== excludeSlug))
+    .sort((a, b) => {
+      const dateA = new Date(a.published_at || a.created_at).getTime();
+      const dateB = new Date(b.published_at || b.created_at).getTime();
+      return dateB - dateA;
+    })
+    .slice(0, limit);
 }
 
 export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost | null> {
