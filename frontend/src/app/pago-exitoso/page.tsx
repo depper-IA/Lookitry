@@ -17,26 +17,48 @@ function IconCheck() {
   );
 }
 
+function extractPlanFromReference(reference: string | null): string | null {
+  if (!reference) return null;
+  if (reference.startsWith('TRIAL-') || reference.startsWith('GUEST-TRIAL-')) return 'TRIAL';
+
+  const planMatch = reference.match(/-P([A-Z]+)(?:-|$)/i);
+  return planMatch?.[1]?.toUpperCase() ?? null;
+}
+
+function extractMonthsFromReference(reference: string | null): number | null {
+  if (!reference) return null;
+
+  const monthsMatch = reference.match(/-M(\d+)(?:-|$)/i);
+  if (!monthsMatch) return null;
+
+  const parsedMonths = Number(monthsMatch[1]);
+  return Number.isFinite(parsedMonths) ? parsedMonths : null;
+}
+
 function PagoExitosoContent() {
   const searchParams = useSearchParams();
-  const plan = searchParams.get('plan') || 'PRO';
-  const months = Number(searchParams.get('months') || 1);
+  const planParam = searchParams.get('plan');
+  const monthsParam = Number(searchParams.get('months') || 1);
   const ref = searchParams.get('ref');
   const method = searchParams.get('method');
   const wompiId = searchParams.get('id');
   const paypalToken = searchParams.get('token');
-  
+
   const [dashboardHref, setDashboardHref] = useState<string>('/login');
   const [loading, setLoading] = useState<boolean>(method === 'paypal' || (!ref && !!wompiId));
   const [error, setError] = useState<string | null>(null);
   const [resolvedRef, setResolvedRef] = useState<string | null>(ref);
   const [supportEmail, setSupportEmail] = useState('info@lookitry.com');
+
   const isTrialParam = searchParams.get('isTrial') === 'true';
-  const isTrial = resolvedRef?.startsWith('TRIAL-') || resolvedRef?.startsWith('GUEST-TRIAL-') || ref?.startsWith('TRIAL-') || ref?.startsWith('GUEST-TRIAL-') || isTrialParam;
+  const effectiveRef = resolvedRef || ref;
+  const resolvedPlan = extractPlanFromReference(effectiveRef) || planParam || 'PRO';
+  const resolvedMonths = extractMonthsFromReference(effectiveRef) ?? monthsParam;
+  const isTrial = resolvedPlan === 'TRIAL' || isTrialParam;
 
   useEffect(() => {
     fetchPublicPaymentSettings()
-      .then(data => {
+      .then((data) => {
         if (data?.manualEmail) setSupportEmail(data.manualEmail);
       })
       .catch(() => {});
@@ -55,9 +77,9 @@ function PagoExitosoContent() {
             currentRef = data.reference;
             setResolvedRef(data.reference);
           } else {
-            throw new Error('No se pudo verificar la transacción');
+            throw new Error('No se pudo verificar la transaccion');
           }
-        } catch (err: any) {
+        } catch {
           setError('No se pudo recuperar la referencia de tu pago. Contacta a soporte.');
           setLoading(false);
           return;
@@ -74,7 +96,7 @@ function PagoExitosoContent() {
           });
           const data = await res.json();
           if (!res.ok) throw new Error(data.message || 'Error al capturar el pago');
-          
+
           const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
           const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-');
           const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
@@ -83,7 +105,7 @@ function PagoExitosoContent() {
           if (isGuestTrial && currentRef) {
             setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
           } else if (isStandardVisitor && currentRef) {
-            setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${months}`);
+            setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}`);
           } else if (token) {
             setDashboardHref('/dashboard');
           } else {
@@ -103,7 +125,7 @@ function PagoExitosoContent() {
         if (isGuestTrial && currentRef) {
           setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
         } else if (isStandardVisitor && currentRef) {
-          setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${months}`);
+          setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}`);
         } else if (token) {
           setDashboardHref('/dashboard');
         } else {
@@ -114,11 +136,12 @@ function PagoExitosoContent() {
     }
 
     validatePayment();
-  }, [ref, months, method, paypalToken, wompiId]);
+  }, [ref, resolvedMonths, method, paypalToken, wompiId]);
 
-  const dashboardLabel = dashboardHref.startsWith('/registro-pro') || dashboardHref.startsWith('/register')
-    ? 'ACTIVAR MI CUENTA'
-    : 'IR AL DASHBOARD';
+  const dashboardLabel =
+    dashboardHref.startsWith('/registro-pro') || dashboardHref.startsWith('/register')
+      ? 'ACTIVAR MI CUENTA'
+      : 'IR AL DASHBOARD';
 
   if (loading) {
     return (
@@ -139,7 +162,7 @@ function PagoExitosoContent() {
       <div className="dark">
         <main className="min-h-screen flex items-center justify-center px-4 bg-[#030303]">
           <div className="w-full max-w-md">
-             <div className="flex justify-center mb-8">
+            <div className="flex justify-center mb-8">
               <Link href="/" className="flex items-center gap-2.5">
                 <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
                 <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
@@ -147,18 +170,16 @@ function PagoExitosoContent() {
                 </span>
               </Link>
             </div>
-            <Alert 
-              type="error"
-              title="¡Pago por verificar!"
-              message={error}
-              className="mb-8"
-            />
+            <Alert type="error" title="Pago por verificar" message={error} className="mb-8" />
             <div className="text-center flex flex-col gap-4">
-              <Link href={dashboardHref} className="inline-block px-8 py-3 bg-[#FF5C3A] text-white text-[13px] font-bold rounded-xl transition-all shadow-lg hover:bg-opacity-90 uppercase">
-                Ir al Dashboard
+              <Link
+                href={dashboardHref}
+                className="inline-block px-8 py-3 bg-[#FF5C3A] text-white text-[13px] font-bold rounded-xl transition-all shadow-lg hover:bg-opacity-90 uppercase"
+              >
+                Ir al dashboard
               </Link>
               <p className="text-[#999] text-[11px]">
-                Incluso si ves este error, tu pago está siendo procesado. El acceso se activará en pocos minutos.
+                Incluso si ves este error, tu pago esta siendo procesado. El acceso se activara en pocos minutos.
               </p>
             </div>
           </div>
@@ -170,24 +191,21 @@ function PagoExitosoContent() {
   return (
     <div className="dark">
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-[#030303] selection:bg-[#FF5C3A]/30">
-        
-        {/* Progress Bar (Step 4: Activation) */}
         <div className="w-full max-w-xl mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
           <StepProgress currentStep={4} maxNavigableStep={4} lockedAfterPayment />
         </div>
 
         <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
-          {/* Logo */}
           <div className="flex justify-center mb-10">
             <Link href="/" className="flex items-center gap-3 group transition-transform hover:scale-105 active:scale-95">
               <div className="relative">
-                <Image 
-                  src="/logo.svg" 
-                  alt="Lookitry" 
-                  width={32} 
-                  height={32} 
-                  className="object-contain h-8 w-auto brightness-110" 
-                  priority 
+                <Image
+                  src="/logo.svg"
+                  alt="Lookitry"
+                  width={32}
+                  height={32}
+                  className="object-contain h-8 w-auto brightness-110"
+                  priority
                 />
                 <div className="absolute inset-0 bg-[#FF5C3A]/20 blur-xl rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
@@ -198,8 +216,6 @@ function PagoExitosoContent() {
           </div>
 
           <div className="rounded-3xl p-8 md:p-10 text-center border bg-[#0a0a0a] border-[#1a1a1a] shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden">
-            
-            {/* Subtle decoration */}
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF5C3A]/5 blur-[80px] rounded-full"></div>
             <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#FF5C3A]/5 blur-[80px] rounded-full"></div>
 
@@ -208,14 +224,14 @@ function PagoExitosoContent() {
             </div>
 
             <h1 className="font-jakarta font-bold text-[28px] text-white mb-3 tracking-tight uppercase">
-              ¡Pago confirmado!
+              Pago confirmado
             </h1>
             <p className="text-[15px] leading-relaxed mb-8 text-[#a0a0a0]">
-              {(dashboardHref.startsWith('/registro-pro') || dashboardHref.startsWith('/register'))
-                ? 'Tu transacción ha sido validada con éxito. Ahora solo falta activar tu acceso para entrar a Lookitry.'
+              {dashboardHref.startsWith('/registro-pro') || dashboardHref.startsWith('/register')
+                ? 'Tu transaccion ha sido validada con exito. Ahora solo falta activar tu acceso para entrar a Lookitry.'
                 : isTrial
-                  ? '¡Tu prueba profesional ha sido activada! Ya puedes empezar a usar todas las herramientas de Lookitry.'
-                  : `Tu plan ya se encuentra activo. Hemos procesado correctamente tu suscripción al Plan ${plan} ${months > 0 ? `por ${months} ${months === 1 ? 'mes' : 'meses'}` : ''}.`}
+                  ? 'Tu periodo trial fue confirmado correctamente. Ya puedes activar tu cuenta y empezar a usar Lookitry.'
+                  : `Tu plan ya se encuentra activo. Hemos procesado correctamente tu suscripcion al Plan ${resolvedPlan} ${resolvedMonths > 0 ? `por ${resolvedMonths} ${resolvedMonths === 1 ? 'mes' : 'meses'}` : ''}.`}
             </p>
 
             {(resolvedRef || ref) && (
@@ -225,11 +241,11 @@ function PagoExitosoContent() {
               </div>
             )}
 
-            <Alert 
+            <Alert
               type="info"
               message={
                 <>
-                  Recibirás un correo de confirmación. Si tienes dudas, escríbenos a {' '}
+                  Recibiras un correo de confirmacion. Si tienes dudas, escribenos a{' '}
                   <a href={`mailto:${supportEmail}`} className="text-white font-bold hover:text-[#FF5C3A] transition-colors">
                     {supportEmail}
                   </a>
@@ -255,9 +271,7 @@ function PagoExitosoContent() {
           </div>
 
           <div className="mt-10 text-center">
-            <p className="text-[#999] text-[12px] font-medium tracking-widest uppercase">
-              LOOKITRY SECURE PAYMENTS © 2026
-            </p>
+            <p className="text-[#999] text-[12px] font-medium tracking-widest uppercase">LOOKITRY SECURE PAYMENTS © 2026</p>
           </div>
         </div>
       </main>

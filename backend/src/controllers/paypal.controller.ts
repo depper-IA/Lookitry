@@ -243,6 +243,13 @@ export class PaypalController {
     }
 
     const hasAuthenticatedBrand = Boolean((req as any).brand?.id);
+    if (hasAuthenticatedBrand && planStr === 'TRIAL') {
+      return res.status(409).json({
+        error: 'AUTHENTICATED_TRIAL_DISABLED',
+        message: 'El trial solo puede comprarse sin una sesion activa. Cierra sesion y usa /trial-checkout.',
+      });
+    }
+
     let amountCOP = hasAuthenticatedBrand
       ? await pricingService.calculateTotal(planStr, selectedMonths, landing)
       : await pricingService.calculateExternalCheckoutTotal(planStr, selectedMonths, landing);

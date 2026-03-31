@@ -1,6 +1,40 @@
 # Changelog - Lookitry (AI Assisted)
 
 
+## [2026-03-31] - Blindaje del trial publico contra sesiones activas
+
+### Cambios Realizados
+- **Checkout general bloquea trial autenticado**: `frontend/src/app/checkout/page.tsx` ahora impide pagar `TRIAL` cuando hay una sesion activa, muestra una advertencia clara y ofrece cerrar sesion para continuar por `/trial-checkout`.
+- **Rutas backend rechazan trial con auth**: `backend/src/controllers/wompi.controller.ts` y `backend/src/controllers/paypal.controller.ts` ahora responden `AUTHENTICATED_TRIAL_DISABLED` si una cuenta autenticada intenta generar un checkout de `TRIAL`.
+- **Referencia post-pago mas confiable**: `frontend/src/app/pago-exitoso/page.tsx` ya interpreta correctamente referencias `PTRIAL`, `PBASIC` y `PPRO`, para que la confirmacion muestre el plan real comprado.
+
+### Archivos Modificados
+- `frontend/src/app/checkout/page.tsx`
+- `frontend/src/app/pago-exitoso/page.tsx`
+- `backend/src/controllers/wompi.controller.ts`
+- `backend/src/controllers/paypal.controller.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Una compra de trial iniciada con sesion activa podia contaminar el flujo publico y terminar aplicandose sobre la marca autenticada. El cambio blinda el funnel para que un trial solo nazca como compra invitada y no degrade cuentas ya existentes.
+
+---
+
+## [2026-03-31] - Confirmacion post-pago consistente para trial
+
+### Cambios Realizados
+- **Lectura real del plan desde la referencia**: `frontend/src/app/pago-exitoso/page.tsx` ahora interpreta el plan y los meses a partir de la referencia de pago (`-PTRIAL-`, `-PBASIC-`, `-PPRO-`) en lugar de depender de un fallback `plan=PRO`.
+- **Copy correcto para compras trial**: la confirmacion post-pago ya no muestra mensajes como "suscripcion al Plan PRO por 1 mes" cuando la compra real fue un trial, y mantiene el CTA de activacion correcto.
+
+### Archivos Modificados
+- `frontend/src/app/pago-exitoso/page.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Las compras trial procesaban bien, pero la pantalla `/pago-exitoso` interpretaba mal referencias tipo `PAYPAL-...-PTRIAL`, generando un mensaje visual incorrecto y confuso justo despues de pagar.
+
+---
+
 ## [2026-03-31] - Free upgrade sin bloqueo por monto cero
 
 ### Cambios Realizados
