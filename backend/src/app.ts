@@ -41,6 +41,9 @@ setInterval(() => {
 
 app.set('trust proxy', 1);
 
+import { requestLogger } from './middleware/requestLogger';
+app.use(requestLogger);
+
 // ── Seguridad: Helmet ────────────────────────────────────────────────────────
 app.use(helmetConfig);
 

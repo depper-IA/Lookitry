@@ -92,11 +92,11 @@
             e.preventDefault();
 
             const productId = $(this).data('product-id');
-            const apiKey = lookitry_vars.api_key;
+            const apiKey = lookitry_vars.session_token || lookitry_vars.api_key;
             const $clickedBtn = $(this);
 
             if (!apiKey) {
-                console.error('Lookitry: API Key no configurada.');
+                console.error('Lookitry: API Key o Session Token no configurados.');
                 alert('No se pudo abrir el probador. Por favor, contacta al administrador.');
                 return;
             }
@@ -109,7 +109,7 @@
                 url: lookitry_vars.api_url + '/embed/wordpress/init',
                 method: 'POST',
                 endpointLabel: '/api/embed/wordpress/init',
-                apiKey,
+                apiKey: apiKey,
                 maxRetries: 2,
                 productExternalId: productId.toString(),
                 headers: {

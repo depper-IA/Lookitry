@@ -12,8 +12,14 @@ router.get('/resolve-domain', publicRateLimiter, pruebaloController.resolveDomai
 // GET /api/pruebalo/allowed-origins - Obtener dominios permitidos (Whitelist dinámica iframe)
 router.get('/allowed-origins', publicRateLimiter, pruebaloController.getAllowedOrigins);
 
+// GET /api/pruebalo/session-token - Generar token efímero JWT para embebidos
+router.get('/session-token', publicRateLimiter, pruebaloController.generateSessionToken);
+
 // GET /api/pruebalo/validate-api-key - Validar clave de API desde el plugin
 router.get('/validate-api-key', publicRateLimiter, pruebaloController.validateApiKey);
+
+// GET /api/pruebalo/session-token - Generar token efímero JWT para embebidos
+router.get('/session-token', publicRateLimiter, pruebaloController.generateSessionToken);
 
 // GET /api/pruebalo/synced-products - Obtener productos ya sincronizados
 router.get('/synced-products', publicRateLimiter, pruebaloController.getSyncedProducts);
