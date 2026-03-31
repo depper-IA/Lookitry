@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -239,7 +239,7 @@ export default function AdminConversionPage() {
           </div>
 
           <div className="mt-8 flex h-56 items-end gap-3">
-            {stats.conversionsByMonth.map((row) => {
+            {(stats?.conversionsByMonth || []).map((row) => {
               const height = row.count > 0 ? Math.max(8, (row.count / maxMonthly) * 100) : 0;
               return (
                 <div key={row.month} className="group relative flex flex-1 flex-col items-center gap-3">
@@ -270,11 +270,11 @@ export default function AdminConversionPage() {
             </p>
           </div>
           <span className="rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-[0.18em]" style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
-            {stats.activeTrials.length} visibles
+            {(stats?.activeTrials || []).length} visibles
           </span>
         </div>
 
-        {stats.activeTrials.length === 0 ? (
+        {(!stats?.activeTrials || stats.activeTrials.length === 0) ? (
           <div className="rounded-[1.5rem] border border-dashed p-8 text-center" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
             <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
               No hay cuentas en trial activo
@@ -296,7 +296,7 @@ export default function AdminConversionPage() {
                 </tr>
               </thead>
               <tbody>
-                {stats.activeTrials.map((trial) => (
+                {(stats?.activeTrials || []).map((trial) => (
                   <tr key={trial.id} className="border-b" style={{ borderColor: 'var(--border-color)' }}>
                     <td className="py-4">
                       <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{trial.name}</div>

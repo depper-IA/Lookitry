@@ -913,11 +913,11 @@ export class AdminService {
 
     const { data: completedPayments, error: paymentsError } = await supabaseAdmin
       .from('subscription_payments')
-      .select('amount, currency, notes, reference, status')
+      .select('amount, currency, notes, status') // Note: reference removed to avoid missing column error if not yet migrated
       .eq('status', 'completed');
 
     if (paymentsError) {
-      throw new Error('Error al obtener pagos de trial: ' + paymentsError.message);
+      throw new Error('Error al obtener pagos: ' + paymentsError.message);
     }
 
     const now = new Date();
@@ -942,7 +942,7 @@ export class AdminService {
     let trialRevenueCOP = 0;
     for (const payment of trialActivationPayments) {
       const normalized = await normalizePaymentRecordToCop(payment, reportingTrm, trmCache);
-      trialRevenueCOP += normalized.amountCop;
+      trialRevenueCOP += (normalized?.amountCop || 0);
     }
 
     // Marcas convertidas: solo planes pagos reales, excluyendo TRIAL.
@@ -952,14 +952,17 @@ export class AdminService {
     );
 
     const trialConversionEvents = brands.flatMap((brand) => {
-      const socialLinks = getBrandSocialLinks(brand);
-      const events = Array.isArray(socialLinks.trial_events) ? socialLinks.trial_events : [];
+      // SAFE CHECK: Ensure social_links exists
+      if (!brand?.social_links) return [];
+      const socialLinks: any = brand.social_links;
+      
+      const events = Array.isArray(socialLinks?.trial_events) ? socialLinks.trial_events : [];
 
       return events
-        .filter((event: any) => event?.type === 'trial_converted')
+        .filter((event: any) => event && typeof event === 'object' && event.type === 'trial_converted')
         .map((event: any) => ({
           brandId: brand.id,
-          created_at: event.created_at,
+          created_at: event.created_at || brand.created_at, // Fallback if internal event lacks date
           planPurchased: String(event?.payload?.planPurchased || '').toUpperCase(),
         }));
     });
@@ -1126,25 +1129,30 @@ export class AdminService {
 
       const normalizedPayments = await Promise.all(
         filteredPayments.map(async (payment: any) => {
+          // SAFE CHECK: Ensure brand data exists even if fetch returned null (e.g. orphan payment)
+          if (!payment.brands) {
+             payment.brands = { name: 'Marca Desconocida', email: 'N/A', slug: 'unknown', plan: 'N/A' };
+          }
+
           const normalized = await normalizePaymentRecordToCop(payment, reportingTrm, trmCache);
           const displayBrand = getPaymentDisplayBrand(payment);
           return {
             ...payment,
             brands: {
-              name: displayBrand.name,
-              email: displayBrand.email,
-              slug: displayBrand.slug,
-              plan: displayBrand.plan,
+              name: displayBrand?.name || 'N/A',
+              email: displayBrand?.email || 'N/A',
+              slug: displayBrand?.slug || 'unknown',
+              plan: displayBrand?.plan || 'N/A',
             },
             billing_type: inferBillingType(payment),
             includes_landing: inferIncludesLanding(payment),
             archived: Boolean(payment.brands?.social_links?.account_archived_at),
-            amount: normalized.amountCop,
-            amount_original: normalized.originalAmount,
-            amount_cop: normalized.amountCop,
-            exchange_rate_used: normalized.exchangeRateUsed,
-            currency: normalized.currency,
-            reference_used: normalized.referenceUsed,
+            amount: normalized?.amountCop || 0,
+            amount_original: normalized?.originalAmount || 0,
+            amount_cop: normalized?.amountCop || 0,
+            exchange_rate_used: normalized?.exchangeRateUsed || 0,
+            currency: normalized?.currency || 'COP',
+            reference_used: normalized?.referenceUsed || false,
           };
         })
       );

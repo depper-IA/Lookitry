@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { Users, TrendingUp, UserCheck, BarChart2, Image, Package, Globe, PauseCircle, MinusCircle, CreditCard, Building2 } from 'lucide-react';
@@ -56,21 +56,24 @@ export default function AdminDashboardPage() {
 
   if (!global || !conversion) return null;
 
-  const maxCount = Math.max(...conversion.conversionsByMonth.map(m => m.count), 1);
+  const conversionsByMonth = conversion?.conversionsByMonth || [];
+  const maxCount = Math.max(...conversionsByMonth.map(m => m.count || 0), 1);
+  const brandsByPlan = global?.brandsByPlan || { BASIC: 0, PRO: 0, TRIAL: 0 };
+  const landingStats = global?.landingStats || { active: 0, suspended: 0, inactive: 0 };
 
   const topCards = [
-    { label: 'Total marcas', value: global.totalBrands, icon: <Users className="w-4 h-4" />, accent: '#3b82f6' },
-    { label: 'Productos activos', value: global.totalProducts, icon: <Package className="w-4 h-4" />, accent: '#10b981' },
-    { label: 'Generaciones totales', value: global.totalGenerations, icon: <Image className="w-4 h-4" />, accent: '#8b5cf6' },
-    { label: 'Generaciones este mes', value: global.generationsThisMonth, icon: <BarChart2 className="w-4 h-4" />, accent: '#FF5C3A' },
-    { label: 'Trials activos', value: conversion.inTrial, icon: <BarChart2 className="w-4 h-4" />, accent: '#f59e0b' },
-    { label: 'Trials pagados', value: conversion.paidTrials, icon: <CreditCard className="w-4 h-4" />, accent: '#f97316' },
-    { label: 'Trial -> Basic', value: conversion.trialToBasic, icon: <TrendingUp className="w-4 h-4" />, accent: '#0ea5e9' },
-    { label: 'Trial -> Pro', value: conversion.trialToPro, icon: <TrendingUp className="w-4 h-4" />, accent: '#22c55e' },
-    { label: 'Trial -> Enterprise', value: conversion.trialToEnterprise, icon: <Building2 className="w-4 h-4" />, accent: '#6366f1' },
-    { label: 'Convertidas a pago', value: conversion.converted, icon: <UserCheck className="w-4 h-4" />, accent: '#14b8a6' },
-    { label: 'Tasa de conversión', value: `${conversion.conversionRate}%`, icon: <TrendingUp className="w-4 h-4" />, accent: '#6366f1' },
-    { label: 'Tasa de éxito IA', value: `${Math.round(global.successRate)}%`, icon: <TrendingUp className="w-4 h-4" />, accent: '#ec4899' },
+    { label: 'Total marcas', value: global?.totalBrands || 0, icon: <Users className="w-4 h-4" />, accent: '#3b82f6' },
+    { label: 'Productos activos', value: global?.totalProducts || 0, icon: <Package className="w-4 h-4" />, accent: '#10b981' },
+    { label: 'Generaciones totales', value: global?.totalGenerations || 0, icon: <Image className="w-4 h-4" />, accent: '#8b5cf6' },
+    { label: 'Generaciones este mes', value: global?.generationsThisMonth || 0, icon: <BarChart2 className="w-4 h-4" />, accent: '#FF5C3A' },
+    { label: 'Trials activos', value: conversion?.inTrial || 0, icon: <BarChart2 className="w-4 h-4" />, accent: '#f59e0b' },
+    { label: 'Trials pagados', value: conversion?.paidTrials || 0, icon: <CreditCard className="w-4 h-4" />, accent: '#f97316' },
+    { label: 'Trial -> Basic', value: conversion?.trialToBasic || 0, icon: <TrendingUp className="w-4 h-4" />, accent: '#0ea5e9' },
+    { label: 'Trial -> Pro', value: conversion?.trialToPro || 0, icon: <TrendingUp className="w-4 h-4" />, accent: '#22c55e' },
+    { label: 'Trial -> Enterprise', value: conversion?.trialToEnterprise || 0, icon: <Building2 className="w-4 h-4" />, accent: '#6366f1' },
+    { label: 'Convertidas a pago', value: conversion?.converted || 0, icon: <UserCheck className="w-4 h-4" />, accent: '#14b8a6' },
+    { label: 'Tasa de conversión', value: `${conversion?.conversionRate || 0}%`, icon: <TrendingUp className="w-4 h-4" />, accent: '#6366f1' },
+    { label: 'Tasa de éxito IA', value: `${Math.round(global?.successRate || 0)}%`, icon: <TrendingUp className="w-4 h-4" />, accent: '#ec4899' },
   ];
 
   return (
@@ -97,11 +100,12 @@ export default function AdminDashboardPage() {
           <h2 className="font-jakarta font-bold text-sm mb-5" style={{ color: 'var(--text-primary)' }}>Distribución por plan</h2>
           <div className="space-y-4">
             {[
-              { label: 'Plan Basic', count: global.brandsByPlan.BASIC, color: '#64748b' },
-              { label: 'Plan Pro', count: global.brandsByPlan.PRO, color: '#FF5C3A' },
-              { label: 'Plan Trial', count: global.brandsByPlan.TRIAL, color: '#f59e0b' },
+              { label: 'Plan Basic', count: brandsByPlan.BASIC || 0, color: '#64748b' },
+              { label: 'Plan Pro', count: brandsByPlan.PRO || 0, color: '#FF5C3A' },
+              { label: 'Plan Trial', count: brandsByPlan.TRIAL || 0, color: '#f59e0b' },
             ].map(p => {
-              const pct = global.totalBrands > 0 ? Math.round((p.count / global.totalBrands) * 100) : 0;
+              const total = global?.totalBrands || 0;
+              const pct = total > 0 ? Math.round((p.count / total) * 100) : 0;
               return (
                 <div key={p.label}>
                   <div className="flex justify-between text-xs mb-2">
@@ -119,7 +123,7 @@ export default function AdminDashboardPage() {
             <div className="pt-4 mt-2" style={{ borderTop: '1px solid var(--border-color)' }}>
               <div className="flex justify-between text-xs">
                 <span style={{ color: 'var(--text-secondary)' }}>Tasa de conversión</span>
-                <span className="font-bold tabular-nums" style={{ color: '#FF5C3A' }}>{conversion.conversionRate}%</span>
+                <span className="font-bold tabular-nums" style={{ color: '#FF5C3A' }}>{conversion?.conversionRate || 0}%</span>
               </div>
             </div>
           </div>
@@ -129,7 +133,7 @@ export default function AdminDashboardPage() {
           <h2 className="font-jakarta font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Conversiones por mes</h2>
           <p className="text-xs mb-5 mt-0.5" style={{ color: 'var(--text-secondary)' }}>Cambios desde trial a planes superiores</p>
           <div className="flex items-end gap-2 h-36">
-            {conversion.conversionsByMonth.map(m => {
+            {conversionsByMonth.map(m => {
               const heightPct = (m.count / maxCount) * 100;
               return (
                 <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
@@ -144,20 +148,20 @@ export default function AdminDashboardPage() {
               );
             })}
           </div>
-          {conversion.conversionsByMonth.every(m => m.count === 0) && (
+          {(conversionsByMonth.length === 0 || conversionsByMonth.every(m => m.count === 0)) && (
             <p className="text-center text-xs mt-3" style={{ color: 'var(--text-muted)' }}>Sin conversiones en los últimos 6 meses</p>
           )}
         </div>
       </div>
 
-      {global.landingStats && (
+      {landingStats && (
         <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
           <h2 className="font-jakarta font-bold tracking-tight text-sm mb-4" style={{ color: 'var(--text-primary)' }}>Mini-landings</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { label: 'Activas', value: global.landingStats.active, icon: <Globe className="w-4 h-4" />, accent: '#10b981' },
-              { label: 'Suspendidas', value: global.landingStats.suspended, icon: <PauseCircle className="w-4 h-4" />, accent: '#f59e0b' },
-              { label: 'Sin activar', value: global.landingStats.inactive, icon: <MinusCircle className="w-4 h-4" />, accent: '#64748b' },
+              { label: 'Activas', value: landingStats.active || 0, icon: <Globe className="w-4 h-4" />, accent: '#10b981' },
+              { label: 'Suspendidas', value: landingStats.suspended || 0, icon: <PauseCircle className="w-4 h-4" />, accent: '#f59e0b' },
+              { label: 'Sin activar', value: landingStats.inactive || 0, icon: <MinusCircle className="w-4 h-4" />, accent: '#64748b' },
             ].map(c => (
               <div key={c.label} className="rounded-lg p-4 flex items-center gap-3" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-color)', borderLeft: `3px solid ${c.accent}` }}>
                 <div style={{ color: c.accent }}>{c.icon}</div>
@@ -184,10 +188,10 @@ export default function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {[...conversion.conversionsByMonth].reverse().map((m) => (
+              {[...conversionsByMonth].reverse().map((m) => (
                 <tr key={m.month} style={{ borderTop: '1px solid var(--border-color)' }}>
                   <td className="px-5 py-3 capitalize" style={{ color: 'var(--text-secondary)' }}>{formatMonth(m.month)}</td>
-                  <td className="px-5 py-3 text-right font-semibold tabular-nums" style={{ color: m.count > 0 ? '#FF5C3A' : 'var(--text-muted)' }}>{m.count}</td>
+                  <td className="px-5 py-3 text-right font-semibold tabular-nums" style={{ color: (m.count || 0) > 0 ? '#FF5C3A' : 'var(--text-muted)' }}>{m.count || 0}</td>
                 </tr>
               ))}
             </tbody>
