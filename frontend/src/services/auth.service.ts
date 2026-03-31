@@ -115,6 +115,13 @@ class AuthService {
     // comprobamos si tenemos datos de marca guardados (indicio de sesión activa).
     return !!this.getBrand();
   }
+
+  async resendVerification(email: string): Promise<{ message: string }> {
+    return await apiFetch<{ message: string }>('/api/auth/resend-verification', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
 }
 
 export const authService = new AuthService();

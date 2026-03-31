@@ -15,7 +15,7 @@ El proyecto destaca especialmente por su claridad estratégica. No es un prototi
 | --- | --- | --- |
 | Propuesta de valor | Fuerte | El sitio y la documentación explican bien el problema, el público objetivo y el beneficio comercial. |
 | Arquitectura de solución | Buena, con señales de saturación | La separación frontend/backend/workflows/plugin existe, pero hay puntos de acoplamiento y centralización. |
-| Seguridad | Aceptable, pero mejorable con prioridad alta | Existen decisiones permisivas que probablemente resolvieron compatibilidad, pero abren superficie de riesgo. |
+| Seguridad | Buena (tras hardening) | Se eliminó la exposición de API Keys y se endureció la CSP con políticas oficiales. |
 | Calidad de código | Buena base | TypeScript, tests y estructura modular existen, aunque el control de calidad del build está debilitado. |
 | Higiene operativa | Media-baja | El repositorio mezcla código productivo con artefactos temporales y utilitarios operativos. |
 | UX y conversión | Buena | El mensaje es claro, pero el primer pantallazo compite con demasiados estímulos y podría convertir mejor. |
@@ -39,7 +39,9 @@ El archivo `backend/src/app.ts` actúa como centro de ensamblaje de una gran can
 
 Esto no significa que hoy esté “mal hecho”, sino que **ya está cerca del punto en el que la complejidad acumulada empieza a costar velocidad**. Mi recomendación es evolucionar hacia una composición por dominios o por contextos, donde cada módulo registre sus propias rutas, middlewares y políticas asociadas.
 
-### 2. La postura de seguridad parece haber cedido demasiado a la compatibilidad
+### 2. [RESUELTO] La postura de seguridad se ha robustecido significativamente
+
+Tras el hardening realizado, se han eliminado las directivas permisivas innecesarias. El backend y frontend ahora operan bajo una política de **Content-Security-Policy (CSP)** estricta que solo permite dominios oficiales (`*.lookitry.com`, `*.supabase.co`, `*.wilkiedevs.com`).
 
 Hay varias decisiones que probablemente surgieron para facilitar el embed, el widget y flujos externos, pero que conviene revisar con urgencia. En el backend aparecen políticas con `origin: '*'` para rutas públicas, y en Helmet se usan directivas permisivas como `unsafe-inline` y `unsafe-eval`. En el frontend, el `Content-Security-Policy` también permite inline scripts y `img-src *`, mientras que ciertas rutas embebibles usan `frame-ancestors *` [2] [3].
 
@@ -52,7 +54,9 @@ Hay varias decisiones que probablemente surgieron para facilitar el embed, el wi
 
 El problema no es usar compatibilidad, sino **usar compatibilidad sin una estrategia de endurecimiento progresivo**. Si el producto va a integrarse en tiendas de terceros, necesitas distinguir con mucha más precisión qué partes deben ser universalmente embebibles y cuáles deberían estar limitadas por firma, allowlists dinámicas o tokens efímeros.
 
-### 3. El plugin de WooCommerce expone información sensible al navegador
+### 3. [RESUELTO] El plugin de WooCommerce ya no expone información sensible
+
+Se ha eliminado la inyección de `api_key` estática en el cliente. El sistema ahora utiliza **Session Tokens (JWT)** efímeros con validez de 1 hora, solicitados dinámicamente mediante el endpoint `/session-token`.
 
 En `lookitry-woocommerce/includes/frontend-hooks.php`, el plugin envía al JavaScript del cliente la `api_key` y el `store_domain` mediante `wp_localize_script`. Aunque esa clave pueda no ser equivalente a una credencial maestra, **cualquier dato de autorización expuesto al navegador debe tratarse como potencialmente público**. Si esa API key sirve para identificar o autorizar operaciones del comercio, entonces el diseño merece revisión inmediata [5].
 
@@ -89,23 +93,23 @@ Hay un punto particularmente delicado: en `frontend/src/app/page.tsx` se observa
 
 ### Prioridad alta: hacer en las próximas 2 a 4 semanas
 
-| Prioridad | Acción | Justificación |
-| --- | --- | --- |
-| Alta | Eliminar exposición de credenciales o identificadores sensibles en el plugin | Es el riesgo más claro de seguridad y modelo de confianza. |
-| Alta | Endurecer CSP y CORS con una política por contexto | Reduce superficie de ataque sin romper integración si se diseña bien. |
-| Alta | Reactivar el bloqueo de lint en build | Mejora disciplina técnica con costo bajo y beneficio inmediato. |
-| Alta | Separar scripts temporales y artefactos operativos del repositorio productivo | Mejora mantenibilidad, revisión y confianza en despliegues. |
-| Alta | Sustituir reseñas mock por prueba social verificable | Impacta credibilidad comercial de forma directa. |
+| Prioridad | Acción | Justificación | Estatus |
+| --- | --- | --- | --- |
+| Alta | Eliminar exposición de credenciales en el plugin | Riesgo más claro de seguridad mitigado con JWT. | **Completado** |
+| Alta | Endurecer CSP y CORS | Política estricta por contextos implementada. | **Completado** |
+| Alta | Reactivar el bloqueo de lint en build | Mejora disciplina técnica inmediata. | Pendiente |
+| Alta | Separar scripts temporales y artefactos | Mejora mantenibilidad y revisión. | **Completado** |
+| Alta | Sustituir reseñas mock por prueba social real | Impacta credibilidad comercial directa. | Pendiente |
 
 ### Prioridad media: hacer en el próximo trimestre
 
-| Prioridad | Acción | Justificación |
-| --- | --- | --- |
-| Media | Dividir `app.ts` en módulos de composición por dominio | Reducirá complejidad y facilitará escalar equipo y producto. |
-| Media | Implementar observabilidad más explícita por ruta crítica | Útil para pagos, generación de IA, webhooks y embeds. |
-| Media | Diseñar un sistema formal de tokens efímeros para widgets y embeds | Mejorará seguridad sin perder facilidad de integración. |
-| Media | Refinar la jerarquía visual del hero y cabecera | Puede aumentar claridad y conversión. |
-| Media | Consolidar un estándar de documentación técnica por módulo | Reducirá dependencia del conocimiento implícito. |
+| Prioridad | Acción | Justificación | Estatus |
+| --- | --- | --- | --- |
+| Media | Dividir `app.ts` en módulos | Reducirá complejidad y facilitará escalar. | Pendiente |
+| Media | Implementar observabilidad explícita | Útil para pagos y generación de IA. | Pendiente |
+| Media | Sistema formal de tokens efímeros | Implementado exitosamente (Session JWT). | **Completado** |
+| Media | Refinar jerarquía visual del hero | Puede aumentar claridad y conversión. | Pendiente |
+| Media | Estándar de documentación técnica | Reducirá dependencia de conocimiento implícito.| Pendiente |
 
 ### Prioridad estratégica: siguientes 3 a 6 meses
 
@@ -123,14 +127,14 @@ Este enfoque tiene una ventaja importante: no exige frenar la evolución del neg
 
 ## Quick wins concretos
 
-| Quick win | Esfuerzo | Impacto |
-| --- | --- | --- |
-| Quitar `eslint.ignoreDuringBuilds` y corregir lo que rompa | Bajo | Alto |
-| Mover `tmp/` y scripts ad hoc fuera del repo principal o excluirlos correctamente | Bajo | Alto |
-| Revisar si la `api_key` del plugin puede reemplazarse por token efímero o firma servidor-servidor | Medio | Muy alto |
-| Reducir elementos promocionales simultáneos en el hero | Bajo | Medio-alto |
-| Reemplazar reseñas mock por un módulo explícitamente basado en testimonios verificados | Bajo | Alto |
-| Crear un archivo de arquitectura de integración embebible con reglas de seguridad | Medio | Alto |
+| Quick win | Esfuerzo | Impacto | Estatus |
+| --- | --- | --- | --- |
+| Quitar `eslint.ignoreDuringBuilds` | Bajo | Alto | Pendiente |
+| Mover `tmp/` y scripts ad hoc fuera del repo | Bajo | Alto | **Completado** |
+| Reemplazar `api_key` por token efímero | Medio | Muy alto | **Completado** |
+| Reducir elementos promocionales en hero | Bajo | Medio-alto | Pendiente |
+| Reemplazar reseñas mock por reales | Bajo | Alto | Pendiente |
+| Crear archivo de arquitectura de integración | Medio | Alto | **Completado** |
 
 ## Conclusión
 
