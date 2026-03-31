@@ -1892,3 +1892,15 @@ Garantizar que futuros agentes de IA tengan un contexto técnico limpio, actuali
 **Motivo:**
 
 - Reforzar la identidad visual "Premium" de la plataforma Lookitry, donde se prefieren íconos limpios (`lucide-react` en UI y SVG en documentación) por sobre los emojis genéricos, manteniendo la coherencia con las directrices de `REGLAS_IMPORTANTES.md`.
+
+## 30 de Marzo, 2026 - Ajustes Finales README (Logo y Footer)
+
+**Objetivo:**
+
+- Solucionar problemas de renderizado del logo principal en GitHub y añadir un toque humano al footer.
+
+**Cambios aplicados:**
+
+- **Raíz (`README.md`):**
+  - Se actualizó el `src` del logo principal para apuntar directamente a `https://lookitry.com/logo.svg`, resolviendo problemas de carga con rutas locales o urls raw de GitHub.
+  - Se agregó de vuelta un único emoji (`❤️`) al pie de página ("Construido con ❤️...") como excepción a la regla de diseño, para mantener calidez en el mensaje final.
