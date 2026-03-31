@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Image, Palette, Package, Globe, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Image as ImageIcon, Palette, Package, Globe, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const getLandingTutorialKey = (brandId?: string | number) =>
   brandId ? `landing_tutorial_seen_${brandId}` : 'landing_tutorial_seen';
@@ -20,7 +20,7 @@ const STEPS: TutorialStep[] = [
     title: 'Sube tu logo',
     description: 'Agrega el logo de tu marca para que aparezca en tu mini-landing. Recomendamos PNG con fondo transparente.',
     hint: 'Busca la sección "Logo de la marca" en esta página.',
-    icon: <Image className="w-8 h-8" />,
+    icon: <ImageIcon className="w-8 h-8" />,
   },
   {
     id: 2,

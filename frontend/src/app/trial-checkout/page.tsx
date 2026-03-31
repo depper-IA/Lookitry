@@ -4,106 +4,137 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Mail, ChevronLeft, ChevronRight, CreditCard, LayoutPanelLeft } from 'lucide-react';
 import { api } from '@/services/api';
-import { authService } from '@/services/auth.service';
+import { StepProgress, Step } from '@/components/payments/StepProgress';
+import { clearCheckoutDraft, loadCheckoutDraft, saveCheckoutDraft } from '@/lib/checkoutDraft';
+import { formatCop, formatUsd, priceInUsd } from '@/lib/paymentDisplay';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+const OA = '#FF5C3A';
+const TRIAL_DRAFT_KEY = 'lookitry:trial-checkout-draft';
 
-function formatPaypalUsd(amountCop: number, trm: number): number {
-  const safeTrm = trm > 0 ? trm : 3900;
-  return Math.ceil(amountCop / safeTrm);
+function IconCheck() {
+  return (
+    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke={OA} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+    </svg>
+  );
 }
-
-// --- Icons ---
-const IconCheck = () => (
-  <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-  </svg>
-);
-
-const IconLock = () => (
-  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-  </svg>
-);
-
-const IconArrowLeft = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-  </svg>
-);
-
-const IconInfo = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
-
-const IconUser = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-  </svg>
-);
 
 export default function TrialCheckoutPage() {
   const router = useRouter();
+  const [currentStep, setCurrentStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [campaign, setCampaign] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState<'wompi' | 'paypal'>('wompi');
   const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
   const [trm, setTrm] = useState(3900);
-
   const [guestEmail, setGuestEmail] = useState('');
   const [guestName, setGuestName] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [nameError, setNameError] = useState('');
 
   useEffect(() => {
-
-    // Cargar info de campaña y TRM
     Promise.all([
       api.get<any>('/trial/status'),
-      fetch(`${API_URL}/api/payment-settings/public`).then(r => r.ok ? r.json() : null)
-    ]).then(([trialRes, paySettings]) => {
-      setCampaign(trialRes.data);
-      if (paySettings?.trm) setTrm(paySettings.trm);
-    }).catch(err => console.error('Error loading checkout data:', err));
+      fetch(`${API_URL}/api/payment-settings/public`).then(r => (r.ok ? r.json() : null)),
+    ])
+      .then(([trialRes, paySettings]) => {
+        setCampaign(trialRes.data);
+        if (paySettings?.trm) setTrm(paySettings.trm);
+      })
+      .catch(err => console.error('Error loading checkout data:', err));
 
-    // Cargar moneda desde localStorage
     const savedCurrency = localStorage.getItem('currency') as 'COP' | 'USD';
     if (savedCurrency) {
       setCurrency(savedCurrency);
       if (savedCurrency === 'USD') setPaymentMethod('paypal');
     }
 
-    const handleCurrencyChange = () => {
-      const current = localStorage.getItem('currency') as 'COP' | 'USD';
-      if (current) {
-        setCurrency(current);
-        if (current === 'USD') setPaymentMethod('paypal');
-      }
-    };
-    window.addEventListener('currencyChange', handleCurrencyChange);
-    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
-  }, []); // Sin router dependency para evitar redirecciones
+    const draft = loadCheckoutDraft(TRIAL_DRAFT_KEY);
+    if (draft?.email) setGuestEmail(draft.email);
+    if (draft?.brandName) setGuestName(draft.brandName);
+    if (draft?.currency) setCurrency(draft.currency);
+    if (draft?.paymentMethod) setPaymentMethod(draft.paymentMethod);
+    if (typeof draft?.trm === 'number' && draft.trm > 0) setTrm(draft.trm);
+  }, []);
+
+  useEffect(() => {
+    saveCheckoutDraft(TRIAL_DRAFT_KEY, {
+      plan: 'TRIAL',
+      months: 1,
+      includesLanding: false,
+      email: guestEmail,
+      brandName: guestName,
+      paymentMethod,
+      currency,
+      trm,
+    });
+  }, [guestEmail, guestName, paymentMethod, currency, trm]);
 
   const priceCOP = campaign?.priceCOP ?? 20000;
   const trialDays = campaign?.trialDays ?? 7;
-  const priceUSD = formatPaypalUsd(priceCOP, trm);
+  const priceUSD = priceInUsd(priceCOP, trm);
 
-  const formatPrice = (val: number) => {
-    if (currency === 'USD') {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(val);
+  const formatPrimaryPrice = () => (paymentMethod === 'paypal' ? formatUsd(priceUSD) : formatCop(priceCOP));
+  const formatSecondaryPrice = () => (paymentMethod === 'paypal' ? `${formatCop(priceCOP)} COP` : `${formatUsd(priceUSD)} USD`);
+
+  const toggleCurrency = () => {
+    const newCurrency = currency === 'COP' ? 'USD' : 'COP';
+    setCurrency(newCurrency);
+    localStorage.setItem('currency', newCurrency);
+    setPaymentMethod(newCurrency === 'USD' ? 'paypal' : 'wompi');
+  };
+
+  const validateStep2 = () => {
+    let valid = true;
+
+    if (!guestEmail.trim()) {
+      setEmailError('El correo es obligatorio');
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.trim())) {
+      setEmailError('Formato de correo inválido');
+      valid = false;
     }
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0
-    }).format(val);
+
+    if (!guestName.trim()) {
+      setNameError('El nombre de la marca es obligatorio');
+      valid = false;
+    }
+
+    return valid;
+  };
+
+  const handleNextStep = () => {
+    if (currentStep === 1) {
+      setCurrentStep(2);
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    if (currentStep === 2 && validateStep2()) {
+      setCurrentStep(3);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep((prev) => (prev - 1) as Step);
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    router.back();
+  };
+
+  const handleStepChange = (step: Step) => {
+    if (step <= currentStep) {
+      setCurrentStep(step);
+      window.scrollTo(0, 0);
+    }
   };
 
   const handlePagar = async () => {
@@ -111,56 +142,47 @@ export default function TrialCheckoutPage() {
     setError('');
 
     try {
-      if (!guestEmail || !guestEmail.includes('@')) {
-        throw new Error('Por favor ingresa un correo electrónico válido');
-      }
-      if (!guestName || guestName.trim().length === 0) {
-        throw new Error('Por favor ingresa el nombre de tu marca');
+      if (!validateStep2()) {
+        setCurrentStep(2);
+        setLoading(false);
+        return;
       }
 
-      const body: any = { 
+      const body: Record<string, unknown> = {
         method: paymentMethod,
-        email: guestEmail,
-        brandName: guestName
+        email: guestEmail.trim(),
+        brandName: guestName.trim(),
       };
-      if (paymentMethod === 'paypal') body.trm = trm;
 
-      // MARKETING: Siempre usamos el endpoint de invitado para este trial
-      const res = await api.post<any>('/trial/initiate-guest', body);
-      
-      if (res.data.checkoutUrl) {
-        window.location.href = res.data.checkoutUrl;
-      } else {
-        throw new Error('No se pudo generar el enlace de pago');
+      if (paymentMethod === 'paypal') {
+        body.trm = trm;
       }
+
+      const res = await api.post<any>('/trial/initiate-guest', body);
+
+      if (res.data.checkoutUrl) {
+        clearCheckoutDraft(TRIAL_DRAFT_KEY);
+        window.location.href = res.data.checkoutUrl;
+        return;
+      }
+
+      throw new Error('No se pudo generar el enlace de pago');
     } catch (err: any) {
       setError(err.message || 'Error al iniciar el pago');
       setLoading(false);
     }
   };
 
-  const toggleCurrency = () => {
-    const newCurrency = currency === 'COP' ? 'USD' : 'COP';
-    setCurrency(newCurrency);
-    localStorage.setItem('currency', newCurrency);
-    window.dispatchEvent(new Event('currencyChange'));
-    if (newCurrency === 'USD') setPaymentMethod('paypal');
-    else setPaymentMethod('wompi');
-  };
-
-
   return (
     <main className="min-h-screen bg-[#030303] text-white selection:bg-[#FF5C3A]/30">
-      {/* Nav */}
       <nav className="border-b border-white/5 bg-black/50 backdrop-blur-xl px-4 md:px-8 h-16 flex items-center justify-between sticky top-0 z-50">
         <Link href="/" className="flex items-center gap-2.5">
           <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-          <span className="font-syne font-extrabold text-base tracking-tight">
+          <span className="font-jakarta font-extrabold text-base tracking-tight">
             Look<span className="text-[#FF5C3A]">itry</span>
           </span>
         </Link>
         <div className="flex items-center gap-4">
-          {/* Currency Switcher */}
           <button
             onClick={toggleCurrency}
             className="flex items-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-3 py-1.5 transition-all text-[11px] font-bold"
@@ -169,218 +191,279 @@ export default function TrialCheckoutPage() {
             <div className="w-px h-3 bg-white/10" />
             <span className={currency === 'USD' ? 'text-[#FF5C3A]' : 'text-white/40'}>USD</span>
           </button>
-          <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-white/50">
-            <IconLock />
+          <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-[#999]">
+            <CreditCard className="w-3.5 h-3.5" style={{ color: OA }} />
             Pago 100% seguro
           </div>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-6 py-8 md:py-16">
+      <div className="max-w-5xl mx-auto px-6 py-8 md:py-16">
         <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-[13px] text-white/40 hover:text-white transition-colors mb-8 group"
+          onClick={handlePrevStep}
+          className="flex items-center gap-2 text-[13px] text-[#999] hover:text-white transition-colors mb-8 group"
         >
-          <IconArrowLeft />
+          <ChevronLeft className="w-4 h-4" />
           Volver
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-          
-          {/* Columna Info Plan */}
-          <div className="space-y-6">
-            <div>
-              <h1 className="font-syne font-bold text-3xl md:text-4xl leading-tight mb-4">
-                Activa tu <span className="text-[#FF5C3A]">Prueba Profesional</span>
-              </h1>
-              <p className="text-white/60 text-[15px] leading-relaxed max-w-md">
-                Estás a un paso de revolucionar la experiencia de compra de tus clientes con Probador Virtual.
-              </p>
-            </div>
+        <div className="mb-8">
+          <StepProgress currentStep={currentStep} maxNavigableStep={currentStep} onStepChange={handleStepChange} />
+        </div>
 
-            <div className="bg-white/[0.03] border border-white/10 rounded-[2rem] p-8 backdrop-blur-sm relative overflow-hidden group">
-              <div className="absolute -top-12 -right-12 w-24 h-24 bg-[#FF5C3A]/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <div className="flex items-center justify-between mb-8">
-                <span className="text-[11px] font-bold uppercase tracking-widest text-[#FF5C3A]">Acceso Ilimitado</span>
-                <span className="bg-white/5 border border-white/10 text-[11px] px-3 py-1 rounded-full text-white/80 font-medium">
-                  {trialDays} días
-                </span>
-              </div>
-
-              <div className="space-y-4 mb-10">
-                {[
-                  '1 Producto activo en el catálogo',
-                  '15 Generaciones con IA',
-                  'Widget personalizable para tu sitio',
-                  'Acceso a todas las funciones PRO'
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <IconCheck />
-                    <span className="text-[14px] text-white/80">{item}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="pt-8 border-t border-white/10 flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-[11px] text-white/40 uppercase font-bold tracking-tight">Total a pagar</span>
-                  <span className="text-3xl font-syne font-extrabold text-white">
-                    {formatPrice(currency === 'USD' ? priceUSD : priceCOP)}
-                  </span>
-                </div>
-                {currency === 'USD' && (
-                  <div className="text-right">
-                    <span className="block text-[10px] text-white/30 leading-tight italic">TRM: {trm.toLocaleString('es-CO')}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-[#FF5C3A]/5 border border-[#FF5C3A]/20 rounded-2xl p-4 flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <IconInfo />
-              </div>
-              <p className="text-[12px] text-white/60 leading-relaxed">
-                <strong className="text-white">Dato:</strong> Puedes cancelar en cualquier momento. Si decides seguir, tu inversión en la prueba se descontará de tu primer mes de suscripción.
-              </p>
-            </div>
-          </div>
-
-          {/* Columna Pago */}
-          <div className="bg-white/[0.02] border border-white/10 rounded-[2.5rem] p-8 md:p-10 sticky top-28">
-            <h2 className="font-syne font-bold text-xl mb-6 flex items-center gap-2 text-white">
-              <span className="w-1.5 h-6 bg-[#FF5C3A] rounded-full inline-block" />
-              Tus Datos de Contacto
-            </h2>
-
-            <div className="space-y-4 mb-8">
-              <div>
-                <label className="block text-[12px] font-bold text-white/50 uppercase tracking-tight mb-2">Tu Email (donde recibirás el acceso)</label>
-                <input
-                  type="email"
-                  value={guestEmail}
-                  onChange={(e) => setGuestEmail(e.target.value)}
-                  placeholder="ejemplo@correo.com"
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-3.5 text-[14px] text-white focus:outline-none focus:border-[#FF5C3A] transition-colors"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-[12px] font-bold text-white/50 uppercase tracking-tight mb-2">Nombre de tu Marca</label>
-                <input
-                  type="text"
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="Mi Marca Increíble"
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl px-5 py-3.5 text-[14px] text-white focus:outline-none focus:border-[#FF5C3A] transition-colors"
-                  required
-                />
-              </div>
-            </div>
-
-            <h2 className="font-syne font-bold text-xl mb-6 flex items-center gap-2 text-white">
-              <span className="w-1.5 h-6 bg-[#FF5C3A] rounded-full inline-block" />
-              Método de Pago
-            </h2>
-
-            <div className="space-y-4 mb-8">
-              <button
-                onClick={() => {
-                  setPaymentMethod('wompi');
-                  if (currency === 'USD') {
-                    setCurrency('COP');
-                    localStorage.setItem('currency', 'COP');
-                    window.dispatchEvent(new Event('currencyChange'));
-                  }
-                }}
-                className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
-                  paymentMethod === 'wompi' 
-                    ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-[0_0_20px_rgba(255,92,58,0.1)]' 
-                    : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.04]'
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wompi' ? 'border-[#FF5C3A]' : 'border-white/20'}`}>
-                    {paymentMethod === 'wompi' && <div className="w-2.5 h-2.5 rounded-full bg-[#FF5C3A]" />}
-                  </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-8 space-y-6">
+            {currentStep === 1 && (
+              <section className="rounded-[2rem] border border-[#1f1f1f] bg-[#0d0d0d] p-8">
+                <div className="flex items-center justify-between mb-6">
                   <div>
-                    <span className="block font-bold text-[15px] text-white">Wompi</span>
-                    <span className="text-[11px] text-white/40">Tarjetas, PSE, Nequi (Solo COP)</span>
+                    <h1 className="font-jakarta font-bold text-3xl md:text-4xl leading-tight text-white">
+                      Activa tu <span className="text-[#FF5C3A]">Prueba Profesional</span>
+                    </h1>
+                    <p className="text-[#bbb] text-[15px] leading-relaxed max-w-xl mt-4">
+                      Empieza con el mismo recorrido del funnel principal: eliges el plan, dejas tus datos y activas el pago.
+                    </p>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-2 rounded-full border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-[#FF5C3A]">
+                    Paso 1 de 3
                   </div>
                 </div>
-                <Image src="/wompi-logo.svg" alt="Wompi" width={60} height={20} className="object-contain opacity-70" />
-              </button>
 
-              <button
-                onClick={() => {
-                  setPaymentMethod('paypal');
-                  if (currency !== 'USD') {
-                    setCurrency('USD');
-                    localStorage.setItem('currency', 'USD');
-                    window.dispatchEvent(new Event('currencyChange'));
-                  }
-                }}
-                className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${
-                  paymentMethod === 'paypal' 
-                    ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-[0_0_20px_rgba(255,92,58,0.1)]' 
-                    : 'border-white/5 bg-white/[0.02] hover:bg-white/[0.04]'
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'paypal' ? 'border-[#FF5C3A]' : 'border-white/20'}`}>
-                    {paymentMethod === 'paypal' && <div className="w-2.5 h-2.5 rounded-full bg-[#FF5C3A]" />}
+                <div className="rounded-[1.75rem] border border-[#1f1f1f] bg-[#0a0a0a] p-6">
+                  <div className="flex items-center justify-between mb-8">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-[#FF5C3A]">Plan trial</span>
+                    <span className="rounded-full border border-[#2a2a2a] bg-[#141414] px-3 py-1 text-[11px] text-[#bbb] font-medium">
+                      {trialDays} días
+                    </span>
                   </div>
-                  <div>
-                    <span className="block font-bold text-[15px] text-white">PayPal</span>
-                    <span className="text-[11px] text-white/40">Tarjetas globales o Saldo PHP</span>
+
+                  <div className="grid gap-3 mb-8">
+                    {[
+                      '1 producto activo en el catálogo',
+                      '15 generaciones con IA',
+                      'Widget personalizable para tu sitio',
+                      'Acceso a todas las funciones PRO',
+                    ].map((item) => (
+                      <div key={item} className="flex items-center gap-3">
+                        <IconCheck />
+                        <span className="text-[14px] text-[#bbb]">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="border-t border-[#1f1f1f] pt-6 flex items-end justify-between">
+                    <div>
+                      <p className="text-[11px] text-[#999] uppercase font-bold tracking-widest mb-2">Total de activación</p>
+                      <p className="text-3xl font-jakarta font-extrabold text-white">{formatPrimaryPrice()}</p>
+                      <p className="text-[10px] text-[#FF5C3A] font-bold uppercase tracking-widest mt-2">
+                        {formatSecondaryPrice()} · TRM {formatCop(trm).replace('COP', '').trim()}
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-[#FF5C3A]/15 bg-[#FF5C3A]/5 p-4 text-right">
+                      <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#FF5C3A]">
+                        <LayoutPanelLeft className="w-3.5 h-3.5" />
+                        Acceso inmediato
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <Image src="/payment-paypal.svg" alt="PayPal" width={60} height={20} className="object-contain opacity-70" />
-              </button>
-            </div>
 
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-[13px] mb-6 flex items-start gap-3">
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {error}
-              </div>
+                <div className="mt-8 flex justify-end">
+                  <button
+                    onClick={handleNextStep}
+                    className="inline-flex items-center gap-2 rounded-2xl bg-[#FF5C3A] px-8 py-4 text-sm font-bold text-white shadow-[0_10px_30px_-10px_rgba(255,92,58,0.4)] transition-all"
+                  >
+                    Continuar
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </section>
             )}
 
-            <button
-              onClick={handlePagar}
-              disabled={loading}
-              className="w-full bg-[#FF5C3A] hover:bg-[#ff6c4d] disabled:opacity-50 disabled:cursor-not-allowed text-white font-syne font-extrabold text-base py-5 rounded-2xl transition-all shadow-[0_4px_24px_rgba(255,92,58,0.3)] hover:shadow-[0_8px_32px_rgba(255,92,58,0.4)] active:scale-[0.98]"
-            >
-              {loading ? (
-                <div className="flex items-center justify-center gap-3">
-                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Procesando...
+            {currentStep === 2 && (
+              <section className="rounded-[2rem] border border-[#1f1f1f] bg-[#0d0d0d] p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="font-jakarta font-bold text-2xl text-white tracking-tight">Tus datos</h2>
+                    <p className="text-[#999] text-sm mt-1">Usaremos este correo para enviarte el acceso y vincular tu prueba.</p>
+                  </div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-[#FF5C3A]">Paso 2 de 3</div>
                 </div>
-              ) : (
-                `Pagar ${formatPrice(currency === 'USD' ? priceUSD : priceCOP)}`
-              )}
-            </button>
 
-            <p className="text-center text-[11px] text-white/30 mt-6 leading-relaxed">
-              Al activar la prueba profesional, aceptas nuestros{' '}
-              <Link href="/terminos" className="underline hover:text-white transition-colors">Términos y Condiciones</Link>.
-            </p>
+                <div className="space-y-5">
+                  <div>
+                    <label className="mb-2 flex items-center gap-2 text-[12px] font-bold uppercase tracking-widest text-[#999]">
+                      <Mail className="w-3.5 h-3.5" style={{ color: OA }} />
+                      Email corporativo
+                    </label>
+                    <input
+                      type="email"
+                      value={guestEmail}
+                      onChange={(e) => {
+                        setGuestEmail(e.target.value);
+                        setEmailError('');
+                      }}
+                      placeholder="ejemplo@correo.com"
+                      className="w-full rounded-2xl border border-[#222] bg-[#050505] px-5 py-4 text-[14px] text-white outline-none transition-colors focus:border-[#FF5C3A]"
+                    />
+                    {emailError && <p className="mt-2 text-[12px] text-red-400">{emailError}</p>}
+                  </div>
+
+                  <div>
+                    <label className="mb-2 flex items-center gap-2 text-[12px] font-bold uppercase tracking-widest text-[#999]">
+                      <Mail className="w-3.5 h-3.5" style={{ color: OA }} />
+                      Nombre de tu marca
+                    </label>
+                    <input
+                      type="text"
+                      value={guestName}
+                      onChange={(e) => {
+                        setGuestName(e.target.value);
+                        setNameError('');
+                      }}
+                      placeholder="Mi marca increíble"
+                      className="w-full rounded-2xl border border-[#222] bg-[#050505] px-5 py-4 text-[14px] text-white outline-none transition-colors focus:border-[#FF5C3A]"
+                    />
+                    {nameError && <p className="mt-2 text-[12px] text-red-400">{nameError}</p>}
+                  </div>
+                </div>
+
+                <div className="mt-8 flex gap-4">
+                  <button
+                    onClick={handlePrevStep}
+                    className="flex-1 rounded-2xl border border-[#1f1f1f] bg-[#111] px-6 py-4 text-sm font-bold text-white transition-all hover:bg-[#141414]"
+                  >
+                    Atrás
+                  </button>
+                  <button
+                    onClick={handleNextStep}
+                    className="flex-[2] inline-flex items-center justify-center gap-2 rounded-2xl bg-[#FF5C3A] px-8 py-4 text-sm font-bold text-white shadow-[0_10px_30px_-10px_rgba(255,92,58,0.4)] transition-all"
+                  >
+                    Continuar al pago
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {currentStep === 3 && (
+              <section className="rounded-[2rem] border border-[#1f1f1f] bg-[#0d0d0d] p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="font-jakarta font-bold text-2xl text-white tracking-tight">Pago</h2>
+                    <p className="text-[#999] text-sm mt-1">Elige la pasarela. El monto se mantiene consistente con la TRM configurada.</p>
+                  </div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-[#FF5C3A]">Paso 3 de 3</div>
+                </div>
+
+                <div className="space-y-4 mb-8">
+                  <button
+                    onClick={() => {
+                      setPaymentMethod('wompi');
+                      setCurrency('COP');
+                      localStorage.setItem('currency', 'COP');
+                    }}
+                    className={`w-full flex items-center justify-between rounded-2xl border p-5 transition-all ${
+                      paymentMethod === 'wompi' ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[#1f1f1f] bg-[#0a0a0a]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${paymentMethod === 'wompi' ? 'border-[#FF5C3A]' : 'border-[#333]'}`}>
+                        {paymentMethod === 'wompi' && <div className="h-2.5 w-2.5 rounded-full bg-[#FF5C3A]" />}
+                      </div>
+                      <div className="text-left">
+                        <span className="block font-bold text-[15px] text-white">Wompi</span>
+                        <span className="text-[11px] text-[#999]">Tarjetas, PSE, Nequi · COP</span>
+                      </div>
+                    </div>
+                    <Image src="/wompi-logo.svg" alt="Wompi" width={60} height={20} className="object-contain opacity-70" />
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setPaymentMethod('paypal');
+                      setCurrency('USD');
+                      localStorage.setItem('currency', 'USD');
+                    }}
+                    className={`w-full flex items-center justify-between rounded-2xl border p-5 transition-all ${
+                      paymentMethod === 'paypal' ? 'border-[#FF5C3A] bg-[#FF5C3A]/5' : 'border-[#1f1f1f] bg-[#0a0a0a]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${paymentMethod === 'paypal' ? 'border-[#FF5C3A]' : 'border-[#333]'}`}>
+                        {paymentMethod === 'paypal' && <div className="h-2.5 w-2.5 rounded-full bg-[#FF5C3A]" />}
+                      </div>
+                      <div className="text-left">
+                        <span className="block font-bold text-[15px] text-white">PayPal</span>
+                        <span className="text-[11px] text-[#999]">Tarjetas globales · USD</span>
+                      </div>
+                    </div>
+                    <Image src="/payment-paypal.svg" alt="PayPal" width={60} height={20} className="object-contain opacity-70" />
+                  </button>
+                </div>
+
+                {error && (
+                  <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-[13px] text-red-400">
+                    {error}
+                  </div>
+                )}
+
+                <div className="mt-8 flex gap-4">
+                  <button
+                    onClick={handlePrevStep}
+                    className="flex-1 rounded-2xl border border-[#1f1f1f] bg-[#111] px-6 py-4 text-sm font-bold text-white transition-all hover:bg-[#141414]"
+                  >
+                    Atrás
+                  </button>
+                  <button
+                    onClick={handlePagar}
+                    disabled={loading}
+                    className="flex-[2] rounded-2xl bg-[#FF5C3A] px-8 py-4 text-sm font-bold text-white shadow-[0_10px_30px_-10px_rgba(255,92,58,0.4)] transition-all disabled:opacity-50"
+                  >
+                    {loading ? 'Procesando...' : paymentMethod === 'paypal' ? `Pagar ${formatUsd(priceUSD)} USD` : `Pagar ${formatCop(priceCOP)} COP`}
+                  </button>
+                </div>
+
+                <div className="mt-8 flex items-center justify-center gap-8 opacity-35">
+                  <Image src="/payment-pse.svg" alt="PSE" width={40} height={40} className="grayscale" />
+                  <Image src="/payment-mastercard.svg" alt="Mastercard" width={30} height={30} className="grayscale" />
+                  <Image src="/payment-visa.svg" alt="Visa" width={45} height={15} className="grayscale" />
+                </div>
+              </section>
+            )}
           </div>
 
+          <aside className="lg:col-span-4 lg:sticky lg:top-24">
+            <div className="rounded-[2rem] border border-[#1f1f1f] bg-[#0d0d0d] p-8">
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#FF5C3A]">Tu resumen</p>
+              <div className="mt-6 space-y-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-white">Prueba profesional</p>
+                    <p className="text-[11px] text-[#999]">{trialDays} días de acceso</p>
+                  </div>
+                  <span className="text-sm font-mono text-white">{formatCop(priceCOP)}</span>
+                </div>
+
+                <div className="border-t border-[#1f1f1f] pt-5">
+                  <p className="text-xs font-bold uppercase tracking-widest text-[#999]">Método seleccionado</p>
+                  <p className="mt-2 text-sm font-bold text-white">{paymentMethod === 'paypal' ? 'PayPal / USD' : 'Wompi / COP'}</p>
+                  <p className="mt-1 text-[11px] text-[#999]">{paymentMethod === 'paypal' ? `${formatUsd(priceUSD)} USD · ${formatCop(priceCOP)} COP` : `${formatCop(priceCOP)} COP · ${formatUsd(priceUSD)} USD`}</p>
+                </div>
+
+                <div className="border-t border-[#1f1f1f] pt-5">
+                  <p className="text-xs font-bold uppercase tracking-widest text-[#999]">Total</p>
+                  <p className="mt-2 text-3xl font-jakarta font-black text-white">{formatPrimaryPrice()}</p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-[#FF5C3A]">{formatSecondaryPrice()} · TRM {formatCop(trm).replace('COP', '').trim()}</p>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
-      
-      {/* Footer minimal */}
-      <footer className="py-12 border-t border-white/5 text-center">
-        <p className="text-white/20 text-[11px] font-syne uppercase tracking-widest">
-          Lookitry &copy; 2024 &bull; AI Try-On solutions
-        </p>
+
+      <footer className="border-t border-white/5 py-12 text-center">
+        <p className="text-[11px] font-jakarta uppercase tracking-widest text-[#999]">Lookitry Secure Payments © 2026</p>
       </footer>
     </main>
   );

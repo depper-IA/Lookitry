@@ -5,14 +5,13 @@ import { supabaseAdmin } from '../config/supabase';
 import { wompiService } from '../services/wompi.service';
 
 const router = Router();
-// Force rebuild to ensure最新的 trial routes are active
 
 /**
  * GET /api/trial/status
  * Retorna si hay una campaña de trial activa y cuántos días ofrece.
- * Público — no requiere auth.
+ * Público, no requiere auth.
  */
-router.get('/status', asyncHandler(async (req, res) => {
+router.get('/status', asyncHandler(async (_req, res) => {
   const now = new Date().toISOString();
   const { data } = await supabaseAdmin
     .from('trial_campaigns')
@@ -34,7 +33,9 @@ router.get('/status', asyncHandler(async (req, res) => {
       priceCOP: 0,
     });
   }
+
   const requiresTrialPayment = Number(data.price_cop ?? 0) > 0 && data.require_card_verification !== false;
+
   return res.json({
     active: true,
     trialAvailable: true,
@@ -48,85 +49,23 @@ router.get('/status', asyncHandler(async (req, res) => {
 
 /**
  * POST /api/trial/initiate
- * Genera la URL de pago (Wompi o PayPal) para activar el trial.
- * Requiere auth (la cuenta ya fue creada en /register).
+ * Flujo legado deshabilitado.
+ * El trial para clientes nuevos ahora siempre se inicia en /trial-checkout
+ * y genera referencias GUEST-TRIAL-* antes de crear la cuenta.
  */
-router.post('/initiate', authMiddleware, asyncHandler(async (req, res) => {
-  const brand = (req as any).brand;
-  const { method = 'wompi', trm: trmOverride } = req.body;
-
-  if (!brand?.id) {
-    return res.status(401).json({ error: 'No autenticado' });
-  }
-
-  // 1. Obtener campaña activa y su precio
-  const now = new Date().toISOString();
-  const { data: campaign } = await supabaseAdmin
-    .from('trial_campaigns')
-    .select('*')
-    .eq('active', true)
-    .or(`ends_at.is.null,ends_at.gt.${now}`)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
-
-  const price = campaign?.price_cop ?? 20000;
-
-  // 2. Si la campana no requiere pago por prueba, activar trial directamente
-  if (price === 0 || campaign?.require_card_verification === false) {
-    await supabaseAdmin
-      .from('brands')
-      .update({ plan: 'TRIAL', trial_payment_status: 'active' })
-      .eq('id', brand.id);
-    return res.json({ skipPayment: true, message: 'Trial activado directamente' });
-  }
-
-  // 3. Generar referencia única de Trial
-  const reference = wompiService.generateTrialReference(brand.id);
-
-  // 4. Marcar trial como pendiente de pago
-  await supabaseAdmin
-    .from('brands')
-    .update({ trial_payment_status: 'pending_payment' })
-    .eq('id', brand.id);
-
-  const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
-  const successUrl = `${frontendUrl}/trial-activado`;
-
-  // 5. Generar URL según el método
-  if (method === 'paypal') {
-    const { paypalService } = require('../services/paypal.service');
-    const { pricingService } = require('../services/pricing.service');
-    const { trm } = await pricingService.getEffectiveTrm(
-      trmOverride ? Number(trmOverride) : undefined
-    );
-    // Reutilizamos el checkout de suscripción de paypalService pero con nuestra referencia TRIAL-
-    const returnUrl = `${frontendUrl}/pago-exitoso?method=paypal&ref=${reference}&isTrial=true`;
-    const createdOrder = await paypalService.createOrder(price, trm, reference, returnUrl);
-    await paypalService.recordOrder({
-      reference,
-      brand_id: brand.id,
-      email: brand.email || null,
-      plan: 'TRIAL',
-      months: 1,
-      amount_cop: price,
-      trm,
-      amount_usd_expected: createdOrder.amountUSD,
-      order_id: createdOrder.orderId,
-      status: 'created',
-    });
-    return res.json({ checkoutUrl: createdOrder.checkoutUrl, reference });
-  } else {
-    // Wompi
-    const checkoutUrl = await wompiService.getCheckoutUrl(brand.id, price, successUrl, false, 1, 'TRIAL', reference);
-    return res.json({ checkoutUrl, reference });
-  }
+router.post('/initiate', authMiddleware, asyncHandler(async (_req, res) => {
+  return res.status(410).json({
+    error: 'El trial autenticado fue deshabilitado',
+    message: 'El trial ahora siempre se inicia desde el checkout publico antes de crear la cuenta.',
+    redirectPath: '/trial-checkout',
+    referencePrefix: 'GUEST-TRIAL-',
+  });
 }));
 
 /**
  * POST /api/trial/initiate-guest
  * Genera URL de pago para trial sin tener cuenta aún.
- * El usuario se registrará DESPUÉS del pago exitoso.
+ * El usuario se registrará después del pago exitoso.
  */
 router.post('/initiate-guest', asyncHandler(async (req, res) => {
   const { email, brandName: rawBrandName, name, method = 'wompi', trm: trmOverride } = req.body;
@@ -136,7 +75,6 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'Email válido es requerido' });
   }
 
-  // 1. Obtener campaña activa
   const now = new Date().toISOString();
   const { data: campaign } = await supabaseAdmin
     .from('trial_campaigns')
@@ -148,13 +86,10 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
     .single();
 
   const price = campaign?.price_cop ?? 20000;
-  const trialDays = campaign?.trial_days ?? 7;
 
-  // 2. Generar referencia de invitado
   const guestId = `visitor_${Date.now()}`;
   const reference = `GUEST-TRIAL-${guestId}`;
 
-  // 3. Crear registro pendiente
   const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({
     email,
     brand_name: brandName,
@@ -171,7 +106,6 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
   }
 
   const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
-  // Redirigir al registro con la referencia después del pago
   const successUrl = `${frontendUrl}/pago-exitoso?method=paypal&ref=${reference}&isGuestTrial=true`;
 
   if (method === 'paypal') {
@@ -180,7 +114,9 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
     const { trm } = await pricingService.getEffectiveTrm(
       trmOverride ? Number(trmOverride) : undefined
     );
+
     const createdOrder = await paypalService.createOrder(price, trm, reference, successUrl);
+
     await paypalService.recordOrder({
       reference,
       brand_id: null,
@@ -193,12 +129,12 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
       order_id: createdOrder.orderId,
       status: 'created',
     });
+
     return res.json({ checkoutUrl: createdOrder.checkoutUrl, reference });
-  } else {
-    // Wompi
-    const checkoutUrl = await wompiService.getCheckoutUrl(guestId, price, successUrl, false, 0, 'TRIAL', reference);
-    return res.json({ checkoutUrl, reference });
   }
+
+  const checkoutUrl = await wompiService.getCheckoutUrl(guestId, price, successUrl, false, 0, 'TRIAL', reference);
+  return res.json({ checkoutUrl, reference });
 }));
 
 export default router;

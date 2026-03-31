@@ -5,6 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { StepProgress, Step } from '@/components/payments/StepProgress';
+import { clearCheckoutDraft, loadCheckoutDraft, saveCheckoutDraft } from '@/lib/checkoutDraft';
+import { formatCop, formatUsd, priceInUsd } from '@/lib/paymentDisplay';
 import { 
   Check, 
   ChevronLeft, 
@@ -18,6 +20,7 @@ import {
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+const CHECKOUT_DRAFT_KEY = 'lookitry:checkout-draft';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -83,10 +86,6 @@ const PLAN_FEATURES: Record<PlanKey, string[]> = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatCOP(n: number) {
-  return '$' + Math.floor(n).toLocaleString('es-CO');
-}
 
 // ── Componente principal ──────────────────────────────────────────────────────
 
@@ -193,11 +192,28 @@ function CheckoutContent() {
     }
   }, []);
 
+  useEffect(() => {
+    const draft = loadCheckoutDraft(CHECKOUT_DRAFT_KEY);
+    if (!draft) return;
+
+    const draftPlan = String(draft.plan || '').toUpperCase();
+    if (['BASIC', 'PRO', 'LANDING', 'TRIAL'].includes(draftPlan)) {
+      setSelectedPlan(draftPlan as PlanKey);
+    }
+    if (typeof draft.months === 'number' && [1, 3, 6, 12].includes(draft.months)) {
+      setSelectedMonths(draft.months);
+    }
+    if (draft.email) setEmail(draft.email);
+    if (draft.brandName) setBrandName(draft.brandName);
+    if (draft.paymentMethod) setPaymentMethod(draft.paymentMethod);
+    if (draft.currency) setCurrency(draft.currency);
+    if (typeof draft.trm === 'number' && draft.trm > 0) setTrm(draft.trm);
+  }, []);
+
   // ── Cálculos ───────────────────────────────────────────────────────────────
 
   const landingPrice    = pricing?.landingPrice         ?? 650000;
   const landingOriginal = pricing?.landingOriginalPrice ?? 900000;
-  const landingDiscount = Math.round((1 - landingPrice / landingOriginal) * 100);
 
   const isLanding = selectedPlan === 'LANDING';
   const isTrial   = selectedPlan === 'TRIAL';
@@ -223,10 +239,6 @@ function CheckoutContent() {
 
   const baseTotalPrice = isLanding ? landingPrice + subPlanTotal : subPlanTotal;
 
-  const originalPrice = isLanding
-    ? landingOriginal + planBase[subPlan] * selectedMonths
-    : planBase[selectedPlan as 'BASIC' | 'PRO' | 'TRIAL'] * (isTrial ? 1 : selectedMonths);
-
   const couponDiscount = appliedCoupon
     ? appliedCoupon.discount_type === 'pct'
       ? Math.ceil(baseTotalPrice * appliedCoupon.discount_value / 100)
@@ -234,6 +246,21 @@ function CheckoutContent() {
     : 0;
 
   const totalPrice = Math.max(0, baseTotalPrice - couponDiscount);
+  const totalPriceUsd = priceInUsd(totalPrice, trm);
+  const canNavigateToStep: Step = currentStep === 3 ? 3 : currentStep;
+
+  useEffect(() => {
+    saveCheckoutDraft(CHECKOUT_DRAFT_KEY, {
+      plan: selectedPlan,
+      months: selectedMonths,
+      includesLanding: isLanding,
+      email,
+      brandName,
+      paymentMethod,
+      currency,
+      trm,
+    });
+  }, [selectedPlan, selectedMonths, isLanding, email, brandName, paymentMethod, currency, trm]);
 
   // ── Acciones ───────────────────────────────────────────────────────────────
 
@@ -296,6 +323,13 @@ function CheckoutContent() {
     }
   };
 
+  const handleStepChange = (step: Step) => {
+    if (step <= canNavigateToStep) {
+      setCurrentStep(step);
+      window.scrollTo(0, 0);
+    }
+  };
+
   const handlePagar = async () => {
     setLoading(true);
     setError('');
@@ -318,9 +352,11 @@ function CheckoutContent() {
         const responseData = await res.json();
         if (!res.ok) throw new Error(responseData.error || 'Error en checkout gratuito');
         if (responseData.isVisitor && responseData.reference) {
+          clearCheckoutDraft(CHECKOUT_DRAFT_KEY);
           window.location.href = `/registro-pro?ref=${responseData.reference}&free=1`;
           return;
         }
+        clearCheckoutDraft(CHECKOUT_DRAFT_KEY);
         window.location.href = `/pago-exitoso?plan=${planToSend}&months=${isTrial ? 1 : selectedMonths}&free=1`;
         return;
       }
@@ -335,6 +371,7 @@ function CheckoutContent() {
         );
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Error link PayPal');
+        clearCheckoutDraft(CHECKOUT_DRAFT_KEY);
         window.location.href = data.checkoutUrl;
         return;
       }
@@ -348,6 +385,7 @@ function CheckoutContent() {
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error checkout Wompi');
+      clearCheckoutDraft(CHECKOUT_DRAFT_KEY);
       window.location.href = data.checkoutUrl;
     } catch (err: any) {
       setError(err.message || 'Error al conectar con el servidor');
@@ -371,11 +409,11 @@ function CheckoutContent() {
       <nav className="sticky top-0 z-50 bg-[#050505]/90 backdrop-blur-md border-b border-[#1a1a1a] px-6 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
           <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="group-hover:scale-110 transition-transform" priority />
-          <span className="font-syne font-extrabold text-lg text-white tracking-tight">
+          <span className="font-jakarta font-extrabold text-lg text-white tracking-tight">
             Look<span style={{ color: OA }}>itry</span>
           </span>
         </Link>
-        <div className="hidden sm:flex items-center gap-2 text-xs text-[#666] font-medium">
+        <div className="hidden sm:flex items-center gap-2 text-xs text-[#999] font-medium">
           <Lock className="w-3.5 h-3.5" style={{ color: OA }} />
           <span>PAGO 100% SEGURO</span>
         </div>
@@ -384,7 +422,7 @@ function CheckoutContent() {
       <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
         {/* Progress Bar */}
         <div className="mb-12">
-          <StepProgress currentStep={currentStep} />
+          <StepProgress currentStep={currentStep} maxNavigableStep={canNavigateToStep} onStepChange={handleStepChange} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -396,7 +434,7 @@ function CheckoutContent() {
             {currentStep === 1 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-syne font-bold text-white tracking-tight">Elige tu plan</h2>
+                  <h2 className="text-2xl font-jakarta font-bold text-white tracking-tight">Elige tu plan</h2>
                   <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso 1 de 3</div>
                 </div>
 
@@ -416,7 +454,7 @@ function CheckoutContent() {
                         }}
                       >
                         <div className="flex items-center justify-between mb-3">
-                          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: isSelected ? OA : '#555' }}>
+                          <span className="text-xs font-bold uppercase tracking-wider" style={{ color: isSelected ? OA : '#999' }}>
                             {planNames[p]}
                           </span>
                           <div
@@ -430,16 +468,16 @@ function CheckoutContent() {
                         <div className="space-y-1">
                           {p === 'LANDING' ? (
                             <>
-                              <div className="text-sm text-[#555] line-through font-medium">{formatCOP(landingOriginal)}</div>
-                              <div className="text-2xl font-syne font-extrabold text-white">{formatCOP(landingPrice)}</div>
+                              <div className="text-sm text-[#999] line-through font-medium">{formatCop(landingOriginal)}</div>
+                              <div className="text-2xl font-jakarta font-extrabold text-white">{formatCop(landingPrice)}</div>
                               <div className="text-[10px] font-bold uppercase" style={{ color: OA }}>Pago único</div>
                             </>
                           ) : (
                             <>
-                              <div className="text-2xl font-syne font-extrabold text-white">
-                                {formatCOP(planBase[p as 'BASIC' | 'PRO' | 'TRIAL'])}
+                              <div className="text-2xl font-jakarta font-extrabold text-white">
+                                {formatCop(planBase[p as 'BASIC' | 'PRO' | 'TRIAL'])}
                               </div>
-                              <div className="text-[10px] text-[#555] font-bold uppercase mt-0.5">
+                              <div className="text-[10px] text-[#999] font-bold uppercase mt-0.5">
                                 {p === 'TRIAL' ? '7 Días' : 'Mensual'}
                               </div>
                             </>
@@ -459,7 +497,7 @@ function CheckoutContent() {
                       </div>
                       <div>
                         <h3 className="text-sm font-bold text-white">Suscripción vinculada</h3>
-                        <p className="text-[11px] text-[#555]">La mini-landing requiere un plan activo</p>
+                        <p className="text-[11px] text-[#999]">La mini-landing requiere un plan activo</p>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -479,7 +517,7 @@ function CheckoutContent() {
                               <span className="text-[11px] font-bold text-white">{planNames[p]}</span>
                               {isSSelected && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: OA }} />}
                             </div>
-                            <div className="text-sm font-bold text-white">{formatCOP(planBase[p])}/mes</div>
+                            <div className="text-sm font-bold text-white">{formatCop(planBase[p])}/mes</div>
                           </button>
                         );
                       })}
@@ -503,7 +541,7 @@ function CheckoutContent() {
                           }}
                         >
                           <div className="text-lg font-bold text-white">{d.months}</div>
-                          <div className="text-[10px] text-[#555] font-bold uppercase tracking-tighter">
+                          <div className="text-[10px] text-[#999] font-bold uppercase tracking-tighter">
                             Mes{d.months > 1 ? 'es' : ''}
                           </div>
                           {d.pct > 0 && (
@@ -535,8 +573,8 @@ function CheckoutContent() {
               <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-2xl font-syne font-bold text-white tracking-tight">Tus datos</h2>
-                    <p className="text-sm text-[#666] mt-1">Vinculamos el plan a tu correo corporativo</p>
+                    <h2 className="text-2xl font-jakarta font-bold text-white tracking-tight">Tus datos</h2>
+                    <p className="text-sm text-[#999] mt-1">Vinculamos el plan a tu correo corporativo</p>
                   </div>
                   <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso 2 de 3</div>
                 </div>
@@ -587,7 +625,7 @@ function CheckoutContent() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-white">{sessionInfo.name}</p>
-                        <p className="text-xs text-[#666]">Sesión activa detectada</p>
+                        <p className="text-xs text-[#999]">Sesión activa detectada</p>
                       </div>
                     </div>
                   )}
@@ -618,8 +656,8 @@ function CheckoutContent() {
               <div className="animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-2xl font-syne font-bold text-white tracking-tight">Finalizar y Activar</h2>
-                    <p className="text-sm text-[#666] mt-1">Elige tu método de pago preferido</p>
+                    <h2 className="text-2xl font-jakarta font-bold text-white tracking-tight">Finalizar y Activar</h2>
+                    <p className="text-sm text-[#999] mt-1">Elige tu método de pago preferido</p>
                   </div>
                   <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso 3 de 3</div>
                 </div>
@@ -639,7 +677,7 @@ function CheckoutContent() {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-white uppercase tracking-widest">Tarjeta / PSE / Nequi</p>
-                      <p className="text-[10px] text-[#555] mt-1">Pago seguro procesado por Bancolombia</p>
+                      <p className="text-[10px] text-[#999] mt-1">Pago seguro procesado por Bancolombia</p>
                     </div>
                   </button>
 
@@ -647,17 +685,17 @@ function CheckoutContent() {
                     onClick={() => setPaymentMethod('paypal')}
                     className="relative p-6 rounded-2xl border-2 flex flex-col gap-4 text-left transition-all"
                     style={{
-                      borderColor: paymentMethod === 'paypal' ? '#0070ba' : '#1f1f1f',
-                      backgroundColor: paymentMethod === 'paypal' ? 'rgba(0,112,186,0.05)' : '#0d0d0d',
+                      borderColor: paymentMethod === 'paypal' ? OA : '#1f1f1f',
+                      backgroundColor: paymentMethod === 'paypal' ? 'rgba(255,92,58,0.04)' : '#0d0d0d',
                     }}
                   >
                     <div className="flex justify-between items-start">
-                      <Image src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" width={100} height={30} className="h-6 w-auto" />
-                      {paymentMethod === 'paypal' && <div className="w-4 h-4 rounded-full bg-blue-500" />}
+                      <Image src="/payment-paypal.svg" alt="PayPal" width={100} height={30} className="h-6 w-auto" />
+                      {paymentMethod === 'paypal' && <div className="w-4 h-4 rounded-full" style={{ backgroundColor: OA }} />}
                     </div>
                     <div>
                       <p className="text-xs font-bold text-white uppercase tracking-widest">PayPal / USD Internacional</p>
-                      <p className="text-[10px] text-[#555] mt-1">TRM actual: {formatCOP(trm)} COP</p>
+                      <p className="text-[10px] text-[#999] mt-1">TRM actual: {formatCop(trm).replace('COP', '').trim()} COP</p>
                     </div>
                   </button>
                 </div>
@@ -682,7 +720,7 @@ function CheckoutContent() {
                     disabled={loading}
                     className="flex-[2] text-white font-extrabold py-4 rounded-2xl transition-all flex items-center justify-center gap-3 group"
                     style={{
-                      backgroundColor: paymentMethod === 'wompi' ? OA : '#0070ba',
+                      backgroundColor: OA,
                       boxShadow: paymentMethod === 'wompi'
                         ? '0 10px 30px -10px rgba(255,92,58,0.5)'
                         : '0 10px 30px -10px rgba(0,112,186,0.5)',
@@ -693,16 +731,16 @@ function CheckoutContent() {
                     ) : (
                       <>
                         <CreditCard className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                        <span>PAGAR {formatCOP(totalPrice)} COP</span>
+                        <span>{paymentMethod === 'paypal' ? `PAGAR ${formatUsd(totalPriceUsd)} USD` : `PAGAR ${formatCop(totalPrice)} COP`}</span>
                       </>
                     )}
                   </button>
                 </div>
 
                 <div className="mt-8 flex justify-center gap-8 opacity-30">
-                  <Image src="https://static.wompi.co/img/pse.png" alt="PSE" width={40} height={40} className="grayscale" />
-                  <Image src="https://static.wompi.co/img/mastercard.png" alt="Mastercard" width={30} height={30} className="grayscale" />
-                  <Image src="https://static.wompi.co/img/visa.png" alt="Visa" width={45} height={15} className="grayscale" />
+                  <Image src="/payment-pse.svg" alt="PSE" width={40} height={40} className="grayscale" />
+                  <Image src="/payment-mastercard.svg" alt="Mastercard" width={30} height={30} className="grayscale" />
+                  <Image src="/payment-visa.svg" alt="Visa" width={45} height={15} className="grayscale" />
                 </div>
               </div>
             )}
@@ -721,19 +759,19 @@ function CheckoutContent() {
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-sm font-bold text-white">Mini-landing Page</p>
-                        <p className="text-[10px] text-[#555]">Un solo pago de por vida</p>
+                        <p className="text-[10px] text-[#999]">Un solo pago de por vida</p>
                       </div>
-                      <span className="text-sm font-mono text-white">{formatCOP(landingPrice)}</span>
+                      <span className="text-sm font-mono text-white">{formatCop(landingPrice)}</span>
                     </div>
                   )}
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-sm font-bold text-white">{planNames[currentPlanKey]}</p>
-                      <p className="text-[10px] text-[#555]">
+                      <p className="text-[10px] text-[#999]">
                         {isTrial ? '7 días de prueba' : `${selectedMonths} mes${selectedMonths > 1 ? 'es' : ''}`}
                       </p>
                     </div>
-                    <span className="text-sm font-mono text-white">{formatCOP(subPlanTotal)}</span>
+                    <span className="text-sm font-mono text-white">{formatCop(subPlanTotal)}</span>
                   </div>
                 </div>
 
@@ -743,7 +781,7 @@ function CheckoutContent() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span className="text-[10px] font-bold text-[#555] uppercase tracking-widest">Cupón Promocional</span>
+                    <span className="text-[10px] font-bold text-[#999] uppercase tracking-widest">Cupón Promocional</span>
                   </div>
 
                   {appliedCoupon ? (
@@ -752,7 +790,7 @@ function CheckoutContent() {
                         <span className="text-xs font-black text-emerald-400">{appliedCoupon.code}</span>
                         <p className="text-[9px] text-emerald-600 font-bold">ACTIVO</p>
                       </div>
-                      <button onClick={() => setAppliedCoupon(null)} className="text-[10px] text-[#555] hover:text-red-400 font-bold uppercase transition-colors">Quitar</button>
+                      <button onClick={() => setAppliedCoupon(null)} className="text-[10px] text-[#999] hover:text-red-400 font-bold uppercase transition-colors">Quitar</button>
                     </div>
                   ) : (
                     <div className="flex gap-2">
@@ -779,16 +817,18 @@ function CheckoutContent() {
 
                 <div className="pt-6 border-t border-[#1f1f1f] space-y-1">
                   {couponDiscount > 0 && (
-                    <div className="flex justify-between items-center text-xs text-[#666] font-medium mb-2 uppercase tracking-tighter">
+                    <div className="flex justify-between items-center text-xs text-[#999] font-medium mb-2 uppercase tracking-tighter">
                       <span>Ahorro Extra</span>
-                      <span className="text-emerald-500 font-bold">-{formatCOP(couponDiscount)}</span>
+                      <span className="text-emerald-500 font-bold">-{formatCop(couponDiscount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between items-end">
-                    <span className="text-xs font-bold text-[#666] uppercase tracking-wider mb-1.5">Total</span>
+                    <span className="text-xs font-bold text-[#999] uppercase tracking-wider mb-1.5">Total</span>
                     <div className="text-right">
-                      <div className="text-3xl font-syne font-black text-white leading-none">{formatCOP(totalPrice)}</div>
-                      <div className="text-[9px] font-bold mt-1 uppercase tracking-widest" style={{ color: OA }}>IVA INCLUIDO (COP)</div>
+                      <div className="text-3xl font-jakarta font-black text-white leading-none">{paymentMethod === 'paypal' ? formatUsd(totalPriceUsd) : formatCop(totalPrice)}</div>
+                      <div className="text-[9px] font-bold mt-1 uppercase tracking-widest" style={{ color: OA }}>
+                        {paymentMethod === 'paypal' ? `${formatCop(totalPrice)} COP · TRM ${formatCop(trm).replace('COP', '').trim()}` : `${formatUsd(totalPriceUsd)} USD REFERENCIA`}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -828,7 +868,7 @@ function CheckoutContent() {
 export default function CheckoutPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-[#555]">
+      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-[#999]">
         <div className="w-8 h-8 border-2 border-t-[#FF5C3A] rounded-full animate-spin mb-4" style={{ borderColor: 'rgba(255,92,58,0.2)', borderTopColor: '#FF5C3A' }} />
         <p className="text-xs font-bold uppercase tracking-widest animate-pulse">Iniciando Checkout Seguro</p>
       </div>

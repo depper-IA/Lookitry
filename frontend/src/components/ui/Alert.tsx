@@ -40,7 +40,7 @@ export const Alert: React.FC<AlertProps> = ({ type = 'info', title, message, cla
       )
     },
     info: {
-      bg: 'bg-[#0d161f]/30',
+      bg: 'bg-[#1a120f]/30',
       border: 'border-[#FF5C3A]/20',
       accent: 'bg-[#FF5C3A]',
       icon: (
@@ -64,7 +64,7 @@ export const Alert: React.FC<AlertProps> = ({ type = 'info', title, message, cla
         </div>
         <div className="flex-1 space-y-0.5">
           {title && (
-            <h3 className="font-syne font-bold text-[14px] md:text-[15px] text-white tracking-tight">
+            <h3 className="font-jakarta font-bold text-[14px] md:text-[15px] text-white tracking-tight">
               {title}
             </h3>
           )}

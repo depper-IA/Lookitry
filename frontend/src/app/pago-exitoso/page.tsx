@@ -126,8 +126,8 @@ function PagoExitosoContent() {
         <main className="min-h-screen flex items-center justify-center px-4 bg-[#030303]">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-t-transparent border-[#FF5C3A] rounded-full animate-spin mx-auto mb-4"></div>
-            <h2 className="text-white font-syne text-xl uppercase tracking-wider">Confirmando tu pago...</h2>
-            <p className="text-[#666] text-sm mt-2">Por favor no cierres esta ventana.</p>
+            <h2 className="text-white font-jakarta text-xl uppercase tracking-wider">Confirmando tu pago...</h2>
+            <p className="text-[#999] text-sm mt-2">Por favor no cierres esta ventana.</p>
           </div>
         </main>
       </div>
@@ -142,7 +142,7 @@ function PagoExitosoContent() {
              <div className="flex justify-center mb-8">
               <Link href="/" className="flex items-center gap-2.5">
                 <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-                <span className="font-syne font-extrabold text-xl text-white tracking-tight">
+                <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
                   Look<span className="text-[#FF5C3A]">itry</span>
                 </span>
               </Link>
@@ -157,7 +157,7 @@ function PagoExitosoContent() {
               <Link href={dashboardHref} className="inline-block px-8 py-3 bg-[#FF5C3A] text-white text-[13px] font-bold rounded-xl transition-all shadow-lg hover:bg-opacity-90 uppercase">
                 Ir al Dashboard
               </Link>
-              <p className="text-[#444] text-[11px]">
+              <p className="text-[#999] text-[11px]">
                 Incluso si ves este error, tu pago está siendo procesado. El acceso se activará en pocos minutos.
               </p>
             </div>
@@ -173,7 +173,7 @@ function PagoExitosoContent() {
         
         {/* Progress Bar (Step 4: Activation) */}
         <div className="w-full max-w-xl mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
-          <StepProgress currentStep={4} />
+          <StepProgress currentStep={4} maxNavigableStep={4} lockedAfterPayment />
         </div>
 
         <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
@@ -191,7 +191,7 @@ function PagoExitosoContent() {
                 />
                 <div className="absolute inset-0 bg-[#FF5C3A]/20 blur-xl rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
-              <span className="font-syne font-extrabold text-2xl text-white tracking-tight">
+              <span className="font-jakarta font-extrabold text-2xl text-white tracking-tight">
                 Look<span className="text-[#FF5C3A]">itry</span>
               </span>
             </Link>
@@ -203,11 +203,11 @@ function PagoExitosoContent() {
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#FF5C3A]/5 blur-[80px] rounded-full"></div>
             <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-[#FF5C3A]/5 blur-[80px] rounded-full"></div>
 
-            <div className="w-20 h-20 bg-green-500/10 border border-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(34,197,94,0.1)]">
+            <div className="w-20 h-20 bg-[#FF5C3A]/10 border border-[#FF5C3A]/20 text-[#FF5C3A] rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(255,92,58,0.12)]">
               <IconCheck />
             </div>
 
-            <h1 className="font-syne font-bold text-[28px] text-white mb-3 tracking-tight uppercase">
+            <h1 className="font-jakarta font-bold text-[28px] text-white mb-3 tracking-tight uppercase">
               ¡Pago confirmado!
             </h1>
             <p className="text-[15px] leading-relaxed mb-8 text-[#a0a0a0]">
@@ -220,7 +220,7 @@ function PagoExitosoContent() {
 
             {(resolvedRef || ref) && (
               <div className="rounded-xl px-5 py-4 mb-6 text-left border bg-[#050505] border-[#1a1a1a]">
-                <p className="text-[10px] mb-1 uppercase tracking-[0.1em] font-bold text-[#444]">Referencia de pago</p>
+                <p className="text-[10px] mb-1 uppercase tracking-[0.1em] font-bold text-[#999]">Referencia de pago</p>
                 <p className="text-[11px] font-mono break-all text-[#888] leading-relaxed font-bold">{resolvedRef || ref}</p>
               </div>
             )}
@@ -247,7 +247,7 @@ function PagoExitosoContent() {
               </Link>
               <Link
                 href="/"
-                className="block w-full py-4 rounded-xl transition-all text-[15px] font-semibold border border-[#1a1a1a] text-[#444] hover:bg-white/5 hover:text-white cursor-pointer uppercase tracking-tight"
+                className="block w-full py-4 rounded-xl transition-all text-[15px] font-semibold border border-[#1a1a1a] text-[#999] hover:bg-white/5 hover:text-white cursor-pointer uppercase tracking-tight"
               >
                 Volver al inicio
               </Link>

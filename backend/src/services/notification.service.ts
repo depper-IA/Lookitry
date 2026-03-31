@@ -3,6 +3,7 @@ import { SubscriptionService } from './subscription.service';
 import { notificationPreferencesService } from './notificationPreferences.service';
 import { supabaseAdmin } from '../config/supabase';
 import { Brand } from '../types';
+import { isTrialOperationalBrand } from '../utils/brandLifecycle';
 import {
   welcomeEmail,
   completeRegistrationEmail,
@@ -48,11 +49,16 @@ export class NotificationService {
   /**
    * Obtiene el monto del plan de una marca desde pricing_config
    * 
-   * @param plan - Tipo de plan ('BASIC' o 'PRO')
+   * @param plan - Tipo de plan ('TRIAL', 'BASIC' o 'PRO')
    * @returns Monto del plan en COP
    */
   private async getPlanAmount(plan: string): Promise<number> {
     try {
+      const planUpper = plan.toUpperCase();
+      if (planUpper === 'TRIAL') {
+        return 20000;
+      }
+
       const planId = plan.toLowerCase(); // 'basic' o 'pro'
       const { data } = await supabaseAdmin
         .from('pricing_config')
@@ -64,7 +70,6 @@ export class NotificationService {
         const value = data.data.precio_mensual_cop;
         // Sanity check: si por error `pro` quedó con precio de `basic` (o viceversa),
         // usamos fallback para no enviar correos con monto incorrecto.
-        const planUpper = plan.toUpperCase();
         if (planUpper === 'PRO' && value < 200000) return 250000;
         if (planUpper === 'BASIC' && value > 200000) return 150000;
         return value;
@@ -73,7 +78,9 @@ export class NotificationService {
       console.error('[NotificationService] Error consultando pricing_config:', e);
     }
     // Fallback en caso de error o datos faltantes
-    return plan.toUpperCase() === 'PRO' ? 250000 : 150000;
+    const planUpper = plan.toUpperCase();
+    if (planUpper === 'TRIAL') return 20000;
+    return planUpper === 'PRO' ? 250000 : 150000;
   }
 
   private buildPendingRegistrationUrl(reference: string): string {
@@ -104,7 +111,8 @@ export class NotificationService {
         }
       }
 
-      const amount = this.formatCOP(await this.getPlanAmount(brand.plan));
+      const effectivePlan = isTrialOperationalBrand(brand) ? 'TRIAL' : brand.plan;
+      const amount = this.formatCOP(await this.getPlanAmount(effectivePlan));
       // getDaysRemaining puede fallar si el plan es TRIAL sin sub activa; usar fallback 7
       let daysRemaining = 7;
       try {
@@ -115,7 +123,7 @@ export class NotificationService {
 
       const html = welcomeEmail(
         { name: brand.name, email: brand.email },
-        brand.plan,
+        effectivePlan,
         amount,
         daysRemaining
       );

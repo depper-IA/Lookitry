@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usageService } from '@/services/usage.service';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -22,7 +22,6 @@ function dismiss(key: string): void {
   sessionStorage.setItem(key, 'dismissed');
 }
 
-// Icono de alerta oficial Lookitry
 function IconAlert({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,11 +38,18 @@ function IconX({ className }: { className?: string }) {
   );
 }
 
+type NotificationConfig = {
+  key: 'subscription_expiring' | 'usage_100';
+  title: string;
+  description: string;
+  href: string;
+  cta: string;
+};
+
 export function DashboardNotifications() {
   const { subscriptionInfo, getDaysRemaining, isInTrial, isLoading: subLoading } = useSubscription();
   const [usageStats, setUsageStats] = useState<UsageStats | null>(null);
   const [loadingUsage, setLoadingUsage] = useState(true);
-
   const [showUsage100, setShowUsage100] = useState(false);
   const [showSubscriptionExpiring, setShowSubscriptionExpiring] = useState(false);
 
@@ -51,7 +57,7 @@ export function DashboardNotifications() {
     usageService.getUsageStats()
       .then((stats) => {
         setUsageStats(stats);
-        if (stats.percentageUsed >= 100 && !isDismissed(getSessionKey('usage_100'))) {
+        if (stats?.percentageUsed >= 100 && !isDismissed(getSessionKey('usage_100'))) {
           setShowUsage100(true);
         }
       })
@@ -61,86 +67,70 @@ export function DashboardNotifications() {
 
   useEffect(() => {
     if (subLoading || !subscriptionInfo) return;
-
-    const inTrial = isInTrial();
-    if (inTrial) return; // No mostrar estos avisos en trial (tienen su propio banner)
+    if (isInTrial()) return;
     if (!subscriptionInfo.status) return;
 
     const days = getDaysRemaining();
-    // Mostramos aviso si vence en menos de 7 días
     if (days !== null && days < 7 && !isDismissed(getSessionKey('subscription_expiring'))) {
       setShowSubscriptionExpiring(true);
     }
-  }, [subscriptionInfo, subLoading]);
+  }, [getDaysRemaining, isInTrial, subLoading, subscriptionInfo]);
 
   if (subLoading || loadingUsage) return null;
-  if (!showUsage100 && !showSubscriptionExpiring) return null;
 
   const daysRemaining = getDaysRemaining();
+  const primaryNotification: NotificationConfig | null = showSubscriptionExpiring
+    ? {
+        key: 'subscription_expiring',
+        title: `Tu suscripción ${daysRemaining !== null && daysRemaining <= 0 ? 'ha vencido' : 'vence pronto'}`,
+        description:
+          daysRemaining !== null && daysRemaining > 0
+            ? `Quedan ${daysRemaining} ${daysRemaining === 1 ? 'día' : 'días'} de acceso. Renueva ahora para evitar interrupciones.`
+            : 'Tu acceso está restringido. Renueva el plan para recuperar continuidad operativa.',
+        href: '/dashboard/subscription',
+        cta: 'Renovar plan',
+      }
+    : showUsage100
+      ? {
+          key: 'usage_100',
+          title: 'Límite de generaciones alcanzado',
+          description: `Has usado el 100% de tu capacidad mensual (${usageStats?.currentMonth?.generationsUsed ?? 0}/${usageStats?.currentMonth?.generationsLimit ?? 0}). Amplía tu capacidad para no frenar nuevas pruebas.`,
+          href: '/dashboard/subscription',
+          cta: 'Aumentar capacidad',
+        }
+      : null;
+
+  if (!primaryNotification) return null;
 
   return (
-    <div className="space-y-3 mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
-      
-      {/* Aviso de Suscripción Vencida o por Vencer (ROJO) */}
-      {showSubscriptionExpiring && (
-        <div className="flex items-center justify-between gap-4 px-5 py-4 rounded-2xl border bg-[#ef4444]05 border-[#ef4444]20 shadow-sm" style={{ backgroundColor: 'var(--bg-card)' }}>
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="mt-0.5 w-8 h-8 rounded-full bg-[#ef4444]10 flex items-center justify-center shrink-0">
-              <IconAlert className="h-4 w-4 text-[#ef4444]" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold" style={{ color: '#ef4444' }}>
-                Tu suscripción {daysRemaining !== null && daysRemaining <= 0 ? 'ha vencido' : 'vence pronto'}
-              </p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                {daysRemaining !== null && daysRemaining > 0 
-                  ? `Quedan ${daysRemaining} ${daysRemaining === 1 ? 'día' : 'días'} de acceso. ` 
-                  : 'Tu acceso está restringido. '
-                }
-                Renueva ahora para evitar interrupciones en tus servicios.
-              </p>
-              <Link href="/dashboard/checkout" className="inline-block mt-2 text-xs font-bold underline hover:opacity-80" style={{ color: '#FF5C3A' }}>
-                Renovar plan ahora
-              </Link>
-            </div>
+    <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+      <div className="flex items-center justify-between gap-4 rounded-2xl border border-[#ef4444]/20 px-5 py-4 shadow-sm" style={{ backgroundColor: 'var(--bg-card)' }}>
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#ef4444]/10">
+            <IconAlert className="h-4 w-4 text-[#ef4444]" />
           </div>
-          <button 
-            onClick={() => { dismiss(getSessionKey('subscription_expiring')); setShowSubscriptionExpiring(false); }}
-            className="p-2 rounded-xl hover:bg-[#ef4444]10 text-gray-400 hover:text-[#ef4444] transition-all shrink-0"
-          >
-            <IconX className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Aviso de Límite de Generaciones (ROJO) */}
-      {showUsage100 && (
-        <div className="flex items-center justify-between gap-4 px-5 py-4 rounded-2xl border bg-[#ef4444]05 border-[#ef4444]20 shadow-sm" style={{ backgroundColor: 'var(--bg-card)' }}>
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="mt-0.5 w-8 h-8 rounded-full bg-[#ef4444]10 flex items-center justify-center shrink-0">
-              <IconAlert className="h-4 w-4 text-[#ef4444]" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold" style={{ color: '#ef4444' }}>
-                Límite de generaciones alcanzado
-              </p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                Has usado el 100% de tu capacidad mensual ({usageStats?.currentMonth.generationsUsed}/{usageStats?.currentMonth.generationsLimit}). 
-                Tu cupo se reiniciará el {usageStats?.resetDate ? new Date(usageStats.resetDate).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' }) : 'próximo mes'}.
-              </p>
-              <Link href="/dashboard/checkout" className="inline-block mt-2 text-xs font-bold underline hover:opacity-80" style={{ color: '#FF5C3A' }}>
-                Aumentar capacidad (Plan Pro)
-              </Link>
-            </div>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-[#ef4444]">{primaryNotification.title}</p>
+            <p className="mt-0.5 text-xs text-[var(--text-secondary)]">{primaryNotification.description}</p>
+            <Link href={primaryNotification.href} className="mt-2 inline-block text-xs font-bold underline hover:opacity-80" style={{ color: '#FF5C3A' }}>
+              {primaryNotification.cta}
+            </Link>
           </div>
-          <button 
-            onClick={() => { dismiss(getSessionKey('usage_100')); setShowUsage100(false); }}
-            className="p-2 rounded-xl hover:bg-[#ef4444]10 text-gray-400 hover:text-[#ef4444] transition-all shrink-0"
-          >
-            <IconX className="h-4 w-4" />
-          </button>
         </div>
-      )}
+        <button
+          onClick={() => {
+            dismiss(getSessionKey(primaryNotification.key));
+            if (primaryNotification.key === 'subscription_expiring') {
+              setShowSubscriptionExpiring(false);
+            } else {
+              setShowUsage100(false);
+            }
+          }}
+          className="shrink-0 rounded-xl p-2 text-gray-400 transition-all hover:bg-[#ef4444]/10 hover:text-[#ef4444]"
+        >
+          <IconX className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   );
 }
