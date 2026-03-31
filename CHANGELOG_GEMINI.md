@@ -1,6 +1,25 @@
 # Changelog - Lookitry (AI Assisted)
 
 
+## [2026-03-31] - Restauración de integridad y corrección de prorrateo USD
+
+### Cambios Realizados
+- **SubscriptionService.ts**: Restauración completa del archivo tras corrupción estructural. Eliminación de bloques duplicados y malformados.
+- **Prorrateo USD -> COP**: Implementada conversión de moneda en `calculateUpgradeProration`. Ahora usa la TRM de `pricingService` para convertir pagos históricos de PayPal (USD) a COP antes de calcular el crédito.
+- **Upgrades en PayPal corregidos**: `PaypalController.ts` ahora detecta correctamente la transición `BASIC` -> `PRO` y utiliza `isUpgrade: true` para resetear el periodo de facturación sin acumular sobre el plan anterior.
+- **Mejora de Logs**: Añadidos logs de traza con el prefijo `[Proration]` para facilitar auditoría de conversiones TRM.
+
+### Archivos Modificados
+- `backend/src/services/subscription.service.ts`
+- `backend/src/controllers/paypal.controller.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Corregir errores de compilación masivos en el backend y solucionar el bug de sobrecargo en PayPal al subir de plan, causado por no convertir los USD pagados previamente a la moneda base del sistema (COP).
+
+---
+
+
 ## [2026-03-31] - Wompi visible siempre en checkout interno
 
 ### Cambios Realizados

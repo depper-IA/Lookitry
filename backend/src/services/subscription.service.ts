@@ -1,4 +1,4 @@
-﻿import { supabaseAdmin } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase';
 import { Brand, SubscriptionPayment, CreatePaymentDto } from '../types';
 import { PaymentSettingsService } from './paymentSettings.service';
 import { getReportingTrm, normalizePaymentRecordToCop } from '../utils/paymentNormalization';
@@ -15,8 +15,6 @@ import { pricingService } from './pricing.service';
  *
  * Servicio para gestionar suscripciones de marcas.
  * Maneja verificación de estado, renovaciones, suspensiones y cálculos de fechas.
- *
- * Requirements: 11.1, 11.2, 11.3, 11.5, 11.6, 11.10
  */
 export class SubscriptionService {
   private async insertPaymentCompat(payload: Record<string, unknown>): Promise<SubscriptionPayment> {
@@ -50,15 +48,6 @@ export class SubscriptionService {
     throw new Error('Error al registrar el pago: ' + error?.message);
   }
 
-  /**
-   * Verifica si la suscripción de una marca está activa.
-   * También permite acceso si la marca está en período de prueba activo.
-   *
-   * @param brandId - ID de la marca
-   * @returns true si la suscripción está activa o el trial no ha vencido
-   *
-   * Requirements: 11.1, 11 (Opción C)
-   */
   async checkSubscriptionStatus(brandId: string): Promise<boolean> {
     const { data, error } = await supabaseAdmin
       .from('brands')
@@ -66,15 +55,9 @@ export class SubscriptionService {
       .eq('id', brandId)
       .single();
 
-    if (error || !data) {
-      return false;
-    }
+    if (error || !data) return false;
+    if (isTrialOperationalBrand(data)) return true;
 
-    if (isTrialOperationalBrand(data)) {
-      return true;
-    }
-
-    // Suscripción activa o por vencer
     if (
       data.subscription_status === 'active' ||
       data.subscription_status === 'expiring_soon' ||
@@ -83,23 +66,14 @@ export class SubscriptionService {
       return true;
     }
 
-    // Verificar período de prueba activo
     if ((data.plan === 'TRIAL' || data.trial_payment_status === 'active') && data.trial_end_date) {
       const trialEnd = new Date(data.trial_end_date);
-      if (trialEnd > new Date()) {
-        return true;
-      }
+      if (trialEnd > new Date()) return true;
     }
 
     return false;
   }
 
-  /**
-   * Verifica si una marca está en período de prueba activo
-   *
-   * @param brandId - ID de la marca
-   * @returns true si el trial está activo y no ha vencido
-   */
   async isInTrial(brandId: string): Promise<boolean> {
     const { data, error } = await supabaseAdmin
       .from('brands')
@@ -107,19 +81,10 @@ export class SubscriptionService {
       .eq('id', brandId)
       .single();
 
-    if (error || !data || !data.trial_end_date) {
-      return false;
-    }
-
+    if (error || !data || !data.trial_end_date) return false;
     return isTrialOperationalBrand(data);
   }
 
-  /**
-   * Obtiene los días restantes del período de prueba
-   *
-   * @param brandId - ID de la marca
-   * @returns días restantes del trial, o null si no aplica
-   */
   async getTrialDaysRemaining(brandId: string): Promise<number | null> {
     const { data, error } = await supabaseAdmin
       .from('brands')
@@ -127,9 +92,7 @@ export class SubscriptionService {
       .eq('id', brandId)
       .single();
 
-    if (error || !data || !data.trial_end_date || !isTrialOperationalBrand(data)) {
-      return null;
-    }
+    if (error || !data || !data.trial_end_date || !isTrialOperationalBrand(data)) return null;
 
     const trialEnd = new Date(data.trial_end_date);
     const now = new Date();
@@ -139,31 +102,12 @@ export class SubscriptionService {
     return diffDays > 0 ? diffDays : 0;
   }
 
-  /**
-   * Calcula la fecha de vencimiento de una suscripción
-   *
-   * @param startDate - Fecha de inicio de la suscripción
-   * @returns Fecha de vencimiento (+30 días desde la fecha de inicio)
-   *
-   * Requirement 11.2: Calcular fecha de vencimiento
-   */
   calculateExpirationDate(startDate: Date, months: number = 1): Date {
     const expirationDate = new Date(startDate);
     expirationDate.setDate(expirationDate.getDate() + 30 * months);
     return expirationDate;
   }
 
-  /**
-   * Renueva la suscripción de una marca por N meses
-   *
-   * @param brandId - ID de la marca
-   * @param paymentData - Datos del pago realizado
-   * @param months - Meses a activar (1, 3, 6 o 12)
-   * @param plan - Plan a activar ('BASIC' | 'PRO'). Si se omite, mantiene el plan actual.
-   * @returns Marca actualizada con nueva fecha de vencimiento
-   *
-   * Requirements: 11.6, 11.14
-   */
   async renewSubscription(
     brandId: string,
     paymentData: CreatePaymentDto,
@@ -171,7 +115,6 @@ export class SubscriptionService {
     plan?: string,
     isUpgrade: boolean = false
   ): Promise<Brand> {
-    // Validar meses permitidos
     if (![1, 3, 6, 12].includes(months)) {
       throw new Error('Los períodos permitidos son 1, 3, 6 o 12 meses');
     }
@@ -186,53 +129,38 @@ export class SubscriptionService {
           .maybeSingle();
 
         if (existingPayment) {
-          const { data: currentBrand, error: currentBrandError } = await supabaseAdmin
+          const { data: currentBrand } = await supabaseAdmin
             .from('brands')
             .select('*')
             .eq('id', brandId)
             .single();
-
-          if (currentBrandError || !currentBrand) {
-            throw new Error('Marca no encontrada');
-          }
-
-          return currentBrand as Brand;
+          if (currentBrand) return currentBrand as Brand;
         }
-      } catch (refCheckError) {
-        // En entornos legacy sin columna reference, seguimos sin esta protección.
-        // Se loguea para visibilidad en caso de error inesperado.
-        console.warn('[Subscription] Guard de idempotencia por reference no disponible:', (refCheckError as Error)?.message);
+      } catch (e) {
+        console.warn('[Subscription] Idempotency check failed:', e);
       }
     }
 
-    // Obtener marca actual
     const { data: brand, error: brandError } = await supabaseAdmin
       .from('brands')
       .select('*')
       .eq('id', brandId)
       .single();
 
-    if (brandError || !brand) {
-      throw new Error('Marca no encontrada');
-    }
+    if (brandError || !brand) throw new Error('Marca no encontrada');
 
-    // Calcular nueva fecha de inicio y vencimiento
     const now = new Date();
     const hadActiveTrial = isTrialOperationalBrand(brand);
     const previousPlan = brand.plan ?? 'BASIC';
-    // En upgrade: siempre desde hoy (el crédito ya fue descontado del precio)
-    // En renovación normal: extender desde la fecha de fin actual si no venció
+    
     const newStartDate = isUpgrade
       ? now
-      : brand.subscription_end_date
-        ? new Date(brand.subscription_end_date) > now
-          ? new Date(brand.subscription_end_date)
-          : now
+      : brand.subscription_end_date && new Date(brand.subscription_end_date) > now
+        ? new Date(brand.subscription_end_date)
         : now;
 
     const newEndDate = this.calculateExpirationDate(newStartDate, months);
 
-    // Actualizar marca con nueva suscripción
     const updateData: Record<string, unknown> = {
       subscription_start_date: newStartDate.toISOString(),
       subscription_end_date: newEndDate.toISOString(),
@@ -241,7 +169,6 @@ export class SubscriptionService {
       next_payment_date: newEndDate.toISOString(),
     };
 
-    // Actualizar plan si se especificó uno válido
     if (plan && ['BASIC', 'PRO', 'ENTERPRISE', 'TRIAL'].includes(plan.toUpperCase())) {
       const planUpper = plan.toUpperCase();
       updateData.plan = planUpper;
@@ -273,18 +200,14 @@ export class SubscriptionService {
       }
     }
 
-    // Si la marca tenía mini-landing suspendida hace menos de 90 días, restaurarla
     if (brand.landing_suspended_at) {
-      const diasSuspendida =
-        (now.getTime() - new Date(brand.landing_suspended_at).getTime()) / (1000 * 60 * 60 * 24);
+      const diasSuspendida = (Date.now() - new Date(brand.landing_suspended_at).getTime()) / (1000 * 60 * 60 * 24);
       if (diasSuspendida < 90) {
         updateData.has_landing_page = true;
         updateData.landing_suspended_at = null;
-        console.log(`[Subscription] Restaurando mini-landing al renovar marca ${brandId}`);
       }
     }
 
-    // Actualizar marca con nueva suscripción
     const { data: updatedBrand, error: updateError } = await supabaseAdmin
       .from('brands')
       .update(updateData)
@@ -292,20 +215,12 @@ export class SubscriptionService {
       .select()
       .single();
 
-    if (updateError || !updatedBrand) {
-      throw new Error('Error al renovar la suscripción: ' + updateError?.message);
-    }
+    if (updateError || !updatedBrand) throw new Error('Error al renovar: ' + updateError?.message);
 
     const planPurchased = String((plan || updatedBrand.plan || brand.plan || 'BASIC')).toUpperCase();
     const includesLanding = String(paymentData.notes || '').toUpperCase().includes('LANDING');
-    const billingType =
-      paymentData.payment_method === 'credit_proration' || isUpgrade
-        ? 'upgrade'
-        : includesLanding && Number(paymentData.months_paid || months || 0) === 0
-          ? 'landing'
-          : hadActiveTrial && ['BASIC', 'PRO', 'ENTERPRISE'].includes(planPurchased)
-            ? 'subscription'
-            : 'subscription';
+    const billingType = (paymentData.payment_method === 'credit_proration' || isUpgrade) ? 'upgrade' : 
+                         (includesLanding && Number(paymentData.months_paid || months || 0) === 0) ? 'landing' : 'subscription';
 
     const ledgerSnapshot: PaymentLedgerSnapshot = {
       version: 1,
@@ -320,7 +235,6 @@ export class SubscriptionService {
       brandPlanAfter: updatedBrand.plan || previousPlan,
     };
 
-    // Registrar pago en historial
     await this.createPaymentRecord({
       ...paymentData,
       brand_id: brandId,
@@ -336,35 +250,13 @@ export class SubscriptionService {
     return updatedBrand as Brand;
   }
 
-  /**
-   * Calcula el prorrateo para un cambio de plan (Upgrade o Downgrade).
-   * El crédito se basa en el precio diario del plan actual × días restantes.
-   * El monto a cobrar = precio del nuevo plan - crédito (mínimo 0).
-   * La nueva fecha de fin = now() + meses nuevos (siempre desde hoy, no acumula).
-   *
-   * @param brandId - ID de la marca
-   * @param newPlan - Plan destino ('BASIC' | 'PRO')
-   * @param newMonths - Meses a contratar del nuevo plan
-   * @param newPlanTotal - Precio total final del nuevo plan en COP
-   * @param currentPlanPriceTotalFallback - Precio total pagado por el plan actual (fallback si no hay registro)
-   */
   async calculateUpgradeProration(
     brandId: string,
     newPlan: string,
     newMonths: number,
     newPlanTotal: number,
     currentPlanPriceTotalFallback: number
-  ): Promise<{
-    daysRemaining: number;
-    basePlanTotal: number;
-    creditAmount: number;
-    newPlanTotal: number;
-    amountToPay: number;
-    remainingCredit: number;
-    newEndDate: string;
-    isFree: boolean;
-    creditLabel: string;
-  }> {
+  ): Promise<any> {
     const { data: brand, error } = await supabaseAdmin
       .from('brands')
       .select('subscription_end_date, subscription_start_date, subscription_status, trial_end_date, plan')
@@ -392,14 +284,11 @@ export class SubscriptionService {
 
     const now = new Date();
     const endDate = brand.subscription_end_date ? new Date(brand.subscription_end_date) : now;
-    const daysRemaining = Math.max(
-      0,
-      Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-    );
+    const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
 
     const { data: lastPayment } = await supabaseAdmin
       .from('subscription_payments')
-      .select('amount, months_paid, notes')
+      .select('amount, currency, months_paid, notes')
       .eq('brand_id', brandId)
       .eq('status', 'completed')
       .gt('months_paid', 0)
@@ -408,91 +297,47 @@ export class SubscriptionService {
       .limit(1)
       .maybeSingle();
 
-    const paymentMonths = lastPayment?.months_paid || Math.max(
-      1,
-      Math.round(
-        Math.max(
-          30,
-          (endDate.getTime() - (brand.subscription_start_date ? new Date(brand.subscription_start_date).getTime() : now.getTime())) /
-            (1000 * 60 * 60 * 24)
-        ) / 30
-      )
-    );
+    const paymentMonths = lastPayment?.months_paid || Math.max(1, Math.round(Math.max(30, (endDate.getTime() - (brand.subscription_start_date ? new Date(brand.subscription_start_date).getTime() : now.getTime())) / (1000 * 60 * 60 * 24)) / 30));
     const totalDays = Math.max(1, 30 * paymentMonths);
     const effectiveDaysRemaining = Math.min(daysRemaining, totalDays);
 
     let currentPlanPriceTotal: number;
     if (lastPayment?.amount && lastPayment.amount > 0) {
-      currentPlanPriceTotal = lastPayment.amount;
-    } else {
-      const startDate = brand.subscription_start_date ? new Date(brand.subscription_start_date) : now;
-      const endDt = brand.subscription_end_date ? new Date(brand.subscription_end_date) : now;
-      const periodDays = Math.max(
-        30,
-        Math.round((endDt.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
-      );
-      const estimatedMonths = Math.max(1, Math.round(periodDays / 30));
+      const originalAmount = typeof lastPayment.amount === 'string' ? parseFloat(lastPayment.amount) : lastPayment.amount;
+      const currency = String(lastPayment.currency || 'COP').toUpperCase();
 
-      if (currentPlanPriceTotalFallback > 0) {
-        currentPlanPriceTotal = currentPlanPriceTotalFallback;
+      if (currency !== 'COP') {
+        const { trm } = await pricingService.getEffectiveTrm();
+        currentPlanPriceTotal = Math.round(originalAmount * trm);
+        console.log(`[Proration] Convertido monto de lastPayment: ${originalAmount} ${currency} -> ${currentPlanPriceTotal} COP (TRM: ${trm})`);
       } else {
-        currentPlanPriceTotal = await pricingService.calculateTotal(
-          String(brand.plan || 'BASIC').toUpperCase(),
-          estimatedMonths,
-          false
-        );
+        currentPlanPriceTotal = originalAmount;
       }
-
-      console.log(
-        `[Proration] Sin lastPayment: usando total fallback/config. periodDays=${periodDays} meses=${estimatedMonths} totalUsado=${currentPlanPriceTotal}`
-      );
+    } else {
+      currentPlanPriceTotal = currentPlanPriceTotalFallback > 0 ? currentPlanPriceTotalFallback : 
+                               await pricingService.calculateTotal(String(brand.plan || 'BASIC').toUpperCase(), paymentMonths, false);
+      console.log(`[Proration] Usando total fallback/config: ${currentPlanPriceTotal}`);
     }
 
-    const lastPaymentSnapshot = parseLedgerSnapshotFromNotes(lastPayment?.notes);
-    const includesLanding =
-      typeof lastPaymentSnapshot?.includesLanding === 'boolean'
-        ? lastPaymentSnapshot.includesLanding
-        : String(lastPayment?.notes || '').includes('Incluye Landing Page');
-
-    if (includesLanding) {
+    const lastSnapshot = parseLedgerSnapshotFromNotes(lastPayment?.notes);
+    if (lastSnapshot?.includesLanding || String(lastPayment?.notes || '').includes('Incluye Landing Page')) {
       try {
-        const settingsService = new PaymentSettingsService();
-        const settings = await settingsService.getSettings();
+        const settings = await new PaymentSettingsService().getSettings();
         const landingPrice = settings.landing_price || 650000;
-
-        const previousAmount = currentPlanPriceTotal;
         currentPlanPriceTotal = Math.max(0, currentPlanPriceTotal - landingPrice);
-        console.log(
-          `[Proration] Ajustando monto por landing page: ${previousAmount} -> ${currentPlanPriceTotal} (Restado: ${landingPrice})`
-        );
-      } catch (err) {
-        console.error('[Proration] Error al obtener precio de landing para ajuste:', err);
+        console.log(`[Proration] Ajustado monto por landing page: -${landingPrice}`);
+      } catch (e) {
+        console.error('[Proration] Error al obtener precio de landing para ajuste:', e);
       }
     }
-
-    console.log(
-      `[Proration] brandId=${brandId} lastPayment=${lastPayment?.amount} fallbackTotal=${currentPlanPriceTotalFallback} totalUsado=${currentPlanPriceTotal} totalDays=${totalDays} daysRemaining=${daysRemaining} effectiveDaysRemaining=${effectiveDaysRemaining}`
-    );
 
     const pricePerDay = currentPlanPriceTotal / totalDays;
-    const remainingPlanValue = Math.max(
-      0,
-      Math.min(currentPlanPriceTotal, Math.round(pricePerDay * effectiveDaysRemaining))
-    );
-    const creditAmount = remainingPlanValue;
-
+    const creditAmount = Math.max(0, Math.round(pricePerDay * effectiveDaysRemaining));
     const amountToPay = Math.max(0, basePlanTotal - creditAmount);
     const remainingCredit = Math.max(0, creditAmount - basePlanTotal);
 
     const newEndDate = this.calculateExpirationDate(now, newMonths);
-    const currentPlanLabel =
-      brand.plan === 'PRO'
-        ? 'Plan Pro'
-        : brand.plan === 'ENTERPRISE'
-          ? 'Plan Enterprise'
-          : brand.plan === 'TRIAL'
-            ? 'Plan Trial'
-            : 'Plan Básico';
+    const label = brand.plan === 'PRO' ? 'Plan Pro' : brand.plan === 'ENTERPRISE' ? 'Plan Enterprise' : 'Plan Básico';
 
     return {
       daysRemaining,
@@ -502,15 +347,11 @@ export class SubscriptionService {
       amountToPay,
       remainingCredit,
       newEndDate: newEndDate.toISOString(),
-      isFree: amountToPay === 0,
-      creditLabel: `Crédito por ${effectiveDaysRemaining} días restantes de ${currentPlanLabel}`,
+      isFree: amountToPay <= 0,
+      creditLabel: `Crédito por ${daysRemaining} días restantes del ${label}`,
     };
   }
 
-  /**
-   * Aplica un upgrade/downgrade gratuito (cuando el crédito cubre el costo del nuevo plan).
-   * Cambia el plan y usa la fecha de fin calculada con los días de regalo.
-   */
   async applyFreeUpgrade(
     brandId: string,
     newPlan: string,
@@ -522,13 +363,7 @@ export class SubscriptionService {
   ): Promise<Brand> {
     const now = new Date();
     const normalizedPlan = newPlan.toUpperCase();
-
-    let newEndDate: Date;
-    if (forcedEndDate) {
-      newEndDate = new Date(forcedEndDate);
-    } else {
-      newEndDate = this.calculateExpirationDate(now, newMonths);
-    }
+    const newEndDate = forcedEndDate ? new Date(forcedEndDate) : this.calculateExpirationDate(now, newMonths);
 
     const { data: updatedBrand, error } = await supabaseAdmin
       .from('brands')
@@ -546,13 +381,8 @@ export class SubscriptionService {
       .select()
       .single();
 
-    if (error || !updatedBrand) {
-      throw new Error('Error al aplicar cambio de plan: ' + error?.message);
-    }
+    if (error || !updatedBrand) throw new Error('Error al aplicar cambio de plan: ' + error?.message);
 
-    // Un free upgrade no representa un cobro real. En entornos legacy la tabla
-    // subscription_payments exige amount > 0, así que no intentamos persistir
-    // un pago de $0 que tumbaría el cambio de plan.
     if (newPlanTotal > creditAmount) {
       await this.createPaymentRecord({
         brand_id: brandId,
@@ -576,48 +406,23 @@ export class SubscriptionService {
           brandPlanAfter: normalizedPlan,
         },
       });
-    } else {
-      console.info(
-        `[Subscription] Upgrade gratuito aplicado sin registro en subscription_payments por amount=0. brandId=${brandId} ref=${reference}`
-      );
     }
 
     return updatedBrand as Brand;
   }
 
-  /**
-   * Suspende la suscripción de una marca
-   *
-   * @param brandId - ID de la marca
-   * @returns Marca actualizada con estado suspended
-   *
-   * Requirement 11.3: Suspender marca por falta de pago
-   */
   async suspendSubscription(brandId: string): Promise<Brand> {
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .update({
-        subscription_status: 'suspended',
-      })
+      .update({ subscription_status: 'suspended' })
       .eq('id', brandId)
       .select()
       .single();
 
-    if (error || !data) {
-      throw new Error('Error al suspender la suscripción: ' + error?.message);
-    }
-
+    if (error || !data) throw new Error('Error al suspender: ' + error?.message);
     return data as Brand;
   }
 
-  /**
-   * Calcula los días restantes de suscripción de una marca
-   *
-   * @param brandId - ID de la marca
-   * @returns Número de días restantes (puede ser negativo si ya venció)
-   *
-   * Requirement 11.10: Mostrar días restantes en dashboard
-   */
   async getDaysRemaining(brandId: string): Promise<number | null> {
     const { data, error } = await supabaseAdmin
       .from('brands')
@@ -625,26 +430,11 @@ export class SubscriptionService {
       .eq('id', brandId)
       .single();
 
-    if (error || !data || !data.subscription_end_date) {
-      return null;
-    }
-
-    const endDate = new Date(data.subscription_end_date);
-    const now = new Date();
-    const diffTime = endDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    return diffDays;
+    if (error || !data || !data.subscription_end_date) return null;
+    const diffTime = new Date(data.subscription_end_date).getTime() - new Date().getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
-  /**
-   * Obtiene las suscripciones que vencen en los próximos X días
-   *
-   * @param days - Número de días para filtrar (ej: 7 para suscripciones que vencen en 7 días)
-   * @returns Lista de marcas cuyas suscripciones vencen en el período especificado
-   *
-   * Requirement 11.5: Identificar suscripciones por vencer para enviar recordatorios
-   */
   async getExpiringSubscriptions(days: number): Promise<Brand[]> {
     const now = new Date();
     const futureDate = new Date();
@@ -658,42 +448,18 @@ export class SubscriptionService {
       .lte('subscription_end_date', futureDate.toISOString())
       .order('subscription_end_date', { ascending: true });
 
-    if (error) {
-      throw new Error('Error al obtener suscripciones por vencer: ' + error.message);
-    }
-
+    if (error) throw new Error('Error al obtener suscripciones por vencer: ' + error.message);
     return (data || []) as Brand[];
   }
 
-  /**
-   * Obtiene información completa de la suscripción de una marca,
-   * incluyendo datos del período de prueba si aplica.
-   *
-   * @param brandId - ID de la marca
-   * @returns Información de suscripción incluyendo fechas, días restantes y estado de trial
-   */
-  async getSubscriptionInfo(brandId: string): Promise<{
-    status: string;
-    startDate: string | null;
-    endDate: string | null;
-    lastPaymentDate: string | null;
-    nextPaymentDate: string | null;
-    daysRemaining: number | null;
-    isInTrial: boolean;
-    trialEndDate: string | null;
-    trialDaysRemaining: number | null;
-  }> {
+  async getSubscriptionInfo(brandId: string): Promise<any> {
     const { data, error } = await supabaseAdmin
       .from('brands')
-      .select(
-        'subscription_status, subscription_start_date, subscription_end_date, last_payment_date, next_payment_date, trial_end_date'
-      )
+      .select('subscription_status, subscription_start_date, subscription_end_date, last_payment_date, next_payment_date, trial_end_date')
       .eq('id', brandId)
       .single();
 
-    if (error || !data) {
-      throw new Error('Error al obtener información de suscripción');
-    }
+    if (error || !data) throw new Error('Error al obtener info');
 
     const daysRemaining = await this.getDaysRemaining(brandId);
     const inTrial = await this.isInTrial(brandId);
@@ -701,13 +467,6 @@ export class SubscriptionService {
 
     if (inTrial && trialDaysRemaining !== null && trialDaysRemaining <= 3) {
       await recordTrialEvent(brandId, 'trial_expiring', { trialDaysRemaining }).catch(() => {});
-    }
-
-    if (!inTrial && data.trial_end_date) {
-      const trialEnd = new Date(data.trial_end_date);
-      if (!Number.isNaN(trialEnd.getTime()) && trialEnd <= new Date()) {
-        await recordTrialEvent(brandId, 'trial_expired').catch(() => {});
-      }
     }
 
     return {
@@ -723,14 +482,6 @@ export class SubscriptionService {
     };
   }
 
-  /**
-   * Reactiva una marca suspendida.
-   * Si la marca tenía mini-landing suspendida hace menos de 90 días,
-   * la restaura automáticamente (has_landing_page = true, landing_suspended_at = null).
-   *
-   * @param brandId - ID de la marca
-   * @returns Marca actualizada con estado active
-   */
   async reactivateSubscription(brandId: string): Promise<Brand> {
     const { data: brand, error: fetchError } = await supabaseAdmin
       .from('brands')
@@ -738,9 +489,7 @@ export class SubscriptionService {
       .eq('id', brandId)
       .single();
 
-    if (fetchError || !brand) {
-      throw new Error('Marca no encontrada: ' + fetchError?.message);
-    }
+    if (fetchError || !brand) throw new Error('Marca no encontrada');
 
     const now = new Date();
     const trialEndDate = brand.trial_end_date ? new Date(brand.trial_end_date) : null;
@@ -748,148 +497,54 @@ export class SubscriptionService {
     const hasActiveTrial = trialEndDate !== null && trialEndDate > now;
     const hasActivePaidPeriod = subscriptionEndDate !== null && subscriptionEndDate > now;
 
-    if (!hasActiveTrial && !hasActivePaidPeriod) {
-      throw new Error('PAYMENT_REQUIRED_FOR_REACTIVATION');
-    }
+    if (!hasActiveTrial && !hasActivePaidPeriod) throw new Error('PAYMENT_REQUIRED_FOR_REACTIVATION');
 
     let restaurarLanding = false;
     if (brand.landing_suspended_at) {
-      const suspendidaHace = Date.now() - new Date(brand.landing_suspended_at).getTime();
-      const diasSuspendida = suspendidaHace / (1000 * 60 * 60 * 24);
-      if (diasSuspendida < 90) {
-        restaurarLanding = true;
-      }
+      const diasSuspendida = (Date.now() - new Date(brand.landing_suspended_at).getTime()) / (1000 * 60 * 60 * 24);
+      if (diasSuspendida < 90) restaurarLanding = true;
     }
 
-    const shouldBeExpiringSoon =
-      hasActivePaidPeriod &&
-      subscriptionEndDate !== null &&
-      subscriptionEndDate.getTime() - now.getTime() <= 7 * 24 * 60 * 60 * 1000;
+    const shouldBeExpiringSoon = hasActivePaidPeriod && subscriptionEndDate !== null && subscriptionEndDate.getTime() - now.getTime() <= 7 * 24 * 60 * 60 * 1000;
 
-    const updatePayload: Record<string, unknown> = {
-      // BUG #8 FIX: 'trial' NO existe en el enum de subscription_status de Supabase.
-      // El trial se infiere dinámicamente desde trial_end_date, nunca se persiste como status.
-      subscription_status: shouldBeExpiringSoon ? 'expiring_soon' : 'active',
-    };
-
+    const payload: any = { subscription_status: shouldBeExpiringSoon ? 'expiring_soon' : 'active' };
     if (restaurarLanding) {
-      updatePayload.has_landing_page = true;
-      updatePayload.landing_suspended_at = null;
-      console.log(`[Subscription] Restaurando mini-landing al reactivar marca ${brandId}`);
+      payload.has_landing_page = true;
+      payload.landing_suspended_at = null;
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('brands')
-      .update(updatePayload)
-      .eq('id', brandId)
-      .select()
-      .single();
-
-    if (error || !data) {
-      throw new Error('Error al reactivar la suscripción: ' + error?.message);
-    }
-
+    const { data, error } = await supabaseAdmin.from('brands').update(payload).eq('id', brandId).select().single();
+    if (error || !data) throw new Error('Error al reactivar');
     return data as Brand;
   }
 
-  /**
-   * Actualiza el estado de suscripciones basado en fechas de vencimiento
-   * Este método debe ser llamado por un job diario
-   *
-   * @returns Resumen de actualizaciones realizadas
-   *
-   * Requirement 11.3: Cambiar estado automáticamente al vencer
-   */
-  async updateSubscriptionStatuses(): Promise<{
-    expired: number;
-    expiringSoon: number;
-    suspended: number;
-    trialExpired: number;
-  }> {
-    const now = new Date();
-    const nowIso = now.toISOString();
-    const sevenDaysFromNow = new Date();
-    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+  async updateSubscriptionStatuses(): Promise<any> {
+    const now = new Date().toISOString();
+    const sevenDays = new Date();
+    sevenDays.setDate(sevenDays.getDate() + 7);
 
-    const { data: expiredTrials } = await supabaseAdmin
-      .from('brands')
-      .update({ subscription_status: 'expired' })
-      .eq('plan', 'TRIAL')
-      .lte('trial_end_date', nowIso)
-      .not('trial_end_date', 'is', null)
-      .in('subscription_status', ['active', 'expiring_soon', 'expired'])
-      .select('id');
-
-    const { data: expiredBrands } = await supabaseAdmin
-      .from('brands')
-      .update({ subscription_status: 'expired' })
-      .neq('plan', 'TRIAL')
-      .lte('subscription_end_date', nowIso)
-      .not('subscription_end_date', 'is', null)
-      .in('subscription_status', ['active', 'expiring_soon'])
-      .select('id');
-
-    const { data: expiringSoonBrands } = await supabaseAdmin
-      .from('brands')
-      .update({ subscription_status: 'expiring_soon' })
-      .neq('plan', 'TRIAL')
-      .gt('subscription_end_date', nowIso)
-      .lte('subscription_end_date', sevenDaysFromNow.toISOString())
-      .eq('subscription_status', 'active')
-      .select('id');
-
-    const { data: suspendedBrands } = await supabaseAdmin
-      .from('brands')
-      .update({ subscription_status: 'suspended' })
-      .eq('subscription_status', 'expired')
-      .select('id');
-
-    const totalExpired = (expiredBrands?.length || 0) + (expiredTrials?.length || 0);
-    console.log(
-      `[Subscription Job] expired=${totalExpired} (subs=${expiredBrands?.length || 0} trials=${expiredTrials?.length || 0}) expiringSoon=${expiringSoonBrands?.length || 0} suspended=${suspendedBrands?.length || 0}`
-    );
+    const { data: expiredTrials } = await supabaseAdmin.from('brands').update({ subscription_status: 'expired' }).eq('plan', 'TRIAL').lte('trial_end_date', now).not('trial_end_date', 'is', null).select('id');
+    const { data: expiredBrands } = await supabaseAdmin.from('brands').update({ subscription_status: 'expired' }).neq('plan', 'TRIAL').lte('subscription_end_date', now).not('subscription_end_date', 'is', null).in('subscription_status', ['active', 'expiring_soon']).select('id');
+    const { data: expiringSoon } = await supabaseAdmin.from('brands').update({ subscription_status: 'expiring_soon' }).neq('plan', 'TRIAL').gt('subscription_end_date', now).lte('subscription_end_date', sevenDays.toISOString()).eq('subscription_status', 'active').select('id');
+    const { data: suspended } = await supabaseAdmin.from('brands').update({ subscription_status: 'suspended' }).eq('subscription_status', 'expired').select('id');
 
     return {
-      expired: totalExpired,
-      expiringSoon: expiringSoonBrands?.length || 0,
-      suspended: suspendedBrands?.length || 0,
+      expired: (expiredBrands?.length || 0) + (expiredTrials?.length || 0),
+      expiringSoon: expiringSoon?.length || 0,
+      suspended: suspended?.length || 0,
       trialExpired: expiredTrials?.length || 0,
     };
   }
 
-  /**
-   * Crea un registro de pago en el historial
-   *
-   * @param paymentData - Datos del pago
-   * @returns Registro de pago creado
-   *
-   * Requirement 11.14: Registrar historial de pagos
-   */
-  private async createPaymentRecord(
-    paymentData: CreatePaymentDto
-  ): Promise<SubscriptionPayment> {
+  private async createPaymentRecord(paymentData: CreatePaymentDto): Promise<SubscriptionPayment> {
     if (paymentData.reference) {
       try {
-        const { data: existing } = await supabaseAdmin
-          .from('subscription_payments')
-          .select('*')
-          .eq('reference', paymentData.reference)
-          .limit(1)
-          .maybeSingle();
-        if (existing) {
-          return existing as SubscriptionPayment;
-        }
-      } catch {
-        console.warn('[Subscription] createPaymentRecord sin guard por reference: esquema legacy o error de consulta');
-      }
+        const { data: existing } = await supabaseAdmin.from('subscription_payments').select('*').eq('reference', paymentData.reference).limit(1).maybeSingle();
+        if (existing) return existing as SubscriptionPayment;
+      } catch (e) {}
     }
 
-    const notesWithSnapshot = paymentData.ledger_snapshot
-      ? attachLedgerSnapshotToNotes(
-          paymentData.notes || null,
-          paymentData.ledger_snapshot as unknown as PaymentLedgerSnapshot
-        )
-      : (paymentData.notes || null);
+    const notes = paymentData.ledger_snapshot ? attachLedgerSnapshotToNotes(paymentData.notes || null, paymentData.ledger_snapshot as any) : (paymentData.notes || null);
 
     return this.insertPaymentCompat({
       brand_id: paymentData.brand_id,
@@ -898,101 +553,39 @@ export class SubscriptionService {
       payment_date: paymentData.payment_date || new Date().toISOString(),
       payment_method: paymentData.payment_method || null,
       status: paymentData.status || 'completed',
-      notes: notesWithSnapshot,
+      notes,
       months_paid: paymentData.months_paid || 1,
       reference: paymentData.reference || null,
     });
   }
 
-  /**
-   * Obtiene el historial de pagos de una marca
-   *
-   * @param brandId - ID de la marca
-   * @returns Lista de pagos ordenados por fecha descendente
-   *
-   * Requirement 11.14: Mostrar historial de pagos
-   */
   async getPaymentHistory(brandId: string): Promise<SubscriptionPayment[]> {
-    const { data, error } = await supabaseAdmin
-      .from('subscription_payments')
-      .select('*')
-      .eq('brand_id', brandId)
-      .order('payment_date', { ascending: false });
-
-    if (error) {
-      throw new Error('Error al obtener historial de pagos: ' + error.message);
-    }
+    const { data, error } = await supabaseAdmin.from('subscription_payments').select('*').eq('brand_id', brandId).order('payment_date', { ascending: false });
+    if (error) throw new Error('Error historial: ' + error.message);
 
     const reportingTrm = await getReportingTrm();
-    const trmCache = new Map<string, number | null>();
+    const cache = new Map<string, number | null>();
 
-    const normalizedPayments = await Promise.all(
-      (data || []).map(async (payment: any) => {
-        const normalized = await normalizePaymentRecordToCop(payment, reportingTrm, trmCache);
-        return {
-          ...payment,
-          amount: normalized.amountCop,
-          amount_original: normalized.originalAmount,
-          amount_cop: normalized.amountCop,
-          exchange_rate_used: normalized.exchangeRateUsed,
-          currency: normalized.currency,
-          reference_used: normalized.referenceUsed,
-        };
-      })
-    );
+    const normalized = await Promise.all((data || []).map(async (payment: any) => {
+      const norm = await normalizePaymentRecordToCop(payment, reportingTrm, cache);
+      return { ...payment, amount: norm.amountCop, amount_original: norm.originalAmount, amount_cop: norm.amountCop, currency: norm.currency };
+    }));
 
-    return normalizedPayments as SubscriptionPayment[];
+    return normalized as SubscriptionPayment[];
   }
 
-  /**
-   * Purga marcas suspendidas hace más de 90 días.
-   * Elimina datos de la marca pero mantiene registros de pagos para auditoría.
-   *
-   * Requirements: 11.12, 11.13
-   */
-  async purgeExpiredSuspendedBrands(): Promise<{ purged: number; errors: number }> {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - 90);
+  async purgeExpiredSuspendedBrands(): Promise<any> {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 90);
 
-    const { data: brandsToPurge, error: fetchError } = await supabaseAdmin
-      .from('brands')
-      .select('id, name, email')
-      .eq('subscription_status', 'suspended')
-      .lt('subscription_end_date', cutoffDate.toISOString());
-
-    if (fetchError || !brandsToPurge?.length) {
-      return { purged: 0, errors: fetchError ? 1 : 0 };
-    }
+    const { data: brands } = await supabaseAdmin.from('brands').select('id, name').eq('subscription_status', 'suspended').lt('subscription_end_date', cutoff.toISOString());
+    if (!brands?.length) return { purged: 0, errors: 0 };
 
     let purged = 0;
-    let errors = 0;
-
-    for (const brand of brandsToPurge) {
-      try {
-        const { error } = await supabaseAdmin
-          .from('brands')
-          .update({
-            subscription_status: 'suspended',
-            name: `[ELIMINADA] ${brand.name}`,
-            email: `deleted_${brand.id}@purged.local`,
-            logo: null,
-            slug: `deleted-${brand.id}`,
-          })
-          .eq('id', brand.id);
-
-        if (error) {
-          console.error(`[Subscription] Error purgando marca ${brand.id}:`, error.message);
-          errors++;
-        } else {
-          console.log(`[Subscription] Marca purgada tras 90 días: ${brand.name} (${brand.id})`);
-          purged++;
-        }
-      } catch (err) {
-        console.error(`[Subscription] Error inesperado purgando marca ${brand.id}:`, err);
-        errors++;
-      }
+    for (const b of brands) {
+      const { error } = await supabaseAdmin.from('brands').update({ name: `[ELIMINADA] ${b.name}`, email: `deleted_${b.id}@purged.local`, logo: null }).eq('id', b.id);
+      if (!error) purged++;
     }
-
-    return { purged, errors };
+    return { purged, errors: brands.length - purged };
   }
 }

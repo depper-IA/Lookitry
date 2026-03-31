@@ -327,6 +327,13 @@ function CheckoutContent() {
   const handlePagarPaypal = async () => {
     setRedirecting(true);
     try {
+      if (isUpgrade && loadingProration) {
+        throw new Error('Estamos calculando tu credito de upgrade. Espera un momento antes de pagar.');
+      }
+      if (isUpgrade && (prorationPreview?.isFree || totalPrice <= 0)) {
+        throw new Error('Este upgrade no requiere PayPal. Confirma el cambio con el boton de upgrade sin costo.');
+      }
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
       const landingParam = includeLanding ? '&includes_landing=true' : '';
       const res = await fetch(
@@ -1324,7 +1331,22 @@ function CheckoutContent() {
           </div>
 
           {/* Sección de pago */}
-          {isUpgrade && prorationPreview?.isFree ? (
+          {isUpgrade && loadingProration ? (
+            <div
+              className="rounded-2xl border px-5 py-5 space-y-4"
+              style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+            >
+              <div className="flex items-center gap-2">
+                <RefreshCw className="w-5 h-5 animate-spin" style={{ color: '#6366f1' }} />
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  Calculando tu upgrade
+                </p>
+              </div>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                Estamos validando el credito exacto de tu plan actual para mostrarte el monto real antes de cobrar.
+              </p>
+            </div>
+          ) : isUpgrade && prorationPreview?.isFree ? (
             <div
               className="rounded-2xl border px-5 py-5 space-y-4"
               style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
