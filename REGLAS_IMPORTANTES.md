@@ -13,6 +13,8 @@ RESPONDE SIEMPRE EN ESPAÑOL
 - Sin emojis en UI — solo SVG / lucide-react
 - Toggle activo: `#FF5C3A` (nunca `bg-blue-600`)
 - Logo: siempre SVG + texto `Look<span style="color:#FF5C3A">itry</span>`
+- Accesibilidad base obligatoria: botones de mostrar/ocultar contraseña deben ser focusables y llevar `aria-label`
+- Pantallas de auth, checkout, pago exitoso y dashboard deben respetar `font-jakarta` en títulos y `DM Sans` en cuerpo/UI
 
 ## Registro de Cambios (Changelog)
 
@@ -138,6 +140,16 @@ Tablas principales:
 5. Tras el pago, la referencia `TRIAL-{brandId}-{ts}` se confirma por webhook y activa la cuenta
 6. Se envía email de bienvenida vía SMTP
 7. Usuario ingresa a su panel en `/dashboard`
+
+### Flujo comercial vigente (obligatorio mantener)
+- El funnel comercial válido ya no termina en el pago: debe continuar con activación y acceso contextual.
+- `StepProgress` es el componente estándar para flujos multi-step de compra/activación (`checkout`, `pago-exitoso`, `register` post-pago, `registro-pro`).
+- `pago-exitoso` debe decidir el CTA principal según contexto:
+  - Visitante con referencia pendiente -> `ACTIVAR MI CUENTA`
+  - Usuario autenticado o ya activo -> `IR AL DASHBOARD`
+- El flujo de visitantes con `pending_registrations` y `free checkout` es parte oficial del producto y no debe romperse.
+- El dashboard home debe priorizar: estado de cuenta, siguiente acción, checklist visible y diagnóstico operativo; no volver a un home basado solo en métricas sueltas.
+- `OnboardingWizard` no debe competir con la portada `/dashboard`; si existe, debe complementar rutas secundarias del panel.
 
 ## 7. RESOLUCIÓN DE PROBLEMAS PREVIOS
 - **Checkout Landing Activo**: Para clientes con un plan PRO o BASIC, comprar la mini-landing individual NO procesa una mensualidad doble, logrando esto enviando `plan=NONE` a las APIs de Wompi / Paypal.

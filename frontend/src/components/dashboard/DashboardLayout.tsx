@@ -8,7 +8,6 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { SubscriptionBadge } from './SubscriptionBadge';
-import { OnboardingWizard } from './OnboardingWizard';
 import { LiveTryOnButton } from './LiveTryOnButton';
 import { DashboardNotifications } from './DashboardNotifications';
 import { TrialBanner } from './TrialBanner';
@@ -274,7 +273,6 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         </header>
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 scroll-smooth sm:p-4 md:p-6 xl:p-8 xl:pt-10">
-          {!isDashboardHome && <OnboardingWizard />}
           {!isDashboardHome && <DashboardNotifications />}
           {!isDashboardHome && <TrialBanner />}
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">{children}</div>

@@ -112,27 +112,54 @@ function RegistroProContent() {
   const [recheckingPending, setRecheckingPending] = useState(false);
   const { brand, isAuthenticated } = useAuth();
   const [autoLinking, setAutoLinking] = useState(false);
+  const [loadingHelpVisible, setLoadingHelpVisible] = useState(false);
 
   useEffect(() => {
     getFingerprint().then(setFingerprint);
   }, []);
 
+  async function recoverReferenceByTransactionId(transactionId: string, retries = 5): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_URL}/api/payments/wompi/transaction/${transactionId}`);
+      const data = await res.json();
+
+      if (data && data.reference) {
+        router.replace(`/registro-pro?ref=${data.reference}&months=${months}`);
+        return true;
+      }
+    } catch {
+      // noop
+    }
+
+    if (retries > 0) {
+      await new Promise((resolve) => window.setTimeout(resolve, 1800));
+      return recoverReferenceByTransactionId(transactionId, retries - 1);
+    }
+
+    return false;
+  }
+
   useEffect(() => {
+    let cancelled = false;
+
     if (!ref && wompiId) {
       setRecoveringRef(true);
-      fetch(`${API_URL}/api/payments/wompi/transaction/${wompiId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.reference) {
-            router.replace(`/registro-pro?ref=${data.reference}&months=${months}`);
-          } else {
+      recoverReferenceByTransactionId(wompiId, 6)
+        .then((resolved) => {
+          if (!resolved && !cancelled) {
             setRecoveringRef(false);
           }
         })
         .catch(() => {
-          setRecoveringRef(false);
+          if (!cancelled) {
+            setRecoveringRef(false);
+          }
         });
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [ref, wompiId, months, router]);
 
   async function fetchPending(retries = 0): Promise<boolean> {
@@ -166,6 +193,19 @@ function RegistroProContent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ref]);
+
+  useEffect(() => {
+    if (!(recoveringRef || fetchingPending || autoLinking)) {
+      setLoadingHelpVisible(false);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setLoadingHelpVisible(true);
+    }, 12000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [recoveringRef, fetchingPending, autoLinking]);
 
   // Efecto de auto-vinculación si ya hay sesión
   useEffect(() => {
@@ -214,14 +254,69 @@ function RegistroProContent() {
   if (recoveringRef || fetchingPending || autoLinking) {
     return (
       <main className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
-        <div className="text-center">
+        <div className="w-full max-w-xl rounded-[28px] border border-[#262626] bg-[#101010] p-8 md:p-10 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
           <div className="w-12 h-12 border-4 border-t-transparent border-[#FF5C3A] rounded-full animate-spin mx-auto mb-4"></div>
-          <h2 className="text-white font-jakarta text-xl">
-            {recoveringRef ? 'Recuperando tu pago...' : autoLinking ? 'Vinculando compra a tu cuenta...' : 'Cargando detalles...'}
+          <h2 className="text-white font-jakarta text-2xl font-bold tracking-tight">
+            {recoveringRef ? 'Estamos localizando tu compra' : autoLinking ? 'Estamos activando tu compra' : 'Estamos preparando tu activacion'}
           </h2>
-          <p className="text-[#999] text-sm mt-2">
-            {recoveringRef ? 'Estamos verificando la transacción.' : autoLinking ? `Detectamos tu sesión activa como ${brand?.name || 'marca'}.` : 'Preparando tu cuenta.'}
+          <p className="mx-auto mt-3 max-w-md text-[15px] leading-7 text-[#b0b0b0]">
+            {recoveringRef ? 'Estamos verificando la transacción.' : autoLinking ? `Detectamos tu sesión activa como ${brand?.name || 'tu marca'}.` : 'Preparando tu cuenta.'}
           </p>
+          <div className="mt-6 max-w-md rounded-2xl border border-[#262626] bg-[#111] px-5 py-4 text-left">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#FF5C3A]">
+              Que esta pasando
+            </p>
+            <p className="mt-2 text-sm leading-6 text-[#c8c8c8]">
+              Estamos validando el pago y sincronizando la referencia para terminar la activacion sin duplicar el cobro.
+            </p>
+          </div>
+          {loadingHelpVisible && (
+            <div className="mt-4 max-w-md rounded-2xl border border-[#FF5C3A]/20 bg-[#FF5C3A]/8 px-5 py-4 text-left">
+              <p className="text-sm font-bold text-white">Esto ya esta tardando mas de lo normal.</p>
+              <p className="mt-2 text-sm leading-6 text-[#d6c0b8]">
+                Si el pago ya fue aprobado, no necesitas volver a pagar. Puedes reintentar la verificacion o revisar tu suscripcion.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                {wompiId && !ref && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoadingHelpVisible(false);
+                      setRecoveringRef(true);
+                      recoverReferenceByTransactionId(wompiId, 3).then((resolved) => {
+                        if (!resolved) {
+                          setRecoveringRef(false);
+                        }
+                      });
+                    }}
+                    className="rounded-xl bg-[#FF5C3A] px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition-all hover:bg-[#ff6c4d]"
+                  >
+                    Reintentar
+                  </button>
+                )}
+                {ref && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setLoadingHelpVisible(false);
+                      setRecheckingPending(true);
+                      await fetchPending(2);
+                      setRecheckingPending(false);
+                    }}
+                    className="rounded-xl bg-[#FF5C3A] px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white transition-all hover:bg-[#ff6c4d]"
+                  >
+                    {recheckingPending ? 'Verificando...' : 'Revisar pago'}
+                  </button>
+                )}
+                <Link
+                  href="/dashboard/subscription"
+                  className="rounded-xl border border-[#303030] px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-white/85 transition-all hover:border-[#FF5C3A]/40 hover:text-white"
+                >
+                  Ver suscripcion
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     );

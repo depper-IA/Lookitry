@@ -234,6 +234,9 @@ export default function RegisterForm() {
                 ? 'Tu pago fue confirmado. Define tu contraseña y entra a tu probador.'
                 : `Prueba Lookitry por ${trialDays} días y transforma tu tienda.`}
             </p>
+            <p className="mt-3 text-[11px] uppercase tracking-[0.18em] text-[#666]">
+              {isPaidFlow ? 'Solo falta activar tu acceso' : 'Te tomara menos de 2 minutos'}
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -290,6 +293,9 @@ export default function RegisterForm() {
                   Sugerir
                 </button>
               </div>
+              <p className="ml-1 text-[11px] leading-relaxed text-[#999]">
+                Esta URL identificara tu probador. Puedes ajustarla ahora para que quede simple y facil de compartir.
+              </p>
             </div>
 
             {/* Email */}
@@ -306,6 +312,11 @@ export default function RegisterForm() {
                 readOnly={isPaidFlow && prefilledFields.email}
                 className={`w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white outline-none transition-all shadow-inner focus:border-[#FF5C3A] ${isPaidFlow && prefilledFields.email ? 'opacity-50 grayscale' : ''}`}
               />
+              <p className="ml-1 text-[11px] leading-relaxed text-[#999]">
+                {isPaidFlow
+                  ? 'Usaremos este correo para recuperar acceso y enviarte avisos importantes de tu cuenta.'
+                  : 'Sera tu correo de acceso y donde recibiras la confirmacion para entrar al dashboard.'}
+              </p>
             </div>
 
             {/* Password Fields */}
@@ -328,10 +339,15 @@ export default function RegisterForm() {
                     type="button"
                     onClick={() => setShowPassword(v => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666] transition-colors hover:text-white"
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                <p className="ml-1 text-[11px] leading-relaxed text-[#999]">
+                  Usa una contrasena de al menos 8 caracteres. Sera la clave con la que administraras tu espacio en Lookitry.
+                </p>
               </div>
               
               <div className="space-y-1.5">
@@ -344,8 +360,20 @@ export default function RegisterForm() {
                   value={form.confirmPassword}
                   onChange={handleChange}
                   required
+                  placeholder="Repite tu contrasena"
                   className={`w-full rounded-xl border ${form.confirmPassword && !passwordsMatch ? 'border-red-500/40' : 'border-[rgba(255,255,255,0.08)]'} bg-[#050505] px-4 py-3 text-sm text-white outline-none transition-all shadow-inner focus:border-[#FF5C3A]`}
                 />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3">
+              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
+                <span className={`inline-block h-2 w-2 rounded-full ${isPasswordValid ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
+                Minimo 8 caracteres
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
+                <span className={`inline-block h-2 w-2 rounded-full ${form.confirmPassword && passwordsMatch ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
+                Confirmacion igual a la contrasena
               </div>
             </div>
 

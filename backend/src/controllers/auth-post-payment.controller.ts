@@ -297,9 +297,46 @@ export async function getPendingRegistration(req: Request, res: Response) {
       return res.status(404).json({ error: 'NOT_FOUND', message: 'Referencia de pago no encontrada' });
     }
 
+    let resolvedPending = pending;
+    const currentStatus = String(pending.status || '').toLowerCase();
+
+    // Autocuración: si Wompi ya aprobó el pago pero el webhook todavía no actualizó
+    // pending_registrations, resolvemos el desfase al consultar por referencia.
+    if (
+      currentStatus !== 'paid' &&
+      currentStatus !== 'confirmed' &&
+      currentStatus !== 'used' &&
+      (ref.startsWith('TRYON-') || ref.startsWith('TRIAL-'))
+    ) {
+      try {
+        const transaction = await wompiService.getTransactionByReference(ref);
+        if (transaction?.status === 'APPROVED') {
+          const { error: syncError } = await supabaseAdmin
+            .from('pending_registrations')
+            .update({
+              status: 'paid',
+              payment_id: transaction.id,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('reference', ref);
+
+          if (syncError) {
+            console.error('[PostPayment] No se pudo sincronizar referencia pagada:', syncError);
+          } else {
+            resolvedPending = {
+              ...pending,
+              status: 'paid',
+            } as typeof pending;
+          }
+        }
+      } catch (syncErr) {
+        console.error('[PostPayment] Error autocorrigiendo estado pendiente:', syncErr);
+      }
+    }
+
     // Compat: normalizar estado legacy "confirmed" a "paid" para el frontend
     const normalized = {
-      ...pending,
+      ...resolvedPending,
       reference: ref,
       normalized_reference: ref,
     } as any;
