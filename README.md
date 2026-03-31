@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="./frontend/public/logo.svg" alt="Lookitry Logo" height="80"/>
+  <img src="https://raw.githubusercontent.com/depper-IA/virtual-tryon/main/frontend/public/logo.svg" alt="Lookitry Logo" height="80"/>
 
-# Look<span style="color:#FF5C3A">itry</span>
+# Lookitry
 
 **El Probador Virtual con Inteligencia Artificial para E-Commerce B2B en Latinoamérica**
 
@@ -24,7 +24,7 @@ _Permite a las marcas integrar un widget de prueba virtual en su tienda en minut
 
 **Este repositorio es estrictamente privado y confidencial. No está a la venta ni es de dominio público.**
 
-El código fuente, la arquitectura, los flujos de inteligencia artificial y las estrategias comerciales descritas aquí son propiedad exclusiva de Look<span style="color:#FF5C3A">itry</span>. Queda estrictamente prohibida la copia, reproducción, distribución, ingeniería inversa o cualquier intento de replicar esta plataforma sin autorización explícita.
+El código fuente, la arquitectura, los flujos de inteligencia artificial y las estrategias comerciales descritas aquí son propiedad exclusiva de Lookitry. Queda estrictamente prohibida la copia, reproducción, distribución, ingeniería inversa o cualquier intento de replicar esta plataforma sin autorización explícita.
 
 Esta documentación técnica se proporciona únicamente con fines informativos y de visualización estructural para el entendimiento del proyecto a nivel interno.
 
@@ -32,7 +32,7 @@ Esta documentación técnica se proporciona únicamente con fines informativos y
 
 ## Propuesta de Valor
 
-Look<span style="color:#FF5C3A">itry</span> es una plataforma SaaS B2B diseñada para revolucionar la forma en que se compra ropa, accesorios y calzado en línea. Mediante el uso de Inteligencia Artificial (impulsada por OpenRouter a través de n8n), los clientes finales pueden subir una selfie y visualizar cómo les quedaría un producto específico.
+Lookitry es una plataforma SaaS B2B diseñada para revolucionar la forma en que se compra ropa, accesorios y calzado en línea. Mediante el uso de Inteligencia Artificial (impulsada por OpenRouter a través de n8n), los clientes finales pueden subir una selfie y visualizar cómo les quedaría un producto específico.
 
 Nuestra solución se integra fácilmente a través de un **widget embebible** (iframe) o una **mini-landing page** personalizada, ideal para marcas en Colombia, México, Argentina, Chile y Perú.
 
@@ -40,7 +40,7 @@ Nuestra solución se integra fácilmente a través de un **widget embebible** (i
 
 ## Stack Tecnológico Premium
 
-La arquitectura de Look<span style="color:#FF5C3A">itry</span> está construida para ser rápida, escalable y ofrecer una experiencia premium.
+La arquitectura de Lookitry está construida para ser rápida, escalable y ofrecer una experiencia premium.
 
 ### Frontend
 
@@ -88,7 +88,7 @@ La arquitectura de Look<span style="color:#FF5C3A">itry</span> está construida 
 
 ## Arquitectura del Sistema
 
-El ecosistema de Look<span style="color:#FF5C3A">itry</span> está diseñado para mantener una separación segura de responsabilidades:
+El ecosistema de Lookitry está diseñado para mantener una separación segura de responsabilidades:
 
 ```mermaid
 graph TD;
@@ -115,7 +115,7 @@ graph TD;
 - **Tipografía:** _Plus Jakarta Sans_ para títulos, _DM Sans_ para el cuerpo del texto.
 - **Grises (Textos):** Mínimo `#999` para legibilidad. Prohibido usar grises oscuros como `#333`, `#444`, `#555`.
 - **Iconografía:** Uso exclusivo de `lucide-react`. Cero emojis en la interfaz.
-- **Logotipo:** Siempre en formato SVG acompañado del texto estilizado `Look<span style="color:#FF5C3A">itry</span>`.
+- **Logotipo:** Siempre en formato SVG acompañado del texto estilizado `Look<span style="color:#FF5C3A">itry</span>` (aplicable en código de UI). En documentación, se usará el logo oficial.
 
 ---
 
