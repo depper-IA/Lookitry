@@ -74,6 +74,24 @@ export function getBlogShareImage(
   return `${appBaseUrl}/api/blog/social-image?src=${encodeURIComponent(image)}`;
 }
 
+export function getBlogTeaser(
+  post?: {
+    excerpt?: string | null;
+    meta_description?: string | null;
+  } | null,
+  fallback = 'Descubre una idea práctica para vender mejor con LOOKITRY, reducir fricción y darle más claridad a tu ecommerce de moda.'
+): string {
+  const raw = String(post?.excerpt || post?.meta_description || '').replace(/\s+/g, ' ').trim();
+  if (!raw) return fallback;
+
+  const normalized = raw.replace(/\.\.\.+$/g, '').trim();
+  const hasStrongLead = /^(descubre|aprende|conoce|impulsa|convierte|evita|mejora|por que|como)/i.test(normalized);
+  const teaser = hasStrongLead ? normalized : `Descubre ${normalized.charAt(0).toLowerCase()}${normalized.slice(1)}`;
+
+  if (teaser.length <= 165) return teaser;
+  return `${teaser.slice(0, 162).trim()}...`;
+}
+
 export async function fetchBlogCategories(): Promise<BlogCategory[]> {
   try {
     const response = await fetch('/api/blog/categories');

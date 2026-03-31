@@ -2,8 +2,9 @@
 
 **Version:** 2.0  
 **Estado:** Beta comercial en ejecucion  
-**Ultima actualizacion:** Marzo 2026  
+**Ultima actualizacion:** 31 de Marzo 2026 (Auditoría Técnica Finalizada)  
 **Objetivo del documento:** seguimiento semanal de lo implementado, pendientes, riesgos y decisiones para lanzar el Plugin MVP de WooCommerce con impacto en ingresos y retencion.
+
 
 ---
 
@@ -14,10 +15,11 @@
 
 ### Resultado ejecutivo
 
-- Integracion base plugin-backend: **funcionando**.
+- Integracion base plugin-backend: **100% funcional**.
 - Modelo comercial (plugin no gratuito): **alineado a nivel tecnico** (API key + limites por plan).
-- Riesgo principal detectado: **conflicto potencial de upsert** en sync por falta de constraint unico compuesto en DB.
-- Estado general: **operable para piloto**, con deuda tecnica puntual antes de escalar.
+- Riesgo principal (upsert): **Mitigado** (Constraint único `brand_id, external_id` verificado en producción).
+- Estado general: **Listo para escala comercial controlada**.
+
 
 ---
 
@@ -99,7 +101,8 @@ Si en el futuro se reactiva algun esquema freemium, debe abrirse como experiment
 - [x] Endpoint de inicializacion embed WordPress operativo.
 - [x] Resolucion de producto por `external_id` operativa.
 - [x] Normalizacion de uso de API key por header implementada en plugin y backend (con compatibilidad legacy temporal).
-- [ ] Constraint unico `(brand_id, external_id)` pendiente de aplicar/validar en base de datos productiva.
+- [x] Constraint unico `(brand_id, external_id)` aplicado y verificado en base de datos productiva.
+
 
 ### Dashboard / Frontend integraciones (`frontend`)
 
@@ -234,7 +237,8 @@ El Plugin MVP se considera listo cuando:
 
 ## Prioridad P0 (antes de escalar tiendas)
 
-- [ ] **DB hardening sync Woo:** migracion creada para unique constraint/index `(brand_id, external_id)`; falta aplicar y validar en entorno productivo.
+- [x] **DB hardening sync Woo:** Constraint único e índice `(brand_id, external_id)` aplicado y validado en entorno productivo.
+
 - [x] **Compatibilidad de API key:** backend y plugin unificados para flujo principal por header.
 - [x] **Seguridad de transporte de key:** endpoints plugin migrados a `x-api-key` con compatibilidad temporal de query param.
 

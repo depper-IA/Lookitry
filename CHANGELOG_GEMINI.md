@@ -1580,7 +1580,7 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 
 - Se corrigió el casteo interno de `PricingConfig` al hidratar configuración dinámica desde Supabase, usando una conversión segura vía `unknown` para evitar que `next build` fallara en producción.
 
-## 29 de Marzo, 2026 â€” AuditorÃ­a y correcciones integrales de `/admin/*`
+## 29 de Marzo, 2026 — Auditoría y correcciones integrales de `/admin/*`
 
 **Archivos modificados:**
 
@@ -1598,25 +1598,25 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 - `frontend/src/app/admin/feedback/page.tsx`
 - `frontend/src/app/admin/health/page.tsx`
 
-**DescripciÃ³n:**
+**Descripción:**
 
-- Se reconstruyÃ³ `/admin/analytics` para normalizar `generationsByMonth`, tolerar datos vacÃ­os y mostrar un estado vacÃ­o amigable cuando no hay actividad.
-- Se corrigiÃ³ `/admin/conversion` para contar correctamente cuentas con `subscription_status = trial` y `trial_end_date` futura, y se agregÃ³ una tabla operativa de trials activos.
-- Se reordenÃ³ `/admin/enterprise` con la secuencia pedida: informaciÃ³n del cliente, calculadora de precios, estado de cuenta e historial de conexiones.
-- La calculadora enterprise dejÃ³ de vivir como secciÃ³n separada dentro de `/admin/pricing`; ahora queda consolidada en su secciÃ³n lÃ³gica de enterprise.
-- Se corrigiÃ³ `/admin/woocommerce` para mostrar solo marcas con conexiÃ³n realmente activa usando validaciÃ³n explÃ­cita del plugin y badge visual de estado.
-- Se ampliÃ³ `/admin/configuracion` en la pestaÃ±a `CrÃ©ditos IA` para manejar OpenRouter y Replicate por separado, con consultas independientes y fallback defensivo.
-- Se fusionaron rutas duplicadas u huÃ©rfanas:
+- Se reconstruyó `/admin/analytics` para normalizar `generationsByMonth`, tolerar datos vacíos y mostrar un estado vacío amigable cuando no hay actividad.
+- Se corrigió `/admin/conversion` para contar correctamente cuentas con `subscription_status = trial` y `trial_end_date` futura, y se agregó una tabla operativa de trials activos.
+- Se reordenó `/admin/enterprise` con la secuencia pedida: información del cliente, calculadora de precios, estado de cuenta e historial de conexiones.
+- La calculadora enterprise dejó de vivir como sección separada dentro de `/admin/pricing`; ahora queda consolidada en su sección lógica de enterprise.
+- Se corrigió `/admin/woocommerce` para mostrar solo marcas con conexión realmente activa usando validación explícita del plugin y badge visual de estado.
+- Se amplió `/admin/configuracion` en la pestaña `Créditos IA` para manejar OpenRouter y Replicate por separado, con consultas independientes y fallback defensivo.
+- Se fusionaron rutas duplicadas u huérfanas:
   - `/admin/feedback` ahora redirige a `/admin/notifications?tab=feedback`
   - `/admin/health` ahora redirige a `/admin/configuracion?tab=health`
-  - la navegaciÃ³n principal renombrÃ³ `Notificaciones` a `Actividad` para reflejar la consolidaciÃ³n
+  - la navegación principal renombró `Notificaciones` a `Actividad` para reflejar la consolidación
 
-**VerificaciÃ³n:**
+**Verificación:**
 
 - `backend npm.cmd test -- --runInBand`
 - `frontend npm.cmd run build`
 
-## 29 de Marzo, 2026 â€” NormalizaciÃ³n de planes trial histÃ³ricos
+## 29 de Marzo, 2026 — Normalización de planes trial históricos
 
 **Archivos modificados:**
 
@@ -1625,13 +1625,13 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 - `frontend/src/app/admin/brands/page.tsx`
 - `backend/src/scripts/normalize-trial-plans.sql`
 
-**DescripciÃ³n:**
+**Descripción:**
 
-- La creaciÃ³n manual de marcas trial dejÃ³ de persistir `plan=BASIC`; ahora crea cuentas con `plan=TRIAL` desde origen.
-- La actualizaciÃ³n de suscripciones dejÃ³ de remapear `TRIAL` a `BASIC`, manteniendo `subscription_status='trial'` cuando corresponde.
-- Se agregÃ³ un script SQL seguro para normalizar datos histÃ³ricos que tienen `trial_end_date` pero quedaron guardados como `BASIC`.
+- La creación manual de marcas trial dejó de persistir `plan=BASIC`; ahora crea cuentas con `plan=TRIAL` desde origen.
+- La actualización de suscripciones dejó de remapear `TRIAL` a `BASIC`, manteniendo `subscription_status='trial'` cuando corresponde.
+- Se agregó un script SQL seguro para normalizar datos históricos que tienen `trial_end_date` pero quedaron guardados como `BASIC`.
 
-**VerificaciÃ³n:**
+**Verificación:**
 
 - `backend npm.cmd test -- --runInBand`
 - `frontend npm.cmd run build`
@@ -1713,7 +1713,7 @@ Reescritura completa del bloque de tareas 23–39 en el spec de UI/UX redesign. 
 - **Restriccion trial (`wompi.controller.ts`, `paypal.controller.ts`, `auth-post-payment.controller.ts`, `admin.controller.ts`, `dashboard/checkout/page.tsx`, `dashboard/checkout-landing/page.tsx`):**
   - Se bloquearon flujos de mini-landing para cuentas trial en backend y se empezo a reflejar la restriccion en checkout.
 
-## 29 de Marzo, 2026 â€” Tolerancia a esquema faltante en Admin Enterprise
+## 29 de Marzo, 2026 — Tolerancia a esquema faltante en Admin Enterprise
 
 **Objetivo:**
 
@@ -1858,6 +1858,92 @@ Garantizar que futuros agentes de IA tengan un contexto técnico limpio, actuali
 
 - El repositorio necesitaba un punto de entrada profesional y completo que facilitara el onboarding de nuevos desarrolladores (o agentes de IA) y presentara adecuadamente el proyecto SaaS B2B.
 
+## 30 de Marzo, 2026 - Migración de `templates-webs` a estructura documental por dominio
+
+**Archivos modificados:**
+
+- `REGLAS_IMPORTANTES.md`
+- `.kiro/steering/REGLAS_IMPORTANTES.md`
+- `CHANGELOG_GEMINI.md`
+
+**Archivos reubicados:**
+
+- `templates-webs/*` → `docs/n8n/workflows/`, `docs/assets/branding/`, `docs/assets/blog/`, `docs/assets/payments/`, `docs/assets/templates-preview/`, `docs/data/`
+
+**Descripción del cambio:**
+Se reorganizó el contenido histórico de `templates-webs` dentro de una estructura más clara en `docs/`, separando workflows de n8n, branding, assets de referencia, logos de pago, previews y datos operativos. También se actualizaron las rutas activas en la documentación maestra para que el proyecto deje de tratar `templates-webs` como carpeta fuente vigente.
+
+**Motivo:**
+
+- `templates-webs` mezclaba demasiados tipos de archivo en una sola ubicación y ya no representaba una estructura mantenible.
+- Era necesario ordenar el repositorio sin romper frontend ni backend, preservando los recursos como documentación y referencia técnica.
+
+## 30 de Marzo, 2026 - Ignorar carpeta local de uso privado en la raíz del repo
+
+**Archivos modificados:**
+
+- `.gitignore`
+- `CHANGELOG_GEMINI.md`
+
+**Descripción del cambio:**
+Se añadió una regla explícita en `.gitignore` para ignorar las carpetas `Local/` y `local/` en la raíz del repositorio. Esto permite usar una carpeta local de carga o trabajo privado dentro del repo sin riesgo de subirla accidentalmente a GitHub.
+
+**Motivo:**
+
+- El usuario utiliza una carpeta local en la raíz del proyecto para archivos de uso privado y necesitaba impedir que se agregara al repositorio por error.
+
+## 30 de Marzo, 2026 - Limpieza de raíz y recentrado visual del detalle de blog
+
+**Archivos modificados:**
+
+- `frontend/src/app/blog/[slug]/page.tsx`
+- `frontend/src/components/blog/BlogShareRail.tsx`
+- `frontend/src/components/blog/BlogCard.tsx`
+- `frontend/src/services/blog.service.ts`
+- `CHANGELOG_GEMINI.md`
+
+**Archivos retirados de la raíz del workspace:**
+
+- `current_dns.json`
+- `fix_settings.js`
+- `git_status.txt`
+- `output.json`
+- `package-lock.json`
+- `por-hacer.txt`
+- `templates-webs/Lookitry-logo.png`
+- `test_iframe.html`
+- `test_widget.html`
+- `test_write.txt`
+- `tmp_check_db.ts`
+- `tmp_run_migration.ts`
+- `tmp_vps_output.txt`
+
+**Descripción del cambio:**
+Se ajustó el layout del detalle del blog para que el contenido principal recupere un centro visual más claro en pantallas grandes, reduciendo la sensación de que todo quedaba empujado a la izquierda. El rail fijo de compartir ahora solo aparece en resoluciones muy amplias y el sidebar editorial queda contenido dentro del eje central del artículo. Además, se completó una limpieza de la raíz del workspace retirando archivos temporales, pruebas locales y artefactos obsoletos que no deben seguir viviendo como primera capa del repo.
+
+**Motivo:**
+
+- La página de lectura del blog se sentía desbalanceada por la aparición demasiado temprana del rail fijo y por una distribución horizontal demasiado abierta.
+- La raíz del proyecto tenía archivos temporales y artefactos de trabajo manual que ya no aportaban al producto ni a la operación normal del repositorio.
+
+## 30 de Marzo, 2026 - Share rail con WhatsApp, ícono X y teasers más llamativos en blog
+
+**Archivos modificados:**
+
+- `frontend/src/components/blog/BlogShareRail.tsx`
+- `frontend/src/components/blog/BlogCard.tsx`
+- `frontend/src/services/blog.service.ts`
+- `frontend/src/app/blog/[slug]/page.tsx`
+
+**Descripción del cambio:**
+Se amplió la barra lateral de compartir del blog para incluir WhatsApp y se reemplazó el ícono heredado de Twitter por el ícono visual de `X`. Además, se normalizó la construcción de excerpts/teasers en frontend para que los resúmenes del blog suenen más editoriales y más accionables tanto en las cards del listado como en la sección de últimos artículos dentro del detalle del post.
+
+**Motivo:**
+
+- Faltaba un canal de compartido clave para audiencias comerciales y equipos en LATAM: WhatsApp.
+- El branding de la red social ya no debía mostrarse con el pájaro de Twitter.
+- Los excerpts visibles del blog necesitaban más gancho editorial para impulsar la lectura y no verse planos o demasiado genéricos.
+
 ## 30 de Marzo, 2026 - Rediseño editorial del detalle de blog con autor, share rail y últimos artículos
 
 **Archivos modificados:**
@@ -1951,3 +2037,34 @@ Se restauró la versión del README generada originalmente por Jules tomando com
 **Motivo:**
 
 - El usuario pidió recuperar específicamente el README creado por Jules, pero con el branding y los enlaces del repositorio actual funcionando correctamente.
+
+## 30 de Marzo, 2026 - Auditoria de codificacion, raiz y reorganizacion documental
+
+**Objetivo:**
+
+- Eliminar texto mojibake y caracteres rotos en archivos fuente y documentacion critica.
+- Formalizar `local/Local` como zona de carga privada no trackeada.
+- Sacar artefactos temporales de la raiz y mover `templates-webs` a una estructura documental por dominio sin romper referencias activas.
+
+**Cambios aplicados:**
+
+- **Codificacion (`frontend/src/app/blog/page.tsx`, `frontend/src/app/admin/blog/[id]/page.tsx`, `frontend/src/app/admin/configuracion/page.tsx`, `frontend/src/app/admin/enterprise/crear/page.tsx`, `frontend/src/app/trial-payment/page.tsx`, `backend/src/controllers/admin.controller.ts`, `backend/src/controllers/enterprise.controller.ts`):**
+  - Se normalizaron cadenas corruptas por codificacion incorrecta en UI y mensajes operativos.
+  - Se limpio el contenido visible afectado por acentos, flechas y simbolos de reemplazo.
+- **Documentacion critica (`REGLAS_IMPORTANTES.md`, `.kiro/steering/REGLAS_IMPORTANTES.md`):**
+  - Se repararon referencias y encabezados con caracteres rotos para evitar que la guia maestra del proyecto siga propagando texto corrupto.
+- **Raiz y estructura documental (`.gitignore`, `docs/assets/*`, `docs/data/*`, `docs/n8n/workflows/*`):**
+  - `local/` y `Local/` quedaron ignoradas para usarse como zona privada de staging antes de mover archivos a su carpeta final.
+  - Se reubico el contenido historico de `templates-webs` dentro de `docs/` segun su dominio: branding, blog, pagos, previews, workflows y datos.
+  - Se retiraron de la raiz varios archivos temporales y artefactos operativos que no deben formar parte del arbol principal del repo.
+- **Blog frontend (`frontend/src/app/blog/[slug]/page.tsx`, `frontend/src/components/blog/BlogCard.tsx`, `frontend/src/components/blog/BlogShareRail.tsx`, `frontend/src/services/blog.service.ts`):**
+  - Se centro mejor la lectura del articulo, se ajusto el rail de compartir para no empujar el contenido y se mantuvieron las mejoras recientes de share/teasers.
+
+**Verificacion:**
+
+- `npm.cmd run build` en `frontend`: OK
+- rastreo `rg` sobre patrones mojibake en archivos fuente y reglas criticas: sin hallazgos restantes
+
+**Motivo:**
+
+- La raiz estaba mezclando documentacion viva, assets fuente y temporales locales. Ademas, varios archivos habian sido guardados o reescritos con codificacion incorrecta, lo que terminaba rompiendo textos visibles y mensajes del sistema.

@@ -37,7 +37,7 @@ export default function BlogEditorPage() {
       if (postData) {
         setPost(postData);
       } else {
-        setError('No se encontrÃ³ el artÃ­culo');
+        setError('No se encontró el artículo');
       }
       setCategories(cats);
     } catch {
@@ -80,7 +80,7 @@ export default function BlogEditorPage() {
         setError('Error al guardar los cambios en el servidor');
       }
     } catch {
-      setError('ExcepciÃ³n al intentar guardar');
+      setError('Excepción al intentar guardar');
     } finally {
       setSaving(false);
     }
@@ -124,10 +124,10 @@ export default function BlogEditorPage() {
           </Link>
           <div>
             <h1 className="font-jakarta font-extrabold text-3xl tracking-tight" style={{ color: 'var(--text-primary)' }}>
-              Editar ArtÃ­culo
+              Editar Artículo
             </h1>
             <p className="text-xs font-medium mt-1" style={{ color: 'var(--text-muted)' }}>
-              {post?.title?.substring(0, 50) || 'Sin tÃ­tulo'}...
+              {post?.title?.substring(0, 50) || 'Sin título'}...
             </p>
           </div>
         </div>
@@ -194,7 +194,7 @@ export default function BlogEditorPage() {
 
               <div className="space-y-3">
                 <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--text-muted)' }}>
-                  TÃ­tulo del ArtÃ­culo
+                  Título del Artículo
                 </label>
                 <input
                   type="text"
@@ -203,7 +203,7 @@ export default function BlogEditorPage() {
                   onChange={handleChange}
                   className="w-full px-6 py-4 rounded-[1.5rem] border text-xl font-bold transition-all placeholder:opacity-50 outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
                   style={fieldStyle}
-                  placeholder="Introduzca el tÃ­tulo..."
+                  placeholder="Introduzca el título..."
                 />
               </div>
 
@@ -241,7 +241,7 @@ export default function BlogEditorPage() {
                   onChange={handleChange}
                   className="w-full h-[700px] px-8 py-8 rounded-[2rem] border text-[13px] font-mono overflow-y-auto transition-all leading-relaxed no-scrollbar outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
                   style={fieldStyle}
-                  placeholder="Pega el cÃ³digo HTML del artÃ­culo generado..."
+                  placeholder="Pega el código HTML del artículo generado..."
                 />
               </div>
             </div>
@@ -268,7 +268,7 @@ export default function BlogEditorPage() {
           <div className="rounded-[2.5rem] border p-8 space-y-6 shadow-xl" style={panelStyle}>
             <h3 className="text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]"></div>
-              PublicaciÃ³n
+              Publicación
             </h3>
 
             <div className="space-y-4">
@@ -290,7 +290,7 @@ export default function BlogEditorPage() {
 
               <div className="space-y-2">
                 <label className="text-[9px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>
-                  CategorÃ­a
+                  Categoría
                 </label>
                 <select
                   name="category_id"
@@ -299,7 +299,7 @@ export default function BlogEditorPage() {
                   className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
                   style={fieldStyle}
                 >
-                  <option value="" style={optionStyle}>Sin CategorÃ­a</option>
+                  <option value="" style={optionStyle}>Sin Categoría</option>
                   {categories.map((cat) => (
                     <option key={cat.id} value={cat.id} style={optionStyle}>
                       {cat.name}
@@ -346,13 +346,13 @@ export default function BlogEditorPage() {
           <div className="rounded-[2.5rem] border p-8 space-y-6 shadow-xl" style={panelStyle}>
             <h3 className="text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
               <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]"></div>
-              OptimizaciÃ³n SEO
+              Optimización SEO
             </h3>
 
             <div className="space-y-5">
               <div className="space-y-2">
                 <label className="text-[9px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>
-                  Meta DescripciÃ³n
+                  Meta Descripción
                 </label>
                 <textarea
                   name="meta_description"
@@ -361,7 +361,7 @@ export default function BlogEditorPage() {
                   rows={4}
                   className="w-full px-5 py-4 rounded-2xl border text-xs transition-all leading-relaxed resize-none no-scrollbar outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
                   style={fieldStyle}
-                  placeholder="DescripciÃ³n para resultados de bÃºsqueda..."
+                  placeholder="Descripción para resultados de búsqueda..."
                 />
               </div>
 

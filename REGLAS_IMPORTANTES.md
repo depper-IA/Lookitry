@@ -1,4 +1,4 @@
----
+﻿---
 inclusion: always
 ---
 
@@ -942,10 +942,10 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 |--------------------------------------------|--------------|---------------------------------------------|
 | `frontend/public/logo.svg`                 | ✅ Activo    | Logo principal — usar en TODAS las páginas  |
 | `frontend/public/favicon.png`              | ✅ Activo    | Favicon del sitio                           |
-| `templates-webs/Lookitry-logo - copia.svg` | ✅ Fuente    | Original SVG fuente                         |
-| `templates-webs/Lookitry-favicon.png`      | ✅ Fuente    | Original favicon fuente                     |
+| `docs/assets/branding/Lookitry-logo - copia.svg` | ✅ Fuente    | Original SVG fuente                         |
+| `docs/assets/branding/Lookitry-favicon.png`      | ✅ Fuente    | Original favicon fuente                     |
 | `frontend/public/logo.png`                 | ❌ Obsoleto  | NO usar — reemplazado por logo.svg          |
-| `templates-webs/Lookitry-logo.png`         | ❌ Obsoleto  | NO usar — reemplazado por SVG               |
+| `docs/assets/branding/Lookitry-logo.png`         | ❌ Obsoleto  | NO usar — reemplazado por SVG               |
 
 ## Tipografía
 
@@ -1034,7 +1034,7 @@ Todos los workflows tienen la etiqueta `SaaS`.
 - Clasifica el error: `credits_exhausted` (HTTP 402/429 o keywords "credits"/"insufficient") vs `service_down`
 - Inserta directo en tabla `admin_notifications` via Supabase REST API (service role key)
 - Recupera `brand_id` y `product_id` del contexto de ejecución fallida si están disponibles
-- Archivo de referencia: `templates-webs/flujo5_error_handler_openrouter.json`
+- Archivo de referencia: `docs/n8n/workflows/flujo5_error_handler_openrouter.json`
 
 
 ## Cloudflare Turnstile — antispam registro
@@ -1157,7 +1157,7 @@ python scripts/_deploy_now.py --frontend   # solo frontend
 
 ---
 
-## 9. LIMITACIONES DE LA IA Y PITFALLS COMUNES (¡LEER CON ATENCIÓN!)
+## 9. LIMITACIONES DE LA IA Y PITFALLS COMUNES (?LEER CON ATENCI?N!)
 
 Esta sección detalla los errores más comunes y limitaciones que las IAs pueden tener al trabajar con la base de código de Lookitry. **DEBES** revisar esta sección antes de realizar cambios estructurales o lógicos importantes.
 
@@ -1229,3 +1229,4 @@ El blog ha sido migrado de WordPress a un sistema nativo integrado en Lookitry.
 - Ruta pública: `/blog` y `/blog/[slug]`.
 - Panel Admin: `/admin/blog` (Gestión de artículos).
 - Sitemap: Se actualiza dinámicamente consultando la tabla `blogs`.
+

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { LandingNav } from '@/components/landing/LandingNav';
 import { LandingFooter } from '@/components/landing/LandingFooter';
 import { BlogShareRail } from '@/components/blog/BlogShareRail';
-import { fetchBlogPostBySlug, fetchRecentBlogPosts, getBlogFeaturedImage, getBlogShareImage } from '@/services/blog.service';
+import { fetchBlogPostBySlug, fetchRecentBlogPosts, getBlogFeaturedImage, getBlogShareImage, getBlogTeaser } from '@/services/blog.service';
 import { Calendar, Tag, ChevronLeft, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -130,7 +130,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <BlogShareRail title={post.title} url={shareUrl} />
       
       {/* Header del articulo */}
-      <article className="max-w-6xl mx-auto px-6 pt-20">
+      <article className="mx-auto max-w-[1320px] px-6 pt-20">
         <Link 
           href="/blog" 
           className="inline-flex items-center gap-2 text-[#FF5C3A] hover:text-[#ff7a5f] mb-8 transition-colors text-sm font-semibold group"
@@ -139,7 +139,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           Volver al blog
         </Link>
 
-        <div className="grid gap-12 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid gap-12 xl:grid-cols-[minmax(0,780px)_280px] xl:justify-center xl:gap-16">
           <div className="min-w-0">
             {post.category && (
               <span className="text-[#FF5C3A] text-xs font-bold uppercase tracking-[0.2em] mb-4 block">
@@ -228,7 +228,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
             </div>
           </div>
-          <aside className="xl:pt-20">
+          <aside className="mx-auto w-full max-w-[320px] xl:mx-0 xl:w-[280px] xl:pt-8">
             <div className="xl:sticky xl:top-24 space-y-6">
               <section className="rounded-[1.75rem] border border-white/10 bg-[#111111] p-6">
                 <div className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Compartir</div>
@@ -303,7 +303,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                         {recentPost.title}
                       </h3>
                       <p className="mt-4 line-clamp-3 text-sm leading-7 text-[#a4a4a4]">
-                        {recentPost.excerpt || 'Explora este artículo para descubrir ideas accionables para ecommerce, moda e IA.'}
+                        {getBlogTeaser(recentPost, 'Descubre una idea accionable para vender mejor, reducir fricción y darle más claridad a tu ecommerce de moda con LOOKITRY.')}
                       </p>
                       <div className="mt-5 flex items-center justify-between gap-3">
                         <span className="text-sm font-semibold text-[#FF5C3A]">Por Lookitry Editorial</span>

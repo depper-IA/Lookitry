@@ -3,13 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { Calendar, ChevronRight } from 'lucide-react';
-import { getBlogFeaturedImage } from '@/services/blog.service';
+import { getBlogFeaturedImage, getBlogTeaser } from '@/services/blog.service';
 
 interface BlogCardProps {
   post: {
     slug: string;
     title: string;
     excerpt: string;
+    meta_description?: string;
     content?: string;
     featured_image?: string;
     published_at: string;
@@ -26,50 +27,52 @@ export const BlogCard: React.FC<BlogCardProps> = ({ post }) => {
       day: 'numeric',
     });
   };
+
   const postDate = post.published_at || post.created_at || new Date().toISOString();
   const previewImage = getBlogFeaturedImage(post);
+  const teaser = getBlogTeaser(post);
 
   return (
-    <Link 
+    <Link
       href={`/blog/${post.slug}`}
-      className="group flex flex-col bg-[#141414] border border-white/5 rounded-2xl overflow-hidden hover:border-[#FF5C3A]/50 transition-all duration-300 hover:shadow-2xl hover:shadow-[#FF5C3A]/10"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-[#141414] transition-all duration-300 hover:border-[#FF5C3A]/50 hover:shadow-2xl hover:shadow-[#FF5C3A]/10"
     >
       <div className="relative aspect-video overflow-hidden">
         {previewImage ? (
-          <img 
-            src={previewImage} 
+          <img
+            src={previewImage}
             alt={post.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] flex items-center justify-center">
-            <span className="text-white/10 font-bold text-4xl">Lookitry</span>
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a]">
+            <span className="text-4xl font-bold text-white/10">Lookitry</span>
           </div>
         )}
         {post.category && (
-          <div className="absolute top-4 left-4">
-            <span className="bg-[#FF5C3A] text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+          <div className="absolute left-4 top-4">
+            <span className="rounded-full bg-[#FF5C3A] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
               {post.category.name}
             </span>
           </div>
         )}
       </div>
 
-      <div className="p-6 flex flex-col flex-grow">
-        <div className="flex items-center gap-2 text-[#999] text-xs mb-3">
+      <div className="flex flex-grow flex-col p-6">
+        <div className="mb-3 flex items-center gap-2 text-xs text-[#999]">
           <Calendar size={14} />
           <span>{formatDate(postDate)}</span>
         </div>
-        
-        <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#FF5C3A] transition-colors line-clamp-2 leading-tight font-plus-jakarta">
+
+        <h3 className="mb-3 line-clamp-2 font-plus-jakarta text-xl font-bold leading-tight text-white transition-colors group-hover:text-[#FF5C3A]">
           {post.title}
         </h3>
-        
-        <p className="text-[#999] text-sm line-clamp-3 mb-6 flex-grow leading-relaxed">
-          {post.excerpt || 'Haz clic para leer más sobre este artículo y descubrir cómo potenciar tu negocio.'}
+
+        <p className="mb-6 flex-grow line-clamp-3 text-sm leading-relaxed text-[#b5b5b5]">
+          {teaser}
         </p>
 
-        <div className="flex items-center text-[#FF5C3A] text-sm font-bold gap-1 mt-auto group-hover:gap-2 transition-all">
+        <div className="mt-auto flex items-center gap-1 text-sm font-bold text-[#FF5C3A] transition-all group-hover:gap-2">
           Leer artículo
           <ChevronRight size={16} />
         </div>

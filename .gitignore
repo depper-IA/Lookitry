@@ -42,6 +42,8 @@ coverage/
 .cache/
 tmp/
 temp/
+/Local/
+/local/
 
 # Python portable y archivos compilados
 python-portable/
