@@ -1,6 +1,21 @@
 # Changelog - Lookitry (AI Assisted)
 
 
+## [2026-03-31] - Wompi visible siempre en checkout interno
+
+### Cambios Realizados
+- **Wompi ya no se oculta por moneda guardada**: `frontend/src/app/dashboard/checkout/page.tsx` ahora muestra el selector de Wompi siempre que el medio este disponible, aunque `localStorage` tenga la moneda en `USD`.
+- **Checkout interno deja de autoseleccionar PayPal por preferencia global**: el flujo autenticado conserva la moneda informativa, pero ya no cambia automaticamente el metodo de pago a PayPal por una preferencia previa de otra pantalla.
+
+### Archivos Modificados
+- `frontend/src/app/dashboard/checkout/page.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+El checkout interno estaba heredando una preferencia global de moneda y por eso escondia Wompi aunque estuviera habilitado. Eso hacia parecer que solo PayPal estaba disponible cuando no era cierto.
+
+---
+
 ## [2026-03-31] - Retorno del pago interno al dashboard con verificacion real
 
 ### Cambios Realizados
