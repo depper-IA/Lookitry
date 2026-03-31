@@ -491,10 +491,15 @@ function CheckoutContent() {
     setApplyingFreeUpgrade(true);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
     const token  = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
     try {
       const res = await fetch(`${apiUrl}/api/payments/wompi/apply-free-upgrade`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers,
         body: JSON.stringify({
           newPlan: selectedPlan, newMonths: selectedMonths,
           creditAmount: prorationPreview.creditAmount, newPlanTotal: prorationPreview.newPlanTotal,

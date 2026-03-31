@@ -19,12 +19,12 @@ const nextConfig = {
     // Definimos la política de seguridad de forma dinámica
     const csp = [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline' ${isProd ? '' : "'unsafe-eval'"} https://challenges.cloudflare.com`,
+      `script-src 'self' 'unsafe-inline' ${isProd ? '' : "'unsafe-eval'"} https://challenges.cloudflare.com https://checkout.wompi.co`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https://*.supabase.co https://*.lookitry.com https://*.wilkiedevs.com",
-      `connect-src 'self' ${isProd ? '' : 'http://localhost:3001'} https://*.lookitry.com https://*.supabase.co https://*.wilkiedevs.com`,
+      `connect-src 'self' ${isProd ? '' : 'http://localhost:3001'} https://*.lookitry.com https://*.supabase.co https://*.wilkiedevs.com https://checkout.wompi.co`,
       "font-src 'self' https://fonts.gstatic.com",
-      "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co",
+      "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co",
       "object-src 'none'",
     ].join('; ');
 
