@@ -61,7 +61,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
-        96464,
+        96672,
         36336
       ]
     },
@@ -74,7 +74,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        98096,
+        98304,
         36560
       ]
     },
@@ -103,7 +103,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        98096,
+        98304,
         36272
       ],
       "retryOnFail": false,
@@ -188,7 +188,7 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        95872,
+        95856,
         36080
       ],
       "id": "d005d6cc-ddc0-4406-bcae-e4bb42908e4c",
@@ -467,7 +467,7 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        96432,
+        96640,
         36064
       ]
     },
@@ -504,7 +504,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        96688,
+        96896,
         36320
       ],
       "retryOnFail": true,
@@ -545,7 +545,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        96480,
+        96688,
         36576
       ],
       "credentials": {
@@ -564,7 +564,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        97168,
+        97376,
         36576
       ]
     },
@@ -578,7 +578,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        97824,
+        98032,
         36576
       ]
     },
@@ -591,7 +591,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        96896,
+        97104,
         36320
       ]
     },
@@ -611,7 +611,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        97104,
+        97312,
         36320
       ]
     },
@@ -625,7 +625,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        97344,
+        97552,
         36320
       ]
     },
@@ -664,7 +664,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        97568,
+        97776,
         36320
       ]
     },
@@ -677,7 +677,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        97792,
+        98000,
         36048
       ]
     },
@@ -691,7 +691,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        97952,
+        98160,
         36048
       ]
     },
@@ -704,20 +704,20 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        98128,
+        98336,
         36048
       ]
     },
     {
       "parameters": {
-        "jsCode": "const enlaces = $input.first().json.enlacesBlogs || [];\n\nlet imagenes = {};\ntry { \n  imagenes = $('Consolidar URLs Imágenes').first().json || {}; \n} catch(error) {\n  console.log(\"Advertencia: No se encontraron datos de imágenes en este ciclo.\");\n}\n\nlet tema = {};\ntry {\n\n  tema = $('Loop Temas Pendientes').item.json || {};\n} catch(error) {\n\n  tema = $('Loop Temas Pendientes').first().json || {};\n}\n\nreturn [{\n  json: {\n    ...tema,\n    enlacesBlogs: enlaces,\n    imagen_destacada_url: imagenes.imagen_destacada?.url || '',\n    imagen_body1_url:     imagenes.imagen_body1?.url     || '',\n    imagen_body2_url:     imagenes.imagen_body2?.url     || '',\n    imagen_destacada_id:  imagenes.imagen_destacada?.id  || null,\n    imagen_body1_id:      imagenes.imagen_body1?.id      || null,\n    imagen_body2_id:      imagenes.imagen_body2?.id      || null\n  }\n}];"
+        "jsCode": "const enlaces = Array.isArray($input.first().json.enlacesBlogs) ? $input.first().json.enlacesBlogs : [];\n\nlet imagenes = {};\ntry {\n  imagenes = $('Consolidar URLs Im?genes').first().json || {};\n} catch (error) {\n  console.log('Advertencia: No se encontraron datos de im?genes en este ciclo.');\n}\n\nlet tema = {};\ntry {\n  tema = $('Loop Temas Pendientes').item.json || {};\n} catch (error) {\n  tema = $('Loop Temas Pendientes').first().json || {};\n}\n\nreturn [{\n  json: {\n    ...tema,\n    enlacesBlogs: enlaces,\n    imagen_destacada_url: imagenes.imagen_destacada?.url || '',\n    imagen_body1_url: imagenes.imagen_body1?.url || '',\n    imagen_body2_url: imagenes.imagen_body2?.url || '',\n    imagen_destacada_id: imagenes.imagen_destacada?.id || null,\n    imagen_body1_id: imagenes.imagen_body1?.id || null,\n    imagen_body2_id: imagenes.imagen_body2?.id || null,\n  },\n}];"
       },
       "id": "7b4607ee-f3f9-4a29-92ea-17608bb07d7b",
       "name": "Obtener Info Consolidada",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        98288,
+        98496,
         36048
       ]
     },
@@ -765,7 +765,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        97856,
+        98064,
         36272
       ]
     },
@@ -794,7 +794,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ ({\n  model: ($json.openrouter_model || 'meta-llama/llama-3.3-70b-instruct'),\n  messages: [\n    {\n      role: 'system',\n      content: [\n        'Eres el Redactor Jefe de Lookitry — el SaaS de probador virtual con IA líder en Colombia.',\n        'Escribes artículos de blog con SEO moderno 2026, lenguaje 100% humano, empático y conversacional para audiencias colombianas y latinoamericanas.',\n        'NUNCA usas lenguaje robótico, genérico ni de ChatGPT.',\n        'NUNCA resumes. SIEMPRE desarrollas cada idea con profundidad, ejemplos reales y datos concretos.',\n        'CRÍTICO: Los textos entre corchetes como [Párrafo 1], [Título H2] son INSTRUCCIONES DE FORMATO, NO texto literal. Debes REEMPLAZARLOS con contenido real generado por ti. NUNCA copies los corchetes al output.',\n        'Tu salida es SIEMPRE un objeto JSON válido y nada más. Sin markdown, sin bloques de código, sin explicaciones previas.',\n        'CRÍTICO JSON: El campo \"content\" debe contener el HTML completo y real del artículo. NUNCA escribas placeholders, NUNCA dejes campos vacíos.'\n      ].join('\\n')\n    },\n    {\n      role: 'user',\n      content: [\n        '# DATOS DE ENTRADA',\n        '- Tema del artículo: ' + ($json.title || ''),\n        '- Investigación fuente: ' + ($json.investigacion_profunda || 'Usa tu conocimiento experto actualizado'),\n        '- Keyword principal: ' + ($json.keywords || ''),\n        '- Categoría: ' + ($json.category_slug || 'ecommerce'),\n        '- Blogs internos para enlazar: ' + JSON.stringify($json.enlacesBlogs || []),\n        '- URL imagen cuerpo 1: ' + ($json.imagen_body1_url || ''),\n        '- URL imagen cuerpo 2: ' + ($json.imagen_body2_url || ''),\n        '- URL imagen hero/portada: ' + ($json.imagen_hero_url || ''),\n        '',\n        '# REQUISITOS SEO 2026',\n        '',\n        '## METADATA (incluir en el JSON de salida)',\n        '- meta_title: Título SEO 50-60 caracteres. Keyword al inicio.',\n        '- meta_description: 145-160 caracteres. Keyword + beneficio + CTA.',\n        '- slug: URL amigable, minúsculas, guiones, sin tildes, máx 60 caracteres.',\n        '- og_title: Para redes sociales. Máx 60 caracteres.',\n        '- og_description: Para redes sociales. 120-200 caracteres.',\n        '',\n        '## ESTRUCTURA DEL ARTÍCULO',\n        '- Entre 2000 y 2500 palabras.',\n        '- Exactamente 5 secciones con etiquetas h2.',\n        '- Cada h2 debe tener un atributo id en slug.',\n        '- Mínimo 4 párrafos reales y detallados debajo de cada h2.',\n        '- Usar h3 para subsecciones cuando aplique.',\n        '- Tono: amigo experto colombiano, no manual corporativo.',\n        '- Incluye ejemplos de tiendas reales colombianas.',\n        '- Incluye datos y cifras concretas plausibles para Colombia 2026.',\n        '',\n        '## IMÁGENES',\n        'Todas las etiquetas img deben incluir:',\n        '- alt con descripción detallada en español que incluya la keyword',\n        '- title con frase corta descriptiva',\n        '- loading=\"lazy\"',\n        '- width=\"800\" height=\"450\"',\n        '',\n        '## LEGIBILIDAD',\n        '- Párrafos máx 3-4 oraciones.',\n        '- Usa strong para destacar conceptos clave.',\n        '- Incluye listas ul u ol donde sea natural.',\n        '',\n        '# HTML A GENERAR',\n        'Genera el siguiente HTML completo con contenido real. Reemplaza cada descripción con texto real:',\n        '',\n        'SECCIÓN INTRO (3 párrafos empáticos que conecten con el dolor del dueño de tienda colombiano):',\n        '<div data-blog-intro=\"lead\" itemprop=\"description\">',\n        '  <p>ESCRIBE AQUÍ EL PÁRRAFO 1 REAL: Engancha con una situación real que vive el dueño de tienda colombiano.</p>',\n        '  <p>ESCRIBE AQUÍ EL PÁRRAFO 2 REAL: Amplía el problema con datos del mercado colombiano 2026.</p>',\n        '  <p>ESCRIBE AQUÍ EL PÁRRAFO 3 REAL: Presenta el artículo como la solución. Incluye keyword.</p>',\n        '</div>',\n        '',\n        'TABLA DE CONTENIDOS con los títulos reales de tus 5 secciones:',\n        '<nav aria-label=\"Tabla de contenidos\" style=\"background:#f5f5f5; padding:20px; border-radius:8px; margin:30px 0;\">',\n        '  <strong>En este artículo encontrarás:</strong>',\n        '  <ol>',\n        '    <li><a href=\"#seccion-1\">TÍTULO REAL SECCIÓN 1</a></li>',\n        '    <li><a href=\"#seccion-2\">TÍTULO REAL SECCIÓN 2</a></li>',\n        '    <li><a href=\"#seccion-3\">TÍTULO REAL SECCIÓN 3</a></li>',\n        '    <li><a href=\"#seccion-4\">TÍTULO REAL SECCIÓN 4</a></li>',\n        '    <li><a href=\"#seccion-5\">TÍTULO REAL SECCIÓN 5</a></li>',\n        '  </ol>',\n        '</nav>',\n        '',\n        'SECCIÓN 1 - El problema real (incluye la keyword en el título):',\n        '<h2 id=\"seccion-1\">ESCRIBE AQUÍ EL TÍTULO REAL DE LA SECCIÓN 1</h2>',\n        '<p>ESCRIBE PÁRRAFO 1 REAL Y DETALLADO</p>',\n        '<p>ESCRIBE PÁRRAFO 2 REAL con ejemplo de tienda colombiana</p>',\n        '<p>ESCRIBE PÁRRAFO 3 REAL con dato estadístico concreto</p>',\n        '<p>ESCRIBE PÁRRAFO 4 REAL sobre consecuencias del problema</p>',\n        '',\n        '<p class=\"soft-cta\" style=\"background:#fff8f6; padding:18px 20px; border-left:4px solid #FF5C3A; font-style:italic; border-radius:0 8px 8px 0;\">',\n        '  <strong>¿Te suena familiar esta situación?</strong> Descubre cómo miles de tiendas en Colombia están usando <a href=\"https://lookitry.com\" style=\"color:#FF5C3A; font-weight:bold;\">Lookitry para reducir devoluciones y aumentar su conversión con IA</a>.',\n        '</p>',\n        '',\n        '<figure style=\"margin:30px 0;\">',\n        '  <img src=\"' + ($json.imagen_body1_url) + '\" alt=\"ESCRIBE DESCRIPCIÓN REAL DE LA IMAGEN CON KEYWORD\" title=\"ESCRIBE TÍTULO CORTO REAL\" loading=\"lazy\" width=\"800\" height=\"450\" itemprop=\"image\" />',\n        '  <figcaption style=\"font-size:0.85em; color:#666; text-align:center; margin-top:8px;\">ESCRIBE PIE DE FOTO REAL</figcaption>',\n        '</figure>',\n        '',\n        'SECCIÓN 2 - Análisis profundo:',\n        '<h2 id=\"seccion-2\">ESCRIBE AQUÍ EL TÍTULO REAL DE LA SECCIÓN 2</h2>',\n        '<p>ESCRIBE PÁRRAFO 1 REAL</p>',\n        '<p>ESCRIBE PÁRRAFO 2 REAL</p>',\n        '<p>ESCRIBE PÁRRAFO 3 REAL</p>',\n        '<p>ESCRIBE PÁRRAFO 4 REAL</p>',\n        '',\n        'SECCIÓN 3 - La solución con IA y Lookitry:',\n        '<h2 id=\"seccion-3\">ESCRIBE AQUÍ EL TÍTULO REAL DE LA SECCIÓN 3</h2>',\n        '<p>ESCRIBE PÁRRAFO 1 REAL</p>',\n        '<p>ESCRIBE PÁRRAFO 2 REAL</p>',\n        '<p>ESCRIBE PÁRRAFO 3 REAL</p>',\n        '<p>ESCRIBE PÁRRAFO 4 REAL</p>',\n        '',\n        '<figure style=\"margin:30px 0;\">',\n        '  <img src=\"' + ($json.imagen_body2_url) + '\" alt=\"ESCRIBE DESCRIPCIÓN REAL DIFERENTE A LA PRIMERA IMAGEN\" title=\"ESCRIBE TÍTULO CORTO REAL\" loading=\"lazy\" width=\"800\" height=\"450\" itemprop=\"image\" />',\n        '  <figcaption style=\"font-size:0.85em; color:#666; text-align:center; margin-top:8px;\">ESCRIBE PIE DE FOTO REAL</figcaption>',\n        '</figure>',\n        '',\n        'SECCIÓN 4 - Casos de uso y resultados reales:',\n        '<h2 id=\"seccion-4\">ESCRIBE AQUÍ EL TÍTULO REAL DE LA SECCIÓN 4</h2>',\n        '<p>ESCRIBE PÁRRAFO 1 REAL</p>',\n        '<p>ESCRIBE PÁRRAFO 2 REAL</p>',\n        '<p>ESCRIBE PÁRRAFO 3 REAL</p>',\n        '<p>ESCRIBE PÁRRAFO 4 REAL</p>',\n        '',\n        'SECCIÓN 5 - Conclusión y futuro del ecommerce colombiano:',\n        '<h2 id=\"seccion-5\">ESCRIBE AQUÍ EL TÍTULO REAL DE LA SECCIÓN 5</h2>',\n        '<p>ESCRIBE PÁRRAFO 1 REAL</p>',\n        '<p>ESCRIBE PÁRRAFO 2 REAL</p>',\n        '<p>ESCRIBE PÁRRAFO 3 REAL con cierre empático e invitación a actuar</p>',\n        '',\n        'FAQ (3 preguntas y respuestas reales relacionadas con el tema y la keyword):',\n        '<div itemscope itemtype=\"https://schema.org/FAQPage\" style=\"background:#f9f9f9; padding:30px; border-radius:12px; margin:40px 0;\">',\n        '  <h3>Preguntas Frecuentes</h3>',\n        '  <div itemscope itemprop=\"mainEntity\" itemtype=\"https://schema.org/Question\">',\n        '    <h4 itemprop=\"name\">ESCRIBE PREGUNTA REAL 1 CON KEYWORD</h4>',\n        '    <div itemscope itemprop=\"acceptedAnswer\" itemtype=\"https://schema.org/Answer\">',\n        '      <p itemprop=\"text\">ESCRIBE RESPUESTA REAL 1 en 2-3 oraciones claras</p>',\n        '    </div>',\n        '  </div>',\n        '  <div itemscope itemprop=\"mainEntity\" itemtype=\"https://schema.org/Question\">',\n        '    <h4 itemprop=\"name\">ESCRIBE PREGUNTA REAL 2</h4>',\n        '    <div itemscope itemprop=\"acceptedAnswer\" itemtype=\"https://schema.org/Answer\">',\n        '      <p itemprop=\"text\">ESCRIBE RESPUESTA REAL 2</p>',\n        '    </div>',\n        '  </div>',\n        '  <div itemscope itemprop=\"mainEntity\" itemtype=\"https://schema.org/Question\">',\n        '    <h4 itemprop=\"name\">ESCRIBE PREGUNTA REAL 3</h4>',\n        '    <div itemscope itemprop=\"acceptedAnswer\" itemtype=\"https://schema.org/Answer\">',\n        '      <p itemprop=\"text\">ESCRIBE RESPUESTA REAL 3</p>',\n        '    </div>',\n        '  </div>',\n        '</div>',\n        '',\n        '<div data-blog-cta=\"final\" style=\"text-align:center; padding:50px 30px; background:linear-gradient(135deg, #0A0A0A 0%, #1a1a1a 100%); border-radius:24px; margin:50px 0;\">',\n        '  <h3 style=\"color:#FFFFFF; font-size:1.5rem; margin-bottom:12px;\">¿Listo para vender más y devolver menos?</h3>',\n        '  <p style=\"color:#aaaaaa; margin-bottom:24px;\">Únete a las tiendas colombianas que ya transformaron su ecommerce con Lookitry.</p>',\n        '  <a href=\"https://lookitry.com/trial-checkout\" style=\"background:#FF5C3A; color:white; padding:16px 36px; border-radius:50px; text-decoration:none; font-weight:bold; font-size:1.1rem; display:inline-block;\">Probar Lookitry Gratis</a>',\n        '</div>',\n        '',\n        '# FORMATO DE SALIDA — DEVUELVE SOLO ESTE JSON, SIN NADA MÁS:',\n        '{',\n        '  \"title\": \"EL TÍTULO H1 REAL DEL ARTÍCULO con keyword al inicio, 55-65 chars\",',\n        '  \"meta_title\": \"EL META TITLE REAL 50-60 chars\",',\n        '  \"meta_description\": \"LA META DESCRIPTION REAL 145-160 chars con keyword y CTA\",',\n        '  \"slug\": \"el-slug-real-sin-tildes-maximo-60-chars\",',\n        '  \"og_title\": \"EL OG TITLE REAL para redes sociales\",',\n        '  \"og_description\": \"LA OG DESCRIPTION REAL 120-200 chars enfocada en beneficio emocional\",',\n        '  \"excerpt\": \"EL RESUMEN REAL del artículo en 2-3 oraciones humanas y empáticas de 80-120 palabras\",',\n        '  \"content\": \"EL HTML COMPLETO Y REAL DEL ARTÍCULO empezando desde el div data-blog-intro hasta el div data-blog-cta final, todo en una sola línea con saltos escapados como \\\\n\",',\n        '  \"tags\": [\"tag-real-1\", \"tag-real-2\", \"tag-real-3\", \"tag-real-4\", \"tag-real-5\"],',\n        '  \"faq_q1\": \"PREGUNTA REAL 1 CON KEYWORD\",',\n        '  \"faq_a1\": \"RESPUESTA REAL 1 en 2-3 oraciones\",',\n        '  \"faq_q2\": \"PREGUNTA REAL 2\",',\n        '  \"faq_a2\": \"RESPUESTA REAL 2\",',\n        '  \"faq_q3\": \"PREGUNTA REAL 3\",',\n        '  \"faq_a3\": \"RESPUESTA REAL 3\",',\n        '  \"reading_time_minutes\": 8,',\n        '  \"word_count\": 2200',\n        '}'\n      ].join('\\n')\n    }\n  ],\n  temperature: 0.72,\n  max_tokens: 7000\n}) }}",
+        "jsonBody": "={{ ({\n  model: ($json.openrouter_model || 'meta-llama/llama-3.3-70b-instruct'),\n  messages: [{\n    role: 'user',\n    content: [\n      'Eres un consultor experto en ecommerce y director de LOOKITRY. Tu misión es escribir un artículo de blog orientado a SEO moderno (2026), con un tono 100% humano, empático y conversacional para Colombia.',\n      '# DATOS DE ENTRADA',\n      '- Tema: ' + ($json.title || ''),\n      '- Investigación profunda (noticia/contexto): ' + ($json.investigacion_profunda || 'Usa tu conocimiento general'),\n      '- Categoría: ' + ($json.category_slug || 'ia'),\n      '- Keywords principales y LSI: ' + ($json.keywords || ''),\n      '- Blogs internos relacionados (usalos de verdad): ' + JSON.stringify($json.enlacesBlogs || []),\n      '- URL imagen cuerpo 1: ' + ($json.imagen_body1_url || ''),\n      '- URL imagen cuerpo 2: ' + ($json.imagen_body2_url || ''),\n      '',\n      '# REGLAS DE SEO 2026 Y MAQUETACION (CRITICO)',\n      '- Todo el contenido debe ir envuelto en una etiqueta <article>.',\n      '- Parrafos muy cortos (maximo 3 lineas) para facilitar la lectura en moviles.',\n      '- Usa la etiqueta <strong> de forma natural para resaltar ideas importantes, dolores del cliente y variaciones de tus palabras clave.',\n      '- Jerarquia estricta: usa <h2> para titulos principales y <h3> para subtemas.',\n      '- Usa al menos una lista <ul> o <ol> para hacer el texto escaneable.',\n      '- Inserta exactamente 2 backlinks internos hacia articulos del blog de LOOKITRY usando URLs de la lista Blogs internos relacionados.',\n      '- Cada backlink debe usar la URL exacta proporcionada y un anchor contextual, nunca la home.',\n      '- Debes usar exactamente las URLs de imagen entregadas en las dos etiquetas <img> del cuerpo.',\n      '- Esta prohibido devolver cualquier etiqueta <img> con src vacio.',\n      '- Las 3 imagenes del articulo deben ser distintas: portada, cuerpo 1 y cuerpo 2 no pueden repetir URL.',\n      '',\n      '# RESTRICCIONES TECNICAS',\n      '1. Devuelve solo un objeto JSON valido. Sin markdown, sin explicaciones extra.',\n      '2. El campo content debe ser HTML completo en una sola linea.',\n      '3. Prohibido envolver el CTA final en etiquetas <p>.',\n      '4. El CTA suave debe enlazar a https://lookitry.com/trial-checkout.',\n      '5. El CTA final debe enlazar a https://lookitry.com/trial-checkout.',\n      '',\n      '# ESTRUCTURA HTML ESTRICTA Y CALL TO ACTIONS (CTAs)',\n      '<article>',\n      '  <div data-blog-intro=\"lead\">[Parrafo de apertura super empatico que toque el dolor del cliente. Resalta algo en <strong>].</div>',\n      '  <h2>[Titulo atractivo seccion 1]</h2>',\n      '  <p>...[3-4 parrafos cortos desarrollando el tema]...</p>',\n      '  <p class=\"soft-cta\" style=\"background:#f9f9f9; padding:15px; border-left:4px solid #FF5C3A; font-style:italic;\"><strong>Te identificas con este problema?</strong> Descubre como LOOKITRY ayuda a las tiendas de moda a <a href=\"https://lookitry.com/trial-checkout\" style=\"color:#FF5C3A;\">activar una prueba paga y reducir devoluciones con IA</a>.</p>',\n      '  <figure><img src=\"' + ($json.imagen_body1_url || '') + '\" alt=\"Escena editorial relacionada con el articulo\" /><figcaption>[Descripcion corta]</figcaption></figure>',\n      '  <h2>[Titulo seccion 2]</h2>',\n      '  <p>...[Desarrollo con ejemplos de Colombia e integracion natural de 2 backlinks internos]...</p>',\n      '  <h3>[Subseccion de beneficios]</h3>',\n      '  <ul>[Lista de 3 a 5 puntos clave con negritas]</ul>',\n      '  <figure><img src=\"' + ($json.imagen_body2_url || '') + '\" alt=\"Tecnologia LOOKITRY aplicada al ecommerce de moda\" /><figcaption>[Descripcion corta]</figcaption></figure>',\n      '  <h2>[Conclusion motivadora]</h2>',\n      '  <p>...[Cierre]...</p>',\n      '  <div data-blog-cta=\"final\" style=\"text-align: center; padding: 40px; background: #0A0A0A; border-radius: 30px; margin: 50px 0;\"><h3 style=\"color: #FFFFFF; margin-bottom: 20px;\">Listo para ver como funcionaria LOOKITRY en tu tienda?</h3><a href=\"https://lookitry.com/trial-checkout\" style=\"background: #FF5C3A; color: white; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; display: inline-block;\">Iniciar prueba de LOOKITRY</a></div>',\n      '</article>',\n      '',\n      '# FORMATO DE SALIDA',\n      '{\"title\":\"...\",\"content\":\"...\",\"excerpt\":\"...\",\"tags\":[\"...\",\"...\",\"...\"]}'\n    ].join('\\n')\n  }],\n  temperature: 0.5,\n  max_tokens: 6000\n}) }}",
         "options": {
           "timeout": 240000
         }
@@ -804,7 +804,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        98528,
+        98736,
         36560
       ],
       "retryOnFail": true,
@@ -818,27 +818,27 @@
     },
     {
       "parameters": {
-        "jsCode": "const source = $input.item.json;\nlet rawText = '';\n\nif (typeof source?.choices?.[0]?.message?.content === 'string') {\n  rawText = source.choices[0].message.content;\n} else if (Array.isArray(source?.choices?.[0]?.message?.content)) {\n  rawText = source.choices[0].message.content\n    .map(p => typeof p === 'string' ? p : p?.text || '')\n    .join('');\n} else if (source?.content?.parts?.[0]?.text) {\n  rawText = source.content.parts[0].text;\n} else {\n  rawText = JSON.stringify(source);\n}\n\n// Limpiar markdown\nrawText = rawText\n  .replace(/```json\\s*/gi, '')\n  .replace(/```\\s*/g, '')\n  .trim();\n\n// Extraer campos clave uno por uno con regex — más robusto que JSON.parse\nfunction extractField(text, key) {\n  const pattern = new RegExp('\"' + key + '\"\\\\s*:\\\\s*\"((?:[^\"\\\\\\\\]|\\\\\\\\.)*)\"','s');\n  const match = text.match(pattern);\n  return match ? match[1]\n    .replace(/\\\\n/g, '\\n')\n    .replace(/\\\\t/g, '\\t')\n    .replace(/\\\\r/g, '')\n    .replace(/\\\\\"'/g, '\"')\n    .replace(/\\\\\\\\/g, '\\\\') : '';\n}\n\nfunction extractArray(text, key) {\n  const pattern = new RegExp('\"' + key + '\"\\\\s*:\\\\s*\\\\[([^\\\\]]*(?:\\\\[[^\\\\]]*\\\\][^\\\\]]*)*)\\\\]', 's');\n  const match = text.match(pattern);\n  if (!match) return [];\n  try {\n    return JSON.parse('[' + match[1] + ']');\n  } catch(_) {\n    return match[1]\n      .split(',')\n      .map(s => s.trim().replace(/^\"|\"$/g, ''))\n      .filter(Boolean);\n  }\n}\n\nfunction extractNumber(text, key) {\n  const pattern = new RegExp('\"' + key + '\"\\\\s*:\\\\s*(\\\\d+)');\n  const match = text.match(pattern);\n  return match ? parseInt(match[1]) : 0;\n}\n\n// Extraer cada campo individualmente\nconst title           = extractField(rawText, 'title');\nconst meta_title      = extractField(rawText, 'meta_title');\nconst meta_description= extractField(rawText, 'meta_description');\nconst slug            = extractField(rawText, 'slug');\nconst og_title        = extractField(rawText, 'og_title');\nconst og_description  = extractField(rawText, 'og_description');\nconst excerpt         = extractField(rawText, 'excerpt');\nconst content         = extractField(rawText, 'content');\nconst faq_q1          = extractField(rawText, 'faq_q1');\nconst faq_a1          = extractField(rawText, 'faq_a1');\nconst faq_q2          = extractField(rawText, 'faq_q2');\nconst faq_a2          = extractField(rawText, 'faq_a2');\nconst faq_q3          = extractField(rawText, 'faq_q3');\nconst faq_a3          = extractField(rawText, 'faq_a3');\nconst reading_time    = extractNumber(rawText, 'reading_time_minutes');\nconst word_count      = extractNumber(rawText, 'word_count');\nconst tags            = extractArray(rawText, 'tags');\n\n// Validar campos obligatorios\nconst missing = [];\nif (!title)   missing.push('title');\nif (!excerpt) missing.push('excerpt');\nif (!content) missing.push('content');\n\nif (missing.length > 0) {\n  return [{ json: { \n    error_ia: true, \n    message: `Campos faltantes: ${missing.join(', ')}`, \n    raw: rawText.substring(0, 500) \n  }}];\n}\n\n// Construir schema_faq desde campos planos\nconst schema_faq = [\n  { question: faq_q1, answer: faq_a1 },\n  { question: faq_q2, answer: faq_a2 },\n  { question: faq_q3, answer: faq_a3 },\n].filter(f => f.question && f.answer);\n\nreturn [{ json: {\n  title,\n  meta_title,\n  meta_description,\n  slug,\n  og_title,\n  og_description,\n  excerpt,\n  content,\n  tags,\n  schema_faq,\n  reading_time_minutes: reading_time,\n  word_count\n}}];"
+        "jsCode": "const source = $input.item.json;\nlet rawText = '';\nif (typeof source?.choices?.[0]?.message?.content === 'string') {\n  rawText = source.choices[0].message.content;\n} else if (Array.isArray(source?.choices?.[0]?.message?.content)) {\n  rawText = source.choices[0].message.content.map(p => typeof p === 'string' ? p : p?.text || '').join('');\n} else if (source?.content?.parts?.[0]?.text) {\n  rawText = source.content.parts[0].text;\n} else {\n  rawText = JSON.stringify(source);\n}\nrawText = rawText.replace(/```json\\s*/gi,'').replace(/```\\s*/g,'').trim();\nlet parsed = null;\ntry { parsed = JSON.parse(rawText); } catch(_) {}\nif (!parsed) {\n  function extractFirstJson(text) {\n    const start = text.indexOf('{');\n    if (start === -1) return null;\n    let depth=0, inStr=false, esc=false;\n    for (let i=start;i<text.length;i++) {\n      const ch=text[i];\n      if(esc){esc=false;continue;}\n      if(ch==='\\\\'){esc=true;continue;}\n      if(ch==='\"'){inStr=!inStr;continue;}\n      if(inStr)continue;\n      if(ch==='{')depth++;\n      if(ch==='}')depth--;\n      if(depth===0)return text.slice(start,i+1);\n    }\n    return null;\n  }\n  const jsonStr = extractFirstJson(rawText);\n  if (!jsonStr) throw new Error('No JSON válido. Respuesta: '+rawText.substring(0,700));\n  parsed = JSON.parse(jsonStr);\n}\nconst missing=['title','excerpt','content'].filter(f=>!parsed[f]);\nif(missing.length>0) {\n  return [{ json: { error_ia: true, message: `Campos faltantes: ${missing.join(', ')}`, raw: rawText } }];\n}\nreturn [{ json: parsed }];"
       },
       "id": "16cf7dce-9d17-45fc-a716-33f13c9f4b87",
       "name": "Parsear Artículo",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        98528,
+        98736,
         36272
       ]
     },
     {
       "parameters": {
-        "jsCode": "const article = $input.first().json;\nlet ctx = {};\ntry { ctx = $('Preparar Contexto Editorial').first().json || {}; } catch(e) {}\n\nconst rawTags = article.tags || article.Tags || ctx.Tags || [];\nconst tagsArray = Array.isArray(rawTags) ? rawTags.map(t=>String(t||'').trim()).filter(Boolean) : String(rawTags||'').split(',').map(t=>t.trim()).filter(Boolean);\n\nconst categorySlug = String(article.category_slug || ctx.category_slug || 'ia').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'ia';\n\nconst excerpt = (article.excerpt || '').substring(0,157) + ((article.excerpt||'').length > 157 ? '...' : '');\nconst meta_description = (article.meta_description || article.excerpt || '').substring(0,157) + '...';\n\nconst wpBody = {\n  title: article.title,\n  excerpt,\n  content: article.content,\n  status: 'published',\n  category_slug: categorySlug,\n  tags: tagsArray,\n  featured_image: ctx.imagen_destacada_url || '',\n  meta_description,\n  topic_id: ctx.topic_id || '',\n  author_id: 'LOOKITRY Editorial' \n};\n\nreturn [{ json: { wpBody, ...ctx, tags: tagsArray, category_slug: categorySlug, title: article.title, excerpt, content: article.content, meta_description } }];"
+        "jsCode": "const article = $input.first().json;\nlet ctx = {};\ntry {\n  ctx = $('Preparar Contexto Editorial').first().json || {};\n} catch (e) {}\n\nconst rawTags = article.tags || article.Tags || ctx.Tags || [];\nconst tagsArray = Array.isArray(rawTags)\n  ? rawTags.map((tag) => String(tag || '').trim()).filter(Boolean)\n  : String(rawTags || '').split(',').map((tag) => tag.trim()).filter(Boolean);\n\nconst categorySlug = String(article.category_slug || ctx.category_slug || 'ia')\n  .toLowerCase()\n  .normalize('NFD')\n  .replace(/[\\u0300-\\u036f]/g, '')\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-+|-+$/g, '') || 'ia';\n\nconst excerptSource = String(article.excerpt || article.meta_description || '');\nconst excerpt = excerptSource.length > 157 ? excerptSource.substring(0, 157) + '...' : excerptSource;\nconst metaSource = String(article.meta_description || article.excerpt || excerptSource || '');\nconst meta_description = metaSource.length > 157 ? metaSource.substring(0, 157) + '...' : metaSource;\n\nconst featuredImage = String(ctx.imagen_destacada_url || '').trim();\nconst bodyImage1 = String(ctx.imagen_body1_url || '').trim();\nconst bodyImage2 = String(ctx.imagen_body2_url || '').trim();\nif (!featuredImage || !bodyImage1 || !bodyImage2) {\n  throw new Error('Faltan imagenes generadas para publicar el articulo.');\n}\nif (new Set([featuredImage, bodyImage1, bodyImage2]).size < 3) {\n  throw new Error('Las imagenes generadas no son unicas. Deben existir portada, cuerpo 1 y cuerpo 2 distintas.');\n}\n\nlet content = String(article.content || '').trim();\nif (!content) {\n  throw new Error('El articulo no devolvio contenido HTML.');\n}\n\nconst figureRegex = /<figure>[\\s\\S]*?<img[^>]*>[\\s\\S]*?<\\/figure>/gi;\nconst figures = content.match(figureRegex) || [];\nif (figures.length < 2) {\n  throw new Error('El articulo debe incluir exactamente dos imagenes dentro del cuerpo.');\n}\nconst forcedFigures = [bodyImage1, bodyImage2];\nlet figureIndex = 0;\ncontent = content.replace(figureRegex, (figureHtml) => {\n  const targetImage = forcedFigures[figureIndex++];\n  if (!targetImage || figureIndex > 2) {\n    return figureHtml;\n  }\n  if (figureHtml.includes('<figcaption>')) {\n    return figureHtml.replace(/<img[^>]*>/i, '<img src=\"' + targetImage + '\" alt=\"Imagen editorial de LOOKITRY para ecommerce de moda\" />');\n  }\n  return '<figure><img src=\"' + targetImage + '\" alt=\"Imagen editorial de LOOKITRY para ecommerce de moda\" /></figure>';\n});\n\nconst emptyImages = content.match(/<img[^>]+src=[\"']\\s*[\"'][^>]*>/gi) || [];\nif (emptyImages.length > 0) {\n  throw new Error('El articulo quedo con imagenes vacias.');\n}\n\nconst bodyImages = Array.from(content.matchAll(/<img[^>]+src=[\"']([^\"']+)[\"'][^>]*>/gi)).map((match) => String(match[1] || '').trim());\nif (bodyImages.length < 2 || bodyImages[0] !== bodyImage1 || bodyImages[1] !== bodyImage2) {\n  throw new Error('El cuerpo del articulo no quedo con las dos imagenes correctas.');\n}\nif (bodyImages.includes(featuredImage)) {\n  throw new Error('La portada no puede repetirse dentro del cuerpo del articulo.');\n}\n\nconst normalizeSlug = (value) => String(value || '')\n  .toLowerCase()\n  .normalize('NFD')\n  .replace(/[\\u0300-\\u036f]/g, '')\n  .replace(/[^a-z0-9]+/g, '-')\n  .replace(/^-+|-+$/g, '');\nconst currentSlug = normalizeSlug(article.title);\nconst relatedLinks = Array.isArray(ctx.enlacesBlogs)\n  ? ctx.enlacesBlogs.filter((link) => {\n      const url = String(link?.url || '').trim();\n      return url && !url.endsWith('/' + currentSlug);\n    }).slice(0, 2)\n  : [];\n\nconst internalLinks = content.match(/https:\\/\\/lookitry\\.com\\/blog\\/[^\"'\\s<]+/gi) || [];\nif (internalLinks.length < 2) {\n  if (relatedLinks.length < 2) {\n    throw new Error('No hay suficientes backlinks internos para publicar el articulo.');\n  }\n\n  const backlinksBlock = '<div data-blog-block=\"impact\"><h3>Sigue aprendiendo con LOOKITRY</h3><ul>' + relatedLinks.map((link) => '<li><a href=\"' + String(link.url).trim() + '\">' + String(link.titulo || 'Articulo relacionado de LOOKITRY').trim() + '</a></li>').join('') + '</ul></div>';\n  if (content.includes('data-blog-cta=\"final\"')) {\n    content = content.replace(/<div data-blog-cta=\"final\"/i, backlinksBlock + '<div data-blog-cta=\"final\"');\n  } else {\n    content += backlinksBlock;\n  }\n}\n\nconst softCta = '<p class=\"soft-cta\" style=\"background:#f9f9f9; padding:15px; border-left:4px solid #FF5C3A; font-style:italic;\"><strong>Te identificas con este reto?</strong> Descubre como LOOKITRY ayuda a las tiendas de moda a <a href=\"https://lookitry.com/trial-checkout\" style=\"color:#FF5C3A;\">activar una prueba paga y mejorar la conversion con IA</a>.</p>';\nif (/<p class=\"soft-cta\"[\\s\\S]*?<\\/p>/i.test(content)) {\n  content = content.replace(/<p class=\"soft-cta\"[\\s\\S]*?<\\/p>/i, softCta);\n} else {\n  content = content.replace(/(<h2[^>]*>)/i, softCta + '$1');\n}\n\nconst finalCta = '<div data-blog-cta=\"final\" style=\"text-align: center; padding: 40px; background: #0A0A0A; border-radius: 30px; margin: 50px 0;\"><h3 style=\"color: #FFFFFF; margin-bottom: 20px;\">Quieres ver como funcionaria LOOKITRY en tu tienda?</h3><a href=\"https://lookitry.com/trial-checkout\" style=\"background: #FF5C3A; color: white; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; display: inline-block;\">Iniciar prueba de LOOKITRY</a></div>';\nif (/<div data-blog-cta=\"final\"[\\s\\S]*?<\\/div>/i.test(content)) {\n  content = content.replace(/<div data-blog-cta=\"final\"[\\s\\S]*?<\\/div>/i, finalCta);\n} else {\n  content += finalCta;\n}\n\nconst wpBody = {\n  title: article.title,\n  excerpt,\n  content,\n  status: 'published',\n  category_slug: categorySlug,\n  tags: tagsArray,\n  featured_image: featuredImage,\n  meta_description,\n  topic_id: ctx.topic_id || '',\n  author_id: 'LOOKITRY Editorial',\n};\n\nreturn [{\n  json: {\n    wpBody,\n    ...ctx,\n    tags: tagsArray,\n    category_slug: categorySlug,\n    title: article.title,\n    excerpt,\n    content,\n    meta_description,\n  },\n}];"
       },
       "id": "b830a7ae-bc56-4bdf-a242-7aaee9d06954",
       "name": "Preparar JSON Lookitry",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        98752,
+        98960,
         36272
       ]
     },
@@ -877,7 +877,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        98976,
+        99184,
         36272
       ]
     },
@@ -911,7 +911,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        99232,
+        99440,
         36272
       ]
     },
@@ -950,7 +950,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        99232,
+        99440,
         36112
       ],
       "alwaysOutputData": true
@@ -964,7 +964,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        99456,
+        99664,
         36288
       ]
     },
@@ -977,7 +977,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        99456,
+        99664,
         36112
       ]
     },
@@ -988,8 +988,8 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        94992,
-        36880
+        95024,
+        36848
       ]
     },
     {
@@ -1017,7 +1017,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ ({\n  model: \"meta-llama/llama-3.3-70b-instruct\",\n  messages: [{\n    role: \"user\",\n    content: [\n      \"Eres el Director de Fotografía Editorial de Lookitry. Creas prompts para Replicate (modelo Flux), una IA generadora de imágenes fotorrealistas.\",\n      \"\",\n      \"DATOS DEL ARTÍCULO:\",\n      \"- Tema: \" + ($('Loop Temas Pendientes').item.json.title || ''),\n      \"- Categoría: \" + ($('Loop Temas Pendientes').item.json.category_slug || 'ia'),\n      \"\",\n      \"CONTEXTO DE USO:\",\n      \"Los prompts serán enviados directamente a Flux en Replicate.\",\n      \"Flux entiende mejor prompts descriptivos, detallados y en inglés.\",\n      \"El negative prompt va en un campo separado — NO lo incluyas dentro del prompt principal.\",\n      \"\",\n      \"REGLAS PARA EL PROMPT PRINCIPAL:\",\n      \"1. SIEMPRE EN INGLÉS.\",\n      \"2. Describe la escena de forma cinematográfica y específica: quién, qué hace, dónde, con qué luz.\",\n      \"3. PERSONAS: Latina woman, 25-30 years old, natural beauty, light brown skin, dark hair, genuine smile, relaxed and confident posture.\",\n      \"4. PROHIBIDO mencionar: text, logo, watermark, credit card, money, abstract elements.\",\n      \"5. Escenas relacionadas al tema del artículo: moda, ecommerce, tiendas, ropa, compras online, tecnología de moda.\",\n      \"6. Las 3 escenas deben ser DIFERENTES entre sí.\",\n      \"7. Termina cada prompt con este bloque fijo de calidad:\",\n      \"   shot on Sony A7R V, 85mm portrait lens, f/1.8 aperture, natural window light, shallow depth of field, soft bokeh background, hyperrealistic, photorealistic, 8k uhd, sharp focus on subject, perfect skin texture, editorial fashion photography, award winning photo\",\n      \"\",\n      \"REGLAS PARA EL NEGATIVE PROMPT (campo separado):\",\n      \"Usa siempre este negative prompt fijo para las 3 imágenes:\",\n      \"extra fingers, missing fingers, six fingers, fused fingers, deformed hands, extra hands, extra arms, extra legs, missing limbs, poorly drawn hands, poorly drawn face, bad anatomy, malformed limbs, mutated body, long neck, double head, cloned face, disfigured face, asymmetric eyes, crossed eyes, blurry, out of focus, low quality, pixelated, watermark, text, logo, signature, oversaturated, plastic skin, unnatural pose, stiff pose, awkward pose, AI generated look\",\n      \"\",\n      \"FORMATO DE SALIDA OBLIGATORIO:\",\n      \"Devuelve SOLO un objeto JSON válido con esta estructura exacta, sin texto adicional:\",\n      \"{\",\n      \"  \\\"prompts\\\": [\",\n      \"    {\",\n      \"      \\\"id\\\": \\\"hero\\\",\",\n      \"      \\\"positive\\\": \\\"ESCRIBE EL PROMPT REAL DE LA IMAGEN DE PORTADA aquí\\\",\",\n      \"      \\\"negative\\\": \\\"extra fingers, missing fingers, six fingers, fused fingers, deformed hands, extra hands, extra arms, extra legs, missing limbs, poorly drawn hands, poorly drawn face, bad anatomy, malformed limbs, mutated body, long neck, double head, cloned face, disfigured face, asymmetric eyes, crossed eyes, blurry, out of focus, low quality, pixelated, watermark, text, logo, signature, oversaturated, plastic skin, unnatural pose, stiff pose, awkward pose, AI generated look\\\"\",\n      \"    },\",\n      \"    {\",\n      \"      \\\"id\\\": \\\"body1\\\",\",\n      \"      \\\"positive\\\": \\\"ESCRIBE EL PROMPT REAL DE LA IMAGEN CUERPO 1 aquí\\\",\",\n      \"      \\\"negative\\\": \\\"extra fingers, missing fingers, six fingers, fused fingers, deformed hands, extra hands, extra arms, extra legs, missing limbs, poorly drawn hands, poorly drawn face, bad anatomy, malformed limbs, mutated body, long neck, double head, cloned face, disfigured face, asymmetric eyes, crossed eyes, blurry, out of focus, low quality, pixelated, watermark, text, logo, signature, oversaturated, plastic skin, unnatural pose, stiff pose, awkward pose, AI generated look\\\"\",\n      \"    },\",\n      \"    {\",\n      \"      \\\"id\\\": \\\"body2\\\",\",\n      \"      \\\"positive\\\": \\\"ESCRIBE EL PROMPT REAL DE LA IMAGEN CUERPO 2 aquí\\\",\",\n      \"      \\\"negative\\\": \\\"extra fingers, missing fingers, six fingers, fused fingers, deformed hands, extra hands, extra arms, extra legs, missing limbs, poorly drawn hands, poorly drawn face, bad anatomy, malformed limbs, mutated body, long neck, double head, cloned face, disfigured face, asymmetric eyes, crossed eyes, blurry, out of focus, low quality, pixelated, watermark, text, logo, signature, oversaturated, plastic skin, unnatural pose, stiff pose, awkward pose, AI generated look\\\"\",\n      \"    }\",\n      \"  ]\",\n      \"}\"\n    ].join('\\n')\n  }],\n  temperature: 0.5,\n  max_tokens: 1000\n}) }}",
+        "jsonBody": "={{ ({\n  model: \"meta-llama/llama-3.3-70b-instruct\",\n  messages: [{\n    role: \"user\",\n    content: [\n      \"Eres el Director de Fotografía de Lookitry Editorial. Tu misión es escribir 3 'prompts' (instrucciones visuales para una IA generadora de imágenes) hiper-realistas.\",\n      \"\",\n      \"DATOS DEL ARTÍCULO:\",\n      \"- Tema: \" + ($('Loop Temas Pendientes').item.json.title || ''),\n      \"- Categoría: \" + ($('Loop Temas Pendientes').item.json.category_slug || 'ia'),\n      \"\",\n      \"REGLAS ESTRICTAS PARA LAS FOTOS:\",\n      \"1. ESCRIBE LOS PROMPTS EN INGLÉS (las IA de imágenes entienden mucho mejor el inglés).\",\n      \"2. NO uses conceptos abstractos (como 'comercio electrónico', 'pagos', 'tecnología abstracta'). Describe ESCENAS FÍSICAS (ej. a beautiful young woman in a boutique looking at her smartphone, fashion studio lighting, elegant clothing on a rack).\",\n      \"3. PROHIBIDO incluir texto, logos, tarjetas de crédito, marcas de agua, ilustraciones o gráficos. Solo FOTOGRAFÍA REALISTA (Photorealistic, 8k, editorial fashion photography).\",\n      \"4. Usa la paleta de colores de Lookitry de forma sutil: orange, white, black, gray.\",\n      \"\",\n      \"FORMATO DE SALIDA OBLIGATORIO (Devuelve SOLO estas 3 líneas numeradas, sin introducciones):\",\n      \"A) [Prompt en inglés describiendo la imagen de portada]\",\n      \"B) [Prompt en inglés describiendo una foto de apoyo para el cuerpo del texto]\",\n      \"C) [Prompt en inglés describiendo otra foto de apoyo o detalle]\"\n    ].join('\\n')\n  }],\n  temperature: 0.6,\n  max_tokens: 1000\n}) }}",
         "options": {
           "timeout": 60000
         }
@@ -1038,114 +1038,6 @@
           "name": "Open Pruebalo"
         }
       }
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=# ROL\nEres un Estratega de Contenido Senior para \"Lookitry\", un SaaS de probador virtual de ropa (lookitry.com) que ayuda a tiendas de ecommerce a aumentar sus ventas.\n\n# OBJETIVO\nGenerar un array de 10 ideas de temas para artículos de blog. Las ideas deben ser actuales, con alta intención comercial y enfocadas en dueños de tiendas de moda, emprendedores de ecommerce y marketing digital.\n\n# INSTRUCCIONES CLAVE\n1.  **Enfoque en el Problema del Cliente:** Los temas deben abordar problemas de conversión, devoluciones de ropa, experiencia de usuario y tendencias de IA en moda.\n2.  **Variedad de Formatos:** Genera una mezcla equilibrada de:\n    * `\"Tutorial Práctico\"` \n    * `\"Análisis de Tendencia\"` \n    * `\"Guía Completa\"` \n3.  **Ángulo de Monetización:** Los temas deben resaltar cómo usar Lookitry o herramientas similares mejora el negocio.\n\n# FORMATO DE SALIDA\nDevuelve ÚNICAMENTE un array JSON válido. Cada objeto del array debe incluir:\n- `title`: El título del artículo.\n- `keywords`: Una cadena de 4-5 palabras clave separadas por comas.\n- `category_slug`: El slug de la categoría (usa: 'ia', 'ecommerce', 'marketing', 'negocios' o 'moda').\n- `meta_description`: Una meta descripción de máximo 110 caracteres.\n\n# EJEMPLO DE SALIDA\n[\n  {\n    \"title\": \"Cómo la IA está reduciendo las devoluciones en tiendas de ropa online\",\n    \"keywords\": \"probador virtual, ia en moda, reducir devoluciones, ecommerce tips\",\n    \"category_slug\": \"ia\",\n    \"meta_description\": \"Descubre cómo los probadores virtuales ayudan a las tiendas a bajar su tasa de devoluciones y subir ventas.\"\n  }\n]\n\n# REGLAS FINALES\n- NO incluyas ```json ni ``` en la salida.\n- NO añadas texto extra.\n- El resultado debe ser un JSON puro.",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2.2,
-      "position": [
-        94544,
-        36016
-      ],
-      "id": "f4540a5d-20aa-46ee-95f8-35748b60cfda",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
-        "triggerTimes": {
-          "item": [
-            {
-              "mode": "everyMonth"
-            }
-          ]
-        }
-      },
-      "id": "3aa8d634-1ed4-4620-bc87-d06aa288c02f",
-      "name": "Schedule Trigger1",
-      "type": "n8n-nodes-base.cron",
-      "typeVersion": 1,
-      "position": [
-        94352,
-        36016
-      ]
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        94480,
-        36256
-      ],
-      "id": "d0d64bdb-66e9-436a-9166-dbe1b69f2b5a",
-      "name": "Google Gemini Chat Model",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "t38zPMWleOvlSpPc",
-          "name": "Que movida cu"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const results = [];\nfor (const inputItem of $input.all()) {\n  let ideas = inputItem.json.output || inputItem.json.content;\n  if (typeof ideas === 'string') {\n    try {\n      ideas = JSON.parse(ideas);\n    } catch (e) {\n      continue;\n    }\n  }\n  if (!Array.isArray(ideas)) continue;\n\n  for (const idea of ideas) {\n    results.push({\n      json: {\n        title: idea.title || '',\n        keywords: idea.keywords || '',\n        category_slug: idea.category_slug || 'ecommerce',\n        meta_description: idea.meta_description || '',\n        status: 'pending'\n      }\n    });\n  }\n}\nreturn results;\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        94880,
-        36016
-      ],
-      "id": "9867772f-5e56-4903-8496-75918b502482",
-      "name": "formatear"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://vkdooutklowctuudjnkl.supabase.co/rest/v1/blog_topics?on_conflict=title",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDc2NTY2NSwiZXhwIjoyMDg2MzQxNjY1fQ.NxXV0Too3Iadb0FGuC8powPUuaMPiF1TKIUVtGMyFpg"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDc2NTY2NSwiZXhwIjoyMDg2MzQxNjY1fQ.NxXV0Too3Iadb0FGuC8powPUuaMPiF1TKIUVtGMyFpg"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "name": "Prefer",
-              "value": "resolution=ignore-duplicates,return=representation"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"title\": {{ JSON.stringify($json.title) }},\n  \"keywords\": {{ JSON.stringify($json.keywords) }},\n  \"category_slug\": {{ JSON.stringify($json.category_slug) }},\n  \"meta_description\": {{ JSON.stringify($json.meta_description) }},\n  \"status\": \"pending\"\n}",
-        "options": {
-          "timeout": 30000
-        }
-      },
-      "id": "d7244061-90f5-4f37-b9c7-56fe5fdcec91",
-      "name": "Insert Idea1",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        95104,
-        36016
-      ],
-      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -1180,7 +1072,13 @@
     },
     "Jina Lector de Noticias": {
       "main": [
-        []
+        [
+          {
+            "node": "Adjuntar Investigación",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "AI Trend Hunter": {
@@ -1643,63 +1541,9 @@
           }
         ]
       ]
-    },
-    "AI Agent": {
-      "main": [
-        [
-          {
-            "node": "formatear",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Schedule Trigger1": {
-      "main": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Gemini Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "formatear": {
-      "main": [
-        [
-          {
-            "node": "Insert Idea1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
   "pinData": {
-    "Adjuntar Investigación": [
-      {
-        "topic_id": "a5bbc5f4-54ef-4c9d-8d11-22109a2742bb",
-        "title": "Guía Completa: Claves para una Experiencia de Usuario Inolvidable en tu Ecommerce de Moda",
-        "keywords": "ux ecommerce, experiencia cliente, probador virtual, fidelizar clientes",
-        "category_slug": "ecommerce",
-        "source_url": "",
-        "investigacion_profunda": "Title: Lookitry — Probador virtual con IA para tu tienda online\n\nURL Source: https://lookitry.com/\n\nMarkdown Content:\n# Lookitry — Probador virtual con IA para tu tienda online\n\n[![Image 1: Lookitry](https://lookitry.com/logo.svg)Look itry](https://lookitry.com/)COP USD\n\nCOP[Planes](https://lookitry.com/planes)[Blog](https://lookitry.com/blog)[Blog](https://lookitry.com/blog)[Iniciar sesión](https://lookitry.com/login)[Contratar ahora](https://lookitry.com/planes)\n\nLookitry es un probador virtual con inteligencia artificial para tiendas de ropa, accesorios y calzado en Latinoamérica.\n\nProbador virtual con IA\n\n# Tus clientes se prueban\n\ntu producto antes de comprar\n\nPara tiendas de ropa, accesorios y calzado en Latinoamérica. Intégralo en tu tienda en 10 minutos. Sin apps, sin desarrollo.\n\nEl widget de probador virtual IA Latam más fácil de integrar. Prueba ropa online con inteligencia artificial y aumenta tus conversiones.\n\n[Prueba $20.000 — 7 días](https://lookitry.com/trial-checkout)[Ver planes](https://lookitry.com/planes)\n\nActiva hoy tu prueba paga · Configuración en minutos\n\nlookitry.com/mi-marca\n\nTu foto\n\nSube una selfie\n\nElige producto\n\n![Image 2: Camisa lino beige](https://lookitry.com/_next/image?url=%2Fproducts%2Fcamisa_lino_beige.png&w=3840&q=75)\n\nCamisa lino beige\n\n$89.000\n\n![Image 3: Zapatillas blancas](https://lookitry.com/_next/image?url=%2Fproducts%2Fzapatilla_blanca.png&w=3840&q=75)\n\nZapatillas blancas\n\n$185.000\n\n![Image 4: Bolso cuero café](https://lookitry.com/_next/image?url=%2Fproducts%2Fbolso_cuero_cafe.png&w=3840&q=75)\n\nBolso cuero café\n\n$210.000\n\n[Generar prueba virtual](https://lookitry.com/planes)\n\n+30\n\nmarcas activas\n\n18K\n\ngeneraciones este mes\n\n4.8/5\n\nsatisfacción promedio\n\nPlanes\n\n## Precios simples\n\nBásico\n\n$180.000\n\n$220.000-18%\n\n/ mes\n\nPago directo — activación inmediata\n\n*   5 productos\n*   400 generaciones/mes\n*   Logo y colores\n*   Widget embebible\n*   Compartir con marca Lookitry\n\n[Contratar Básico](https://lookitry.com/checkout?plan=BASIC&currency=COP)\n\nMás popular\n\nPro\n\n$350.000\n\n$420.000-17%\n\n/ mes\n\nPago directo — activación inmediata\n\n*   15 productos\n*   1000 generaciones/mes\n*   Plugin WooCommerce\n*   Templates avanzados\n*   Compartir con tu nombre de marca\n*   URL personalizada del widget\n*   Soporte prioritario\n\n[Contratar Pro](https://lookitry.com/checkout?plan=PRO&currency=COP)\n\nEnterprise\n\nPersonalizado\n\nImplementación consultiva a medida\n\n*   +50 productos\n*   Volumen a medida\n*   Marca Blanca\n*   Panel de Analítica Avanzado\n*   Acceso a API\n\n[Hablar con ventas](https://lookitry.com/contacto?plan=enterprise)\n\nComparativa completa\n\n| Característica | Básico | Pro | Enterprise |\n| --- | --- | --- | --- |\n| Productos en el probador | 5 | 15 | +50 |\n| Generaciones por mes | 400 | 1.000 | A medida |\n| Plugin WooCommerce | No | Sí | Sí |\n| Marca Blanca | No | No | Sí |\n| Panel de Analítica Avanzado | No | No | Sí |\n| Acceso a API | No | No | Sí |\n\nPagos 100% Seguros\n\n## Medios de pago aceptados\n\nProcesamos tus pagos de forma segura a través de Wompi y PayPal con encriptación de grado bancario.\n\n![Image 5: Visa](https://lookitry.com/payment-visa.svg)![Image 6: Mastercard](https://lookitry.com/payment-mastercard.svg)![Image 7: PSE](https://lookitry.com/payment-pse.svg)![Image 8: Nequi](https://lookitry.com/payment-nequi.svg)![Image 9: Bancolombia](https://lookitry.com/payment-bancolombia.svg)![Image 10: PayPal](https://lookitry.com/payment-paypal.svg)\n\nSSL Encrypted PCI Compliance Activación Instantánea\n\nCómo funciona\n\n## Tres pasos. Sin complicaciones.\n\n![Image 11: Cliente subiendo una selfie al probador virtual](https://lookitry.com/_next/image?url=%2Fsteps%2Fpaso-1.webp&w=3840&q=75)\n\n01\n\n### Sube tu foto\n\nEl cliente toma una selfie o sube una imagen desde su celular o computador.\n\n![Image 12: Selección de producto en el catálogo del probador virtual](https://lookitry.com/_next/image?url=%2Fsteps%2Fpaso-2.webp&w=3840&q=75)\n\n02\n\n### Elige el producto\n\nSelecciona la prenda, accesorio o calzado del catálogo de tu marca.\n\n![Image 13: Resultado generado por IA del probador virtual de ropa](https://lookitry.com/_next/image?url=%2Fsteps%2Fpaso-3.webp&w=3840&q=75)\n\n03\n\n### Ve el resultado\n\nLa IA genera la imagen en segundos. El cliente puede descargarla y compartirla.\n\nServicio adicional · Pago único\n\n## Tu tienda online,\n\nsin pagar un diseñador\n\nPágina pública propia\n\nURL en lookitry.com/tu-marca. Compártela en redes, WhatsApp o tu bio de Instagram.\n\nCatálogo visual\n\nTus productos con foto, precio y badge. Tus clientes los ven y los prueban en segundos.\n\nProbador IA integrado\n\nEl widget de prueba virtual está embebido directamente. Sin redireccionamientos.\n\nWhatsApp flotante\n\nBotón de contacto siempre visible. Tus clientes te escriben con un clic.\n\n3 templates de diseño\n\nClásico, Editorial o Moderno. Cambia el diseño desde tu dashboard cuando quieras.\n\nActivación inmediata\n\nPagas y en minutos tu página está activa. Sin esperas, sin procesos manuales.\n\n![Image 14: Demo de Mini-Landing](https://lookitry.com/_next/image?url=%2Fhero%2Fpromo_landing.png&w=3840&q=75)\n\n$900.000 28% OFF\n\n$650.000\n\nPago único · Sin mensualidad adicional\n\n*   Página pública activa\n*   Probador IA integrado\n*   3 templates incluidos\n*   WhatsApp flotante\n*   Activación inmediata\n\nObtener mi mini-landing\nServicio adicional · Pago único\n\nReviews\n\n## Lo que dicen nuestras marcas\n\nOpiniones reales de marcas que ya usan Lookitry\n\nPRO\n\n“Desde que activamos el try-on virtual, nuestras clientas pasan más tiempo explorando la colección. Las devoluciones bajaron notablemente. Una herramienta que no sabíamos que necesitábamos.”\n\nMB\n\nMaison Bogotá\n\nfebrero de 2025\n\nBASIC\n\n“La integración con nuestra tienda fue sencilla y el soporte del equipo fue excelente. Los clientes aman poder verse con la ropa antes de comprar.”\n\nSM\n\nStudio Medellín\n\nmarzo de 2025\n\nPRO\n\n“Muy buena plataforma. El try-on es rápido y los resultados se ven naturales. Le damos 5 estrellas en experiencia de usuario.”\n\nVC\n\nVestidos Cali\n\nenero de 2025\n\nBASIC\n\n“La integración con nuestra tienda fue sencilla y el soporte del equipo fue excelente. Los clientes aman poder verse con la ropa antes de comprar.”\n\nSM\n\nStudio Medellín\n\nmarzo de 2025\n\nPRO\n\n“Muy buena plataforma. El try-on es rápido y los resultados se ven naturales. Le damos 5 estrellas en experiencia de usuario.”\n\nVC\n\nVestidos Cali\n\nenero de 2025\n\nBASIC\n\n“Probamos varios servicios similares y Lookitry fue el que mejor resultados dio con nuestras prendas. La calidad de la IA es sorprendente.”\n\nAB\n\nAtelier Barranquilla\n\nfebrero de 2025\n\nPRO\n\n“Muy buena plataforma. El try-on es rápido y los resultados se ven naturales. Le damos 5 estrellas en experiencia de usuario.”\n\nVC\n\nVestidos Cali\n\nenero de 2025\n\nBASIC\n\n“Probamos varios servicios similares y Lookitry fue el que mejor resultados dio con nuestras prendas. La calidad de la IA es sorprendente.”\n\nAB\n\nAtelier Barranquilla\n\nfebrero de 2025\n\nPRO\n\n“Nuestras ventas online aumentaron después de implementar el probador virtual. Los compradores sienten más confianza al ver cómo les queda la prenda.”\n\nCN\n\nColección Norte\n\nmarzo de 2025\n\nBASIC\n\n“Probamos varios servicios similares y Lookitry fue el que mejor resultados dio con nuestras prendas. La calidad de la IA es sorprendente.”\n\nAB\n\nAtelier Barranquilla\n\nfebrero de 2025\n\nPRO\n\n“Nuestras ventas online aumentaron después de implementar el probador virtual. Los compradores sienten más confianza al ver cómo les queda la prenda.”\n\nCN\n\nColección Norte\n\nmarzo de 2025\n\nPRO\n\n“Desde que activamos el try-on virtual, nuestras clientas pasan más tiempo explorando la colección. Las devoluciones bajaron notablemente. Una herramienta que no sabíamos que necesitábamos.”\n\nMB\n\nMaison Bogotá\n\nfebrero de 2025\n\nPRO\n\n“Nuestras ventas online aumentaron después de implementar el probador virtual. Los compradores sienten más confianza al ver cómo les queda la prenda.”\n\nCN\n\nColección Norte\n\nmarzo de 2025\n\nPRO\n\n“Desde que activamos el try-on virtual, nuestras clientas pasan más tiempo explorando la colección. Las devoluciones bajaron notablemente. Una herramienta que no sabíamos que necesitábamos.”\n\nMB\n\nMaison Bogotá\n\nfebrero de 2025\n\nBASIC\n\n“La integración con nuestra tienda fue sencilla y el soporte del equipo fue excelente. Los clientes aman poder verse con la ropa antes de comprar.”\n\nSM\n\nStudio Medellín\n\nmarzo de 2025\n\nPreguntas frecuentes\n\n## Todo lo que necesitas saber\n\nMini-Landing Pagos Generaciones Probador IA\n\n¿Qué es la mini-landing y para qué sirve?\n\nEs una página pública profesional en lookitry.com/tu-marca. Incluye tu catálogo de productos con probador virtual integrado, botón de WhatsApp flotante y hasta 3 templates de diseño. La puedes compartir en redes sociales, WhatsApp o en la bio de Instagram.\n\n¿Cuánto cuesta la mini-landing?\n\nEs un pago único. El precio actual está disponible en la sección de planes de esta página. No tiene mensualidad adicional: pagas una vez y la página queda activa mientras tengas un plan de suscripción activo.\n\n¿Cuánto tiempo tarda en activarse?\n\nLa activación es inmediata. En minutos después de confirmar el pago, tu página ya está disponible en la URL asignada.\n\n¿Puedo cambiar el diseño de mi mini-landing?\n\nSí. Desde tu dashboard puedes elegir entre 3 templates: Clásico, Editorial y Probador. También puedes actualizar tu logo, colores, slogan, ciudad, horario y mensaje de WhatsApp cuando quieras.\n\n¿La mini-landing incluye el probador virtual?\n\nSí, el probador de IA está integrado directamente en tu página. Tus clientes pueden seleccionar un producto y probárselo sin salir de tu mini-landing.\n\n¿Necesito saber programar para tener mi mini-landing?\n\nNo. Todo se configura desde tu dashboard con formularios simples. No necesitas tocar código ni contratar un desarrollador.\n\n¿No encontraste lo que buscabas?\n\nEscríbenos y te respondemos en minutos.\n\n[WhatsApp](https://wa.me/573105436281)[Correo](mailto:info@lookitry.com)\n\n[![Image 15: Lookitry](https://lookitry.com/logo.svg)Look itry](https://lookitry.com/)\nProbador virtual con IA para tiendas de ropa, accesorios y calzado en Latinoamérica.\n\nActivación en minutos Soporte por WhatsApp Pago seguro\n\n[](https://lookitry.com/#)[](https://lookitry.com/#)[](mailto:info@lookitry.com)[](https://wa.me/573105436281)\n\nProducto\n\n*   [Inicio](https://lookitry.com/)\n*   [Planes y precios](https://lookitry.com/planes)\n*   [Iniciar sesión](https://lookitry.com/login)\n*   [Activar prueba ahora](https://lookitry.com/trial-checkout)\n*   [Crear cuenta de marca](https://lookitry.com/register)\n\nEmpresa\n\n*   [Sobre nosotros](https://lookitry.com/sobre-nosotros)\n*   [Contacto](https://lookitry.com/contacto)\n*   [Aplicaciones reales](https://lookitry.com/aplicaciones)\n*   [Centro de ayuda](https://lookitry.com/ayuda)\n*   [Estado del servicio](https://lookitry.com/estado)\n\nConfianza legal\n\n*   [Términos y Condiciones](https://lookitry.com/terminos)\n*   [Política de Privacidad](https://lookitry.com/politicas-privacidad)\n*   [Política de uso](https://lookitry.com/politica-de-uso)\n*   [Política de cookies](https://lookitry.com/cookies)\n*   [Aviso legal](https://lookitry.com/aviso-legal)\n\n© 2026[Wilkie Devs SAS](https://wilkiedevs.com/)· Colombia\n\n[Admin](https://lookitry.com/admin/login)\n"
-      }
-    ],
     "Webhook Trigger Manual": [
       {
         "headers": {

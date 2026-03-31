@@ -14,10 +14,37 @@ interface BlogPostPageProps {
   };
 }
 
-function sanitizeBlogHtml(content: string) {
+function sanitizeBlogHtml(content: string, featuredImage?: string | null) {
   let html = content || '';
 
-  html = html.replace(/<figure>\s*<img[^>]+src=["']\s*["'][^>]*>\s*<figcaption>(.*?)<\/figcaption>\s*<\/figure>/gi, '<figure><figcaption>$1</figcaption></figure>');
+  // 1. Manejar imágenes rotas (src vacío o solo espacios)
+  // Buscamos etiquetas img que tengan src="" o src=" "
+  const emptyImgRegex = /<img[^>]+src=["']\s*["'][^>]*>/gi;
+  
+  if (featuredImage) {
+    // Si tenemos imagen destacada, la usamos como fallback para la PRIMERA imagen rota
+    let hasReplaced = false;
+    html = html.replace(emptyImgRegex, (match) => {
+      if (!hasReplaced) {
+        hasReplaced = true;
+        // Reemplazar el src vacío por la imagen destacada
+        return match.replace(/src=["']\s*["']/i, `src="${featuredImage}"`);
+      }
+      // Para el resto de imágenes rotas, las eliminamos para no repetir la misma foto
+      return '';
+    });
+  } else {
+    // Si no hay imagen destacada, eliminamos todas las imágenes rotas
+    html = html.replace(emptyImgRegex, '');
+  }
+
+  // 2. Limpiar figuras que quedaron vacías después de quitar la imagen
+  html = html.replace(/<figure>\s*<\/figure>/gi, '');
+  
+  // 3. Caso especial: figura con figcaption pero sin imagen (limpieza extra)
+  html = html.replace(/<figure>\s*(?:<img[^>]+src=["']\s*["'][^>]*>)?\s*<figcaption>(.*?)<\/figcaption>\s*<\/figure>/gi, (match, caption) => {
+    return `<figure className="bg-white/5 p-4 rounded-xl border border-white/5 my-8 italic text-center text-[#6d625c]">${caption}</figure>`;
+  });
 
   return html;
 }
@@ -25,7 +52,7 @@ function sanitizeBlogHtml(content: string) {
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   const post = await fetchBlogPostBySlug(params.slug);
   const socialImage = getBlogShareImage(post);
-  
+
   if (!post) {
     return {
       title: 'Post no encontrado | Lookitry',
@@ -64,7 +91,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const recentPosts = await fetchRecentBlogPosts(3, post.slug);
   const heroImage = getBlogFeaturedImage(post);
   const socialImage = getBlogShareImage(post);
-  const articleHtml = sanitizeBlogHtml(post.content);
+  const articleHtml = sanitizeBlogHtml(post.content, heroImage);
   const shareUrl = `https://lookitry.com/blog/${params.slug}`;
 
   const formatDate = (dateStr: string) => {
@@ -110,7 +137,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       name: 'Lookitry',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://lookitry.com/logo.png', // Ajustar si hay una URL de logo oficial
+        url: 'https://lookitry.com/logo.png',
       },
     },
     description: post.meta_description || post.excerpt,
@@ -128,11 +155,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       />
       <LandingNav />
       <BlogShareRail title={post.title} url={shareUrl} />
-      
+
       {/* Header del articulo */}
       <article className="mx-auto max-w-[1320px] px-6 pt-20">
-        <Link 
-          href="/blog" 
+        <Link
+          href="/blog"
           className="inline-flex items-center gap-2 text-[#FF5C3A] hover:text-[#ff7a5f] mb-8 transition-colors text-sm font-semibold group"
         >
           <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
@@ -170,9 +197,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
             {heroImage && (
               <div className="relative aspect-[21/9] rounded-2xl overflow-hidden mb-12 border border-white/5">
-                <img 
-                  src={heroImage} 
-                  alt={post.title} 
+                <img
+                  src={heroImage}
+                  alt={post.title}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -180,7 +207,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
             {/* Contenido (HTML renderizado) */}
             <section className="rounded-[2rem] border border-white/10 bg-[#f6f0ee] text-[#1f1f1f] shadow-[0_30px_80px_rgba(0,0,0,0.24)] overflow-hidden">
-              <div 
+              <div
                 className={articleProseClass}
                 dangerouslySetInnerHTML={{ __html: articleHtml }}
               />
@@ -213,14 +240,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Quieres potenciar tu marca con LOOKITRY?</h2>
               <p className="text-[#999] mb-8 max-w-xl mx-auto">Activa una experiencia de compra mas clara, moderna y confiable para tus clientes con LOOKITRY.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link 
-                  href="/trial-checkout" 
+                <Link
+                  href="/trial-checkout"
                   className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white font-bold py-3 px-8 rounded-full transition-all"
                 >
                   Comenzar prueba ahora
                 </Link>
-                <Link 
-                  href="/planes" 
+                <Link
+                  href="/planes"
                   className="border border-[#FF5C3A]/25 bg-[#1a1a1a] text-[#FF5C3A] hover:bg-[#221613] font-bold py-3 px-8 rounded-full transition-all"
                 >
                   Ver planes

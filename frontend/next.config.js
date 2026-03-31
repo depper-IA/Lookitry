@@ -4,7 +4,7 @@ const isProd = process.env.NODE_ENV === 'production';
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
-  eslint: { ignoreDuringBuilds: true },
+  eslint: { ignoreDuringBuilds: false },
   images: {
     remotePatterns: [
       { protocol: 'http', hostname: 'localhost' },
@@ -17,12 +17,11 @@ const nextConfig = {
   },
   async headers() {
     // Definimos la política de seguridad de forma dinámica
-    // Se ha actualizado para permitir img-src * para imágenes externas (WooCommerce)
     const csp = [
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline' ${isProd ? '' : "'unsafe-eval'"} https://challenges.cloudflare.com`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src * data: blob:",
+      "img-src 'self' data: blob: https://vkdooutklowctuudjnkl.supabase.co https://api.lookitry.com https://minio.wilkiedevs.com https://lookitry.com https://wilkiedevs.com",
       `connect-src 'self' ${isProd ? '' : 'http://localhost:3001'} https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co`,
       "font-src 'self' https://fonts.gstatic.com",
       "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co",

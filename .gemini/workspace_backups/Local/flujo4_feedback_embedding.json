@@ -1,0 +1,150 @@
+{
+  "name": "Lookitry — Feedback Embedding (RAG)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "feedback-embedding",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-feedback",
+      "name": "Webhook — Recibir feedback",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "feedback-embedding"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body ?? $input.first().json;\n\nconst errorType = body.error_type ?? 'other';\nconst productCategory = body.product_category ?? 'desconocido';\nconst description = body.description ?? '';\nconst promptUsed = (body.prompt_used ?? '').slice(0, 800);\n\n// Texto concatenado para generar el embedding\nconst text = `[${errorType}] Producto: ${productCategory}. Error: ${description}. Prompt original: ${promptUsed}`;\n\nreturn [{\n  json: {\n    feedback_id: body.feedback_id,\n    error_type: errorType,\n    product_category: productCategory,\n    description,\n    prompt_used: promptUsed,\n    embedding_text: text\n  }\n}];"
+      },
+      "id": "build-text",
+      "name": "Construir texto para embedding",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Llamar a la API de Gemini Embeddings directamente usando la credencial googlePalmApi\n// El nodo Code puede acceder a credenciales via $credentials en versiones recientes,\n// pero lo más confiable es usar el nodo HTTP Request con la credencial OAuth.\n// Este nodo prepara el payload para el siguiente nodo HTTP.\nconst text = $input.first().json.embedding_text;\nconst feedbackId = $input.first().json.feedback_id;\n\nreturn [{\n  json: {\n    feedback_id: feedbackId,\n    embedding_text: text,\n    // Pasar todos los campos para el nodo de guardado\n    ...$input.first().json\n  }\n}];"
+      },
+      "id": "prepare-embedding",
+      "name": "Preparar para embedding",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"models/gemini-embedding-001\",\n  \"content\": {\n    \"parts\": [\n      { \"text\": {{ JSON.stringify($json.embedding_text) }} }\n    ]\n  },\n  \"taskType\": \"RETRIEVAL_DOCUMENT\"\n}",
+        "options": {}
+      },
+      "id": "gemini-embedding",
+      "name": "Gemini — Generar embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ReWa7OVkhJwwgxXG",
+          "name": "Info.sam API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\n\n// La respuesta de Gemini embedContent: { embedding: { values: [...768 floats] } }\nconst embedding = response.embedding?.values ?? [];\n\nif (!Array.isArray(embedding) || embedding.length === 0) {\n  throw new Error(`Gemini no devolvió embedding válido. Respuesta: ${JSON.stringify(response).slice(0, 400)}`);\n}\n\nif (embedding.length !== 768) {\n  throw new Error(`Dimensión incorrecta: esperadas 768, recibidas ${embedding.length}`);\n}\n\nconst feedbackId = $('Construir texto para embedding').first().json.feedback_id;\n\nif (!feedbackId) {\n  throw new Error('feedback_id no encontrado en el contexto');\n}\n\nreturn [{\n  json: {\n    feedback_id: feedbackId,\n    embedding,\n    dimensions: embedding.length\n  }\n}];"
+      },
+      "id": "extract-embedding",
+      "name": "Extraer y validar embedding",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE generation_feedback SET embedding = '[{{ $json.embedding.join(',') }}]'::vector(768) WHERE id = '{{ $json.feedback_id }}' RETURNING id;",
+        "options": {}
+      },
+      "id": "supabase-update",
+      "name": "Supabase — Guardar embedding",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [1340, 300],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_CRED_ID",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, feedback_id: $('Extraer y validar embedding').first().json.feedback_id, dimensions: $('Extraer y validar embedding').first().json.dimensions } }}"
+      },
+      "id": "respond-ok",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: $json.message } }}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "respond-error",
+      "name": "Responder Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1560, 480]
+    }
+  ],
+  "connections": {
+    "Webhook — Recibir feedback": {
+      "main": [[{ "node": "Construir texto para embedding", "type": "main", "index": 0 }]]
+    },
+    "Construir texto para embedding": {
+      "main": [[{ "node": "Preparar para embedding", "type": "main", "index": 0 }]]
+    },
+    "Preparar para embedding": {
+      "main": [[{ "node": "Gemini — Generar embedding", "type": "main", "index": 0 }]]
+    },
+    "Gemini — Generar embedding": {
+      "main": [[{ "node": "Extraer y validar embedding", "type": "main", "index": 0 }]]
+    },
+    "Extraer y validar embedding": {
+      "main": [[{ "node": "Supabase — Guardar embedding", "type": "main", "index": 0 }]]
+    },
+    "Supabase — Guardar embedding": {
+      "main": [[{ "node": "Responder OK", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5519e0d30f"
+  },
+  "pinData": {},
+  "versionId": "flujo4-v3",
+  "triggerCount": 0,
+  "tags": [{ "id": "rag-feedback", "name": "RAG" }]
+}
