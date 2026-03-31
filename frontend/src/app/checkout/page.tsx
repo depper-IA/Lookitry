@@ -434,7 +434,12 @@ function CheckoutContent() {
             {currentStep === 1 && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-jakarta font-bold text-white tracking-tight">Elige tu plan</h2>
+                  <div>
+                    <h2 className="text-2xl font-jakarta font-bold text-white tracking-tight">Elige tu plan</h2>
+                    <p className="mt-1 text-sm text-[#999]">
+                      Primero define que quieres activar hoy. Luego te mostramos el cobro y el siguiente paso con claridad.
+                    </p>
+                  </div>
                   <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso 1 de 3</div>
                 </div>
 
@@ -574,7 +579,7 @@ function CheckoutContent() {
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h2 className="text-2xl font-jakarta font-bold text-white tracking-tight">Tus datos</h2>
-                    <p className="text-sm text-[#999] mt-1">Vinculamos el plan a tu correo corporativo</p>
+                    <p className="text-sm text-[#999] mt-1">Vinculamos tu compra al correo con el que entraras y administraras la cuenta</p>
                   </div>
                   <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso 2 de 3</div>
                 </div>
@@ -657,7 +662,7 @@ function CheckoutContent() {
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h2 className="text-2xl font-jakarta font-bold text-white tracking-tight">Finalizar y Activar</h2>
-                    <p className="text-sm text-[#999] mt-1">Elige tu método de pago preferido</p>
+                    <p className="text-sm text-[#999] mt-1">Elige como quieres pagar. Despues te llevamos a confirmacion y activacion.</p>
                   </div>
                   <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso 3 de 3</div>
                 </div>
@@ -707,6 +712,24 @@ function CheckoutContent() {
                   </div>
                 )}
 
+                <div className="mb-6 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: OA }}>
+                    Que activas con este pago
+                  </p>
+                  <p className="mt-2 text-sm text-[#bbb]">
+                    {isLanding
+                      ? `Mini-landing + ${planNames[subPlan]} por ${selectedMonths} mes${selectedMonths > 1 ? 'es' : ''}.`
+                      : isTrial
+                        ? 'Tu prueba profesional por 7 dias para empezar a configurar y validar la experiencia.'
+                        : `${planNames[selectedPlan]} por ${selectedMonths} mes${selectedMonths > 1 ? 'es' : ''}.`}
+                  </p>
+                  <p className="mt-2 text-[11px] text-[#999]">
+                    {isLanding
+                      ? 'La mini-landing es un pago unico. El plan asociado cubre el uso y la operacion mensual.'
+                      : 'Al completar el pago te llevamos a confirmacion y activacion de tu acceso.'}
+                  </p>
+                </div>
+
                 <div className="flex gap-4 mt-10">
                   <button
                     onClick={handlePrevStep}
@@ -751,7 +774,7 @@ function CheckoutContent() {
             <div className="bg-[#0d0d0d] border border-[#1f1f1f] rounded-3xl p-8 shadow-2xl overflow-hidden relative">
               <div className="absolute top-0 right-0 w-32 h-32 blur-3xl rounded-full -mr-16 -mt-16" style={{ backgroundColor: 'rgba(255,92,58,0.05)' }} />
 
-              <h3 className="text-xs font-black uppercase tracking-widest mb-6" style={{ color: OA }}>Tu Configuración</h3>
+              <h3 className="text-xs font-black uppercase tracking-widest mb-6" style={{ color: OA }}>Resumen de compra</h3>
 
               <div className="space-y-6">
                 <div className="space-y-4">
@@ -776,6 +799,24 @@ function CheckoutContent() {
                 </div>
 
                 <div className="h-px bg-[#1f1f1f] w-full" />
+
+                <div className="rounded-2xl border border-[#1f1f1f] bg-[#050505] p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#999]">Cobro de hoy</p>
+                  <p className="mt-2 text-sm text-white">
+                    {isLanding
+                      ? 'Hoy pagas la mini-landing y el periodo inicial del plan elegido.'
+                      : isTrial
+                        ? 'Hoy activas tu prueba para configurar tu cuenta y entrar al dashboard.'
+                        : 'Hoy activas tu plan y el periodo seleccionado.'}
+                  </p>
+                  <p className="mt-2 text-[11px] text-[#999]">
+                    {isLanding
+                      ? 'La landing es pago unico. El plan asociado sigue su ciclo normal segun el tiempo que elijas.'
+                      : isTrial
+                        ? 'No hay cobros compuestos en este paso.'
+                        : 'El total ya incluye el periodo que elegiste y cualquier descuento aplicado.'}
+                  </p>
+                </div>
 
                 {/* Cupón */}
                 <div className="space-y-3">

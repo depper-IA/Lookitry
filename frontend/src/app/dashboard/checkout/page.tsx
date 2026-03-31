@@ -493,10 +493,19 @@ function CheckoutContent() {
   const handleError = (msg: string) => {
     const normalized = msg.toLowerCase();
     if (
-      normalized.includes('verificando tu pago') ||
       normalized.includes('widget de wompi') ||
       normalized.includes('wompi no está disponible') ||
       normalized.includes('wompi no esta disponible')
+    ) {
+      setErrorMsg('No pudimos abrir Wompi en este intento. Prueba de nuevo o usa PayPal mientras verificamos el medio de pago.');
+      setState('error');
+      return;
+    }
+    if (
+      normalized.includes('verificando tu pago') ||
+      normalized.includes('verificando tu pago con wompi') ||
+      normalized.includes('wompi no está disponible') ||
+      normalized.includes('transaccion en verificacion')
     ) {
       setErrorMsg('Estamos verificando tu pago. Si la transacción ya fue aprobada, tu plan se actualizará automáticamente.');
       setState('verifying');
@@ -526,7 +535,7 @@ function CheckoutContent() {
         console.error('[Checkout] Error verificando suscripción:', error);
       }
 
-      if (!cancelled && attempts >= 6) {
+      if (!cancelled && attempts >= 20) {
         setErrorMsg('Tu pago quedó en verificación. Si ya fue aprobado, la actualización aparecerá en tu suscripción en pocos minutos.');
         setState('error');
       }

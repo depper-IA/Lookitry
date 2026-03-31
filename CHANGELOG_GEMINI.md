@@ -1,5 +1,6 @@
 # Changelog - Lookitry (AI Assisted)
 
+
 ## [2026-03-31] - Persistencia de pendientes técnicos
 
 ### Cambios Realizados
@@ -13,6 +14,47 @@
 
 ### Motivo
 Evitar que cambios diferidos o limpiezas técnicas queden en el aire entre sesiones, y dejar un mecanismo permanente de continuidad además del changelog.
+
+---
+
+## [2026-03-31] - Mejora del rescate post-pago en registro-pro
+
+### Cambios Realizados
+- **Sincronización defensiva de referencias Wompi**: `backend/src/controllers/auth-post-payment.controller.ts` ahora autocorrige `pending_registrations` cuando la referencia ya aparece aprobada en Wompi pero el webhook aún no ha marcado el pago como `paid`.
+- **Pantalla de espera más útil**: `frontend/src/app/registro-pro/page.tsx` mejoró el copy visual del estado de carga post-pago, añadió ayuda contextual y muestra acciones de recuperación si la sincronización tarda más de lo normal.
+- **Reintento automático de referencia**: `frontend/src/app/registro-pro/page.tsx` ya no intenta resolver el `id` de Wompi una sola vez; ahora reintenta varias veces antes de dar por fallida la recuperación de la referencia.
+
+### Archivos Modificados
+- `backend/src/controllers/auth-post-payment.controller.ts`
+- `frontend/src/app/registro-pro/page.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Reducir los casos donde una compra aprobada de plan + mini-landing tarda demasiado en reflejarse en `registro-pro`, y reemplazar el estado de “spinner vacío” por una experiencia más clara y recuperable.
+
+---
+## [2026-03-31] - Ajustes de UX seguros en auth/pago y actualización de reglas operativas
+
+### Cambios Realizados
+- **Login alineado a branding y accesibilidad**: `frontend/src/components/auth/LoginForm.tsx` ahora usa `font-jakarta` en marca/título, elimina grises prohibidos (`#333`-`#555`) en textos y placeholders, y vuelve focusable el toggle de contraseña con `aria-label` y `title`.
+- **Registro más pedagógico sin tocar la lógica**: `frontend/src/components/auth/RegisterForm.tsx` añade ayuda breve para slug, email, contraseña y confirmación, además de feedback visual mínimo para reducir errores antes de enviar.
+- **Checkout más claro comercialmente**: `frontend/src/app/checkout/page.tsx` ahora explica mejor qué se activa hoy, qué incluye el pago y resume el cobro con lenguaje más directo.
+- **Dashboard y onboarding alineados**: `frontend/src/lib/dashboardAccountState.ts` simplifica lenguaje técnico residual y `frontend/src/components/dashboard/DashboardLayout.tsx` deja al dashboard home como superficie principal de activación, evitando competir con el modal de onboarding en rutas internas.
+- **Pago exitoso sin color prohibido**: `frontend/src/app/pago-exitoso/page.tsx` reemplaza el texto residual `#333` por un color permitido del sistema.
+- **Memoria del proyecto actualizada**: `reglas_importantes.md` ahora documenta el flujo comercial vigente (`StepProgress`, CTA contextual post-pago, `pending_registrations`, home del dashboard orientado a activación y no duplicar onboarding con `/dashboard`).
+
+### Archivos Modificados
+- `frontend/src/components/auth/LoginForm.tsx`
+- `frontend/src/components/auth/RegisterForm.tsx`
+- `frontend/src/app/checkout/page.tsx`
+- `frontend/src/components/dashboard/DashboardLayout.tsx`
+- `frontend/src/lib/dashboardAccountState.ts`
+- `frontend/src/app/pago-exitoso/page.tsx`
+- `reglas_importantes.md`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Aplicar mejoras de bajo riesgo que fortalecen la experiencia de usuario, corrigen incumplimientos reales de diseño/accesibilidad y dejan las reglas del proyecto sincronizadas con el estado funcional más reciente.
 
 ---
 ## [2026-03-31] - Bloqueo de creditos/widget por verificacion y limpieza de uso trial
@@ -229,7 +271,6 @@ Cumplir con los estándares de seguridad y UX de la auditoría técnica, asegura
 - `frontend/src/components/auth/LoginForm.tsx`
 - `frontend/src/services/auth.service.ts`
 - `CHANGELOG_GEMINI.md`
-# Changelog - Lookitry (AI Assisted)
 
 ## [2026-03-31] - Integración del dashboard con el flujo de registro y pago
 
@@ -273,5 +314,23 @@ Volver el dashboard una continuación natural del flujo `registro -> pago -> acc
 
 ### Motivo
 Corregir el caso donde un trial nuevo post-pago aparecía como `Plan Básico activo`, y limpiar los restos visuales violeta/azules todavía presentes en activación y estados de suscripción del dashboard.
+
+---
+
+## [2026-03-31] - Corrección del checkout interno para upgrades con Wompi
+
+### Cambios Realizados
+- **Fallback real para Wompi**: `frontend/src/components/payments/WompiButton.tsx` ahora redirige al checkout hospedado de Wompi cuando el widget no carga o no está disponible en navegador, en lugar de dejar el flujo bloqueado.
+- **Verificación más precisa en dashboard checkout**: `frontend/src/app/dashboard/checkout/page.tsx` dejó de tratar errores técnicos de Wompi como si fueran pagos pendientes y amplió la ventana de verificación automática para dar tiempo a webhooks y sincronización de suscripción.
+- **Cobertura de regresión**: `frontend/src/__tests__/components/WompiButton.test.tsx` ahora valida tanto el flujo aprobado con widget como el fallback al checkout hospedado cuando falla la carga del script.
+
+### Archivos Modificados
+- `frontend/src/components/payments/WompiButton.tsx`
+- `frontend/src/app/dashboard/checkout/page.tsx`
+- `frontend/src/__tests__/components/WompiButton.test.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Corregir el caso reportado en upgrades trial -> Basic/Pro donde el botón de pago no abría el medio de pago y el usuario era enviado de forma errónea a la pantalla de "Verificando tu pago" o a "Pago no completado".
 
 ---

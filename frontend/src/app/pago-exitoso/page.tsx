@@ -255,7 +255,7 @@ function PagoExitosoContent() {
           </div>
 
           <div className="mt-10 text-center">
-            <p className="text-[#333] text-[12px] font-medium tracking-widest uppercase">
+            <p className="text-[#999] text-[12px] font-medium tracking-widest uppercase">
               LOOKITRY SECURE PAYMENTS © 2026
             </p>
           </div>

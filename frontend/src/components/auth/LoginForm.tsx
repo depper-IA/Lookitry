@@ -92,17 +92,17 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
-            <span className="font-syne font-extrabold text-xl text-white tracking-tight">
+            <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
         </div>
 
         <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8">
-          <h2 className="font-syne font-bold text-[22px] text-white mb-1 uppercase tracking-tight">
+          <h2 className="font-jakarta font-bold text-[22px] text-white mb-1 uppercase tracking-tight">
             Iniciar sesión
           </h2>
-          <p className="text-[13px] text-[#555] mb-7 font-medium">
+          <p className="text-[13px] text-[#999] mb-7 font-medium">
             Accede a tu dashboard de probador virtual profesional
           </p>
 
@@ -142,7 +142,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                 required
                 className={`block w-full px-4 py-3 bg-[#0f0f0f] border ${
                   validationErrors.email ? 'border-red-900/50' : 'border-[#2a2a2a]'
-                } rounded-lg text-white text-[14px] placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
+                } rounded-lg text-white text-[14px] placeholder-[#666] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
                 placeholder="tu@tienda.com"
                 value={formData.email}
                 onChange={handleChange}
@@ -158,7 +158,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                 <label htmlFor="password" className="block text-[11px] font-bold text-[#888] uppercase tracking-widest">
                   Contraseña
                 </label>
-                <Link href={`/auth/forgot-password${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[11px] text-[#555] hover:text-[#FF5C3A] transition-colors">
+                <Link href={`/auth/forgot-password${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[11px] text-[#999] hover:text-[#FF5C3A] transition-colors">
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
@@ -171,7 +171,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                   required
                   className={`block w-full px-4 py-3 pr-10 bg-[#0f0f0f] border ${
                     validationErrors.password ? 'border-red-900/50' : 'border-[#2a2a2a]'
-                  } rounded-lg text-white text-[14px] placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
+                  } rounded-lg text-white text-[14px] placeholder-[#666] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
                   placeholder="********"
                   value={formData.password}
                   onChange={handleChange}
@@ -179,8 +179,9 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
                 <button
                   type="button"
                   onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#FF5C3A] focus:outline-none transition-colors"
-                  tabIndex={-1}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#999] hover:text-[#FF5C3A] focus:outline-none focus-visible:text-[#FF5C3A] transition-colors"
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
@@ -199,7 +200,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
             </button>
           </form>
 
-          <p className="text-center text-[13px] text-[#444] mt-8">
+          <p className="text-center text-[13px] text-[#999] mt-8">
             ¿No tienes cuenta?{' '}
             <Link href={`/register${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[#FF5C3A] hover:text-white transition-colors font-bold">
               Regístrate aquí
