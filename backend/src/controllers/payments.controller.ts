@@ -23,6 +23,41 @@ export class PaymentsController {
       });
     }
   }
+
+  async verifyAddon(req: AuthRequest, res: Response) {
+    try {
+      if (!req.brand?.id) {
+        return res.status(401).json({ error: 'UNAUTHORIZED' });
+      }
+
+      const { reference } = req.body;
+      if (!reference) return res.status(400).json({ error: 'Falta la referencia' });
+
+      // Verificar en Wompi (asumimos que intentamos Wompi primero para credits)
+      // Importante: Requeriremos importar wompiService para esto
+      const { wompiService } = require('../services/wompi.service');
+      const tx = await wompiService.getTransactionByReference(reference);
+
+      if (tx && tx.status === 'APPROVED') {
+        await addonCreditsService.applyPurchasedCredits(
+          reference,
+          'wompi',
+          tx.amount_in_cents / 100,
+          String(tx.id)
+        );
+        return res.status(200).json({ status: 'applied_now', message: 'Compra unificada.' });
+      }
+
+      return res.status(200).json({ status: 'pending_or_not_found' });
+    } catch (error: any) {
+      // Ignorar errores silenciándolos, puede que ya se haya aplicado (violación Unique)
+      if (error.message?.includes('violates unique constraint')) {
+        return res.status(200).json({ status: 'already_applied' });
+      }
+      console.error('[PaymentsController] Error en verifyAddon:', error);
+      return res.status(500).json({ error: 'Error verificando el add-on' });
+    }
+  }
 }
 
 export const paymentsController = new PaymentsController();
