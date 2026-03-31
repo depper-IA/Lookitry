@@ -521,6 +521,7 @@ export class SubscriptionService {
     forcedEndDate?: string
   ): Promise<Brand> {
     const now = new Date();
+    const normalizedPlan = newPlan.toUpperCase();
 
     let newEndDate: Date;
     if (forcedEndDate) {
@@ -532,7 +533,7 @@ export class SubscriptionService {
     const { data: updatedBrand, error } = await supabaseAdmin
       .from('brands')
       .update({
-        plan: newPlan.toUpperCase(),
+        plan: normalizedPlan,
         subscription_start_date: now.toISOString(),
         subscription_end_date: newEndDate.toISOString(),
         subscription_status: 'active',
@@ -549,28 +550,37 @@ export class SubscriptionService {
       throw new Error('Error al aplicar cambio de plan: ' + error?.message);
     }
 
-    await this.createPaymentRecord({
-      brand_id: brandId,
-      amount: 0,
-      currency: 'COP',
-      payment_date: now.toISOString(),
-      payment_method: 'credit_proration',
-      status: 'completed',
-      months_paid: newMonths,
-      notes: `Cambio de plan gratuito por prorrateo. Plan: ${newPlan}. Crédito aplicado: $${creditAmount}. Valor plan: $${newPlanTotal}. Ref: ${reference}`,
-      ledger_snapshot: {
-        version: 1,
-        brandId: brandId,
-        brandName: (updatedBrand as any).name || null,
-        brandEmail: (updatedBrand as any).email || null,
-        brandSlug: (updatedBrand as any).slug || null,
-        planPurchased: newPlan.toUpperCase(),
-        billingType: 'upgrade',
-        includesLanding: false,
-        brandPlanBefore: null,
-        brandPlanAfter: newPlan.toUpperCase(),
-      },
-    });
+    // Un free upgrade no representa un cobro real. En entornos legacy la tabla
+    // subscription_payments exige amount > 0, así que no intentamos persistir
+    // un pago de $0 que tumbaría el cambio de plan.
+    if (newPlanTotal > creditAmount) {
+      await this.createPaymentRecord({
+        brand_id: brandId,
+        amount: Math.max(0, newPlanTotal - creditAmount),
+        currency: 'COP',
+        payment_date: now.toISOString(),
+        payment_method: 'credit_proration',
+        status: 'completed',
+        months_paid: newMonths,
+        notes: `Cambio de plan por prorrateo. Plan: ${newPlan}. Crédito aplicado: $${creditAmount}. Valor plan: $${newPlanTotal}. Ref: ${reference}`,
+        ledger_snapshot: {
+          version: 1,
+          brandId: brandId,
+          brandName: (updatedBrand as any).name || null,
+          brandEmail: (updatedBrand as any).email || null,
+          brandSlug: (updatedBrand as any).slug || null,
+          planPurchased: normalizedPlan,
+          billingType: 'upgrade',
+          includesLanding: false,
+          brandPlanBefore: null,
+          brandPlanAfter: normalizedPlan,
+        },
+      });
+    } else {
+      console.info(
+        `[Subscription] Upgrade gratuito aplicado sin registro en subscription_payments por amount=0. brandId=${brandId} ref=${reference}`
+      );
+    }
 
     return updatedBrand as Brand;
   }

@@ -1,6 +1,23 @@
 # Changelog - Lookitry (AI Assisted)
 
 
+## [2026-03-31] - Free upgrade sin bloqueo por monto cero
+
+### Cambios Realizados
+- **Upgrade gratis compatible con esquema legacy**: `backend/src/services/subscription.service.ts` ya no intenta insertar un `subscription_payments` con `amount: 0` al aplicar un upgrade gratuito por prorrateo, evitando el `500` cuando la tabla conserva la restricción `amount > 0`.
+- **Cobertura de regresión**: `backend/src/services/__tests__/subscription.service.test.ts` ahora verifica que `applyFreeUpgrade` complete el cambio de plan sin tocar `subscription_payments` cuando no hay cobro real.
+
+### Archivos Modificados
+- `backend/src/services/subscription.service.ts`
+- `backend/src/services/__tests__/subscription.service.test.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+El flujo `Basic -> Pro` sin costo seguía fallando en producción porque el backend trataba de registrar un pago de valor cero en una tabla legacy que solo acepta montos positivos. El cambio preserva el upgrade y deja la trazabilidad principal en `plan_change_requests`, sin convertir un no-cobro en un pago artificial.
+
+---
+
+
 ## [2026-03-31] - Persistencia de pendientes técnicos
 
 ### Cambios Realizados
