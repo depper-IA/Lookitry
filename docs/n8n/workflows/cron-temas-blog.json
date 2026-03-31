@@ -1,0 +1,171 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=# ROL\nEres un Estratega de Contenido Senior para \"Lookitry\", un SaaS de probador virtual de ropa (lookitry.com) que ayuda a tiendas de ecommerce a aumentar sus ventas.\n\n# OBJETIVO\nGenerar un array de 15 ideas de temas para artículos de blog. Las ideas deben ser actuales, con alta intención comercial y enfocadas en dueños de tiendas de moda, emprendedores de ecommerce y marketing digital.\n\n# INSTRUCCIONES CLAVE\n1.  **Enfoque en el Problema del Cliente:** Los temas deben abordar problemas de conversión, devoluciones de ropa, experiencia de usuario y tendencias de IA en moda.\n2.  **Variedad de Formatos:** Genera una mezcla equilibrada de:\n    * `\"Tutorial Práctico\"` \n    * `\"Análisis de Tendencia\"` \n    * `\"Guía Completa\"` \n3.  **Ángulo de Monetización:** Los temas deben resaltar cómo usar Lookitry o herramientas similares mejora el negocio.\n\n# FORMATO DE SALIDA\nDevuelve ÚNICAMENTE un array JSON válido. Cada objeto del array debe incluir:\n- `title`: El título del artículo.\n- `keywords`: Una cadena de 4-5 palabras clave separadas por comas.\n- `category_slug`: El slug de la categoría (usa: 'ia', 'ecommerce', 'marketing', 'negocios' o 'moda').\n- `meta_description`: Una meta descripción de máximo 110 caracteres.\n\n# EJEMPLO DE SALIDA\n[\n  {\n    \"title\": \"Cómo la IA está reduciendo las devoluciones en tiendas de ropa online\",\n    \"keywords\": \"probador virtual, ia en moda, reducir devoluciones, ecommerce tips\",\n    \"category_slug\": \"ia\",\n    \"meta_description\": \"Descubre cómo los probadores virtuales ayudan a las tiendas a bajar su tasa de devoluciones y subir ventas.\"\n  }\n]\n\n# REGLAS FINALES\n- NO incluyas ```json ni ``` en la salida.\n- NO añadas texto extra.\n- El resultado debe ser un JSON puro.",
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 2.2,
+            "position": [
+                93632,
+                37184
+            ],
+            "id": "12bc6708-5f73-4470-b4b4-e74ce70a5ece",
+            "name": "AI Agent"
+        },
+        {
+            "parameters": {
+                "triggerTimes": {
+                    "item": [
+                        {
+                            "mode": "everyMonth"
+                        }
+                    ]
+                }
+            },
+            "id": "ca2b0ca2-2614-4c47-9a25-66c7e1f54851",
+            "name": "Schedule Trigger1",
+            "type": "n8n-nodes-base.cron",
+            "typeVersion": 1,
+            "position": [
+                93440,
+                37184
+            ]
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+            "typeVersion": 1,
+            "position": [
+                93568,
+                37424
+            ],
+            "id": "7d8cc58a-96b7-4b3c-99a0-83b15f29dcbf",
+            "name": "Google Gemini Chat Model",
+            "credentials": {
+                "googlePalmApi": {
+                    "id": "t38zPMWleOvlSpPc",
+                    "name": "Que movida cu"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const results = [];\nfor (const inputItem of $input.all()) {\n  let ideas = inputItem.json.output || inputItem.json.content;\n  if (typeof ideas === 'string') {\n    try {\n      ideas = JSON.parse(ideas);\n    } catch (e) {\n      continue;\n    }\n  }\n  if (!Array.isArray(ideas)) continue;\n\n  for (const idea of ideas) {\n    results.push({\n      json: {\n        title: idea.title || '',\n        keywords: idea.keywords || '',\n        category_slug: idea.category_slug || 'ecommerce',\n        meta_description: idea.meta_description || '',\n        status: 'pending'\n      }\n    });\n  }\n}\nreturn results;\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                93936,
+                37184
+            ],
+            "id": "4991e376-ae40-40b8-93e5-6747f16d8be6",
+            "name": "formatear"
+        },
+        {
+            "parameters": {
+                "operation": "insert",
+                "tableId": "blog_topics",
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {},
+                    "matchingColumns": [
+                        "title"
+                    ],
+                    "schema": [],
+                    "mappingColumns": [
+                        {
+                            "name": "title",
+                            "value": "={{ $json.title }}"
+                        },
+                        {
+                            "name": "keywords",
+                            "value": "={{ $json.keywords }}"
+                        },
+                        {
+                            "name": "category_slug",
+                            "value": "={{ $json.category_slug }}"
+                        },
+                        {
+                            "name": "meta_description",
+                            "value": "={{ $json.meta_description }}"
+                        },
+                        {
+                            "name": "status",
+                            "value": "={{ $json.status }}"
+                        }
+                    ]
+                }
+            },
+            "type": "n8n-nodes-base.supabase",
+            "typeVersion": 1,
+            "position": [
+                94200,
+                37184
+            ],
+            "id": "92bbfbc8-275d-4f6a-af41-386d397b9636",
+            "name": "Insert Idea",
+            "credentials": {
+                "supabaseApi": {
+                    "id": "FRE0anooe2qI1LJP",
+                    "name": "Supabase Lookitry"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "formatear",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Schedule Trigger1": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Gemini Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "formatear": {
+            "main": [
+                [
+                    {
+                        "node": "Insert Idea",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5519e0d30f"
+    }
+}

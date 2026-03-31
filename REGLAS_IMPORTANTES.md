@@ -1,4 +1,4 @@
-﻿---
+---
 inclusion: always
 ---
 
@@ -28,6 +28,25 @@ Cada vez que se realice cualquier cambio en el código, la IA DEBE documentarlo 
 
 - NO hacer commits ni push sin que el usuario lo pida explícitamente
 - NO hacer deploy sin autorización explícita del usuario
+
+## 🛡️ BLINDAJE DE INGENIERÍA (Prevención de Fallos)
+
+Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 500), se deben seguir estas reglas innegociables:
+
+1. **Codificación Universal (UTF-8)**:
+   - Antes de cualquier operación de terminal, ejecutar: `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8`.
+   - Verificar la integridad del archivo tras cada escritura masiva (`view_file`).
+
+2. **Programación Defensiva (Frontend)**:
+   - **Optional Chaining (`?.`)**: Obligatorio en TODOS los accesos a datos provenientes de la API o Supabase (ej: `data?.stats?.total`).
+   - **Fallbacks de Renderizado**: Siempre proveer valores por defecto en componentes de UI (ej: `stats || []`, `count || 0`). Prohibido renderizar `undefined` o `null` directamente en propiedades de componentes de terceros (recharts, tables).
+
+3. **Robustez de Backend**:
+   - Los servicios deben usar bloques `try-catch` granulares para que errores en datos periféricos (como una red social mal formada) no tumben toda la respuesta del servidor.
+   - Usar `maybeSingle()` o validaciones manuales en lugar de `.single()` si existe la mínima posibilidad de que el dato no exista.
+
+4. **Verificación Pre-Deploy**:
+   - Siempre correr `scripts/check_integrity.py` (si existe) y verificar que el código compile localmente antes de subir cambios.
 
 
 # LOOKITRY — MASTER MEMORY CONTEXT
