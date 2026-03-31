@@ -101,6 +101,15 @@ Tablas principales:
 - **Try-On**: `/pruebalo/[brandSlug]` -> Validación -> POST `/api/generations` -> n8n -> OpenRouter (IA) -> MinIO -> Resultado.
 - **Pago (Config Dinámica)**: `/checkout?plan=BASIC` lee `pricing_config`. Checkout genera URL Wompi -> Pago -> Webhook activa sub en `brands`.
 
+### Flujo de Registro (Trial Pago)
+1. Usuario llena formulario en `/register`
+2. Cloudflare Turnstile valida que no es bot
+3. `POST /api/auth/register` crea la marca en estado `pending_payment` en `brands`
+4. Usuario es redirigido a `/trial-checkout` para realizar el pago del Trial (`20.000 COP`)
+5. Tras el pago, la referencia `TRIAL-{brandId}-{ts}` se confirma por webhook y activa la cuenta
+6. Se envía email de bienvenida vía SMTP
+7. Usuario ingresa a su panel en `/dashboard`
+
 ## 7. RESOLUCIÓN DE PROBLEMAS PREVIOS
 - **Checkout Landing Activo**: Para clientes con un plan PRO o BASIC, comprar la mini-landing individual NO procesa una mensualidad doble, logrando esto enviando `plan=NONE` a las APIs de Wompi / Paypal.
 - **Trial Landing Preview**: La vista previa gratuita es de 3 minutos guiados enteramente por el frontend local-storage (`MiniLanding.tsx`). No uses verificaciones basadas en `brand.created_at` ya que eso expira el tiempo sin que el usuario haya siquiera tocado la ruta pública.
