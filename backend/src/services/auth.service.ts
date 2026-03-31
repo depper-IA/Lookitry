@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import * as jwt from 'jsonwebtoken';
 import { supabaseAdmin } from '../config/supabase';
 import { RegisterBrandDto, LoginDto, AuthResponse, Brand } from '../types';
 import { generateToken } from '../utils/jwt';
@@ -505,7 +506,6 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
       const jwtSecret = process.env.JWT_SECRET;
       if (jwtSecret) {
         try {
-          const jwt = require('jsonwebtoken');
           const decoded = jwt.verify(apiKey, jwtSecret) as any;
           if (decoded.brand_id && decoded.type === 'embed_session') {
             return await this.getBrandById(decoded.brand_id);
