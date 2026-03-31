@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import { requestLogger } from './middleware/requestLogger';
 
 // Configuración de Seguridad
 import { helmetConfig, publicCorsConfig, globalCorsConfig } from './config/security.config';
@@ -41,7 +42,6 @@ setInterval(() => {
 
 app.set('trust proxy', 1);
 
-import { requestLogger } from './middleware/requestLogger';
 app.use(requestLogger);
 
 // ── Seguridad: Helmet ────────────────────────────────────────────────────────
