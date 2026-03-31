@@ -5,7 +5,7 @@ import { wompiService } from '@/services/wompi.service';
 import type { WompiWidgetResult } from '@/types/wompi';
 import type { PlanType } from '@/types';
 
-type WompiPlan = Exclude<PlanType, 'ENTERPRISE'>;
+type WompiPlan = Exclude<PlanType, 'ENTERPRISE'> | 'NONE';
 
 interface WompiButtonProps {
   plan: WompiPlan;
