@@ -302,22 +302,28 @@ export class SubscriptionService {
     const effectiveDaysRemaining = Math.min(daysRemaining, totalDays);
 
     let currentPlanPriceTotal: number;
-    if (lastPayment?.amount && lastPayment.amount > 0) {
-      const originalAmount = typeof lastPayment.amount === 'string' ? parseFloat(lastPayment.amount) : lastPayment.amount;
+    const rawAmount = lastPayment?.amount ? (typeof lastPayment.amount === 'string' ? parseFloat(lastPayment.amount) : lastPayment.amount) : 0;
+
+    if (rawAmount > 0 && lastPayment?.months_paid && lastPayment.months_paid > 0) {
       const currency = String(lastPayment.currency || 'COP').toUpperCase();
 
       if (currency !== 'COP') {
         const { trm } = await pricingService.getEffectiveTrm();
-        currentPlanPriceTotal = Math.round(originalAmount * trm);
-        console.log(`[Proration] Convertido monto de lastPayment: ${originalAmount} ${currency} -> ${currentPlanPriceTotal} COP (TRM: ${trm})`);
+        currentPlanPriceTotal = Math.round(rawAmount * trm);
+        console.log(`[Proration] Convertido monto de lastPayment: ${rawAmount} ${currency} -> ${currentPlanPriceTotal} COP (TRM: ${trm})`);
       } else {
-        currentPlanPriceTotal = originalAmount;
+        currentPlanPriceTotal = rawAmount;
+        console.log(`[Proration] Usando monto de lastPayment en COP: ${currentPlanPriceTotal}`);
       }
     } else {
-      currentPlanPriceTotal = currentPlanPriceTotalFallback > 0 ? currentPlanPriceTotalFallback : 
-                               await pricingService.calculateTotal(String(brand.plan || 'BASIC').toUpperCase(), paymentMonths, false);
-      console.log(`[Proration] Usando total fallback/config: ${currentPlanPriceTotal}`);
+      // No hay pago real anterior (trial, pago $0, etc) — calcular precio de plan actual desde config
+      const currentPlanKey = String(brand.plan || 'BASIC').toUpperCase();
+      currentPlanPriceTotal = currentPlanPriceTotalFallback > 0
+        ? currentPlanPriceTotalFallback
+        : await pricingService.calculateTotal(currentPlanKey, paymentMonths, false);
+      console.log(`[Proration] Sin pago anterior valido. Usando precio de config para ${currentPlanKey} x ${paymentMonths} meses: ${currentPlanPriceTotal}`);
     }
+
 
     const lastSnapshot = parseLedgerSnapshotFromNotes(lastPayment?.notes);
     if (lastSnapshot?.includesLanding || String(lastPayment?.notes || '').includes('Incluye Landing Page')) {
