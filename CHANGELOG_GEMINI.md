@@ -15,6 +15,28 @@
 Evitar que cambios diferidos o limpiezas técnicas queden en el aire entre sesiones, y dejar un mecanismo permanente de continuidad además del changelog.
 
 ---
+## [2026-03-31] - Migración real de enum TRIAL, deploy productivo y utilidades de saneamiento
+
+### Cambios Realizados
+- **Migración real del esquema**: se añadieron `supabase/migrations/20260331_enable_trial_plan_enum.sql` y `supabase/migrations/20260331_backfill_trial_plan.sql` para habilitar `TRIAL` en el enum físico de `brands.plan` y backfillear cuentas trial operativas.
+- **Runner reutilizable de SQL remoto**: se añadió `backend/scripts/apply-sql-migration.js` para ejecutar migraciones directas contra PostgreSQL de Supabase usando `SUPABASE_DB_PASSWORD`, evitando depender de pasos manuales cerca del release.
+- **Corrección puntual de marcas trial**: `backend/scripts/fix-trial-brand.js` se dejó preparado para corregir cuentas concretas por email y ya se usó para normalizar la cuenta `santiagowilkie2011@gmail.com`.
+- **Auditor y limpiador de datos de prueba**: se añadieron `backend/scripts/audit-test-accounts.js` y `backend/scripts/cleanup-test-data.js` para diagnosticar cuentas de test y preparar una limpieza controlada con whitelist (`--keep-email`) antes del open release.
+- **Aplicación en producción**: se empujó `main` al repo y se desplegó el commit `92c6071` a producción con rebuild completo de backend y frontend.
+
+### Archivos Modificados
+- `backend/scripts/apply-sql-migration.js`
+- `backend/scripts/fix-trial-brand.js`
+- `backend/scripts/audit-test-accounts.js`
+- `backend/scripts/cleanup-test-data.js`
+- `supabase/migrations/20260331_enable_trial_plan_enum.sql`
+- `supabase/migrations/20260331_backfill_trial_plan.sql`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Blindar la salida a release con una ruta de migración y saneamiento repetible: el sistema ya no depende de workarounds para persistir `TRIAL`, y la limpieza previa a clientes reales puede ejecutarse de forma auditada en lugar de borrar datos a mano.
+
+---
 ## [2026-03-31] - Soporte operativo de trial con esquema legado y corrección puntual de cuenta
 
 ### Cambios Realizados
