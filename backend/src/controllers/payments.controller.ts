@@ -33,8 +33,7 @@ export class PaymentsController {
       const { reference } = req.body;
       if (!reference) return res.status(400).json({ error: 'Falta la referencia' });
 
-      // Verificar en Wompi (asumimos que intentamos Wompi primero para credits)
-      // Importante: Requeriremos importar wompiService para esto
+      // Verificar en Wompi primero
       const { wompiService } = require('../services/wompi.service');
       const tx = await wompiService.getTransactionByReference(reference);
 
@@ -45,7 +44,25 @@ export class PaymentsController {
           tx.amount_in_cents / 100,
           String(tx.id)
         );
-        return res.status(200).json({ status: 'applied_now', message: 'Compra unificada.' });
+        return res.status(200).json({ status: 'applied_now', message: 'Compra unificada (Wompi).' });
+      }
+
+      // Si no es Wompi, verificamos en PayPal
+      const { paypalService } = require('../services/paypal.service');
+      const paypalOrder = await paypalService.getTrackedOrder(reference);
+      if (paypalOrder && paypalOrder.order_id) {
+        const order = await paypalService.getOrder(paypalOrder.order_id);
+        if (order && (order.status === 'COMPLETED' || order.status === 'APPROVED')) {
+           // En caso de que haya quedado en APPROVED, idealmente la captura se debió hacer en paypal.controller
+           // pero si no, igual la aplicamos (idealmente el webhook o /capture la captura).
+           await addonCreditsService.applyPurchasedCredits(
+               reference,
+               'paypal',
+               paypalOrder.amount_usd_expected,
+               paypalOrder.order_id
+           );
+           return res.status(200).json({ status: 'applied_now', message: 'Compra unificada (PayPal).' });
+        }
       }
 
       return res.status(200).json({ status: 'pending_or_not_found' });

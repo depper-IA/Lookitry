@@ -1,9 +1,9 @@
 # Changelog - Lookitry (AI Assisted)
 
-## [2026-03-31] - Fix Wompi Addon purchases & Trial dynamic price loading
+## [2026-03-31] - Fix Wompi & PayPal Addon purchases & Trial dynamic price loading
 
 ### Cambios Realizados
-- **Wompi Addon manual sync (Fallback API)**: Agregado endpoint `/api/payments/verify-addon` para forzar la verificación y aplicación de créditos extra cuando el Webhook de Sandbox (o Prod) de Wompi se pierde o demora. El frontend en `/dashboard/subscription` ahora lo gatilla automáticamente tras retornar del gateway.
+- **Wompi & PayPal Addon manual sync (Fallback API)**: Agregado endpoint `/api/payments/verify-addon` para forzar la verificación y aplicación de créditos extra cuando el Webhook de Sandbox (o Prod) se pierde o demora. El frontend en `/dashboard/subscription` ahora lo gatilla automáticamente tras retornar del gateway. Funciona cotejando el estado de la transacción directamente con las APIs de ambos proveedores (Wompi y PayPal).
 - **Precio dinámico TRIAL corregido**:  Modificado el fetch en `/dashboard/subscription` para traer `trial` desde `pricing_config` (si existe en BD) y manejar el fallback a 20.000 COP, coincidiendo con la misma lógica en `checkout`. De esta manera, el plan `TRIAL` ya no muestra 0, sino el valor correcto asignado al usuario. 
 
 ### Archivos Modificados
