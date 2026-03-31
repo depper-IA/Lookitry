@@ -8,6 +8,38 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Obtener Session Token JWT desde Lookitry
+ */
+function lookitry_get_session_token( $api_key, $store_domain ) {
+    if ( empty( $api_key ) ) {
+        return '';
+    }
+
+    $transient_key = 'lookitry_session_token';
+    $cached_token = get_transient( $transient_key );
+
+    if ( false !== $cached_token ) {
+        return $cached_token;
+    }
+
+    $url = LOOKITRY_API_BASE_URL . '/pruebalo/session-token?key=' . urlencode( $api_key ) . '&domain=' . urlencode( $store_domain );
+    $response = wp_remote_get( $url, array( 'timeout' => 5 ) );
+
+    if ( is_wp_error( $response ) ) {
+        return '';
+    }
+
+    $body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+    if ( ! empty( $body['valid'] ) && ! empty( $body['token'] ) ) {
+        set_transient( $transient_key, $body['token'], 3000 );
+        return $body['token'];
+    }
+
+    return '';
+}
+
+/**
  * Enqueue scripts and styles
  */
 function lookitry_enqueue_scripts() {
@@ -27,11 +59,14 @@ function lookitry_enqueue_scripts() {
             )
         );
 
+        $api_key = get_option( 'lookitry_api_key', '' );
+        $store_domain = home_url();
+
         // Pass variables to JS
         wp_localize_script( 'lookitry-public', 'lookitry_vars', array(
-            'api_url' => LOOKITRY_API_BASE_URL,
-            'api_key' => get_option( 'lookitry_api_key', '' ),
-            'store_domain' => home_url(),
+            'api_url'      => LOOKITRY_API_BASE_URL,
+            'session_token'=> lookitry_get_session_token( $api_key, $store_domain ),
+            'store_domain' => $store_domain,
         ));
     }
 }

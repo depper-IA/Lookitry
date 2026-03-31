@@ -555,6 +555,53 @@ export class PruebaloController {
   });
 
   /**
+   * GET /api/pruebalo/session-token?key=...
+   * Endpoint público (S2S) para generar un token JWT efímero.
+   * El plugin lo pide para pasarlo al frontend y evitar exponer la API Key.
+   */
+  generateSessionToken = asyncHandler(async (req: Request, res: Response) => {
+    const key = (req.query.key as string) || (req.headers['x-api-key'] as string);
+    const domain = req.query.domain as string;
+
+    if (!key) {
+      return res.status(400).json({ valid: false, message: 'Clave de API requerida' });
+    }
+
+    const brand = await brandsService.getBrandByApiKey(key);
+    if (!brand) {
+      return res.status(200).json({ valid: false, message: 'Clave de API inválida' });
+    }
+    this.assertPluginOperational(brand);
+
+    if (domain) {
+      await this.markPluginValidated(brand, domain);
+    }
+
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET no está configurado');
+    }
+
+    // Token efímero de 1 hora
+    const jwt = await import('jsonwebtoken');
+    const token = jwt.sign(
+      { 
+        brand_id: brand.id, 
+        brand_slug: brand.slug,
+        type: 'embed_session' 
+      },
+      jwtSecret,
+      { expiresIn: '1h' }
+    );
+
+    return res.status(200).json({
+      valid: true,
+      token,
+      expires_in: 3600
+    });
+  });
+
+  /**
    * GET /api/pruebalo/validate-api-key?key=...
    * Endpoint público para validar una clave de API desde el plugin
    */

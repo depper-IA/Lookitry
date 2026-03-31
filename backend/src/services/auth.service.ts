@@ -499,6 +499,24 @@ async function recordTrialRegistration(brandId: string, ip: string, fingerprint:
   }
 
   async getBrandByApiKey(apiKey: string): Promise<Brand | null> {
+    if (!apiKey) return null;
+
+    if (apiKey.startsWith('ey')) {
+      const jwtSecret = process.env.JWT_SECRET;
+      if (jwtSecret) {
+        try {
+          const jwt = require('jsonwebtoken');
+          const decoded = jwt.verify(apiKey, jwtSecret) as any;
+          if (decoded.brand_id && decoded.type === 'embed_session') {
+            return await this.getBrandById(decoded.brand_id);
+          }
+        } catch (e) {
+          console.warn('[AuthService] JWT erróneo/expirado en auth:', (e as Error).message);
+          return null;
+        }
+      }
+    }
+
     const { data, error } = await supabaseAdmin
       .from('brands')
       .select('*')
