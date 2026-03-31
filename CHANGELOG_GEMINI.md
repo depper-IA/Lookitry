@@ -1875,3 +1875,18 @@ Se corrigió el panel de administración del blog para que no marque la ejecuci�
 - El panel `/admin/blog` mostraba un error genérico engañoso aunque n8n pudiera reportar el estado real más tarde.
 - El workflow nuevo de blog dependía de `blog_topics.source_url`, pero la tabla no tenía esa columna.
 - El repositorio necesitaba quedar sin conflictos para permitir commit y push limpios.
+
+## 30 de Marzo, 2026 - Corrección de enlaces del README y republicación del flujo Trial Pago
+
+**Archivos modificados:**
+
+- `README.md`
+- `REGLAS_IMPORTANTES.md`
+
+**Descripción del cambio:**
+Se corrigieron las referencias del `README.md` que todavía apuntaban al repositorio legacy `virtual-tryon`, actualizando logo, enlaces de issues y comandos de clonado para usar `depper-IA/Lookitry`. Además, se reinsertó en `REGLAS_IMPORTANTES.md` la sección explícita `Flujo de Registro (Trial Pago)` dentro de los flujos principales para que vuelva a quedar publicada en `main`.
+
+**Motivo:**
+
+- El `README.md` publicado seguía mostrando enlaces viejos del repo anterior.
+- La sección del flujo Trial Pago no había quedado persistida en `origin/main` tras el rebase anterior.

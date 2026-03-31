@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/depper-IA/virtual-tryon/main/frontend/public/logo.svg" alt="Lookitry Logo" width="150"/>
+  <img src="https://raw.githubusercontent.com/depper-IA/Lookitry/main/frontend/public/logo.svg" alt="Lookitry Logo" width="150"/>
 
 # Lookitry 👕✨
 
@@ -16,7 +16,7 @@
 
 _Permite a las marcas integrar un widget de prueba virtual en su tienda en minutos, reduciendo devoluciones y aumentando la conversión. "Pruébalo antes de comprarlo"._
 
-[Ver Demo (Próximamente)](https://lookitry.com) · [Reportar Bug](https://github.com/depper-IA/virtual-tryon/issues) · [Solicitar Feature](https://github.com/depper-IA/virtual-tryon/issues)
+[Ver Demo (Próximamente)](https://lookitry.com) · [Reportar Bug](https://github.com/depper-IA/Lookitry/issues) · [Solicitar Feature](https://github.com/depper-IA/Lookitry/issues)
 
 </div>
 
@@ -112,8 +112,8 @@ _(El flujo exacto y detallado se encuentra en la documentación interna de la IA
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/depper-IA/virtual-tryon.git
-cd virtual-tryon
+git clone https://github.com/depper-IA/Lookitry.git
+cd Lookitry
 ```
 
 ### 2. Configurar el Backend
