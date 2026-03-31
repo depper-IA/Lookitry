@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { LookitryLogoText } from '@/components/mini-landing/shared';
+import { authService } from '@/services/auth.service';
 
 interface LandingNavProps {
   ctaHref?: string;
@@ -60,11 +61,12 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
   };
 
   function handleLogout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('brandToken');
-    localStorage.removeItem('brand');
+    // Limpiar localStorage Y cookie HTTP-Only del backend
+    authService.logout();
     setSession(null);
     setDropdownOpen(false);
+    // Hard redirect para forzar limpieza completa de estado React
+    window.location.href = '/login';
   }
 
   const resolvedCtaHref = ctaHref ?? (trialActive ? '/register' : '/planes');
