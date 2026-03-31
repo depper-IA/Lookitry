@@ -15,6 +15,20 @@
 Evitar que cambios diferidos o limpiezas técnicas queden en el aire entre sesiones, y dejar un mecanismo permanente de continuidad además del changelog.
 
 ---
+## [2026-03-31] - Corrección de carga de uso y créditos para cuentas no verificadas
+
+### Cambios Realizados
+- **Usage desbloqueado para cuentas con email no verificado**: `backend/src/services/usage.service.ts` dejó de lanzar `EMAIL_NOT_VERIFIED` al consultar estadísticas de uso.
+- **Impacto funcional directo**: `dashboard/usage` vuelve a cargar correctamente y `dashboard/subscription` ya no cae al fallback `0` en la tarjeta de créditos extra cuando la cuenta sí existe pero aún no verificó email.
+
+### Archivos Modificados
+- `backend/src/services/usage.service.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+El dashboard ya permite entrar con cuenta creada y pago activo aunque el correo siga pendiente de verificación. Bloquear las estadísticas de uso en ese estado rompía dos pantallas críticas del panel y generaba confusión en la lectura de créditos disponibles.
+
+---
 ## [2026-03-31] - Migración real de enum TRIAL, deploy productivo y utilidades de saneamiento
 
 ### Cambios Realizados
