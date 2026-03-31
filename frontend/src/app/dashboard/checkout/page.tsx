@@ -17,6 +17,14 @@ import type { WompiWidgetResult } from '@/types/wompi';
 import { hasActivePaidSubscription, isTrialBrand } from '@/lib/subscription-display';
 
 type CheckoutPlan = Exclude<PlanType, 'ENTERPRISE'>;
+type PaymentFlowMethod = 'wompi' | 'paypal' | 'credit_proration';
+type PendingPaymentSummary = {
+  method: PaymentFlowMethod;
+  amount: number;
+  plan: CheckoutPlan;
+  months: number;
+  reference?: string;
+};
 
 // ── Fallbacks (solo si la API falla) ─────────────────────────────────────────
 
@@ -67,6 +75,12 @@ const MONTH_DISCOUNTS_FALLBACK = [
 function formatPaypalUsd(amountCop: number, trm: number): string {
   const safeTrm = trm > 0 ? trm : 3900;
   return String(Math.ceil(amountCop / safeTrm));
+}
+
+function paymentMethodLabel(method?: PaymentFlowMethod): string {
+  if (method === 'paypal') return 'PayPal';
+  if (method === 'credit_proration') return 'Crédito aplicado';
+  return 'Wompi';
 }
 
 type CheckoutState = 'idle' | 'verifying' | 'success' | 'error';
@@ -267,6 +281,7 @@ function CheckoutContent() {
   const [trm, setTrm] = useState(3900);
   const [redirecting, setRedirecting] = useState(false);
   const [supportEmail, setSupportEmail] = useState('info@lookitry.com');
+  const [pendingPaymentSummary, setPendingPaymentSummary] = useState<PendingPaymentSummary | null>(null);
 
   const [includeLanding, setIncludeLanding] = useState(false);
   const [miniLandingPrice, setMiniLandingPrice] = useState(MINI_LANDING_PRICE_FALLBACK);
@@ -316,6 +331,13 @@ function CheckoutContent() {
       );
       const data = await res.json();
       if (data.checkoutUrl) {
+        setPendingPaymentSummary({
+          method: 'paypal',
+          amount: totalPrice,
+          plan: selectedPlan,
+          months: selectedMonths,
+          reference: data.reference,
+        });
         window.location.href = data.checkoutUrl;
       } else {
         throw new Error('No se pudo generar el link de PayPal');
@@ -479,7 +501,15 @@ function CheckoutContent() {
           forcedEndDate: prorationPreview.newEndDate // Enviamos la fecha con días extra
         }),
       });
-      if (res.ok) { setState('success'); }
+      if (res.ok) {
+        setPendingPaymentSummary({
+          method: 'credit_proration',
+          amount: 0,
+          plan: selectedPlan,
+          months: selectedMonths,
+        });
+        setState('success');
+      }
       else { const e = await res.json(); setErrorMsg(e.error || 'Error al aplicar el cambio'); setState('error'); }
     } catch { setErrorMsg('Error de conexión'); setState('error'); }
     finally { setApplyingFreeUpgrade(false); }
@@ -487,6 +517,13 @@ function CheckoutContent() {
 
   const handleSuccess = (result: WompiWidgetResult) => {
     console.log('[Wompi] Pago aprobado:', result.transaction.id);
+    setPendingPaymentSummary({
+      method: 'wompi',
+      amount: totalPrice,
+      plan: selectedPlan,
+      months: selectedMonths,
+      reference: result.transaction.reference,
+    });
     setErrorMsg('');
     setState('verifying');
   };
@@ -580,6 +617,41 @@ function CheckoutContent() {
             Tu pago fue aprobado. Tu suscripción se actualizará automáticamente en los próximos minutos.
           </p>
         </div>
+        {pendingPaymentSummary && (
+          <div
+            className="rounded-2xl border p-4 text-left space-y-2"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+          >
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Plan</span>
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {planInfo[pendingPaymentSummary.plan].name} · {pendingPaymentSummary.months} {pendingPaymentSummary.months === 1 ? 'mes' : 'meses'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Método</span>
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {paymentMethodLabel(pendingPaymentSummary.method)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Monto</span>
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {pendingPaymentSummary.amount === 0 ? 'Sin costo' : formatCurrency(pendingPaymentSummary.amount)}
+              </span>
+            </div>
+            {pendingPaymentSummary.reference && (
+              <div className="pt-2 border-t" style={{ borderColor: 'var(--border-color)' }}>
+                <p className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
+                  Referencia
+                </p>
+                <p className="mt-1 text-xs break-all" style={{ color: 'var(--text-primary)' }}>
+                  {pendingPaymentSummary.reference}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
         <button
           onClick={() => router.push('/dashboard/subscription')}
           className="px-8 py-3 min-h-[44px] rounded-xl text-white text-sm font-semibold hover:opacity-90 cursor-pointer"
@@ -611,6 +683,52 @@ function CheckoutContent() {
             {errorMsg || 'Estamos confirmando la transacción con la pasarela. Si el cobro ya fue aprobado, tu plan se actualizará automáticamente.'}
           </p>
         </div>
+        {pendingPaymentSummary && (
+          <div
+            className="rounded-2xl border p-4 text-left space-y-2"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+          >
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Plan</span>
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {planInfo[pendingPaymentSummary.plan].name} · {pendingPaymentSummary.months} {pendingPaymentSummary.months === 1 ? 'mes' : 'meses'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Método</span>
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {paymentMethodLabel(pendingPaymentSummary.method)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Monto</span>
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {pendingPaymentSummary.amount === 0 ? 'Sin costo' : formatCurrency(pendingPaymentSummary.amount)}
+              </span>
+            </div>
+            {pendingPaymentSummary.reference && (
+              <div className="pt-2 border-t" style={{ borderColor: 'var(--border-color)' }}>
+                <p className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
+                  Referencia
+                </p>
+                <p className="mt-1 text-xs break-all" style={{ color: 'var(--text-primary)' }}>
+                  {pendingPaymentSummary.reference}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+        <div
+          className="rounded-2xl border p-4 text-left space-y-2"
+          style={{ background: 'rgba(255,92,58,0.06)', borderColor: 'rgba(255,92,58,0.18)' }}
+        >
+          <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+            Qué esperar ahora
+          </p>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            La validación suele reflejarse en menos de 2 minutos. Si ya pasó más tiempo, entra a tu suscripción o escribe a {supportEmail}.
+          </p>
+        </div>
         <button
           onClick={() => router.push('/dashboard/subscription')}
           className="px-8 py-3 min-h-[44px] rounded-xl text-white text-sm font-semibold hover:opacity-90 cursor-pointer"
@@ -638,6 +756,41 @@ function CheckoutContent() {
           <h2 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Pago no completado</h2>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{errorMsg}</p>
         </div>
+        {pendingPaymentSummary && (
+          <div
+            className="rounded-2xl border p-4 text-left space-y-2"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+          >
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Plan</span>
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {planInfo[pendingPaymentSummary.plan].name} · {pendingPaymentSummary.months} {pendingPaymentSummary.months === 1 ? 'mes' : 'meses'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Método</span>
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {paymentMethodLabel(pendingPaymentSummary.method)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span style={{ color: 'var(--text-muted)' }}>Monto</span>
+              <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {pendingPaymentSummary.amount === 0 ? 'Sin costo' : formatCurrency(pendingPaymentSummary.amount)}
+              </span>
+            </div>
+            {pendingPaymentSummary.reference && (
+              <div className="pt-2 border-t" style={{ borderColor: 'var(--border-color)' }}>
+                <p className="text-[11px] uppercase tracking-[0.18em]" style={{ color: 'var(--text-muted)' }}>
+                  Referencia
+                </p>
+                <p className="mt-1 text-xs break-all" style={{ color: 'var(--text-primary)' }}>
+                  {pendingPaymentSummary.reference}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
         <div className="flex gap-3 justify-center">
           <button
             onClick={() => { setState('idle'); setErrorMsg(''); }}
