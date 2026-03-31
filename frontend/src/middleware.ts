@@ -100,7 +100,7 @@ export async function middleware(request: NextRequest) {
     // Limpiar siempre X-Frame-Options para que nuestro CSP no tenga conflictos
     response.headers.delete('X-Frame-Options');
 
-    const baseCsp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob: 'self'; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co; font-src 'self' https://fonts.gstatic.com; media-src 'self';";
+    const baseCsp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://checkout.wompi.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob: 'self'; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co https://checkout.wompi.co; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co; media-src 'self';";
 
     const frameAncestors = ["'self'", ...allowedOrigins]
       .filter(Boolean)
