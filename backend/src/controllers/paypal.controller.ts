@@ -281,13 +281,15 @@ export class PaypalController {
     if (hasAuthenticatedBrand && planStr === 'PRO') {
       const { data: currentBrand } = await supabaseAdmin
         .from('brands')
-        .select('plan, subscription_status, trial_end_date')
+        .select('plan, subscription_status, trial_end_date, trial_payment_status')
         .eq('id', (req as any).brand.id)
         .single();
 
       const isActualUpgrade =
         hasActivePaidSubscription(currentBrand) &&
         currentBrand?.plan === 'BASIC';
+
+      console.log(`[PaypalCheckout] brand=${(req as any).brand.id} plan=${currentBrand?.plan} status=${currentBrand?.subscription_status} isActualUpgrade=${isActualUpgrade}`);
 
       if (isActualUpgrade) {
         const planOnlyTotal = await pricingService.calculateTotal(planStr, selectedMonths, false);
@@ -304,6 +306,9 @@ export class PaypalController {
           : 0;
 
         amountCOP = Math.max(0, preview.amountToPay + landingAmount);
+        console.log(`[PaypalCheckout] Proration aplicada: credit=${preview.creditAmount} amountToPay=${preview.amountToPay} amountCOP=${amountCOP}`);
+      } else {
+        console.log(`[PaypalCheckout] Sin proration. Cobro completo: ${amountCOP} COP`);
       }
     }
 
@@ -378,6 +383,22 @@ export class PaypalController {
       return res.status(400).json({ error: 'orderId es requerido' });
     }
 
+    // Idempotencia: si la referencia ya está completada en DB, retornar éxito sin re-procesar
+    if (requestedReference) {
+      const existingByRef = await paypalService.getTrackedOrder(requestedReference);
+      if (existingByRef?.status === 'completed') {
+        console.log(`[PaypalCapture] Orden ya procesada (by ref): ${requestedReference}`);
+        return res.status(200).json({
+          success: true,
+          message: 'Pago ya procesado anteriormente',
+          orderId,
+          status: 'COMPLETED',
+          reference: requestedReference,
+          alreadyProcessed: true,
+        });
+      }
+    }
+
     const order = await paypalService.getOrder(orderId);
     const resolvedReference = paypalService.extractReference(order);
     if (!resolvedReference) {
@@ -389,6 +410,20 @@ export class PaypalController {
     }
 
     const trackedOrder = await paypalService.getTrackedOrder(resolvedReference);
+
+    // Idempotencia: ya procesada
+    if (trackedOrder?.status === 'completed') {
+      console.log(`[PaypalCapture] Orden ya completada en DB: ${resolvedReference}`);
+      return res.status(200).json({
+        success: true,
+        message: 'Pago ya procesado anteriormente',
+        orderId,
+        status: 'COMPLETED',
+        reference: resolvedReference,
+        alreadyProcessed: true,
+      });
+    }
+
     const orderAmountUSD = paypalService.extractAmountUsd(order);
     if (orderAmountUSD == null) {
       throw new Error('No se pudo validar el monto de la orden PayPal');
@@ -398,7 +433,10 @@ export class PaypalController {
     let effectiveOrder = order;
     if (order.status === 'APPROVED') {
       effectiveOrder = await paypalService.captureOrder(orderId);
-    } else if (order.status !== 'COMPLETED') {
+    } else if (order.status === 'COMPLETED') {
+      // Orden ya capturada en PayPal (PAY_NOW sandbox o webhook previo)
+      effectiveOrder = order;
+    } else {
       throw new Error(`El pago no se completó (Status: ${order.status})`);
     }
 
@@ -406,9 +444,14 @@ export class PaypalController {
     if (amountUSD == null) {
       throw new Error('No se pudo validar el monto capturado en PayPal');
     }
-    assertTrackedOrder(resolvedReference, trackedOrder, orderId, amountUSD);
+    // Usar el monto de la orden rastreada si PayPal devuelve algo distinto dentro de tolerancia
+    const finalAmount = trackedOrder && Math.abs(amountUSD - Number(trackedOrder.amount_usd_expected)) > PAYPAL_AMOUNT_TOLERANCE
+      ? Number(trackedOrder.amount_usd_expected)
+      : amountUSD;
 
-    await fulfillPaypalPayment(resolvedReference, orderId, amountUSD, 'capture');
+    assertTrackedOrder(resolvedReference, trackedOrder, orderId, finalAmount);
+
+    await fulfillPaypalPayment(resolvedReference, orderId, finalAmount, 'capture');
     await paypalService.markOrderStatus(resolvedReference, 'completed', orderId);
 
     return res.status(200).json({
