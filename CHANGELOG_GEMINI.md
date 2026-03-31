@@ -15,6 +15,23 @@
 Evitar que cambios diferidos o limpiezas técnicas queden en el aire entre sesiones, y dejar un mecanismo permanente de continuidad además del changelog.
 
 ---
+## [2026-03-31] - Avisos de verificación integrados en consumo y suscripción
+
+### Cambios Realizados
+- **SubscriptionInfo enriquecido**: `frontend/src/services/subscription.service.ts` ahora mapea `emailVerified`, `trialPaymentStatus` y `extraCreditsBalance` desde `/brands/me`, para que las vistas de dashboard tengan contexto real de cuenta.
+- **Aviso contextual en suscripción**: `frontend/src/app/dashboard/subscription/page.tsx` ahora muestra un bloque premium de “Verificación pendiente” con CTA de reenvío, en lugar de dejar el usuario sin contexto cuando la cuenta aún no terminó la validación por correo.
+- **Aviso contextual en consumo**: `frontend/src/app/dashboard/usage/page.tsx` carga también la marca actual y muestra un mensaje elegante de verificación pendiente con botón para reenviar el correo, manteniendo visibles las estadísticas en vez de sugerir que hubo un fallo del sistema.
+
+### Archivos Modificados
+- `frontend/src/services/subscription.service.ts`
+- `frontend/src/app/dashboard/subscription/page.tsx`
+- `frontend/src/app/dashboard/usage/page.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Hacer que la verificación de correo se comunique como un estado normal del onboarding, no como un error técnico, especialmente en dos vistas críticas donde el usuario interpreta consumo, créditos y facturación.
+
+---
 ## [2026-03-31] - Corrección de carga de uso y créditos para cuentas no verificadas
 
 ### Cambios Realizados
