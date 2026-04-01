@@ -73,7 +73,7 @@ function cleanOldOperations(): void {
     if (now - op.timestamp > expiryTime) {
       pendingOperations.splice(index, 1);
     }
-  );
+  });
 }
 
 async function ensureDirectoryExists(dirPath: string): Promise<void> {
@@ -643,7 +643,7 @@ export { bot };
 
 function generateAdminPageContent(sectionName: string): string {
   return `import { Box, Button, Text, useToast } from '@/components/ui';
-import { useState } from 'react`;
+import { useState } from 'react';
 
 export default function ${sectionName.replace(/\s+/g, '')}Page() {
   const [loading, setLoading] = useState(false);
