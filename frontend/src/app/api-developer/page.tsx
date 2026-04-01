@@ -86,15 +86,15 @@ export default function ApiDeveloperPage() {
                   </div>
                   
                   <div className="font-mono text-xs md:text-sm lg:text-base space-y-2 opacity-90">
-                    <div className="text-purple-400">const<span className="text-white"> lookitry = </span>require<span className="text-yellow-400">('@lookitry/sdk')</span>;</div>
-                    <div className="text-white/20">// 1. Auth & Config</div>
-                    <div className="text-purple-400">await<span className="text-white"> lookitry.</span>init<span className="text-white">(</span><span className="text-green-400">"{apiKeyPlaceholder}"</span><span className="text-white">);</span></div>
+                    <div className="text-purple-400">const<span className="text-white"> lookitry = </span>require<span className="text-yellow-400">(&apos;@lookitry/sdk&apos;)</span>;</div>
+                    <div className="text-white/20">{'// 1. Auth & Config'}</div>
+                    <div className="text-purple-400">await<span className="text-white"> lookitry.</span>init<span className="text-white">(</span><span className="text-green-400">&quot;{apiKeyPlaceholder}&quot;</span><span className="text-white">);</span></div>
                     <div className="text-white">&nbsp;</div>
-                    <div className="text-white/20">// 2. Magic happens here</div>
+                    <div className="text-white/20">{'// 2. Magic happens here'}</div>
                     <div className="text-purple-400">const<span className="text-white"> &#123; result_url, latency_ms &#125; = </span>await<span className="text-white"> lookitry.</span>render<span className="text-white">(&#123;</span></div>
-                    <div className="text-white">&nbsp;&nbsp;user_photo: <span className="text-green-400">"s3://bucket/selfie.jpg"</span>,</div>
-                    <div className="text-white">&nbsp;&nbsp;sku: <span className="text-green-400">"PRO-VESTIDO-RED"</span>,</div>
-                    <div className="text-white">&nbsp;&nbsp;webhook: <span className="text-green-400">"https://tu-app.com/callback"</span></div>
+                    <div className="text-white">&nbsp;&nbsp;user_photo: <span className="text-green-400">&quot;s3://bucket/selfie.jpg&quot;</span>,</div>
+                    <div className="text-white">&nbsp;&nbsp;sku: <span className="text-green-400">&quot;PRO-VESTIDO-RED&quot;</span>,</div>
+                    <div className="text-white">&nbsp;&nbsp;webhook: <span className="text-green-400">&quot;https://tu-app.com/callback&quot;</span></div>
                     <div className="text-white">&#125;);</div>
                     <div className="text-white">&nbsp;</div>
                     <div className="text-purple-400">console<span className="text-white">.</span>log<span className="text-white">(</span><span className="text-green-400">`IA Ready in $&#123;latency_ms&#125;ms: $&#123;result_url&#125;`</span><span className="text-white">);</span></div>

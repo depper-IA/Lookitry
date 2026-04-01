@@ -55,7 +55,7 @@ export default function LandingReviews({ reviews }: LandingReviewsProps) {
               </div>
 
               <p className="text-white/80 font-dm-sans leading-relaxed mb-8 italic relative z-10 text-[15px] font-light">
-                "{rev.comment}"
+                &quot;{rev.comment}&quot;
               </p>
 
               <div className="flex items-center gap-4 border-t border-white/5 pt-6 relative z-10">
