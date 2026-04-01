@@ -102,7 +102,7 @@ export default function LandingHero() {
                 <div className="text-[8px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1 px-1">Paso 2: Elige Producto</div>
                 
                 {[
-                   { name: 'Camisa Lino Cream', price: '$120K', img: 'https://images.unsplash.com/photo-1588615419958-e65922002766?q=80&w=200&auto=format&fit=crop', active: true },
+                    { name: 'Camisa Lino Cream', price: '$120K', img: 'https://images.unsplash.com/photo-1594932224012-99d4a318bedc?q=80&w=200&auto=format&fit=crop', active: true },
                    { name: 'Zapatilla Urban Classic', price: '$240K', img: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=200&auto=format&fit=crop', active: false },
                    { name: 'Bolso Artisan', price: '$180K', img: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=200&auto=format&fit=crop', active: false },
                    { name: 'Vestido Summer', price: '$350K', img: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=200&auto=format&fit=crop', active: false }
