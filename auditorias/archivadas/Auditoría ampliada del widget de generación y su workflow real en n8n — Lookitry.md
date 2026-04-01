@@ -1,3 +1,12 @@
+---
+status: AUDITADA ✓
+fecha_auditoria: 2026-04-01
+fecha_cierre: 2026-04-01
+resumen: Auditoría del widget try-on y workflow n8n. Todos los hallazgos fueron corregidos.
+enlaces:
+  - changelog: CHANGELOG_GEMINI.md
+---
+
 # Auditoría ampliada del widget de generación y su workflow real en n8n — Lookitry
 
 ## Alcance y conclusión ejecutiva

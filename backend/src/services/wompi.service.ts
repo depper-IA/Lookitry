@@ -99,6 +99,9 @@ export class WompiService {
   /**
    * Verifica la firma del webhook de Wompi.
    * Wompi docs: https://docs.wompi.co/en/docs/colombia/eventos/
+   * 
+   * NOTA: Solo usamos la variante oficial (v1) según documentación de Wompi.
+   * Las variantes legacy (v2, v3) fueron removidas por seguridad.
    */
   async verifyWebhookSignature(payload: string, checksum: string): Promise<boolean> {
     const { eventsSecret, testMode } = await this.getActiveKeys();
@@ -110,33 +113,24 @@ export class WompiService {
     const tryHash = (data: string) => crypto.createHash('sha256').update(data).digest('hex');
 
     try {
-      // Intentar variante 1 (recomendada por Wompi para transacciones actualizadas)
+      // Variante oficial (v1) según documentación de Wompi:
       // Estructura: transaction.id + transaction.status + transaction.amount_in_cents + timestamp + secret
       const event = JSON.parse(payload);
       const tx = event?.data?.transaction;
       const timestamp = event?.timestamp;
 
       if (tx && timestamp) {
-        // Aseguramos que amount sea string exacto como llega
         const amountStr = String(tx.amount_in_cents);
         const v1String = `${tx.id}${tx.status}${amountStr}${timestamp}${eventsSecret}`;
         const v1 = tryHash(v1String);
+        
         if (v1 === checksum) return true;
         
-        // Variante 2: legacy id + status + amount + currency + secret
-        const v2String = `${tx.id}${tx.status}${amountStr}${tx.currency}${eventsSecret}`;
-        const v2 = tryHash(v2String);
-        if (v2 === checksum) return true;
+        // Debug si falla
+        console.warn(`[Wompi] Firma v1 fallida. testMode=${testMode} tx.id=${tx?.id} status=${tx?.status}`);
+      } else {
+        console.warn('[Wompi] Payload sin transaction o timestamp válido');
       }
-
-      // Variante 3 (fallback universal): Body completo + Secret
-      // Importante: payload debe ser el raw string exacto
-      const v3 = tryHash(payload + eventsSecret);
-      if (v3 === checksum) return true;
-
-      // Debug detallado si todas fallan
-      console.warn(`[Wompi] Fallo de firma. testMode=${testMode} tx.id=${tx?.id} status=${tx?.status}`);
-      console.log(`[Wompi] Esperado checksum: ${checksum}`);
     } catch (e) {
       console.error('[Wompi] Error parseando payload:', e);
     }

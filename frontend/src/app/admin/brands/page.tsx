@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useConfirm } from '@/components/admin/ConfirmDialog';
 
 interface Brand {
   id: string;
@@ -64,6 +65,7 @@ export default function AdminBrandsPage() {
   const [savingModalConfig, setSavingModalConfig] = useState(false);
   const [sendingReset, setSendingReset] = useState<string | null>(null);
   const [resetToast, setResetToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const confirm = useConfirm();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPlan, setFilterPlan] = useState<FilterPlan>('all');
@@ -187,7 +189,14 @@ export default function AdminBrandsPage() {
   };
 
   const handleChangePlan = async (brandId: string, newPlan: string) => {
-    if (!confirm(`¿Cambiar plan a ${newPlan}?`)) return;
+    const ok = await confirm({
+      title: 'Cambiar plan',
+      message: `¿Cambiar el plan de esta marca a ${newPlan}?`,
+      confirmLabel: 'Cambiar plan',
+      danger: false,
+      reason: 'Esta acción modifica el contrato de la marca y puede afectar su facturación.',
+    });
+    if (!ok) return;
     setChangingPlan(brandId);
     try {
       const res = await fetch(`${API_URL}/api/admin/brands/${brandId}/plan`, {
@@ -205,7 +214,14 @@ export default function AdminBrandsPage() {
 
   const handleDeleteProduct = async (productId: string) => {
     if (!selectedBrand) return;
-    if (!confirm('¿Eliminar este producto permanentemente? Esta acción no se puede deshacer.')) return;
+    const ok = await confirm({
+      title: 'Eliminar producto',
+      message: '¿Eliminar este producto permanentemente? Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      danger: true,
+      reason: 'Los productos eliminados no pueden recuperarse. Asegúrate de que el producto esté inactivo.',
+    });
+    if (!ok) return;
     setDeletingProduct(productId);
     try {
       const res = await fetch(`${API_URL}/api/admin/brands/${selectedBrand.id}/products/${productId}`, {
@@ -383,9 +399,28 @@ export default function AdminBrandsPage() {
   };
 
   const handleBulkAction = async (action: 'suspend' | 'reactivate' | 'delete') => {
+    const actionLabels: Record<string, { title: string; message: string; danger: boolean }> = {
+      suspend: { title: 'Suspender marcas', message: `¿Suspender ${selected.size} marca(s)? Sus suscripciones quedarán inactivas.`, danger: false },
+      reactivate: { title: 'Reactivar marcas', message: `¿Reactivar ${selected.size} marca(s)? Sus suscripciones se restaurarán.`, danger: false },
+      delete: { title: 'Eliminar marcas', message: `¿Eliminar permanentemente ${selected.size} marca(s) y todos sus datos?`, danger: true },
+    };
+    const cfg = actionLabels[action];
+    const ok = await confirm({
+      title: cfg.title,
+      message: cfg.message,
+      confirmLabel: action === 'delete' ? 'Eliminar permanentemente' : action === 'suspend' ? 'Suspender' : 'Reactivar',
+      danger: cfg.danger,
+      reason: action === 'delete'
+        ? 'Esta acción elimina la marca, productos, generaciones y pagos. No se puede deshacer.'
+        : action === 'suspend'
+        ? 'Las marcas suspendidas perderán acceso hasta que se reactiven manualmente.'
+        : 'Las marcas reactivadas recuperarán su suscripción anterior.',
+    });
+    if (!ok) return;
+
     setBulkLoading(true);
     const ids = Array.from(selected);
-    let ok = 0; let fail = 0;
+    let okCount = 0; let failCount = 0;
 
     await Promise.all(ids.map(async id => {
       try {
@@ -404,15 +439,15 @@ export default function AdminBrandsPage() {
           });
           if (!res.ok) throw new Error();
         }
-        ok++;
-      } catch { fail++; }
+        okCount++;
+      } catch { failCount++; }
     }));
 
     setBulkLoading(false);
     setConfirmBulk(null);
     setSelected(new Set());
     await fetchBrands();
-    if (fail > 0) alert(`${ok} exitosa${ok !== 1 ? 's' : ''}, ${fail} con error`);
+    if (failCount > 0) alert(`${okCount} exitosa${okCount !== 1 ? 's' : ''}, ${failCount} con error`);
   };
 
   if (loading) return (

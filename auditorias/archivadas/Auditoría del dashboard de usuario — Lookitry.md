@@ -1,5 +1,7 @@
 # Auditoría del dashboard de usuario — Lookitry
 
+> **AUDITADA ✓ — 1 de abril de 2026**
+
 ## Resumen ejecutivo
 
 Esta auditoría evalúa el **dashboard de usuario** de Lookitry teniendo en cuenta las reglas del proyecto y las auditorías previas de **registro**, **pago** y **widget de generación**. El objetivo no es solo valorar si el panel “se ve bien”, sino determinar si realmente ayuda al cliente a entender su estado, activar su cuenta, instalar su probador, controlar su consumo y tomar la siguiente mejor decisión sin fricción.
