@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, ChevronDown, Layout, Zap, Terminal } from 'lucide-react';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 interface LandingNavProps {
   currency?: 'COP' | 'USD';
@@ -204,11 +203,6 @@ export default function LandingNav({
               <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none opacity-20" />
             </Link>
 
-            {/* Theme Toggle - Desktop */}
-            <div className="hidden sm:block">
-              <ThemeToggle />
-            </div>
-
             {/* Mobile Menu Toggle */}
             <button
               className="lg:hidden text-white/80 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10"
@@ -246,12 +240,6 @@ export default function LandingNav({
                   USD
                 </button>
               </div>
-            </div>
-
-            {/* Theme Toggle - Mobile */}
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Tema</span>
-              <ThemeToggle />
             </div>
 
             <div className="flex flex-col gap-4">
