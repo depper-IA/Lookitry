@@ -86,7 +86,7 @@ export default function LandingHero() {
               {/* Left: Model */}
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-white/10 bg-[#1a1a1a]">
                 <Image 
-                  src="/steps/paso-1.webp" 
+                  src="/images/photo-1589156229687-496a31ad1d1f.jpeg" 
                   alt="Modelo Probador Virtual Lookitry" 
                   fill 
                   className="object-cover" 
@@ -103,8 +103,8 @@ export default function LandingHero() {
                 
                 {[
                    { name: 'Camisa Lino Beige', price: '$120K', img: '/products/camisa_lino_beige.png', active: true },
-                   { name: 'Zapatilla Blanca', price: '$240K', img: '/products/zapatilla_blanca.png', active: false },
-                   { name: 'Bolso Cuero Café', price: '$180K', img: '/products/bolso_cuero_cafe.png', active: false },
+                   { name: 'Zapatilla Urban Classic', price: '$240K', img: '/images/photo-1549298916-b41d501d3772.jpeg', active: false },
+                   { name: 'Bolso Artisan Pro', price: '$180K', img: '/images/photo-1584917865442-de89df76afd3.jpeg', active: false },
                    { name: 'Vestido Summer', price: '$350K', img: '/steps/paso-3.webp', active: false }
                 ].map((prod, i) => (
                   <div 
