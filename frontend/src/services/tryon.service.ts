@@ -7,39 +7,44 @@ const GENERATION_TIMEOUT_MS = 95_000;
 
 class TryOnService {
   async getConfig(brandSlug: string): Promise<TryOnConfigResponse> {
-    const res = await fetch(`${API_URL}/api/pruebalo/${brandSlug}`);
-    if (res.status === 404) throw new Error('Marca no encontrada');
-    if (!res.ok) throw new Error('Error al cargar la configuración');
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API_URL}/api/pruebalo/${brandSlug}`);
+      if (res.status === 404) throw new Error('Marca no encontrada');
+      if (!res.ok) throw new Error('Error al cargar la configuración');
+      const data = await res.json();
 
-    return {
-      brand: {
-        id: data.brand.id,
-        name: data.brand.name,
-        slug: data.brand.slug,
-        logo: data.brand.logo,
-        primaryColor: data.brand.primary_color,
-        secondaryColor: data.brand.secondary_color,
-        widgetTemplate: data.brand.widget_template,
-        buttonText: data.brand.button_text,
-        welcomeMessage: data.brand.welcome_message,
-        plan: data.brand.plan,
-        headerColor: data.brand.header_color ?? null,
-        brandDescription: data.brand.brand_description ?? null,
-        whatsappContact: data.brand.whatsapp_contact ?? null,
-        coverImageUrl: data.brand.cover_image_url ?? null,
-        socialLinks: data.brand.social_links ?? {},
-        hasLandingPage: data.brand.has_landing_page ?? false,
-        customDomain: data.brand.custom_domain ?? null,
-      },
-      products: data.products.map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        imageUrl: p.image_url || '',
-        category: p.category,
-        description: p.description,
-      })),
-    };
+      return {
+        brand: {
+          id: data?.brand?.id ?? '',
+          name: data?.brand?.name ?? '',
+          slug: data?.brand?.slug ?? '',
+          logo: data?.brand?.logo ?? null,
+          primaryColor: data?.brand?.primary_color ?? '#FF5C3A',
+          secondaryColor: data?.brand?.secondary_color ?? null,
+          widgetTemplate: data?.brand?.widget_template ?? 'minimal',
+          buttonText: data?.brand?.button_text ?? 'Probarme esto',
+          welcomeMessage: data?.brand?.welcome_message ?? '',
+          plan: data?.brand?.plan ?? 'BASIC',
+          headerColor: data?.brand?.header_color ?? null,
+          brandDescription: data?.brand?.brand_description ?? null,
+          whatsappContact: data?.brand?.whatsapp_contact ?? null,
+          coverImageUrl: data?.brand?.cover_image_url ?? null,
+          socialLinks: data?.brand?.social_links ?? {},
+          hasLandingPage: data?.brand?.has_landing_page ?? false,
+          customDomain: data?.brand?.custom_domain ?? null,
+        },
+        products: (data?.products ?? []).map((p: any) => ({
+          id: p?.id ?? '',
+          name: p?.name ?? '',
+          imageUrl: p?.image_url || '',
+          category: p?.category ?? '',
+          description: p?.description ?? '',
+        })),
+      };
+    } catch (error) {
+      console.error('[TryOnService] Error en getConfig:', error);
+      throw error;
+    }
   }
 
   async generate(brandSlug: string, data: GenerateTryOnDto): Promise<GenerateTryOnResponse> {

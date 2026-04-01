@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Menu, X, User, LogOut, Layout, Zap, Terminal } from 'lucide-react';
 import { authService } from '@/services/auth.service';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 interface LandingNavProps {
   ctaHref?: string;
@@ -292,18 +293,46 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
             </div>
 
             {!session && (
-              <div className="mt-4 pt-10 border-t border-white/5 flex flex-col gap-4">
+              <div className="mt-4 pt-6 border-t border-white/5 flex flex-col gap-4">
+                {/* Currency Selector - Mobile */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Moneda</span>
+                  <div className="flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 gap-3" role="group" aria-label="Selector de moneda">
+                    <button
+                      onClick={() => { if (currency !== 'COP') toggleCurrency(); }}
+                      aria-pressed={currency === 'COP'}
+                      className={`text-sm font-bold cursor-pointer transition-colors uppercase ${currency === 'COP' ? 'text-[#FF5C3A]' : 'text-white/50'}`}
+                    >
+                      COP
+                    </button>
+                    <div className="w-[1px] h-3 bg-white/10" aria-hidden="true" />
+                    <button
+                      onClick={() => { if (currency !== 'USD') toggleCurrency(); }}
+                      aria-pressed={currency === 'USD'}
+                      className={`text-sm font-bold cursor-pointer transition-colors uppercase ${currency === 'USD' ? 'text-[#FF5C3A]' : 'text-white/50'}`}
+                    >
+                      USD
+                    </button>
+                  </div>
+                </div>
+
+                {/* Theme Toggle - Mobile */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Tema</span>
+                  <ThemeToggle />
+                </div>
+
                 <Link 
                   href="/login" 
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-4 text-center text-white/60 font-bold uppercase tracking-widest text-[11px]"
+                  className="w-full py-4 text-center text-white/60 font-bold uppercase tracking-widest text-[11px] border border-white/10 rounded-2xl active:scale-[0.98] transition-all"
                 >
                   Ingresar a mi cuenta
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-5 bg-[#FF5C3A] rounded-2xl text-center text-white font-bold uppercase tracking-[0.2em] text-[12px]"
+                  className="w-full py-5 bg-[#FF5C3A] rounded-2xl text-center text-white font-bold uppercase tracking-[0.2em] text-[12px] active:scale-[0.98] transition-all"
                 >
                   Probar gratis ahora
                 </Link>

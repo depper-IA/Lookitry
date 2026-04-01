@@ -54,12 +54,12 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
   };
 
   return (
-    <section className="bg-[#f5f2ee] px-6 py-16 md:px-8 md:py-20">
-      <div className="mx-auto max-w-[1180px]">
-        <div className="mb-10 text-center">
-          <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.12em] text-[#FF5C3A]">Reviews</p>
-          <h2 className="text-3xl font-bold tracking-tight text-[#0a0a0a] md:text-4xl">Lo que dicen nuestras marcas</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-[#666] md:text-base">
+    <section className="bg-[#f5f2ee] dark:bg-[#0d0d0d] px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20" aria-label="Reviews de clientes">
+      <div className="mx-auto max-w-5xl sm:max-w-[1180px]">
+        <div className="mb-8 sm:mb-10 text-center">
+          <p className="mb-2 sm:mb-3 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.12em] text-[#FF5C3A]">Reviews</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0a0a0a] dark:text-white md:text-4xl">Lo que dicen nuestras marcas</h2>
+          <p className="mx-auto mt-2 sm:mt-3 max-w-2xl text-sm leading-relaxed text-[#666] dark:text-white/60 md:text-base">
             Opiniones reales de marcas que ya usan Lookitry
           </p>
         </div>
@@ -68,48 +68,48 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
           <button
             type="button"
             onClick={() => goTo(activeIndex - 1)}
-            className="absolute left-0 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#d7d0c7] bg-white/95 p-3 text-[#0a0a0a] shadow-lg transition-all hover:scale-105 md:flex"
+            className="absolute left-0 sm:-left-2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#d7d0c7] dark:border-white/10 bg-white/95 dark:bg-[#1a1a1a] p-2.5 sm:p-3 text-[#0a0a0a] dark:text-white shadow-lg transition-all hover:scale-105 md:flex"
             aria-label="Ver review anterior"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
           </button>
 
           <div className="overflow-hidden">
             <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
               {slides.map((_, slideIndex) => (
                 <div key={`slide-${slides[slideIndex].id}`} className="min-w-full">
-                  <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-3">
                     {[0, 1, 2].map((offset) => {
                       const review = slides[(slideIndex + offset) % slides.length];
                       return (
                         <article
                           key={`${review.id}-${offset}`}
-                          className={`${offset > 0 ? 'hidden md:flex' : 'flex'} h-full flex-col rounded-[28px] border border-[#e0dcd7] bg-white p-6 shadow-[0_20px_60px_rgba(15,15,15,0.06)]`}
+                          className={`${offset > 0 ? 'hidden md:flex' : 'flex'} h-full flex-col rounded-2xl sm:rounded-[28px] border border-[#e0dcd7] dark:border-white/5 bg-white dark:bg-[#141414] p-5 sm:p-6 shadow-[0_20px_60px_rgba(15,15,15,0.06)] dark:shadow-none`}
                         >
-                          <div className="mb-5 flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-1">
+                          <div className="mb-4 sm:mb-5 flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-0.5 sm:gap-1" aria-label={`${review.rating} de 5 estrellas`}>
                               {Array.from({ length: 5 }).map((__, starIndex) => (
-                                <Star key={`${review.id}-${starIndex}`} className={`h-4 w-4 ${starIndex < review.rating ? 'fill-[#FF5C3A] text-[#FF5C3A]' : 'text-[#e7dfd6]'}`} />
+                                <Star key={`${review.id}-${starIndex}`} className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${starIndex < review.rating ? 'fill-[#FF5C3A] text-[#FF5C3A]' : 'text-[#e7dfd6] dark:text-white/10'}`} aria-hidden="true" />
                               ))}
                             </div>
-                            <span className="rounded-full border border-[#f1d5cd] bg-[#fff4f1] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#FF5C3A]">
+                            <span className="rounded-full border border-[#f1d5cd] dark:border-[#FF5C3A]/20 bg-[#fff4f1] dark:bg-[#FF5C3A]/10 px-2 sm:px-2.5 py-0.5 sm:py-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] text-[#FF5C3A]">
                               {review.reviewer_plan}
                             </span>
                           </div>
 
-                          <p className="flex-1 text-[15px] leading-7 text-[#3f3a35]">“{review.comment}”</p>
+                          <p className="flex-1 text-sm sm:text-[15px] leading-6 sm:leading-7 text-[#3f3a35] dark:text-white/80">&ldquo;{review.comment}&rdquo;</p>
 
-                          <div className="mt-6 flex items-center gap-3 border-t border-[#f0ebe5] pt-5">
+                          <div className="mt-4 sm:mt-6 flex items-center gap-2.5 sm:gap-3 border-t border-[#f0ebe5] dark:border-white/5 pt-4 sm:pt-5">
                             {review.avatar_url ? (
-                              <Image src={review.avatar_url} alt={review.reviewer_name} width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
+                              <Image src={review.avatar_url} alt={review.reviewer_name} width={40} height={40} className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover shrink-0" />
                             ) : (
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">
+                              <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-[#FF5C3A] text-xs sm:text-sm font-bold text-white shrink-0">
                                 {getInitials(review.reviewer_name)}
                               </div>
                             )}
                             <div>
-                              <p className="font-semibold text-[#0a0a0a]">{review.reviewer_name}</p>
-                              <p className="text-xs uppercase tracking-[0.16em] text-[#8a8178]">{formatDate(review.created_at)}</p>
+                              <p className="font-semibold text-sm text-[#0a0a0a] dark:text-white">{review.reviewer_name}</p>
+                              <p className="text-[10px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.16em] text-[#8a8178] dark:text-white/40">{formatDate(review.created_at)}</p>
                             </div>
                           </div>
                         </article>
@@ -124,27 +124,27 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
           <button
             type="button"
             onClick={() => goTo(activeIndex + 1)}
-            className="absolute right-0 top-1/2 z-10 hidden translate-x-1/2 -translate-y-1/2 rounded-full border border-[#d7d0c7] bg-white/95 p-3 text-[#0a0a0a] shadow-lg transition-all hover:scale-105 md:flex"
+            className="absolute right-0 sm:-right-2 top-1/2 z-10 hidden translate-x-1/2 -translate-y-1/2 rounded-full border border-[#d7d0c7] dark:border-white/10 bg-white/95 dark:bg-[#1a1a1a] p-2.5 sm:p-3 text-[#0a0a0a] dark:text-white shadow-lg transition-all hover:scale-105 md:flex"
             aria-label="Ver siguiente review"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
           </button>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-2">
+        <div className="mt-6 sm:mt-8 flex items-center justify-center gap-1.5 sm:gap-2">
           {slides.map((review, index) => (
             <button
               key={`dot-${review.id}`}
               type="button"
               onClick={() => goTo(index)}
-              className={`h-2.5 rounded-full transition-all ${index === activeIndex ? 'w-8 bg-[#FF5C3A]' : 'w-2.5 bg-[#d1c8be]'}`}
+              className={`h-2 sm:h-2.5 rounded-full transition-all ${index === activeIndex ? 'w-6 sm:w-8 bg-[#FF5C3A]' : 'w-2 sm:w-2.5 bg-[#d1c8be] dark:bg-white/20'}`}
               aria-label={`Ir a la review ${index + 1}`}
             />
           ))}
         </div>
 
         {process.env.NODE_ENV === 'development' && usingMockReviews && (
-          <p className="mt-4 text-center text-xs text-yellow-600">
+          <p className="mt-4 text-center text-xs text-yellow-600 dark:text-yellow-400">
             [DEV] Mostrando mock reviews — faltan {Math.max(0, 5 - realReviewsCount)} reviews reales aprobadas
           </p>
         )}

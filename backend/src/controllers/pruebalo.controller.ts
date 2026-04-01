@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { createHash } from 'crypto';
+import jwt from 'jsonwebtoken';
 import { supabaseAdmin } from '../config/supabase';
 import { getCachedBrandConfig, setCachedBrandConfig, invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { BrandsService } from '../services/brands.service';
@@ -589,7 +590,6 @@ export class PruebaloController {
     }
 
     // Token efímero de 1 hora
-    const jwt = await import('jsonwebtoken');
     const token = jwt.sign(
       { 
         brand_id: brand.id, 

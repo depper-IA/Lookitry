@@ -79,6 +79,27 @@ h1, h2, h3, h4, h5, h6 {
 .theme-text       { color: var(--text-primary); }
 .theme-text-muted { color: var(--text-secondary); }
 
+/* ── Landing theme utilities ─────────────────────────────────────────────── */
+.landing-dark {
+  background-color: #0a0a0a;
+  color: #ffffff;
+}
+.landing-dark-section {
+  background-color: #0a0a0a;
+}
+.landing-light-section {
+  background-color: #ffffff;
+  color: #0a0a0a;
+}
+.landing-card-dark {
+  background-color: #111111;
+  border-color: rgba(255,255,255,0.05);
+}
+.landing-card-light {
+  background-color: #f8f6f4;
+  border-color: #e8e4df;
+}
+
 /* ── Animaciones ───────────────────────────────────────────────────────────── */
 @keyframes pulse-dot {
   0%, 100% { opacity: 1; transform: scale(1); }

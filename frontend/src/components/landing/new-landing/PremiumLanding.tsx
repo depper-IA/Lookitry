@@ -12,6 +12,10 @@ import LandingPayments from './LandingPayments';
 import LandingReviews from './LandingReviews';
 import LandingFaq from './LandingFaq';
 import LandingFooter from './LandingFooter';
+import { PromoBanner } from '@/components/landing/PromoBanner';
+import { PromoModal } from '@/components/landing/PromoModal';
+import { ReviewsSlider } from '@/components/landing/ReviewsSlider';
+import ActiveCouponsBanner from './ActiveCouponsBanner';
 
 import { PricingConfig } from '@/lib/pricing';
 import { PublicReview } from '@/types';
@@ -26,11 +30,14 @@ interface PremiumLandingProps {
 export default function PremiumLanding({ 
   pricing, 
   reviews, 
+  realReviewsCount = 0, 
+  usingMockReviews = false,
   currency = 'COP', 
   trm = 4000 
-}: PremiumLandingProps) {
+}: PremiumLandingProps & { realReviewsCount?: number; usingMockReviews?: boolean }) {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-[#FF5C3A]/30 selection:text-[#FF5C3A] font-dm-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a0a0a] dark:bg-[#0a0a0a] text-white selection:bg-[#FF5C3A]/30 selection:text-white font-dm-sans overflow-x-hidden">
+      <PromoBanner />
       <LandingNav />
       <main>
         <LandingHero />
@@ -39,11 +46,14 @@ export default function PremiumLanding({
         <LandingMiniLanding />
         <LandingPlugin />
         <LandingPricing pricing={pricing} currency={currency} trm={trm} />
+        <ActiveCouponsBanner />
         <LandingPayments />
+        <ReviewsSlider reviews={reviews} realReviewsCount={realReviewsCount} usingMockReviews={usingMockReviews} />
         <LandingReviews reviews={reviews} />
         <LandingFaq />
       </main>
       <LandingFooter />
+      <PromoModal />
     </div>
   );
 }

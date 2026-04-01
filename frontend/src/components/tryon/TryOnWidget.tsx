@@ -223,7 +223,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     return () => observer.disconnect();
   }, [isEmbed, EMBED_ORIGIN]);
 
-  const primaryColor   = config?.brand.primaryColor   || '#6366f1';
+  const primaryColor   = config?.brand.primaryColor   || '#FF5C3A';
   const secondaryColor = config?.brand.secondaryColor || '#f9fafb';
   const buttonText     = config?.brand.buttonText     || 'Probarme esto';
   const welcomeMessage = config?.brand.welcomeMessage || '';
