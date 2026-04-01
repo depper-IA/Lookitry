@@ -1,5 +1,22 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-01] - Navbar móvil mejorado y menú mobile con estilo premium
+
+### Cambios Realizados
+- **Navbar sticky en lugar de fixed**: El navbar ahora scrollea naturalmente en mobile y desktop usando `sticky top-0` en lugar de `fixed top-0`
+- **Estilo del menú móvil mejorado**: 
+  - Fondo con `backdrop-blur-xl` para efecto premium
+  - Animación slide-in más fluida
+  - Separadores con gradiente sutil (`bg-gradient-to-r`)
+  - Hover states más visibles en items de productos
+  - Footer con enlaces legales (términos, privacidad, cookies, contacto)
+
+### Archivos Modificados
+- `frontend/src/components/landing/LandingNav.tsx` (navbar sticky + menú mejorado)
+- `frontend/src/components/landing/new-landing/LandingNav.tsx` (navbar sticky + menú mejorado)
+
+---
+
 ## [2026-04-01] - Confirmaciones reforzadas integradas en todo el admin
 
 ### Cambios Realizados

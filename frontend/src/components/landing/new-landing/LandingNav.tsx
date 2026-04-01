@@ -88,7 +88,7 @@ export default function LandingNav({
   return (
     <>
       <nav
-        className={`relative left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 py-6 sm:py-8 ${navBg}`}
+        className={`sticky top-0 left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 py-6 sm:py-8 ${navBg}`}
         role="navigation"
         aria-label="Navegación principal"
       >
@@ -204,7 +204,7 @@ export default function LandingNav({
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[55] bg-white dark:bg-[#0a0a0a] pt-24 sm:pt-28 px-6 sm:px-10 overflow-y-auto animate-in fade-in duration-300" role="dialog" aria-modal="true" aria-label="Menú de navegación">
+        <div className="fixed inset-0 z-[55] bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-xl pt-24 sm:pt-28 px-6 sm:px-10 overflow-y-auto animate-in fade-in slide-in-from-right duration-300" role="dialog" aria-modal="true" aria-label="Menú de navegación">
           <div className="flex flex-col gap-6 pb-20">
             {/* Currency Selector - Mobile */}
             <div className="flex items-center justify-between">
@@ -235,9 +235,9 @@ export default function LandingNav({
                   key={prod.title}
                   href={prod.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-4 p-4 bg-black/5 dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5 active:scale-[0.98] transition-all"
+                  className="flex items-center gap-4 p-4 bg-black/5 dark:bg-white/5 rounded-2xl border border-black/5 dark:border-white/5 active:scale-[0.98] transition-all hover:bg-black/10 dark:hover:bg-white/10 hover:border-black/10 dark:hover:border-white/10 group"
                 >
-                  <div className={`w-10 h-10 rounded-xl ${prod.bgColor} flex items-center justify-center shrink-0`}>
+                  <div className={`w-10 h-10 rounded-xl ${prod.bgColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
                     {prod.icon}
                   </div>
                   <div>
@@ -248,7 +248,9 @@ export default function LandingNav({
               ))}
             </div>
 
-            <div className="flex flex-col gap-4 pt-4 border-t border-black/5 dark:border-white/5">
+            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" />
+
+            <div className="flex flex-col gap-4 pt-2 border-t border-black/5 dark:border-white/5">
               {menuLinks.map((item) => (
                 <Link
                   key={item.label}
@@ -261,21 +263,30 @@ export default function LandingNav({
               ))}
             </div>
 
-            <div className="flex flex-col gap-3 mt-2">
+            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-black/5 dark:via-white/5 to-transparent" />
+
+            <div className="flex flex-col gap-3">
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3.5 text-center text-black/60 dark:text-white/60 font-bold uppercase tracking-widest text-[11px] border border-black/10 dark:border-white/10 rounded-2xl active:scale-[0.98] transition-all"
+                className="w-full py-3.5 text-center text-black/60 dark:text-white/60 font-bold uppercase tracking-widest text-[11px] border border-black/10 dark:border-white/10 rounded-2xl active:scale-[0.98] transition-all hover:bg-black/5 dark:hover:bg-white/5"
               >
                 Ingresar
               </Link>
               <Link
                 href="/register"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full bg-[#FF5C3A] text-white px-8 py-4 rounded-2xl font-jakarta font-black text-center transition-all active:scale-[0.98] shadow-xl shadow-[#FF5C3A]/20"
+                className="w-full bg-[#FF5C3A] text-white px-8 py-4 rounded-2xl font-jakarta font-black text-center transition-all active:scale-[0.98] hover:bg-[#ff7a5f] shadow-xl shadow-[#FF5C3A]/20"
               >
                 Probar ahora
               </Link>
+            </div>
+
+            <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] text-black/30 dark:text-white/30 font-medium pt-4">
+              <Link href="/terminos" className="hover:text-black/60 dark:hover:text-white/60 transition-colors">Términos</Link>
+              <Link href="/politicas-privacidad" className="hover:text-black/60 dark:hover:text-white/60 transition-colors">Privacidad</Link>
+              <Link href="/cookies" className="hover:text-black/60 dark:hover:text-white/60 transition-colors">Cookies</Link>
+              <Link href="/contacto" className="hover:text-black/60 dark:hover:text-white/60 transition-colors">Contacto</Link>
             </div>
           </div>
         </div>
