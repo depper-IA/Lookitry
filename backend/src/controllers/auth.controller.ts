@@ -5,6 +5,7 @@ import { verifyEmailTemplate, passwordResetTemplate } from '../templates/email-t
 import { RegisterBrandDto, LoginDto } from '../types';
 import { AuthRequest } from '../middleware/auth';
 import { generateToken } from '../utils/jwt';
+import { supabaseAdmin } from '../config/supabase';
 
 const authService = new AuthService();
 const emailService = new EmailService();
@@ -301,6 +302,48 @@ export class AuthController {
         return res.status(401).json({ error: 'WRONG_PASSWORD', message: 'La contraseña actual es incorrecta' });
       }
       return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al cambiar la contraseña' });
+    }
+  }
+
+  async checkEmail(req: Request, res: Response) {
+    try {
+      const { email } = req.query;
+
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email requerido' });
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Formato de email inválido' });
+      }
+
+      const { data: brand, error } = await supabaseAdmin
+        .from('brands')
+        .select('id, name, email, plan, subscription_status')
+        .eq('email', email.toLowerCase())
+        .maybeSingle();
+
+      if (error) {
+        console.error('[checkEmail] Error consultando brand:', error);
+        return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al verificar email' });
+      }
+
+      if (!brand) {
+        return res.status(200).json({ exists: false });
+      }
+
+      return res.status(200).json({
+        exists: true,
+        brand: {
+          name: brand.name,
+          plan: brand.plan,
+          subscriptionStatus: brand.subscription_status
+        }
+      });
+    } catch (error: any) {
+      console.error('Error en checkEmail:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al verificar email' });
     }
   }
 }
