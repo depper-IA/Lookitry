@@ -102,7 +102,7 @@ export default function LandingNav({
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-[60] px-4 sm:px-6 md:px-12 transition-all duration-500 ease-in-out ${navBg} ${isStuck ? 'py-3 sm:py-4' : 'py-6 sm:py-8'}`}
+        className={`fixed top-0 left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 transition-all duration-500 ease-in-out ${navBg} ${isStuck ? 'py-3 sm:py-4' : 'py-6 sm:py-8'}`}
         role="navigation"
         aria-label="Navegación principal"
       >

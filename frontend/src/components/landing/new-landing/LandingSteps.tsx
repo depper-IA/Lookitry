@@ -6,10 +6,10 @@ import Link from 'next/link';
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-6 sm:mb-8 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] border shadow-sm transition-all ${light
-      ? 'bg-white/5 border-white/10 text-white/60'
+      ? 'bg-black/5 border-black/10 text-black/40 dark:bg-white/5 dark:border-white/10 dark:text-white/60'
       : 'bg-[#FF5C3A]/5 border-[#FF5C3A]/20 text-[#FF5C3A]'
     }`}>
-    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-white/40' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
+    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-black/20 dark:bg-white/40' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
     {text}
   </div>
 );
@@ -43,7 +43,7 @@ const STEPS = [
 
 export default function LandingSteps() {
   return (
-    <section id="como-funciona" className="bg-white dark:bg-[#0d0d0d] py-16 sm:py-20 px-4 sm:px-6 md:px-12 relative" aria-label="Cómo funciona">
+    <section id="como-funciona" className="bg-white dark:bg-[#0a0a0a] py-16 sm:py-20 px-4 sm:px-6 md:px-12 relative" aria-label="Cómo funciona">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16 md:mb-24">
           <SectionTag text="Proceso impecable" />
