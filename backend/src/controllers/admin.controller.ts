@@ -1640,3 +1640,68 @@ export const updatePricingConfig = async (req: any, res: Response) => {
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al actualizar precios' });
   }
 };
+
+export const getMissionControl = async (_req: any, res: Response) => {
+  try {
+    const result = await adminService.getMissionControl();
+    return res.status(200).json(result);
+  } catch (error: any) {
+    console.error('Error in getMissionControl:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener datos del mission control' });
+  }
+};
+
+export const getRiskData = async (_req: any, res: Response) => {
+  try {
+    const result = await adminService.getRiskData();
+    return res.status(200).json(result);
+  } catch (error: any) {
+    console.error('Error in getRiskData:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener datos de riesgo' });
+  }
+};
+
+export const getEconomics = async (_req: any, res: Response) => {
+  try {
+    const result = await adminService.getEconomics();
+    return res.status(200).json(result);
+  } catch (error: any) {
+    console.error('Error in getEconomics:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener datos de economía unitaria' });
+  }
+};
+
+export const getAuditLog = async (req: any, res: Response) => {
+  try {
+    const { limit, offset, action, admin_email, from, to } = req.query;
+    const result = await adminService.getAuditLog({
+      limit: limit ? parseInt(limit as string) : 100,
+      offset: offset ? parseInt(offset as string) : 0,
+      action: action as string | undefined,
+      admin_email: admin_email as string | undefined,
+      from: from as string | undefined,
+      to: to as string | undefined,
+    });
+    return res.status(200).json(result);
+  } catch (error: any) {
+    console.error('Error in getAuditLog:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener log de auditoría' });
+  }
+};
+
+export const getBrandFull = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'ID de marca requerido' });
+    }
+    const result = await adminService.getBrandFull(id);
+    return res.status(200).json(result);
+  } catch (error: any) {
+    console.error('Error in getBrandFull:', error);
+    if (error.message === 'Marca no encontrada') {
+      return res.status(404).json({ error: 'NOT_FOUND', message: error.message });
+    }
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener ficha de marca' });
+  }
+};
