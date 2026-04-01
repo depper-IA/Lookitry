@@ -96,13 +96,13 @@ export default function LandingNav({
   ];
 
   const navBg = isStuck
-    ? 'bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-md border-b border-black/5 dark:border-white/5'
+    ? 'bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-md shadow-sm'
     : 'bg-white/80 dark:bg-transparent backdrop-blur-sm';
 
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 transition-all duration-500 ease-in-out ${navBg} ${isStuck ? 'py-3 sm:py-4' : 'py-6 sm:py-8'}`}
+        className={`sticky top-0 left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 transition-all duration-500 ease-in-out ${navBg} ${isStuck ? 'py-3 sm:py-4' : 'py-6 sm:py-8'}`}
         role="navigation"
         aria-label="Navegación principal"
       >
