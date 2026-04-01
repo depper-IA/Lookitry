@@ -11,7 +11,16 @@ import { hasActivePaidSubscription, isTrialLandingBlocked } from '../utils/brand
 
 const subscriptionService = new SubscriptionService();
 const notificationService = new NotificationService();
-const PAYPAL_AMOUNT_TOLERANCE = 0.01;
+
+// Tolerancia de monto: 2% o mínimo $0.50 para prevenir manipulación
+const PAYPAL_AMOUNT_TOLERANCE_PCT = 0.02;
+const PAYPAL_AMOUNT_TOLERANCE_MIN = 0.50;
+
+function getPaypalTolerance(expectedAmount: number): number {
+  return Math.max(expectedAmount * PAYPAL_AMOUNT_TOLERANCE_PCT, PAYPAL_AMOUNT_TOLERANCE_MIN);
+}
+
+const PAYPAL_AMOUNT_TOLERANCE = 0.01; // Mantenido para compatibilidad legacy
 
 async function insertPaypalPaymentCompat(payload: Record<string, unknown>) {
   let result = await supabaseAdmin.from('subscription_payments').insert(payload);
@@ -411,8 +420,21 @@ export class PaypalController {
 
     const trackedOrder = await paypalService.getTrackedOrder(resolvedReference);
 
-    // Idempotencia: ya procesada
-    if (trackedOrder?.status === 'completed') {
+    // Idempotencia atómica: intentar adquirir lock de procesamiento
+    if (trackedOrder?.status === 'pending' || trackedOrder?.status === 'failed') {
+      const acquired = await paypalService.tryStartProcessing(resolvedReference);
+      if (!acquired) {
+        console.log(`[PaypalCapture] Orden siendo procesada por otra request: ${resolvedReference}`);
+        return res.status(200).json({
+          success: true,
+          message: 'Pago siendo procesado',
+          orderId,
+          status: 'PROCESSING',
+          reference: resolvedReference,
+          alreadyProcessed: true,
+        });
+      }
+    } else if (trackedOrder?.status === 'completed') {
       console.log(`[PaypalCapture] Orden ya completada en DB: ${resolvedReference}`);
       return res.status(200).json({
         success: true,
@@ -482,7 +504,9 @@ export class PaypalController {
         resource.supplementary_data?.related_ids?.order_id;
       const orderId = resource.supplementary_data?.related_ids?.order_id || captureId;
 
-      console.log(`[PayPal Webhook] Pago completado. CaptureId: ${captureId}, Monto: ${amountUSD}, Ref: ${reference}`);
+      // Log sanitizado (sin exponer referencias completas)
+      const refShort = reference ? `${reference.slice(0, 12)}...` : 'N/A';
+      console.log(`[PayPal Webhook] Pago completado. CaptureId: ${captureId}, Monto: ${amountUSD}, Ref: ${refShort}`);
 
       if (
         reference &&

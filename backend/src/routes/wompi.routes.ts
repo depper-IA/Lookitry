@@ -3,18 +3,37 @@ import { WompiController } from '../controllers/wompi.controller';
 import { verifyToken } from '../utils/jwt';
 import { AuthService } from '../services/auth.service';
 import { optionalAuth } from '../middleware/auth';
+import rateLimit from 'express-rate-limit';
 
 const router = Router();
 const wompiController = new WompiController();
 const authService = new AuthService();
+
+// Rate limiter específico para webhooks (más permisivo que general)
+// Permite hasta 200 requests por minuto por IP (suficiente para webhooks de Wompi)
+const webhookRateLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minuto
+  max: 200,
+  message: {
+    error: 'RATE_LIMIT_EXCEEDED',
+    message: 'Demasiadas solicitudes de webhook.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Solo aplicar a endpoints de webhook
+    return !req.path.includes('webhook');
+  },
+});
 
 // Se usa optionalAuth importado desde ../middleware/auth
 
 /**
  * POST /api/payments/wompi/webhook
  * Recibe eventos de Wompi — NO requiere auth (llamado directamente por Wompi)
+ * Rate limited para prevenir abuse
  */
-router.post('/webhook', (req, res) => wompiController.handleWebhook(req, res));
+router.post('/webhook', webhookRateLimiter, (req, res) => wompiController.handleWebhook(req, res));
 
 /**
  * GET /api/payments/wompi/upgrade-preview
