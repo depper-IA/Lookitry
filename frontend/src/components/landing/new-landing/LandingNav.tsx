@@ -34,21 +34,9 @@ export default function LandingNav({
       window.dispatchEvent(new Event('currencyChange'));
     }
   };
-  const [isStuck, setIsStuck] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const productsRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPos = window.scrollY;
-      setIsStuck(scrollPos > 40);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -95,14 +83,12 @@ export default function LandingNav({
     }
   ];
 
-  const navBg = isStuck
-    ? 'bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur-md shadow-sm'
-    : 'bg-white/80 dark:bg-transparent backdrop-blur-sm';
+  const navBg = 'bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur-md border-b border-black/5 dark:border-white/5';
 
   return (
     <>
       <nav
-        className={`relative left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 transition-all duration-500 ease-in-out ${navBg} ${isStuck ? 'py-3 sm:py-4' : 'py-6 sm:py-8'}`}
+        className={`relative left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 py-6 sm:py-8 ${navBg}`}
         role="navigation"
         aria-label="Navegación principal"
       >
