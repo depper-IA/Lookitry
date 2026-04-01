@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { LandingNav } from '@/components/landing/LandingNav';
-import { LandingFooter } from '@/components/landing/LandingFooter';
+import LandingNav from '@/components/landing/new-landing/LandingNav';
+import LandingFooter from '@/components/landing/new-landing/LandingFooter';
 
 export const metadata: Metadata = {
   title: 'Centro de Ayuda — Lookitry',
@@ -37,10 +37,10 @@ export default function AyudaPage() {
               <h2 className="text-base font-semibold text-white mt-1">Crea y configura tu marca</h2>
               <p className="text-sm text-[#bbb] mt-2">Completa identidad, carga productos y deja listo tu probador virtual.</p>
             </Link>
-            <Link href="/aplicaciones" className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 block hover:border-[#FF5C3A]/40 transition-colors">
-              <p className="text-[11px] uppercase tracking-[0.1em] text-[#FF5C3A] font-semibold">Paso 3</p>
-              <h2 className="text-base font-semibold text-white mt-1">Inspírate con aplicaciones reales</h2>
-              <p className="text-sm text-[#bbb] mt-2">Revisa categorías y ejemplos de uso para replicar estrategias que convierten.</p>
+            <Link href="/casos-de-exito" className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 block hover:border-[#FF5C3A]/40 transition-colors">
+              <p className="text-[11px] uppercase tracking-[0.1em] text-[#FF5C3A] font-semibold">Inspiración</p>
+              <h2 className="text-base font-semibold text-white mt-1">Casos de éxito reales</h2>
+              <p className="text-sm text-[#bbb] mt-2">Revisa cómo otras marcas están escalando sus ventas con Lookitry.</p>
             </Link>
             <Link href="/contacto" className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 block hover:border-[#FF5C3A]/40 transition-colors">
               <p className="text-[11px] uppercase tracking-[0.1em] text-[#FF5C3A] font-semibold">Soporte</p>

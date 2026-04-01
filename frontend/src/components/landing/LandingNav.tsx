@@ -3,45 +3,36 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
-import { LookitryLogoText } from '@/components/mini-landing/shared';
+import { ChevronDown, Menu, X, User, LogOut, Layout, Zap, Terminal } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 
 interface LandingNavProps {
   ctaHref?: string;
   ctaLabel?: string;
+  currentCurrency?: 'COP' | 'USD';
+  onCurrencyChange?: (c: 'COP' | 'USD') => void;
 }
 
-export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
-  const [trialActive, setTrialActive] = useState(false);
-  const [ctaReady, setCtaReady] = useState(false); // evita parpadeo del botón
+export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChange }: LandingNavProps) {
   const [session, setSession] = useState<{ name: string; email: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
   const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const productsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Cargar preferencia de moneda
-    const saved = localStorage.getItem('currency') as 'COP' | 'USD';
-    if (saved) setCurrency(saved);
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    if (!apiUrl) {
-      setCtaReady(true);
-      return;
+    // Si se pasa currentCurrency por props, sincronizar estado interno
+    if (currentCurrency && currentCurrency !== currency) {
+      setCurrency(currentCurrency);
     }
-    fetch(`${apiUrl}/api/trial/status`)
-      .then(r => r.json())
-      .then(d => {
-        setTrialActive(d.trialAvailable === true || d.active === true);
-        setCtaReady(true);
-      })
-      .catch(() => {
-        setTrialActive(false);
-        setCtaReady(true);
-      });
-  }, []);
+  }, [currentCurrency]);
 
   useEffect(() => {
+    const saved = localStorage.getItem('currency') as 'COP' | 'USD';
+    if (saved && !currentCurrency) setCurrency(saved);
+
     const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
     if (!token) return;
     try {
@@ -52,11 +43,13 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
     } catch {}
   }, []);
 
-  // Cerrar dropdown al hacer click fuera
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
+      }
+      if (productsRef.current && !productsRef.current.contains(e.target as Node)) {
+        setProductsOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -65,140 +58,260 @@ export function LandingNav({ ctaHref, ctaLabel }: LandingNavProps) {
 
   const toggleCurrency = () => {
     const next = currency === 'COP' ? 'USD' : 'COP';
-    setCurrency(next);
+    if (onCurrencyChange) {
+      onCurrencyChange(next);
+    } else {
+      setCurrency(next);
+    }
     localStorage.setItem('currency', next);
     window.dispatchEvent(new Event('currencyChange'));
   };
 
   async function handleLogout() {
-    // Limpiar localStorage Y cookie HTTP-Only del backend
     await authService.logout();
     setSession(null);
     setDropdownOpen(false);
-    // Hard redirect para forzar limpieza completa de estado React
     window.location.href = '/login';
   }
 
-  const resolvedCtaHref = ctaHref ?? '/planes';
-  const resolvedCtaLabel = ctaLabel ?? 'Ver planes →';
+  const resolvedCtaHref = ctaHref ?? '/register';
+  const resolvedCtaLabel = ctaLabel ?? 'Probar ahora';
 
   const initials = session?.name
     ? session.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
     : '?';
 
   return (
-    <nav className="bg-[#0a0a0a] border-b border-[#1a1a1a] px-6 md:px-8 h-14 flex items-center justify-between sticky top-0 z-50">
-      <div className="flex items-center gap-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image
-            src="/logo.svg"
-            alt="Lookitry"
-            width={28}
-            height={28}
-            className="object-contain h-7 w-auto"
-            priority
-          />
-          <LookitryLogoText className="text-base text-white leading-none" />
-        </Link>
+    <nav className="fixed top-0 left-0 right-0 z-[60] bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5 py-3 md:py-4 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
+        
+        {/* Left: Logo & Currency Toggle */}
+        <div className="flex items-center gap-4 md:gap-8 grow lg:grow-0">
+          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+            <div className="relative w-7 h-7 md:w-8 md:h-8">
+              <Image src="/logo.svg" alt="Lookitry" fill className="object-contain" priority />
+            </div>
+            <span className="font-['Plus_Jakarta_Sans'] text-xl md:text-2xl font-bold tracking-tighter text-white">
+              Look<span className="text-[#FF5C3A]">itry</span>
+            </span>
+          </Link>
 
-        {/* Selector de moneda */}
-        <button
-          onClick={toggleCurrency}
-          className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg border border-[#2a2a2a] hover:border-[#444] transition-all bg-[#141414]"
-          title="Cambiar moneda"
-        >
-          <span className={`text-[10px] font-bold ${currency === 'COP' ? 'text-[#FF5C3A]' : 'text-[#555]'}`}>COP</span>
-          <div className="w-px h-2.5 bg-[#2a2a2a]" />
-          <span className={`text-[10px] font-bold ${currency === 'USD' ? 'text-[#FF5C3A]' : 'text-[#555]'}`}>USD</span>
-        </button>
-      </div>
-
-      <div className="flex items-center gap-1 md:gap-2">
-        {/* Selector móvil */}
-        <button
-          onClick={toggleCurrency}
-          className="sm:hidden flex items-center justify-center w-8 h-8 rounded-lg border border-[#2a2a2a] bg-[#141414] text-[10px] font-bold text-[#FF5C3A]"
-        >
-          {currency}
-        </button>
-
-        <Link
-          href="/planes"
-          className="text-[13px] text-[#888] hover:text-white px-2 md:px-3.5 py-1.5 rounded-md transition-colors hidden sm:block"
-        >
-          Planes
-        </Link>
-
-        <Link
-          href="/blog"
-          className="text-[13px] text-[#888] hover:text-white px-2 md:px-3.5 py-1.5 rounded-md transition-colors hidden sm:block"
-        >
-          Blog
-        </Link>
-
-        <Link
-          href="/blog"
-          className="sm:hidden text-[11px] font-bold uppercase tracking-[0.14em] text-[#aaa] hover:text-white px-3 py-1.5 rounded-md border border-[#2a2a2a] bg-[#141414] transition-colors"
-        >
-          Blog
-        </Link>
-
-        {session ? (
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen(v => !v)}
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-[#1a1a1a] transition-colors"
+          {/* Currency Toggle (Pill Style) */}
+          <div className="hidden sm:flex items-center bg-white/5 border border-white/10 rounded-full px-2.5 py-1.5 gap-2.5">
+            <button 
+              onClick={() => currency !== 'COP' && toggleCurrency()}
+              className={`text-[9px] font-black tracking-widest transition-colors ${currency === 'COP' ? 'text-[#FF5C3A]' : 'text-white/20 hover:text-white/40'}`}
             >
-              <div className="w-7 h-7 rounded-full bg-[#FF5C3A] flex items-center justify-center flex-shrink-0">
-                <span className="text-[11px] font-bold text-white">{initials}</span>
-              </div>
-              <span className="text-[13px] text-[#ccc] hidden sm:block max-w-[120px] truncate">
-                {session.name || session.email}
-              </span>
-              <svg className={`w-3.5 h-3.5 text-[#666] transition-transform hidden sm:block ${dropdownOpen ? 'rotate-180' : ''}`}
-                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              COP
+            </button>
+            <div className="w-[1px] h-2.5 bg-white/10" />
+            <button 
+              onClick={() => currency !== 'USD' && toggleCurrency()}
+              className={`text-[9px] font-black tracking-widest transition-colors ${currency === 'USD' ? 'text-[#FF5C3A]' : 'text-white/20 hover:text-white/40'}`}
+            >
+              USD
+            </button>
+          </div>
+        </div>
+
+        {/* Center: Intelligent Navigation Links (Desktop) */}
+        <div className="hidden lg:flex items-center gap-1 xl:gap-2">
+          {/* Products Dropdown */}
+          <div className="relative" ref={productsRef}>
+            <button 
+              onMouseEnter={() => setProductsOpen(true)}
+              onClick={() => setProductsOpen(!productsOpen)}
+              className={`flex items-center gap-1.5 px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${productsOpen ? 'text-[#FF5C3A]' : 'text-[#FF5C3A] hover:text-white'}`}
+            >
+              PRODUCTOS PRO
+              <ChevronDown size={12} className={`transition-transform duration-300 ${productsOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            {dropdownOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-52 bg-[#141414] border border-[#2a2a2a] rounded-xl shadow-xl overflow-hidden z-50">
-                <div className="px-4 py-3 border-b border-[#2a2a2a]">
-                  <p className="text-[13px] font-semibold text-white truncate">{session.name}</p>
-                  <p className="text-[11px] text-[#666] truncate mt-0.5">{session.email}</p>
-                </div>
-                <Link href="/dashboard" onClick={() => setDropdownOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-[#ccc] hover:bg-[#1f1f1f] hover:text-white transition-colors">
-                  <svg className="w-4 h-4 text-[#666]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001m-6 0h6" />
-                  </svg>
-                  Ir al dashboard
+            {productsOpen && (
+              <div 
+                onMouseLeave={() => setProductsOpen(false)}
+                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-[#111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 duration-200"
+              >
+                <Link href="/mini-landing-pro" onClick={() => setProductsOpen(false)} className="flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-[#FF5C3A] group-hover:bg-[#FF5C3A] group-hover:text-white transition-all">
+                    <Layout size={16} />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-white uppercase tracking-wider mb-0.5">Mini-Landing Pro</p>
+                    <p className="text-[9px] text-white/40 leading-relaxed font-medium">Tu tienda online pro sin código.</p>
+                  </div>
                 </Link>
-                <button onClick={handleLogout}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] text-[#999] hover:bg-[#1f1f1f] hover:text-[#ff6b6b] transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  Cerrar sesión
-                </button>
+                <Link href="/plugin-woocommerce" onClick={() => setProductsOpen(false)} className="flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                    <Zap size={16} />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-white uppercase tracking-wider mb-0.5">WooCommerce Plugin</p>
+                    <p className="text-[9px] text-white/40 leading-relaxed font-medium">Automatiza tu probador virtual.</p>
+                  </div>
+                </Link>
+                <Link href="/api-developer" onClick={() => setProductsOpen(false)} className="flex items-start gap-3 px-4 py-3 hover:bg-white/5 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                    <Terminal size={16} />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-white uppercase tracking-wider mb-0.5">API Developer Hub</p>
+                    <p className="text-[9px] text-white/40 leading-relaxed font-medium">IA nativa en tu propia app.</p>
+                  </div>
+                </Link>
               </div>
             )}
           </div>
-        ) : (
-          <Link href="/login" className="text-[13px] bg-[#FF5C3A] sm:bg-transparent text-white sm:text-[#888] sm:hover:text-white font-medium sm:font-normal px-4 sm:px-3.5 py-1.5 rounded-md transition-colors">
-            Iniciar sesión
-          </Link>
-        )}
 
-        {!session && ctaReady && (
-          <Link
-            href={resolvedCtaHref}
-            className="hidden sm:flex items-center gap-1.5 text-[13px] font-semibold bg-[#FF5C3A] hover:bg-[#e84d2c] active:scale-95 text-white px-4 py-1.5 rounded-md transition-all duration-150"
+          {[
+            { label: 'CASOS DE ÉXITO', href: '/casos-de-exito' },
+            { label: 'PLANES', href: '/planes' },
+            { label: 'BLOG', href: '/blog' }
+          ].map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-all duration-300 relative group"
+            >
+              {item.label}
+              <span className="absolute bottom-0 left-3 right-3 h-[1px] bg-[#FF5C3A] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center" />
+            </Link>
+          ))}
+        </div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-4 md:gap-6">
+          {session ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-2 group p-1 pr-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+              >
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-[#FF5C3A] flex items-center justify-center text-white font-bold text-xs">
+                  {initials}
+                </div>
+                <div className="hidden sm:flex flex-col items-start mr-1">
+                  <span className="text-[10px] font-bold text-white truncate max-w-[100px]">{session.name}</span>
+                  <span className="text-[8px] text-white/30 uppercase tracking-widest leading-none">Mi Panel</span>
+                </div>
+                <ChevronDown size={14} className={`text-white/20 transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {dropdownOpen && (
+                <div className="absolute right-0 top-full mt-3 w-56 bg-[#111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <Link href="/dashboard" onClick={() => setDropdownOpen(false)} className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors group">
+                    <User size={16} className="text-white/30 group-hover:text-[#FF5C3A] transition-colors" />
+                    <span className="text-[12px] font-bold text-white/80 group-hover:text-white transition-colors">Dashboard General</span>
+                  </Link>
+                  <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/10 transition-colors group">
+                    <LogOut size={16} className="text-white/30 group-hover:text-red-500 transition-colors" />
+                    <span className="text-[12px] font-bold text-white/80 group-hover:text-red-500 transition-colors">Cerrar Sesión</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link 
+                href="/login" 
+                className="hidden sm:block text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors"
+              >
+                Ingresar
+              </Link>
+              <Link
+                href={resolvedCtaHref}
+                className="group relative overflow-hidden bg-[#FF5C3A] text-white text-[10px] font-bold uppercase tracking-[0.2em] px-6 md:px-8 py-3 md:py-3.5 rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#FF5C3A]/20"
+              >
+                <span className="relative z-10">{resolvedCtaLabel}</span>
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+              </Link>
+            </>
+          )}
+
+          {/* Mobile Menu Button */}
+          <button 
+            className="lg:hidden text-white p-1 hover:bg-white/5 rounded-lg transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {resolvedCtaLabel}
-          </Link>
-        )}
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Menu Drawer */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 top-[60px] bg-[#0a0a0a] z-50 p-6 animate-in fade-in duration-300 border-t border-white/5 overflow-y-auto">
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-4">
+              <p className="text-[9px] font-black text-[#FF5C3A] uppercase tracking-[0.3em] mb-2">Productos Pro</p>
+              <Link href="/mini-landing-pro" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 active:scale-[0.98] transition-all">
+                <div className="w-10 h-10 rounded-xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A]">
+                  <Layout size={20} />
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold text-white uppercase tracking-wider">Mini-Landing Pro</p>
+                  <p className="text-[10px] text-white/40 font-medium">Tienda sin código.</p>
+                </div>
+              </Link>
+              <Link href="/plugin-woocommerce" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 active:scale-[0.98] transition-all">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+                  <Zap size={20} />
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold text-white uppercase tracking-wider">Woo Plugin</p>
+                  <p className="text-[10px] text-white/40 font-medium">Ventas en piloto automático.</p>
+                </div>
+              </Link>
+              <Link href="/api-developer" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 active:scale-[0.98] transition-all">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                  <Terminal size={20} />
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold text-white uppercase tracking-wider">Developer API</p>
+                  <p className="text-[10px] text-white/40 font-medium">Integración nativa.</p>
+                </div>
+              </Link>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <p className="text-[9px] font-black text-[#FF5C3A] uppercase tracking-[0.3em] mb-2">Corporativo</p>
+              {[
+                { label: 'Casos de Éxito', href: '/casos-de-exito' },
+                { label: 'Planes y Precios', href: '/planes' },
+                { label: 'Nuestro Blog', href: '/blog' }
+              ].map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="py-4 text-2xl font-bold font-['Plus_Jakarta_Sans'] text-white/60 hover:text-white transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            {!session && (
+              <div className="mt-4 pt-10 border-t border-white/5 flex flex-col gap-4">
+                <Link 
+                  href="/login" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-4 text-center text-white/60 font-bold uppercase tracking-widest text-[11px]"
+                >
+                  Ingresar a mi cuenta
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-5 bg-[#FF5C3A] rounded-2xl text-center text-white font-bold uppercase tracking-[0.2em] text-[12px]"
+                >
+                  Probar gratis ahora
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
