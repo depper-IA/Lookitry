@@ -86,7 +86,7 @@ export default function LandingHero() {
               {/* Left: Model */}
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-white/10 bg-[#1a1a1a]">
                 <Image 
-                  src="https://images.unsplash.com/photo-1589156229687-496a31ad1d1f?q=80&w=1000&auto=format&fit=crop" 
+                  src="/steps/paso-1.webp" 
                   alt="Modelo Probador Virtual Lookitry" 
                   fill 
                   className="object-cover" 
@@ -102,10 +102,10 @@ export default function LandingHero() {
                 <div className="text-[8px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1 px-1">Paso 2: Elige Producto</div>
                 
                 {[
-                    { name: 'Camisa Lino Cream', price: '$120K', img: 'https://images.unsplash.com/photo-1594932224012-99d4a318bedc?q=80&w=200&auto=format&fit=crop', active: true },
-                   { name: 'Zapatilla Urban Classic', price: '$240K', img: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=200&auto=format&fit=crop', active: false },
-                   { name: 'Bolso Artisan', price: '$180K', img: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=200&auto=format&fit=crop', active: false },
-                   { name: 'Vestido Summer', price: '$350K', img: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=200&auto=format&fit=crop', active: false }
+                   { name: 'Camisa Lino Beige', price: '$120K', img: '/products/camisa_lino_beige.png', active: true },
+                   { name: 'Zapatilla Blanca', price: '$240K', img: '/products/zapatilla_blanca.png', active: false },
+                   { name: 'Bolso Cuero Café', price: '$180K', img: '/products/bolso_cuero_cafe.png', active: false },
+                   { name: 'Vestido Summer', price: '$350K', img: '/steps/paso-3.webp', active: false }
                 ].map((prod, i) => (
                   <div 
                     key={i} 
