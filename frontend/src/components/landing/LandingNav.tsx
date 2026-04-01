@@ -82,10 +82,10 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
     : '?';
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[60] bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5 py-3 md:py-4 transition-all duration-300">
+    <nav className="fixed top-0 left-0 right-0 z-[70] bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5 py-3 md:py-4 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
         
-        {/* Left: Logo & Currency Toggle */}
+        {/* Left: Logo */}
         <div className="flex items-center gap-4 md:gap-8 grow lg:grow-0">
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
             <div className="relative w-7 h-7 md:w-8 md:h-8">
@@ -95,23 +95,6 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
-
-          {/* Currency Toggle (Pill Style) */}
-          <div className="hidden sm:flex items-center bg-white/5 border border-white/10 rounded-full px-2.5 py-1.5 gap-2.5">
-            <button 
-              onClick={() => currency !== 'COP' && toggleCurrency()}
-              className={`text-[9px] font-black tracking-widest transition-colors ${currency === 'COP' ? 'text-[#FF5C3A]' : 'text-white/20 hover:text-white/40'}`}
-            >
-              COP
-            </button>
-            <div className="w-[1px] h-2.5 bg-white/10" />
-            <button 
-              onClick={() => currency !== 'USD' && toggleCurrency()}
-              className={`text-[9px] font-black tracking-widest transition-colors ${currency === 'USD' ? 'text-[#FF5C3A]' : 'text-white/20 hover:text-white/40'}`}
-            >
-              USD
-            </button>
-          </div>
         </div>
 
         {/* Center: Intelligent Navigation Links (Desktop) */}
@@ -212,6 +195,21 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
             </div>
           ) : (
             <>
+              <div className="hidden xl:flex items-center bg-white/5 border border-white/10 rounded-full px-2.5 py-1.5 gap-2">
+                <button 
+                  onClick={() => currency !== 'COP' && toggleCurrency()}
+                  className={`text-[9px] font-bold tracking-widest transition-colors ${currency === 'COP' ? 'text-[#FF5C3A]' : 'text-white/40 hover:text-white/70'}`}
+                >
+                  COP
+                </button>
+                <div className="w-[1px] h-2 bg-white/10" />
+                <button 
+                  onClick={() => currency !== 'USD' && toggleCurrency()}
+                  className={`text-[9px] font-bold tracking-widest transition-colors ${currency === 'USD' ? 'text-[#FF5C3A]' : 'text-white/40 hover:text-white/70'}`}
+                >
+                  USD
+                </button>
+              </div>
               <Link 
                 href="/login" 
                 className="hidden sm:block text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors"

@@ -7,18 +7,12 @@ import { Instagram, Facebook, Globe, MessageCircle, ShieldCheck, Sun, Moon } fro
 
 export default function LandingFooter() {
   const currentYear = new Date().getFullYear();
-  const [isDark, setIsDark] = React.useState(false);
-
-  React.useEffect(() => {
-    const stored = localStorage.getItem('theme');
-    if (stored === 'dark') {
-      setIsDark(true);
-    } else if (stored === 'light') {
-      setIsDark(false);
-    } else {
-      setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const [isDark, setIsDark] = React.useState(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
     }
-  }, []);
+    return false;
+  });
 
   const toggle = () => {
     const next = !isDark;
@@ -28,7 +22,7 @@ export default function LandingFooter() {
   };
 
   return (
-    <footer className="bg-[#080808] pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-8 sm:pb-10 md:pb-12 px-4 sm:px-6 md:px-12 border-t border-white/5 relative z-10" role="contentinfo">
+    <footer className="bg-[#080808] dark:bg-[#080808] pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-8 sm:pb-10 md:pb-12 px-4 sm:px-6 md:px-12 border-t border-white/5 relative z-10" role="contentinfo">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr] gap-10 sm:gap-14 md:gap-16 lg:gap-20 mb-16 sm:mb-20 md:mb-24">
           {/* Info Col */}

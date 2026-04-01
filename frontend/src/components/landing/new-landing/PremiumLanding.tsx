@@ -9,7 +9,6 @@ import LandingMiniLanding from './LandingMiniLanding';
 import LandingPlugin from './LandingPlugin';
 import LandingPricing from './LandingPricing';
 import LandingPayments from './LandingPayments';
-import LandingReviews from './LandingReviews';
 import LandingFaq from './LandingFaq';
 import LandingFooter from './LandingFooter';
 import { PromoBanner } from '@/components/landing/PromoBanner';
@@ -49,7 +48,6 @@ export default function PremiumLanding({
         <ActiveCouponsBanner />
         <LandingPayments />
         <ReviewsSlider reviews={reviews} realReviewsCount={realReviewsCount} usingMockReviews={usingMockReviews} />
-        <LandingReviews reviews={reviews} />
         <LandingFaq />
       </main>
       <LandingFooter />
