@@ -6,10 +6,10 @@ import Link from 'next/link';
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-6 sm:mb-8 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] border shadow-sm transition-all ${light
-      ? 'bg-black/5 border-black/10 text-black/40 dark:bg-white/5 dark:border-white/10 dark:text-white/60'
+      ? 'bg-white/5 border-white/10 text-white/60 dark:bg-black/5 dark:border-black/10 dark:text-black/40'
       : 'bg-[#FF5C3A]/5 border-[#FF5C3A]/20 text-[#FF5C3A]'
     }`}>
-    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-black/20 dark:bg-white/40' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
+    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-white/40 dark:bg-black/20' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
     {text}
   </div>
 );
@@ -43,14 +43,14 @@ const STEPS = [
 
 export default function LandingSteps() {
   return (
-    <section id="como-funciona" className="bg-white dark:bg-[#0a0a0a] py-16 sm:py-20 px-4 sm:px-6 md:px-12 relative" aria-label="Cómo funciona">
+    <section id="como-funciona" className="bg-[#0a0a0a] dark:bg-white py-16 sm:py-20 px-4 sm:px-6 md:px-12 relative" aria-label="Cómo funciona">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16 md:mb-24">
           <SectionTag text="Proceso impecable" />
-          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#0a0a0a] dark:text-white mb-4 sm:mb-6 md:mb-8">
+          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white dark:text-[#0a0a0a] mb-4 sm:mb-6 md:mb-8">
             Tus clientes lo aman,<br /><span className="text-[#FF5C3A]">tú vendes más.</span>
           </h2>
-          <p className="font-dm-sans text-base sm:text-lg text-[#666] dark:text-white/60 max-w-2xl mx-auto font-light leading-relaxed">
+          <p className="font-dm-sans text-base sm:text-lg text-white/60 dark:text-[#666] max-w-2xl mx-auto font-light leading-relaxed">
             Una experiencia de 3 pasos diseñada para eliminar la fricción técnica y maximizar el deleite del cliente final.
           </p>
         </div>
@@ -61,7 +61,7 @@ export default function LandingSteps() {
               key={i}
               className="step-card group relative"
             >
-              <div className="relative aspect-[3/4] rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] overflow-hidden mb-6 sm:mb-8 border border-[#e8e4df] dark:border-white/10 bg-[#f0ece8] dark:bg-[#1a1a1a] shadow-sm transition-all duration-500 group-hover:shadow-xl">
+              <div className="relative aspect-[3/4] rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] overflow-hidden mb-6 sm:mb-8 border border-white/10 dark:border-[#e8e4df] bg-[#1a1a1a] dark:bg-[#f0ece8] shadow-sm transition-all duration-500 group-hover:shadow-xl">
                 <Image
                   src={step.img}
                   alt={step.alt}
@@ -73,8 +73,8 @@ export default function LandingSteps() {
                   {step.n}
                 </div>
               </div>
-              <h3 className="font-jakarta text-xl sm:text-2xl font-bold text-[#0a0a0a] dark:text-white mb-3 sm:mb-4 transition-colors group-hover:text-[#FF5C3A]">{step.title}</h3>
-              <p className="font-dm-sans text-[#666] dark:text-white/60 leading-relaxed text-sm font-light">
+              <h3 className="font-jakarta text-xl sm:text-2xl font-bold text-white dark:text-[#0a0a0a] mb-3 sm:mb-4 transition-colors group-hover:text-[#FF5C3A]">{step.title}</h3>
+              <p className="font-dm-sans text-white/60 dark:text-[#666] leading-relaxed text-sm font-light">
                 {step.desc}
               </p>
             </div>
