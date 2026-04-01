@@ -3,10 +3,29 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Instagram, Facebook, Globe, MessageCircle, ShieldCheck } from 'lucide-react';
+import { Instagram, Facebook, Globe, MessageCircle, ShieldCheck, Sun, Moon } from 'lucide-react';
 
 export default function LandingFooter() {
   const currentYear = new Date().getFullYear();
+  const [isDark, setIsDark] = React.useState(false);
+
+  React.useEffect(() => {
+    const stored = localStorage.getItem('theme');
+    if (stored === 'dark') {
+      setIsDark(true);
+    } else if (stored === 'light') {
+      setIsDark(false);
+    } else {
+      setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+  }, []);
+
+  const toggle = () => {
+    const next = !isDark;
+    setIsDark(next);
+    document.documentElement.classList.toggle('dark', next);
+    localStorage.setItem('theme', next ? 'dark' : 'light');
+  };
 
   return (
     <footer className="bg-[#080808] pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-8 sm:pb-10 md:pb-12 px-4 sm:px-6 md:px-12 border-t border-white/5 relative z-10" role="contentinfo">
@@ -106,6 +125,21 @@ export default function LandingFooter() {
             <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/30"><Globe size={14} aria-hidden="true" /> CALI. COLOMBIA</div>
             <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/30"><ShieldCheck size={14} aria-hidden="true" /> PCI Tier 1</div>
           </div>
+          <button
+            onClick={toggle}
+            aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 text-white/50 hover:text-white hover:border-white/20 hover:bg-white/5 transition-all text-xs font-medium"
+          >
+            {isDark ? (
+              <>
+                <Sun size={14} aria-hidden="true" /> Modo claro
+              </>
+            ) : (
+              <>
+                <Moon size={14} aria-hidden="true" /> Modo oscuro
+              </>
+            )}
+          </button>
         </div>
       </div>
     </footer>

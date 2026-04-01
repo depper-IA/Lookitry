@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Menu, X, User, LogOut, Layout, Zap, Terminal } from 'lucide-react';
 import { authService } from '@/services/auth.service';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 interface LandingNavProps {
   ctaHref?: string;
@@ -314,12 +313,6 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
                       USD
                     </button>
                   </div>
-                </div>
-
-                {/* Theme Toggle - Mobile */}
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Tema</span>
-                  <ThemeToggle />
                 </div>
 
                 <Link 

@@ -54,7 +54,7 @@ export function ReviewsSlider({ reviews, realReviewsCount, usingMockReviews }: R
   };
 
   return (
-    <section className="bg-[#f5f2ee] dark:bg-[#0d0d0d] px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20" aria-label="Reviews de clientes">
+    <section className="bg-white dark:bg-[#0d0d0d] px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20" aria-label="Reviews de clientes">
       <div className="mx-auto max-w-5xl sm:max-w-[1180px]">
         <div className="mb-8 sm:mb-10 text-center">
           <p className="mb-2 sm:mb-3 text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.12em] text-[#FF5C3A]">Reviews</p>
