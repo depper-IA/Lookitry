@@ -10,7 +10,7 @@ interface SelfieUploaderProps {
   welcomeMessage?: string;
 }
 
-export function SelfieUploader({ onUpload, primaryColor = '#6366f1', welcomeMessage }: SelfieUploaderProps) {
+export function SelfieUploader({ onUpload, primaryColor = '#FF5C3A', welcomeMessage }: SelfieUploaderProps) {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
