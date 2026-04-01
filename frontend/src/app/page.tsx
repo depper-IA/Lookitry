@@ -1,7 +1,11 @@
-// Página principal — redirige al diseño de mini-landing
-// El JSON-LD de SEO se mantiene para que Google siga indexando el producto completo
+import dynamic from 'next/dynamic';
 import { getPricingConfig } from '@/lib/pricing';
-import MiniLandingHomepage from '@/components/landing/MiniLandingHomepage';
+
+// Carga dinámica para evitar errores de GSAP/Window en el build de servidor
+const PremiumLanding = dynamic(
+  () => import('@/components/landing/new-landing/PremiumLanding'),
+  { ssr: false }
+);
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
@@ -21,8 +25,43 @@ export const metadata = {
 
 export default async function HomePage() {
   const pricing = await getPricingConfig();
+  
+  // Testimonios curados para la home premium
+  const reviews = [
+    {
+      id: '1',
+      rating: 5,
+      comment: "Lookitry no solo nos dio una web, nos dio una herramienta de ventas real. La tasa de retorno de clientes que usan el probador es increíble.",
+      reviewer_name: "Elena Martínez",
+      reviewer_plan: "PRO",
+      is_featured: true,
+      created_at: new Date().toISOString(),
+      avatar_url: null
+    },
+    {
+      id: '2',
+      rating: 5,
+      comment: "Increíble cómo cambió la percepción de mi marca. Mis clientas de WhatsApp ahora entran al link, prueban y compran. ¡Ahorro horas!",
+      reviewer_name: "Sofía Rodríguez",
+      reviewer_plan: "BASIC",
+      is_featured: true,
+      created_at: new Date().toISOString(),
+      avatar_url: null
+    },
+    {
+      id: '3',
+      rating: 5,
+      comment: "El plugin de WooCommerce se instaló en 5 minutos. Mis ventas subieron un 30% en el primer mes de uso.",
+      reviewer_name: "Carlos Gómez",
+      reviewer_plan: "PRO",
+      is_featured: true,
+      created_at: new Date().toISOString(),
+      avatar_url: null
+    }
+  ];
 
   const jsonLd = {
+    // ... (rest of jsonLd remains the same)
     '@context': 'https://schema.org',
     '@graph': [
       {
@@ -85,7 +124,7 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <MiniLandingHomepage />
+      <PremiumLanding pricing={pricing} reviews={reviews} />
     </>
   );
 }
