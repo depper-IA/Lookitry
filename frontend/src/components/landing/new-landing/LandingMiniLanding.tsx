@@ -13,7 +13,7 @@ export default function LandingMiniLanding() {
   ];
 
   return (
-    <section id="mini-landing" className="bg-white dark:bg-[#0d0d0d] py-16 sm:py-20 px-4 sm:px-6 overflow-hidden" aria-label="Mini Landing Pro">
+    <section id="mini-landing" className="bg-white dark:bg-[#0a0a0a] py-16 sm:py-20 px-4 sm:px-6 overflow-hidden" aria-label="Mini Landing Pro">
       <div className="max-w-7xl mx-auto px-0 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div>

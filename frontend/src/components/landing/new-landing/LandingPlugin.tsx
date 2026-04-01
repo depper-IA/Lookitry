@@ -24,7 +24,7 @@ export default function LandingPlugin() {
   ];
 
   return (
-    <section id="plugin" className="bg-white dark:bg-[#0d0d0d] py-20 sm:py-24 md:py-32 px-4 sm:px-6 overflow-hidden relative border-t border-[#eeebe7] dark:border-white/5" aria-label="Plugin WooCommerce">
+    <section id="plugin" className="bg-white dark:bg-[#0a0a0a] py-20 sm:py-24 md:py-32 px-4 sm:px-6 overflow-hidden relative border-t border-[#eeebe7] dark:border-white/5" aria-label="Plugin WooCommerce">
       <div className="max-w-7xl mx-auto px-0 sm:px-6">
         <div className="text-center lg:text-left mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#FF5C3A]/10 border border-[#FF5C3A]/20 text-[#FF5C3A] text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-4 sm:mb-6">

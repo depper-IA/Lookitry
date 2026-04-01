@@ -71,10 +71,10 @@ const FAQ_TABS = [
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-6 sm:mb-8 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] border shadow-sm transition-all ${light
-      ? 'bg-white/5 border-white/10 text-white/60'
+      ? 'bg-black/5 border-black/10 text-black/40 dark:bg-white/5 dark:border-white/10 dark:text-white/60'
       : 'bg-[#FF5C3A]/5 border-[#FF5C3A]/20 text-[#FF5C3A]'
     }`}>
-    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-white/40' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
+    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-black/20 dark:bg-white/40' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
     {text}
   </div>
 );
@@ -84,11 +84,11 @@ export default function LandingFaq() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   return (
-    <section className="bg-[#0a0a0a] py-20 sm:py-24 md:py-28 lg:py-40 px-4 sm:px-6 md:px-12 border-t border-white/5" aria-label="Preguntas frecuentes">
+    <section className="bg-white dark:bg-[#0a0a0a] py-20 sm:py-24 md:py-28 lg:py-40 px-4 sm:px-6 md:px-12 border-t border-[#eeebe7] dark:border-white/5" aria-label="Preguntas frecuentes">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12 sm:mb-16 md:mb-20">
           <SectionTag text="Resolviendo dudas" light />
-          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight mb-6 sm:mb-8">Preguntas <span className="text-[#FF5C3A]">frecuentes.</span></h2>
+          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#0a0a0a] dark:text-white tracking-tight mb-6 sm:mb-8">Preguntas <span className="text-[#FF5C3A]">frecuentes.</span></h2>
         </div>
 
         {/* Tabs */}
@@ -104,7 +104,7 @@ export default function LandingFaq() {
                 aria-controls={`faq-panel-${tab.id}`}
                 className={`flex items-center gap-2 sm:gap-2.5 px-4 sm:px-6 md:px-7 py-2.5 sm:py-3 md:py-3.5 rounded-xl sm:rounded-[1.2rem] text-[10px] sm:text-[11px] font-bold uppercase tracking-widest transition-all duration-300 border whitespace-nowrap ${active
                     ? 'bg-[#FF5C3A] border-[#FF5C3A] text-white shadow-2xl shadow-[#FF5C3A]/30'
-                    : 'bg-white/5 border-white/5 text-white/40 hover:bg-white/10 hover:text-white/60'
+                    : 'bg-[#f8f6f4] dark:bg-white/5 border-[#e8e4df] dark:border-white/5 text-[#666] dark:text-white/40 hover:bg-[#eeebe7] dark:hover:bg-white/10 hover:text-[#0a0a0a] dark:hover:text-white/60'
                   }`}
               >
                 {tab.icon} {tab.label}
@@ -114,26 +114,26 @@ export default function LandingFaq() {
         </div>
 
         {/* Accordion */}
-        <div id={`faq-panel-${activeTab}`} className="bg-[#111] border border-white/5 rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-8 lg:p-10 shadow-2xl overflow-hidden" role="tabpanel">
+        <div id={`faq-panel-${activeTab}`} className="bg-[#f8f6f4] dark:bg-[#111] border border-[#e8e4df] dark:border-white/5 rounded-2xl sm:rounded-[2rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-8 lg:p-10 shadow-sm dark:shadow-2xl overflow-hidden" role="tabpanel">
           {FAQ_TABS.find(t => t.id === activeTab)?.items.map((item, idx) => {
             const open = openFaqIndex === idx;
             return (
-              <div key={idx} className="border-b border-white/5 last:border-0 font-dm-sans">
+              <div key={idx} className="border-b border-[#e8e4df] dark:border-white/5 last:border-0 font-dm-sans">
                 <button
                   onClick={() => setOpenFaqIndex(open ? null : idx)}
                   aria-expanded={open}
                   className="w-full py-5 sm:py-6 md:py-7 flex items-center justify-between text-left group transition-all"
                 >
-                  <span className={`font-jakarta text-base sm:text-lg font-bold pr-4 transition-all duration-300 ${open ? 'text-[#FF5C3A]' : 'text-white/70 group-hover:text-white'}`}>
+                  <span className={`font-jakarta text-base sm:text-lg font-bold pr-4 transition-all duration-300 ${open ? 'text-[#FF5C3A]' : 'text-[#0a0a0a] dark:text-white/70 group-hover:text-[#0a0a0a] dark:group-hover:text-white'}`}>
                     {item.q}
                   </span>
-                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center shrink-0 transition-all duration-500 ${open ? 'bg-[#FF5C3A] border-[#FF5C3A] rotate-180' : 'border-white/10 text-white/20'
+                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border flex items-center justify-center shrink-0 transition-all duration-500 ${open ? 'bg-[#FF5C3A] border-[#FF5C3A] rotate-180' : 'border-[#e8e4df] dark:border-white/10 text-[#666] dark:text-white/20'
                     }`} aria-hidden="true">
                     <ChevronDown size={18} />
                   </div>
                 </button>
                 {open && (
-                  <div className="pb-6 sm:pb-8 text-white/50 text-sm leading-relaxed max-w-3xl animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="pb-6 sm:pb-8 text-[#666] dark:text-white/50 text-sm leading-relaxed max-w-3xl animate-in fade-in slide-in-from-top-2 duration-300">
                     {item.a}
                   </div>
                 )}

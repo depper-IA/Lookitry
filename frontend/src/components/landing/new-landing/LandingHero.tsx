@@ -7,32 +7,32 @@ import { ArrowRight, ShieldCheck, Clock, Sparkles, Camera, Check } from 'lucide-
 
 const SectionTag = ({ text, light = false }: { text: string; light?: boolean }) => (
   <div className={`inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-6 sm:mb-8 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] border shadow-sm transition-all ${light
-      ? 'bg-white/5 border-white/10 text-white/60 dark:bg-black/5 dark:border-black/10 dark:text-black/40'
+      ? 'bg-black/5 border-black/10 text-black/40 dark:bg-white/5 dark:border-white/10 dark:text-white/60'
       : 'bg-[#FF5C3A]/5 border-[#FF5C3A]/20 text-[#FF5C3A]'
     }`}>
-    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-white/40 dark:bg-black/20' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
+    <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${light ? 'bg-black/20 dark:bg-white/40' : 'bg-[#FF5C3A]'}`} aria-hidden="true" />
     {text}
   </div>
 );
 
 export default function LandingHero() {
   return (
-    <section id="hero" className="relative min-h-screen flex items-center pt-24 sm:pt-32 pb-16 sm:pb-24 px-4 sm:px-6 md:px-12 overflow-hidden bg-[#0a0a0a] dark:bg-[#0a0a0a]" aria-label="Sección principal">
+    <section id="hero" className="relative min-h-screen flex items-center pt-24 sm:pt-32 pb-16 sm:pb-24 px-4 sm:px-6 md:px-12 overflow-hidden bg-white dark:bg-[#0a0a0a]" aria-label="Sección principal">
       <div className="absolute inset-0 z-0" aria-hidden="true">
         <div className="bg-circle absolute top-[-10%] right-[-10%] w-[80vw] h-[80vw] bg-[#FF5C3A]/5 blur-[200px] rounded-full" />
-        <div className="bg-circle absolute bottom-[-10%] left-[-10%] w-[60vw] h-[60vw] bg-white/5 blur-[150px] rounded-full" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay" />
+        <div className="bg-circle absolute bottom-[-10%] left-[-10%] w-[60vw] h-[60vw] bg-black/5 dark:bg-white/5 blur-[150px] rounded-full" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 dark:opacity-20 pointer-events-none mix-blend-overlay" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         <div className="text-center lg:text-left">
           <SectionTag text="Revolución Visual con IA" />
           <h1 className="font-jakarta text-3xl sm:text-[44px] md:text-[56px] lg:text-[64px] font-black leading-[1.1] tracking-[-0.03em] sm:tracking-[-0.04em] mb-6 sm:mb-8">
-            <span className="block text-white">Vende más con el</span>
+            <span className="block text-[#0a0a0a] dark:text-white">Vende más con el</span>
             <span className="block text-[#FF5C3A]">Probador Virtual</span>
-            <span className="block text-white">Nº1 de Latinoamérica.</span>
+            <span className="block text-[#0a0a0a] dark:text-white">Nº1 de Latinoamérica.</span>
           </h1>
-          <p className="font-dm-sans text-base sm:text-lg text-white/80 max-w-xl mx-auto lg:mx-0 mb-8 sm:mb-12 leading-[1.6] font-light">
+          <p className="font-dm-sans text-base sm:text-lg text-[#666] dark:text-white/80 max-w-xl mx-auto lg:mx-0 mb-8 sm:mb-12 leading-[1.6] font-light">
             Tu tienda online, <span className="text-[#FF5C3A] font-bold">sin pagar un diseñador.</span> Permite que tus clientes se prueben tu catálogo en segundos con IA.
           </p>
 
@@ -41,12 +41,12 @@ export default function LandingHero() {
               Obtén Acceso Premium
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" aria-hidden="true" />
             </Link>
-            <Link href="#como-funciona" className="bg-white/5 text-white px-6 sm:px-10 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 text-sm sm:text-base">
+            <Link href="#como-funciona" className="bg-black/5 dark:bg-white/5 text-[#0a0a0a] dark:text-white px-6 sm:px-10 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold border border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 transition-all flex items-center gap-2 text-sm sm:text-base">
                Ver cómo funciona
             </Link>
           </div>
 
-          <div className="mt-12 sm:mt-16 flex flex-wrap justify-center lg:justify-start items-center gap-6 sm:gap-10 text-white/80 font-bold text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.25em]">
+          <div className="mt-12 sm:mt-16 flex flex-wrap justify-center lg:justify-start items-center gap-6 sm:gap-10 text-[#666] dark:text-white/80 font-bold text-[9px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.25em]">
             <div className="flex items-center gap-2 sm:gap-2.5 hover:text-[#FF5C3A] transition-colors">
               <ShieldCheck size={14} className="text-[#FF5C3A] shrink-0" aria-hidden="true" /> 100% Seguro
             </div>
