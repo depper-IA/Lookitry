@@ -1,5 +1,27 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-01] - Auditoría del dashboard admin completada
+
+### Cambios Realizados
+- **Backend - Nuevos endpoints administrativos**:
+  - `GET /api/admin/stats/mission-control`: Dashboard ejecutivo con métricas clave
+  - `GET /api/admin/risk`: Datos de riesgo y churn por cuenta
+  - `GET /api/admin/economics`: Economía unitaria y márgenes
+  - `GET /api/admin/audit-log`: Historial de acciones administrativas
+  - `GET /api/admin/brands/:id/full`: Ficha completa de marca con contexto total
+
+- **Frontend - Configuración limpiada**:
+  - Eliminadas pestañas obsoletas (debug, credits, ai, health) de configuracion/page.tsx
+  - Mantenidas solo pestañas relevantes (trial, contact)
+
+### Archivos Modificados
+- `backend/src/services/admin.service.ts` (nuevos métodos de servicio)
+- `backend/src/controllers/admin.controller.ts` (nuevos handlers)
+- `backend/src/routes/admin.routes.ts` (nuevas rutas)
+- `frontend/src/app/admin/configuracion/page.tsx` (limpieza de pestañas)
+
+---
+
 ## [2026-04-01] - Navbar móvil mejorado y menú mobile con estilo premium
 
 ### Cambios Realizados
