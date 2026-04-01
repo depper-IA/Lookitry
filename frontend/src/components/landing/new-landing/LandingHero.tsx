@@ -105,7 +105,7 @@ export default function LandingHero() {
                    { name: 'Camisa Lino Beige', price: '$120K', img: '/products/camisa_lino_beige.png', active: true },
                    { name: 'Zapatilla Urban Classic', price: '$240K', img: '/images/photo-1549298916-b41d501d3772.jpeg', active: false },
                    { name: 'Bolso Artisan Pro', price: '$180K', img: '/images/photo-1584917865442-de89df76afd3.jpeg', active: false },
-                   { name: 'Vestido Summer', price: '$350K', img: '/steps/paso-3.webp', active: false }
+                   { name: 'Zapatilla Blanca', price: '$350K', img: '/products/zapatilla_blanca.png', active: false }
                 ].map((prod, i) => (
                   <div 
                     key={i} 
