@@ -1,8 +1,8 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { LandingNav } from '@/components/landing/LandingNav';
-import { LandingFooter } from '@/components/landing/LandingFooter';
+import LandingNav from '@/components/landing/new-landing/LandingNav';
+import LandingFooter from '@/components/landing/new-landing/LandingFooter';
 import { BlogShareRail } from '@/components/blog/BlogShareRail';
 import { fetchBlogPostBySlug, fetchRecentBlogPosts, getBlogFeaturedImage, getBlogShareImage, getBlogTeaser } from '@/services/blog.service';
 import { Calendar, Tag, ChevronLeft, ArrowUpRight } from 'lucide-react';
@@ -148,12 +148,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] selection:bg-[#FF5C3A]/30 pb-20">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <LandingNav />
+      <main className="min-h-screen bg-[#0a0a0a] selection:bg-[#FF5C3A]/30 pb-20">
       <BlogShareRail title={post.title} url={shareUrl} />
 
       {/* Header del articulo */}
@@ -347,10 +348,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           </section>
         )}
       </article>
-
-      <div className="mt-20">
-        <LandingFooter />
-      </div>
     </main>
+    <LandingFooter />
+    </>
   );
 }
