@@ -1,5 +1,261 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-01] - Theme toggle en footer, fondo blanco light mode, fixes responsive
+
+### Cambios Realizados
+- **ThemeToggle**: Movido del navbar al footer. Botón "Modo claro / Modo oscuro" en la barra inferior del footer. Sincronización correcta con `useState` + `useEffect` para evitar desincronización SSR.
+- **Fondo blanco en light mode**: Todas las secciones de la landing ahora usan `bg-white dark:bg-[#0a0a0a]` con textos adaptativos (`text-[#0a0a0a] dark:text-white`).
+- **Secciones actualizadas**: Hero, Stats, Steps, MiniLanding, Plugin, Pricing, Payments, Reviews, Faq — todas con variantes `dark:` correctas.
+- **Eliminada sección duplicada de reviews**: Removido `LandingReviews` de `PremiumLanding.tsx`. Queda solo `ReviewsSlider` con funcionalidad dinámica (carrusel, paginación, mock reviews).
+- **Navbar z-index corregido**: Cambiado de `z-[60]` a `z-[70]` para que quede encima del PromoBanner.
+- **globals.css**: `--bg-base` cambiado de `#f5f2ee` a `#ffffff` para fondo blanco puro en light mode.
+- **Layout script inline**: Mejorado para respetar `prefers-color-scheme` del sistema operativo si no hay preferencia guardada.
+- **ThemeToggle component**: Ahora detecta `prefers-color-scheme`, usa `useCallback` para optimización, y tiene `aria-label` dinámico.
+
+### Archivos Modificados
+- `frontend/src/app/globals.css`
+- `frontend/src/app/layout.tsx`
+- `frontend/src/components/ui/ThemeToggle.tsx`
+- `frontend/src/components/landing/new-landing/PremiumLanding.tsx`
+- `frontend/src/components/landing/new-landing/LandingNav.tsx`
+- `frontend/src/components/landing/new-landing/LandingFooter.tsx`
+- `frontend/src/components/landing/new-landing/LandingHero.tsx`
+- `frontend/src/components/landing/new-landing/LandingStats.tsx`
+- `frontend/src/components/landing/new-landing/LandingSteps.tsx`
+- `frontend/src/components/landing/new-landing/LandingMiniLanding.tsx`
+- `frontend/src/components/landing/new-landing/LandingPlugin.tsx`
+- `frontend/src/components/landing/new-landing/LandingPricing.tsx`
+- `frontend/src/components/landing/new-landing/LandingPayments.tsx`
+- `frontend/src/components/landing/new-landing/LandingReviews.tsx`
+- `frontend/src/components/landing/new-landing/LandingFaq.tsx`
+- `frontend/src/components/landing/LandingNav.tsx`
+- `frontend/src/components/landing/ReviewsSlider.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Auditoría UI/UX: el selector dark/light no funcionaba correctamente (invertido), la página no se ponía blanca en light mode, el nav se ocultaba detrás del PromoBanner, y la sección de reviews estaba duplicada.
+
+---
+
+## [2026-04-01] - Inversión del funnel de checkout
+
+### Cambios Realizados
+- **Backend**:
+  - Nuevo endpoint `GET /api/auth/check-email?email=xxx` para verificar si el email ya existe
+  - Método `checkEmailExists()` en `auth.service.ts`
+  - Método `checkEmail()` en `auth.controller.ts`
+- **StepProgress.tsx**:
+  - Orden de pasos invertido: `Tus Datos` → `Plan` → `Pago` → `Acceso`
+- **checkout/page.tsx**:
+  - **Paso 1 (antes Plan)**: Ahora es "Tus Datos" con validación de email existente
+  - **Paso 2 (antes Datos)**: Ahora es "Elige tu plan"
+  - Validación de email en `onBlur` que llama al backend
+  - Si el email existe: mensaje "Este correo ya tiene una cuenta. Usa uno diferente o inicia sesión."
+  - Botón "CONTINUAR" en paso 1, "IR AL PAGO" en paso 2
+
+### Archivos Modificados
+- `backend/src/services/auth.service.ts`
+- `backend/src/controllers/auth.controller.ts`
+- `backend/src/routes/auth.routes.ts`
+- `frontend/src/components/payments/StepProgress.tsx`
+- `frontend/src/app/checkout/page.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Auditoría #2 (Registro y pago). Inversión del funnel para que el usuario ingrese sus datos primero y se valide que el email no esté registrado antes de elegir plan.
+
+---
+
+## [2026-04-01] - Completitud de mejoras de UX post-pago (Fase 2)
+
+### Cambios Realizados
+- **Checkout (mensajes unificados)**:
+  - Estado success ahora indica el método de pago usado (Wompi/PayPal)
+- **Historial de pagos (comprobantes)**:
+  - Nuevo modal de comprobante con todos los detalles del pago
+  - Botón de descarga en cada fila del historial
+  - Muestra: fecha, monto, método, referencia (copiable), notas
+- **Cambios programados (panel dedicado)**:
+  - Nueva sección que muestra cambios de plan pendientes/procesando
+  - Visualización de upgrades y downgrades con estado
+  - Implementado endpoint `/api/brands/me/pending-changes`
+  - Backend: método `getByBrand` en PlanChangeService
+  - Frontend: sección condicional con iconos diferenciados
+
+### Archivos Modificados
+- `frontend/src/app/dashboard/checkout/page.tsx`
+- `frontend/src/app/dashboard/subscription/page.tsx`
+- `frontend/src/services/subscription.service.ts`
+- `frontend/src/types/index.ts`
+- `backend/src/services/planChange.service.ts`
+- `backend/src/routes/brands.routes.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Segunda fase de implementación de recomendaciones de auditoría de pago interno:
+1. Unificación de mensajes UX entre Wompi y PayPal
+2. Comprobantes/trazabilidad de pagos
+3. Panel de cambios programados visible
+
+---
+
+## [2026-04-01] - Mejoras de UX post-pago según auditoría de pago interno (Fase 1)
+
+### Cambios Realizados
+- **Checkout (estado de verificación)**:
+  - Añadido ETA explícito: "Tiempo estimado: menos de 2 minutos"
+  - Mejora del mensaje "Qué esperar ahora" con instrucciones claras
+  - Añadido enlace directo a soporte con referencia del pago pegada
+- **Suscripción (hero card)**:
+  - Añadido bloque "Próximo cobro" visible cuando la suscripción está activa
+  - Muestra monto a pagar + fecha exacta de renovación
+- **Historial de pagos**:
+  - Añadida columna "Referencia" con posibilidad de copiar al portapapeles
+  - Mejorada trazabilidad de cada transacción
+- **Tipos TypeScript**:
+  - Añadido campo `reference` a `SubscriptionPayment` para mejor trazabilidad
+
+### Archivos Modificados
+- `frontend/src/app/dashboard/checkout/page.tsx`
+- `frontend/src/app/dashboard/subscription/page.tsx`
+- `frontend/src/types/index.ts`
+- `frontend/src/services/subscription.service.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Implementación de recomendaciones de prioridad crítica de la auditoría de pago interno post-compra:
+1. Estado post-pago con referencia, monto, método y ETA
+2. Visibilidad del próximo cobro y fecha exacta
+3. Historial de pagos más trazable
+
+---
+
+## [2026-04-01] - Fase 2 auditoría landing y sitio público
+
+### Cambios Realizados
+- **LandingClient.tsx**:
+  - **Nueva sección "Por qué Lookitry"**: Sección de diferenciación con 3 beneficios clave antes del pricing
+  - **Pricing movido**: Ahora aparece después de "Cómo funciona" y "Mini-landing" (antes era muy temprano)
+  - **Mini-landing aclarada**: Cambiado badge a "Complemento del plan mensual" + descripción del precio
+- **LandingFooter.tsx**:
+  - **Footer reordenado por intención**: Producto → Empresa → Soporte → Legal
+  - **Nuevo bloque "Soporte"**: Contacto y Estado del servicio
+  - **Cambiado "Ecosistema" → "Producto"**
+  - **Removido "Probador Virtual"** del footer
+
+### Archivos Modificados
+- `frontend/src/components/landing/LandingFooter.tsx`
+- `frontend/src/components/landing/LandingClient.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Auditorías #4 (landing) y #2 (sitio público). Fase 2 - Mejoras de conversión.
+
+---
+
+## [2026-04-01] - Fase 3 auditoría landing y sitio público
+
+### Cambios Realizados
+- **LandingNav.tsx**:
+  - Selector de moneda movido de la izquierda (prominente) al lado derecho (junto a botones)
+  - Visible solo en desktop (xl) para reducir ruido visual
+- **politicas-privacidad/page.tsx**:
+  - Agregado cierre comercial: "Ver planes" al final de la página
+- **aviso-legal/page.tsx**:
+  - Agregado cierre comercial: "Hablar con ventas" al final de la página
+- **terminos/TerminosClient.tsx**:
+  - Cierre comercial actualizado: "Ver planes y precios" (antes llevaba a "Sobre nosotros")
+- **LandingClient.tsx**:
+  - Nueva sección comparativa "Sin probador vs con Lookitry" (antes de "Por qué Lookitry")
+  - Mejorado contraste de texto: `#666` → `#888` en tagline
+
+### Archivos Modificados
+- `frontend/src/components/landing/LandingNav.tsx`
+- `frontend/src/app/politicas-privacidad/page.tsx`
+- `frontend/src/app/aviso-legal/page.tsx`
+- `frontend/src/app/terminos/TerminosClient.tsx`
+- `frontend/src/components/landing/LandingClient.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Auditorías #4 (landing) y #2 (sitio público). Fase 3 - Diferenciación y cierre comercial.
+
+---
+
+## [2026-04-01] - Fase 1 auditoría landing y sitio público
+
+### Cambios Realizados
+- **LandingFooter.tsx**:
+  - Removido enlace "Admin" del footer público (línea 193)
+- **LandingClient.tsx**:
+  - CTA del mockup: "Generar prueba virtual" → "Ver planes y precios"
+  - Métricas con contexto: agregados subtitles explicativos
+    - "+30 marcas activas en LATAM"
+    - "18K+ pruebas generadas Este mes"
+    - "4.8/5 satisfacción Basado en encuestas reales"
+
+### Archivos Modificados
+- `frontend/src/components/landing/LandingFooter.tsx`
+- `frontend/src/components/landing/LandingClient.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Auditorías #4 (landing) y #2 (sitio público). Quick wins Fase 1.
+
+---
+
+## [2026-04-01] - Completitud de auditoría n8n
+
+### Cambios Realizados
+- **n8n Workflow `wPLypk7KhBcFLicX` (Virtual Try-On)**:
+  - **Clasificación de errores**: Agregados 2 Switch nodes:
+    - `Clasificar Error Generacion`: Timeout → 504, Credits agotados → 502, Respuesta inválida → 502
+    - `Clasificar Upload`: Upload fallido → 500
+  - **Respuestas diferenciadas**: 4 nodos de respuesta según tipo de error
+  - **Nodos totales**: 15 (de 10 originales)
+- **upload.service.ts (Backend)**:
+  - Nuevo método `cleanupTempFiles()` para limpiar selfies temporales de MinIO
+  - Lista y elimina objetos del folder `temp/` mayores a N horas
+- **app.ts (Backend)**:
+  - Nuevo endpoint `POST /api/upload/cleanup-temp?maxAgeHours=24`
+  - Limpieza automática de archivos temporales
+
+### Archivos Modificados
+- `n8n workflow wPLypk7KhBcFLicX` (actualizado vía API)
+- `backend/src/services/upload.service.ts`
+- `backend/src/app.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Nota
+- Token ya usaba credenciales n8n (no había problema de seguridad)
+
+---
+
+## [2026-04-01] - Mejoras al widget premium según auditoría n8n
+
+### Cambios Realizados
+- **n8n.client.ts (Backend)**:
+  - Timeout alineado de 90s → 120s (coincide con timeout de n8n)
+- **n8n Workflow `wPLypk7KhBcFLicX` (Virtual Try-On)**:
+  - **Respuesta con telemetría**: Agregado `_meta` con `model`, `executionId`, `generatedAt`
+  - **Nodo renombrado**: "Eliminar Selfie Temporal" → "Limpieza Temporal (pendiente)"
+  - **pinData limpiado**: Removidos datos sensibles del workflow exportado
+  - **Mejora de respuesta**: Ahora devuelve `{ success, imageUrl, _meta: { model, executionId, generatedAt } }`
+
+### Archivos Modificados
+- `backend/src/services/n8n.client.ts`
+- `n8n workflow wPLypk7KhBcFLicX` (actualizado vía API)
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Aplicación de mejoras al widget premium identificadas en la auditoría del workflow n8n:
+1. Alineación de timeouts para evitar cortes prematuros
+2. Telemetría básica para trazabilidad operativa
+3. Limpieza de pinData por seguridad
+4. Clarificación del nodo noOp
+
+---
+
 ## [2026-04-01] - Correcciones de blindaje según auditoría n8n y reglas_importantes.md
 
 ### Cambios Realizados
