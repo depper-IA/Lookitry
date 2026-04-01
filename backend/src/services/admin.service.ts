@@ -1186,4 +1186,508 @@ export class AdminService {
 
     return (data?.data || {}) as PricingMetaData;
   }
+
+  async getMissionControl() {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [brandsRes, paymentsRes, feedbackRes, generationsRes] = await Promise.all([
+      supabaseAdmin.from('brands').select('id, name, email, plan, subscription_status, trial_end_date, subscription_end_date, has_landing_page, landing_suspended_at, created_at'),
+      supabaseAdmin.from('subscription_payments').select('id, brand_id, amount, status, payment_date, payment_method, brands(name, email, plan)').eq('status', 'failed').order('payment_date', { ascending: false }).limit(20),
+      supabaseAdmin.from('generation_feedback').select('id, brand_id, error_type, created_at, resolved').eq('resolved', false).order('created_at', { ascending: false }).limit(20),
+      supabaseAdmin.from('generations').select('id, brand_id, status, generated_at, error_message').eq('status', 'FAILED').gte('generated_at', startOfMonth.toISOString()).order('generated_at', { ascending: false }).limit(50),
+    ]);
+
+    const brands = brandsRes.data || [];
+    const failedPayments = paymentsRes.data || [];
+    const unresolvedFeedback = feedbackRes.data || [];
+    const failedGenerations = generationsRes.data || [];
+
+    const trialsExpiringSoon = brands.filter(b => {
+      if (b.plan !== 'TRIAL' || !b.trial_end_date) return false;
+      const trialEnd = new Date(b.trial_end_date);
+      const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return daysLeft >= 0 && daysLeft <= 3;
+    }).map(b => {
+      const trialEnd = new Date(b.trial_end_date!);
+      const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return { id: b.id, name: b.name, email: b.email, days_left: daysLeft, trial_end_date: b.trial_end_date };
+    });
+
+    const trialsStalled = brands.filter(b => {
+      if (b.plan !== 'TRIAL' || !b.trial_end_date) return false;
+      const trialEnd = new Date(b.trial_end_date);
+      const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return daysLeft > 3;
+    });
+
+    const suspendedLandings = brands.filter(b => b.landing_suspended_at).map(b => ({
+      id: b.id, name: b.name, email: b.email, suspended_at: b.landing_suspended_at,
+    }));
+
+    const expiringSubscriptions = brands.filter(b => {
+      if (!b.subscription_end_date) return false;
+      if (b.subscription_status !== 'active' && b.subscription_status !== 'expiring_soon') return false;
+      const subEnd = new Date(b.subscription_end_date);
+      const daysLeft = Math.ceil((subEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return daysLeft >= 0 && daysLeft <= 7;
+    }).map(b => {
+      const subEnd = new Date(b.subscription_end_date!);
+      const daysLeft = Math.ceil((subEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return { id: b.id, name: b.name, email: b.email, plan: b.plan, days_left: daysLeft, subscription_end_date: b.subscription_end_date };
+    });
+
+    const brandsWithFailedPayments = new Set(failedPayments.map(p => p.brand_id));
+
+    const criticalAlerts: Array<{ type: string; message: string; severity: 'critical' | 'warning'; count?: number }> = [];
+
+    if (failedPayments.length > 0) {
+      criticalAlerts.push({ type: 'failed_payments', message: `${failedPayments.length} pagos fallidos recientes`, severity: 'critical', count: failedPayments.length });
+    }
+    if (trialsExpiringSoon.length > 0) {
+      criticalAlerts.push({ type: 'trials_expiring', message: `${trialsExpiringSoon.length} trials expiran en 3 días o menos`, severity: 'warning', count: trialsExpiringSoon.length });
+    }
+    if (unresolvedFeedback.length > 5) {
+      criticalAlerts.push({ type: 'feedback_backlog', message: `${unresolvedFeedback.length} feedbacks sin resolver`, severity: 'warning', count: unresolvedFeedback.length });
+    }
+    if (expiringSubscriptions.length > 0) {
+      criticalAlerts.push({ type: 'subscriptions_expiring', message: `${expiringSubscriptions.length} suscripciones expiran en 7 días`, severity: 'warning', count: expiringSubscriptions.length });
+    }
+
+    const operationalQueue: Array<{ type: string; label: string; brand_id?: string; priority: 'high' | 'medium' | 'low' }> = [];
+
+    for (const trial of trialsExpiringSoon) {
+      operationalQueue.push({ type: 'trial_expiring', label: `Trial de ${trial.name} expira en ${trial.days_left}d`, brand_id: trial.id, priority: 'high' });
+    }
+    for (const sub of expiringSubscriptions) {
+      operationalQueue.push({ type: 'subscription_expiring', label: `Suscripción de ${sub.name} (${sub.plan}) expira en ${sub.days_left}d`, brand_id: sub.id, priority: 'high' });
+    }
+    for (const brandId of brandsWithFailedPayments) {
+      const brand = brands.find(b => b.id === brandId);
+      if (brand) {
+        operationalQueue.push({ type: 'failed_payment', label: `Pago fallido de ${brand.name}`, brand_id: brandId, priority: 'high' });
+      }
+    }
+
+    return {
+      alerts: criticalAlerts,
+      operational_queue: operationalQueue,
+      trials_expiring_soon: trialsExpiringSoon,
+      trials_stalled: trialsStalled.map(b => ({ id: b.id, name: b.name, email: b.email, trial_end_date: b.trial_end_date })),
+      subscriptions_expiring: expiringSubscriptions,
+      failed_payments_recent: failedPayments.slice(0, 10),
+      unresolved_feedback_count: unresolvedFeedback.length,
+      failed_generations_recent: failedGenerations.slice(0, 10),
+      suspended_landings: suspendedLandings,
+      summary: {
+        total_brands: brands.length,
+        total_trials: brands.filter(b => b.plan === 'TRIAL').length,
+        total_active_subscriptions: brands.filter(b => b.subscription_status === 'active' || b.subscription_status === 'expiring_soon').length,
+        critical_alerts_count: criticalAlerts.filter(a => a.severity === 'critical').length,
+        queue_items_count: operationalQueue.length,
+      },
+    };
+  }
+
+  async getRiskData() {
+    const now = new Date();
+
+    const { data: brands, error } = await supabaseAdmin
+      .from('brands')
+      .select('id, name, email, plan, subscription_status, trial_end_date, subscription_end_date, created_at, has_landing_page');
+
+    if (error || !brands) {
+      throw new Error('Error al obtener datos de riesgo: ' + error?.message);
+    }
+
+    const { data: generations, error: genError } = await supabaseAdmin
+      .from('generations')
+      .select('brand_id, status, generated_at')
+      .gte('generated_at', new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString());
+
+    if (genError) {
+      console.error('Error getting generations for risk:', genError);
+    }
+
+    const genByBrand = new Map<string, { total: number; failed: number; last_at: string | null }>();
+    for (const g of generations || []) {
+      const existing = genByBrand.get(g.brand_id) || { total: 0, failed: 0, last_at: null };
+      existing.total += 1;
+      if (g.status === 'FAILED') existing.failed += 1;
+      if (!existing.last_at || g.generated_at > existing.last_at) existing.last_at = g.generated_at;
+      genByBrand.set(g.brand_id, existing);
+    }
+
+    const { data: failedPayments, error: payError } = await supabaseAdmin
+      .from('subscription_payments')
+      .select('brand_id, payment_date, amount')
+      .eq('status', 'failed')
+      .gte('payment_date', new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000).toISOString());
+
+    if (payError) {
+      console.error('Error getting failed payments for risk:', payError);
+    }
+
+    const failedPayByBrand = new Map<string, number>();
+    for (const p of failedPayments || []) {
+      failedPayByBrand.set(p.brand_id, (failedPayByBrand.get(p.brand_id) || 0) + 1);
+    }
+
+    const riskBrands: Array<{
+      id: string; name: string; email: string; plan: string;
+      risk_score: number; risk_factors: string[];
+      subscription_status: string | null; trial_end_date: string | null;
+      generations_30d: number; failed_generations_30d: number;
+      failed_payments_60d: number; last_generation: string | null;
+    }> = [];
+
+    for (const brand of brands) {
+      const riskFactors: string[] = [];
+      let riskScore = 0;
+
+      const genStats = genByBrand.get(brand.id) || { total: 0, failed: 0, last_at: null };
+      const failedPayCount = failedPayByBrand.get(brand.id) || 0;
+
+      if (brand.plan === 'TRIAL' && brand.trial_end_date) {
+        const trialEnd = new Date(brand.trial_end_date);
+        const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        if (daysLeft <= 3 && daysLeft >= 0) {
+          riskFactors.push(`Trial expira en ${daysLeft} días`);
+          riskScore += 30;
+        } else if (daysLeft < 0) {
+          riskFactors.push('Trial vencido sin conversión');
+          riskScore += 50;
+        }
+      }
+
+      if (brand.plan !== 'TRIAL' && genStats.total === 0) {
+        riskFactors.push('Sin generaciones registradas');
+        riskScore += 25;
+      }
+
+      if (genStats.total > 0 && genStats.total <= 2) {
+        riskFactors.push('Uso muy bajo (1-2 generaciones en 30 días)');
+        riskScore += 20;
+      }
+
+      if (genStats.total > 0 && genStats.failed / genStats.total > 0.5) {
+        riskFactors.push(`Alta tasa de error (${Math.round((genStats.failed / genStats.total) * 100)}%)`);
+        riskScore += 25;
+      }
+
+      if (failedPayCount >= 2) {
+        riskFactors.push(`${failedPayCount} pagos fallidos en 60 días`);
+        riskScore += 30;
+      }
+
+      if (brand.subscription_status === 'suspended') {
+        riskFactors.push('Suscripción suspendida');
+        riskScore += 40;
+      }
+
+      if (brand.has_landing_page === false && brand.plan !== 'TRIAL') {
+        riskFactors.push('Sin mini-landing activada');
+        riskScore += 10;
+      }
+
+      if (genStats.last_at) {
+        const lastGen = new Date(genStats.last_at);
+        const daysSinceLastGen = Math.floor((now.getTime() - lastGen.getTime()) / (1000 * 60 * 60 * 24));
+        if (daysSinceLastGen > 14 && (brand.plan === 'PRO' || brand.plan === 'BASIC')) {
+          riskFactors.push(`Sin uso hace ${daysSinceLastGen} días`);
+          riskScore += 20;
+        }
+      }
+
+      if (riskScore > 0) {
+        riskBrands.push({
+          id: brand.id,
+          name: brand.name,
+          email: brand.email,
+          plan: brand.plan,
+          risk_score: Math.min(riskScore, 100),
+          risk_factors: riskFactors,
+          subscription_status: brand.subscription_status,
+          trial_end_date: brand.trial_end_date,
+          generations_30d: genStats.total,
+          failed_generations_30d: genStats.failed,
+          failed_payments_60d: failedPayCount,
+          last_generation: genStats.last_at,
+        });
+      }
+    }
+
+    riskBrands.sort((a, b) => b.risk_score - a.risk_score);
+
+    return {
+      risk_brands: riskBrands,
+      summary: {
+        total_at_risk: riskBrands.length,
+        high_risk: riskBrands.filter(b => b.risk_score >= 50).length,
+        medium_risk: riskBrands.filter(b => b.risk_score >= 25 && b.risk_score < 50).length,
+        low_risk: riskBrands.filter(b => b.risk_score < 25).length,
+      },
+    };
+  }
+
+  async getEconomics() {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const { data: brands, error: brandsError } = await supabaseAdmin
+      .from('brands')
+      .select('id, name, plan, subscription_status, created_at');
+
+    if (brandsError || !brands) {
+      throw new Error('Error al obtener datos de economía: ' + brandsError?.message);
+    }
+
+    const { data: payments, error: payError } = await supabaseAdmin
+      .from('subscription_payments')
+      .select('brand_id, amount, currency, status, payment_date, payment_method, notes');
+
+    if (payError) {
+      console.error('Error getting payments for economics:', payError);
+    }
+
+    const completedPayments = (payments || []).filter(p => p.status === 'completed');
+
+    const revenueByPlan: Record<string, { total: number; count: number }> = { BASIC: { total: 0, count: 0 }, PRO: { total: 0, count: 0 }, TRIAL: { total: 0, count: 0 }, ENTERPRISE: { total: 0, count: 0 } };
+    for (const payment of completedPayments) {
+      const brand = brands.find(b => b.id === payment.brand_id);
+      const plan = brand?.plan || 'BASIC';
+      const amount = Number(payment.amount) || 0;
+      if (!revenueByPlan[plan]) revenueByPlan[plan] = { total: 0, count: 0 };
+      revenueByPlan[plan].total += amount;
+      revenueByPlan[plan].count += 1;
+    }
+
+    const { data: generations, error: genError } = await supabaseAdmin
+      .from('generations')
+      .select('brand_id, status, generated_at')
+      .gte('generated_at', startOfMonth.toISOString());
+
+    if (genError) {
+      console.error('Error getting generations for economics:', genError);
+    }
+
+    const genByPlan: Record<string, number> = { BASIC: 0, PRO: 0, TRIAL: 0, ENTERPRISE: 0 };
+    for (const g of generations || []) {
+      const brand = brands.find(b => b.id === g.brand_id);
+      const plan = brand?.plan || 'BASIC';
+      if (g.status === 'SUCCESS') {
+        genByPlan[plan] = (genByPlan[plan] || 0) + 1;
+      }
+    }
+
+    const COST_PER_GEN_OPENROUTER = 0.039;
+    const COST_PER_GEN_REPLICATE = 0.05;
+    const estimatedCostPerGen = (COST_PER_GEN_OPENROUTER + COST_PER_GEN_REPLICATE) / 2;
+
+    const economicsByPlan = Object.entries(revenueByPlan).map(([plan, rev]) => {
+      const genCount = genByPlan[plan] || 0;
+      const estimatedCost = genCount * estimatedCostPerGen;
+      const margin = rev.total - estimatedCost;
+      const marginPct = rev.total > 0 ? (margin / rev.total) * 100 : 0;
+      return {
+        plan,
+        revenue: rev.total,
+        payment_count: rev.count,
+        generations_this_month: genCount,
+        estimated_ia_cost: estimatedCost,
+        margin,
+        margin_percent: Math.round(marginPct * 10) / 10,
+        avg_revenue_per_brand: rev.count > 0 ? rev.total / rev.count : 0,
+      };
+    });
+
+    const totalRevenue = economicsByPlan.reduce((sum, e) => sum + e.revenue, 0);
+    const totalCost = economicsByPlan.reduce((sum, e) => sum + e.estimated_ia_cost, 0);
+    const totalMargin = totalRevenue - totalCost;
+    const totalMarginPct = totalRevenue > 0 ? (totalMargin / totalRevenue) * 100 : 0;
+
+    const cohortData: Array<{ month: string; brands: number; revenue: number }> = [];
+    const brandByCohort = new Map<string, { brands: Set<string>; revenue: number }>();
+    for (const brand of brands) {
+      const cohortMonth = brand.created_at ? new Date(brand.created_at).toISOString().slice(0, 7) : 'unknown';
+      if (!brandByCohort.has(cohortMonth)) {
+        brandByCohort.set(cohortMonth, { brands: new Set(), revenue: 0 });
+      }
+      brandByCohort.get(cohortMonth)!.brands.add(brand.id);
+    }
+    for (const payment of completedPayments) {
+      const brand = brands.find(b => b.id === payment.brand_id);
+      if (brand?.created_at) {
+        const cohortMonth = new Date(brand.created_at).toISOString().slice(0, 7);
+        if (brandByCohort.has(cohortMonth)) {
+          brandByCohort.get(cohortMonth)!.revenue += Number(payment.amount) || 0;
+        }
+      }
+    }
+    for (const [month, data] of brandByCohort.entries()) {
+      cohortData.push({ month, brands: data.brands.size, revenue: data.revenue });
+    }
+    cohortData.sort((a, b) => a.month.localeCompare(b.month));
+
+    return {
+      by_plan: economicsByPlan,
+      summary: {
+        total_revenue: totalRevenue,
+        total_estimated_ia_cost: totalCost,
+        total_margin: totalMargin,
+        total_margin_percent: Math.round(totalMarginPct * 10) / 10,
+        total_generations_this_month: Object.values(genByPlan).reduce((s, v) => s + v, 0),
+      },
+      cohorts: cohortData.slice(-12),
+    };
+  }
+
+  async getAuditLog(filters: {
+    limit?: number;
+    offset?: number;
+    action?: string;
+    admin_email?: string;
+    from?: string;
+    to?: string;
+  }) {
+    let query = supabaseAdmin
+      .from('admin_audit_log')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false });
+
+    if (filters.action) {
+      query = query.eq('action', filters.action);
+    }
+    if (filters.admin_email) {
+      query = query.ilike('admin_email', `%${filters.admin_email}%`);
+    }
+    if (filters.from) {
+      query = query.gte('created_at', new Date(filters.from).toISOString());
+    }
+    if (filters.to) {
+      const endDate = new Date(filters.to);
+      endDate.setHours(23, 59, 59, 999);
+      query = query.lte('created_at', endDate.toISOString());
+    }
+
+    const limit = filters.limit || 100;
+    const offset = filters.offset || 0;
+    query = query.range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
+
+    if (error) {
+      if (error.code === 'PGRST200' || error.message.includes('admin_audit_log')) {
+        return { entries: [], count: 0, message: 'Tabla de auditoría no disponible aún' };
+      }
+      throw new Error('Error al obtener audit log: ' + error.message);
+    }
+
+    return {
+      entries: data || [],
+      count: count || 0,
+    };
+  }
+
+  async getBrandFull(brandId: string) {
+    const { data: brand, error } = await supabaseAdmin
+      .from('brands')
+      .select('*')
+      .eq('id', brandId)
+      .single();
+
+    if (error || !brand) {
+      throw new Error('Marca no encontrada');
+    }
+
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const [productsRes, generationsRes, paymentsRes, feedbackRes] = await Promise.all([
+      supabaseAdmin.from('products').select('id, name, category, is_active, external_id, created_at').eq('brand_id', brandId).order('created_at', { ascending: false }),
+      supabaseAdmin.from('generations').select('id, status, generated_at, error_message, product_id').eq('brand_id', brandId).gte('generated_at', thirtyDaysAgo.toISOString()).order('generated_at', { ascending: false }).limit(50),
+      supabaseAdmin.from('subscription_payments').select('id, amount, currency, status, payment_date, payment_method, notes').eq('brand_id', brandId).order('payment_date', { ascending: false }).limit(20),
+      supabaseAdmin.from('generation_feedback').select('id, error_type, comment, created_at, resolved').eq('brand_id', brandId).order('created_at', { ascending: false }).limit(20),
+    ]);
+
+    const products = productsRes.data || [];
+    const generations = generationsRes.data || [];
+    const payments = paymentsRes.data || [];
+    const feedback = feedbackRes.data || [];
+
+    const totalGenerations = generations.length;
+    const successfulGenerations = generations.filter(g => g.status === 'SUCCESS').length;
+    const failedGenerations = generations.filter(g => g.status === 'FAILED').length;
+    const successRate = totalGenerations > 0 ? (successfulGenerations / totalGenerations) * 100 : 0;
+
+    const totalRevenue = payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+    const isInTrial = brand.plan === 'TRIAL' && brand.trial_end_date && new Date(brand.trial_end_date) > now;
+    const trialDaysRemaining = isInTrial ? Math.ceil((new Date(brand.trial_end_date!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
+
+    const riskFactors: string[] = [];
+    let riskScore = 0;
+    if (isInTrial && trialDaysRemaining !== null && trialDaysRemaining <= 3) {
+      riskFactors.push(`Trial expira en ${trialDaysRemaining} días`);
+      riskScore += 30;
+    }
+    if (totalGenerations === 0) {
+      riskFactors.push('Sin uso en 30 días');
+      riskScore += 25;
+    }
+    if (totalGenerations > 0 && failedGenerations / totalGenerations > 0.5) {
+      riskFactors.push('Alta tasa de error en generaciones');
+      riskScore += 25;
+    }
+    if (brand.subscription_status === 'suspended') {
+      riskFactors.push('Suscripción suspendida');
+      riskScore += 40;
+    }
+
+    return {
+      brand: {
+        id: brand.id,
+        name: brand.name,
+        email: brand.email,
+        slug: brand.slug,
+        plan: brand.plan,
+        subscription_status: brand.subscription_status,
+        trial_end_date: brand.trial_end_date,
+        subscription_end_date: brand.subscription_end_date,
+        created_at: brand.created_at,
+        has_landing_page: brand.has_landing_page,
+        landing_suspended_at: brand.landing_suspended_at,
+        phone: brand.phone,
+        contact_name: brand.contact_name,
+        is_in_trial: isInTrial,
+        trial_days_remaining: trialDaysRemaining,
+      },
+      usage: {
+        products_count: products.length,
+        active_products: products.filter(p => p.is_active).length,
+        generations_30d: totalGenerations,
+        successful_generations: successfulGenerations,
+        failed_generations: failedGenerations,
+        success_rate: Math.round(successRate * 10) / 10,
+        last_generation: generations[0]?.generated_at || null,
+      },
+      finances: {
+        total_revenue: totalRevenue,
+        payments: payments,
+        payment_count: payments.length,
+        failed_payments: payments.filter(p => p.status === 'failed').length,
+      },
+      support: {
+        feedback_count: feedback.length,
+        unresolved_feedback: feedback.filter(f => !f.resolved).length,
+        feedback,
+      },
+      risk: {
+        score: Math.min(riskScore, 100),
+        factors: riskFactors,
+      },
+      products,
+      recent_generations: generations,
+    };
+  }
 }

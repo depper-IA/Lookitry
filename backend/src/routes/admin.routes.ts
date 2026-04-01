@@ -60,6 +60,13 @@ import {
   createTrialCampaign,
   updateTrialCampaign,
 } from '../controllers/trialCampaign.controller';
+import {
+  getMissionControl,
+  getRiskData,
+  getEconomics,
+  getAuditLog,
+  getBrandFull,
+} from '../controllers/admin.controller';
 
 import { authRateLimiter } from '../middleware/rateLimiter';
 
@@ -147,5 +154,12 @@ router.put('/pricing', requirePermission('settings'), updatePricingConfig);
 router.get('/woocommerce/brands-summary', requirePermission('brands'), getWooBrandsSummary);
 router.get('/woocommerce/brands/:id/products', requirePermission('brands'), getWooBrandProducts);
 router.patch('/woocommerce/brands/:id/products/:productId/active', requirePermission('brands'), setWooProductActive);
+
+// Mission Control, Riesgo, Economía, Auditoría, Ficha 360
+router.get('/stats/mission-control', requirePermission('conversion'), getMissionControl);
+router.get('/risk', requirePermission('brands'), getRiskData);
+router.get('/economics', requirePermission('settings'), getEconomics);
+router.get('/audit-log', requirePermission('admins'), getAuditLog);
+router.get('/brands/:id/full', requirePermission('brands'), getBrandFull);
 
 export default router;
