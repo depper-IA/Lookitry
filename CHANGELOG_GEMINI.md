@@ -1,5 +1,35 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-01] - Correcciones de blindaje segÃºn auditorÃ­a n8n y reglas_importantes.md
+
+### Cambios Realizados
+- **tryon.service.ts (Frontend)**: 
+  - Agregado try-catch en mÃ©todo `getConfig()` 
+  - Implementado optional chaining (`?.`) en todos los accesos a `data.brand` y `data.products`
+  - Agregados valores fallback seguros para todos los campos
+  - Corregido fallback de `primaryColor` a `#FF5C3A`
+- **pruebalo.controller.ts (Backend)**:
+  - Eliminado import dinÃ¡mico de `jsonwebtoken` dentro de funciÃ³n async
+  - Movido `import jwt from 'jsonwebtoken'` a nivel superior del archivo
+- **TryOnWidget.tsx**: Corregido fallback de color `#6366f1` â†’ `#FF5C3A`
+- **SelfieUploader.tsx**: Corregido default prop `primaryColor` de `#6366f1` â†’ `#FF5C3A`
+
+### Archivos Modificados
+- `frontend/src/services/tryon.service.ts`
+- `backend/src/controllers/pruebalo.controller.ts`
+- `frontend/src/components/tryon/TryOnWidget.tsx`
+- `frontend/src/components/tryon/SelfieUploader.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+AplicaciÃ³n de reglas de blindaje de ingenierÃ­a segÃºn `reglas_importantes.md` tras auditorÃ­a del workflow n8n del widget try-on. Se corrigieron:
+1. Optional chaining faltante en acceso a datos de API
+2. Try-catch faltante en servicio frontend
+3. Import dinÃ¡mico prohibido (causa errores en Docker)
+4. Colores de fallback incorrectos (fuera de paleta corporativa)
+
+---
+
 ## [2026-03-31] - RestauraciÃ³n de Landing & Dashboard Pro-Test Premium
 
 ### Cambios Realizados
@@ -484,21 +514,21 @@ Corregir el caso reportado en upgrades trial -> Basic/Pro donde el botÃ³n de pag
 
 ---
 
-## [1.0.9] - Integración de Aplicaciones en Casos de Uso
-- Fusiones de los bloques de ventas y la comparativa interactiva Antes/Después desde `AplicacionesClient.tsx` hacia la página principal de `/casos-de-exito`.
-- Eliminación de la ruta independiente `/aplicaciones` para fortalecer el impacto del SEO y tráfico hacia Casos de Uso.
-- Aplicación estricta de patrones de diseño DarkTech (colores #0a0a0a/#FF5C3A, bordes semi-transparentes) y tipografía Premium.
+## [1.0.9] - Integraciï¿½n de Aplicaciones en Casos de Uso
+- Fusiones de los bloques de ventas y la comparativa interactiva Antes/Despuï¿½s desde `AplicacionesClient.tsx` hacia la pï¿½gina principal de `/casos-de-exito`.
+- Eliminaciï¿½n de la ruta independiente `/aplicaciones` para fortalecer el impacto del SEO y trï¿½fico hacia Casos de Uso.
+- Aplicaciï¿½n estricta de patrones de diseï¿½o DarkTech (colores #0a0a0a/#FF5C3A, bordes semi-transparentes) y tipografï¿½a Premium.
 
-## [1.0.10] - Optimización de Fetch y Enlaces Ecosistema
-- Se implementó un sistema de caché en memoria dentro de `public-config.service.ts` para `fetchPublicPaymentSettings` y `fetchPublicPlanPrices`. Esto detiene las múltiples llamadas concurrentes generadas por Next.js App Router durante la navegación entre páginas (componente LandingFooter).
-- Se actualizaron los enlaces del footer sección Producto para coincidir exactamente con el término "Ecosistema" (Probador Virtual, Mini-Landing Pro, Plugin WooCommerce, API Developer, Planes Mensuales).
+## [1.0.10] - Optimizaciï¿½n de Fetch y Enlaces Ecosistema
+- Se implementï¿½ un sistema de cachï¿½ en memoria dentro de `public-config.service.ts` para `fetchPublicPaymentSettings` y `fetchPublicPlanPrices`. Esto detiene las mï¿½ltiples llamadas concurrentes generadas por Next.js App Router durante la navegaciï¿½n entre pï¿½ginas (componente LandingFooter).
+- Se actualizaron los enlaces del footer secciï¿½n Producto para coincidir exactamente con el tï¿½rmino "Ecosistema" (Probador Virtual, Mini-Landing Pro, Plugin WooCommerce, API Developer, Planes Mensuales).
 
-## [1.0.11] - Corrección de Estética y Crash en Mini-Landing-Pro
-- Se resolvió un error interno de renderizado (Crash 500 / Fallo de validación del componente Image de Next.js) que ocurría al internar cargar imágenes desde el host externo de Unsplash. Se reemplazó el uso de <Image> por una etiqueta <img /> nativa en la pre-visualización de los productos de la Mini-Landing.
-- Se eliminó la deuda técnica arquitectónica en /mini-landing-pro removiendo su NavBar y Footer aislados/hardcodeados. Se implementó eficientemente <LandingNav currency={currency} onCurrencyChange={handleCurrencyChange} /> y <LandingFooter />, respetando la estructura DarkTech Premium consolidada globalmente.
+## [1.0.11] - Correcciï¿½n de Estï¿½tica y Crash en Mini-Landing-Pro
+- Se resolviï¿½ un error interno de renderizado (Crash 500 / Fallo de validaciï¿½n del componente Image de Next.js) que ocurrï¿½a al internar cargar imï¿½genes desde el host externo de Unsplash. Se reemplazï¿½ el uso de <Image> por una etiqueta <img /> nativa en la pre-visualizaciï¿½n de los productos de la Mini-Landing.
+- Se eliminï¿½ la deuda tï¿½cnica arquitectï¿½nica en /mini-landing-pro removiendo su NavBar y Footer aislados/hardcodeados. Se implementï¿½ eficientemente <LandingNav currency={currency} onCurrencyChange={handleCurrencyChange} /> y <LandingFooter />, respetando la estructura DarkTech Premium consolidada globalmente.
 
-## [1.0.12] - Migración a Single-Page Navigation (Home)
-- Se actualizaron los enlaces del Navbar (Productos Pro) y del Footer (Ecosistema) para que carguen sin recargar la página, haciendo scroll fluido hacia las anclas respectivas de la landing page principal (\/#mini-landing\, \/#plugin\, \/#planes\, etc.), mejorando significativamente la experiencia de usuario y reduciendo la tasa de rebote en vez de cargar páginas aisladas.
+## [1.0.12] - Migraciï¿½n a Single-Page Navigation (Home)
+- Se actualizaron los enlaces del Navbar (Productos Pro) y del Footer (Ecosistema) para que carguen sin recargar la pï¿½gina, haciendo scroll fluido hacia las anclas respectivas de la landing page principal (\/#mini-landing\, \/#plugin\, \/#planes\, etc.), mejorando significativamente la experiencia de usuario y reduciendo la tasa de rebote en vez de cargar pï¿½ginas aisladas.
 
-## [1.0.13] - Restauración de Rutas Independientes (Ecosistema)
-- Se revirtieron los enlaces ancla en Navbar y Footer para regresarlos a sus URLs de página completas (\/mini-landing-pro\, \/plugin-woocommerce\, \/api-developer\, \/planes\, \/probador-virtual\) por requerimiento del usuario. Las piezas del ecosistema seguirán existiendo como mini-landings independientes aisladas de la landing page principal.
+## [1.0.13] - Restauraciï¿½n de Rutas Independientes (Ecosistema)
+- Se revirtieron los enlaces ancla en Navbar y Footer para regresarlos a sus URLs de pï¿½gina completas (\/mini-landing-pro\, \/plugin-woocommerce\, \/api-developer\, \/planes\, \/probador-virtual\) por requerimiento del usuario. Las piezas del ecosistema seguirï¿½n existiendo como mini-landings independientes aisladas de la landing page principal.
