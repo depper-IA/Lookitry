@@ -110,6 +110,8 @@ function CheckoutContent() {
   const [brandName, setBrandName] = useState('');
   const [emailError, setEmailError] = useState('');
   const [brandNameError, setBrandNameError] = useState('');
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailExists, setEmailExists] = useState<{ exists: boolean; name?: string } | null>(null);
 
   const [hasSession, setHasSession] = useState(false);
   const [sessionInfo, setSessionInfo] = useState<{ name: string; email: string } | null>(null);
@@ -288,31 +290,57 @@ function CheckoutContent() {
     }
   };
 
-  const validateStep2 = () => {
+  const validateStep1 = async () => {
     let valid = true;
+    
     if (!email.trim()) {
       setEmailError('El correo es obligatorio');
+      setEmailExists(null);
       valid = false;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setEmailError('Formato de correo inválido');
+      setEmailExists(null);
       valid = false;
+    } else {
+      setEmailChecking(true);
+      try {
+        const res = await fetch(`${API_URL}/api/auth/check-email?email=${encodeURIComponent(email.trim())}`);
+        const data = await res.json();
+        if (data.exists) {
+          setEmailExists({ exists: true, name: data.brand?.name });
+          setEmailError('Este correo ya está registrado');
+          valid = false;
+        } else {
+          setEmailExists({ exists: false });
+          setEmailError('');
+        }
+      } catch {
+        setEmailExists(null);
+      } finally {
+        setEmailChecking(false);
+      }
     }
+    
     if (!hasSession && !brandName.trim()) {
       setBrandNameError('El nombre de la marca es obligatorio');
       valid = false;
+    } else {
+      setBrandNameError('');
     }
+    
     return valid;
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (currentStep === 1) {
-      setCurrentStep(2);
-      window.scrollTo(0, 0);
-    } else if (currentStep === 2) {
-      if (validateStep2()) {
-        setCurrentStep(3);
+      const isValid = await validateStep1();
+      if (isValid) {
+        setCurrentStep(2);
         window.scrollTo(0, 0);
       }
+    } else if (currentStep === 2) {
+      setCurrentStep(3);
+      window.scrollTo(0, 0);
     }
   };
 
@@ -405,12 +433,17 @@ function CheckoutContent() {
     window.location.href = '/trial-checkout';
   };
 
-  const planNames: Record<PlanKey, string> = {
-    BASIC: 'Plan Básico',
-    PRO: 'Plan Pro',
-    LANDING: 'Mini-landing',
-    TRIAL: 'Prueba Gratuita',
-  };
+const planNames: Record<PlanKey, string> = {
+  BASIC: 'Plan Básico',
+  PRO: 'Plan Pro',
+  LANDING: 'Mini-landing',
+  TRIAL: 'Prueba',
+};
+
+const getTrialLabel = (): string => {
+  const trialBase = planBase.TRIAL ?? 20000;
+  return trialBase > 0 ? 'Prueba' : 'Prueba Gratuita';
+};
 
   // Accent color
   const OA = '#FF5C3A';
@@ -522,10 +555,13 @@ function CheckoutContent() {
                           ) : (
                             <>
                               <div className="text-2xl font-jakarta font-extrabold text-white">
-                                {formatCop(planBase[p as 'BASIC' | 'PRO' | 'TRIAL'])}
+                                {p === 'TRIAL' 
+                                  ? (planBase.TRIAL > 0 ? formatCop(planBase.TRIAL) : 'GRATIS')
+                                  : formatCop(planBase[p as 'BASIC' | 'PRO' | 'TRIAL'])
+                                }
                               </div>
                               <div className="text-[10px] text-[#999] font-bold uppercase mt-0.5">
-                                {p === 'TRIAL' ? '7 Días' : 'Mensual'}
+                                {p === 'TRIAL' ? (planBase.TRIAL > 0 ? 'Pago único' : '7 Días') : 'Mensual'}
                               </div>
                             </>
                           )}

@@ -35,6 +35,9 @@ router.post('/resend-verification', authRateLimiter, asyncHandler((req, res) => 
 // POST /api/auth/change-password (requiere auth)
 router.post('/change-password', authMiddleware, asyncHandler((req, res) => authController.changePassword(req as any, res)));
 
+// GET /api/auth/check-email?email=xxx — verifica si el email ya existe
+router.get('/check-email', asyncHandler((req, res) => authController.checkEmail(req, res)));
+
 // POST /api/auth/logout — limpia la cookie HTTP-Only del lado del servidor
 router.post('/logout', (_req, res) => {
   res.clearCookie('token', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' });
