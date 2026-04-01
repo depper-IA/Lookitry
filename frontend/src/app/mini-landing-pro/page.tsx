@@ -1,5 +1,7 @@
 'use client';
 
+// GSAP usa window — debe renderizarse solo en cliente para evitar 404 en SSR
+import dynamic from 'next/dynamic';
 import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
