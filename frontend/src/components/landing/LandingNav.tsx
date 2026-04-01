@@ -82,7 +82,7 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
     : '?';
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[70] bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5 py-3 md:py-4 transition-all duration-300">
+    <nav className="sticky top-0 left-0 right-0 z-[70] bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5 py-3 md:py-4 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
         
         {/* Left: Logo */}
@@ -238,12 +238,12 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 top-[60px] bg-[#0a0a0a] z-50 p-6 animate-in fade-in duration-300 border-t border-white/5 overflow-y-auto">
+        <div className="lg:hidden fixed inset-0 top-[60px] bg-[#0a0a0a]/95 backdrop-blur-xl z-50 p-6 animate-in fade-in slide-in-from-right duration-300 border-t border-white/5 overflow-y-auto">
           <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-4">
               <p className="text-[9px] font-black text-[#FF5C3A] uppercase tracking-[0.3em] mb-2">Productos Pro</p>
-              <Link href="/mini-landing-pro" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 active:scale-[0.98] transition-all">
-                <div className="w-10 h-10 rounded-xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A]">
+              <Link href="/mini-landing-pro" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 active:scale-[0.98] transition-all hover:bg-white/10 hover:border-white/20 group">
+                <div className="w-10 h-10 rounded-xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] group-hover:bg-[#FF5C3A] group-hover:text-white transition-all">
                   <Layout size={20} />
                 </div>
                 <div>
@@ -251,8 +251,8 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
                   <p className="text-[10px] text-white/40 font-medium">Tienda sin código.</p>
                 </div>
               </Link>
-              <Link href="/plugin-woocommerce" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 active:scale-[0.98] transition-all">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+              <Link href="/plugin-woocommerce" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 active:scale-[0.98] transition-all hover:bg-white/10 hover:border-white/20 group">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all">
                   <Zap size={20} />
                 </div>
                 <div>
@@ -260,8 +260,8 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
                   <p className="text-[10px] text-white/40 font-medium">Ventas en piloto automático.</p>
                 </div>
               </Link>
-              <Link href="/api-developer" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 active:scale-[0.98] transition-all">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+              <Link href="/api-developer" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10 active:scale-[0.98] transition-all hover:bg-white/10 hover:border-white/20 group">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all">
                   <Terminal size={20} />
                 </div>
                 <div>
@@ -270,6 +270,8 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
                 </div>
               </Link>
             </div>
+
+            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
             <div className="flex flex-col gap-2">
               <p className="text-[9px] font-black text-[#FF5C3A] uppercase tracking-[0.3em] mb-2">Corporativo</p>
@@ -316,19 +318,28 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
                 <Link 
                   href="/login" 
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-4 text-center text-white/60 font-bold uppercase tracking-widest text-[11px] border border-white/10 rounded-2xl active:scale-[0.98] transition-all"
+                  className="w-full py-4 text-center text-white/60 font-bold uppercase tracking-widest text-[11px] border border-white/10 rounded-2xl active:scale-[0.98] transition-all hover:bg-white/5 hover:border-white/20"
                 >
                   Ingresar a mi cuenta
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-5 bg-[#FF5C3A] rounded-2xl text-center text-white font-bold uppercase tracking-[0.2em] text-[12px] active:scale-[0.98] transition-all"
+                  className="w-full py-5 bg-[#FF5C3A] rounded-2xl text-center text-white font-bold uppercase tracking-[0.2em] text-[12px] active:scale-[0.98] transition-all hover:bg-[#ff7a5f]"
                 >
                   Probar gratis ahora
                 </Link>
               </div>
             )}
+
+            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            
+            <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] text-white/30 font-medium">
+              <Link href="/terminos" className="hover:text-white/60 transition-colors">Términos</Link>
+              <Link href="/politicas-privacidad" className="hover:text-white/60 transition-colors">Privacidad</Link>
+              <Link href="/cookies" className="hover:text-white/60 transition-colors">Cookies</Link>
+              <Link href="/contacto" className="hover:text-white/60 transition-colors">Contacto</Link>
+            </div>
           </div>
         </div>
       )}
