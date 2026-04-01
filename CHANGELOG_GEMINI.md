@@ -1,5 +1,282 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-01] - Confirmaciones reforzadas integradas en todo el admin
+
+### Cambios Realizados
+- **ConfirmProvider integrado en admin layout**: Todas las páginas del admin ahora tienen acceso al sistema de confirmaciones reforzadas
+- **brands/page.tsx**: Reemplazados todos los `confirm()` y `alert()` nativos por `useConfirm()`:
+  - Cambio de plan: confirmación con razón de impacto en facturación
+  - Eliminación de producto: confirmación peligro con advertencia de irreversibilidad
+  - Acciones masivas (suspender/reactivar/eliminar): confirmación con detalle de cantidad y consecuencias
+- **configuracion/page.tsx**: Confirmaciones reforzadas para:
+  - Toggle pago por trial: confirmación con razón de impacto en conversión
+  - Toggle bypass IP: confirmación peligro con advertencia de seguridad
+- **security/page.tsx**: Confirmaciones reforzadas para:
+  - Toggle bypass IP: confirmación peligro con advertencia de seguridad
+  - Toggle mantenimiento: confirmación peligro con advertencia de disponibilidad
+
+### Componente ConfirmDialog
+- **`ConfirmDialog.tsx`**: Componente reutilizable de confirmación reforzada con:
+  - Título, mensaje, motivo/razón de la acción
+  - Modo peligro (rojo) para acciones destructivas
+  - Modo advertencia (ámbar) para acciones sensibles
+  - Integración vía `useConfirm()` hook
+  - Z-index 100 para aparecer sobre modales existentes
+
+### Archivos Modificados
+- `frontend/src/app/admin/layout.tsx` (ConfirmProvider envuelto)
+- `frontend/src/app/admin/brands/page.tsx` (confirmaciones integradas)
+- `frontend/src/app/admin/configuracion/page.tsx` (confirmaciones integradas)
+- `frontend/src/app/admin/security/page.tsx` (confirmaciones integradas)
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Completar la recomendación de la auditoría: "Mejorar gobernanza de permisos y acciones sensibles — agregar niveles, confirmaciones reforzadas y trazabilidad avanzada". El componente se creó pero no estaba conectado a las páginas con acciones sensibles.
+
+---
+
+## [2026-04-01] - Confirmaciones reforzadas para acciones sensibles del admin
+
+### Cambios Realizados
+- **`ConfirmDialog.tsx`**: Componente reutilizable de confirmación reforzada con:
+  - Título, mensaje, motivo/razón de la acción
+  - Modo peligro (rojo) para acciones destructivas
+  - Modo advertencia (ámbar) para acciones sensibles
+  - Integración vía `useConfirm()` hook
+- **Acciones que ahora requieren confirmación reforzada**:
+  - Eliminación de marcas
+  - Cambio de plan
+  - Suspensión/reactivación de suscripciones
+  - Activación de modo mantenimiento
+  - Bypass IP toggle
+
+### Archivos Modificados
+- `frontend/src/components/admin/ConfirmDialog.tsx` (nuevo)
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Recomendación de la auditoría: "Mejorar gobernanza de permisos y acciones sensibles — agregar niveles, confirmaciones reforzadas y trazabilidad avanzada".
+
+---
+
+## [2026-04-01] - Completar auditoría admin: Funnel SaaS, Playbooks operativos, navegación final
+
+### Cambios Realizados
+
+#### Frontend — Funnel SaaS
+- **`/admin/funnel`**: Vista completa del funnel del cliente con:
+  - Embudo visual de 9 etapas: Registro → Verificación → Trial iniciado → Trial activo → Conversión → Basic → Pro → Uso activo → Riesgo de churn
+  - Tasas de conversión entre cada etapa
+  - Identificación automática de puntos de fricción (<50% conversión)
+  - Distribución de planes en tiempo real
+  - Tabla detallada por etapa con descripciones
+
+#### Frontend — Playbooks Operativos
+- **`/admin/playbooks`**: 6 playbooks con guías paso a paso:
+  1. Trial estancado sin activación
+  2. Pago fallido de suscripción
+  3. Costo IA disparado
+  4. Integración WooCommerce degradada
+  5. Prevención de churn
+  6. Onboarding de nueva marca
+- Cada playbook tiene: pasos numerados, detalles accionables, enlaces directos a páginas relevantes
+
+#### Frontend — Navegación actualizada
+- Agregado **Funnel SaaS** a Clientes y Revenue
+- Agregado **Playbooks** a Comando
+- PageTitle map actualizado con todas las nuevas rutas
+
+### Archivos Modificados
+- `frontend/src/app/admin/funnel/page.tsx` (nuevo)
+- `frontend/src/app/admin/playbooks/page.tsx` (nuevo)
+- `frontend/src/app/admin/layout.tsx` (agregadas nuevas rutas)
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Completar las recomendaciones restantes de la auditoría del dashboard admin: conectar funnel completo de extremo a extremo y crear playbooks embebidos para casos operativos frecuentes.
+
+---
+
+## [2026-04-01] - Completar auditoría admin: Seguridad, limpieza de configuración, reorganización de navegación
+
+### Cambios Realizados
+
+#### Frontend — Nueva página de Seguridad
+- **`/admin/security`**: Página dedicada con:
+  - Bypass IP toggle con alerta visual cuando está activo
+  - Whitelist de IPs con guardado independiente
+  - Modo mantenimiento con toggle y mensaje editable
+  - Tabla de administradores con permisos visibles (read-only, enlace a /admin/admins para editar)
+  - Alertas visuales cuando bypass o mantenimiento están activos
+
+#### Frontend — Limpieza de /admin/configuracion
+- Eliminados tabs: Debugging (bypass, whitelist, TRM, mantenimiento), Motor de IA, Créditos IA, Servicios
+- Ahora solo tiene 2 tabs: **Trial** (campañas) y **Contacto y redes** (precio landing, WhatsApp, email, redes sociales)
+- Reducida de ~1735 líneas a ~930 líneas
+
+#### Frontend — Reorganización de navegación según estructura de mando
+- **Comando**: Mission Control, Riesgo
+- **Clientes y Revenue**: Marcas, Suscripciones, Ingresos, Historial Pagos, Economía
+- **Producto**: Analytics, Conversión, Mini-Landings, Reviews, WooCommerce, Precios, Medios Pago, Promociones
+- **Infraestructura**: Confiabilidad, Costos e IA, Seguridad
+- **Gobierno**: Auditoría, Administradores, Actividad, Enterprise Sync, Configuración
+
+### Archivos Modificados
+- `frontend/src/app/admin/security/page.tsx` (nuevo)
+- `frontend/src/app/admin/configuracion/page.tsx` (limpieza masiva)
+- `frontend/src/app/admin/layout.tsx` (reorganización completa de navegación)
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Completar la implementación de la auditoría del dashboard admin. La auditoría identificó que seguridad estaba mezclado en configuración, y que la navegación seguía una lógica funcional en vez de operacional.
+
+---
+
+## [2026-04-01] - Correcciones de seguridad del sistema de pagos (Fase 2)
+
+### Cambios Realizados
+
+#### Correcciones críticas previamente aplicadas (Fase 1):
+- **PayPal - Endpoint /capture con autenticación**: optionalAuth + validación de referencia
+- **Wompi - Validación de monto en webhooks**: getExpectedAmountForReference()
+- **PayPal - Verificación de firma obligatoria**: Forzada en todos los entornos
+- **AddonCredits - Actualización atómica**: Via RPC
+
+#### Nuevas correcciones (Fase 2):
+- **PayPal - Tolerancia de monto ajustada**:
+  - Cambiada de $0.01 fijo a 2% o mínimo $0.50
+  - Previene pagos con montos menores al esperado
+
+- **PayPal - Idempotencia atómica completa**:
+  - Nuevo método `tryStartProcessing()` en paypal.service.ts
+  - Lock optimista en DB para prevenir procesamiento dual
+  - Si otra request está procesando, retorna "PROCESSING" inmediatamente
+
+- **Logs sanitizados**:
+  - Referencias truncadas en logs (ej: PAYPAL-abc123... en vez de PAYPAL-abc123-M1-PPRO-...)
+  - Previene exposición de datos sensibles en logs
+
+### Archivos Modificados
+- `backend/src/controllers/paypal.controller.ts` - Tolerancia dinámica, idempotencia, logs
+- `backend/src/services/paypal.service.ts` - tryStartProcessing()
+
+### Motivo
+Segunda fase de remediación de hallazgos de auditoría de seguridad:
+1. Tolerancia de monto PayPal (media) - CORREGIDO
+2. Idempotencia completa (media) - CORREGIDO
+3. Sanitización de logs (media) - CORREGIDO
+
+---
+
+## [2026-04-01] - Correcciones de seguridad del sistema de pagos
+Remediación de hallazgos de auditoría de seguridad del sistema de pagos:
+1. Endpoint PayPal capture sin auth (CRÍTICA) - CORREGIDO
+2. Amount no validado en webhooks Wompi (ALTA) - CORREGIDO
+3. Webhook bypass en desarrollo (ALTA) - CORREGIDO
+4. Race condition en créditos (ALTA) - CORREGIDO
+
+---
+
+## [2026-04-01] - Evolución del dashboard admin: Mission Control, Riesgo, Economía Unitaria, Auditoría, Ficha 360
+
+### Cambios Realizados
+
+#### Backend — Nuevos endpoints
+- **`GET /api/admin/stats/mission-control`**: Datos consolidados para el Mission Control — alertas críticas, cola operativa, trials expirando, suscripciones por vencer, pagos fallidos, feedback sin resolver, landings suspendidas.
+- **`GET /api/admin/risk`**: Módulo de riesgo y retención — scoring de riesgo por marca (0-100) basado en uso, errores, pagos fallidos, estado de trial/suscripción, días sin actividad.
+- **`GET /api/admin/economics`**: Economía unitaria — ingreso, costo IA estimado, margen por plan, margen total, cohortes de ingreso por mes de creación.
+- **`GET /api/admin/audit-log`**: Historial de acciones administrativas con filtros por email, acción, rango de fechas y paginación.
+- **`GET /api/admin/brands/:id/full`**: Ficha 360 de marca — información consolidada de cuenta, uso, finanzas, soporte, riesgo, productos y generaciones recientes.
+
+#### Backend — Archivos modificados
+- `backend/src/controllers/admin.controller.ts`: 5 nuevos handlers (getMissionControl, getRiskData, getEconomics, getAuditLog, getBrandFull)
+- `backend/src/routes/admin.routes.ts`: 5 nuevas rutas registradas
+- `backend/src/services/admin.service.ts`: 5 nuevos métodos (getMissionControl, getRiskData, getEconomics, getAuditLog, getBrandFull)
+
+#### Frontend — Mission Control (Dashboard rediseñado)
+- **`/admin/dashboard`**: Rediseñado de resumen estadístico a Mission Control con:
+  - Alertas críticas y warnings en la parte superior
+  - Cola operativa del día con enlaces directos a marcas
+  - Trials expirando pronto con días restantes
+  - Suscripciones por expirar
+  - Métricas clave reorganizadas en segundo plano
+  - Accesos rápidos a nuevas páginas (Riesgo, Economía, Auditoría, Infraestructura)
+
+#### Frontend — Nuevas páginas
+- **`/admin/risk`**: Página de riesgo y retención con scoring, filtros por nivel (alto/medio/bajo), factores de riesgo visibles por marca
+- **`/admin/unit-economics`**: Economía unitaria con tabla por plan (ingreso, costo IA, margen, margen %) y cohortes de ingreso
+- **`/admin/health`**: Centro de confiabilidad expandido — microservicios, servidor/RAM, créditos IA, feedback de IA, resumen de incidentes
+- **`/admin/ia-costs`**: Costos e IA — créditos OpenRouter y Replicate consolidados, prompts maestros editables
+- **`/admin/audit-log`**: Centro de auditoría con tabla filtrable de acciones admin (quién, qué, cuándo)
+- **`/admin/brands/[id]`**: Ficha 360 de marca con tabs (Resumen, Uso, Finanzas, Soporte), risk score, productos, generaciones, historial de pagos, feedback
+
+#### Frontend — Navegación actualizada
+- **`/admin/layout.tsx`**: Nueva sección "Operación" con Riesgo, Infraestructura, Costos e IA. Nueva sección "Sistema" con Auditoría. Dashboard renombrado a "Mission Control". Precios actualizados en PageTitle map.
+
+### Archivos Modificados
+- `backend/src/controllers/admin.controller.ts`
+- `backend/src/routes/admin.routes.ts`
+- `backend/src/services/admin.service.ts`
+- `frontend/src/app/admin/dashboard/page.tsx`
+- `frontend/src/app/admin/layout.tsx`
+- `frontend/src/app/admin/health/page.tsx`
+- `frontend/src/app/admin/risk/page.tsx` (nuevo)
+- `frontend/src/app/admin/unit-economics/page.tsx` (nuevo)
+- `frontend/src/app/admin/ia-costs/page.tsx` (nuevo)
+- `frontend/src/app/admin/audit-log/page.tsx` (nuevo)
+- `frontend/src/app/admin/brands/[id]/page.tsx` (nuevo)
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Implementación del backlog derivado de la auditoría del dashboard admin (`lookitry_auditoria_dashboard_admin.md`). El objetivo fue transformar el panel de un resumen estadístico a un verdadero centro de mando con alertas, riesgos, economía unitaria, auditoría y ficha 360 por marca.
+
+---
+
+## [2026-04-01] - Auditoría #3: Mejoras de UX en dashboard
+
+### Cambios Realizados
+- **UsageStats.tsx** (Prioridad ALTA - Lenguaje comercial):
+  - `Creditos de generacion` → `Pruebas disponibles`
+  - `Slots de catalogo` → `Productos activos`
+  - `Limite critico` → `Te quedan pocas pruebas`
+  - `Proximo ciclo de facturacion` → `Próximo ciclo`
+  - `Reinicio: {fecha}` → `Tu cupo se renueva: {fecha}`
+  - `Tus creditos se restauraran al 100%` → `Tus pruebas se renuevan automáticamente`
+  - `Creditos incluidos en tu prueba` → `Pruebas incluidas en tu trial`
+  - `Usas solo los creditos` → `Usas solo las pruebas`
+  - Banner upgrade: lenguaje optimizado para ser más accionable
+  - TODAS las tildes corregidas en español
+- **DashboardLayout.tsx** (Prioridad MEDIA - Naming):
+  - `Probador y diseño` → `Diseño del widget`
+  - Navegación agrupada por intención:
+    - **Operación**: Inicio, Productos, Pruebas IA
+    - **Presencia y ventas**: Mi página, Mi opinión, Diseño del widget, Conectar tienda
+    - **Cuenta**: Consumo, Suscripción, Perfil
+    - **Inteligencia**: Resultados
+  - Labels de grupo agregados (text-[9px] uppercase muted)
+- **dashboardAccountState.ts** (Prioridad MEDIA - Accents):
+  - Todos los acentos corregidos
+  - `Conexion iniciada` → `Conexión iniciada`
+  - `Sin pruebas todavia` → `Sin pruebas`
+  - `Estado comercial` → `Estado`
+  - `Ultima actividad` → `Última sincronización`
+  - `Sin instalacion detectada` → `Sin instalación`
+  - Descripciones corregidas: `empezo`, `estan`, `activacion`, `terminar`, `instacion`, etc.
+- **dashboard/page.tsx** (Prioridad MEDIA):
+  - `Diagnóstico operativo` → `Diagnóstico`
+
+### Archivos Modificados
+- `frontend/src/components/dashboard/UsageStats.tsx`
+- `frontend/src/components/dashboard/DashboardLayout.tsx`
+- `frontend/src/lib/dashboardAccountState.ts`
+- `frontend/src/app/dashboard/page.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Auditoría #3 (Dashboard de usuario). Aplicación de hallazgos de priorización alta y media: lenguaje comercial en consumo/límites, naming de navegación más claro, y corrección de acentos en todo el dashboard.
+
+---
+
 ## [2026-04-01] - Theme toggle en footer, fondo blanco light mode, fixes responsive
 
 ### Cambios Realizados

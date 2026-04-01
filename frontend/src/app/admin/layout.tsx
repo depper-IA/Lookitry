@@ -6,56 +6,59 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { AdminNotifications } from '@/components/admin/AdminNotifications';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { ConfirmProvider } from '@/components/admin/ConfirmDialog';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Building2, CreditCard, TrendingUp, History, Settings2, Tag, PieChart, MousePointer2, Layout, Megaphone, Bell, Clock, ShieldCheck, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Building2, CreditCard, TrendingUp, History, Settings2, Tag, PieChart, MousePointer2, Layout, Megaphone, Bell, Clock, ShieldCheck, User, Shield, DollarSign, Activity, Zap, Brain, BookOpen, GitBranch } from 'lucide-react';
 
 const adminNav = [
   {
-    label: null,
+    label: 'Comando',
     items: [
-      { href: '/admin/dashboard',     label: 'Dashboard',     icon: DashboardIcon },
-      { href: '/admin/brands',        label: 'Marcas',        icon: BrandsIcon },
-      { href: '/admin/subscriptions', label: 'Suscripciones', icon: SubsIcon },
+      { href: '/admin/dashboard',     label: 'Mission Control', icon: DashboardIcon },
+      { href: '/admin/risk',          label: 'Riesgo',          icon: Shield },
+      { href: '/admin/playbooks',     label: 'Playbooks',       icon: BookOpen },
     ],
   },
   {
-    label: 'Finanzas',
+    label: 'Clientes y Revenue',
     items: [
-      { href: '/admin/revenue',          label: 'Ingresos',           icon: RevenueIcon },
-      { href: '/admin/payments',         label: 'Historial de Pagos', icon: PaymentsIcon },
-      { href: '/admin/payment-settings', label: 'Medios de Pago',     icon: PaySettingsIcon },
-      { href: '/admin/pricing',          label: 'Precios',            icon: PricingIcon },
+      { href: '/admin/brands',        label: 'Marcas',           icon: BrandsIcon },
+      { href: '/admin/subscriptions', label: 'Suscripciones',    icon: SubsIcon },
+      { href: '/admin/revenue',       label: 'Ingresos',         icon: RevenueIcon },
+      { href: '/admin/payments',      label: 'Historial Pagos',  icon: PaymentsIcon },
+      { href: '/admin/unit-economics',label: 'Economía',         icon: DollarSign },
+      { href: '/admin/funnel',        label: 'Funnel SaaS',      icon: GitBranch },
     ],
   },
   {
-    label: 'Analítica',
+    label: 'Producto',
     items: [
-      { href: '/admin/analytics',  label: 'Analytics',  icon: AnalyticsIcon },
-      { href: '/admin/conversion', label: 'Conversión', icon: ConversionIcon },
+      { href: '/admin/analytics',          label: 'Analytics',    icon: AnalyticsIcon },
+      { href: '/admin/conversion',         label: 'Conversión',   icon: ConversionIcon },
+      { href: '/admin/mini-landings',      label: 'Mini-Landings',icon: MiniLandingIcon },
+      { href: '/admin/reviews',            label: 'Reviews',      icon: ReviewsIcon },
+      { href: '/admin/woocommerce',        label: 'WooCommerce',  icon: WooIcon },
+      { href: '/admin/pricing',            label: 'Precios',      icon: PricingIcon },
+      { href: '/admin/payment-settings',   label: 'Medios Pago',  icon: PaySettingsIcon },
+      { href: '/admin/marketing/promotions',label: 'Promociones', icon: MegaphoneIcon },
     ],
   },
   {
-    label: 'Contenido',
+    label: 'Infraestructura',
     items: [
-      { href: '/admin/mini-landings', label: 'Mini-Landings', icon: MiniLandingIcon },
-      { href: '/admin/reviews',       label: 'Reviews',       icon: ReviewsIcon },
-      { href: '/admin/blog',          label: 'Blog',          icon: BlogIcon },
+      { href: '/admin/health',   label: 'Confiabilidad', icon: Zap },
+      { href: '/admin/ia-costs', label: 'Costos e IA',   icon: Brain },
+      { href: '/admin/security', label: 'Seguridad',     icon: ShieldCheck },
     ],
   },
   {
-    label: 'Marketing',
+    label: 'Gobierno',
     items: [
-      { href: '/admin/marketing/promotions', label: 'Promociones', icon: MegaphoneIcon },
-    ],
-  },
-  {
-    label: 'Sistema',
-    items: [
-      { href: '/admin/notifications', label: 'Actividad',       icon: BellIcon },
-      { href: '/admin/enterprise',    label: 'Enterprise Sync', icon: EnterpriseIcon },
-      { href: '/admin/woocommerce',   label: 'WooCommerce',     icon: WooIcon },
-      { href: '/admin/configuracion', label: 'Configuración',   icon: TrialIcon },
+      { href: '/admin/audit-log',     label: 'Auditoría',       icon: Activity },
       { href: '/admin/admins',        label: 'Administradores', icon: AdminsIcon },
+      { href: '/admin/notifications', label: 'Actividad',       icon: BellIcon },
+      { href: '/admin/enterprise',    label: 'Enterprise Sync', icon: EnterpriseIcon },
+      { href: '/admin/configuracion', label: 'Configuración',   icon: TrialIcon },
     ],
   },
 ];
@@ -321,6 +324,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 
   return (
+    <ConfirmProvider>
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-base)' }}>
       {sidebarOpen && (
         <div className="fixed inset-0 z-30 bg-black/70 lg:hidden" onClick={() => setSidebarOpen(false)} />
@@ -366,26 +370,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <main className="flex-1 p-5 sm:p-7">{children}</main>
       </div>
     </div>
+    </ConfirmProvider>
   );
 }
 
 function PageTitle({ pathname }: { pathname: string }) {
   const map: Record<string, string> = {
-    '/admin/dashboard':            'Dashboard',
+    '/admin/dashboard':            'Mission Control',
     '/admin/brands':               'Marcas',
     '/admin/subscriptions':        'Suscripciones',
     '/admin/revenue':              'Ingresos',
     '/admin/payments':             'Historial de Pagos',
     '/admin/payment-settings':     'Medios de Pago',
     '/admin/pricing':              'Precios',
+    '/admin/unit-economics':       'Economía Unitaria',
+    '/admin/funnel':               'Funnel SaaS',
     '/admin/analytics':            'Analytics',
     '/admin/conversion':           'Conversión',
+    '/admin/risk':                 'Riesgo y Retención',
+    '/admin/health':               'Confiabilidad',
+    '/admin/ia-costs':             'Costos e IA',
+    '/admin/security':             'Seguridad',
     '/admin/mini-landings':        'Mini-Landings',
     '/admin/reviews':              'Moderación de Reviews',
     '/admin/blog':                 'Blog',
     '/admin/marketing/promotions': 'Promociones',
     '/admin/notifications':        'Notificaciones',
     '/admin/woocommerce':          'WooCommerce',
+    '/admin/audit-log':            'Auditoría',
+    '/admin/playbooks':            'Playbooks Operativos',
     '/admin/configuracion':        'Configuración',
     '/admin/admins':               'Administradores',
     '/admin/enterprise':          'Enterprise Sync',

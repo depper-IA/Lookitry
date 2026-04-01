@@ -255,6 +255,28 @@ export class PaypalService {
   }
 
   /**
+   * Intenta atomicizar el procesamiento de una orden (lock optimista).
+   * Retorna true si fue exitoso (la orden estaba en estado válido para procesar).
+   * Retorna false si ya estaba procesada/completada.
+   */
+  async tryStartProcessing(reference: string): Promise<boolean> {
+    const { data, error } = await supabaseAdmin
+      .from('paypal_orders')
+      .update({ status: 'processing' })
+      .eq('reference', reference)
+      .in('status', ['pending', 'failed'])
+      .select();
+
+    if (error) {
+      console.error('[PayPal] Error en tryStartProcessing:', error.message);
+      return false;
+    }
+
+    // Si data.length > 0, pudimos adquirir el lock
+    return data && data.length > 0;
+  }
+
+  /**
    * Verifica la firma de un webhook de PayPal
    * Nota: Idealmente se usa el endpoint de validación de PayPal o una librería
    */

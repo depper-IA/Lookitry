@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useConfirm } from '@/components/admin/ConfirmDialog';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -318,6 +319,7 @@ export default function SystemConfigPage() {
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState<SysTab>('trial');
   const credits = openRouterCredits;
+  const confirm = useConfirm();
 
   const headers = { 'Content-Type': 'application/json' };
 
@@ -493,6 +495,16 @@ export default function SystemConfigPage() {
 
   async function handleToggleTrialPayment() {
     const newVal = !trialPaymentRequired;
+    const ok = await confirm({
+      title: newVal ? 'Activar pago por trial' : 'Desactivar pago por trial',
+      message: newVal
+        ? 'Los nuevos usuarios deberán pagar el trial para activar la prueba.'
+        : 'La campaña activa permitirá trials sin pago.',
+      confirmLabel: newVal ? 'Activar' : 'Desactivar',
+      danger: false,
+      reason: 'Este cambio afecta directamente la conversión de nuevos registros.',
+    });
+    if (!ok) return;
     setSavingTrialPayment(true);
     try {
       const targets = campaigns.filter(c => c.active);
@@ -577,6 +589,18 @@ export default function SystemConfigPage() {
 
   async function handleToggleBypass() {
     const newVal = !bypassIp;
+    const ok = await confirm({
+      title: newVal ? 'Activar bypass IP' : 'Desactivar bypass IP',
+      message: newVal
+        ? 'Se omitirá la verificación de IP para TODOS los registros de prueba. Esto es un riesgo de seguridad.'
+        : 'Se restaurará la verificación de IP en producción.',
+      confirmLabel: newVal ? 'Activar bypass' : 'Desactivar bypass',
+      danger: newVal,
+      reason: newVal
+        ? 'Cualquier IP podrá registrar cuentas de prueba sin verificación. Solo usar en desarrollo o testing controlado.'
+        : 'Se restaura la protección de IP para todos los registros.',
+    });
+    if (!ok) return;
     setSavingBypass(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
