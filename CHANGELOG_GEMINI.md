@@ -1,6 +1,27 @@
 # Changelog - Lookitry (AI Assisted)
 
-## [2026-03-31] - Fix Wompi & PayPal Addon purchases & Trial dynamic price loading
+## [2026-03-31] - RestauraciÃ³n de Landing & Dashboard Pro-Test Premium
+
+### Cambios Realizados
+- **Landing Pro-Test (RestauraciÃ³n)**: Corregida la integridad del archivo `frontend/src/app/landing-pro-test/page.tsx`. Se arreglaron errores de etiquetas JSX sin cerrar y se importaron componentes faltantes (`Box` -> `ShoppingBag`, `PlusCircle`, etc.).
+- **Dashboard Pro-Test (CreaciÃ³n)**: Creada nueva interfaz premium en `frontend/src/app/dashboard/pro-test/page.tsx`. Esta versiÃ³n utiliza un diseÃ±o *Glassmorphism* avanzado, carga de datos real (Account State, MÃ©tricas, SuscripciÃ³n) y cumple al 100% con la identidad corporativa de Lookitry.
+- **Blindaje EstÃ©tico (Memory Management)**: Ambos archivos fueron auditados para cumplir con las reglas en `REGLAS_IMPORTANTES.md`:
+  - **Fuentes**: Uso de `font-jakarta` (Plus Jakarta Sans) en todos los tÃ­tulos y `font-sans` (DM Sans) en el cuerpo.
+  - **Colores**: Uso de `#FF5C3A` para acentos, `#0a0a0a` para fondos y `#141414` para tarjetas.
+  - **RestricciÃ³n de Grises**: Eliminados grises prohibidos (`#333`-`#555`), reemplazados por `#999` y `#bbb`.
+  - **Logo**: Corregido para usar `LOOK<span style="color:#FF5C3A">ITRY</span>` en formato texto/SVG corporativo.
+- **Limpieza de UI**: EliminaciÃ³n de emojis en favor de `lucide-react`.
+
+### Archivos Modificados
+- `frontend/src/app/landing-pro-test/page.tsx`
+- `frontend/src/app/dashboard/pro-test/page.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Atender la solicitud del usuario de previsualizar el dashboard con diseÃ±o premium y corregir la degradaciÃ³n de la landing de prueba, asegurando que Lookitry mantenga su "memoria" visual y tÃ©cnica en todas sus interfaces de prueba.
+
+---
+
 
 ### Cambios Realizados
 - **Wompi & PayPal Addon manual sync (Fallback API)**: Agregado endpoint `/api/payments/verify-addon` para forzar la verificaciÃ³n y aplicaciÃ³n de crÃ©ditos extra cuando el Webhook de Sandbox (o Prod) se pierde o demora. El frontend en `/dashboard/subscription` ahora lo gatilla automÃ¡ticamente tras retornar del gateway. Funciona cotejando el estado de la transacciÃ³n directamente con las APIs de ambos proveedores (Wompi y PayPal).
@@ -462,3 +483,22 @@ Corregir el caso donde un trial nuevo post-pago aparecÃ­a como `Plan BÃ¡sico act
 Corregir el caso reportado en upgrades trial -> Basic/Pro donde el botÃ³n de pago no abrÃ­a el medio de pago y el usuario era enviado de forma errÃ³nea a la pantalla de "Verificando tu pago" o a "Pago no completado".
 
 ---
+
+## [1.0.9] - Integración de Aplicaciones en Casos de Uso
+- Fusiones de los bloques de ventas y la comparativa interactiva Antes/Después desde `AplicacionesClient.tsx` hacia la página principal de `/casos-de-exito`.
+- Eliminación de la ruta independiente `/aplicaciones` para fortalecer el impacto del SEO y tráfico hacia Casos de Uso.
+- Aplicación estricta de patrones de diseño DarkTech (colores #0a0a0a/#FF5C3A, bordes semi-transparentes) y tipografía Premium.
+
+## [1.0.10] - Optimización de Fetch y Enlaces Ecosistema
+- Se implementó un sistema de caché en memoria dentro de `public-config.service.ts` para `fetchPublicPaymentSettings` y `fetchPublicPlanPrices`. Esto detiene las múltiples llamadas concurrentes generadas por Next.js App Router durante la navegación entre páginas (componente LandingFooter).
+- Se actualizaron los enlaces del footer sección Producto para coincidir exactamente con el término "Ecosistema" (Probador Virtual, Mini-Landing Pro, Plugin WooCommerce, API Developer, Planes Mensuales).
+
+## [1.0.11] - Corrección de Estética y Crash en Mini-Landing-Pro
+- Se resolvió un error interno de renderizado (Crash 500 / Fallo de validación del componente Image de Next.js) que ocurría al internar cargar imágenes desde el host externo de Unsplash. Se reemplazó el uso de <Image> por una etiqueta <img /> nativa en la pre-visualización de los productos de la Mini-Landing.
+- Se eliminó la deuda técnica arquitectónica en /mini-landing-pro removiendo su NavBar y Footer aislados/hardcodeados. Se implementó eficientemente <LandingNav currency={currency} onCurrencyChange={handleCurrencyChange} /> y <LandingFooter />, respetando la estructura DarkTech Premium consolidada globalmente.
+
+## [1.0.12] - Migración a Single-Page Navigation (Home)
+- Se actualizaron los enlaces del Navbar (Productos Pro) y del Footer (Ecosistema) para que carguen sin recargar la página, haciendo scroll fluido hacia las anclas respectivas de la landing page principal (\/#mini-landing\, \/#plugin\, \/#planes\, etc.), mejorando significativamente la experiencia de usuario y reduciendo la tasa de rebote en vez de cargar páginas aisladas.
+
+## [1.0.13] - Restauración de Rutas Independientes (Ecosistema)
+- Se revirtieron los enlaces ancla en Navbar y Footer para regresarlos a sus URLs de página completas (\/mini-landing-pro\, \/plugin-woocommerce\, \/api-developer\, \/planes\, \/probador-virtual\) por requerimiento del usuario. Las piezas del ecosistema seguirán existiendo como mini-landings independientes aisladas de la landing page principal.

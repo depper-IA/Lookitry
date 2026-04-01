@@ -1,4 +1,4 @@
-import LandingClient from '@/components/landing/LandingClient';
+import HomeLandingClient from '@/components/landing/HomeLandingClient';
 import { PromoModal } from '@/components/landing/PromoModal';
 import { getPricingConfig } from '@/lib/pricing';
 import type { PublicReviewsResponse } from '@/types';
@@ -145,11 +145,9 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <LandingClient
-        pricing={pricing}
-        reviews={reviewsToShow}
-        realReviewsCount={publicReviews.total_approved}
-        usingMockReviews={!hasEnoughReviews}
+      <HomeLandingClient 
+        pricing={pricing} 
+        reviews={reviewsToShow} 
       />
       <PromoModal />
     </>

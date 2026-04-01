@@ -1,9 +1,9 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { LandingNav } from '@/components/landing/LandingNav';
-import { LandingFooter } from '@/components/landing/LandingFooter';
+import LandingNav from '@/components/landing/new-landing/LandingNav';
+import LandingFooter from '@/components/landing/new-landing/LandingFooter';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 const ARTICLES = [
