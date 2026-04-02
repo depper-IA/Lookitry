@@ -1,5 +1,26 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-02] - Mejoras en el módulo Enterprise Sync
+
+### Problema
+- El endpoint `/api/enterprise/sync-product` devolvía error 500 en producción
+- El webhook `syncProductWebhook` fallaba sin logs claros
+- La función RPC `increment_sync_count` no estaba disponible, causando errores en cascada
+
+### Solución
+- Envolvimos todo el código del webhook en try-catch robusto
+- Agregamos logs de debug para diagnosticar problemas
+- Hacemos que los errores en RPC y config updates no fallen todo el proceso
+- Mejoramos el manejo de errores en `updateSyncStatus`
+
+### Archivos Modificados
+- `backend/src/controllers/enterprise.controller.ts`
+
+### Documentación Creada
+- `docs/N8N_ENTERPRISE_CREDENTIALS_SETUP.md` - Guía para configurar credenciales en n8n gratuito
+
+---
+
 ## [2026-04-01] - Navbar sticky persistente con z-index alto
 
 ### Problema

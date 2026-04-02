@@ -206,7 +206,7 @@ export const adminResetPassword = async (req: any, res: Response) => {
     await adminService.resetPasswordWithToken(token, password);
 
     return res.status(200).json({
-      message: 'Contrase?a restablecida correctamente',
+      message: 'Contraseña restablecida correctamente',
     });
   } catch (error: any) {
     console.error('Error in adminResetPassword:', error);
@@ -841,7 +841,7 @@ export const createAdmin = async (req: any, res: Response) => {
           </p>
           <table style="width:100%;border-collapse:collapse;margin-bottom:24px;background:#f9fafb;border-radius:8px;padding:16px">
             <tr><td style="padding:8px 12px;color:#6b7280;font-size:14px">Email</td><td style="padding:8px 12px;font-weight:600;color:#111827">${email}</td></tr>
-            <tr><td style="padding:8px 12px;color:#6b7280;font-size:14px">Contrase?a</td><td style="padding:8px 12px;font-weight:600;color:#111827">${password}</td></tr>
+            <tr><td style="padding:8px 12px;color:#6b7280;font-size:14px">Contraseña</td><td style="padding:8px 12px;font-weight:600;color:#111827">${password}</td></tr>
             <tr><td style="padding:8px 12px;color:#6b7280;font-size:14px">Nivel de acceso</td><td style="padding:8px 12px;color:#111827">${permissionsList}</td></tr>
           </table>
           <p style="color:#dc2626;font-size:13px;margin-bottom:24px">
@@ -946,7 +946,7 @@ export const changeOwnPassword = async (req: any, res: Response) => {
     });
 
     return res.status(200).json({
-      message: 'Contrase?a actualizada exitosamente. Inicia sesi?n de nuevo con tu nueva contrase?a.',
+      message: 'Contraseña actualizada exitosamente. Inicia sesión de nuevo con tu nueva contraseña.',
       requiresReauth: true,
     });
   } catch (error: any) {
@@ -977,7 +977,7 @@ export const changeAdminPassword = async (req: any, res: Response) => {
       action: 'admin.change_password',
       details: { target_admin_id: id },
     });
-    return res.status(200).json({ message: 'Contrase?a actualizada correctamente' });
+    return res.status(200).json({ message: 'Contraseña actualizada correctamente' });
   } catch (error: any) {
     return res.status(400).json({ error: 'BAD_REQUEST', message: error.message });
   }
