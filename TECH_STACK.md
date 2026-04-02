@@ -206,6 +206,7 @@ LOOKITRY/
 │   ├── src/
 │   │   ├── app/                # Páginas y API routes
 │   │   ├── components/         # Componentes reutilizables
+│   │   │   └── checkout/       # Componentes granulares del funnel de pago
 │   │   ├── services/           # Clientes HTTP
 │   │   ├── utils/              # Helpers
 │   │   └── types/              # TypeScript types
@@ -215,6 +216,7 @@ LOOKITRY/
 ├── backend/                     # Express API
 │   ├── src/
 │   │   ├── controllers/        # Controladores
+│   │   │   └── admin/          # Sub-controladores de panel de administración
 │   │   ├── routes/             # Rutas
 │   │   ├── middleware/         # Auth, admin, rate limiting
 │   │   ├── config/             # Supabase config

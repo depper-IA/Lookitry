@@ -1,6 +1,49 @@
 # Changelog - Lookitry (AI Assisted)
 
-## [2026-04-02] - Mejoras en el módulo Enterprise Sync
+## [2026-04-02] - Refactorización y Modularización del Admin Controller
+
+### Problema
+- El `AdminController.ts` era un archivo monolítico gigante que violaba los principios SOLID, haciendo difícil su mantenimiento, propenso a corrupciones de texto y a generar conflictos en el control de versiones.
+
+### Solución
+- Extracción de la lógica monolítica hacia múltiples controladores agrupados por dominio: `BrandAdminController`, `StatsAdminController`, `PaymentsAdminController`, `FeedbackAdminController`, `OperationalAdminController`, entre otros.
+- Implementación del patrón Facade en el controlador principal para delegar las llamadas a los nuevos controladores sin quebrar la retrocompatibilidad con `admin.routes.ts`.
+
+### Archivos Modificados
+- `backend/src/controllers/admin.controller.ts` (Convertido en hub/facade)
+- `backend/src/controllers/admin/*.ts` (Nuevos controladores hijos)
+
+---
+
+## [2026-04-02] - Modularización del Checkout Funnel
+
+### Problema
+- La página de checkout era un componente monolítico difícil de leer y mantener, que mezclaba estados de datos de usuario, de plan y métodos de pago de forma secuencial rígida.
+
+### Solución
+- División arquitectónica de la interfaz en componentes separados correspondientes a sus pasos lógicos (`UserDataStep`, `PlanSelectionStep`, `PaymentMethodStep`).
+- El estado y handlers se centralizaron en un layout/padre, pasando props hacia abajo mediante los módulos recién creados.
+- Actualización paralela de la arquitectura Front en el archivo `TECH_STACK.md` para reflejar la nueva división.
+
+### Archivos Modificados
+- `frontend/src/app/checkout/page.tsx`
+- `frontend/src/components/checkout/*.tsx` (Nuevos subcomponentes)
+
+---
+
+## [2026-04-02] - Corrección de Navegación en Landing General
+
+### Problema
+- El Navbar y el TopBar estaban anclados de formas extrañas usando clases mixtas relativas y `sticky`, causando fallos donde los enlaces o fondos se sobreponían, o no seguían el scroll natural del contenido.
+
+### Solución
+- Limpieza de contenedores de posicionamiento (`sticky`, `fixed`, `z-index` conflictivos).
+- Restablecimiento del flujo normal de documentos dinámicos de Next.js, logrando un desplazamiento parejo de los hero headers en conjunto con el Navbar.
+
+### Archivos Modificados
+- `frontend/src/components/landing/new-landing/*.tsx`
+
+---## [2026-04-02] - Mejoras en el módulo Enterprise Sync
 
 ### Problema
 - El endpoint `/api/enterprise/sync-product` devolvía error 500 en producción
