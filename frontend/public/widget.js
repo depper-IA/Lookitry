@@ -1,97 +1,168 @@
 (function() {
-  // Configuración base
   const BASE_URL = 'https://lookitry.com';
-  const CONTAINER_ID = 'lookitry-tester-container';
+  const DEFAULT_SELECTOR = '[data-lookitry-widget], #lookitry-tester-container';
   const ALLOWED_ORIGINS = new Set([BASE_URL, 'https://www.lookitry.com']);
+  const IFRAME_REGISTRY = new Map();
+  let listenerBound = false;
 
-  function initLookitry() {
-    const container = document.getElementById(CONTAINER_ID);
-    if (!container) return;
+  function normalizeHeight(value, fallback) {
+    const height = Number(value);
+    return Number.isFinite(height) && height > 100 ? height : fallback;
+  }
 
-    // 1. Obtener datos del contenedor
-    const slug = container.getAttribute('data-slug');
+  function resolveProductId(container) {
     let productId = container.getAttribute('data-product-id');
 
-    if (!slug) {
-      console.error('Lookitry: Falta el atributo data-slug en el contenedor.');
-      return;
+    if (productId) {
+      return productId;
     }
 
-    // 2. Intento de lectura dinámica de Product ID (Shopify, WooCommerce, QueryParams)
+    const urlParams = new URLSearchParams(window.location.search);
+    productId =
+      urlParams.get('variant') ||
+      urlParams.get('product_id') ||
+      urlParams.get('p') ||
+      urlParams.get('id');
+
     if (!productId) {
-      const urlParams = new URLSearchParams(window.location.search);
-      // Shopify usa ?variant=, WooCommerce a veces ?add-to-cart= o el ID está en el DOM
-      productId = urlParams.get('variant') || urlParams.get('product_id') || urlParams.get('p') || urlParams.get('id');
-      
-      // Intento en WooCommerce (Input hidden common)
-      if (!productId) {
-        const wcInput = document.querySelector('input[name="add-to-cart"], .variation_id');
-        if (wcInput) productId = wcInput.value;
+      const wcInput = document.querySelector('input[name="add-to-cart"], .variation_id');
+      if (wcInput && 'value' in wcInput) {
+        productId = wcInput.value;
       }
     }
 
-    // 3. Crear el Iframe dinámico
-    const iframe = document.createElement('iframe');
-    const embedUrl = new URL(`${BASE_URL}/embed/${slug}`);
-    if (productId) embedUrl.searchParams.set('product_id', productId);
-    
-    // Identificador para postMessage
-    embedUrl.searchParams.set('parent_url', window.location.href);
+    return productId || '';
+  }
 
-    // 4. Estilos para responsividad Pro Max
-    const styles = {
-      width: '100%',
-      height: '700px', // Altura inicial
-      border: 'none',
-      overflow: 'hidden',
-      display: 'block',
-      margin: '0 auto',
-      transition: 'height 0.3s ease'
-    };
+  function ensureMessageListener() {
+    if (listenerBound) return;
+    listenerBound = true;
 
-    Object.assign(iframe.style, styles);
-    iframe.src = embedUrl.toString();
-    iframe.id = 'lookitry-iframe-' + slug;
-    iframe.setAttribute('scrolling', 'no');
-    iframe.setAttribute('allow', 'camera; clipboard-write'); // Permitir cámara para selfies
-
-    // 5. Inyectar en el contenedor
-    container.innerHTML = '';
-    container.appendChild(iframe);
-    // Aviso legal mínimo para embeds de terceros (reduce riesgo jurídico)
-    const legalWrap = document.createElement('div');
-    legalWrap.style.marginTop = '8px';
-    legalWrap.style.textAlign = 'right';
-    legalWrap.style.fontSize = '11px';
-    legalWrap.style.fontFamily = 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
-    legalWrap.style.color = '#888';
-    legalWrap.innerHTML =
-      'Al usar este probador aceptas la <a href="' + BASE_URL + '/politica-de-uso" target="_blank" rel="noopener noreferrer" style="color:#FF5C3A;text-decoration:none;">política de uso</a>';
-    container.appendChild(legalWrap);
-
-    // 6. Listener para redimensionamiento dinámico (postMessage)
     window.addEventListener('message', function(event) {
       if (!event || !ALLOWED_ORIGINS.has(event.origin)) return;
 
-      // Compat: versiones antiguas (LOOKITRY_RESIZE) y actuales (TRYON_RESIZE)
       const msg = event.data || {};
       const type = msg.type;
+      const iframe = Array.from(IFRAME_REGISTRY.values()).find(function(candidate) {
+        return candidate && candidate.contentWindow === event.source;
+      });
+
+      if (!iframe) return;
 
       let newHeight = null;
       if (type === 'TRYON_RESIZE') {
-        newHeight = msg?.data?.height;
+        newHeight = msg && msg.data ? msg.data.height : null;
       } else if (type === 'LOOKITRY_RESIZE') {
-        newHeight = msg?.height;
+        newHeight = msg.height;
       }
 
-      if (newHeight && newHeight > 100) iframe.style.height = newHeight + 'px';
+      if (newHeight) {
+        iframe.style.height = normalizeHeight(newHeight, 700) + 'px';
+      }
     }, false);
   }
 
-  // Ejecutar cuando el DOM esté listo
+  function buildWidget(container) {
+    const slug = container.getAttribute('data-slug');
+    const modalMode = container.getAttribute('data-modal') === 'true';
+    const hideLegal = container.getAttribute('data-hide-legal') === 'true';
+    const initialHeight = normalizeHeight(container.getAttribute('data-height'), modalMode ? 760 : 700);
+    const productId = resolveProductId(container);
+
+    if (!slug) {
+      console.error('Lookitry: Falta el atributo data-slug en el contenedor.');
+      return null;
+    }
+
+    const embedUrl = new URL(BASE_URL + '/embed/' + slug);
+    if (productId) {
+      embedUrl.searchParams.set('product_id', productId);
+    }
+    embedUrl.searchParams.set('parent_url', window.location.href);
+
+    container.innerHTML = '';
+    container.style.position = 'relative';
+    container.style.width = '100%';
+    container.style.maxWidth = modalMode ? '100%' : (container.getAttribute('data-max-width') || '100%');
+    container.style.margin = modalMode ? '0' : '0 auto';
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.alignItems = 'stretch';
+    container.style.justifyContent = modalMode ? 'center' : 'flex-start';
+    container.style.minHeight = modalMode ? '100%' : '0';
+
+    const iframe = document.createElement('iframe');
+    iframe.src = embedUrl.toString();
+    iframe.id = 'lookitry-iframe-' + slug + '-' + Math.random().toString(36).slice(2, 8);
+    iframe.setAttribute('scrolling', 'no');
+    iframe.setAttribute('allow', 'camera; clipboard-write');
+    iframe.setAttribute('title', 'Lookitry widget');
+    iframe.style.width = '100%';
+    iframe.style.height = initialHeight + 'px';
+    iframe.style.border = 'none';
+    iframe.style.overflow = 'hidden';
+    iframe.style.display = 'block';
+    iframe.style.margin = '0 auto';
+    iframe.style.background = '#ffffff';
+    iframe.style.transition = 'height 0.3s ease';
+    iframe.style.borderRadius = modalMode ? '28px' : '24px';
+    iframe.style.boxShadow = modalMode ? 'none' : '0 10px 50px rgba(0,0,0,0.10)';
+    iframe.style.flex = modalMode ? '1 1 auto' : '0 0 auto';
+    iframe.style.minHeight = modalMode ? initialHeight + 'px' : '0';
+
+    container.appendChild(iframe);
+    IFRAME_REGISTRY.set(container, iframe);
+
+    if (!hideLegal) {
+      const legalWrap = document.createElement('div');
+      legalWrap.style.marginTop = '8px';
+      legalWrap.style.textAlign = 'right';
+      legalWrap.style.fontSize = '11px';
+      legalWrap.style.fontFamily = 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+      legalWrap.style.color = '#888';
+      legalWrap.innerHTML =
+        'Al usar este probador aceptas la <a href="' + BASE_URL + '/politica-de-uso" target="_blank" rel="noopener noreferrer" style="color:#FF5C3A;text-decoration:none;">politica de uso</a>';
+      container.appendChild(legalWrap);
+    }
+
+    return iframe;
+  }
+
+  function init(target) {
+    ensureMessageListener();
+
+    if (!target) {
+      return initAll();
+    }
+
+    if (typeof target === 'string') {
+      const node = document.querySelector(target);
+      return node ? buildWidget(node) : null;
+    }
+
+    if (target instanceof Element) {
+      return buildWidget(target);
+    }
+
+    return null;
+  }
+
+  function initAll() {
+    ensureMessageListener();
+    const nodes = document.querySelectorAll(DEFAULT_SELECTOR);
+    return Array.from(nodes).map(buildWidget).filter(Boolean);
+  }
+
+  window.LookitryWidget = {
+    init: init,
+    initAll: initAll,
+  };
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initLookitry);
+    document.addEventListener('DOMContentLoaded', function() {
+      initAll();
+    });
   } else {
-    initLookitry();
+    initAll();
   }
 })();

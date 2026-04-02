@@ -15,6 +15,7 @@ export interface TryOnTemplateProps {
   step: Step;
   config: TryOnConfigResponse;
   brandSlug: string;
+  isEmbed: boolean;
 
   primaryColor: string;
   secondaryColor: string;

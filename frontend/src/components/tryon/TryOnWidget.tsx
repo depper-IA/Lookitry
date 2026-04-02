@@ -269,6 +269,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     step,
     config,
     brandSlug,
+    isEmbed,
     primaryColor,
     secondaryColor,
     buttonText,

@@ -111,7 +111,7 @@ function lookitry_render_modal() {
     <div id="lookitry-modal-overlay" class="lookitry-modal-overlay">
         <div class="lookitry-modal-container">
             <button type="button" id="lookitry-modal-close" class="lookitry-modal-close">&times;</button>
-            <iframe id="lookitry-iframe" class="lookitry-iframe" src="" allow="camera"></iframe>
+            <div id="lookitry-modal-body" class="lookitry-modal-body"></div>
         </div>
     </div>
     <?php
