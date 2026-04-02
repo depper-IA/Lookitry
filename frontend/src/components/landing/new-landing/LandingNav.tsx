@@ -118,6 +118,7 @@ export default function LandingNav({
     <>
       <nav
         className={`sticky top-0 z-[70] px-4 sm:px-6 md:px-12 py-6 sm:py-8 w-full ${navBg}`}
+        style={{ position: 'sticky', top: 0 }}
         role="navigation"
         aria-label="Navegación principal"
       >
