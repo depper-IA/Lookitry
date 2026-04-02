@@ -239,10 +239,10 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                   ))}
                   {(basic.features_excluidas ?? []).map(f => (
                     <li key={f} className="flex items-center gap-3 text-[14px]">
-                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-white/5 opacity-30">
-                        <IconX />
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(255,92,58,0.13)]">
+                        <IconCheck />
                       </span>
-                      <span className="text-white/20">{f}</span>
+                      <span className="text-white/70">{f}</span>
                     </li>
                   ))}
                 </ul>
