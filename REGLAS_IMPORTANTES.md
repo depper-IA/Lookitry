@@ -6,7 +6,12 @@ inclusion: always
 **RESPONDE SIEMPRE EN ESPAÑOL**
 
 > Este archivo contiene las reglas operativas que la IA debe seguir al trabajar en el proyecto.
-> Para contexto del proyecto, ver: `docs/PRD.md`, `docs/DESIGN.md`, `docs/TECH_STACK.md`.
+> Para contexto del proyecto, ver: `PRD.md`, `DESIGN.md`, `TECH_STACK.md`.
+
+---
+
+## 0. Documentación Viva (Regla de Sincronicidad)
+**TODA VEZ que se realicen cambios estructurales en la arquitectura, componentes base, o diseño, es OBLIGATORIO actualizar `PRD.md`, `DESIGN.md`, `TECH_STACK.md` y `REGLAS_IMPORTANTES.md` para que reflejen inmediatamente la realidad del sistema. Los documentos nunca deben quedar obsoletos.**
 
 ---
 
@@ -76,7 +81,7 @@ Al iniciar cada tarea, la IA debe leer `pendientes_por_hacer.md` si existe. Si d
 
 ## 4. Reglas de Diseño
 
->参考: `docs/DESIGN.md`
+>参考: `DESIGN.md`
 
 - Colores: `#FF5C3A` naranja, `#0a0a0a` negro base, `#141414` cards
 - Tipografía: Plus Jakarta Sans (títulos), DM Sans (cuerpo)
@@ -116,7 +121,7 @@ Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 50
 
 ## 6. Reglas de Base de Datos
 
->参考: `docs/TECH_STACK.md`
+>参考: `TECH_STACK.md`
 
 - Backend SIEMPRE usa `supabaseAdmin` (service role) — bypasea RLS completamente
 - El backend usa JWT propio, NO Supabase Auth
