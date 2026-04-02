@@ -49,11 +49,13 @@ export function getBrandAllowedOrigins(brand: any): string[] {
   const configured = sanitizeDomainList(socialLinks.allowed_origins);
   const websiteOrigin = normalizeOrigin(socialLinks.website || brand?.website || null);
   const customDomainOrigin = normalizeOrigin(brand?.custom_domain || null);
+  const wooPluginStoreOrigin = normalizeOrigin(socialLinks.woo_plugin_store_domain || null);
 
   const origins = new Set<string>();
   configured.forEach((origin) => origins.add(origin));
   if (websiteOrigin) origins.add(websiteOrigin);
   if (customDomainOrigin) origins.add(customDomainOrigin);
+  if (wooPluginStoreOrigin) origins.add(wooPluginStoreOrigin);
 
   return Array.from(origins);
 }
