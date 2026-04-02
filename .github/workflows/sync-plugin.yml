@@ -2,7 +2,7 @@ name: Sync Plugin to WordPress
 
 on:
   push:
-    branches: [main]
+    branches: [main, opencode/mighty-circuit]
     paths:
       - 'lookitry-woocommerce/**'
   workflow_dispatch:
