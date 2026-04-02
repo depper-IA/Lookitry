@@ -1,0 +1,142 @@
+{
+  "name": "Lookitry Enterprise Sync (Hardcoded)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0],
+      "id": "2abcebff-9bdf-4932-b0d2-61ee77f5105a"
+    },
+    {
+      "parameters": {
+        "url": "https://vkdooutklowctuudjnkl.supabase.co/rest/v1/enterprise_sync_configs?active=eq.true&select=*",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDc2NTY2NSwiZXhwIjoyMDg2MzQxNjY1fQ.NxXV0Too3Iadb0FGuC8powPUuaMPiF1TKIUVtGMyFpg"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrZG9vdXRrbG93Y3R1dWRqbmtsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDc2NTY2NSwiZXhwIjoyMDg2MzQxNjY1fQ.NxXV0Too3Iadb0FGuC8powPUuaMPiF1TKIUVtGMyFpg"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "name": "Load Sync Configs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [224, 0],
+      "id": "be149aff-a1ac-4f25-b606-8d85df1d9d26"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json;\nconst configs = Array.isArray(raw)\n  ? raw\n  : Array.isArray(raw.data)\n    ? raw.data\n    : raw && Object.keys(raw).length\n      ? [raw]\n      : [];\n\nreturn configs.map((config) => ({ json: config }));"
+      },
+      "name": "Expand Sync Configs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [432, 0],
+      "id": "c1fe0f27-a83d-4a6e-bb1e-48e7dce2aa01"
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "name": "Process Each Brand",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [656, 0],
+      "id": "5ae417f6-09da-4212-b3c8-a1dc9e2dce71"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\nconst config = $json;\nconst {\n  brand_id,\n  sync_type = 'csv',\n  source_url,\n  api_key,\n  field_map = {},\n} = config;\n\nif (!brand_id || !source_url) {\n  throw new Error('brand_id y source_url son requeridos');\n}\n\n// VALORES HARDCODADOS (configurados manualmente)\nconst apiBase = 'https://api.lookitry.com';\nconst enterpriseToken = 'lookitry_enterprise_sync_2026_03_27_WilkieSecure';\nconst removeBgApiKey = 'P2Chn8kBygyw6ueawB3oQPar';\nconst minioEndpoint = 'https://minio.wilkiedevs.com';\nconst minioBucket = 'images';\nconst minioAccessKey = 'Wilkiedevs';\nconst minioSecretKey = 'Travis2305*';\nconst minioPublicUrl = 'https://minio.wilkiedevs.com';\n\nfunction parseCsvLine(line) {\n  const values = [];\n  let current = '';\n  let inQuotes = false;\n\n  for (let i = 0; i < line.length; i += 1) {\n    const char = line[i];\n    const next = line[i + 1];\n\n    if (char === '\"') {\n      if (inQuotes && next === '\"') {\n        current += '\"';\n        i += 1;\n      } else {\n        inQuotes = !inQuotes;\n      }\n      continue;\n    }\n\n    if (char === ',' && !inQuotes) {\n      values.push(current.trim());\n      current = '';\n      continue;\n    }\n\n    current += char;\n  }\n\n  values.push(current.trim());\n  return values;\n}\n\nfunction parseCsv(text) {\n  const lines = text\n    .split(/\\r?\\n/)\n    .map((line) => line.trim())\n    .filter(Boolean);\n\n  if (lines.length < 2) return [];\n\n  const headers = parseCsvLine(lines[0]);\n  return lines.slice(1).map((line) => {\n    const values = parseCsvLine(line);\n    return headers.reduce((acc, header, index) => {\n      acc[header] = values[index] ?? '';\n      return acc;\n    }, {});\n  });\n}\n\nfunction extractCollection(data) {\n  if (Array.isArray(data)) return data;\n  if (Array.isArray(data.products)) return data.products;\n  if (Array.isArray(data.items)) return data.items;\n  if (Array.isArray(data.data)) return data.data;\n  return [];\n}\n\nfunction pick(record, target, fallbacks = []) {\n  const mappedKey = field_map[target];\n  const keys = [mappedKey, target, ...fallbacks].filter(Boolean);\n\n  for (const key of keys) {\n    const value = record?.[key];\n    if (value !== undefined && value !== null && String(value).trim() !== '') {\n      return value;\n    }\n  }\n\n  return null;\n}\n\nfunction buildCatalogHeaders(rawKey) {\n  if (!rawKey) return {};\n  if (typeof rawKey !== 'string') return {};\n  if (rawKey.includes(':')) {\n    const encoded = Buffer.from(rawKey).toString('base64');\n    return { Authorization: `Basic ${encoded}` };\n  }\n  return { Authorization: `Bearer ${rawKey}` };\n}\n\nfunction sha256Hex(data) {\n  return crypto.createHash('sha256').update(data).digest('hex');\n}\n\nfunction hmac(key, data, encoding) {\n  return crypto.createHmac('sha256', key).update(data).digest(encoding);\n}\n\nfunction getSignatureKey(secretKey, dateStamp, region, service) {\n  const kDate = hmac(`AWS4${secretKey}`, dateStamp);\n  const kRegion = hmac(kDate, region);\n  const kService = hmac(kRegion, service);\n  return hmac(kService, 'aws4_request');\n}\n\nasync function uploadToMinio(buffer, objectKey) {\n  const endpointUrl = new URL(minioEndpoint);\n  const host = endpointUrl.host;\n  const pathname = `/${minioBucket}/${objectKey}`;\n  const url = `${minioEndpoint}${pathname}`;\n  const method = 'PUT';\n  const service = 's3';\n  const region = 'us-east-1';\n  const now = new Date();\n  const amzDate = now.toISOString().replace(/[:-]|\\.\\d{3}/g, '').slice(0, 15) + 'Z';\n  const dateStamp = amzDate.slice(0, 8);\n  const payloadHash = sha256Hex(buffer);\n  const canonicalHeaders = `host:${host}\\nx-amz-content-sha256:${payloadHash}\\nx-amz-date:${amzDate}\\n`;\n  const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';\n  const canonicalRequest = [\n    method,\n    pathname,\n    '',\n    canonicalHeaders,\n    signedHeaders,\n    payloadHash,\n  ].join('\\n');\n  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;\n  const stringToSign = [\n    'AWS4-HMAC-SHA256',\n    amzDate,\n    credentialScope,\n    sha256Hex(canonicalRequest),\n  ].join('\\n');\n  const signingKey = getSignatureKey(minioSecretKey, dateStamp, region, service);\n  const signature = crypto.createHmac('sha256', signingKey).update(stringToSign).digest('hex');\n  const authorizationHeader = `AWS4-HMAC-SHA256 Credential=${minioAccessKey}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;\n\n  const response = await fetch(url, {\n    method,\n    headers: {\n      Host: host,\n      'Content-Type': 'image/png',\n      'Content-Length': String(buffer.length),\n      'x-amz-content-sha256': payloadHash,\n      'x-amz-date': amzDate,\n      Authorization: authorizationHeader,\n    },\n    body: buffer,\n  });\n\n  if (!response.ok) {\n    const detail = await response.text();\n    throw new Error(`MinIO upload falló: ${response.status} ${detail}`);\n  }\n}\n\nconst catalogResponse = await fetch(source_url, {\n  method: 'GET',\n  headers: buildCatalogHeaders(api_key),\n});\n\nif (!catalogResponse.ok) {\n  throw new Error(`No se pudo consultar el catálogo: ${catalogResponse.status} ${catalogResponse.statusText}`);\n}\n\nconst rawBody = await catalogResponse.text();\nlet records = [];\n\nif (sync_type === 'csv' || /(^|\\n).+,.+(\\n|$)/.test(rawBody)) {\n  records = parseCsv(rawBody);\n} else {\n  const parsed = JSON.parse(rawBody);\n  records = extractCollection(parsed);\n}\n\nconst products = records\n  .map((record) => ({\n    brand_id,\n    external_id: String(pick(record, 'external_id', ['id', 'sku', 'product_id']) || '').trim(),\n    name: pick(record, 'name', ['title', 'product_name']),\n    description: pick(record, 'description', ['body_html', 'details', 'short_description']),\n    category: pick(record, 'category', ['type', 'product_type', 'collection']),\n    image_url_original: pick(record, 'image_url', ['image', 'image_src', 'imageUrl', 'featured_image']),\n    price: pick(record, 'price', ['regular_price', 'sale_price']),\n  }))\n  .filter((product) => product.name && product.image_url_original);\n\nlet successCount = 0;\nlet failedCount = 0;\nconst failures = [];\n\nfor (let index = 0; index < products.length; index += 1) {\n  const product = products[index];\n\n  try {\n    const removalBody = new URLSearchParams({\n      image_url: String(product.image_url_original),\n      size: 'auto',\n    });\n\n    const removeBgResponse = await fetch('https://api.remove.bg/v1.0/removebg', {\n      method: 'POST',\n      headers: {\n        'X-Api-Key': removeBgApiKey,\n        'Content-Type': 'application/x-www-form-urlencoded',\n      },\n      body: removalBody.toString(),\n    });\n\n    if (!removeBgResponse.ok) {\n      const detail = await removeBgResponse.text();\n      throw new Error(`remove.bg falló: ${removeBgResponse.status} ${detail}`);\n    }\n\n    const arrayBuffer = await removeBgResponse.arrayBuffer();\n    const pngBuffer = Buffer.from(arrayBuffer);\n    const safeExternalId = product.external_id || `generated-${index + 1}`;\n    const objectKey = `enterprise/${brand_id}/${safeExternalId}.png`;\n\n    await uploadToMinio(pngBuffer, objectKey);\n\n    const finalImageUrl = `${minioPublicUrl}/${minioBucket}/${objectKey}`;\n    const notifyResponse = await fetch(`${apiBase}/api/enterprise/sync-product`, {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n        Authorization: `Bearer ${enterpriseToken}`,\n      },\n      body: JSON.stringify({\n        brand_id,\n        external_id: safeExternalId,\n        name: product.name,\n        description: product.description,\n        category: product.category,\n        image_url: finalImageUrl,\n        price: product.price,\n      }),\n    });\n\n    if (!notifyResponse.ok) {\n      const detail = await notifyResponse.text();\n      throw new Error(`Backend Lookitry falló: ${notifyResponse.status} ${detail}`);\n    }\n\n    successCount += 1;\n  } catch (error) {\n    failedCount += 1;\n    failures.push(`${product.name}: ${error.message}`);\n  }\n}\n\nconst status = successCount > 0 && failedCount === 0\n  ? 'success'\n  : successCount > 0\n    ? 'partial'\n    : 'failed';\n\nconst message = failedCount > 0\n  ? failures.slice(0, 3).join(' | ')\n  : `Sync completado con ${successCount} productos.`;\n\nreturn [{\n  json: {\n    brand_id,\n    status,\n    message,\n    products_received: products.length,\n    products_synced_count: successCount,\n    failed_count: failedCount,\n    failures,\n  },\n}];"
+      },
+      "name": "Process Brand Catalog",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [896, 0],
+      "id": "d876d9c5-7235-4fa6-a296-bf9dded788ef"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://api.lookitry.com/api/admin/enterprise/' + $json.brand_id + '/sync-status' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer lookitry_enterprise_sync_2026_03_27_WilkieSecure"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ status: $json.status, message: $json.message, products_synced_count: $json.products_synced_count }) }}",
+        "options": {}
+      },
+      "name": "Update Sync Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1136, 0],
+      "id": "89f91470-128e-43ad-84e8-09923d7df10f"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [[{"node": "Load Sync Configs", "type": "main", "index": 0}]]
+    },
+    "Load Sync Configs": {
+      "main": [[{"node": "Expand Sync Configs", "type": "main", "index": 0}]]
+    },
+    "Expand Sync Configs": {
+      "main": [[{"node": "Process Each Brand", "type": "main", "index": 0}]]
+    },
+    "Process Each Brand": {
+      "main": [
+        [{"node": "Process Brand Catalog", "type": "main", "index": 0}],
+        []
+      ]
+    },
+    "Process Brand Catalog": {
+      "main": [[{"node": "Update Sync Status", "type": "main", "index": 0}]]
+    },
+    "Update Sync Status": {
+      "main": [[{"node": "Process Each Brand", "type": "main", "index": 1}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all"
+  },
+  "meta": {
+    "instanceId": "enterprise-sync-hardcoded"
+  }
+}
