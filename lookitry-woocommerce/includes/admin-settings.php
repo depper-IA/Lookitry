@@ -20,7 +20,7 @@ function lookitry_add_admin_menu() {
         'lookitry_settings_page'
     );
 }
-add_action( 'admin_menu', 'lookitry_add_admin_menu' );
+// add_action( 'admin_menu', 'lookitry_add_admin_menu' ); // Registered in lookitry_init()
 
 /**
  * Render Settings Page
@@ -930,7 +930,7 @@ function lookitry_settings_page() {
 /**
  * AJAX Handler: Get Product Catalog
  */
-add_action( 'wp_ajax_lookitry_get_catalog', 'lookitry_ajax_get_catalog' );
+// add_action( 'wp_ajax_lookitry_get_catalog', 'lookitry_ajax_get_catalog' ); // Registered in lookitry_init()
 function lookitry_ajax_get_catalog() {
     check_ajax_referer( 'lookitry_settings_nonce', 'nonce' );
 

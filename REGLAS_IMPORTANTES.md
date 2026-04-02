@@ -13,6 +13,8 @@ inclusion: always
 ## 0. Documentación Viva (Regla de Sincronicidad)
 **TODA VEZ que se realicen cambios estructurales en la arquitectura, componentes base, o diseño, es OBLIGATORIO actualizar `PRD.md`, `DESIGN.md`, `TECH_STACK.md` y `REGLAS_IMPORTANTES.md` para que reflejen inmediatamente la realidad del sistema. Los documentos nunca deben quedar obsoletos.**
 
+**REGLA DE ORO: NO ELIMINAR información técnica que siga siendo válida o funcional (versiones de librerías, estructuras de carpetas, reglas previas). Solo se debe incluir la información que falta o se actualiza, manteniendo el historial y contexto previo.**
+
 ---
 
 ## 1. Reglas de Git
@@ -145,6 +147,25 @@ Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 50
 | Enterprise Sync | `N8N_ENTERPRISE_SYNC_WEBHOOK_URL` | — |
 
 > El Error Handler se ejecuta automáticamente como `errorWorkflow` del Try-On en n8n.
+
+---
+
+## 8. Resumen de Arquitectura y Flujos
+
+Para detalles técnicos exhaustivos, referirse siempre a `TECH_STACK.md`.
+
+### 8.1 Flujos de n8n (IA)
+- **Try-On:** Backend dispara `/webhook/tryon`. n8n procesa con OpenRouter y actualiza Supabase.
+- **Error Handling:** Cualquier fallo en n8n activa el flujo de error que notifica a los admins en el panel.
+
+### 8.2 Flujos Críticos de Negocio
+- **Registro:** Turnstile -> DB -> Email SMTP.
+- **Pagos (Wompi):** Webhooks validan firma e inician `renewSubscription`.
+- **Upgrade:** Se aplica crédito prorrateado del plan anterior. El nuevo plan inicia inmediatamente.
+
+### 8.3 Infraestructura
+- **Docker:** Frontend, Backend, n8n y MinIO corren en contenedores aislados en el VPS (`31.220.18.39`).
+- **Almacenamiento:** Todas las imágenes (selfies, productos, resultados) residen en **MinIO**.
 
 ---
 

@@ -72,9 +72,9 @@
                                                                                  ]
                                                               },
                                          "sendBody":  true,
-                                         "specifyBody":  "json",
-                                         "jsonBody":  "={{ JSON.stringify({ \"model\": \"google/gemini-2.5-flash-image\", \"modalities\": [\"image\", \"text\"], \"messages\": [{ \"role\": \"user\", \"content\": [ { \"type\": \"text\", \"text\": $json.full_prompt }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.selfie_url } }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.product_image_url } } ] }], \"max_tokens\": 1024, \"temperature\": 0.3 }) }}",
-                                         "options":  {
+                                       "specifyBody":  "json",
+                                          "jsonBody":  "={{ JSON.stringify({ \"model\": \"google/gemini-2.5-flash-image\", \"modalities\": [\"image\", \"text\"], \"messages\": [{ \"role\": \"user\", \"content\": [ { \"type\": \"text\", \"text\": $json.full_prompt }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.selfie_url } }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.product_image_url } } ] }], \"max_tokens\": 1024, \"temperature\": 0.3 }) }}",
+                                          "options":  {
                                                          "timeout":  120000
                                                      }
                                      },
@@ -195,12 +195,12 @@
                                                                                      "value":  "={{ $(\u0027Subir Imagen Final\u0027).item.json.url }}",
                                                                                      "type":  "string"
                                                                                  },
-                                                                                 {
-                                                                                     "id":  "field-model",
-                                                                                     "name":  "_meta_model",
-                                                                                     "value":  "google/gemini-2.5-flash-image",
-                                                                                     "type":  "string"
-                                                                                 },
+                                                                                  {
+                                                                                      "id":  "field-model",
+                                                                                      "name":  "_meta_model",
+                                                                                      "value":  "google/gemini-2.0-flash-exp",
+                                                                                      "type":  "string"
+                                                                                  },
                                                                                  {
                                                                                      "id":  "field-execution",
                                                                                      "name":  "_meta_execution_id",
@@ -470,7 +470,7 @@
                                                                                     },
                                                                "sendBody":  true,
                                                                "specifyBody":  "json",
-                                                               "jsonBody":  "={{ JSON.stringify({ \"model\": \"google/gemini-2.5-flash-image\", \"modalities\": [\"image\", \"text\"], \"messages\": [{ \"role\": \"user\", \"content\": [ { \"type\": \"text\", \"text\": $json.full_prompt }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.selfie_url } }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.product_image_url } } ] }], \"max_tokens\": 1024, \"temperature\": 0.3 }) }}",
+                                                               "jsonBody":  "={{ JSON.stringify({ \"model\": \"google/gemini-2.0-flash-exp\", \"modalities\": [\"image\", \"text\"], \"messages\": [{ \"role\": \"user\", \"content\": [ { \"type\": \"text\", \"text\": $json.full_prompt }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.selfie_url } }, { \"type\": \"image_url\", \"image_url\": { \"url\": $json.product_image_url } } ] }], \"max_tokens\": 1024, \"temperature\": 0.3 }) }}",
                                                                "options":  {
                                                                                "timeout":  120000
                                                                            }
@@ -595,7 +595,7 @@
                                                                                                        {
                                                                                                            "id":  "field-model",
                                                                                                            "name":  "_meta_model",
-                                                                                                           "value":  "google/gemini-2.5-flash-image",
+                                                                                                           "value":  "google/gemini-2.0-flash-exp",
                                                                                                            "type":  "string"
                                                                                                        },
                                                                                                        {

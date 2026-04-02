@@ -70,7 +70,7 @@ function lookitry_enqueue_scripts() {
         ));
     }
 }
-add_action( 'wp_enqueue_scripts', 'lookitry_enqueue_scripts' );
+// add_action( 'wp_enqueue_scripts', 'lookitry_enqueue_scripts' ); // Registered in lookitry_init()
 
 /**
  * Inject Try-On Button
@@ -78,7 +78,7 @@ add_action( 'wp_enqueue_scripts', 'lookitry_enqueue_scripts' );
 function lookitry_inject_button() {
     global $product;
     
-    if ( ! $product ) return;
+    if ( ! $product || ! $product->is_type( array( 'simple', 'variable' ) ) || $product->get_status() !== 'publish' ) return;
 
     // Get WooCommerce product ID
     $product_id = $product->get_id();
@@ -96,7 +96,7 @@ function lookitry_inject_button() {
     echo '</button>';
     echo '</div>';
 }
-add_action( 'woocommerce_after_add_to_cart_button', 'lookitry_inject_button' );
+// add_action( 'woocommerce_after_add_to_cart_button', 'lookitry_inject_button' ); // Registered in lookitry_init()
 
 /**
  * Render Modal HTML in Footer
@@ -112,4 +112,4 @@ function lookitry_render_modal() {
     </div>
     <?php
 }
-add_action( 'wp_footer', 'lookitry_render_modal' );
+// add_action( 'wp_footer', 'lookitry_render_modal' ); // Registered in lookitry_init()
