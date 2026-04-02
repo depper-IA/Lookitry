@@ -192,4 +192,69 @@ this.accessKey}/${credentialScope}, ` +
     };
     return map[contentType] || '.jpg';
   }
+
+  async cleanupTempFiles(paths: string[]): Promise<{ deleted: number; errors: number }> {
+    let deleted = 0;
+    let errors = 0;
+
+    for (const path of paths) {
+      try {
+        await this.deleteObject(path);
+        deleted++;
+        console.log(`[Cleanup] Eliminado: ${path}`);
+      } catch (error: any) {
+        errors++;
+        console.error(`[Cleanup] Error eliminando ${path}:`, error.message);
+      }
+    }
+
+    return { deleted, errors };
+  }
+
+  private async deleteObject(key: string): Promise<void> {
+    const host = this.endpoint.replace(/^https?:\/\//, '');
+    const url = `${this.endpoint}/${this.bucket}/${key}`;
+
+    const now = new Date();
+    const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
+    const amzDate = now.toISOString().replace(/[:-]/g, '').slice(0, 15) + 'Z';
+    const region = 'us-east-1';
+    const payloadHash = 'UNSIGNED-PAYLOAD';
+
+    const canonicalHeaders = `host:${host}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzDate}\n`;
+    const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
+
+    const canonicalRequest = [
+      'DELETE',
+      `/${this.bucket}/${key}`,
+      '',
+      canonicalHeaders,
+      signedHeaders,
+      payloadHash,
+    ].join('\n');
+
+    const credentialScope = `${dateStamp}/${region}/s3/aws4_request`;
+    const stringToSign = [
+      'AWS4-HMAC-SHA256',
+      amzDate,
+      credentialScope,
+      crypto.createHash('sha256').update(canonicalRequest).digest('hex'),
+    ].join('\n');
+
+    const signingKey = this.getSigningKey(dateStamp, region);
+    const signature = crypto.createHmac('sha256', signingKey).update(stringToSign).digest('hex');
+
+    const authorization =
+      `AWS4-HMAC-SHA256 Credential=${this.accessKey}/${credentialScope}, ` +
+      `SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+    await axios.delete(url, {
+      headers: {
+        'x-amz-date': amzDate,
+        'x-amz-content-sha256': payloadHash,
+        Authorization: authorization,
+      },
+      timeout: 30000,
+    });
+  }
 }

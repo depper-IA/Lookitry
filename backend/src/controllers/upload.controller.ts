@@ -102,3 +102,38 @@ export const uploadSelfie = async (req: Request, res: Response) => {
     });
   }
 };
+
+/**
+ * DELETE /api/upload/cleanup-temp
+ * Elimina selfies temporales del bucket MinIO.
+ *body: { selfie_paths: string[] } o ?path=nombre_archivo
+ */
+export const cleanupTempSelfies = async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const expectedToken = process.env.N8N_BEARER_TOKEN || '';
+    if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
+      return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Token inválido' });
+    }
+
+    const { selfie_paths } = req.body;
+    
+    if (!selfie_paths || !Array.isArray(selfie_paths) || selfie_paths.length === 0) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'selfie_paths es requerido y debe ser un array' });
+    }
+
+    const results = await uploadService.cleanupTempFiles(selfie_paths);
+
+    return res.status(200).json({ 
+      success: true, 
+      deleted: results.deleted, 
+      errors: results.errors 
+    });
+  } catch (error: any) {
+    console.error('[Cleanup Temp] Error:', error);
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: error.message || 'Error al limpiar archivos temporales',
+    });
+  }
+};
