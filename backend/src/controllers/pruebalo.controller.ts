@@ -1142,11 +1142,10 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
     `- Reproduce the garment EXACTLY as shown in the reference image: same colors, patterns, textures, logos, stitching, cuts, and fit.`,
     `- Do NOT invent, simplify, or alter any visual element of the product.`,
 
-    `[NO GENERATED GRAPHICS OR ARTIFACTS]`,
-    `- Do NOT generate any watermark, signature, caption, subtitle, label, sticker, badge, icon, UI element, or decorative symbol anywhere in the image.`,
-    `- Do NOT generate any fake brand mark, fake logo, fake text, fake lettering, or fake embroidery that is not explicitly visible in the reference product.`,
-    `- If the reference product contains a real logo or graphic, reproduce only that exact original element in its correct position. Never add extra marks.`,
-    `- Background objects, walls, lights, vehicles, and accessories must not contain invented words, signs, or graphic marks.`,
+    `[NO MODEL-INSERTED WATERMARKS OR OVERLAYS]`,
+    `- Preserve all authentic logos, brand marks, graphics, embroidery, and printed details that truly belong to the reference product.`,
+    `- Do NOT generate any extra watermark, signature, caption, subtitle, AI stamp, stock-photo mark, UI overlay, or invented text that is not part of the real product design.`,
+    `- Background objects, walls, lights, vehicles, and accessories must not contain invented words, signs, or graphic marks added by the model.`,
     `- The final image must look like a clean camera photograph, not a poster, ad creative, screenshot, or designed composition.`,
 
     `[PERSON & REALISM]`,
@@ -1154,7 +1153,7 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
     `- The product must fit naturally on the body with correct perspective, lighting, and shadows.`,
     `- Photorealistic quality only — no illustrations, no stylization.`,
 
-    `Output: the final try-on image only. No text, no watermarks, no signatures, no fake logos, no UI overlays.`,
+    `Output: the final try-on image only. Keep real product branding if it exists, but never add model-invented watermarks, signatures, or UI overlays.`,
   );
 
   return lines.join('\n');
