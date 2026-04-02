@@ -76,9 +76,10 @@ function lookitry_enqueue_scripts() {
  * Inject Try-On Button
  */
 function lookitry_inject_button() {
+    static $rendered = false;
     global $product;
     
-    if ( ! $product || ! $product->is_type( array( 'simple', 'variable' ) ) || $product->get_status() !== 'publish' ) return;
+    if ( $rendered || ! $product || ! $product->is_type( array( 'simple', 'variable' ) ) || $product->get_status() !== 'publish' ) return;
 
     // Get WooCommerce product ID
     $product_id = $product->get_id();
@@ -95,6 +96,7 @@ function lookitry_inject_button() {
     echo '<span>' . esc_html( $button_text ) . '</span>';
     echo '</button>';
     echo '</div>';
+    $rendered = true;
 }
 // add_action( 'woocommerce_after_add_to_cart_button', 'lookitry_inject_button' ); // Registered in lookitry_init()
 
