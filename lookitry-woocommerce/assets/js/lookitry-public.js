@@ -154,6 +154,25 @@
             window.LookitryWidget.init(container);
         }
 
+        function renderIframeFallback(embedUrl) {
+            if (!embedUrl) {
+                throw new Error('Missing embed URL');
+            }
+
+            $modalBody.empty();
+
+            const iframe = document.createElement('iframe');
+            iframe.id = 'lookitry-iframe';
+            iframe.className = 'lookitry-iframe';
+            iframe.src = embedUrl;
+            iframe.setAttribute('allow', 'camera; clipboard-write');
+            iframe.setAttribute('scrolling', 'no');
+            iframe.style.borderRadius = '28px';
+            iframe.style.overflow = 'hidden';
+
+            $modalBody.append(iframe);
+        }
+
         function showOverlayState(type, title, message, showUpgradeLink) {
             $overlay.find('.lookitry-loading-overlay, .lookitry-error-overlay').remove();
 
@@ -347,9 +366,20 @@
                                     productId: lookitryProductId
                                 });
                                 $overlay.css('display', 'flex');
+
+                                window.setTimeout(function() {
+                                    if (!$modalBody.find('iframe').length) {
+                                        renderIframeFallback(response.embedUrl);
+                                    }
+                                }, 900);
                             })
                             .catch(function() {
-                                showRequestError('Error al cargar el widget', 'No se pudo inicializar el loader del probador.', false);
+                                try {
+                                    renderIframeFallback(response.embedUrl);
+                                    $overlay.css('display', 'flex');
+                                } catch (fallbackError) {
+                                    showRequestError('Error al cargar el widget', 'No se pudo inicializar el loader del probador.', false);
+                                }
                             });
                     } else {
                         showRequestError('Error al inicializar', response.message || response.error || 'El probador no esta disponible en este momento.', false);
