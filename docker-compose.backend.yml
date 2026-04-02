@@ -7,6 +7,8 @@ services:
     restart: unless-stopped
     env_file:
       - /root/virtual-tryon/backend/.env.production
+    environment:
+      - ENTERPRISE_SYNC_TOKEN=lookitry_enterprise_sync_2026_03_27_WilkieSecure
     networks:
       - proxy
     labels:
