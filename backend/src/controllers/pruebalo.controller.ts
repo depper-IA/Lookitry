@@ -398,15 +398,24 @@ export class PruebaloController {
       }
 
       // ── Debugging detallado para trazabilidad ──────────────────────────────
+      const errorText = [
+        n8nError.message || '',
+        JSON.stringify(n8nError.n8nBody ?? {}),
+      ].join(' ').toLowerCase();
+
       const isCreditsError =
         n8nError.statusCode === 402 ||
         n8nError.statusCode === 429 ||
-        (n8nError.message || '').toLowerCase().includes('insufficient') ||
-        (n8nError.message || '').toLowerCase().includes('credits') ||
-        (n8nError.message || '').toLowerCase().includes('quota') ||
-        (n8nError.message || '').toLowerCase().includes('out of credits') ||
-        (n8nError.message || '').toLowerCase().includes('402') ||
-        JSON.stringify(n8nError.n8nBody ?? {}).toLowerCase().includes('credits');
+        errorText.includes('insufficient') ||
+        errorText.includes('credits') ||
+        errorText.includes('quota') ||
+        errorText.includes('out of credits') ||
+        errorText.includes('insufficient balance') ||
+        errorText.includes('balance') ||
+        errorText.includes('payment required') ||
+        errorText.includes('billing') ||
+        errorText.includes('provider returned error') ||
+        errorText.includes('402');
 
       console.error('[pruebalo] Error en generación', {
         brandSlug,

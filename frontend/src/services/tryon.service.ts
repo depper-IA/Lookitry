@@ -5,6 +5,26 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 /** Tiempo máximo (ms) que esperamos una respuesta del endpoint de generación */
 const GENERATION_TIMEOUT_MS = 95_000;
 
+function isCreditsExhaustedErrorPayload(payload: any): boolean {
+  const errorCode = String(payload?.error || '').toUpperCase();
+  const message = String(payload?.message || '').toLowerCase();
+  const details = JSON.stringify(payload?.details ?? {}).toLowerCase();
+  const combined = `${message} ${details}`;
+
+  return (
+    errorCode.includes('OPENROUTER') ||
+    message === 'service_credits_exhausted' ||
+    combined.includes('service_credits_exhausted') ||
+    combined.includes('credits') ||
+    combined.includes('quota') ||
+    combined.includes('out of credits') ||
+    combined.includes('insufficient balance') ||
+    combined.includes('balance') ||
+    combined.includes('payment required') ||
+    combined.includes('billing')
+  );
+}
+
 class TryOnService {
   async getConfig(brandSlug: string): Promise<TryOnConfigResponse> {
     try {
@@ -67,8 +87,8 @@ class TryOnService {
       if (res.status === 429) throw new Error(json.message || 'Límite de generaciones excedido');
       if (!res.ok) {
         const msg: string = json.message || 'Error al generar la imagen';
-        // Marcar errores de servicio (créditos agotados) para que el widget los trate diferente
-        if (msg === 'SERVICE_CREDITS_EXHAUSTED') {
+        // Marcar errores de servicio (créditos agotados / saldo insuficiente) para que el widget los trate diferente
+        if (isCreditsExhaustedErrorPayload(json)) {
           const err = new Error('SERVICE_CREDITS_EXHAUSTED') as any;
           err.isServiceError = true;
           throw err;
