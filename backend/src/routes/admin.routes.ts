@@ -70,7 +70,6 @@ import {
   registerSubscriptionPayment,
   suspendSubscription,
   reactivateSubscription,
-  getRevenueStats,
 } from '../controllers/admin.controller';
 
 import { authRateLimiter } from '../middleware/rateLimiter';
@@ -172,8 +171,5 @@ router.get('/subscriptions', requirePermission('subscriptions'), getAllSubscript
 router.post('/subscriptions/:id/payment', requirePermission('subscriptions'), registerSubscriptionPayment);
 router.patch('/subscriptions/:id/suspend', requirePermission('subscriptions'), suspendSubscription);
 router.patch('/subscriptions/:id/reactivate', requirePermission('subscriptions'), reactivateSubscription);
-
-// Estadísticas de Revenue
-router.get('/revenue/stats', requirePermission('subscriptions'), getRevenueStats);
 
 export default router;
