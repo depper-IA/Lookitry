@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+function normalizeOrigin(raw?: string | null): string | null {
+  if (!raw) return null;
+
+  try {
+    const value = String(raw).trim();
+    if (!value) return null;
+    const url = new URL(value);
+    return `${url.protocol}//${url.hostname}`;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * middleware.ts — Protección de rutas en el Edge Runtime de Next.js
  */
@@ -97,12 +110,18 @@ export async function middleware(request: NextRequest) {
       console.error('[Middleware] Error validando origen del iframe:', e);
     }
 
+    const requestDerivedOrigins = [
+      normalizeOrigin(request.headers.get('origin')),
+      normalizeOrigin(request.headers.get('referer')),
+    ].filter((origin): origin is string => Boolean(origin));
+
     // Limpiar siempre X-Frame-Options para que nuestro CSP no tenga conflictos
     response.headers.delete('X-Frame-Options');
 
     const baseCsp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://checkout.wompi.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob: 'self'; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co https://checkout.wompi.co; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://*.wordpress.com https://*.wixsite.com https://*.shopify.com; media-src 'self';";
 
-    const frameAncestors = ["'self'", ...allowedOrigins]
+    const frameAncestors = ["'self'", ...allowedOrigins, ...requestDerivedOrigins]
+      .filter((origin, index, array) => array.indexOf(origin) === index)
       .filter(Boolean)
       .join(' ');
 
