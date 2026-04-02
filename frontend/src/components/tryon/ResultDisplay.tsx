@@ -124,25 +124,44 @@ export function ResultDisplay({
 
   const handleShare = async () => {
     setShareError(null);
-    if (!navigator.share) {
-      setShareError('Tu navegador no soporta la función de compartir. Usa los botones de WhatsApp o Facebook.');
-      return;
-    }
-
     setSharing(true);
     try {
-      const watermarkedUrl = getProxiedImageUrl(imageUrl, brandPlan);
-      const res = await fetch(watermarkedUrl);
-      const blob = await res.blob();
-      const file = new File([blob], 'prueba-virtual.jpg', { type: 'image/jpeg' });
+      const shareTargetUrl = pluginView ? imageUrl : getProxiedImageUrl(imageUrl, brandPlan);
 
-      await navigator.share({
-        title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
-        text: `Mira cómo me queda este producto: ${productName}`,
-        files: [file],
-      });
+      if (navigator.share) {
+        try {
+          const res = await fetch(shareTargetUrl);
+          const blob = await res.blob();
+          const file = new File([blob], 'prueba-virtual.jpg', { type: blob.type || 'image/jpeg' });
+
+          await navigator.share({
+            title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
+            text: `Mira cómo me queda este producto: ${productName}`,
+            files: [file],
+          });
+          return;
+        } catch (_nativeShareError) {
+          try {
+            await navigator.share({
+              title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
+              text: `Mira cómo me queda este producto: ${productName}`,
+              url: shareTargetUrl,
+            });
+            return;
+          } catch (_urlShareError) {}
+        }
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(shareTargetUrl);
+        setShareError('Enlace copiado. Ya puedes compartir la imagen.');
+        return;
+      }
+
+      window.open(shareTargetUrl, '_blank', 'noopener');
     } catch (error) {
       console.error('Error al compartir:', error);
+      setShareError('No se pudo compartir en este dispositivo.');
     } finally {
       setSharing(false);
     }
@@ -240,22 +259,6 @@ export function ResultDisplay({
                 <p className="mt-2 text-sm text-gray-500">Mostramos solo la imagen final dentro del plugin para una vista limpia, completa y enfocada en conversión.</p>
               </div>
 
-              <button
-                onClick={handleShare}
-                disabled={sharing}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-xs font-black uppercase tracking-widest text-white shadow-xl transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 md:text-sm"
-                style={{ backgroundColor: primaryColor }}
-              >
-                <svg className="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.882 13.12 9 12.827 9 12.5s-.118-.62-.316-.842m0 1.684a1.125 1.125 0 10-1.368 0m1.368 0a1.125 1.125 0 11-1.368 0M15.316 6.658C15.118 6.88 15 7.173 15 7.5s.118.62.316.842m0-1.684a1.125 1.125 0 111.368 0m-1.368 0a1.125 1.125 0 101.368 0M15.316 17.342C15.118 17.12 15 16.827 15 16.5s.118-.62.316-.842m0 1.684a1.125 1.125 0 111.368 0m-1.368 0a1.125 1.125 0 101.368 0M8.684 11.658l6.632-3.316m0 7.316l-6.632-3.316" />
-                </svg>
-                {sharing ? 'Compartiendo...' : 'Compartir resultado'}
-              </button>
-
-              {shareError && (
-                <p className="text-center text-[10px] font-bold uppercase text-orange-500">{shareError}</p>
-              )}
-
               {addToCartUrl && (
                 <a
                   href={addToCartUrl}
@@ -276,6 +279,22 @@ export function ResultDisplay({
                 >
                   Comprar ahora
                 </a>
+              )}
+
+              <button
+                onClick={handleShare}
+                disabled={sharing}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-xs font-black uppercase tracking-widest text-white shadow-xl transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 md:text-sm"
+                style={{ backgroundColor: primaryColor }}
+              >
+                <svg className="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.882 13.12 9 12.827 9 12.5s-.118-.62-.316-.842m0 1.684a1.125 1.125 0 10-1.368 0m1.368 0a1.125 1.125 0 11-1.368 0M15.316 6.658C15.118 6.88 15 7.173 15 7.5s.118.62.316.842m0-1.684a1.125 1.125 0 111.368 0m-1.368 0a1.125 1.125 0 101.368 0M15.316 17.342C15.118 17.12 15 16.827 15 16.5s.118-.62.316-.842m0 1.684a1.125 1.125 0 111.368 0m-1.368 0a1.125 1.125 0 101.368 0M8.684 11.658l6.632-3.316m0 7.316l-6.632-3.316" />
+                </svg>
+                {sharing ? 'Compartiendo...' : 'Compartir resultado'}
+              </button>
+
+              {shareError && (
+                <p className="text-center text-[10px] font-bold uppercase text-orange-500">{shareError}</p>
               )}
 
               <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-4 py-3 text-xs leading-relaxed text-gray-500">

@@ -239,7 +239,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16" >
+      <div className={`flex items-center justify-center ${pluginView ? 'min-h-[70vh]' : 'py-16'}`} >
         <div className="text-center">
           <div className="w-14 h-14 border-4 border-gray-200 rounded-full animate-spin mx-auto" style={{ borderTopColor: primaryColor }} />
           <p className="mt-4 text-gray-500 text-sm font-medium">Cargando el probador...</p>

@@ -262,14 +262,26 @@
 
             $modalBody.empty();
 
+            let finalEmbedUrl = embedUrl;
+            try {
+                const parsed = new URL(embedUrl);
+                parsed.searchParams.set('product_url', getProductUrl());
+                parsed.searchParams.set('add_to_cart_url', getAddToCartUrl(activeWooProductId || getProductId()));
+                parsed.searchParams.set('cart_url', getCartUrl());
+                finalEmbedUrl = parsed.toString();
+            } catch (error) {}
+
             const iframe = document.createElement('iframe');
             iframe.id = 'lookitry-iframe';
             iframe.className = 'lookitry-iframe';
-            iframe.src = embedUrl;
+            iframe.src = finalEmbedUrl;
             iframe.setAttribute('allow', 'camera; clipboard-write');
             iframe.setAttribute('scrolling', 'no');
             iframe.style.borderRadius = '28px';
             iframe.style.overflow = 'hidden';
+            iframe.addEventListener('load', function() {
+                $overlay.find('.lookitry-loading-overlay').remove();
+            });
 
             $modalBody.append(iframe);
         }
@@ -462,7 +474,7 @@
 
                         ensureWidgetScript(widgetUrl)
                             .then(function() {
-                                $overlay.find('.lookitry-loading-overlay, .lookitry-error-overlay').remove();
+                                $overlay.find('.lookitry-error-overlay').remove();
                                 renderWidgetInModal({
                                     brandSlug: brandSlug,
                                     productId: lookitryProductId
@@ -537,6 +549,11 @@
                 const wooProductId = activeWooProductId || getProductId();
                 saveLastResult(wooProductId, e.data.data);
                 renderSavedResult(wooProductId);
+                return;
+            }
+
+            if (e.data && e.data.type === 'TRYON_READY') {
+                $overlay.find('.lookitry-loading-overlay').remove();
                 return;
             }
 
