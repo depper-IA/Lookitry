@@ -36,35 +36,40 @@ async function handleCommand(msg: TelegramBot.Message, command: string) {
       await sendMainMenu(chatId);
       return;
 
-    case '/pagos':
+    case '/pagos': {
       const result = await auditPayments();
       const message = formatAuditResult(result.summary, result.sections);
       await bot!.sendMessage(chatId, message, { parse_mode: 'HTML' });
       break;
+    }
 
-    case '/suscripciones':
+    case '/suscripciones': {
       const result = await auditSubscriptions();
       const message = formatAuditResult(result.summary, result.sections);
       await bot!.sendMessage(chatId, message, { parse_mode: 'HTML' });
       break;
+    }
 
-    case '/ia':
+    case '/ia': {
       const result = await auditAI();
       const message = formatAuditResult(result.summary, result.sections);
       await bot!.sendMessage(chatId, message, { parse_mode: 'HTML' });
       break;
+    }
 
-    case '/seguridad':
+    case '/seguridad': {
       const result = await auditSecurity();
       const message = formatAuditResult(result.summary, result.sections);
       await bot!.sendMessage(chatId, message, { parse_mode: 'HTML' });
       break;
+    }
 
-    case '/health':
+    case '/health': {
       const result = await auditHealth();
       const message = formatAuditResult(result.summary, result.sections);
       await bot!.sendMessage(chatId, message, { parse_mode: 'HTML' });
       break;
+    }
 
     case '/full':
       const payments = await auditPayments();
@@ -184,13 +189,13 @@ export function startTelegramBot() {
   try {
     bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 
-    bot.on('message', async (msg) => {
+    bot.on('message', async (msg: TelegramBot.Message) => {
       if (!msg.text) return;
       const command = msg.text.trim().toLowerCase();
       await handleCommand(msg, command);
     });
 
-    bot.on('callback_query', async (callbackQuery) => {
+    bot.on('callback_query', async (callbackQuery: TelegramBot.CallbackQuery) => {
       const msg = callbackQuery.message;
       const data = callbackQuery.data;
       if (!msg || !data) return;
@@ -199,7 +204,7 @@ export function startTelegramBot() {
       await handleCommand(msg, data);
     });
 
-    bot.on('polling_error', (error) => {
+    bot.on('polling_error', (error: Error) => {
       console.error('[Telegram] Polling error:', error.message);
     });
 
