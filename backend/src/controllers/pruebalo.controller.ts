@@ -946,6 +946,24 @@ export class PruebaloController {
         throw new ValidationError('URL de imagen no permitida');
       }
 
+      // Validar para prevenir SSRF
+      try {
+        const parsedUrl = new URL(imageUrl);
+        const hostname = parsedUrl.hostname.toLowerCase();
+
+        // Block localhost, internal IP ranges, and internal hostnames (including IPv6 brackets)
+        const isInternal = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?)$/.test(hostname) ||
+          /^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|169\.254\.)/.test(hostname) ||
+          hostname.endsWith('.local') ||
+          hostname.endsWith('.internal');
+
+        if (isInternal) {
+          throw new ValidationError('URL de imagen no permitida');
+        }
+      } catch (err: any) {
+        throw new ValidationError(err.message === 'URL de imagen no permitida' ? err.message : 'URL de imagen inválida');
+      }
+
       const response = await fetch(imageUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
