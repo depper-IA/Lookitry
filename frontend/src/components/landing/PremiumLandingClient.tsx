@@ -209,7 +209,7 @@ export default function PremiumLandingClient({ pricing }: PremiumLandingClientPr
               </p>
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-5">
-                <Link href="/register" className="group bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold flex items-center gap-3 transition-all hover:scale-105 hover:bg-[#ff7b5e] shadow-xl shadow-[#FF5C3A]/20">
+                <Link href="/checkout?plan=TRIAL" className="group bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold flex items-center gap-3 transition-all hover:scale-105 hover:bg-[#ff7b5e] shadow-xl shadow-[#FF5C3A]/20">
                   ¡Probar Ahora!
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </Link>

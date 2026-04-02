@@ -128,7 +128,7 @@ export default function MiniLandingHomepage() {
 
               <div className="flex flex-wrap gap-5">
                 <Link
-                  href="/register"
+                  href="/checkout?plan=TRIAL"
                   className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center gap-3"
                 >
                   Obtener mi página ahora <ArrowRight size={18} />
@@ -277,7 +277,7 @@ export default function MiniLandingHomepage() {
                     No te cobraremos una mensualidad adicional por el diseño ni el mantenimiento de esta página. Tu Mini-Landing se mantendrá activa siempre y cuando mantengas activa tu suscripción mensual de Lookitry.
                   </p>
                   <Link
-                    href="/register"
+                    href="/checkout?plan=TRIAL"
                     className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center w-fit gap-3"
                   >
                     Obtener mi página ahora <ArrowRight size={18} />
@@ -351,7 +351,7 @@ export default function MiniLandingHomepage() {
 
             <div className="mt-16 text-center">
               <Link
-                href="/register"
+                href="/checkout?plan=TRIAL"
                 className="inline-flex items-center gap-3 bg-[#FF5C3A] text-white px-12 py-6 rounded-[2rem] font-bold text-lg hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-[#FF5C3A]/30"
               >
                 Obtener mi página ahora <ArrowRight size={22} />

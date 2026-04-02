@@ -197,7 +197,7 @@ export default function HomeLandingClient({ pricing, reviews }: HomeLandingClien
         className="fixed bottom-10 right-10 z-[100] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] transform opacity-100 translate-y-0"
       >
         <Link 
-          href="/register" 
+          href="/checkout?plan=TRIAL" 
           className="flex items-center gap-3 bg-[#FF5C3A] text-white px-8 py-5 rounded-full font-bold shadow-2xl shadow-[#FF5C3A]/50 hover:scale-110 active:scale-95 transition-all group overflow-hidden relative"
         >
           <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none opacity-20" />

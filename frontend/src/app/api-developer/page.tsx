@@ -64,7 +64,7 @@ export default function ApiDeveloperPage() {
               </p>
               
               <div className="flex flex-wrap gap-5">
-                <Link href="/register?plan=PRO" className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center gap-3">
+                <Link href="/checkout?plan=PRO" className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center gap-3">
                   Obtener API Key (Pro) <ArrowRight size={18} />
                 </Link>
                 <div className="flex items-center gap-2 text-white/40 text-xs font-mono">

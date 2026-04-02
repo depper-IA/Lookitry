@@ -304,7 +304,7 @@ export default function LandingProTest() {
               Ingresar
             </Link>
             <Link
-              href="/register"
+              href="/checkout?plan=TRIAL"
               className="group relative overflow-hidden bg-[#FF5C3A] text-white text-[11px] font-bold uppercase tracking-[0.2em] px-8 py-3.5 rounded-full transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#FF5C3A]/20"
             >
               <span className="relative z-10">Probar ahora</span>
@@ -335,7 +335,7 @@ export default function LandingProTest() {
               </p>
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-5">
-                <Link href="/register" className="group bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold flex items-center gap-3 transition-all hover:scale-105 hover:bg-[#ff7b5e] shadow-xl shadow-[#FF5C3A]/20">
+                <Link href="/checkout?plan=TRIAL" className="group bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold flex items-center gap-3 transition-all hover:scale-105 hover:bg-[#ff7b5e] shadow-xl shadow-[#FF5C3A]/20">
                   ¡Probar Gratis Ahora!
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -499,7 +499,7 @@ export default function LandingProTest() {
             </div>
           </div>
           <div className="flex justify-center mt-16">
-          <Link href="/register" className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-[#FF5C3A]/20">
+          <Link href="/checkout?plan=TRIAL" className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-[#FF5C3A]/20">
             ¡Comenzar mi transformación ahora!
           </Link>
         </div>
@@ -536,7 +536,7 @@ export default function LandingProTest() {
               </div>
 
               <div className="flex flex-wrap gap-4">
-                <Link href="/register" className="bg-[#FF5C3A] text-white px-8 py-4 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20">
+                <Link href="/checkout?plan=TRIAL" className="bg-[#FF5C3A] text-white px-8 py-4 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20">
                   Crear mi página ahora
                 </Link>
                 <Link href="/planes" className="bg-[#0a0a0a] text-white px-8 py-4 rounded-2xl font-bold text-sm transition-all hover:bg-[#FF5C3A]">
@@ -919,7 +919,7 @@ export default function LandingProTest() {
         className="fixed bottom-10 right-10 z-[100] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] transform opacity-100 translate-y-0"
       >
         <Link 
-          href="/register" 
+          href="/checkout?plan=TRIAL" 
           className="flex items-center gap-3 bg-[#FF5C3A] text-white px-8 py-5 rounded-full font-bold shadow-2xl shadow-[#FF5C3A]/50 hover:scale-110 active:scale-95 transition-all group overflow-hidden relative"
         >
           <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none opacity-20" />

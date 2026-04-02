@@ -236,7 +236,7 @@ export default function CasosDeUsoPage() {
                          <span className="text-[10px] uppercase font-bold tracking-widest text-white/40 block mb-1">{item.kpi}</span>
                          <span className="text-3xl font-black font-jakarta text-[#FF5C3A]">{item.result}</span>
                       </div>
-                      <Link href="/register?plan=PRO" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:bg-[#FF5C3A] hover:text-white hover:border-[#FF5C3A] transition-all group-hover:border-[#FF5C3A]/50">
+                      <Link href="/checkout?plan=PRO" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:bg-[#FF5C3A] hover:text-white hover:border-[#FF5C3A] transition-all group-hover:border-[#FF5C3A]/50">
                          <ArrowRight size={16} />
                       </Link>
                    </div>

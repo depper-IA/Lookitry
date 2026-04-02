@@ -60,7 +60,7 @@ export default function ProbadorVirtualContent() {
                 <Link href="/pruebalo/demo" className="bg-[#FF5C3A] text-white px-12 py-6 rounded-2xl font-bold text-sm hover:scale-105 transition-all shadow-xl shadow-[#FF5C3A]/30">
                    Prueba Premium
                 </Link>
-                <Link href="/register" className="bg-white/5 text-white px-12 py-6 rounded-2xl font-bold text-sm border border-white/10 hover:bg-white/10 transition-all">
+                <Link href="/checkout?plan=TRIAL" className="bg-white/5 text-white px-12 py-6 rounded-2xl font-bold text-sm border border-white/10 hover:bg-white/10 transition-all">
                    Activar para mi Marca
                 </Link>
              </div>
@@ -148,7 +148,7 @@ export default function ProbadorVirtualContent() {
           {/* CTA Footer Section */}
           <div className="text-center max-w-4xl mx-auto mb-40">
              <h2 className="font-jakarta text-4xl md:text-7xl font-black mb-12 tracking-tight">¿Listo para el <br /><span className="text-[#FF5C3A]">Futuro de la Moda?</span></h2>
-             <Link href="/register" className="inline-flex items-center gap-4 bg-[#FF5C3A] text-white px-16 py-8 rounded-[2.5rem] font-black text-lg transition-all hover:scale-105 shadow-2xl shadow-[#FF5C3A]/20 active:scale-95">
+             <Link href="/checkout?plan=TRIAL" className="inline-flex items-center gap-4 bg-[#FF5C3A] text-white px-16 py-8 rounded-[2.5rem] font-black text-lg transition-all hover:scale-105 shadow-2xl shadow-[#FF5C3A]/20 active:scale-95">
                 Empezar Ahora <InfinityIcon size={24} />
              </Link>
           </div>

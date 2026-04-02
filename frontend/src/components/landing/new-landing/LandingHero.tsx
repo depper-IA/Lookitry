@@ -37,7 +37,7 @@ export default function LandingHero() {
           </p>
 
           <div className="flex flex-wrap justify-center lg:justify-start gap-3 sm:gap-5">
-            <Link href="/register" className="group bg-[#FF5C3A] text-white px-6 sm:px-10 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold flex items-center gap-2 sm:gap-3 transition-all hover:scale-105 hover:bg-[#ff7b5e] shadow-xl shadow-[#FF5C3A]/20 text-sm sm:text-base">
+            <Link href="/checkout?plan=TRIAL" className="group bg-[#FF5C3A] text-white px-6 sm:px-10 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold flex items-center gap-2 sm:gap-3 transition-all hover:scale-105 hover:bg-[#ff7b5e] shadow-xl shadow-[#FF5C3A]/20 text-sm sm:text-base">
               Obtén Acceso Premium
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" aria-hidden="true" />
             </Link>
