@@ -105,6 +105,14 @@
             $clickedBtn.find('span').text('Cargando probador...');
             $clickedBtn.prop('disabled', true);
 
+            // Show loading overlay with spinner
+            $overlay.css('display', 'flex').html(
+                '<div class="lookitry-loading-overlay">' +
+                '<div class="lookitry-spinner"></div>' +
+                '<p>Cargando probador virtual...</p>' +
+                '</div>'
+            );
+
             requestWithTelemetry({
                 url: lookitry_vars.api_url + '/embed/wordpress/init',
                 method: 'POST',
@@ -121,6 +129,8 @@
                 contentType: 'application/json',
                 success: function(response) {
                     if (response.success && response.embedUrl) {
+                        // Clear loading overlay and show iframe
+                        $overlay.find('.lookitry-loading-overlay').remove();
                         $iframe.attr('src', response.embedUrl);
                         $overlay.css('display', 'flex');
                     } else {
