@@ -79,7 +79,7 @@ function lookitry_inject_button() {
     static $rendered = false;
     global $product;
     
-    if ( $rendered || ! $product || ! $product->is_type( array( 'simple', 'variable' ) ) || $product->get_status() !== 'publish' ) return;
+    if ( $rendered || ! $product || $product->get_status() !== 'publish' ) return;
 
     // Get WooCommerce product ID
     $product_id = $product->get_id();
