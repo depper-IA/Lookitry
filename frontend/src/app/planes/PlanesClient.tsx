@@ -384,9 +384,9 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                     return (
                       <tr key={feature} className="hover:bg-white/[0.02] transition-colors group">
                         <td className="px-8 py-5 text-white/60">{feature}</td>
-                        <td className="px-8 py-5 text-center">{basic.features.includes(feature) ? <IconCheckTable /> : <IconXTable />}</td>
-                        <td className="px-8 py-5 text-center">{pro.features.includes(feature) ? <IconCheckTable /> : <IconXTable />}</td>
-                        <td className="px-8 py-5 text-center">{inEnterprise ? <IconCheckTable /> : <IconXTable />}</td>
+                        <td className="px-8 py-5 text-center">{basic.features.includes(feature) ? <IconCheckTable /> : <IconCheckTable />}</td>
+                        <td className="px-8 py-5 text-center">{pro.features.includes(feature) ? <IconCheckTable /> : <IconCheckTable />}</td>
+                        <td className="px-8 py-5 text-center">{inEnterprise ? <IconCheckTable /> : <IconCheckTable />}</td>
                       </tr>
                     );
                   })}
