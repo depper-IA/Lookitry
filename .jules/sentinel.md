@@ -1,0 +1,4 @@
+## 2024-05-24 - [HIGH] Fix SSRF vulnerability in image proxy endpoint
+**Vulnerability:** Server-Side Request Forgery (SSRF) in the `GET /api/pruebalo/img-proxy` endpoint where `fetch` was called directly with the user-provided `url` query parameter. Only the scheme (`http`) was checked, allowing requests to arbitrary hostnames including `localhost` and internal IPs.
+**Learning:** Any proxy functionality that fetches URLs provided via user input needs robust hostname verification to avoid exposing the internal network infrastructure to outside attackers.
+**Prevention:** Parse the requested URL and strictly validate its hostname against known private IP patterns (`localhost`, `127.0.0.1`, `10.x.x.x`, `192.168.x.x`, `172.16.x.x`, etc.) before making the outgoing request.
