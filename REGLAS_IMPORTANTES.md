@@ -21,6 +21,39 @@ inclusion: always
 - **NUNCA usar GitHub Actions CI/CD** para deploys
 - Para ejecutar: `python _deploy_now.py` desde la carpeta `scripts/` o usar `--force` para forzar rebuild
 
+### 1.2 Pasos para Deploy (Commit → Push → Verificar → Deploy)
+
+Cuando el usuario autorice el deploy, seguir estos pasos:
+
+1. **Verificar cambios locales** con `git status` y `git diff`
+2. **Hacer commit** con mensaje descriptivo (usar conventional commits: `fix:`, `feat:`, etc.)
+3. **Hacer push** a origin main
+4. **Ejecutar deploy** con `python scripts/_deploy_now.py --force`
+5. **Verificar** que el health check devuelve 200 y los endpoints funcionan
+6. **Si hay errores**, diagnosticar y arreglar antes de reportar éxito
+
+> **Nota:** El deploy incluye rebuild de backend y frontend. Verificar siempre que los endpoints críticos funcionen después del deploy.
+
+### 1.3 Agregar Variables de Entorno en Producción
+
+Para agregar variables de entorno en el servidor de producción:
+
+**Opción 1: MCP de Hostinger (recomendado si está disponible)**
+- El MCP tiene funciones VPS como `VPS_updateProjectV1` para actualizar variables de entorno
+- Usar estas funciones para agregar/modificar variables y luego reiniciar el proyecto
+
+**Opción 2: Acceso SSH manual**
+Conectarse al VPS y editar el archivo `.env`:
+```bash
+ssh root@tu-servidor
+echo "ENTERPRISE_SYNC_TOKEN=lookitry_enterprise_sync_2026_03_27_WilkieSecure" >> /root/virtual-tryon/backend/.env.production
+docker restart lookitry-backend
+```
+
+**Opción 3: Panel de Hostinger**
+- Ir a VPS → Gestionar → Variables de Entorno (si está disponible)
+- O editar el archivo `.env.production` por sFTP
+
 ---
 
 ## 2. Registro de Cambios (Changelog)
