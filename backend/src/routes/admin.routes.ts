@@ -31,8 +31,6 @@ import {
   resolveFeedback,
   deleteFeedback,
   getUnresolvedFeedbackCount,
-  getOpenRouterCredits,
-  getReplicateCredits,
   sendBrandResetEmail,
   getPayments,
   getAllPromotions,
@@ -41,11 +39,27 @@ import {
   deletePromotion,
   getPricingConfig,
   updatePricingConfig,
+  getMissionControl,
+  getRiskData,
+  getEconomics,
+  getAuditLog,
+  getBrandFull,
+  getAllSubscriptions,
+  registerSubscriptionPayment,
+  suspendSubscription,
+  reactivateSubscription,
+  getRevenueStats,
+} from '../controllers/admin.controller';
+import {
+  getOpenRouterCredits,
+  getReplicateCredits,
   getSystemStats,
+} from '../controllers/admin/system.admin.controller';
+import {
   getWooBrandsSummary,
   getWooBrandProducts,
   setWooProductActive,
-} from '../controllers/admin.controller';
+} from '../controllers/admin/woo.admin.controller';
 import {
   getPaymentSettings,
   updatePaymentSettings,
@@ -60,17 +74,6 @@ import {
   createTrialCampaign,
   updateTrialCampaign,
 } from '../controllers/trialCampaign.controller';
-import {
-  getMissionControl,
-  getRiskData,
-  getEconomics,
-  getAuditLog,
-  getBrandFull,
-  getAllSubscriptions,
-  registerSubscriptionPayment,
-  suspendSubscription,
-  reactivateSubscription,
-} from '../controllers/admin.controller';
 
 import { authRateLimiter } from '../middleware/rateLimiter';
 
