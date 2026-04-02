@@ -890,6 +890,20 @@ export class PruebaloController {
    * GET /api/pruebalo/img-proxy?url=...
    * Proxy para saltar bloqueos de CORS/Hotlinking de imágenes de productos
    */
+  // SSRF protection: allowlist of safe domains for image proxy
+  private static readonly ALLOWED_IMAGE_PROXY_DOMAINS = [
+    'lookitry.com',
+    'lookitry.co',
+    'lookitry.app',
+    'lookitry.net',
+    'cdn.lookitry.com',
+    'images.lookitry.com',
+  ];
+
+  /**
+   * GET /api/pruebalo/img-proxy?url=...
+   * Proxy para saltar bloqueos de CORS/Hotlinking de imágenes de productos
+   */
   imgProxy = asyncHandler(async (req: Request, res: Response) => {
     const imageUrl = req.query.url as string;
 
@@ -901,6 +915,35 @@ export class PruebaloController {
       // Validar si es una URL absoluta
       if (!imageUrl.startsWith('http')) {
         throw new ValidationError('URL de imagen inválida');
+      }
+      // SSRF: validar destino de proxy de imágenes con allowlist y no IPs privadas
+      const isAllowedImageUrl = (urlStr: string): boolean => {
+        try {
+          const u = new URL(urlStr);
+          const host = u.hostname;
+          // bloquear direcciones IP privadas o localhost
+          if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(host)) {
+            const parts = host.split('.').map((p) => parseInt(p, 10));
+            const [a, b] = parts;
+            if (a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || host === '127.0.0.1') {
+              return false;
+            }
+          }
+          const allowedDomains = [
+            'lookitry.com',
+            'lookitry.co',
+            'lookitry.app',
+            'lookitry.net',
+            'cdn.lookitry.com',
+            'images.lookitry.com',
+          ];
+          return allowedDomains.some((d) => host.endsWith(d));
+        } catch {
+          return false;
+        }
+      };
+      if (!isAllowedImageUrl(imageUrl)) {
+        throw new ValidationError('URL de imagen no permitida');
       }
 
       const response = await fetch(imageUrl, {

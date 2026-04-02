@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { LandingNav } from '@/components/landing/LandingNav';
-import { LandingFooter } from '@/components/landing/LandingFooter';
+import LandingNav from '@/components/landing/new-landing/LandingNav';
+import LandingFooter from '@/components/landing/new-landing/LandingFooter';
 
 export const metadata: Metadata = {
   title: 'Estado del Servicio — Lookitry',
