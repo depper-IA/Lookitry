@@ -49,78 +49,385 @@ function lookitry_settings_page() {
     $version = defined('LOOKITRY_PLUGIN_VERSION') ? LOOKITRY_PLUGIN_VERSION : '1.2.5';
     ?>
     <style>
-        .lookitry-wrap { max-width: 900px; margin: 30px auto 0 20px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; }
+        .lookitry-wrap { 
+            max-width: 960px; 
+            margin: 30px auto 0 20px; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
         
-        /* New Dark Header */
+        /* Premium Dark Header with Gradient */
         .lookitry-header { 
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
-            margin-bottom: 25px; 
-            background: #000; /* Fondo Negro Puro solicitado */
-            padding: 20px 25px; 
-            border-radius: 12px; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            padding: 24px 28px; 
+            border-radius: 16px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        .lookitry-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,92,58,0.5), transparent);
         }
         .lookitry-header-left { display: flex; align-items: center; gap: 20px; }
         .lookitry-header img { height: 38px; width: auto; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,255,255,0.1)); }
-        .lookitry-header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+        .lookitry-header h1 { margin: 0; font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
         .lookitry-header h1 span { color: #FF5C3A; }
-        .lookitry-version { font-size: 10px; background: rgba(255,255,255,0.1); color: #94a3b8; padding: 2px 8px; border-radius: 99px; font-weight: 600; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); }
+        .lookitry-version { 
+            font-size: 11px; 
+            background: rgba(255,92,58,0.15); 
+            color: #FF5C3A; 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            border: 1px solid rgba(255,92,58,0.2);
+        }
         
-        /* Tabs System */
-        .lookitry-tabs-nav { display: flex; gap: 8px; margin-bottom: 0; padding: 0 10px; }
-        .lookitry-tab-btn { padding: 12px 24px; background: #cbd5e1; border: none; border-radius: 10px 10px 0 0; font-weight: 700; font-size: 13px; color: #475569; cursor: pointer; transition: all 0.2s; }
-        .lookitry-tab-btn.active { background: #fff; color: #FF5C3A; border: 1px solid #e2e8f0; border-bottom: 2px solid #fff; margin-bottom: -1px; z-index: 10; padding-bottom: 13px; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.02); }
-        .lookitry-tab-content { background: white; border-radius: 0 12px 12px 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); padding: 35px; border: 1px solid #e2e8f0; min-height: 450px; }
+        /* Premium Tabs */
+        .lookitry-tabs-nav { 
+            display: flex; 
+            gap: 4px; 
+            margin-bottom: 0; 
+            padding: 0 4px;
+            background: #f1f5f9;
+            border-radius: 12px 12px 0 0;
+            width: fit-content;
+        }
+        .lookitry-tab-btn { 
+            padding: 14px 28px; 
+            background: transparent; 
+            border: none; 
+            border-radius: 10px 10px 0 0; 
+            font-weight: 600; 
+            font-size: 13px; 
+            color: #64748b; 
+            cursor: pointer; 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .lookitry-tab-btn:hover { 
+            color: #334155; 
+            background: rgba(255,255,255,0.5);
+        }
+        .lookitry-tab-btn.active { 
+            background: #fff; 
+            color: #FF5C3A; 
+            box-shadow: 0 -4px 12px -2px rgba(0,0,0,0.08);
+        }
+        .lookitry-tab-content { 
+            background: white; 
+            border-radius: 0 16px 16px 16px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); 
+            padding: 32px; 
+            border: 1px solid #e2e8f0; 
+            min-height: 500px;
+        }
         .lookitry-pane { display: none; }
-        .lookitry-pane.active { display: block; animation: fadeIn 0.3s ease-out; }
+        .lookitry-pane.active { 
+            display: block; 
+            animation: fadeIn 0.3s ease-out; 
+        }
         
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        .lookitry-card-title { margin-top: 0; font-size: 19px; color: #0f172a; font-weight: 800; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; }
+        /* Premium Card Titles */
+        .lookitry-card-title { 
+            margin-top: 0; 
+            font-size: 18px; 
+            color: #0f172a; 
+            font-weight: 700; 
+            margin-bottom: 24px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f1f5f9;
+        }
         .lookitry-card-title span { display: flex; align-items: center; gap: 10px; }
 
-        .lookitry-usage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .lookitry-stat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; transition: all 0.2s; }
-        .lookitry-stat-box:hover { border-color: #cbd5e1; background: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .lookitry-stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: 700; }
-        .lookitry-stat-value { font-size: 26px; font-weight: 900; color: #0f172a; }
+        /* Premium Stats Grid */
+        .lookitry-usage-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
+            margin-bottom: 32px; 
+        }
+        .lookitry-stat-box { 
+            background: linear-gradient(135deg, #f8fafc 0%, #fff 100%); 
+            border: 1px solid #e2e8f0; 
+            border-radius: 16px; 
+            padding: 24px; 
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .lookitry-stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #FF5C3A, #ff8c6b);
+            border-radius: 4px 0 0 4px;
+        }
+        .lookitry-stat-box:hover { 
+            border-color: #FF5C3A; 
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -8px rgba(255,92,58,0.15);
+        }
+        .lookitry-stat-label { 
+            font-size: 12px; 
+            color: #64748b; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            margin-bottom: 12px; 
+            font-weight: 600; 
+        }
+        .lookitry-stat-value { 
+            font-size: 28px; 
+            font-weight: 800; 
+            color: #0f172a; 
+            letter-spacing: -1px;
+        }
         
-        .lookitry-brand-preview { display: flex; align-items: center; gap: 18px; }
-        .lookitry-brand-logo-circle { width: 54px; height: 54px; background: #fff; border: 2px solid #e2e8f0; border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 6px; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.06); }
+        .lookitry-brand-preview { display: flex; align-items: center; gap: 16px; }
+        .lookitry-brand-logo-circle { 
+            width: 52px; 
+            height: 52px; 
+            background: #fff; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 14px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 6px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
         .lookitry-brand-logo-circle img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-        /* Usage Bar */
-        .lookitry-progress-container { margin-top: 15px; }
-        .lookitry-progress-bar { height: 10px; background: #e2e8f0; border-radius: 20px; overflow: hidden; margin-top: 10px; position: relative; }
-        .lookitry-progress-fill { height: 100%; background: linear-gradient(90deg, #FF5C3A, #ff8c6b); border-radius: 20px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* Premium Progress Bar */
+        .lookitry-progress-container { margin-top: 16px; }
+        .lookitry-progress-bar { 
+            height: 8px; 
+            background: #e2e8f0; 
+            border-radius: 10px; 
+            overflow: hidden; 
+            margin-top: 10px; 
+            position: relative; 
+        }
+        .lookitry-progress-fill { 
+            height: 100%; 
+            background: linear-gradient(90deg, #FF5C3A, #ff8c6b); 
+            border-radius: 10px; 
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .lookitry-progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-        .lookitry-field-group { margin-bottom: 20px; background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .lookitry-field-group label { display: block; font-weight: 700; margin-bottom: 12px; color: #0f172a; font-size: 14px; }
+        /* Premium Field Groups */
+        .lookitry-field-group { 
+            margin-bottom: 24px; 
+            background: #f8fafc; 
+            padding: 24px; 
+            border-radius: 14px; 
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        .lookitry-field-group:hover {
+            border-color: #cbd5e1;
+        }
+        .lookitry-field-group label { 
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 12px; 
+            color: #0f172a; 
+            font-size: 14px; 
+        }
         .lookitry-input-with-btn { display: flex; gap: 12px; }
-        .lookitry-input-with-btn input { flex-grow: 1; height: 48px; border-radius: 10px; border: 1px solid #cbd5e1; padding: 0 18px; font-size: 15px; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.05); }
-        .lookitry-input-with-btn input:focus { border-color: #FF5C3A; outline: none; box-shadow: 0 0 0 3px rgba(255, 92, 58, 0.1); }
+        .lookitry-input-with-btn input { 
+            flex-grow: 1; 
+            height: 48px; 
+            border-radius: 10px; 
+            border: 1px solid #cbd5e1; 
+            padding: 0 18px; 
+            font-size: 14px; 
+            box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.04);
+            transition: all 0.2s;
+        }
+        .lookitry-input-with-btn input:focus { 
+            border-color: #FF5C3A; 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(255, 92, 58, 0.1);
+        }
         
-        .lookitry-badge { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* Premium Badges */
+        .lookitry-badge { 
+            display: inline-block; 
+            padding: 5px 14px; 
+            border-radius: 20px; 
+            font-size: 11px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+        }
         .lookitry-badge-basic { background: #e0f2fe; color: #0369a1; }
-        .lookitry-badge-pro { background: #fef3c7; color: #92400e; }
+        .lookitry-badge-pro { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; }
         
-        .lookitry-btn-primary { background: #FF5C3A !important; border: none !important; color: white !important; font-weight: 700 !important; cursor: pointer; border-radius: 10px !important; transition: all 0.2s; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(255, 92, 58, 0.3); }
-        .lookitry-btn-primary:hover { background: #e64a2e !important; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(255, 92, 58, 0.4); }
-        .lookitry-btn-dark { background: #0f172a !important; color: white !important; border: none !important; border-radius: 10px !important; transition: all 0.2s; }
-        .lookitry-btn-dark:hover { background: #1e293b !important; }
+        /* Premium Buttons */
+        .lookitry-btn-primary { 
+            background: linear-gradient(135deg, #FF5C3A, #e64a2e) !important; 
+            border: none !important; 
+            color: white !important; 
+            font-weight: 700 !important; 
+            cursor: pointer; 
+            border-radius: 10px !important; 
+            transition: all 0.25s ease; 
+            font-size: 14px; 
+            box-shadow: 0 4px 12px rgba(255, 92, 58, 0.3);
+        }
+        .lookitry-btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(255, 92, 58, 0.4); 
+        }
+        .lookitry-btn-dark { 
+            background: linear-gradient(135deg, #0f172a, #1e293b) !important; 
+            color: white !important; 
+            border: none !important; 
+            border-radius: 10px !important; 
+            transition: all 0.25s ease; 
+        }
+        .lookitry-btn-dark:hover { 
+            background: linear-gradient(135deg, #1e293b, #334155) !important; 
+            transform: translateY(-1px);
+        }
         
-        .lookitry-table-container { max-height: 550px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        /* Premium Table */
+        .lookitry-table-container { 
+            max-height: 500px; 
+            overflow-y: auto; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 14px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
         .lookitry-table { width: 100%; border-collapse: collapse; text-align: left; }
-        .lookitry-table th { background: #f8fafc; padding: 18px; border-bottom: 2px solid #e2e8f0; font-weight: 800; color: #475569; font-size: 11px; text-transform: uppercase; position: sticky; top: 0; z-index: 10; letter-spacing: 0.5px; }
-        .lookitry-table td { padding: 18px; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: #334155; vertical-align: middle; }
-        .lookitry-table tr:hover td { background: #fcfdfe; }
+        .lookitry-table th { 
+            background: linear-gradient(180deg, #f8fafc, #f1f5f9); 
+            padding: 16px 18px; 
+            border-bottom: 2px solid #e2e8f0; 
+            font-weight: 700; 
+            color: #475569; 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10; 
+            letter-spacing: 0.5px;
+        }
+        .lookitry-table td { 
+            padding: 16px 18px; 
+            border-bottom: 1px solid #f1f5f9; 
+            font-size: 14px; 
+            color: #334155; 
+            vertical-align: middle; 
+        }
+        .lookitry-table tr:hover td { 
+            background: #fcfdfe; 
+        }
         
-        #lookitry-notice { position: fixed; bottom: 30px; right: 30px; z-index: 10000; display: none; padding: 18px 35px; border-radius: 14px; color: white; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); font-weight: 700; font-size: 15px; }
-        .lookitry-notice-success { background: #10b981; }
-        .lookitry-notice-error { background: #ef4444; }
-        .lookitry-notice-info { background: #3b82f6; }
+        /* Premium Notifications */
+        #lookitry-notice { 
+            position: fixed; 
+            bottom: 30px; 
+            right: 30px; 
+            z-index: 10000; 
+            display: none; 
+            padding: 16px 24px; 
+            border-radius: 12px; 
+            color: white; 
+            box-shadow: 0 20px 40px -8px rgba(0,0,0,0.3); 
+            font-weight: 600; 
+            font-size: 14px;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .lookitry-notice-success { background: linear-gradient(135deg, #10b981, #059669); }
+        .lookitry-notice-error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .lookitry-notice-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+        /* Connection Status */
+        .lookitry-status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .lookitry-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        .lookitry-status-dot.connected { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .lookitry-status-dot.plan-warning { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+        
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        /* Plan Upgrade Callout */
+        .lookitry-plan-upgrade {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .lookitry-plan-upgrade svg {
+            width: 40px;
+            height: 40px;
+            color: #d97706;
+            flex-shrink: 0;
+        }
+        .lookitry-plan-upgrade-content h4 {
+            margin: 0 0 4px 0;
+            color: #92400e;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .lookitry-plan-upgrade-content p {
+            margin: 0;
+            color: #a16207;
+            font-size: 14px;
+        }
+        .lookitry-plan-upgrade-content a {
+            color: #d97706;
+            font-weight: 600;
+        }
     </style>
 
     <div class="lookitry-wrap">
@@ -160,6 +467,17 @@ function lookitry_settings_page() {
                     <h3 style="margin-top: 0; color: #0f172a;">API no conectada</h3>
                     <p style="color: #64748b; max-width: 300px; margin: 0 auto 25px;">Debes validar tu Clave de API en la pestaña de Conexión para habilitar el catálogo.</p>
                     <button type="button" class="button lookitry-btn-primary" style="height: 48px; padding: 0 30px;" onclick="jQuery('[data-tab=tab-config]').click()">Configurar Ahora</button>
+                    
+                    <!-- Plan Upgrade Callout -->
+                    <div class="lookitry-plan-upgrade" style="margin-top: 30px; max-width: 400px; margin-left: auto; margin-right: auto;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                        <div class="lookitry-plan-upgrade-content">
+                            <h4>Plugin exclusivo PRO</h4>
+                            <p>El probador virtual requiere plan <strong>PRO</strong> o <strong>ENTERPRISE</strong>. <a href="https://lookitry.com/dashboard/subscription" target="_blank">Ver planes</a></p>
+                        </div>
+                    </div>
                 </div>
                 
                 <div id="status-connected" style="display: none;">
@@ -405,8 +723,28 @@ function lookitry_settings_page() {
                         $('#status-connected').hide();
                         $('#status-unconnected').show();
                         $('#lookitry-sync-section').hide();
-                        $('#connection-status-dot').css('color', '#ef4444').html('<span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span> Error de conexión');
-                        if (!silent) showNotice('Error: ' + (res.message || 'Clave inválida'), 'error');
+                        
+                        // Verificar si es error de plan
+                        if (res.message && (res.message.includes('PRO') || res.message.includes('plan'))) {
+                            $('#connection-status-dot').css('color', '#f59e0b').html('<span style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%;"></span> Plan requerido');
+                            showNotice('El plugin requiere plan PRO o ENTERPRISE. Tu plan actual no es compatible.', 'error');
+                            
+                            // Show upgrade callout in the unconnected section
+                            $('#status-unconnected').append(
+                                '<div class="lookitry-plan-upgrade" style="margin-top: 30px; max-width: 400px; margin-left: auto; margin-right: auto;">' +
+                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:40px;height:40px;color:#d97706;">' +
+                                '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>' +
+                                '</svg>' +
+                                '<div class="lookitry-plan-upgrade-content">' +
+                                '<h4 style="margin:0 0 4px 0;color:#92400e;font-size:16px;font-weight:700;">Plan no compatible</h4>' +
+                                '<p style="margin:0;color:#a16207;font-size:14px;">El probador virtual requiere <strong>PRO</strong> o <strong>ENTERPRISE</strong>. <a href="https://lookitry.com/dashboard/subscription" target="_blank" style="color:#d97706;font-weight:600;">Ver planes</a></p>' +
+                                '</div>' +
+                                '</div>'
+                            );
+                        } else {
+                            $('#connection-status-dot').css('color', '#ef4444').html('<span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span> Error de conexión');
+                            if (!silent) showNotice('Error: ' + (res.message || 'Clave inválida'), 'error');
+                        }
                     }
                 },
                 error: function() {
@@ -450,7 +788,19 @@ function lookitry_settings_page() {
         // Auto-validate on load
         if (currentKey) {
             validateConnection(true);
-            loadSyncedList(currentKey);
+        }
+
+        // Load synced list after validation completes (sequential to avoid race condition)
+        function loadSyncedListAfterValidation(key) {
+            if ( $('#status-connected').is(':visible') ) {
+                loadSyncedList(key);
+            } else {
+                setTimeout(function() { loadSyncedListAfterValidation(key); }, 500);
+            }
+        }
+        
+        if (currentKey && $('#status-connected').length) {
+            setTimeout(function() { loadSyncedListAfterValidation(currentKey); }, 1000);
         }
 
         function getProxiedUrl(url) {
@@ -585,7 +935,7 @@ function lookitry_ajax_get_catalog() {
 
     $products = wc_get_products( array(
         'status' => 'publish',
-        'limit'  => 60, 
+        'limit'  => 500, 
     ) );
 
     $payload = array();

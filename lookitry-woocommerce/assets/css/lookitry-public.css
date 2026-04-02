@@ -1,10 +1,11 @@
 /**
- * Lookitry Public Styles
+ * Lookitry Public Styles - Premium Version
  */
 
+/* Premium Try-On Button */
 .lookitry-tryon-container {
-    margin-top: 15px;
-    margin-bottom: 15px;
+    margin-top: 16px;
+    margin-bottom: 16px;
     width: 100%;
 }
 
@@ -13,93 +14,262 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    background-color: var(--lookitry-button-bg, #FF5C3A);
+    background: linear-gradient(135deg, var(--lookitry-button-bg, #FF5C3A), var(--lookitry-button-bg, #e64a2e));
     color: var(--lookitry-button-text, #ffffff) !important;
-    padding: 12px 24px;
-    border-radius: 8px;
+    padding: 14px 28px;
+    border-radius: 12px;
     font-weight: 600;
     font-size: 15px;
     text-decoration: none !important;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
     cursor: pointer;
     width: 100%;
-    box-shadow: 0 4px 14px rgba(255, 92, 58, 0.25);
+    box-shadow: 0 6px 20px rgba(255, 92, 58, 0.35), 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.lookitry-tryon-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.lookitry-tryon-button:hover::before {
+    left: 100%;
 }
 
 .lookitry-tryon-button:hover {
-    filter: brightness(0.92);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 92, 58, 0.35);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(255, 92, 58, 0.45), 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.lookitry-tryon-button:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 92, 58, 0.3);
+}
+
+.lookitry-tryon-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
 }
 
 .lookitry-tryon-button svg {
     width: 20px;
     height: 20px;
+    position: relative;
+    z-index: 1;
 }
 
-/* Modal Styles */
+.lookitry-tryon-button span {
+    position: relative;
+    z-index: 1;
+}
+
+/* Premium Modal Overlay */
 .lookitry-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.88);
     z-index: 999999;
     display: none;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(8px);
+    animation: modalFadeIn 0.3s ease-out;
 }
 
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Premium Modal Container */
 .lookitry-modal-container {
     position: relative;
-    width: 90%;
-    max-width: 480px;
-    height: 650px; /* Altura inicial estable para evitar estiramiento antes del resize */
+    width: 92%;
+    max-width: 520px;
+    height: 700px;
     max-height: 90vh;
-    background: #000;
-    border-radius: 20px;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    border: 1px solid #333;
+    box-shadow: 0 35px 60px -20px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.08);
+    animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@keyframes modalSlideIn {
+    from { 
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Premium Close Button */
 .lookitry-modal-close {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 32px;
-    height: 32px;
-    background: rgba(255, 255, 255, 0.1);
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.08);
     border-radius: 50%;
-    color: #fff;
+    color: rgba(255, 255, 255, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     z-index: 10;
-    transition: background 0.2s;
-    font-family: Arial, sans-serif;
-    font-size: 18px;
+    transition: all 0.25s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 20px;
     border: none;
+    backdrop-filter: blur(4px);
 }
 
 .lookitry-modal-close:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transform: rotate(90deg);
 }
 
+.lookitry-modal-close:active {
+    transform: scale(0.95);
+}
+
+/* Premium Iframe */
 .lookitry-iframe {
     width: 100%;
     height: 100%;
     border: none;
+    background: #000;
 }
 
+/* Premium Loading Overlay */
+.lookitry-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+.lookitry-loading-overlay p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 15px;
+    margin-top: 20px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+}
+
+.lookitry-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #FF5C3A;
+    border-radius: 50%;
+    animation: lookitry-spin 0.9s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    box-shadow: 0 0 20px rgba(255, 92, 58, 0.3);
+}
+
+@keyframes lookitry-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Premium Error State */
+.lookitry-error-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: 40px;
+    text-align: center;
+}
+
+.lookitry-error-overlay svg {
+    width: 64px;
+    height: 64px;
+    color: #ef4444;
+    margin-bottom: 20px;
+}
+
+.lookitry-error-overlay h3 {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+
+.lookitry-error-overlay p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    margin: 0;
+    max-width: 300px;
+}
+
+.lookitry-upgrade-btn {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #FF5C3A, #e64a2e);
+    color: #fff !important;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.25s ease;
+}
+
+.lookitry-upgrade-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 92, 58, 0.4);
+}
+
+/* Mobile Responsive */
 @media (max-width: 600px) {
     .lookitry-modal-container {
         width: 100%;
         height: 100%;
+        max-height: 100vh;
         border-radius: 0;
+    }
+    
+    .lookitry-tryon-button {
+        padding: 16px 24px;
+        font-size: 16px;
+    }
+    
+    .lookitry-modal-close {
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
     }
 }
