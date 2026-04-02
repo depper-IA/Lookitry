@@ -33,7 +33,7 @@ function lookitry_settings_page() {
     // Save settings if submitted
     if ( isset( $_POST['lookitry_save_settings'] ) ) {
         check_admin_referer( 'lookitry_settings_nonce' );
-        
+
         $api_key = sanitize_text_field( $_POST['lookitry_api_key'] ?? '' );
         $button_text = sanitize_text_field( $_POST['lookitry_button_text'] ?? 'Probar Virtualmente' );
         $button_bg_color = sanitize_hex_color( $_POST['lookitry_button_bg_color'] ?? '#FF5C3A' ) ?: '#FF5C3A';
@@ -42,7 +42,7 @@ function lookitry_settings_page() {
         update_option( 'lookitry_button_text', $button_text );
         update_option( 'lookitry_button_bg_color', $button_bg_color );
         update_option( 'lookitry_button_text_color', $button_text_color );
-        
+
         echo '<div class="notice notice-success is-dismissible"><p>Ajustes guardados correctamente.</p></div>';
     }
 
@@ -53,24 +53,43 @@ function lookitry_settings_page() {
     $version = defined('LOOKITRY_PLUGIN_VERSION') ? LOOKITRY_PLUGIN_VERSION : '1.2.5';
     ?>
     <style>
-        .lookitry-wrap { 
-            max-width: 960px; 
-            margin: 30px auto 0 20px; 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        .lookitry-wrap {
+            --lt-bg-base: #f5f2ee;
+            --lt-bg-card: #ffffff;
+            --lt-bg-soft: #fcfaf7;
+            --lt-bg-header: #fffaf5;
+            --lt-bg-hover: #fff4eb;
+            --lt-border: #eadfd3;
+            --lt-border-strong: #d8c7b5;
+            --lt-text-primary: #181411;
+            --lt-text-secondary: #625851;
+            --lt-text-muted: #8c8078;
+            --lt-accent: #FF5C3A;
+            --lt-accent-soft: rgba(255, 92, 58, 0.10);
+            --lt-success: #10b981;
+            --lt-warning: #f59e0b;
+            --lt-error: #ef4444;
+            --lt-shadow: 0 24px 48px -28px rgba(24, 20, 17, 0.18);
+            max-width: 1320px;
+            width: calc(100% - 32px);
+            margin: 24px 16px 0 0;
+            font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--lt-text-primary);
         }
-        
-        /* Premium Dark Header with Gradient */
-        .lookitry-header { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            margin-bottom: 30px; 
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-            padding: 24px 28px; 
-            border-radius: 16px; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.05);
+
+        .lookitry-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 24px;
+            background: linear-gradient(180deg, #fffaf5 0%, #fff 100%);
+            padding: 24px 28px;
+            border-radius: 24px;
+            box-shadow: var(--lt-shadow);
             position: relative;
             overflow: hidden;
+            border: 1px solid var(--lt-border);
         }
         .lookitry-header::before {
             content: '';
@@ -78,100 +97,98 @@ function lookitry_settings_page() {
             top: 0;
             left: 0;
             right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,92,58,0.5), transparent);
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255,92,58,0.95), rgba(255,92,58,0.35), rgba(245, 158, 11, 0.35));
         }
         .lookitry-header-left { display: flex; align-items: center; gap: 20px; }
-        .lookitry-header img { height: 38px; width: auto; object-fit: contain; filter: drop-shadow(0 0 8px rgba(255,255,255,0.1)); }
-        .lookitry-header h1 { margin: 0; font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
-        .lookitry-header h1 span { color: #FF5C3A; }
-        .lookitry-version { 
-            font-size: 11px; 
-            background: rgba(255,92,58,0.15); 
-            color: #FF5C3A; 
-            padding: 4px 12px; 
-            border-radius: 20px; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            border: 1px solid rgba(255,92,58,0.2);
+        .lookitry-header img { height: 38px; width: auto; object-fit: contain; }
+        .lookitry-version {
+            font-size: 11px;
+            background: var(--lt-accent-soft);
+            color: var(--lt-accent);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 1px solid rgba(255,92,58,0.18);
         }
-        
-        /* Premium Tabs */
-        .lookitry-tabs-nav { 
-            display: flex; 
-            gap: 4px; 
-            margin-bottom: 0; 
+
+        .lookitry-tabs-nav {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 0;
             padding: 0 4px;
-            background: #f1f5f9;
-            border-radius: 12px 12px 0 0;
+            background: transparent;
+            border-radius: 18px 18px 0 0;
             width: fit-content;
         }
-        .lookitry-tab-btn { 
-            padding: 14px 28px; 
-            background: transparent; 
-            border: none; 
-            border-radius: 10px 10px 0 0; 
-            font-weight: 600; 
-            font-size: 13px; 
-            color: #64748b; 
-            cursor: pointer; 
+        .lookitry-tab-btn {
+            padding: 14px 28px;
+            background: rgba(255,255,255,0.7);
+            border: 1px solid var(--lt-border);
+            border-bottom: none;
+            border-radius: 18px 18px 0 0;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--lt-text-secondary);
+            cursor: pointer;
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .lookitry-tab-btn:hover { 
-            color: #334155; 
-            background: rgba(255,255,255,0.5);
+        .lookitry-tab-btn:hover {
+            color: var(--lt-text-primary);
+            background: var(--lt-bg-hover);
         }
-        .lookitry-tab-btn.active { 
-            background: #fff; 
-            color: #FF5C3A; 
-            box-shadow: 0 -4px 12px -2px rgba(0,0,0,0.08);
+        .lookitry-tab-btn.active {
+            background: var(--lt-bg-card);
+            color: var(--lt-accent);
+            box-shadow: 0 -4px 12px -8px rgba(24,20,17,0.12);
         }
-        .lookitry-tab-content { 
-            background: white; 
-            border-radius: 0 16px 16px 16px; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); 
-            padding: 32px; 
-            border: 1px solid #e2e8f0; 
+        .lookitry-tab-content {
+            background: var(--lt-bg-card);
+            border-radius: 0 24px 24px 24px;
+            box-shadow: var(--lt-shadow);
+            padding: 32px;
+            border: 1px solid var(--lt-border);
             min-height: 500px;
         }
         .lookitry-pane { display: none; }
-        .lookitry-pane.active { 
-            display: block; 
-            animation: fadeIn 0.3s ease-out; 
+        .lookitry-pane.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
         }
-        
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Premium Card Titles */
-        .lookitry-card-title { 
-            margin-top: 0; 
-            font-size: 18px; 
-            color: #0f172a; 
-            font-weight: 700; 
-            margin-bottom: 24px; 
-            display: flex; 
-            align-items: center; 
+        .lookitry-card-title {
+            margin-top: 0;
+            font-size: 18px;
+            color: var(--lt-text-primary);
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
             justify-content: space-between;
             padding-bottom: 16px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid var(--lt-border);
         }
         .lookitry-card-title span { display: flex; align-items: center; gap: 10px; }
 
-        /* Premium Stats Grid */
-        .lookitry-usage-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 20px; 
-            margin-bottom: 32px; 
+        .lookitry-usage-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
         }
-        .lookitry-stat-box { 
-            background: linear-gradient(135deg, #f8fafc 0%, #fff 100%); 
-            border: 1px solid #e2e8f0; 
-            border-radius: 16px; 
-            padding: 24px; 
+        .lookitry-stat-box {
+            background: linear-gradient(180deg, var(--lt-bg-soft) 0%, var(--lt-bg-card) 100%);
+            border: 1px solid var(--lt-border);
+            border-radius: 24px;
+            padding: 24px;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            min-height: 170px;
+            box-shadow: 0 18px 36px -30px rgba(24, 20, 17, 0.22);
         }
         .lookitry-stat-box::before {
             content: '';
@@ -180,63 +197,86 @@ function lookitry_settings_page() {
             left: 0;
             width: 4px;
             height: 100%;
-            background: linear-gradient(180deg, #FF5C3A, #ff8c6b);
+            background: linear-gradient(180deg, var(--lt-accent), rgba(255,92,58,0.38));
             border-radius: 4px 0 0 4px;
         }
-        .lookitry-stat-box:hover { 
-            border-color: #FF5C3A; 
+        .lookitry-stat-box:hover {
+            border-color: rgba(255,92,58,0.34);
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px -8px rgba(255,92,58,0.15);
+            box-shadow: 0 22px 40px -28px rgba(255,92,58,0.2);
         }
-        .lookitry-stat-label { 
-            font-size: 12px; 
-            color: #64748b; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-            margin-bottom: 12px; 
-            font-weight: 600; 
+        .lookitry-stat-label {
+            font-size: 12px;
+            color: var(--lt-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 700;
         }
-        .lookitry-stat-value { 
-            font-size: 28px; 
-            font-weight: 800; 
-            color: #0f172a; 
+        .lookitry-stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--lt-text-primary);
             letter-spacing: -1px;
         }
-        
-        .lookitry-brand-preview { display: flex; align-items: center; gap: 16px; }
-        .lookitry-brand-logo-circle { 
-            width: 52px; 
-            height: 52px; 
-            background: linear-gradient(135deg, #1e293b, #0f172a); 
-            border: 2px solid #334155; 
-            border-radius: 14px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            padding: 6px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+        .lookitry-stat-copy {
+            margin-top: 10px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--lt-text-secondary);
         }
-        .lookitry-brand-logo-circle img { 
-            max-width: 100%; 
-            max-height: 100%; 
-            object-fit: contain; 
-            filter: brightness(1.1);
+        .lookitry-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 7px 12px;
+            background: rgba(16,185,129,0.08);
+            color: var(--lt-success);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .lookitry-status-pill::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: currentColor;
+            box-shadow: 0 0 0 4px rgba(16,185,129,0.12);
         }
 
-        /* Premium Progress Bar */
-        .lookitry-progress-container { margin-top: 16px; }
-        .lookitry-progress-bar { 
-            height: 8px; 
-            background: #e2e8f0; 
-            border-radius: 10px; 
-            overflow: hidden; 
-            margin-top: 10px; 
-            position: relative; 
+        .lookitry-brand-preview { display: flex; align-items: center; gap: 16px; }
+        .lookitry-brand-logo-circle {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(180deg, #fff 0%, #f8f1ea 100%);
+            border: 1px solid var(--lt-border);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
         }
-        .lookitry-progress-fill { 
-            height: 100%; 
-            background: linear-gradient(90deg, #FF5C3A, #ff8c6b); 
-            border-radius: 10px; 
+        .lookitry-brand-logo-circle img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .lookitry-progress-container { margin-top: 16px; }
+        .lookitry-progress-bar {
+            height: 8px;
+            background: #efe6dd;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+            position: relative;
+        }
+        .lookitry-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--lt-accent), #ff866a);
+            border-radius: 10px;
             transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
@@ -252,128 +292,126 @@ function lookitry_settings_page() {
         }
         @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-        /* Premium Field Groups */
-        .lookitry-field-group { 
-            margin-bottom: 24px; 
-            background: #f8fafc; 
-            padding: 24px; 
-            border-radius: 14px; 
-            border: 1px solid #e2e8f0;
+        .lookitry-field-group {
+            margin-bottom: 24px;
+            background: var(--lt-bg-soft);
+            padding: 24px;
+            border-radius: 22px;
+            border: 1px solid var(--lt-border);
             transition: all 0.2s;
         }
         .lookitry-field-group:hover {
-            border-color: #cbd5e1;
+            border-color: var(--lt-border-strong);
         }
-        .lookitry-field-group label { 
-            display: block; 
-            font-weight: 600; 
-            margin-bottom: 12px; 
-            color: #0f172a; 
-            font-size: 14px; 
+        .lookitry-field-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--lt-text-primary);
+            font-size: 14px;
         }
         .lookitry-input-with-btn { display: flex; gap: 12px; }
-        .lookitry-input-with-btn input { 
-            flex-grow: 1; 
-            height: 48px; 
-            border-radius: 10px; 
-            border: 1px solid #cbd5e1; 
-            padding: 0 18px; 
-            font-size: 14px; 
-            box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.04);
+        .lookitry-input-with-btn input {
+            flex-grow: 1;
+            height: 48px;
+            border-radius: 16px;
+            border: 1px solid var(--lt-border);
+            padding: 0 18px;
+            font-size: 14px;
+            color: var(--lt-text-primary);
+            background: #fff;
+            box-shadow: inset 0 1px 2px rgba(24,20,17,0.04);
             transition: all 0.2s;
         }
-        .lookitry-input-with-btn input:focus { 
-            border-color: #FF5C3A; 
-            outline: none; 
+        .lookitry-input-with-btn input:focus {
+            border-color: var(--lt-accent);
+            outline: none;
             box-shadow: 0 0 0 3px rgba(255, 92, 58, 0.1);
         }
-        
-        /* Premium Badges */
-        .lookitry-badge { 
-            display: inline-block; 
-            padding: 5px 14px; 
-            border-radius: 20px; 
-            font-size: 11px; 
-            font-weight: 700; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
+
+        .lookitry-badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .lookitry-badge-basic { background: #e0f2fe; color: #0369a1; }
         .lookitry-badge-pro { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; }
-        
-        /* Premium Buttons */
-        .lookitry-btn-primary { 
-            background: linear-gradient(135deg, #FF5C3A, #e64a2e) !important; 
-            border: none !important; 
-            color: white !important; 
-            font-weight: 700 !important; 
-            cursor: pointer; 
-            border-radius: 10px !important; 
-            transition: all 0.25s ease; 
-            font-size: 14px; 
+
+        .lookitry-btn-primary {
+            background: linear-gradient(135deg, var(--lt-accent), #e64a2e) !important;
+            border: none !important;
+            color: white !important;
+            font-weight: 700 !important;
+            cursor: pointer;
+            border-radius: 16px !important;
+            transition: all 0.25s ease;
+            font-size: 14px;
             box-shadow: 0 4px 12px rgba(255, 92, 58, 0.3);
         }
-        .lookitry-btn-primary:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 8px 20px rgba(255, 92, 58, 0.4); 
+        .lookitry-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 92, 58, 0.4);
         }
-        .lookitry-btn-dark { 
-            background: linear-gradient(135deg, #0f172a, #1e293b) !important; 
-            color: white !important; 
-            border: none !important; 
-            border-radius: 10px !important; 
-            transition: all 0.25s ease; 
+        .lookitry-btn-dark {
+            background: #fff !important;
+            color: var(--lt-text-primary) !important;
+            border: 1px solid var(--lt-border) !important;
+            border-radius: 16px !important;
+            transition: all 0.25s ease;
         }
-        .lookitry-btn-dark:hover { 
-            background: linear-gradient(135deg, #1e293b, #334155) !important; 
+        .lookitry-btn-dark:hover {
+            background: var(--lt-bg-hover) !important;
             transform: translateY(-1px);
         }
-        
-        /* Premium Table */
-        .lookitry-table-container { 
-            max-height: 500px; 
-            overflow-y: auto; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 14px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+
+        .lookitry-table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid var(--lt-border);
+            border-radius: 20px;
+            box-shadow: 0 10px 24px -20px rgba(24,20,17,0.18);
         }
         .lookitry-table { width: 100%; border-collapse: collapse; text-align: left; }
-        .lookitry-table th { 
-            background: linear-gradient(180deg, #f8fafc, #f1f5f9); 
-            padding: 16px 18px; 
-            border-bottom: 2px solid #e2e8f0; 
-            font-weight: 700; 
-            color: #475569; 
-            font-size: 11px; 
-            text-transform: uppercase; 
-            position: sticky; 
-            top: 0; 
-            z-index: 10; 
+        .lookitry-table th {
+            background: linear-gradient(180deg, #fffaf5, #f8f1ea);
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--lt-border);
+            font-weight: 800;
+            color: var(--lt-text-secondary);
+            font-size: 11px;
+            text-transform: uppercase;
+            position: sticky;
+            top: 0;
+            z-index: 10;
             letter-spacing: 0.5px;
         }
-        .lookitry-table td { 
-            padding: 16px 18px; 
-            border-bottom: 1px solid #f1f5f9; 
-            font-size: 14px; 
-            color: #334155; 
-            vertical-align: middle; 
+        .lookitry-table td {
+            padding: 16px 18px;
+            border-bottom: 1px solid #f4ece5;
+            font-size: 14px;
+            color: var(--lt-text-secondary);
+            vertical-align: middle;
         }
-        .lookitry-table tr:hover td { 
-            background: #fcfdfe; 
+        .lookitry-table tr:hover td {
+            background: #fffaf6;
         }
-        
+
         /* Premium Notifications */
-        #lookitry-notice { 
-            position: fixed; 
-            bottom: 30px; 
-            right: 30px; 
-            z-index: 10000; 
-            display: none; 
-            padding: 16px 24px; 
-            border-radius: 12px; 
-            color: white; 
-            box-shadow: 0 20px 40px -8px rgba(0,0,0,0.3); 
-            font-weight: 600; 
+        #lookitry-notice {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 10000;
+            display: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            box-shadow: 0 20px 40px -8px rgba(0,0,0,0.3);
+            font-weight: 600;
             font-size: 14px;
             animation: slideIn 0.3s ease-out;
         }
@@ -390,9 +428,9 @@ function lookitry_settings_page() {
             padding: 8px 16px;
             border-radius: 24px;
             font-size: 13px;
-            font-weight: 600;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            font-weight: 700;
+            background: rgba(255,255,255,0.75);
+            border: 1px solid var(--lt-border);
         }
         .lookitry-status-dot {
             width: 8px;
@@ -402,14 +440,14 @@ function lookitry_settings_page() {
         }
         .lookitry-status-dot.connected { background: #10b981; box-shadow: 0 0 8px #10b981; }
         .lookitry-status-dot.plan-warning { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
-        
+
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        
+
         /* Plan Upgrade Callout */
         .lookitry-plan-upgrade {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            border: 1px solid #f59e0b;
-            border-radius: 12px;
+            background: linear-gradient(135deg, #fff3df, #ffe8be);
+            border: 1px solid rgba(245, 158, 11, 0.32);
+            border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
             display: flex;
@@ -437,12 +475,60 @@ function lookitry_settings_page() {
             color: #d97706;
             font-weight: 600;
         }
+        .lookitry-summary-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .lookitry-meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--lt-bg-hover);
+            border: 1px solid var(--lt-border);
+            color: var(--lt-text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        @media (max-width: 1100px) {
+            .lookitry-usage-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 820px) {
+            .lookitry-wrap {
+                width: calc(100% - 20px);
+                margin: 16px 10px 0 0;
+            }
+            .lookitry-header,
+            .lookitry-tab-content {
+                padding: 22px;
+            }
+            .lookitry-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .lookitry-usage-grid {
+                grid-template-columns: 1fr;
+            }
+            .lookitry-card-title {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 14px;
+            }
+            .lookitry-input-with-btn {
+                flex-direction: column;
+            }
+        }
     </style>
 
     <div class="lookitry-wrap">
         <div class="lookitry-header">
             <div class="lookitry-header-left">
-                <div class="lookitry-logo-wrapper" style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 15px;">
+                <div class="lookitry-logo-wrapper" style="background: linear-gradient(180deg, #ffffff 0%, #fff4eb 100%); padding: 12px 14px; border-radius: 18px; border: 1px solid var(--lt-border); display: flex; align-items: center; gap: 15px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);">
                     <!-- Logo Incrustado Directamente -->
                     <div style="height: 38px; width: 40px;">
                         <svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 255.95 238.82" style="width: 100%; height: 100%;">
@@ -450,14 +536,14 @@ function lookitry_settings_page() {
                             <polygon fill="#FFFFFF" points="79.22 164.66 79.22 131.32 185.31 4.64 247.29 4.48 170.77 102.47 253.38 234.34 192.8 234.34 135.92 144.81 121.73 164.66 79.22 164.66"/>
                         </svg>
                     </div>
-                    <div style="display: flex; align-items: baseline; font-weight: 800; font-size: 24px; letter-spacing: -1px;">
-                        <span style="color: #FFFFFF;">Look</span><span style="color: #FF5C3A;">itry</span>
+                    <div style="display: flex; align-items: baseline; font-family: 'Plus Jakarta Sans', 'DM Sans', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -1px;">
+                        <span style="color: var(--lt-text-primary);">Look</span><span style="color: #FF5C3A;">itry</span>
                     </div>
                 </div>
                 <span class="lookitry-version" style="margin-left: 10px;">v<?php echo $version; ?></span>
             </div>
-            <div id="connection-status-dot" style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: #64748b; background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 99px; border: 1px solid rgba(255,255,255,0.1);">
-                <span style="width: 10px; height: 10px; background: #94a3b8; border-radius: 50%;"></span>
+            <div id="connection-status-dot" style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--lt-text-secondary); background: rgba(255,255,255,0.75); padding: 9px 15px; border-radius: 99px; border: 1px solid var(--lt-border);">
+                <span style="width: 10px; height: 10px; background: #94a3b8; border-radius: 50%;"></span> Sin validar
             </div>
         </div>
 
@@ -476,7 +562,7 @@ function lookitry_settings_page() {
                     <h3 style="margin-top: 0; color: #0f172a;">API no conectada</h3>
                     <p style="color: #64748b; max-width: 300px; margin: 0 auto 25px;">Debes validar tu Clave de API en la pestaña de Conexión para habilitar el catálogo.</p>
                     <button type="button" class="button lookitry-btn-primary" style="height: 48px; padding: 0 30px;" onclick="jQuery('[data-tab=tab-config]').click()">Configurar Ahora</button>
-                    
+
                     <!-- Plan Upgrade Callout -->
                     <div class="lookitry-plan-upgrade" style="margin-top: 30px; max-width: 400px; margin-left: auto; margin-right: auto;">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -488,7 +574,7 @@ function lookitry_settings_page() {
                         </div>
                     </div>
                 </div>
-                
+
                 <div id="status-connected" style="display: none;">
                     <div class="lookitry-card-title"><span>Estado de tu Probador</span></div>
                     <div class="lookitry-usage-grid">
@@ -503,6 +589,9 @@ function lookitry_settings_page() {
                                     <span id="lookitry-plan-badge" class="lookitry-badge">PLAN</span>
                                 </div>
                             </div>
+                            <div class="lookitry-summary-meta">
+                                <span class="lookitry-meta-chip" id="lookitry-domain-chip">Dominio actual: <?php echo esc_html( wp_parse_url( home_url(), PHP_URL_HOST ) ?: home_url() ); ?></span>
+                            </div>
                         </div>
                         <div class="lookitry-stat-box">
                             <div class="lookitry-stat-label">Productos en Lookitry</div>
@@ -512,16 +601,22 @@ function lookitry_settings_page() {
                                     <div id="usage-fill" class="lookitry-progress-fill" style="width: 0%"></div>
                                 </div>
                             </div>
+                            <p class="lookitry-stat-copy" id="lookitry-usage-copy">Sin consumo cargado todavia.</p>
+                        </div>
+                        <div class="lookitry-stat-box">
+                            <div class="lookitry-stat-label">Estado del Plugin</div>
+                            <div id="lookitry-plugin-state" class="lookitry-status-pill" style="background: rgba(245, 158, 11, 0.10); color: #b45309;">Pendiente de validacion</div>
+                            <p id="lookitry-plugin-state-copy" class="lookitry-stat-copy">Valida la API para habilitar el catalogo, cargar el resumen y activar el boton del probador en producto.</p>
                         </div>
                     </div>
 
                     <!-- Sincronizador de Catálogo (Ahora Siempre Abierto en Tab 1) -->
-                    <div id="lookitry-sync-section" style="margin-top: 40px; border-top: 1px solid #f1f5f9; padding-top: 40px;">
+                    <div id="lookitry-sync-section" style="margin-top: 40px; border-top: 1px solid var(--lt-border); padding-top: 40px;">
                         <div class="lookitry-card-title">
                             <span>Sincronizador de Catálogo</span>
-                            <button type="button" id="lookitry-load-catalog" class="button" style="background: #fff; border: 1px solid #cbd5e1; font-weight: 700; height: 38px; color: #1e293b; border-radius: 8px;">Refrescar productos de WP</button>
+                            <button type="button" id="lookitry-load-catalog" class="button" style="background: #fff; border: 1px solid var(--lt-border); font-weight: 700; height: 42px; color: var(--lt-text-primary); border-radius: 14px; padding: 0 18px;">Refrescar productos de WP</button>
                         </div>
-                        
+
                         <div id="lookitry-sync-loading" style="display: none; text-align: center; padding: 40px;">
                             <span class="spinner is-active" style="float: none; margin: 0 10px 0 0;"></span> Procesando catálogo de la tienda...
                         </div>
@@ -547,7 +642,7 @@ function lookitry_settings_page() {
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: center;">
                                 <div id="lookitry-selection-count" style="font-size: 14px; color: #475569; font-weight: 700;">0 productos seleccionados</div>
                                 <button type="button" id="lookitry-sync-selected" class="button lookitry-btn-primary" style="height: 52px; padding: 0 45px; font-size: 16px;">Sincronizar a Lookitry</button>
@@ -690,6 +785,39 @@ function lookitry_settings_page() {
             });
         }
 
+        function updatePluginState(label, copy, tone) {
+            var tones = {
+                success: { background: 'rgba(16, 185, 129, 0.10)', color: '#047857' },
+                warning: { background: 'rgba(245, 158, 11, 0.10)', color: '#b45309' },
+                error: { background: 'rgba(239, 68, 68, 0.10)', color: '#b91c1c' }
+            };
+            var style = tones[tone] || tones.warning;
+
+            $('#lookitry-plugin-state').text(label).css({
+                background: style.background,
+                color: style.color
+            });
+            $('#lookitry-plugin-state-copy').text(copy);
+        }
+
+        function ensurePlanUpgradeCallout() {
+            if ($('#status-unconnected .lookitry-plan-upgrade').length) {
+                return;
+            }
+
+            $('#status-unconnected').append(
+                '<div class="lookitry-plan-upgrade" style="margin-top: 30px; max-width: 400px; margin-left: auto; margin-right: auto;">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:40px;height:40px;color:#d97706;">' +
+                '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>' +
+                '</svg>' +
+                '<div class="lookitry-plan-upgrade-content">' +
+                '<h4 style="margin:0 0 4px 0;color:#92400e;font-size:16px;font-weight:700;">Plan no compatible</h4>' +
+                '<p style="margin:0;color:#a16207;font-size:14px;">El probador virtual requiere <strong>PRO</strong> o <strong>ENTERPRISE</strong>. <a href="<?php echo esc_url( lookitry_get_upgrade_url() ); ?>" target="_blank" style="color:#d97706;font-weight:600;">Ver planes</a></p>' +
+                '</div>' +
+                '</div>'
+            );
+        }
+
         // Tabs Logic
         $('.lookitry-tab-btn').on('click', function() {
             var tab = $(this).data('tab');
@@ -718,22 +846,24 @@ function lookitry_settings_page() {
                         $('#status-unconnected').hide();
                         $('#status-connected').show();
                         $('#lookitry-sync-section').show();
-                        
+
                         // Actualizar solo el logo del resumen de marca, NO el del header de Lookitry
                         if (res.logo_light || res.logo) {
                           $('#lookitry-stat-logo').attr('src', res.logo_light || res.logo);
                         }
-                        
+
                         $('#connection-status-dot').css('color', '#059669').html('<span style="width: 8px; height: 8px; background: #059669; border-radius: 50%;"></span> Conectado: ' + res.brandName);
 
                         $('#lookitry-brand-name').text(res.brandName);
                         $('#lookitry-plan-badge').text(res.plan).removeClass().addClass('lookitry-badge lookitry-badge-' + res.plan.toLowerCase());
-                        
+
                         var usage = res.usage || { current: 0, max: 0 };
                         $('#usage-current').text(usage.current);
                         $('#usage-max').text(usage.max);
                         var pct = Math.min(100, (usage.current / usage.max) * 100);
                         $('#usage-fill').css('width', pct + '%');
+                        $('#lookitry-usage-copy').text('Capacidad ocupada: ' + Math.round(pct || 0) + '%. Mantienes el control del catalogo sincronizado.');
+                        updatePluginState('Listo para usarse', 'La API esta validada y el plugin puede mostrar el boton del probador en productos sincronizados.', 'success');
 
                         currentKey = key;
                         persistApiKey(key).fail(function() {
@@ -749,14 +879,16 @@ function lookitry_settings_page() {
                         $('#status-connected').hide();
                         $('#status-unconnected').show();
                         $('#lookitry-sync-section').hide();
-                        
+
                         // Verificar si es error de plan
                         if (res.message && (res.message.includes('PRO') || res.message.includes('plan'))) {
                             $('#connection-status-dot').css('color', '#f59e0b').html('<span style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%;"></span> Plan requerido');
                             showNotice('El plugin requiere plan PRO o ENTERPRISE. Tu plan actual no es compatible.', 'error');
-                            
+                            updatePluginState('Upgrade requerido', 'Tu cuenta esta conectada, pero el plan actual no habilita el probador para WooCommerce.', 'warning');
+
                             // Show upgrade callout in the unconnected section
-                            $('#status-unconnected').append(
+                            if (!$('#status-unconnected .lookitry-plan-upgrade').length) {
+                                $('#status-unconnected').append(
                                 '<div class="lookitry-plan-upgrade" style="margin-top: 30px; max-width: 400px; margin-left: auto; margin-right: auto;">' +
                                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:40px;height:40px;color:#d97706;">' +
                                 '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>' +
@@ -766,7 +898,8 @@ function lookitry_settings_page() {
                                 '<p style="margin:0;color:#a16207;font-size:14px;">El probador virtual requiere <strong>PRO</strong> o <strong>ENTERPRISE</strong>. <a href="<?php echo esc_url( lookitry_get_upgrade_url() ); ?>" target="_blank" style="color:#d97706;font-weight:600;">Ver planes</a></p>' +
                                 '</div>' +
                                 '</div>'
-                            );
+                                );
+                            }
                         } else {
                             $('#connection-status-dot').css('color', '#ef4444').html('<span style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span> Error de conexión');
                             if (!silent) showNotice('Error: ' + (res.message || 'Clave inválida'), 'error');
@@ -774,6 +907,7 @@ function lookitry_settings_page() {
                     }
                 },
                 error: function() {
+                    updatePluginState('Fallo de red', 'No se pudo validar la API por un problema de red o servidor.', 'error');
                     if (!silent) showNotice('Error de red. Verifica tu servidor.', 'error');
                 },
                 complete: function() {
@@ -842,7 +976,7 @@ function lookitry_settings_page() {
                 setTimeout(function() { loadSyncedListAfterValidation(key); }, 500);
             }
         }
-        
+
         if (currentKey && $('#status-connected').length) {
             setTimeout(function() { loadSyncedListAfterValidation(currentKey); }, 1000);
         }
@@ -1028,7 +1162,7 @@ function lookitry_ajax_get_catalog() {
 
     $products = wc_get_products( array(
         'status' => 'publish',
-        'limit'  => 500, 
+        'limit'  => 500,
     ) );
 
     $payload = array();

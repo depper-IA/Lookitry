@@ -44,8 +44,8 @@ function lookitry_get_session_token( $api_key, $store_domain ) {
  */
 function lookitry_enqueue_scripts() {
     if ( is_product() ) {
-        wp_enqueue_style( 'lookitry-public', LOOKITRY_PLUGIN_URL . 'assets/css/lookitry-public.css', array(), '1.0.0' );
-        wp_enqueue_script( 'lookitry-public', LOOKITRY_PLUGIN_URL . 'assets/js/lookitry-public.js', array( 'jquery' ), '1.0.0', true );
+        wp_enqueue_style( 'lookitry-public', LOOKITRY_PLUGIN_URL . 'assets/css/lookitry-public.css', array(), LOOKITRY_PLUGIN_VERSION );
+        wp_enqueue_script( 'lookitry-public', LOOKITRY_PLUGIN_URL . 'assets/js/lookitry-public.js', array( 'jquery' ), LOOKITRY_PLUGIN_VERSION, true );
 
         $button_bg_color = get_option( 'lookitry_button_bg_color', '#FF5C3A' );
         $button_text_color = get_option( 'lookitry_button_text_color', '#FFFFFF' );
@@ -61,12 +61,14 @@ function lookitry_enqueue_scripts() {
 
         $api_key = get_option( 'lookitry_api_key', '' );
         $store_domain = home_url();
+        $button_text = get_option( 'lookitry_button_text', 'Probar Virtualmente' );
 
         // Pass variables to JS
         wp_localize_script( 'lookitry-public', 'lookitry_vars', array(
             'api_url'      => LOOKITRY_API_BASE_URL,
             'session_token'=> lookitry_get_session_token( $api_key, $store_domain ),
             'store_domain' => $store_domain,
+            'button_text'  => $button_text,
         ));
     }
 }

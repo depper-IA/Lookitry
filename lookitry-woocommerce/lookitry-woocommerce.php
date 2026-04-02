@@ -3,7 +3,7 @@
  * Plugin Name: Lookitry for WooCommerce
  * Plugin URI: https://lookitry.com
  * Description: El probador virtual de Lookitry para tu tienda de WooCommerce.
- * Version: 1.3.1
+ * Version: 1.3.2
  * Author: Wilkie Devs
  * Author URI: https://wilkiedevs.com
  * License: GPL2
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 define('LOOKITRY_PLUGIN_FILE', __FILE__);
-define('LOOKITRY_PLUGIN_VERSION', '1.3.1');
+define('LOOKITRY_PLUGIN_VERSION', '1.3.2');
 define('LOOKITRY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('LOOKITRY_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('LOOKITRY_API_BASE_URL', 'https://api.lookitry.com/api');
@@ -58,14 +58,21 @@ function lookitry_plan_notice()
         return;
     }
 
+    if (get_option('lookitry_dismissed_plan_notice', 'no') === 'yes') {
+        return;
+    }
+
     $screen = get_current_screen();
     if ($screen && $screen->base !== 'woocommerce_page_lookitry-settings') {
         return;
     }
 
-    echo '<div class="lookitry-plan-notice notice notice-info" style="margin: 20px 0; padding: 16px 20px; border-left: 4px solid #FF5C3A; background: linear-gradient(135deg, #fff7ed, #ffedd5); border-radius: 8px;">';
-    echo '<div style="display: flex; align-items: center; gap: 16px;">';
-    echo '<div style="font-size: 24px;">Plan</div>';
+    $dismiss_nonce = wp_create_nonce('lookitry_dismiss_plan_notice');
+
+    echo '<div id="lookitry-plan-notice" class="lookitry-plan-notice notice notice-info" style="margin: 20px 0; padding: 16px 20px; border-left: 4px solid #FF5C3A; background: linear-gradient(135deg, #fff7ed, #ffedd5); border-radius: 8px; position: relative;">';
+    echo '<button type="button" class="notice-dismiss lookitry-plan-notice-dismiss" aria-label="Cerrar aviso"><span class="screen-reader-text">Cerrar aviso</span></button>';
+    echo '<div style="display: flex; align-items: center; gap: 16px; padding-right: 24px;">';
+    echo '<div style="font-size: 24px; line-height: 1;">Plan</div>';
     echo '<div>';
     echo '<h3 style="margin: 0 0 8px 0; color: #9a3412; font-size: 16px;">Plugin exclusivo PRO / ENTERPRISE</h3>';
     echo '<p style="margin: 0; color: #c2410c; font-size: 14px;">El probador virtual requiere un plan activo <strong>PRO</strong> o <strong>ENTERPRISE</strong>. Si tu plan es BASIC o Trial, el plugin no funcionara hasta que hagas upgrade.</p>';
@@ -73,6 +80,7 @@ function lookitry_plan_notice()
     echo '</div>';
     echo '</div>';
     echo '</div>';
+    echo '<script>jQuery(function($){$(document).off("click.lookitryPlanNotice").on("click.lookitryPlanNotice",".lookitry-plan-notice-dismiss",function(){var $notice=$("#lookitry-plan-notice");$.post(ajaxurl,{action:"lookitry_dismiss_plan_notice",nonce:"' . esc_js($dismiss_nonce) . '"});$notice.slideUp(180,function(){$notice.remove();});});});</script>';
 }
 
 register_uninstall_hook(__FILE__, 'lookitry_uninstall_cleanup');
@@ -83,6 +91,7 @@ function lookitry_uninstall_cleanup()
     delete_option('lookitry_button_text');
     delete_option('lookitry_button_bg_color');
     delete_option('lookitry_button_text_color');
+    delete_option('lookitry_dismissed_plan_notice');
     delete_transient('lookitry_session_token');
 }
 
@@ -92,10 +101,23 @@ function lookitry_init()
         add_action('admin_menu', 'lookitry_add_admin_menu');
         add_action('wp_ajax_lookitry_get_catalog', 'lookitry_ajax_get_catalog');
         add_action('wp_ajax_lookitry_save_api_key', 'lookitry_ajax_save_api_key');
+        add_action('wp_ajax_lookitry_dismiss_plan_notice', 'lookitry_ajax_dismiss_plan_notice');
     }
 
     add_action('wp_enqueue_scripts', 'lookitry_enqueue_scripts');
     add_action('woocommerce_after_add_to_cart_button', 'lookitry_inject_button');
     add_action('woocommerce_single_product_summary', 'lookitry_inject_button', 31);
     add_action('wp_footer', 'lookitry_render_modal');
+}
+
+function lookitry_ajax_dismiss_plan_notice()
+{
+    check_ajax_referer('lookitry_dismiss_plan_notice', 'nonce');
+
+    if (!current_user_can('manage_woocommerce')) {
+        wp_send_json_error(array('message' => 'Permisos insuficientes.'), 403);
+    }
+
+    update_option('lookitry_dismissed_plan_notice', 'yes');
+    wp_send_json_success();
 }
