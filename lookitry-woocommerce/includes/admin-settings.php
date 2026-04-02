@@ -203,16 +203,21 @@ function lookitry_settings_page() {
         .lookitry-brand-logo-circle { 
             width: 52px; 
             height: 52px; 
-            background: #fff; 
-            border: 2px solid #e2e8f0; 
+            background: linear-gradient(135deg, #1e293b, #0f172a); 
+            border: 2px solid #334155; 
             border-radius: 14px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
             padding: 6px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
         }
-        .lookitry-brand-logo-circle img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .lookitry-brand-logo-circle img { 
+            max-width: 100%; 
+            max-height: 100%; 
+            object-fit: contain; 
+            filter: brightness(1.1);
+        }
 
         /* Premium Progress Bar */
         .lookitry-progress-container { margin-top: 16px; }
