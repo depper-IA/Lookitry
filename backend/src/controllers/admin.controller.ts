@@ -51,6 +51,15 @@ export const adminLogin = async (req: any, res: Response) => {
       });
     }
 
+    // Validación de formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Formato de email inválido',
+      });
+    }
+
     // Buscar admin
     const admin = await adminService.getAdminByEmail(email);
 
@@ -84,8 +93,8 @@ export const adminLogin = async (req: any, res: Response) => {
     const cookieOptions: any = {
       httpOnly: true,
       secure: IS_PROD,
-      sameSite: IS_PROD ? 'none' : 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: IS_PROD ? 'strict' : 'lax',
+      expires: new Date(0),
       path: '/',
     };
 
@@ -103,9 +112,7 @@ export const adminLogin = async (req: any, res: Response) => {
     });
 
     return res.status(200).json({
-      // Mantenemos el token en el JSON por retrocompatibilidad, 
-      // pero el frontend ahora debe usar credentials: 'include'
-      token,
+      // Token se envía solo en cookie HTTP-only por seguridad
       admin: {
         id: admin.id,
         email: admin.email,
@@ -214,7 +221,7 @@ export const adminResetPassword = async (req: any, res: Response) => {
     if (error.message === 'PASSWORD_TOO_SHORT') {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
-        message: 'La contraseña debe tener al menos 8 caracteres',
+        message: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial',
       });
     }
 
@@ -942,8 +949,6 @@ export const changeOwnPassword = async (req: any, res: Response) => {
       message: 'Contrase?a actualizada exitosamente. Inicia sesi?n de nuevo con tu nueva contrase?a.',
       requiresReauth: true,
     });
-
-    return res.status(200).json({ message: 'Contrase?a actualizada exitosamente' });
   } catch (error: any) {
     const isValidation = error.message === 'La contraseña actual es incorrecta'
       || error.message === 'La nueva contraseña debe tener al menos 8 caracteres';

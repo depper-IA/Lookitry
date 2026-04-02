@@ -140,13 +140,33 @@ export default function RegisterForm() {
     }
   };
 
+  const validatePasswordComplexity = (password: string): { isValid: boolean; message: string } => {
+    if (password.length < 8) {
+      return { isValid: false, message: 'La contraseña debe tener al menos 8 caracteres' };
+    }
+    if (!/[A-Z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra mayúscula' };
+    }
+    if (!/[a-z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra minúscula' };
+    }
+    if (!/[0-9]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un número' };
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...)' };
+    }
+    return { isValid: true, message: '' };
+  };
+
   const isPasswordValid = form.password.length >= 8;
   const passwordsMatch = form.password === form.confirmPassword;
+  const passwordComplexity = validatePasswordComplexity(form.password);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isPasswordValid) {
-      setError('La contraseña debe tener al menos 8 caracteres');
+    if (!passwordComplexity.isValid) {
+      setError(passwordComplexity.message);
       return;
     }
     if (!passwordsMatch) {
@@ -332,7 +352,7 @@ export default function RegisterForm() {
                     value={form.password}
                     onChange={handleChange}
                     required
-                    placeholder="Mín. 8 caracteres"
+                    placeholder="8+ caracteres, mayúscula, minúscula, número y símbolo"
                     className={`w-full rounded-xl border ${form.password && !isPasswordValid ? 'border-red-500/40' : 'border-[rgba(255,255,255,0.08)]'} bg-[#050505] px-4 py-3 pr-10 text-sm text-white outline-none transition-all shadow-inner focus:border-[#FF5C3A]`}
                   />
                   <button
@@ -368,8 +388,24 @@ export default function RegisterForm() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3">
               <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
-                <span className={`inline-block h-2 w-2 rounded-full ${isPasswordValid ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
+                <span className={`inline-block h-2 w-2 rounded-full ${passwordComplexity.isValid ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
                 Minimo 8 caracteres
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
+                <span className={`inline-block h-2 w-2 rounded-full ${/[A-Z]/.test(form.password) ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
+                Una letra mayuscula
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
+                <span className={`inline-block h-2 w-2 rounded-full ${/[a-z]/.test(form.password) ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
+                Una letra minuscula
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
+                <span className={`inline-block h-2 w-2 rounded-full ${/[0-9]/.test(form.password) ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
+                Un numero
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
+                <span className={`inline-block h-2 w-2 rounded-full ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(form.password) ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
+                Un caracter especial
               </div>
               <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
                 <span className={`inline-block h-2 w-2 rounded-full ${form.confirmPassword && passwordsMatch ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />

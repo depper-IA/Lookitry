@@ -301,10 +301,34 @@ export default function ProfilePage() {
     }
   };
 
+  const validatePasswordComplexity = (password: string): { isValid: boolean; message: string } => {
+    if (password.length < 8) {
+      return { isValid: false, message: 'La contraseña debe tener al menos 8 caracteres' };
+    }
+    if (!/[A-Z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra mayúscula' };
+    }
+    if (!/[a-z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra minúscula' };
+    }
+    if (!/[0-9]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un número' };
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...)' };
+    }
+    return { isValid: true, message: '' };
+  };
+
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       setErrorMsg('Las contraseñas no coinciden');
+      return;
+    }
+    const complexityCheck = validatePasswordComplexity(newPassword);
+    if (!complexityCheck.isValid) {
+      setErrorMsg(complexityCheck.message);
       return;
     }
     setLoading(true);
@@ -749,10 +773,11 @@ export default function ProfilePage() {
                            <label className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] opacity-60 ml-2">Nueva Contraseña</label>
                            <div className="relative group">
                               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)] group-focus-within:text-[#FF5C3A] transition-colors" />
-                              <input
-                                 type={showNew ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} required
-                                 className="w-full pl-12 pr-12 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
-                              />
+                               <input
+                                  type={showNew ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} required
+                                  className="w-full pl-12 pr-12 py-4 bg-[var(--bg-hover)] border-2 border-transparent focus:border-[#FF5C3A]/30 rounded-2xl font-medium text-sm tracking-tight outline-none transition-all text-[var(--text-primary)]"
+                                  placeholder="8+ caracteres, mayúscula, minúscula, número y símbolo"
+                               />
                               <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[#FF5C3A] transition-colors">
                                  {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
                               </button>

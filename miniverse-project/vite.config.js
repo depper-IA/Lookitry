@@ -1,0 +1,16 @@
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': 'http://localhost:4321',
+      '/ws': {
+        target: 'ws://localhost:4321',
+        ws: true,
+      },
+      '/worlds': 'http://localhost:4321',
+      '/public': 'http://localhost:4321',
+    },
+  },
+});

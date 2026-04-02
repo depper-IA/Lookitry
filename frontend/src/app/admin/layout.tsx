@@ -110,7 +110,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             return;
           }
           // Actualizar con datos frescos del servidor
-          setAdminUser(profileData.user || userParsed);
+          setAdminUser(profileData.admin || userParsed);
           setLoading(false);
 
           Promise.all([

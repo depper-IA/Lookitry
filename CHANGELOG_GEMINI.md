@@ -1,5 +1,45 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-01] - Navbar sticky persistente con z-index alto
+
+### Problema
+- El navbar no se mantenía visible al hacer scroll
+- El contenido de la página quedaba tapado detrás del menú
+
+### Solución
+- Contenedor `sticky top-0 z-[100]` que envuelve PromoBanner + LandingNav
+- Ambos componentes se mantienen fijos en la parte superior al hacer scroll
+- `main` con `relative` para establish stacking context correcto
+
+### Archivos Modificados
+- `frontend/src/components/landing/new-landing/PremiumLanding.tsx`
+- `CHANGELOG_GEMINI.md`
+
+---
+
+## [2026-04-01] - Panel usuario + glassmorphism en navbar landing
+
+### Problema
+- El panel de usuario (avatar, nombre, "Mi Panel", dropdown) desapareció de la landing
+- El navbar perdió el efecto glassmorphism
+- El usuario quería scroll dinámico (no sticky/fixed)
+
+### Solución
+- Agregado panel de usuario al `new-landing/LandingNav.tsx` con:
+  - Avatar con iniciales del nombre
+  - Nombre + "Mi Panel" con dropdown
+  - Links a Dashboard General y Cerrar Sesión
+  - Carga de sesión desde localStorage
+- Navbar con glassmorphism oscuro: `bg-[#0a0a0a]/80 backdrop-blur-md`
+- Eliminado soporte dark/light mode - esquema white-on-dark consistente
+- Scroll dinámico (navbar es `relative`, no sticky)
+
+### Archivos Modificados
+- `frontend/src/components/landing/new-landing/LandingNav.tsx`
+- `CHANGELOG_GEMINI.md`
+
+---
+
 ## [2026-04-01] - Eliminar flash de registro: botones apuntan directo a checkout
 
 ### Problema

@@ -18,7 +18,7 @@ function setCookieToken(res: Response, token: string): void {
   const cookieOptions: any = {
     httpOnly: true,
     secure: IS_PROD,           // Solo HTTPS en producción
-    sameSite: IS_PROD ? 'none' : 'lax', // 'none' cross-origin en prod (requiere secure)
+    sameSite: IS_PROD ? 'strict' : 'lax', // 'strict' para máxima protección CSRF
     maxAge: 30 * 24 * 60 * 60 * 1000,  // 30 días en ms
     path: '/',
   };
@@ -87,8 +87,18 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El slug solo puede contener letras minúsculas, números y guiones' });
       }
 
-      if (data.password.length < 6) {
-        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La contraseña debe tener al menos 6 caracteres' });
+      if (data.password.length < 8) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial' });
+      }
+
+      // Validar complejidad de contraseña
+      const hasUppercase = /[A-Z]/.test(data.password);
+      const hasLowercase = /[a-z]/.test(data.password);
+      const hasNumber = /[0-9]/.test(data.password);
+      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(data.password);
+      
+      if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La contraseña debe contener mayúscula, minúscula, número y carácter especial' });
       }
 
       const result = await authService.register({
@@ -188,6 +198,11 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email y contraseña son requeridos' });
       }
 
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(data.email)) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Formato de email inválido' });
+      }
+
       const result = await authService.login(data);
       // Emitir token como cookie HTTP-Only (más seguro que localStorage)
       if (result.token) setCookieToken(res, result.token);
@@ -240,8 +255,17 @@ export class AuthController {
       if (!token || !password) {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Token y contraseña son requeridos' });
       }
-      if (password.length < 6) {
-        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La contraseña debe tener al menos 6 caracteres' });
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial' });
+      }
+      
+      const hasUppercase = /[A-Z]/.test(password);
+      const hasLowercase = /[a-z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+      
+      if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La contraseña debe contener mayúscula, minúscula, número y carácter especial' });
       }
 
       await authService.resetPassword(token, password);
@@ -290,8 +314,17 @@ export class AuthController {
       if (!currentPassword || !newPassword) {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Contraseña actual y nueva son requeridas' });
       }
-      if (newPassword.length < 6) {
-        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La nueva contraseña debe tener al menos 6 caracteres' });
+      if (newPassword.length < 8) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La nueva contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial' });
+      }
+      
+      const hasUppercase = /[A-Z]/.test(newPassword);
+      const hasLowercase = /[a-z]/.test(newPassword);
+      const hasNumber = /[0-9]/.test(newPassword);
+      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword);
+      
+      if (!hasUppercase || !hasLowercase || !hasNumber || !hasSpecial) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La contraseña debe contener mayúscula, minúscula, número y carácter especial' });
       }
 
       await authService.changePassword(brandId, currentPassword, newPassword);

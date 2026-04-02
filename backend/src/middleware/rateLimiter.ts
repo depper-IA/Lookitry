@@ -81,7 +81,7 @@ export const authRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req: Request, res: Response) => {
-    console.warn(`⚠️  Rate limit de auth excedido para IP: ${req.ip}, Email: ${req.body?.email}`);
+    console.warn(`⚠️  Rate limit de auth excedido para IP: ${req.ip}`);
     res.status(429).json({
       error: 'AUTH_RATE_LIMIT_EXCEEDED',
       message: 'Demasiados intentos de autenticación. Por favor intenta de nuevo más tarde.',

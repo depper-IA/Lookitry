@@ -41,12 +41,32 @@ function ResetPasswordForm() {
     if (!token) setError('El enlace es inválido. Solicita uno nuevo.');
   }, [token]);
 
+  const validatePasswordComplexity = (password: string): { isValid: boolean; message: string } => {
+    if (password.length < 8) {
+      return { isValid: false, message: 'La contraseña debe tener al menos 8 caracteres' };
+    }
+    if (!/[A-Z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra mayúscula' };
+    }
+    if (!/[a-z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra minúscula' };
+    }
+    if (!/[0-9]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un número' };
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...)' };
+    }
+    return { isValid: true, message: '' };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+    const complexityCheck = validatePasswordComplexity(password);
+    if (!complexityCheck.isValid) {
+      setError(complexityCheck.message);
       return;
     }
     if (password !== confirm) {
@@ -107,9 +127,9 @@ function ResetPasswordForm() {
               <h2 className="font-syne font-bold text-[22px] text-white mb-1">
                 Nueva contraseña
               </h2>
-              <p className="text-[13px] text-[#555] mb-7">
-                Ingresa tu nueva contraseña. Debe tener al menos 6 caracteres.
-              </p>
+                <p className="text-[13px] text-[#555] mb-7">
+                  Ingresa tu nueva contraseña. Debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.
+                </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
@@ -127,7 +147,7 @@ function ResetPasswordForm() {
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       className="block w-full px-3 py-2.5 pr-10 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg text-white text-[13px] placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder="8+ caracteres, mayúscula, minúscula, número y símbolo"
                     />
                     <button type="button" onClick={() => setShowPassword(v => !v)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-[#888] focus:outline-none transition-colors" tabIndex={-1}>

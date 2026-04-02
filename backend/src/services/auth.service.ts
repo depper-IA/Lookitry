@@ -95,6 +95,30 @@ function createEmailVerificationToken(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
+function validatePasswordComplexity(password: string): { isValid: boolean; message?: string } {
+  if (password.length < 8) {
+    return { isValid: false, message: 'La contraseña debe tener al menos 8 caracteres' };
+  }
+  
+  if (!/[A-Z]/.test(password)) {
+    return { isValid: false, message: 'La contraseña debe contener al menos una letra mayúscula' };
+  }
+  
+  if (!/[a-z]/.test(password)) {
+    return { isValid: false, message: 'La contraseña debe contener al menos una letra minúscula' };
+  }
+  
+  if (!/[0-9]/.test(password)) {
+    return { isValid: false, message: 'La contraseña debe contener al menos un número' };
+  }
+  
+  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    return { isValid: false, message: 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...)' };
+  }
+  
+  return { isValid: true };
+}
+
   export class AuthService {
   /**
   * Registro seguro después de un pago confirmado (Wompi o PayPal).
@@ -607,6 +631,11 @@ function createEmailVerificationToken(): string {
     const expiresAt = new Date(brand.reset_token_expires_at);
     if (expiresAt < new Date()) throw new Error('TOKEN_EXPIRED');
 
+    const complexityCheck = validatePasswordComplexity(newPassword);
+    if (!complexityCheck.isValid) {
+      throw new Error('PASSWORD_TOO_SHORT');
+    }
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await supabaseAdmin
@@ -648,6 +677,13 @@ function createEmailVerificationToken(): string {
 
     const isValid = await bcrypt.compare(currentPassword, brand.password);
     if (!isValid) throw new Error('WRONG_PASSWORD');
+
+    const complexityCheck = validatePasswordComplexity(newPassword);
+    if (!complexityCheck.isValid) {
+      throw new Error(complexityCheck.message);
+    }
+
+    if (newPassword === currentPassword) throw new Error('La nueva contraseña debe ser diferente a la actual');
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await supabaseAdmin

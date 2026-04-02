@@ -91,6 +91,34 @@ export class AdminService {
     return /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(value);
   }
 
+  private validatePasswordComplexity(password: string): { isValid: boolean; message?: string } {
+    if (password.length < 8) {
+      return { isValid: false, message: 'La contraseña debe tener al menos 8 caracteres' };
+    }
+    
+    // Al menos una mayúscula
+    if (!/[A-Z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra mayúscula' };
+    }
+    
+    // Al menos una minúscula
+    if (!/[a-z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra minúscula' };
+    }
+    
+    // Al menos un número
+    if (!/[0-9]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un número' };
+    }
+    
+    // Al menos un carácter especial
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...)' };
+    }
+    
+    return { isValid: true };
+  }
+
   /**
    * Listar todos los admins (sin exponer passwords)
    */
@@ -229,7 +257,9 @@ export class AdminService {
     const valid = await bcrypt.compare(currentPassword, adminRecord.password);
     if (!valid) throw new Error('La contraseña actual es incorrecta');
 
-    if (newPassword.length < 8) throw new Error('La nueva contraseña debe tener al menos 8 caracteres');
+    const complexityCheck = this.validatePasswordComplexity(newPassword);
+    if (!complexityCheck.isValid) throw new Error(complexityCheck.message);
+    
     if (newPassword === currentPassword) throw new Error('La nueva contraseña debe ser diferente a la actual');
 
     const hashed = await bcrypt.hash(newPassword, 10);
@@ -295,8 +325,9 @@ export class AdminService {
       throw new Error('TOKEN_EXPIRED');
     }
 
-    if (newPassword.length < 8) {
-      throw new Error('PASSWORD_TOO_SHORT');
+    const complexityCheck = this.validatePasswordComplexity(newPassword);
+    if (!complexityCheck.isValid) {
+      throw new Error('PASSWORD_TOO_SHORT'); // Mantenemos el mismo error para no romper el frontend
     }
 
     const hashed = await bcrypt.hash(newPassword, 10);
