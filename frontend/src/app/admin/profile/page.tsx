@@ -16,6 +16,25 @@ export default function AdminProfilePage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
+  const validatePasswordComplexity = (password: string): { isValid: boolean; message: string } => {
+    if (password.length < 8) {
+      return { isValid: false, message: 'La contraseña debe tener al menos 8 caracteres' };
+    }
+    if (!/[A-Z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra mayúscula' };
+    }
+    if (!/[a-z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra minúscula' };
+    }
+    if (!/[0-9]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un número' };
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...)' };
+    }
+    return { isValid: true, message: '' };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -25,10 +44,13 @@ export default function AdminProfilePage() {
       setError('Las contraseñas nuevas no coinciden');
       return;
     }
-    if (form.newPassword.length < 8) {
-      setError('La nueva contraseña debe tener al menos 8 caracteres');
+    
+    const complexityCheck = validatePasswordComplexity(form.newPassword);
+    if (!complexityCheck.isValid) {
+      setError(complexityCheck.message);
       return;
     }
+    
     if (form.newPassword === form.currentPassword) {
       setError('La nueva contraseña debe ser diferente a la actual');
       return;
@@ -139,7 +161,7 @@ export default function AdminProfilePage() {
                 value={form.newPassword}
                 onChange={e => setForm(f => ({ ...f, newPassword: e.target.value }))}
                 required
-                placeholder="Mínimo 8 caracteres"
+                placeholder="8+ caracteres, mayúscula, minúscula, número y símbolo"
                 className="w-full px-3 py-2.5 pr-10 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A] transition-colors"
                 style={inputStyle}
               />
@@ -156,17 +178,27 @@ export default function AdminProfilePage() {
             {/* Indicador de fortaleza */}
             {form.newPassword.length > 0 && (
               <div className="mt-1.5 flex gap-1">
-                {[1, 2, 3, 4].map(i => (
-                  <div
-                    key={i}
-                    className="flex-1 h-1 rounded-full transition-colors"
-                    style={{
-                      background: form.newPassword.length >= i * 3
-                        ? i <= 1 ? '#ef4444' : i <= 2 ? '#f59e0b' : i <= 3 ? '#3b82f6' : '#10b981'
-                        : 'var(--border-color)',
-                    }}
-                  />
-                ))}
+                {[1, 2, 3, 4, 5].map(i => {
+                  const checks = {
+                    length: form.newPassword.length >= 8,
+                    uppercase: /[A-Z]/.test(form.newPassword),
+                    lowercase: /[a-z]/.test(form.newPassword),
+                    number: /[0-9]/.test(form.newPassword),
+                    special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(form.newPassword),
+                  };
+                  const strength = Object.values(checks).filter(Boolean).length;
+                  return (
+                    <div
+                      key={i}
+                      className="flex-1 h-1 rounded-full transition-colors"
+                      style={{
+                        background: i <= strength
+                          ? i <= 1 ? '#ef4444' : i <= 2 ? '#f59e0b' : i <= 3 ? '#3b82f6' : '#10b981'
+                          : 'var(--border-color)',
+                      }}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>

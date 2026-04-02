@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Miniverse World</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      color: #eee;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      gap: 12px;
+    }
+    h1 { font-size: 18px; color: #e94560; letter-spacing: 2px; }
+    #world-container {
+      width: 800px;
+      height: 600px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #2a2a3e;
+    }
+    #status {
+      font-size: 12px;
+      color: #666;
+    }
+    #agents-list {
+      font-size: 11px;
+      color: #aaa;
+      max-width: 800px;
+      width: 100%;
+    }
+    .agent-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 4px 0;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .dot.working { background: #4ade80; }
+    .dot.idle { background: #fbbf24; }
+    .dot.thinking { background: #f472b6; }
+    .dot.sleeping { background: #818cf8; }
+    .dot.error { background: #ef4444; }
+    .dot.speaking { background: #22d3ee; }
+    .dot.offline { background: #444; }
+  </style>
+</head>
+<body>
+  <h1>Miniverse</h1>
+  <div id="world-container"></div>
+  <div id="status">Connecting...</div>
+  <div id="agents-list"></div>
+
+  <script type="module">
+    import { Miniverse } from '@miniverse/core';
+
+    const SERVER_URL = 'http://localhost:4321';
+
+    async function init() {
+      try {
+        // Fetch world config
+        const res = await fetch(`${SERVER_URL}/api/info`);
+        const info = await res.json();
+        const worldId = info.world || 'cozy-startup';
+
+        const container = document.getElementById('world-container');
+        
+        const miniverse = new Miniverse({
+          container,
+          world: worldId,
+          scene: worldId,
+          signal: {
+            type: 'websocket',
+            url: `ws://localhost:4321/ws`,
+          },
+          citizens: [],
+          scale: 2,
+          width: 800,
+          height: 600,
+          worldBasePath: `${SERVER_URL}/worlds/${worldId}`,
+          autoSpawn: true,
+          defaultSprites: ['morty', 'dexter', 'nova', 'rio'],
+        });
+
+        await miniverse.start();
+
+        document.getElementById('status').textContent = `World: ${worldId} | Agents: ${info.agents.online}/${info.agents.total}`;
+
+        // Update agent list
+        const ws = new WebSocket(`ws://localhost:4321/ws`);
+        ws.onmessage = (e) => {
+          try {
+            const msg = JSON.parse(e.data);
+            if (msg.type === 'agents') {
+              renderAgents(msg.agents);
+            }
+          } catch {}
+        };
+
+      } catch (err) {
+        console.error('Failed to init Miniverse:', err);
+        document.getElementById('status').textContent = `Error: ${err.message}`;
+        createFallbackView();
+      }
+    }
+
+    function renderAgents(agents) {
+      const el = document.getElementById('agents-list');
+      if (!agents || agents.length === 0) {
+        el.innerHTML = '<p>No agents connected</p>';
+        return;
+      }
+      el.innerHTML = agents.map(a => `
+        <div class="agent-status">
+          <span class="dot ${a.state}"></span>
+          <span>${a.name || a.agent}</span>
+          <span style="color:#555">${a.state}${a.task ? ' · ' + a.task : ''}</span>
+        </div>
+      `).join('');
+    }
+
+    function createFallbackView() {
+      const container = document.getElementById('world-container');
+      container.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:12px;">
+          <p style="color:#e94560;">Failed to load world</p>
+          <p style="color:#555;font-size:11px;">Check that the Miniverse server is running on port 4321</p>
+        </div>
+      `;
+    }
+
+    init();
+  </script>
+</body>
+</html>

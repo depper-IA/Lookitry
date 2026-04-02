@@ -27,7 +27,7 @@ function PasswordField({
           value={value}
           onChange={e => onChange(e.target.value)}
           className="block w-full px-3 py-2.5 pr-10 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg text-white text-[13px] placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
-          placeholder="Mínimo 8 caracteres"
+          placeholder="8+ caracteres, mayúscula, minúscula, número y símbolo"
         />
         <button
           type="button"
@@ -59,12 +59,32 @@ function AdminResetPasswordForm() {
     }
   }, [token]);
 
+  const validatePasswordComplexity = (password: string): { isValid: boolean; message: string } => {
+    if (password.length < 8) {
+      return { isValid: false, message: 'La contraseña debe tener al menos 8 caracteres' };
+    }
+    if (!/[A-Z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra mayúscula' };
+    }
+    if (!/[a-z]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos una letra minúscula' };
+    }
+    if (!/[0-9]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un número' };
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      return { isValid: false, message: 'La contraseña debe contener al menos un carácter especial (!@#$%^&*...)' };
+    }
+    return { isValid: true, message: '' };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (password.length < 8) {
-      setError('La contraseña debe tener al menos 8 caracteres');
+    const complexityCheck = validatePasswordComplexity(password);
+    if (!complexityCheck.isValid) {
+      setError(complexityCheck.message);
       return;
     }
 

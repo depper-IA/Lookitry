@@ -43,6 +43,15 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
+    
+    // Validación de formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Por favor, ingresa un email válido');
+      setLoading(false);
+      return;
+    }
+    
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/admin/auth/login`,
