@@ -113,7 +113,15 @@
                 '</div>'
             );
 
+            // Timeout de 15 segundos para cerrar el loading
+            var loadingTimeout = setTimeout(function() {
+                if ($overlay.find('.lookitry-loading-overlay').length > 0) {
+                    showErrorOverlay('Tiempo de espera agotado', 'El probador está tardando más de lo normal. Intenta de nuevo.');
+                }
+            }, 15000);
+
             function showErrorOverlay(title, message, showUpgradeLink) {
+                clearTimeout(loadingTimeout);
                 $overlay.find('.lookitry-loading-overlay').remove();
                 $overlay.find('.lookitry-error-overlay').remove();
                 
@@ -154,13 +162,15 @@
                 }),
                 contentType: 'application/json',
                 success: function(response) {
+                    clearTimeout(loadingTimeout);
                     if (response.success && response.embedUrl) {
                         // Clear loading overlay and show iframe
                         $overlay.find('.lookitry-loading-overlay').remove();
                         $iframe.attr('src', response.embedUrl);
                         $overlay.css('display', 'flex');
                     } else {
-                        showErrorOverlay('Error al inicializar', response.message || 'Intenta de nuevo más tarde.');
+                        // Mostrar error del backend
+                        showErrorOverlay('Error al inicializar', response.message || response.error || 'El probador no está disponible en este momento.');
                     }
                 },
                 error: function(xhr) {
@@ -168,16 +178,25 @@
                     let message = 'No se pudo conectar con Lookitry.';
                     let showUpgradeLink = false;
                     
-                    if (xhr.status === 403 && (xhr.responseJSON?.message?.includes('PRO') || xhr.responseJSON?.message?.includes('plan'))) {
+                    // Intentar obtener mensaje del responseJSON
+                    var responseMsg = xhr.responseJSON?.message || xhr.responseJSON?.error || '';
+                    
+                    if (xhr.status === 403 && (responseMsg.includes('PRO') || responseMsg.includes('plan') || responseMsg.includes('ENTERPRISE'))) {
                         title = 'Plan no compatible';
                         message = 'El probador virtual requiere plan PRO o ENTERPRISE.';
                         showUpgradeLink = true;
+                    } else if (xhr.status === 403 && responseMsg.includes('image')) {
+                        title = 'Imagen no procesable';
+                        message = 'La imagen del producto no es compatible. Verifica que sea un formato válido (JPG, PNG).';
                     } else if (xhr.status === 404) {
                         title = 'Producto no encontrado';
-                        message = 'Este producto no está sincronizado con Lookitry.';
-                    } else if (xhr.status === 401 || xhr.status === 403) {
+                        message = 'Este producto no está sincronizado con Lookitry. Sincronízalo primero desde el panel de administración.';
+                    } else if (xhr.status === 401) {
                         title = 'Acceso denegado';
-                        message = 'Tu API Key es inválida o tu dominio no está autorizado.';
+                        message = 'Tu API Key es inválida.';
+                    } else if (responseMsg) {
+                        title = 'Error de Lookitry';
+                        message = responseMsg;
                     } else if (xhr.status === 0) {
                         title = 'Sin conexión';
                         message = 'Verifica tu conexión a internet e intenta de nuevo.';
