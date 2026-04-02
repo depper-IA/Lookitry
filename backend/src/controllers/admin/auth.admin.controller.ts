@@ -232,3 +232,154 @@ export const adminLogout = async (_req: any, res: Response) => {
     });
   }
 };
+
+/**
+ * GET /api/admin/admins
+ * Listar administradores
+ */
+export const listAdmins = async (_req: any, res: Response) => {
+  try {
+    const admins = await adminService.listAdmins();
+    return res.status(200).json({ admins });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+  }
+};
+
+/**
+ * POST /api/admin/admins
+ * Crear nuevo administrador
+ */
+export const createAdmin = async (req: any, res: Response) => {
+  try {
+    const { email, password, name, permissions } = req.body;
+    if (!email || !password || !name) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'email, password y name son requeridos' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La contraseña debe tener al menos 8 caracteres' });
+    }
+    const admin = await adminService.createAdmin({ email, password, name, permissions });
+
+    // Email de bienvenida
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://lookitry.com');
+    const isSuperadmin = !permissions || permissions.length === 0;
+    const permissionsList = isSuperadmin ? 'Acceso total (superadmin)' : (permissions as string[]).join(', ');
+
+    emailService.sendEmail({
+      to: email,
+      subject: 'Acceso al Panel de Administración — Virtual Try-On',
+      html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+        <h2 style="color:#FF5C3A;margin-bottom:8px">Bienvenido al Panel de Administración</h2>
+        <p style="color:#6b7280;margin-bottom:24px">Hola <strong>${name}</strong>, se ha creado tu cuenta de administrador en Lookitry.</p>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:24px;background:#f9fafb;border-radius:8px;padding:16px">
+          <tr><td style="padding:8px 12px;color:#6b7280;font-size:14px">Email</td><td style="padding:8px 12px;font-weight:600;color:#111827">${email}</td></tr>
+          <tr><td style="padding:8px 12px;color:#6b7280;font-size:14px">Contraseña</td><td style="padding:8px 12px;font-weight:600;color:#111827">${password}</td></tr>
+          <tr><td style="padding:8px 12px;color:#6b7280;font-size:14px">Nivel de acceso</td><td style="padding:8px 12px;color:#111827">${permissionsList}</td></tr>
+        </table>
+        <p style="color:#dc2626;font-size:13px;margin-bottom:24px">Por seguridad, cambia tu contraseña después de iniciar sesión por primera vez.</p>
+        <a href="${appUrl}/admin/login" style="display:inline-block;background:#FF5C3A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">Ir al panel de administración</a>
+      </div>`,
+    }).catch(err => console.error('[createAdmin] Error enviando email de bienvenida:', err));
+
+    return res.status(201).json({ admin });
+  } catch (error: any) {
+    return res.status(400).json({ error: 'BAD_REQUEST', message: error.message });
+  }
+};
+
+/**
+ * PATCH /api/admin/admins/:id/permissions
+ */
+export const updateAdminPermissions = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { permissions } = req.body;
+    if (!Array.isArray(permissions)) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'permissions debe ser un array' });
+    await adminService.updateAdminPermissions(id, permissions);
+    return res.status(200).json({ message: 'Permisos actualizados' });
+  } catch (error: any) {
+    return res.status(400).json({ error: 'BAD_REQUEST', message: error.message });
+  }
+};
+
+/**
+ * DELETE /api/admin/admins/:id
+ */
+export const deleteAdmin = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    await adminService.deleteAdmin(id, req.admin?.id);
+    return res.status(200).json({ message: 'Admin eliminado' });
+  } catch (error: any) {
+    return res.status(400).json({ error: 'BAD_REQUEST', message: error.message });
+  }
+};
+
+/**
+ * POST /api/admin/admins/:id/credentials
+ */
+export const sendAdminCredentials = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { admin, newPassword } = await adminService.resetAdminPassword(id);
+
+    const { adminPasswordResetEmail } = await import('../../templates/email-templates');
+    emailService.sendEmail({
+      to: admin.email,
+      subject: 'Restablecimiento de contraseña — Panel de Administración',
+      html: adminPasswordResetEmail(admin.name, admin.email, newPassword),
+    }).catch(err => console.error('[sendAdminCredentials] Error enviando email:', err));
+
+    auditService.log({ admin_id: req.admin?.id ?? 'unknown', admin_email: req.admin?.email ?? 'unknown', action: 'admin.send_credentials', details: { target_admin_id: id, target_email: admin.email } });
+    return res.status(200).json({ message: 'Credenciales enviadas exitosamente' });
+  } catch (error: any) {
+    return res.status(400).json({ error: 'BAD_REQUEST', message: error.message });
+  }
+};
+
+/**
+ * PUT /api/admin/admins/me/password
+ */
+export const changeOwnPassword = async (req: any, res: Response) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+    if (!req.admin?.id) return res.status(401).json({ error: 'UNAUTHORIZED', message: 'No autenticado' });
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'currentPassword y newPassword son requeridos' });
+    
+    await adminService.changeOwnPassword(req.admin.id, currentPassword, newPassword);
+
+    const IS_PROD = process.env.NODE_ENV === 'production';
+    const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+    const cookieOptions: any = {
+      httpOnly: true,
+      secure: IS_PROD,
+      sameSite: IS_PROD ? 'none' : 'lax',
+      expires: new Date(0),
+      path: '/',
+    };
+    if (COOKIE_DOMAIN && IS_PROD) cookieOptions.domain = COOKIE_DOMAIN;
+    res.cookie('admin_token', '', cookieOptions);
+
+    auditService.log({ admin_id: req.admin.id, admin_email: req.admin.email, action: 'admin.change_password' });
+    return res.status(200).json({ message: 'Contraseña actualizada exitosamente. Inicia sesión de nuevo con tu nueva contraseña.', requiresReauth: true });
+  } catch (error: any) {
+    return res.status(400).json({ error: 'BAD_REQUEST', message: error.message });
+  }
+};
+
+/**
+ * PATCH /api/admin/admins/:id/password
+ */
+export const changeAdminPassword = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { newPassword } = req.body || {};
+    if (!newPassword) return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'newPassword es requerido' });
+    await adminService.changeAdminPassword(id, newPassword);
+    auditService.log({ admin_id: req.admin?.id ?? 'unknown', admin_email: req.admin?.email ?? 'unknown', action: 'admin.change_password', details: { target_admin_id: id } });
+    return res.status(200).json({ message: 'Contraseña actualizada correctamente' });
+  } catch (error: any) {
+    return res.status(400).json({ error: 'BAD_REQUEST', message: error.message });
+  }
+};
