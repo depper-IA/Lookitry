@@ -198,8 +198,8 @@ export function ResultDisplay({
   if (pluginView) {
     return (
       <>
-        <div className="mx-auto w-full max-w-5xl">
-          <div className="mb-4 flex flex-col items-center text-center md:mb-6">
+        <div className="mx-auto w-full max-w-6xl">
+          <div className="mb-4 flex flex-col items-center text-center md:mb-5">
             <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50">
               <svg className="h-7 w-7 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -211,7 +211,7 @@ export function ResultDisplay({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_280px] md:items-start">
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
             <div className="rounded-[28px] border border-gray-100 bg-white p-3 shadow-sm md:p-4">
               <ResultImage
                 imageUrl={imageUrl}
@@ -222,41 +222,31 @@ export function ResultDisplay({
               />
             </div>
 
-            <div className="flex flex-col gap-3 rounded-[28px] border border-gray-100 bg-[#faf8f5] p-4 md:sticky md:top-4">
+            <div className="flex flex-col gap-4 rounded-[28px] border border-gray-100 bg-[#faf8f5] p-5 xl:sticky xl:top-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Acciones</p>
-                <p className="mt-2 text-sm text-gray-500">Aqui solo mostramos la imagen final para una vista limpia dentro del plugin.</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Compartir</p>
+                <p className="mt-2 text-sm text-gray-500">Mostramos solo la imagen final dentro del plugin para una vista mas limpia y mejor aprovechada.</p>
               </div>
 
               <button
-                onClick={handleDownload}
-                disabled={downloading}
+                onClick={handleShare}
+                disabled={sharing}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-xs font-black uppercase tracking-widest text-white shadow-xl transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 md:text-sm"
                 style={{ backgroundColor: primaryColor }}
               >
-                {downloading ? '...' : (
-                  <>
-                    <svg className="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Descargar imagen
-                  </>
-                )}
+                <svg className="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.882 13.12 9 12.827 9 12.5s-.118-.62-.316-.842m0 1.684a1.125 1.125 0 10-1.368 0m1.368 0a1.125 1.125 0 11-1.368 0M15.316 6.658C15.118 6.88 15 7.173 15 7.5s.118.62.316.842m0-1.684a1.125 1.125 0 111.368 0m-1.368 0a1.125 1.125 0 101.368 0M15.316 17.342C15.118 17.12 15 16.827 15 16.5s.118-.62.316-.842m0 1.684a1.125 1.125 0 111.368 0m-1.368 0a1.125 1.125 0 101.368 0M8.684 11.658l6.632-3.316m0 7.316l-6.632-3.316" />
+                </svg>
+                {sharing ? 'Compartiendo...' : 'Compartir resultado'}
               </button>
 
-              {downloadError && (
-                <p className="text-center text-[10px] font-bold uppercase text-red-500">{downloadError}</p>
+              {shareError && (
+                <p className="text-center text-[10px] font-bold uppercase text-orange-500">{shareError}</p>
               )}
 
-              <button
-                onClick={onReset}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white py-3 text-xs font-black uppercase tracking-widest text-gray-500 transition-all hover:bg-gray-50 active:scale-95 md:text-sm"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Probar otro
-              </button>
+              <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-4 py-3 text-xs leading-relaxed text-gray-500">
+                Toca la imagen para verla completa. El plugin oculta comparaciones y acciones secundarias para priorizar el resultado final.
+              </div>
             </div>
           </div>
         </div>
