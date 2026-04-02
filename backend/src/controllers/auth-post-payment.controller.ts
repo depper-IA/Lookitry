@@ -179,8 +179,9 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
 
     } else {
       // 5.2 Si no hay sesión, crear la cuenta (vía registerPostPayment del servicio que es más robusto)
-      const { override_email } = req.body;
-      const emailToUse = (override_email && override_email.trim()) ? override_email.trim() : pending.email;
+      // SECURITY: Always use the email from pending_registrations — never allow override.
+      // The email was set during checkout and must match the payment.
+      const emailToUse = pending.email;
 
       result = await authService.registerPostPayment({
         contact_name: contact_name || name,

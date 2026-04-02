@@ -1,7 +1,8 @@
 'use client';
 
-import { Mail, User, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Mail, User, AlertCircle, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import { Step } from '@/components/payments/StepProgress';
+import { authService } from '@/services/auth.service';
 
 interface UserDataStepProps {
   email: string;
@@ -55,19 +56,25 @@ export default function UserDataStep({
           <label className="text-xs font-bold text-[#999] uppercase tracking-widest flex items-center gap-2">
             <Mail className="w-3.5 h-3.5" style={{ color: OA }} />
             Correo Electrónico
+            {hasSession && <Lock className="w-3 h-3 text-[#999]" />}
           </label>
           <div className="relative">
             <input
               type="email"
               value={email}
-              onChange={e => { setEmail(e.target.value); setEmailError(''); }}
+              onChange={e => {
+                if (hasSession) return; // SECURITY: Prevent email changes when authenticated
+                setEmail(e.target.value);
+                setEmailError('');
+              }}
+              readOnly={hasSession}
               placeholder="ejemplo@mimarca.com"
-              className="w-full bg-[#050505] border rounded-xl px-4 py-4 text-white outline-none transition-all"
+              className={`w-full bg-[#050505] border rounded-xl px-4 py-4 text-white outline-none transition-all ${hasSession ? 'opacity-70 cursor-not-allowed' : ''}`}
               style={{ borderColor: emailError ? 'rgba(239,68,68,0.5)' : '#222' }}
               onFocus={e => { e.currentTarget.style.borderColor = OA; }}
               onBlur={async e => { 
                 e.currentTarget.style.borderColor = emailError ? 'rgba(239,68,68,0.5)' : '#222';
-                if (email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                if (!hasSession && email.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                   await validateStep2();
                 }
               }}
@@ -85,6 +92,18 @@ export default function UserDataStep({
               {emailExists?.exists && emailExists.name && (
                 <span className="text-[#999]"> — Sesión: {emailExists.name}</span>
               )}
+            </p>
+          )}
+          {hasSession && (
+            <p className="text-[11px] text-[#999]">
+              Correo vinculado a tu cuenta activa. Para usar otro correo,{' '}
+              <button
+                onClick={() => { authService.logout().then(() => window.location.reload()); }}
+                className="underline hover:text-white transition-colors"
+                style={{ color: OA }}
+              >
+                cierra sesión
+              </button>.
             </p>
           )}
         </div>
@@ -116,7 +135,7 @@ export default function UserDataStep({
             </div>
             <div>
               <p className="text-sm font-bold text-white">{sessionInfo.name}</p>
-              <p className="text-xs text-[#999]">Sesión activa detectada</p>
+              <p className="text-xs text-[#999]">{sessionInfo.email}</p>
             </div>
           </div>
         )}

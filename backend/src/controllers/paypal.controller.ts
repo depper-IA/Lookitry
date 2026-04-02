@@ -260,9 +260,19 @@ async function fulfillPaypalPayment(reference: string, orderId: string, amountUS
 export class PaypalController {
   getCheckoutUrl = asyncHandler(async (req: Request, res: Response) => {
     const { months, plan, email, trm, includes_landing } = req.query;
+    const brand = (req as any).brand;
 
     if (!months || !plan) {
       return res.status(400).json({ error: 'Faltan parámetros requeridos: months, plan' });
+    }
+
+    // SECURITY: If authenticated, the email must match the session email.
+    // Prevents creating orders for a different account while logged in.
+    if (brand?.id && email && brand.email && String(email).trim().toLowerCase() !== brand.email.toLowerCase()) {
+      return res.status(403).json({
+        error: 'EMAIL_MISMATCH',
+        message: 'El email del checkout debe coincidir con el email de tu cuenta activa.',
+      });
     }
 
     const selectedMonths = parseInt(months as string, 10);

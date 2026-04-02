@@ -206,8 +206,12 @@ function CheckoutContent() {
     if (typeof draft.months === 'number' && [1, 3, 6, 12].includes(draft.months)) {
       setSelectedMonths(draft.months);
     }
-    if (draft.email) setEmail(draft.email);
-    if (draft.brandName) setBrandName(draft.brandName);
+    // SECURITY: Never override email from draft when user has an active session.
+    // The email must always come from the authenticated session (set above in the session useEffect).
+    // Only restore email from draft for unauthenticated users (visitors).
+    const hasActiveSession = !!localStorage.getItem('brand');
+    if (!hasActiveSession && draft.email) setEmail(draft.email);
+    if (draft.brandName && !hasActiveSession) setBrandName(draft.brandName);
     if (draft.paymentMethod) setPaymentMethod(draft.paymentMethod);
     if (draft.currency) setCurrency(draft.currency);
     if (typeof draft.trm === 'number' && draft.trm > 0) setTrm(draft.trm);
@@ -292,6 +296,15 @@ function CheckoutContent() {
   const validateStep2 = async () => {
     let valid = true;
     
+    // SECURITY: If user has an active session, the email MUST match the session email.
+    // Changing the email while authenticated would create orders for the wrong account.
+    if (hasSession && sessionInfo?.email && email.trim().toLowerCase() !== sessionInfo.email.toLowerCase()) {
+      setEmailError('No puedes cambiar el correo mientras tienes una sesión activa. Cierra sesión primero para comprar con otro correo.');
+      setEmailExists(null);
+      valid = false;
+      return valid;
+    }
+
     if (!email.trim()) {
       setEmailError('El correo es obligatorio');
       setEmailExists(null);
@@ -301,22 +314,29 @@ function CheckoutContent() {
       setEmailExists(null);
       valid = false;
     } else {
-      setEmailChecking(true);
-      try {
-        const res = await fetch(`${API_URL}/api/auth/check-email?email=${encodeURIComponent(email.trim())}`);
-        const data = await res.json();
-        if (data.exists) {
-          setEmailExists({ exists: true, name: data.brand?.name });
-          setEmailError('Este correo ya está registrado');
-          valid = false;
-        } else {
-          setEmailExists({ exists: false });
-          setEmailError('');
+      // Only check email existence for visitors (no session).
+      // Authenticated users already have an account — their email WILL exist in DB.
+      if (hasSession) {
+        setEmailExists({ exists: false });
+        setEmailError('');
+      } else {
+        setEmailChecking(true);
+        try {
+          const res = await fetch(`${API_URL}/api/auth/check-email?email=${encodeURIComponent(email.trim())}`);
+          const data = await res.json();
+          if (data.exists) {
+            setEmailExists({ exists: true, name: data.brand?.name });
+            setEmailError('Este correo ya está registrado');
+            valid = false;
+          } else {
+            setEmailExists({ exists: false });
+            setEmailError('');
+          }
+        } catch {
+          setEmailExists(null);
+        } finally {
+          setEmailChecking(false);
         }
-      } catch {
-        setEmailExists(null);
-      } finally {
-        setEmailChecking(false);
       }
     }
     
@@ -365,6 +385,12 @@ function CheckoutContent() {
     try {
       if (trialBlockedBySession) {
         throw new Error('El trial solo puede comprarse sin una sesion activa. Cierra sesion y continua desde el checkout de trial.');
+      }
+
+      // SECURITY: Double-check email matches session before sending payment.
+      // This is a safety net in case UI validation was bypassed.
+      if (hasSession && sessionInfo?.email && email.trim().toLowerCase() !== sessionInfo.email.toLowerCase()) {
+        throw new Error('El correo no coincide con tu sesión activa. Cierra sesión para comprar con otro correo.');
       }
 
       if (totalPrice === 0) {
