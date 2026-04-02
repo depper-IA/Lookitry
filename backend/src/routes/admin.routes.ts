@@ -66,6 +66,11 @@ import {
   getEconomics,
   getAuditLog,
   getBrandFull,
+  getAllSubscriptions,
+  registerSubscriptionPayment,
+  suspendSubscription,
+  reactivateSubscription,
+  getRevenueStats,
 } from '../controllers/admin.controller';
 
 import { authRateLimiter } from '../middleware/rateLimiter';
@@ -161,5 +166,14 @@ router.get('/risk', requirePermission('brands'), getRiskData);
 router.get('/economics', requirePermission('settings'), getEconomics);
 router.get('/audit-log', requirePermission('admins'), getAuditLog);
 router.get('/brands/:id/full', requirePermission('brands'), getBrandFull);
+
+// Gestión de Suscripciones
+router.get('/subscriptions', requirePermission('subscriptions'), getAllSubscriptions);
+router.post('/subscriptions/:id/payment', requirePermission('subscriptions'), registerSubscriptionPayment);
+router.patch('/subscriptions/:id/suspend', requirePermission('subscriptions'), suspendSubscription);
+router.patch('/subscriptions/:id/reactivate', requirePermission('subscriptions'), reactivateSubscription);
+
+// Estadísticas de Revenue
+router.get('/revenue/stats', requirePermission('subscriptions'), getRevenueStats);
 
 export default router;
