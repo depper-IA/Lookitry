@@ -968,7 +968,21 @@ export class PruebaloController {
         try {
           const u = new URL(urlStr);
           const host = u.hostname;
-          // bloquear direcciones IP privadas o localhost
+          const protocol = u.protocol.toLowerCase();
+
+          if (protocol !== 'http:' && protocol !== 'https:') {
+            return false;
+          }
+
+          if (u.username || u.password) {
+            return false;
+          }
+
+          const port = u.port ? Number(u.port) : null;
+          if (port && port !== 80 && port !== 443) {
+            return false;
+          }
+
           if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(host)) {
             const parts = host.split('.').map((p) => parseInt(p, 10));
             const [a, b] = parts;
@@ -976,15 +990,19 @@ export class PruebaloController {
               return false;
             }
           }
-          const allowedDomains = [
-            'lookitry.com',
-            'lookitry.co',
-            'lookitry.app',
-            'lookitry.net',
-            'cdn.lookitry.com',
-            'images.lookitry.com',
-          ];
-          return allowedDomains.some((d) => host.endsWith(d));
+
+          if (
+            host === 'localhost' ||
+            host === '0.0.0.0' ||
+            host === '::1' ||
+            host === '[::1]' ||
+            host.endsWith('.local') ||
+            host.endsWith('.internal')
+          ) {
+            return false;
+          }
+
+          return true;
         } catch {
           return false;
         }
@@ -1044,6 +1062,12 @@ export class PruebaloController {
       if (error?.cause) (logObj as any).cause = error.cause;
       
       console.error('[imgProxy] Error:', logObj);
+      if (error instanceof ValidationError) {
+        return res.status(400).json({
+          error: 'INVALID_IMAGE_URL',
+          message: error.message,
+        });
+      }
       return res.status(500).json({ 
         error: 'FAILED_TO_PROXY_IMAGE', 
         message: detail 
