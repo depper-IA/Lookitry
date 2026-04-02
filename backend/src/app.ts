@@ -16,7 +16,7 @@ import apiRouter from './routes/index';
 import { syncProductWebhook } from './controllers/enterprise.controller';
 import { getPublicPaymentSettings } from './controllers/paymentSettings.controller';
 import { getHealthStatus } from './controllers/health.controller';
-import { uploadImage, uploadSelfie, multerMemory } from './controllers/upload.controller';
+import { uploadImage, uploadSelfie, cleanupTempSelfies, multerMemory } from './controllers/upload.controller';
 import { redeemCoupon, validateCoupon } from './controllers/coupons.controller';
 import { authMiddleware } from './middleware/auth';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
@@ -78,6 +78,7 @@ app.use('/api', apiRouter);
 app.get('/api/payment-settings/public', getPublicPaymentSettings);
 app.post('/api/upload', authMiddleware, (req, res) => uploadImage(req as any, res));
 app.post('/api/upload/selfie', multerMemory.single('file'), (req, res) => uploadSelfie(req, res));
+app.delete('/api/upload/cleanup-temp', (req, res) => cleanupTempSelfies(req, res));
 app.post('/api/coupons/redeem', redeemCoupon);
 app.post('/api/coupons/validate', validateCoupon);
 

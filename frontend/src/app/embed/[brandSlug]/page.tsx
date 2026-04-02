@@ -2,6 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { TryOnWidget } from '@/components/tryon/TryOnWidget';
+import '@/app/globals.css';
 
 interface EmbedPageProps {
   params: {
@@ -12,11 +13,19 @@ interface EmbedPageProps {
 export default function EmbedPage({ params }: EmbedPageProps) {
   const searchParams = useSearchParams();
   const externalId = searchParams.get('external_id');
-  const isEmbed = searchParams.get('is_embed') !== 'false'; // Por defecto true en esta ruta
-  const productId = searchParams.get('product_id'); // ID interno como fallback
+  const isEmbed = searchParams.get('is_embed') !== 'false';
+  const productId = searchParams.get('product_id');
 
   return (
-    <div id="tryon-embed-root" className="w-full bg-transparent overflow-hidden h-max">
+    <div 
+      id="tryon-embed-root" 
+      className="w-full min-h-screen"
+      style={{ 
+        backgroundColor: 'transparent',
+        margin: 0,
+        padding: 0
+      }}
+    >
       <TryOnWidget 
         brandSlug={params.brandSlug} 
         isEmbed={isEmbed} 
