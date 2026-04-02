@@ -86,6 +86,7 @@ interface ResultDisplayProps {
   brandSlug?: string;
   brandName?: string;
   brandPlan?: string;
+  pluginView?: boolean;
 }
 
 export function ResultDisplay({
@@ -98,6 +99,7 @@ export function ResultDisplay({
   brandSlug,
   brandName,
   brandPlan,
+  pluginView = false,
 }: ResultDisplayProps) {
   const [lightboxOpen, setLightboxOpen]   = useState(false);
   const [downloading, setDownloading]     = useState(false);
@@ -192,6 +194,86 @@ export function ResultDisplay({
     const url = encodeURIComponent(shareUrl);
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'noopener');
   };
+
+  if (pluginView) {
+    return (
+      <>
+        <div className="mx-auto w-full max-w-5xl">
+          <div className="mb-4 flex flex-col items-center text-center md:mb-6">
+            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50">
+              <svg className="h-7 w-7 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-black uppercase italic tracking-tight text-gray-900 md:text-2xl">Resultado final</h2>
+            <p className="mt-1 text-xs font-medium uppercase tracking-widest text-gray-400 md:text-sm">
+              Visualizacion con <span className="font-bold text-gray-700">{productName}</span>
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_280px] md:items-start">
+            <div className="rounded-[28px] border border-gray-100 bg-white p-3 shadow-sm md:p-4">
+              <ResultImage
+                imageUrl={imageUrl}
+                productName={productName}
+                primaryColor={primaryColor}
+                onOpen={() => setLightboxOpen(true)}
+                brandPlan={brandPlan}
+              />
+            </div>
+
+            <div className="flex flex-col gap-3 rounded-[28px] border border-gray-100 bg-[#faf8f5] p-4 md:sticky md:top-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Acciones</p>
+                <p className="mt-2 text-sm text-gray-500">Aqui solo mostramos la imagen final para una vista limpia dentro del plugin.</p>
+              </div>
+
+              <button
+                onClick={handleDownload}
+                disabled={downloading}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-xs font-black uppercase tracking-widest text-white shadow-xl transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 md:text-sm"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {downloading ? '...' : (
+                  <>
+                    <svg className="h-4 w-4 md:h-5 md:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Descargar imagen
+                  </>
+                )}
+              </button>
+
+              {downloadError && (
+                <p className="text-center text-[10px] font-bold uppercase text-red-500">{downloadError}</p>
+              )}
+
+              <button
+                onClick={onReset}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white py-3 text-xs font-black uppercase tracking-widest text-gray-500 transition-all hover:bg-gray-50 active:scale-95 md:text-sm"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Probar otro
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {lightboxOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4" onClick={() => setLightboxOpen(false)}>
+            <img src={imageUrl} alt={productName} className="max-h-[90vh] max-w-full rounded-2xl object-contain" />
+            <button className="absolute right-6 top-6 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20">
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <>

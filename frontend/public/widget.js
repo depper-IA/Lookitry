@@ -66,6 +66,7 @@
     const slug = container.getAttribute('data-slug');
     const modalMode = container.getAttribute('data-modal') === 'true';
     const hideLegal = container.getAttribute('data-hide-legal') === 'true';
+    const pluginView = container.getAttribute('data-plugin-view') === 'true';
     const initialHeight = normalizeHeight(container.getAttribute('data-height'), modalMode ? 760 : 700);
     const productId = resolveProductId(container);
 
@@ -77,6 +78,9 @@
     const embedUrl = new URL(BASE_URL + '/embed/' + slug);
     if (productId) {
       embedUrl.searchParams.set('product_id', productId);
+    }
+    if (pluginView) {
+      embedUrl.searchParams.set('plugin_view', '1');
     }
     embedUrl.searchParams.set('parent_url', window.location.href);
 

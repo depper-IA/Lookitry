@@ -16,6 +16,7 @@ export interface TryOnTemplateProps {
   config: TryOnConfigResponse;
   brandSlug: string;
   isEmbed: boolean;
+  pluginView: boolean;
 
   primaryColor: string;
   secondaryColor: string;

@@ -15,6 +15,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
   const externalId = searchParams.get('external_id');
   const isEmbed = searchParams.get('is_embed') !== 'false';
   const productId = searchParams.get('product_id');
+  const pluginView = searchParams.get('plugin_view') === '1';
 
   return (
     <div 
@@ -31,6 +32,7 @@ export default function EmbedPage({ params }: EmbedPageProps) {
         isEmbed={isEmbed} 
         externalId={externalId}
         initialProductId={productId}
+        pluginView={pluginView}
       />
     </div>
   );

@@ -10,6 +10,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
     config,
     brandSlug,
     isEmbed,
+    pluginView,
     primaryColor,
     secondaryColor,
     buttonText,
@@ -85,6 +86,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
                 brandSlug={brandSlug}
                 brandName={config.brand.name}
                 brandPlan={config.brand.plan}
+                pluginView={pluginView}
               />
             )}
           </div>

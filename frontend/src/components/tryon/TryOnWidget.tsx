@@ -15,6 +15,7 @@ interface TryOnWidgetProps {
   initialProductId?: string | null;
   externalId?: string | null; // ID de plataforma externa
   forceLayout?: 'top-bar' | 'sidebar' | 'centered' | 'bare';
+  pluginView?: boolean;
 }
 
 function templateToLayout(template?: string): Layout {
@@ -32,7 +33,7 @@ function templateToLayout(template?: string): Layout {
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
-export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = null, externalId = null, forceLayout }: TryOnWidgetProps) {
+export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = null, externalId = null, forceLayout, pluginView = false }: TryOnWidgetProps) {
   const [step, setStep] = useState<Step>('upload');
   const [config, setConfig] = useState<TryOnConfigResponse | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
@@ -231,7 +232,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
   const isPro = (config?.brand?.plan || 'BASIC') === 'PRO';
   // En planes no-PRO, forzamos la experiencia principal (bare) por defecto.
   // PRO desbloquea el resto de experiencias (minimal/modern/bold).
-  const effectiveLayout = forceLayout || (isPro ? selectedLayout : 'bare');
+  const effectiveLayout = pluginView ? 'bare' : (forceLayout || (isPro ? selectedLayout : 'bare'));
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
@@ -270,6 +271,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     config,
     brandSlug,
     isEmbed,
+    pluginView,
     primaryColor,
     secondaryColor,
     buttonText,
