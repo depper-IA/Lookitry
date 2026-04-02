@@ -281,8 +281,12 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
 
       if (error) return res.status(500).json({ error: error.message });
 
-      // Actualizar contador de sync
-      await supabaseAdmin.rpc('increment_sync_count', { p_brand_id: brand_id });
+      // Actualizar contador de sync (si falla, continuar sin fallar)
+      try {
+        await supabaseAdmin.rpc('increment_sync_count', { p_brand_id: brand_id });
+      } catch (rpcError: any) {
+        console.warn('[Enterprise] RPC increment_sync_count no disponible:', rpcError.message);
+      }
 
       return res.json({ action: 'updated', product: updated });
     } else {
@@ -319,23 +323,35 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
         return res.status(500).json({ error: error.message });
       }
 
-      // Actualizar timestamp y contador en enterprise_sync_configs
-      await supabaseAdmin.rpc('increment_sync_count', { p_brand_id: brand_id });
-      await safeUpdateEnterpriseConfig(brand_id, {
-        last_sync_at: new Date().toISOString(),
-        last_sync_status: 'success',
-        updated_at: new Date().toISOString(),
-      });
+      // Actualizar timestamp y contador en enterprise_sync_configs (si falla, continuar sin fallar)
+      try {
+        await supabaseAdmin.rpc('increment_sync_count', { p_brand_id: brand_id });
+      } catch (rpcError: any) {
+        console.warn('[Enterprise] RPC increment_sync_count no disponible:', rpcError.message);
+      }
+      try {
+        await safeUpdateEnterpriseConfig(brand_id, {
+          last_sync_at: new Date().toISOString(),
+          last_sync_status: 'success',
+          updated_at: new Date().toISOString(),
+        });
+      } catch (configError: any) {
+        console.warn('[Enterprise] Error actualizando config:', configError.message);
+      }
 
       return res.status(201).json({ action: 'created', product: created });
     }
   } catch (err: any) {
-    // Registrar el error en la config de sync
-    await safeUpdateEnterpriseConfig(brand_id, {
-      last_sync_status: 'failed',
-      last_sync_message: err.message,
-      updated_at: new Date().toISOString(),
-    });
+    // Registrar el error en la config de sync (si falla, continuar sin fallar)
+    try {
+      await safeUpdateEnterpriseConfig(brand_id, {
+        last_sync_status: 'failed',
+        last_sync_message: err.message,
+        updated_at: new Date().toISOString(),
+      });
+    } catch (configError: any) {
+      console.warn('[Enterprise] Error actualizando config de error:', configError.message);
+    }
 
     return res.status(500).json({ error: err.message });
   }
@@ -380,6 +396,7 @@ export const updateSyncStatus = async (req: Request, res: Response) => {
 
     return res.json({ message: 'Estado de sync actualizado', config: data });
   } catch (err: any) {
+    console.error('[Enterprise] Error en updateSyncStatus:', err.message);
     return res.status(500).json({ error: err.message });
   }
 };
