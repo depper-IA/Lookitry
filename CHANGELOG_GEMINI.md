@@ -1,5 +1,24 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-01] - Reordenar funnel checkout: Datos → Plan → Pago
+
+### Cambios Realizados
+- **Flujo reordenado**: El checkout ahora comienza con "Tus Datos" (email/nombre), luego "Plan", luego "Pago"
+- **Captura de lead temprana**: Email se recoge en paso 1 antes de mostrar precios, útil para remarketing si el usuario abandona
+- **StepProgress.tsx**: Labels dinámicos via prop `stepLabels` (backward compatible, default sin cambios)
+- **Componentes hijos**: `stepNumber` prop dinámico en UserDataStep, PlanSelectionStep, PaymentMethodStep
+- **handleNextStep**: Validación ahora ocurre en paso 1 (Datos) en lugar de paso 2
+
+### Archivos Modificados
+- `frontend/src/app/checkout/page.tsx` (reordenar render + handleNextStep + stepLabels)
+- `frontend/src/components/payments/StepProgress.tsx` (prop stepLabels opcional)
+- `frontend/src/components/checkout/UserDataStep.tsx` (prop stepNumber + continuación dinámica)
+- `frontend/src/components/checkout/PlanSelectionStep.tsx` (prop stepNumber)
+- `frontend/src/components/checkout/PaymentMethodStep.tsx` (prop stepNumber)
+- `CHANGELOG_GEMINI.md`
+
+---
+
 ## [2026-04-01] - FIX CRÍTICO: Seguridad del checkout — email de sesión vs email de checkout
 
 ### Problema
