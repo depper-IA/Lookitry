@@ -1,22 +1,20 @@
-# Tech Stack - Lookitry
+# Tech Stack — Lookitry
 
-## Resumen de Tecnologías
+Este documento es la **fuente de verdad técnica** y arquitectura del sistema. Debe actualizarse obligatoriamente ante cambios estructurales sin eliminar información previa funcional.
 
 ---
 
-## 1. Stack Principal
+## 1. Stack Técnico Principal
 
-| Capa | Tecnología | Versión |
-|------|------------|---------|
-| Frontend | Next.js | 14.0.4 |
-| Frontend | React | 18.2.0 |
-| Frontend | TypeScript | 5.3.3 |
-| Frontend | Tailwind CSS | 3.4.0 |
-| Backend | Node.js | — |
-| Backend | Express | 4.18.2 |
-| Backend | TypeScript | 5.3.3 |
-| Base de datos | PostgreSQL (Supabase) | — |
-| Autenticación | JWT propio | — |
+| Capa | Tecnología | Versión | Uso |
+|------|------------|---------|-----|
+| **Frontend** | Next.js (App Router) | 14.0.4 | UI y renderizado |
+| **Backend** | Node.js + Express | 4.18.2 | API de Negocio |
+| **Base de datos** | Supabase (PostgreSQL) | — | Persistencia de datos |
+| **Autenticación** | JWT propio | — | Seguridad de sesión |
+| **IA / Try-On** | n8n + OpenRouter | — | Orquestación de IA |
+| **Styling** | Tailwind CSS | 3.4.0 | Diseño y UI |
+| **Almacenamiento** | MinIO (S3 compatible) | — | Assets e imágenes generadas |
 
 ---
 
@@ -40,14 +38,6 @@
 | `@fingerprintjs/fingerprintjs` | 4.6.2 | Fingerprinting |
 | `country-state-city` | 3.2.1 | Datos de países/ciudades |
 
-#### DevDependencies
-- `eslint`, `eslint-config-next`
-- `prettier`
-- `vitest`, `@testing-library/react`, `jsdom`
-- `fast-check`
-- `postcss`, `autoprefixer`
-- `rimraf`, `cross-env`
-
 ### 2.2 Backend
 
 | Librería | Versión | Uso |
@@ -64,206 +54,131 @@
 | `node-cron` | 4.2.1 | Cron jobs |
 | `ioredis` | 5.10.1 | Redis client |
 | `sharp` | 0.34.5 | Procesamiento imágenes |
-| `uuid` | 13.0.0 | UUIDs |
 | `axios` | 1.6.2 | HTTP client |
 | `dotenv` | 16.3.1 | Variables de entorno |
-| `cookie-parser` | 1.4.7 | Cookies |
-
-#### DevDependencies
-- `typescript`, `ts-node-dev`
-- `jest`, `ts-jest`, `fast-check`
-- `eslint`, `@typescript-eslint/*`
-- `prettier`, `rimraf`, `cross-env`
-- `@types/*` (express, node, jest, etc.)
 
 ---
 
-## 3. Infraestructura
+## 3. Endpoints y URLs del Sistema
 
-### 3.1 Servicios Externos
-
-| Servicio | URL | Propósito |
-|----------|-----|-----------|
-| Supabase | `vkdooutklowctuudjnkl.supabase.co` | PostgreSQL + Storage |
-| n8n | `n8n.wilkiedevs.com` | Workflows de IA |
-| MinIO | `minio.wilkiedevs.com` | Almacenamiento de imágenes |
-| Wompi | — | Pasarela de pagos (COP) |
-| PayPal | — | Pasarela de pagos (USD) |
-| Cloudflare Turnstile | — | Antispam |
-| SMTP Hostinger | `smtp.hostinger.com:465` | Email transaccional |
-
-### 3.2 Entornos de Producción
-
-| Servicio | URL |
-|----------|-----|
-| Frontend | `https://lookitry.com` |
-| Backend API | `https://api.lookitry.com` |
-| n8n | `https://n8n.wilkiedevs.com` |
-| MinIO | `https://minio.wilkiedevs.com` |
-
-### 3.3 VPS
-
-| Recurso | Valor |
-|---------|-------|
-| IP | `31.220.18.39` |
-| Usuario | `root` |
-| Docker project | `virtual-tryon` / `LOOKITRY` |
-| Hostinger VPS ID | `1004711` |
+| Servicio | URL Producción | URL Local |
+|----------|----------------|-----------|
+| **Frontend** | `https://lookitry.com` | `http://localhost:3000` |
+| **API Backend** | `https://api.lookitry.com` | `http://localhost:3001` |
+| **n8n Panel** | `https://n8n.wilkiedevs.com` | — |
+| **MinIO Panel** | `https://minio.wilkiedevs.com` | — |
+| **Supabase Project** | `https://vkdooutklowctuudjnkl.supabase.co` | — |
 
 ---
 
-## 4. Base de Datos (Supabase)
+## 4. Infraestructura y Despliegue
 
-### 4.1 Tablas Principales
+### 4.1 Servidor VPS (Hostinger)
+- **IP:** `31.220.18.39`
+- **Usuario:** `root`
+- **ID VPS:** `1004711`
+- **SO:** Ubuntu con Docker Engine
 
-| Tabla | Descripción | Registros (~) |
-|-------|-------------|---------------|
-| `brands` | Clientes/marcas del SaaS | 54 |
-| `products` | Catálogo de productos | 174 |
-| `generations` | Historial de try-ons | 14 |
-| `generation_feedback` | Feedback de calidad | 0 |
-| `subscription_payments` | Historial de pagos | 1+ |
-| `pricing_config` | Config de precios | 6 |
-| `payment_settings` | Config pasarelas | 1 |
-| `coupons` | Cupones de descuento | 0 |
-| `promotions` | Promociones activas | 0 |
-| `admins` | Administradores | 2 |
-| `admin_notifications` | Notificaciones sistema | 16 |
-| `trial_campaigns` | Campañas de trial | 1 |
-| `trial_registrations` | Registros de trial | 3 |
-| `pending_registrations` | Registros de pago pendiente | — |
-| `admin_notification_preferences` | Preferencias notificaciones | 16 |
-| `blogs` | Artículos del blog | — |
-
-### 4.2 RLS (Row Level Security)
-- **Regla:** Backend SIEMPRE usa `supabaseAdmin` (service role) — bypasea RLS completamente
-- Frontend usa `supabase` anon para tablas públicas (`pricing_config`, `promotions`)
+### 4.2 Contenedores Docker
+| Contenedor | Imagen | Propósito |
+|------------|--------|-----------|
+| `lookitry-frontend` | `nextjs:custom` | Aplicación Next.js |
+| `lookitry-backend` | `node:18-alpine` | API Express |
+| `root-n8n-1` | `n8nio/n8n` | Orquestador de flujos |
+| `minio` | `quay.io/minio/minio` | Almacenamiento local S3 |
 
 ---
 
-## 5. n8n - Workflows
+## 5. Base de Datos — Esquema Detallado
 
-| Workflow | ID | Descripción |
-|----------|-----|-------------|
-| Try-On principal | `wPLypk7KhBcFLicX` | Generación de prueba virtual |
-| Error Handler | `PNri7NdZYkZhpPnm` | Manejo de errores |
-| Feedback embedding | `47RcLopJB6M82b0k` | Embeddings de feedback |
-| Descriptor IA | `ZjVTV3QxoPEi60GX` | Descripción de productos |
+### 5.1 `brands` (Clientes SaaS)
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | uuid PK | Identificador único de la marca |
+| `email` | text | Email de login (Unique) |
+| `slug` | text | Para URL pública: `/pruebalo/[slug]` |
+| `plan` | enum | `BASIC`, `PRO` |
+| `subscription_status` | enum | `active`, `expired`, `trial` |
+| `subscription_end_date` | timestamptz | Fecha de expiración de pago |
 
-Tag: `SaaS`  
-Bearer token: configurado en variables de entorno
-
----
-
-## 6. Variables de Entorno
-
-### 6.1 Backend (`backend/.env`)
-
-```env
-PORT=3001
-SUPABASE_URL=https://vkdooutklowctuudjnkl.supabase.co
-SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_KEY=eyJ...
-JWT_SECRET=...
-N8N_WEBHOOK_URL=https://n8n.wilkiedevs.com/webhook/tryon
-N8N_API_KEY=eyJ...
-N8N_BEARER_TOKEN=***
-WOMPI_PUBLIC_KEY=pub_test_...
-WOMPI_PRIVATE_KEY=prv_test_...
-WOMPI_EVENTS_SECRET=test_events_...
-WOMPI_INTEGRITY_SECRET=test_integrity_...
-WOMPI_ENABLED=true
-TURNSTILE_SECRET_KEY=0x4AAAA...
-TURNSTILE_ENABLED=true
-SMTP_HOST=smtp.hostinger.com
-SMTP_PORT=465
-SMTP_USER=info@lookitry.com
-SMTP_PASS=***
-MINIO_ENDPOINT=https://minio.wilkiedevs.com
-MINIO_BUCKET=images
-MINIO_ACCESS_KEY=Wilkiedevs
-MINIO_SECRET_KEY=***
-FRONTEND_URL=https://lookitry.com
-```
-
-### 6.2 Frontend (`frontend/.env.local`)
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_SUPABASE_URL=https://vkdooutklowctuudjnkl.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAAAAACsmy7e_yL9iyAXM
-```
+### 5.2 `products` (Catálogo)
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | uuid PK | |
+| `brand_id` | uuid FK | Relación con `brands` |
+| `image_url` | text | Imagen original del producto |
+| `is_active` | bool | Visibilidad en el widget |
 
 ---
 
-## 7. Estructura del Proyecto
+## 6. Arquitectura n8n — El Motor de IA
+
+### 6.1 Flujos y Webhooks
+| Función | Webhook Path | ID Workflow |
+|---------|--------------|-------------|
+| **Try-On Principal** | `/webhook/tryon` | `wPLypk7KhBcFLicX` |
+| **Descriptor IA** | `/webhook/descriptor` | `ZjVTV3QxoPEi60GX` |
+| **Error Handling** | (Automático) | `PNri7NdZYkZhpPnm` |
+
+---
+
+## 7. Arquitectura de Flujos de Negocio
+
+### 7.1 Flujo de Registro y Trial
+- Registro -> Turnstile -> Creación en DB -> Email Verificación.
+- `TRIAL` automático configurable en `trial_campaigns`.
+
+### 7.2 Flujo de Pago y Prorrateo (Wompi)
+- **Upgrade (BASIC → PRO):** Se aplica crédito proporcional del tiempo no usado.
+- **Webhook:** Valida firma e inicia `renewSubscription`.
+
+### 7.3 Flujo de Generación (Try-On)
+1. Usuario sube selfie -> Backend -> Webhook n8n.
+2. Frontend hace **Polling** hasta que el estado sea `SUCCESS`.
+
+---
+
+## 8. Estructura del Proyecto
 
 ```
 LOOKITRY/
 ├── frontend/                    # Next.js 14 (App Router)
-│   ├── src/
-│   │   ├── app/                # Páginas y API routes
-│   │   ├── components/         # Componentes reutilizables
-│   │   │   └── checkout/       # Componentes granulares del funnel de pago
-│   │   ├── services/           # Clientes HTTP
-│   │   ├── utils/              # Helpers
-│   │   └── types/              # TypeScript types
-│   ├── public/                 # Assets estáticos
-│   └── package.json
-│
+│   ├── src/app/                # Páginas y API routes
+│   ├── src/components/         # Componentes reutilizables
+│   └── src/services/           # Clientes HTTP
 ├── backend/                     # Express API
-│   ├── src/
-│   │   ├── controllers/        # Controladores
-│   │   │   └── admin/          # Sub-controladores de panel de administración
-│   │   ├── routes/             # Rutas
-│   │   ├── middleware/         # Auth, admin, rate limiting
-│   │   ├── config/             # Supabase config
-│   │   ├── services/           # Servicios externos
-│   │   ├── jobs/               # Cron jobs
-│   │   ├── scripts/            # Scripts de utilidad
-│   │   └── types/              # TypeScript types
-│   └── package.json
-│
-├── docs/                       # Documentación
-├── scripts/                    # Deploy y utilidades
-└── REGLAS_IMPORTANTES.md       # Reglas del proyecto
+│   ├── src/controllers/        # Lógica de negocio
+│   ├── src/routes/             # Definición de rutas
+│   └── src/services/           # Integraciones (n8n, MinIO)
+├── scripts/                    # Deploy (_deploy_now.py)
+└── REGLAS_IMPORTANTES.md       # Reglas operativas
 ```
 
 ---
 
-## 8. Scripts de Desarrollo
+## 9. Scripts de Desarrollo
 
 ### Frontend
-```bash
-npm run dev          # Desarrollo
-npm run build       # Build
-npm run lint        # Linting
-npm run format      # Format
-```
+- `npm run dev`: Desarrollo local.
+- `npm run build`: Generar build de producción.
 
 ### Backend
-```bash
-npm run dev         # Desarrollo con hot-reload
-npm run build       # Compilar
-npm run start       # Ejecutar
-npm run test        # Tests
-npm run lint        # Linting
-```
+- `npm run dev`: Hot-reload con ts-node-dev.
+- `python scripts/_deploy_now.py`: Deploy al VPS.
 
-### Deploy
-```bash
-python scripts/_deploy_now.py              # Backend + Frontend
-python scripts/_deploy_now.py --backend     # Solo backend
-python scripts/_deploy_now.py --frontend    # Solo frontend
-python scripts/_deploy_now.py --restart     # Solo restart (~5s)
-```
+---
+
+## 10. Variables de Entorno Críticas
+
+| Variable | Descripción |
+|----------|-------------|
+| `SUPABASE_SERVICE_KEY` | Acceso administrativo DB. |
+| `N8N_BEARER_TOKEN` | Token para webhooks de n8n. |
+| `MINIO_ENDPOINT` | URL del almacenamiento local. |
 
 ---
 
 ##不走
 
-Este documento es el inventario técnico del proyecto. Actualizar cuando se agreguen o eliminen dependencias.
-
-**Última actualización:** Abril 2026
+**Última actualización:** Abril 2026.
+Toda modificación en los flujos de n8n debe ser documentada inmediatamente aquí.

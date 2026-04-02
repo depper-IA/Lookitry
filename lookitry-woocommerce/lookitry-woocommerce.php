@@ -72,5 +72,14 @@ function lookitry_uninstall_cleanup() {
 
 function lookitry_init()
 {
-// Hooks and filters
+    // Register Admin Menu
+    if (is_admin()) {
+        add_action('admin_menu', 'lookitry_add_admin_menu');
+        add_action('wp_ajax_lookitry_get_catalog', 'lookitry_ajax_get_catalog');
+    }
+
+    // Register Frontend Hooks
+    add_action('wp_enqueue_scripts', 'lookitry_enqueue_scripts');
+    add_action('woocommerce_after_add_to_cart_button', 'lookitry_inject_button');
+    add_action('wp_footer', 'lookitry_render_modal');
 }
