@@ -253,6 +253,15 @@
             $modalBody.append(container);
 
             window.LookitryWidget.init(container);
+
+            window.setTimeout(function() {
+                const innerIframe = container.querySelector('iframe');
+                if (innerIframe) {
+                    innerIframe.addEventListener('load', function() {
+                        $overlay.find('.lookitry-loading-overlay').remove();
+                    }, { once: true });
+                }
+            }, 50);
         }
 
         function renderIframeFallback(embedUrl) {
@@ -482,10 +491,10 @@
                                 $overlay.css('display', 'flex');
 
                                 window.setTimeout(function() {
-                                    if (!$modalBody.find('iframe').length) {
+                                    if (!$modalBody.find('iframe').length && !$modalBody.find('[data-lookitry-widget="true"] iframe').length) {
                                         renderIframeFallback(response.embedUrl);
                                     }
-                                }, 900);
+                                }, 1200);
                             })
                             .catch(function() {
                                 try {
