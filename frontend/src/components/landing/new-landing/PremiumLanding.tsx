@@ -11,9 +11,9 @@ import LandingPricing from './LandingPricing';
 import LandingPayments from './LandingPayments';
 import LandingFaq from './LandingFaq';
 import LandingFooter from './LandingFooter';
-import { PromoBanner } from '@/components/landing/PromoBanner';
-import { PromoModal } from '@/components/landing/PromoModal';
-import { ReviewsSlider } from '@/components/landing/ReviewsSlider';
+import { PromoBanner } from './PromoBanner';
+import { PromoModal } from './PromoModal';
+import { ReviewsSlider } from './ReviewsSlider';
 import ActiveCouponsBanner from './ActiveCouponsBanner';
 
 import { PricingConfig } from '@/lib/pricing';
