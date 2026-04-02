@@ -252,7 +252,6 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'brand_id, name e image_url son requeridos' });
     }
 
-    // Rest of the code...
     // Verificar si el producto ya existe (deduplicar por external_id o nombre+marca)
     let existingProduct = null;
 
