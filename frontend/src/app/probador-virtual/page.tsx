@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic';
 
 const ProbadorVirtualContent = dynamic(
-  () => import('@/components/landing/ProbadorVirtualContent'),
+  () => import('@/components/landing/new-landing/ProbadorVirtualContent'),
   { ssr: false }
 );
 
