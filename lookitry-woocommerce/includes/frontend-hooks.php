@@ -32,7 +32,7 @@ function lookitry_get_session_token( $api_key, $store_domain ) {
     $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
     if ( ! empty( $body['valid'] ) && ! empty( $body['token'] ) ) {
-        set_transient( $transient_key, $body['token'], 3000 );
+        set_transient( $transient_key, $body['token'], 1800 );
         return $body['token'];
     }
 

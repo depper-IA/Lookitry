@@ -450,7 +450,19 @@ function lookitry_settings_page() {
         // Auto-validate on load
         if (currentKey) {
             validateConnection(true);
-            loadSyncedList(currentKey);
+        }
+
+        // Load synced list after validation completes (sequential to avoid race condition)
+        function loadSyncedListAfterValidation(key) {
+            if ( $('#status-connected').is(':visible') ) {
+                loadSyncedList(key);
+            } else {
+                setTimeout(function() { loadSyncedListAfterValidation(key); }, 500);
+            }
+        }
+        
+        if (currentKey && $('#status-connected').length) {
+            setTimeout(function() { loadSyncedListAfterValidation(currentKey); }, 1000);
         }
 
         function getProxiedUrl(url) {
@@ -585,7 +597,7 @@ function lookitry_ajax_get_catalog() {
 
     $products = wc_get_products( array(
         'status' => 'publish',
-        'limit'  => 60, 
+        'limit'  => 500, 
     ) );
 
     $payload = array();
