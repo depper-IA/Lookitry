@@ -34,6 +34,7 @@ function templateToLayout(template?: string): Layout {
 
 // ── Componente principal ──────────────────────────────────────────────────────
 export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = null, externalId = null, forceLayout, pluginView = false }: TryOnWidgetProps) {
+  const hasLockedPluginProduct = pluginView && !!(initialProductId || externalId);
   const [step, setStep] = useState<Step>('upload');
   const [config, setConfig] = useState<TryOnConfigResponse | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
@@ -128,12 +129,13 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
       return null;
     });
 
-    setSelfieFile(null); setSelectedProduct(null);
+    setSelfieFile(null);
+    setSelectedProduct(prev => (hasLockedPluginProduct ? prev : null));
     setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false);
     setNotice(null);
     setGeneratedProducts(new Map());
     setStep('upload');
-  }, [brandSlug]);
+  }, [brandSlug, hasLockedPluginProduct]);
 
   const handleSelfieUpload = (file: File, preview: string) => {
     setSelfiePreview(prev => {

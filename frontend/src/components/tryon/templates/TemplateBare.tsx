@@ -52,13 +52,32 @@ export function TemplateBare(props: TryOnTemplateProps) {
             {step === 'select' && (
               <div className="space-y-3 md:space-y-4">
                 <SelfieThumb preview={selfiePreview} onReset={onReset} />
-                <FriendlyProductSelector
-                  products={config.products}
-                  selected={selectedProduct}
-                  onSelect={onProductSelect}
-                  primaryColor={primaryColor}
-                  generatedProducts={generatedProducts}
-                />
+                {pluginView && selectedProduct ? (
+                  <div className="rounded-[24px] border border-gray-100 bg-white p-4 shadow-sm">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Producto fijado</p>
+                    <div className="mt-3 flex items-center gap-3">
+                      <img
+                        src={selectedProduct.imageUrl}
+                        alt={selectedProduct.name}
+                        className="h-16 w-16 rounded-2xl border border-gray-100 object-cover"
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black uppercase italic text-gray-900">{selectedProduct.name}</p>
+                        <p className="mt-1 text-xs text-gray-500">
+                          Este producto ya fue seleccionado desde la pagina del producto en WooCommerce.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <FriendlyProductSelector
+                    products={config.products}
+                    selected={selectedProduct}
+                    onSelect={onProductSelect}
+                    primaryColor={primaryColor}
+                    generatedProducts={generatedProducts}
+                  />
+                )}
                 {selectedProduct && (
                   <div className="sticky bottom-4 pt-2">
                     <button
