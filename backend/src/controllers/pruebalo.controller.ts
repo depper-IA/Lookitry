@@ -678,7 +678,7 @@ export class PruebaloController {
       });
     }
 
-    const syncedIds = await productsService.getAllSyncedExternalIds(brand.id);
+    const syncedIds = await productsService.getActiveSyncedExternalIds(brand.id);
 
     return res.status(200).json({ success: true, syncedIds });
   });
@@ -721,6 +721,47 @@ export class PruebaloController {
     return res.status(200).json({
       success: true,
       message: 'Sincronización completada',
+      result
+    });
+  });
+
+  unsyncWooCommerceProducts = asyncHandler(async (req: Request, res: Response) => {
+    const apiKey = req.headers['x-api-key'] as string;
+    const externalIds = Array.isArray(req.body?.external_ids) ? req.body.external_ids : [];
+
+    if (!apiKey) {
+      throw new ValidationError('Clave de API requerida');
+    }
+
+    if (externalIds.length === 0) {
+      throw new ValidationError('Debes indicar al menos un producto para desincronizar');
+    }
+
+    const brand = await brandsService.getBrandByApiKey(apiKey);
+    if (!brand) {
+      throw new ValidationError('Clave de API invÃ¡lida');
+    }
+    this.assertPluginOperational(brand);
+
+    if (!isAllowedStoreHost(brand, req)) {
+      throw new ValidationError(
+        `Dominio no autorizado para esta API Key. Esperado: ${getExpectedStoreHost(brand)}. Recibido: ${getIncomingStoreHost(req)}`
+      );
+    }
+
+    await this.markPluginValidated(brand, getIncomingStoreHost(req));
+
+    const result = await productsService.setProductsActiveByExternalIds(
+      brand.id,
+      externalIds.map((id: any) => String(id)),
+      false
+    );
+
+    invalidateBrandConfigCache(brand.slug);
+
+    return res.status(200).json({
+      success: true,
+      message: result.updated > 0 ? 'Producto(s) desincronizado(s)' : 'No hubo productos para desincronizar',
       result
     });
   });

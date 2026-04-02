@@ -345,6 +345,61 @@ export class ProductsService {
   }
 
   /**
+   * Obtener los IDs externos sincronizados y activos de una marca.
+   */
+  async getActiveSyncedExternalIds(brandId: string): Promise<string[]> {
+    const { data, error } = await supabaseAdmin
+      .from('products')
+      .select('external_id')
+      .eq('brand_id', brandId)
+      .eq('is_active', true)
+      .not('external_id', 'is', null);
+
+    if (error) {
+      throw new Error('Error al obtener IDs sincronizados activos: ' + error.message);
+    }
+
+    return (data || []).map(p => String(p.external_id));
+  }
+
+  /**
+   * Activar o desactivar productos sincronizados por external_id.
+   */
+  async setProductsActiveByExternalIds(
+    brandId: string,
+    externalIds: string[],
+    active: boolean
+  ): Promise<{ updated: number }> {
+    const normalizedIds = Array.from(
+      new Set(
+        (externalIds || [])
+          .map((id) => String(id || '').trim())
+          .filter(Boolean)
+      )
+    );
+
+    if (normalizedIds.length === 0) {
+      return { updated: 0 };
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('products')
+      .update({
+        is_active: active,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('brand_id', brandId)
+      .in('external_id', normalizedIds)
+      .select('id');
+
+    if (error) {
+      throw new Error('Error actualizando productos sincronizados: ' + error.message);
+    }
+
+    return { updated: (data || []).length };
+  }
+
+  /**
    * Sincronización masiva de productos (WooCommerce -> Lookitry)
    */
   async bulkSyncProducts(brandId: string, syncData: any[]): Promise<{ updated: number; created: number; skipped: number }> {

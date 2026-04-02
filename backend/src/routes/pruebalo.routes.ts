@@ -27,6 +27,9 @@ router.get('/synced-products', publicRateLimiter, pruebaloController.getSyncedPr
 // POST /api/pruebalo/sync-woocommerce - Sincronizar productos desde el plugin
 router.post('/sync-woocommerce', publicRateLimiter, pruebaloController.syncWooCommerceProducts);
 
+// POST /api/pruebalo/unsync-woocommerce - Desincronizar productos desde el plugin
+router.post('/unsync-woocommerce', publicRateLimiter, pruebaloController.unsyncWooCommerceProducts);
+
 // POST /api/pruebalo/plugin-telemetry - Registrar telemetria tecnica del plugin
 router.post('/plugin-telemetry', publicRateLimiter, pruebaloController.recordPluginTelemetry);
 

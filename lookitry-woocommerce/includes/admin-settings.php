@@ -777,6 +777,7 @@ function lookitry_settings_page() {
                     if (res.success) {
                         syncedIds = res.syncedIds || [];
                         updateTableStatus();
+                        decorateSyncedRows();
                     }
                 }
             });
@@ -791,6 +792,23 @@ function lookitry_settings_page() {
                 } else {
                     $statusCell.html('<span style="color: #94a3b8; font-style: italic;">Pendiente</span>');
                 }
+            });
+        }
+
+        function decorateSyncedRows() {
+            catalogData.forEach(function(p, i) {
+                if (syncedIds.indexOf(p.external_id) === -1) return;
+
+                var $statusCell = $('#status-' + i);
+                if (!$statusCell.length || $statusCell.find('.lookitry-unsync-product').length) return;
+
+                var syncedLabel = $statusCell.html();
+                $statusCell.html(
+                    '<div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">' +
+                    '<span>' + syncedLabel + '</span>' +
+                    '<button type="button" class="button-link lookitry-unsync-product" data-external-id="' + p.external_id + '" data-product-name="' + $('<div>').text(p.name).html() + '" style="color:#b91c1c; font-weight:700; text-decoration:none; padding:0;">Desincronizar</button>' +
+                    '</div>'
+                );
             });
         }
 
@@ -860,6 +878,7 @@ function lookitry_settings_page() {
                         });
                         $('#lookitry-product-list').html(html);
                         updateTableStatus();
+                        decorateSyncedRows();
                         $tableWrap.fadeIn();
                         showNotice('Catálogo cargado: ' + catalogData.length + ' productos.', 'info');
                     }
@@ -923,6 +942,54 @@ function lookitry_settings_page() {
                 },
                 complete: function() {
                     $btn.prop('disabled', false).text('Sincronizar a Lookitry');
+                }
+            });
+        });
+
+        $(document).on('click', '.lookitry-unsync-product', function() {
+            var apiKey = $('#lookitry_api_key').val();
+            var externalId = String($(this).data('external-id') || '').trim();
+            var productName = String($(this).data('product-name') || 'este producto');
+            var $button = $(this);
+
+            if (!apiKey || !externalId) {
+                showNotice('No se pudo identificar el producto a desincronizar.', 'error');
+                return;
+            }
+
+            if (!window.confirm('Â¿Desincronizar "' + productName + '" de Lookitry? El producto dejarÃ¡ de estar disponible en el probador, pero no se borrarÃ¡ el historial.')) {
+                return;
+            }
+
+            $button.prop('disabled', true).text('Desincronizando...');
+
+            requestWithTelemetry({
+                url: 'https://api.lookitry.com/api/pruebalo/unsync-woocommerce',
+                method: 'POST',
+                endpointLabel: '/api/pruebalo/unsync-woocommerce',
+                telemetryApiKey: function() { return apiKey; },
+                maxRetries: 1,
+                headers: { 'x-api-key': apiKey },
+                contentType: 'application/json',
+                data: JSON.stringify({ external_ids: [externalId] }),
+                telemetryMetadata: { external_id: externalId, action: 'unsync_single' },
+                success: function(res) {
+                    if (res.success) {
+                        syncedIds = syncedIds.filter(function(id) { return id !== externalId; });
+                        updateTableStatus();
+                        decorateSyncedRows();
+                        validateConnection(true);
+                        showNotice('Producto desincronizado correctamente.', 'success');
+                    } else {
+                        showNotice('Error: ' + (res.message || 'No se pudo desincronizar.'), 'error');
+                    }
+                },
+                error: function(xhr) {
+                    var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Fallo de conexiÃ³n.';
+                    showNotice(msg, 'error');
+                },
+                complete: function() {
+                    $button.prop('disabled', false).text('Desincronizar');
                 }
             });
         });
