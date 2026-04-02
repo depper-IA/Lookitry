@@ -47,6 +47,12 @@ export class PruebaloController {
     if (socialLinks.app_uninstalled_at || socialLinks.integration_paused_at) {
       throw new ValidationError('La integración está pausada o desinstalada para esta tienda');
     }
+    
+    // Plugin solo funciona con planes PRO o ENTERPRISE
+    const allowedPlans = ['PRO', 'ENTERPRISE'];
+    if (!allowedPlans.includes(brand.plan)) {
+      throw new ValidationError('El plugin de WooCommerce requiere un plan PRO o ENTERPRISE. Tu plan actual es ' + brand.plan + '.');
+    }
   }
 
   /**
