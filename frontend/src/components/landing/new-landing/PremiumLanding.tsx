@@ -36,10 +36,8 @@ export default function PremiumLanding({
 }: PremiumLandingProps & { realReviewsCount?: number; usingMockReviews?: boolean }) {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-[#0a0a0a] dark:text-white selection:bg-[#FF5C3A]/30 selection:text-white font-dm-sans overflow-x-hidden">
-      <div className="sticky top-0 z-[80]">
-        <PromoBanner />
-        <LandingNav />
-      </div>
+      <PromoBanner />
+      <LandingNav />
       <main>
         <LandingHero />
         <LandingStats />
