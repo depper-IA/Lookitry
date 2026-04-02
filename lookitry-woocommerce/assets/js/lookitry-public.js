@@ -109,9 +109,35 @@
             $overlay.css('display', 'flex').html(
                 '<div class="lookitry-loading-overlay">' +
                 '<div class="lookitry-spinner"></div>' +
-                '<p>Cargando probador virtual...</p>' +
+                '<p>Inicializando probador virtual...</p>' +
                 '</div>'
             );
+
+            function showErrorOverlay(title, message, showUpgradeLink) {
+                $overlay.find('.lookitry-loading-overlay').remove();
+                $overlay.find('.lookitry-error-overlay').remove();
+                
+                var upgradeLinkHtml = '';
+                if (showUpgradeLink) {
+                    upgradeLinkHtml = '<a href="https://lookitry.com/dashboard/subscription" target="_blank" class="lookitry-upgrade-btn">Ver planes disponibles</a>';
+                }
+                
+                $overlay.append(
+                    '<div class="lookitry-error-overlay">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                    '<circle cx="12" cy="12" r="10"></circle>' +
+                    '<line x1="12" y1="8" x2="12" y2="12"></line>' +
+                    '<line x1="12" y1="16" x2="12.01" y2="16"></line>' +
+                    '</svg>' +
+                    '<h3>' + title + '</h3>' +
+                    '<p>' + message + '</p>' +
+                    upgradeLinkHtml +
+                    '</div>'
+                );
+                $overlay.css('display', 'flex');
+                $clickedBtn.find('span').text(originalText);
+                $clickedBtn.prop('disabled', false);
+            }
 
             requestWithTelemetry({
                 url: lookitry_vars.api_url + '/embed/wordpress/init',
@@ -134,17 +160,30 @@
                         $iframe.attr('src', response.embedUrl);
                         $overlay.css('display', 'flex');
                     } else {
-                        alert('Error al inicializar el probador: ' + (response.message || 'Desconocido'));
+                        showErrorOverlay('Error al inicializar', response.message || 'Intenta de nuevo más tarde.');
                     }
                 },
                 error: function(xhr) {
-                    let msg = 'Error de conexion con Lookitry.';
-                    if (xhr.status === 404) {
-                        msg = 'Producto no encontrado en Lookitry. Asegurate de que el ID Externo coincida.';
+                    let title = 'Error de conexión';
+                    let message = 'No se pudo conectar con Lookitry.';
+                    let showUpgradeLink = false;
+                    
+                    if (xhr.status === 403 && (xhr.responseJSON?.message?.includes('PRO') || xhr.responseJSON?.message?.includes('plan'))) {
+                        title = 'Plan no compatible';
+                        message = 'El probador virtual requiere plan PRO o ENTERPRISE.';
+                        showUpgradeLink = true;
+                    } else if (xhr.status === 404) {
+                        title = 'Producto no encontrado';
+                        message = 'Este producto no está sincronizado con Lookitry.';
                     } else if (xhr.status === 401 || xhr.status === 403) {
-                        msg = 'API Key invalida, dominio no autorizado o plan vencido.';
+                        title = 'Acceso denegado';
+                        message = 'Tu API Key es inválida o tu dominio no está autorizado.';
+                    } else if (xhr.status === 0) {
+                        title = 'Sin conexión';
+                        message = 'Verifica tu conexión a internet e intenta de nuevo.';
                     }
-                    alert(msg);
+                    
+                    showErrorOverlay(title, message, showUpgradeLink);
                 },
                 complete: function() {
                     $clickedBtn.find('span').text(originalText);
