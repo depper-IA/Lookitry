@@ -484,7 +484,7 @@ function lookitry_settings_page() {
                         </svg>
                         <div class="lookitry-plan-upgrade-content">
                             <h4>Plugin exclusivo PRO</h4>
-                            <p>El probador virtual requiere plan <strong>PRO</strong> o <strong>ENTERPRISE</strong>. <a href="https://lookitry.com/dashboard/subscription" target="_blank">Ver planes</a></p>
+                            <p>El probador virtual requiere plan <strong>PRO</strong> o <strong>ENTERPRISE</strong>. <a href="<?php echo esc_url( lookitry_get_upgrade_url() ); ?>" target="_blank">Ver planes</a></p>
                         </div>
                     </div>
                 </div>
@@ -678,6 +678,18 @@ function lookitry_settings_page() {
             run();
         }
 
+        function persistApiKey(key) {
+            return $.ajax({
+                url: ajaxurl,
+                method: 'POST',
+                data: {
+                    action: 'lookitry_save_api_key',
+                    nonce: '<?php echo wp_create_nonce( "lookitry_settings_nonce" ); ?>',
+                    api_key: key
+                }
+            });
+        }
+
         // Tabs Logic
         $('.lookitry-tab-btn').on('click', function() {
             var tab = $(this).data('tab');
@@ -723,8 +735,13 @@ function lookitry_settings_page() {
                         var pct = Math.min(100, (usage.current / usage.max) * 100);
                         $('#usage-fill').css('width', pct + '%');
 
+                        currentKey = key;
+                        persistApiKey(key).fail(function() {
+                            showNotice('La conexiÃ³n fue vÃ¡lida, pero no se pudo guardar la API Key en WordPress.', 'error');
+                        });
+
                         if (!silent) {
-                            showNotice('¡Conexión validada exitosamente!', 'success');
+                            showNotice('¡Conexión validada y guardada exitosamente!', 'success');
                             // Load synced products list
                             loadSyncedList(key);
                         }
@@ -746,7 +763,7 @@ function lookitry_settings_page() {
                                 '</svg>' +
                                 '<div class="lookitry-plan-upgrade-content">' +
                                 '<h4 style="margin:0 0 4px 0;color:#92400e;font-size:16px;font-weight:700;">Plan no compatible</h4>' +
-                                '<p style="margin:0;color:#a16207;font-size:14px;">El probador virtual requiere <strong>PRO</strong> o <strong>ENTERPRISE</strong>. <a href="https://lookitry.com/dashboard/subscription" target="_blank" style="color:#d97706;font-weight:600;">Ver planes</a></p>' +
+                                '<p style="margin:0;color:#a16207;font-size:14px;">El probador virtual requiere <strong>PRO</strong> o <strong>ENTERPRISE</strong>. <a href="<?php echo esc_url( lookitry_get_upgrade_url() ); ?>" target="_blank" style="color:#d97706;font-weight:600;">Ver planes</a></p>' +
                                 '</div>' +
                                 '</div>'
                             );
@@ -1034,4 +1051,24 @@ function lookitry_ajax_get_catalog() {
     }
 
     wp_send_json_success( $payload );
+}
+
+function lookitry_ajax_save_api_key() {
+    check_ajax_referer( 'lookitry_settings_nonce', 'nonce' );
+
+    if ( ! current_user_can( lookitry_get_admin_capability() ) ) {
+        wp_send_json_error( 'No tienes permisos.' );
+    }
+
+    $api_key = sanitize_text_field( $_POST['api_key'] ?? '' );
+    if ( empty( $api_key ) ) {
+        wp_send_json_error( 'API Key requerida.' );
+    }
+
+    update_option( 'lookitry_api_key', $api_key );
+    delete_transient( 'lookitry_session_token' );
+
+    wp_send_json_success( array(
+        'message' => 'API Key guardada correctamente.',
+    ) );
 }

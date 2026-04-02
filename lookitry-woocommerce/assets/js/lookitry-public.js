@@ -127,7 +127,7 @@
                 
                 var upgradeLinkHtml = '';
                 if (showUpgradeLink) {
-                    upgradeLinkHtml = '<a href="https://lookitry.com/dashboard/subscription" target="_blank" class="lookitry-upgrade-btn">Ver planes disponibles</a>';
+                    upgradeLinkHtml = '<a href="https://lookitry.com/plugin-woocommerce/activar" target="_blank" class="lookitry-upgrade-btn">Ver planes disponibles</a>';
                 }
                 
                 $overlay.append(
