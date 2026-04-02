@@ -172,7 +172,7 @@ Usa los botones de abajo o escribe el comando.`;
         ],
       ],
     },
-  );
+  });
 }
 
 export function startTelegramBot() {
