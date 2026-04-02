@@ -14,6 +14,8 @@
         const storeDomain = lookitry_vars.store_domain || window.location.origin;
         const buttonText = lookitry_vars.button_text || 'Probar Virtualmente';
         const widgetScriptFallbackUrl = 'https://lookitry.com/widget.js';
+        const allowedWidgetOrigins = ['https://lookitry.com', 'https://www.lookitry.com'];
+        let activeWooProductId = '';
 
         function escapeHtml(value) {
             return $('<div>').text(value || '').html();
@@ -68,7 +70,76 @@
                         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"></path></svg>' +
                         '<span>' + escapeHtml(buttonText) + '</span>' +
                     '</button>' +
+                    '<div class="lookitry-result-slot" data-product-id="' + escapeHtml(productId) + '"></div>' +
                 '</div>';
+        }
+
+        function getResultStorageKey(productId) {
+            return 'lookitry_last_result_' + String(productId || '').trim();
+        }
+
+        function saveLastResult(productId, payload) {
+            if (!productId || !payload || !payload.imageUrl) {
+                return;
+            }
+
+            try {
+                sessionStorage.setItem(getResultStorageKey(productId), JSON.stringify({
+                    imageUrl: payload.imageUrl,
+                    productName: payload.productName || '',
+                    generationId: payload.generationId || '',
+                    savedAt: Date.now()
+                }));
+            } catch (error) {}
+        }
+
+        function getLastResult(productId) {
+            if (!productId) {
+                return null;
+            }
+
+            try {
+                const raw = sessionStorage.getItem(getResultStorageKey(productId));
+                return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function renderSavedResult(productId) {
+            const result = getLastResult(productId);
+            const $slot = $('.lookitry-result-slot[data-product-id="' + productId + '"]').first();
+
+            if (!$slot.length) {
+                return;
+            }
+
+            if (!result || !result.imageUrl) {
+                $slot.empty().hide();
+                return;
+            }
+
+            const addToCartUrl = getAddToCartUrl(productId);
+            const cartUrl = getCartUrl();
+            const productUrl = getProductUrl();
+
+            $slot.html(
+                '<div class="lookitry-result-card">' +
+                    '<div class="lookitry-result-card__media">' +
+                        '<img src="' + escapeHtml(result.imageUrl) + '" alt="' + escapeHtml(result.productName || 'Última visualización') + '">' +
+                    '</div>' +
+                    '<div class="lookitry-result-card__content">' +
+                        '<p class="lookitry-result-card__eyebrow">Ultima visualizacion</p>' +
+                        '<p class="lookitry-result-card__title">' + escapeHtml(result.productName || 'Resultado guardado') + '</p>' +
+                        '<div class="lookitry-result-card__actions">' +
+                            '<a class="lookitry-result-card__btn lookitry-result-card__btn--ghost" href="' + escapeHtml(result.imageUrl) + '" target="_blank" rel="noopener noreferrer">Ver imagen</a>' +
+                            '<a class="lookitry-result-card__btn lookitry-result-card__btn--ghost" href="' + escapeHtml(addToCartUrl) + '" target="_top" rel="noopener noreferrer">Enviar al carrito</a>' +
+                            '<a class="lookitry-result-card__btn" href="' + escapeHtml(cartUrl) + '" target="_top" rel="noopener noreferrer">Comprar ahora</a>' +
+                        '</div>' +
+                        '<a class="lookitry-result-card__link" href="' + escapeHtml(productUrl) + '" target="_top" rel="noopener noreferrer">Volver al producto</a>' +
+                    '</div>' +
+                '</div>'
+            ).show();
         }
 
         function syncExistingButtonId() {
@@ -97,6 +168,7 @@
 
             if ($cartForm.length) {
                 $cartForm.after(buttonMarkup);
+                renderSavedResult(productId);
                 return;
             }
 
@@ -110,6 +182,7 @@
                 } else {
                     $summary.append(buttonMarkup);
                 }
+                renderSavedResult(productId);
             }
         }
 
@@ -339,6 +412,7 @@
             }
 
             const originalText = $clickedBtn.find('span').text();
+            activeWooProductId = productId;
             $clickedBtn.find('span').text('Cargando probador...');
             $clickedBtn.prop('disabled', true);
             showOverlayState('loading');
@@ -454,19 +528,18 @@
             resetOverlay();
         });
 
-        $overlay.on('click', function(e) {
-            if (e.target === this) {
-                resetOverlay();
-            }
-        });
-
-        $(document).on('keydown', function(e) {
-            if (e.key === 'Escape' && $overlay.is(':visible')) {
-                resetOverlay();
-            }
-        });
-
         window.addEventListener('message', function(e) {
+            if (allowedWidgetOrigins.indexOf(e.origin) === -1) {
+                return;
+            }
+
+            if (e.data && e.data.type === 'TRYON_COMPLETE' && e.data.data) {
+                const wooProductId = activeWooProductId || getProductId();
+                saveLastResult(wooProductId, e.data.data);
+                renderSavedResult(wooProductId);
+                return;
+            }
+
             if (e.data && e.data.type === 'TRYON_RESIZE') {
                 const newHeight = e.data.data.height;
                 if (newHeight && window.innerWidth > 600) {
