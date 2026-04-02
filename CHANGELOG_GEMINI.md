@@ -1,5 +1,33 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-01] - Eliminar flash de registro: botones apuntan directo a checkout
+
+### Problema
+Al hacer click en cualquier botón de registro, aparecía por unos segundos el formulario de `/register` y luego redirigía al checkout. El flash ocurría porque `/register` sin `?ref=` solo redirige a `/checkout?plan=TRIAL` via useEffect.
+
+### Solución
+Cambiar TODOS los links de `/register` a `/checkout?plan=TRIAL` directamente, eliminando el redirect innecesario. Los botones con `/register?plan=PRO` se cambiaron a `/checkout?plan=PRO`.
+
+### Archivos Modificados (15 archivos, ~28 links)
+- `frontend/src/components/landing/new-landing/LandingNav.tsx` (2 links + fallback default)
+- `frontend/src/components/landing/LandingNav.tsx` (1 link)
+- `frontend/src/components/landing/new-landing/LandingHero.tsx` (1 link)
+- `frontend/src/components/landing/new-landing/LandingSteps.tsx` (1 link)
+- `frontend/src/components/landing/new-landing/LandingMiniLanding.tsx` (1 link)
+- `frontend/src/components/landing/ProbadorVirtualContent.tsx` (2 links)
+- `frontend/src/components/landing/PremiumLandingClient.tsx` (1 link)
+- `frontend/src/components/landing/MiniLandingHomepage.tsx` (3 links)
+- `frontend/src/components/landing/HomeLandingClient.tsx` (1 link)
+- `frontend/src/app/mini-landing-pro/page.tsx` (4 links)
+- `frontend/src/app/landing-pro-test/page.tsx` (5 links)
+- `frontend/src/app/ayuda/page.tsx` (1 link)
+- `frontend/src/app/plugin-woocommerce/page.tsx` (3 links → `/checkout?plan=PRO`)
+- `frontend/src/app/casos-de-exito/page.tsx` (1 link → `/checkout?plan=PRO`)
+- `frontend/src/app/api-developer/page.tsx` (1 link → `/checkout?plan=PRO`)
+- `frontend/src/components/auth/LoginForm.tsx` (1 link dinámico)
+
+---
+
 ## [2026-04-01] - Reordenar funnel checkout: Datos → Plan → Pago
 
 ### Cambios Realizados

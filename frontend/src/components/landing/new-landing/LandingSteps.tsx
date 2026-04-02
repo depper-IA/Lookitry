@@ -82,7 +82,7 @@ export default function LandingSteps() {
         </div>
 
         <div className="flex justify-center mt-10 sm:mt-12 md:mt-16">
-          <Link href="/register" className="bg-[#FF5C3A] text-white px-6 sm:px-10 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-[#FF5C3A]/20 text-sm sm:text-base">
+          <Link href="/checkout?plan=TRIAL" className="bg-[#FF5C3A] text-white px-6 sm:px-10 py-4 sm:py-5 rounded-xl sm:rounded-2xl font-bold hover:scale-105 transition-all shadow-xl shadow-[#FF5C3A]/20 text-sm sm:text-base">
             ¡Comenzar mi transformación ahora!
           </Link>
         </div>

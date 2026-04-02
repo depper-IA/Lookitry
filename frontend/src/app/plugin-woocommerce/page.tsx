@@ -70,7 +70,7 @@ export default function PluginWooCommercePage() {
               </p>
               
               <div className="flex flex-wrap gap-5">
-                <Link href="/register?plan=PRO" className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center gap-3 active:scale-95">
+                <Link href="/checkout?plan=PRO" className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center gap-3 active:scale-95">
                   Contratar Plan Pro y Descargar <ArrowRight size={18} />
                 </Link>
               </div>
@@ -249,7 +249,7 @@ export default function PluginWooCommercePage() {
                   </div>
                 </div>
 
-                <Link href="/register?plan=PRO" id="cta-pro-plugin" className="bg-[#FF5C3A] text-white px-16 py-8 rounded-[2.5rem] font-bold text-xl hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-[#FF5C3A]/30 inline-flex items-center gap-4 group/cta">
+                <Link href="/checkout?plan=PRO" id="cta-pro-plugin" className="bg-[#FF5C3A] text-white px-16 py-8 rounded-[2.5rem] font-bold text-xl hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-[#FF5C3A]/30 inline-flex items-center gap-4 group/cta">
                    Contratar Plan Pro y Descargar Plugin <ArrowRight size={24} className="group-hover/cta:translate-x-2 transition-transform" />
                 </Link>
                 
@@ -292,7 +292,7 @@ export default function PluginWooCommercePage() {
              <div className="mt-20 text-center">
                 <div className="inline-flex flex-col items-center p-12 rounded-[3.5rem] bg-gradient-to-b from-[#FF5C3A]/10 to-transparent border border-[#FF5C3A]/20">
                    <h3 className="text-2xl font-bold font-jakarta mb-6">¿Listo para automatizar?</h3>
-                   <Link href="/register?plan=PRO" className="flex items-center gap-3 text-white font-black text-xl hover:text-[#FF5C3A] transition-colors border-b-2 border-[#FF5C3A] pb-2">
+                   <Link href="/checkout?plan=PRO" className="flex items-center gap-3 text-white font-black text-xl hover:text-[#FF5C3A] transition-colors border-b-2 border-[#FF5C3A] pb-2">
                       Empieza tu Plan Pro hoy mismo <ArrowRight size={24} />
                    </Link>
                 </div>

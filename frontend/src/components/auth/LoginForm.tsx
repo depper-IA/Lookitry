@@ -202,7 +202,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
 
           <p className="text-center text-[13px] text-[#999] mt-8">
             ¿No tienes cuenta?{' '}
-            <Link href={`/register${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[#FF5C3A] hover:text-white transition-colors font-bold">
+            <Link href={`/checkout?plan=TRIAL${redirectTo && redirectTo !== '/dashboard' ? `&redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[#FF5C3A] hover:text-white transition-colors font-bold">
               Regístrate aquí
             </Link>
           </p>

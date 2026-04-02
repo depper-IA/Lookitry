@@ -32,7 +32,7 @@ export default function AyudaPage() {
               <h2 className="text-base font-semibold text-white mt-1">Elige plan y método de pago</h2>
               <p className="text-sm text-[#bbb] mt-2">Compara planes, define tu inversión y activa tu cuenta de forma inmediata.</p>
             </Link>
-            <Link href="/register" className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 block hover:border-[#FF5C3A]/40 transition-colors">
+            <Link href="/checkout?plan=TRIAL" className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 block hover:border-[#FF5C3A]/40 transition-colors">
               <p className="text-[11px] uppercase tracking-[0.1em] text-[#FF5C3A] font-semibold">Paso 2</p>
               <h2 className="text-base font-semibold text-white mt-1">Crea y configura tu marca</h2>
               <p className="text-sm text-[#bbb] mt-2">Completa identidad, carga productos y deja listo tu probador virtual.</p>

@@ -182,7 +182,7 @@ export default function LandingNav({
               Ingresar
             </Link>
             <Link
-              href="/register"
+              href="/checkout?plan=TRIAL"
               className="group relative overflow-hidden bg-[#FF5C3A] text-white text-[11px] font-bold uppercase tracking-[0.15em] px-6 sm:px-8 py-3 sm:py-3.5 rounded-full transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#FF5C3A]/20"
             >
               <span className="relative z-10">Probar ahora</span>
@@ -274,7 +274,7 @@ export default function LandingNav({
                 Ingresar
               </Link>
               <Link
-                href="/register"
+                href="/checkout?plan=TRIAL"
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full bg-[#FF5C3A] text-white px-8 py-4 rounded-2xl font-jakarta font-black text-center transition-all active:scale-[0.98] hover:bg-[#ff7a5f] shadow-xl shadow-[#FF5C3A]/20"
               >

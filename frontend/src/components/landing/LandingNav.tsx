@@ -74,7 +74,7 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
     window.location.href = '/login';
   }
 
-  const resolvedCtaHref = ctaHref ?? '/register';
+  const resolvedCtaHref = ctaHref ?? '/checkout?plan=TRIAL';
   const resolvedCtaLabel = ctaLabel ?? 'Probar ahora';
 
   const initials = session?.name
@@ -323,7 +323,7 @@ export function LandingNav({ ctaHref, ctaLabel, currentCurrency, onCurrencyChang
                   Ingresar a mi cuenta
                 </Link>
                 <Link
-                  href="/register"
+                  href="/checkout?plan=TRIAL"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full py-5 bg-[#FF5C3A] rounded-2xl text-center text-white font-bold uppercase tracking-[0.2em] text-[12px] active:scale-[0.98] transition-all hover:bg-[#ff7a5f]"
                 >
