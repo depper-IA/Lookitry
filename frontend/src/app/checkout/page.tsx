@@ -352,14 +352,16 @@ function CheckoutContent() {
 
   const handleNextStep = async () => {
     if (currentStep === 1) {
-      setCurrentStep(2);
-      window.scrollTo(0, 0);
-    } else if (currentStep === 2) {
+      // Step 1 = Datos: validate before advancing
       const isValid = await validateStep2();
       if (isValid) {
-        setCurrentStep(3);
+        setCurrentStep(2);
         window.scrollTo(0, 0);
       }
+    } else if (currentStep === 2) {
+      // Step 2 = Plan: no validation needed, advance directly
+      setCurrentStep(3);
+      window.scrollTo(0, 0);
     }
   };
 
@@ -480,13 +482,35 @@ function CheckoutContent() {
       <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
         {/* Progress Bar */}
         <div className="mb-12">
-          <StepProgress currentStep={currentStep} maxNavigableStep={canNavigateToStep} onStepChange={handleStepChange} />
+          <StepProgress currentStep={currentStep} stepLabels={['Tus Datos', 'Plan', 'Pago', 'Acceso']} maxNavigableStep={canNavigateToStep} onStepChange={handleStepChange} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Column */}
           <div className="lg:col-span-8 space-y-6">
             {currentStep === 1 && (
+              <UserDataStep
+                email={email}
+                setEmail={setEmail}
+                brandName={brandName}
+                setBrandName={setBrandName}
+                emailError={emailError}
+                setEmailError={setEmailError}
+                brandNameError={brandNameError}
+                setBrandNameError={setBrandNameError}
+                emailChecking={emailChecking}
+                emailExists={emailExists}
+                hasSession={hasSession}
+                sessionInfo={sessionInfo}
+                validateStep2={validateStep2}
+                handlePrevStep={handlePrevStep}
+                setCurrentStep={setCurrentStep}
+                stepNumber={1}
+                OA={OA}
+              />
+            )}
+
+            {currentStep === 2 && (
               <PlanSelectionStep
                 selectedPlan={selectedPlan}
                 setSelectedPlan={setSelectedPlan}
@@ -504,31 +528,11 @@ function CheckoutContent() {
                 planNames={planNames}
                 landingPrice={landingPrice}
                 landingOriginal={landingOriginal}
+                stepNumber={2}
                 OA={OA}
                 hasSession={hasSession}
                 clearCheckoutDraft={clearCheckoutDraft}
                 CHECKOUT_DRAFT_KEY={CHECKOUT_DRAFT_KEY}
-              />
-            )}
-
-            {currentStep === 2 && (
-              <UserDataStep
-                email={email}
-                setEmail={setEmail}
-                brandName={brandName}
-                setBrandName={setBrandName}
-                emailError={emailError}
-                setEmailError={setEmailError}
-                brandNameError={brandNameError}
-                setBrandNameError={setBrandNameError}
-                emailChecking={emailChecking}
-                emailExists={emailExists}
-                hasSession={hasSession}
-                sessionInfo={sessionInfo}
-                validateStep2={validateStep2}
-                handlePrevStep={handlePrevStep}
-                setCurrentStep={setCurrentStep}
-                OA={OA}
               />
             )}
 
@@ -551,6 +555,7 @@ function CheckoutContent() {
                 selectedMonths={selectedMonths}
                 formatCop={formatCop}
                 formatUsd={formatUsd}
+                stepNumber={3}
                 OA={OA}
               />
             )}

@@ -7,24 +7,31 @@ export type Step = 1 | 2 | 3 | 4;
 
 interface StepProgressProps {
   currentStep: Step;
+  stepLabels?: string[]; // Optional custom labels: e.g. ['Tus Datos', 'Plan', 'Pago', 'Acceso']
   maxNavigableStep?: Step;
   onStepChange?: (step: Step) => void;
   lockedAfterPayment?: boolean;
 }
 
-const steps = [
+const defaultSteps = [
   { id: 1, name: 'Plan', icon: LayoutPanelLeft },
   { id: 2, name: 'Tus Datos', icon: User },
   { id: 3, name: 'Pago', icon: CreditCard },
   { id: 4, name: 'Acceso', icon: Rocket },
 ];
 
+const stepIcons = [LayoutPanelLeft, User, CreditCard, Rocket];
+
 export const StepProgress: React.FC<StepProgressProps> = ({
   currentStep,
+  stepLabels,
   maxNavigableStep = currentStep,
   onStepChange,
   lockedAfterPayment = false,
 }) => {
+  const steps = stepLabels
+    ? stepLabels.map((label, i) => ({ id: i + 1, name: label, icon: stepIcons[i] || Rocket }))
+    : defaultSteps;
   return (
     <div className="w-full max-w-3xl mx-auto px-4 py-8">
       <nav aria-label="Progress">

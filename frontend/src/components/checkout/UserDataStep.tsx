@@ -20,6 +20,7 @@ interface UserDataStepProps {
   validateStep2: () => Promise<boolean>;
   handlePrevStep: () => void;
   setCurrentStep: (step: Step) => void;
+  stepNumber?: number;
   OA: string;
 }
 
@@ -39,6 +40,7 @@ export default function UserDataStep({
   validateStep2,
   handlePrevStep,
   setCurrentStep,
+  stepNumber = 2,
   OA
 }: UserDataStepProps) {
   return (
@@ -48,7 +50,7 @@ export default function UserDataStep({
           <h2 className="text-2xl font-jakarta font-bold text-white tracking-tight">Tus datos</h2>
           <p className="text-sm text-[#999] mt-1">Vinculamos tu compra al correo con el que entrarás y administrarás la cuenta</p>
         </div>
-        <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso 2 de 3</div>
+        <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso {stepNumber} de 3</div>
       </div>
 
       <div className="space-y-6 bg-[#0d0d0d] border border-[#1f1f1f] p-8 rounded-3xl">
@@ -153,7 +155,7 @@ export default function UserDataStep({
           onClick={async () => {
             const isValid = await validateStep2();
             if (isValid) {
-              setCurrentStep(3);
+              setCurrentStep((stepNumber + 1) as Step);
               window.scrollTo(0, 0);
             }
           }}

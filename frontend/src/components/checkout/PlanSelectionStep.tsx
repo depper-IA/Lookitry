@@ -21,6 +21,7 @@ interface PlanSelectionStepProps {
   planNames: Record<PlanKey, string>;
   landingPrice: number;
   landingOriginal: number;
+  stepNumber?: number;
   OA: string;
   hasSession: boolean;
   clearCheckoutDraft: (key: string) => void;
@@ -44,6 +45,7 @@ export default function PlanSelectionStep({
   planNames,
   landingPrice,
   landingOriginal,
+  stepNumber = 1,
   OA,
   hasSession,
   clearCheckoutDraft,
@@ -58,7 +60,7 @@ export default function PlanSelectionStep({
             Selecciona el plan que mejor se adapte a tu negocio.
           </p>
         </div>
-        <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso 1 de 3</div>
+        <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso {stepNumber} de 3</div>
       </div>
 
       {/* Alerta de Trial */}

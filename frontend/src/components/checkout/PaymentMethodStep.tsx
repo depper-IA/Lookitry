@@ -22,6 +22,7 @@ interface PaymentMethodStepProps {
   selectedMonths: number;
   formatCop: (val: number) => string;
   formatUsd: (val: number) => string;
+  stepNumber?: number;
   OA: string;
 }
 
@@ -43,6 +44,7 @@ export default function PaymentMethodStep({
   selectedMonths,
   formatCop,
   formatUsd,
+  stepNumber = 3,
   OA
 }: PaymentMethodStepProps) {
   return (
@@ -52,7 +54,7 @@ export default function PaymentMethodStep({
           <h2 className="text-2xl font-jakarta font-bold text-white tracking-tight">Finalizar y Activar</h2>
           <p className="text-sm text-[#999] mt-1">Elige como quieres pagar. Despues te llevamos a confirmacion y activacion.</p>
         </div>
-        <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso 3 de 3</div>
+        <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso {stepNumber} de 3</div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
