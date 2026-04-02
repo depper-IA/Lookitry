@@ -40,8 +40,8 @@ export function useActivePromotions(): UseActivePromotionsReturn {
 
         const promos = d.data || [];
 
+        // Procesar overrides de planes
         const overrides: Record<'BASIC' | 'PRO', PlanOverrideConfig | null> = { BASIC: null, PRO: null };
-
         for (const promo of promos) {
           if (promo.type === 'plan_override' && promo.active) {
             const cfg = promo.config;
@@ -56,32 +56,25 @@ export function useActivePromotions(): UseActivePromotionsReturn {
             }
           }
         }
-
         setPlanOverrides(overrides);
+
+        // Extraer cupones de las promociones activas
+        const coupons = promos
+          .filter((promo: any) => promo.type === 'coupon' && promo.active)
+          .map((promo: any) => ({
+            id: promo.id,
+            code: promo.config?.code || '',
+            discount_type: promo.config?.discount_type || 'pct',
+            discount_value: promo.config?.discount_value || 0,
+            plan_ids: promo.config?.plan_ids || [],
+          }));
+        setActiveCoupons(coupons);
+
         setLoading(false);
       })
       .catch(() => {
         setLoading(false);
       });
-
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-    fetch(`${API_URL}/api/admin/coupons`)
-      .then(r => r.ok ? r.json() : null)
-      .then((d: { ok: boolean; data: any[] } | null) => {
-        if (d?.ok && d.data) {
-          const active = d.data
-            .filter((c: any) => c.active)
-            .map((c: any) => ({
-              id: c.id,
-              code: c.code,
-              discount_type: c.discount_type,
-              discount_value: c.discount_value,
-              plan_ids: c.plan_ids || [],
-            }));
-          setActiveCoupons(active);
-        }
-      })
-      .catch(() => {});
   }, []);
 
   return { planOverrides, activeCoupons, loading };

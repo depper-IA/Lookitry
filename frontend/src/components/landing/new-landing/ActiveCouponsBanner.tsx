@@ -25,20 +25,19 @@ export default function ActiveCouponsBanner() {
       return;
     }
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-    fetch(`${API_URL}/api/admin/coupons`)
+    fetch('/api/promotions')
       .then(r => r.ok ? r.json() : null)
       .then((d: { ok: boolean; data: any[] } | null) => {
         if (d?.ok && d.data) {
           const active = d.data
-            .filter((c: any) => c.active)
-            .map((c: any) => ({
-              id: c.id,
-              code: c.code,
-              discount_type: c.discount_type,
-              discount_value: c.discount_value,
-              plan_ids: c.plan_ids || [],
-              expires_at: c.expires_at,
+            .filter((promo: any) => promo.type === 'coupon' && promo.active)
+            .map((promo: any) => ({
+              id: promo.id,
+              code: promo.config?.code || '',
+              discount_type: promo.config?.discount_type || 'pct',
+              discount_value: promo.config?.discount_value || 0,
+              plan_ids: promo.config?.plan_ids || [],
+              expires_at: promo.expires_at || promo.config?.expires_at,
             }));
           if (active.length > 0) {
             setCoupons(active);
