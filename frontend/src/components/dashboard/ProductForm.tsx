@@ -80,6 +80,31 @@ const BADGE_OPTIONS = [
   { value: 'oferta', label: 'Oferta' },
 ];
 
+function buildProxyImageUrl(url: string): string {
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+
+  if (!url || url.includes('/api/pruebalo/img-proxy?url=')) {
+    return url;
+  }
+
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    const isInternalAsset =
+      host.endsWith('lookitry.com') ||
+      host.endsWith('supabase.co') ||
+      host.endsWith('minio.wilkiedevs.com');
+
+    if (isInternalAsset) {
+      return url;
+    }
+
+    return `${apiBase}/api/pruebalo/img-proxy?url=${encodeURIComponent(url)}`;
+  } catch {
+    return url;
+  }
+}
+
 export function ProductForm({ product, showExternalId = false, onSubmit, onCancel }: ProductFormProps) {
   const [formData, setFormData] = useState<CreateProductDto>({ name: '', description: '', imageUrl: '', category: 'tshirt', price: undefined, badge: undefined, externalId: undefined });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -97,6 +122,7 @@ export function ProductForm({ product, showExternalId = false, onSubmit, onCance
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const canDescribeWithAI = !!formData.imageUrl && !!formData.name.trim();
+  const imagePreviewSrc = imagePreview ? buildProxyImageUrl(imagePreview) : null;
 
   // Auto-disparar cuando el usuario termina de escribir el nombre y ya hay imagen
   const autoTriggeredRef = useRef(false);
@@ -175,7 +201,14 @@ export function ProductForm({ product, showExternalId = false, onSubmit, onCance
         body: JSON.stringify({ image_url: imageUrl, product_name: productName, category }),
       });
 
-      if (!res.ok) throw new Error('Error al conectar con el servicio de IA');
+      if (!res.ok) {
+        let backendMessage = 'Error al conectar con el servicio de IA';
+        try {
+          const errorData = await res.json();
+          backendMessage = errorData?.message || backendMessage;
+        } catch {}
+        throw new Error(backendMessage);
+      }
       const raw = await res.text();
       if (!raw?.trim()) throw new Error('El servicio de IA no devolvió respuesta');
       let description = '';
@@ -337,10 +370,10 @@ export function ProductForm({ product, showExternalId = false, onSubmit, onCance
               <Input name="imageUrl" value={formData.imageUrl} onChange={handleChange} error={errors.imageUrl} placeholder="https://ejemplo.com/imagen.jpg" required />
               <input ref={fileInputRef} type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={e => e.target.files?.[0] && handleImageFile(e.target.files[0])} />
               {compressionInfo && <p className="text-xs" style={{ color: '#10b981' }}>{compressionInfo}</p>}
-              {imagePreview && (
+              {imagePreviewSrc && (
                 <div>
                   <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>Vista previa:</p>
-                  <img src={imagePreview} alt="Preview" className="w-full max-w-[200px] object-cover rounded-lg border" style={{ borderColor: 'var(--border-color)' }} />
+                  <img src={imagePreviewSrc} alt="Preview" className="w-full max-w-[200px] object-cover rounded-lg border" style={{ borderColor: 'var(--border-color)' }} />
                 </div>
               )}
             </div>
