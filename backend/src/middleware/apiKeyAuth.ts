@@ -48,6 +48,15 @@ export const apiKeyAuth = async (
       plan: brand.plan,
     };
 
+    // Verificar que el plan permita uso del plugin (PRO o ENTERPRISE)
+    const allowedPlans = ['PRO', 'ENTERPRISE'];
+    if (!allowedPlans.includes(brand.plan)) {
+      return res.status(403).json({
+        error: 'PLAN_NOT_ALLOWED',
+        message: `El plugin de WooCommerce requiere un plan PRO o ENTERPRISE. Tu plan actual es ${brand.plan}.`,
+      });
+    }
+
     next();
   } catch (error: any) {
     return res.status(500).json({
