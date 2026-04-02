@@ -8,11 +8,12 @@
     $(document).ready(function() {
         const $overlay = $('#lookitry-modal-overlay');
         const $close = $('#lookitry-modal-close');
-        const $iframe = $('#lookitry-iframe');
+        const $modalBody = $('#lookitry-modal-body');
         const $modalContainer = $overlay.find('.lookitry-modal-container');
         const telemetryUrl = lookitry_vars.api_url + '/pruebalo/plugin-telemetry';
         const storeDomain = lookitry_vars.store_domain || window.location.origin;
         const buttonText = lookitry_vars.button_text || 'Probar Virtualmente';
+        const widgetScriptFallbackUrl = 'https://lookitry.com/widget.js';
 
         function escapeHtml(value) {
             return $('<div>').text(value || '').html();
@@ -88,11 +89,76 @@
             }
         }
 
+        function ensureWidgetScript(scriptUrl) {
+            const finalUrl = scriptUrl || widgetScriptFallbackUrl;
+
+            if (window.LookitryWidget && typeof window.LookitryWidget.init === 'function') {
+                return Promise.resolve(window.LookitryWidget);
+            }
+
+            return new Promise(function(resolve, reject) {
+                const existing = document.querySelector('script[data-lookitry-widget-loader="true"]');
+
+                if (existing) {
+                    existing.addEventListener('load', function() {
+                        resolve(window.LookitryWidget);
+                    }, { once: true });
+                    existing.addEventListener('error', reject, { once: true });
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = finalUrl;
+                script.async = true;
+                script.defer = true;
+                script.dataset.lookitryWidgetLoader = 'true';
+                script.onload = function() {
+                    if (window.LookitryWidget && typeof window.LookitryWidget.init === 'function') {
+                        resolve(window.LookitryWidget);
+                    } else {
+                        reject(new Error('Widget loader not available'));
+                    }
+                };
+                script.onerror = function() {
+                    reject(new Error('Widget script failed to load'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        function renderWidgetInModal(widgetOptions) {
+            const brandSlug = widgetOptions.brandSlug;
+            const productId = widgetOptions.productId;
+
+            if (!brandSlug || !productId) {
+                throw new Error('Missing widget configuration');
+            }
+
+            $modalBody.empty();
+
+            const container = document.createElement('div');
+            container.id = 'lookitry-tester-container';
+            container.setAttribute('data-lookitry-widget', 'true');
+            container.setAttribute('data-slug', brandSlug);
+            container.setAttribute('data-product-id', productId);
+            container.setAttribute('data-modal', 'true');
+            container.setAttribute('data-hide-legal', 'true');
+            container.setAttribute('data-height', String(Math.max(680, $modalContainer.innerHeight() || 760)));
+            container.style.width = '100%';
+            container.style.height = '100%';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.style.justifyContent = 'center';
+            $modalBody.append(container);
+
+            window.LookitryWidget.init(container);
+        }
+
         function showOverlayState(type, title, message, showUpgradeLink) {
             $overlay.find('.lookitry-loading-overlay, .lookitry-error-overlay').remove();
 
             if (type === 'loading') {
-                $iframe.hide().attr('src', '');
+                $modalBody.empty();
                 $modalContainer.append(
                     '<div class="lookitry-loading-overlay">' +
                         '<div class="lookitry-spinner"></div>' +
@@ -108,7 +174,7 @@
                 upgradeLinkHtml = '<a href="https://lookitry.com/plugin-woocommerce/activar" target="_blank" class="lookitry-upgrade-btn">Ver planes disponibles</a>';
             }
 
-            $iframe.hide().attr('src', '');
+            $modalBody.empty();
             $modalContainer.append(
                 '<div class="lookitry-error-overlay">' +
                     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
@@ -126,7 +192,7 @@
 
         function resetOverlay() {
             $overlay.find('.lookitry-loading-overlay, .lookitry-error-overlay').remove();
-            $iframe.show().attr('src', '');
+            $modalBody.empty();
             $overlay.hide();
         }
 
@@ -261,9 +327,30 @@
                     clearTimeout(loadingTimeout);
 
                     if (response.success && response.embedUrl) {
-                        $overlay.find('.lookitry-loading-overlay, .lookitry-error-overlay').remove();
-                        $iframe.attr('src', response.embedUrl).show();
-                        $overlay.css('display', 'flex');
+                        const widgetUrl = response.widgetUrl || widgetScriptFallbackUrl;
+                        const brandSlug = response.brandSlug || (function() {
+                            try {
+                                const parsed = new URL(response.embedUrl);
+                                const segments = parsed.pathname.split('/').filter(Boolean);
+                                return segments[1] || '';
+                            } catch (error) {
+                                return '';
+                            }
+                        })();
+                        const lookitryProductId = response.product && response.product.id ? String(response.product.id) : '';
+
+                        ensureWidgetScript(widgetUrl)
+                            .then(function() {
+                                $overlay.find('.lookitry-loading-overlay, .lookitry-error-overlay').remove();
+                                renderWidgetInModal({
+                                    brandSlug: brandSlug,
+                                    productId: lookitryProductId
+                                });
+                                $overlay.css('display', 'flex');
+                            })
+                            .catch(function() {
+                                showRequestError('Error al cargar el widget', 'No se pudo inicializar el loader del probador.', false);
+                            });
                     } else {
                         showRequestError('Error al inicializar', response.message || response.error || 'El probador no esta disponible en este momento.', false);
                     }

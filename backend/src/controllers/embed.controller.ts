@@ -39,6 +39,8 @@ export class EmbedController {
     return res.status(200).json({
       success: true,
       embedUrl,
+      widgetUrl: `${baseUrl}/widget.js`,
+      brandSlug: brand.slug,
       product: {
         id: product.id,
         name: product.name
