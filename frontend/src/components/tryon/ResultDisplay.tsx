@@ -20,6 +20,7 @@ function ResultImage({
   aspectRatio,
   compact = false,
   brandPlan,
+  fit = 'cover',
 }: {
   imageUrl: string;
   productName: string;
@@ -28,6 +29,7 @@ function ResultImage({
   aspectRatio?: string;
   compact?: boolean;
   brandPlan?: string;
+  fit?: 'cover' | 'contain';
 }) {
   const [loaded, setLoaded] = useState(false);
 
@@ -50,7 +52,7 @@ function ResultImage({
       <img
         src={imageUrl}
         alt={`Prueba virtual de ${productName}`}
-        className={`w-full ${aspectRatio ? 'object-cover h-full' : 'h-auto'}`}
+        className={`w-full ${aspectRatio ? `${fit === 'contain' ? 'object-contain' : 'object-cover'} h-full` : 'h-auto'}`}
         onLoad={() => setLoaded(true)}
       />
       {loaded && !compact && (
@@ -195,6 +197,14 @@ export function ResultDisplay({
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'noopener');
   };
 
+  const pluginQuery =
+    typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search)
+      : new URLSearchParams();
+  const productUrl = pluginQuery.get('product_url') || '';
+  const addToCartUrl = pluginQuery.get('add_to_cart_url') || '';
+  const cartUrl = pluginQuery.get('cart_url') || '';
+
   if (pluginView) {
     return (
       <>
@@ -211,21 +221,23 @@ export function ResultDisplay({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
             <div className="rounded-[28px] border border-gray-100 bg-white p-3 shadow-sm md:p-4">
               <ResultImage
                 imageUrl={imageUrl}
                 productName={productName}
                 primaryColor={primaryColor}
                 onOpen={() => setLightboxOpen(true)}
+                aspectRatio="aspect-[4/3]"
+                fit="contain"
                 brandPlan={brandPlan}
               />
             </div>
 
-            <div className="flex flex-col gap-4 rounded-[28px] border border-gray-100 bg-[#faf8f5] p-5 xl:sticky xl:top-4">
+            <div className="flex flex-col gap-4 rounded-[28px] border border-gray-100 bg-[#faf8f5] p-5 lg:sticky lg:top-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Compartir</p>
-                <p className="mt-2 text-sm text-gray-500">Mostramos solo la imagen final dentro del plugin para una vista mas limpia y mejor aprovechada.</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Acciones</p>
+                <p className="mt-2 text-sm text-gray-500">Mostramos solo la imagen final dentro del plugin para una vista limpia, completa y enfocada en conversión.</p>
               </div>
 
               <button
@@ -244,8 +256,37 @@ export function ResultDisplay({
                 <p className="text-center text-[10px] font-bold uppercase text-orange-500">{shareError}</p>
               )}
 
+              {addToCartUrl && (
+                <a
+                  href={addToCartUrl}
+                  target="_top"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white py-3.5 text-xs font-black uppercase tracking-widest text-gray-800 transition-all hover:bg-gray-50 active:scale-95 md:text-sm"
+                >
+                  Enviar al carrito
+                </a>
+              )}
+
+              {cartUrl && (
+                <a
+                  href={cartUrl}
+                  target="_top"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white py-3.5 text-xs font-black uppercase tracking-widest text-gray-800 transition-all hover:bg-gray-50 active:scale-95 md:text-sm"
+                >
+                  Comprar ahora
+                </a>
+              )}
+
               <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-4 py-3 text-xs leading-relaxed text-gray-500">
-                Toca la imagen para verla completa. El plugin oculta comparaciones y acciones secundarias para priorizar el resultado final.
+                {productUrl ? (
+                  <a href={productUrl} target="_top" rel="noopener noreferrer" className="font-semibold text-[#FF5C3A] underline underline-offset-2">
+                    Volver al producto
+                  </a>
+                ) : (
+                  <span>Toca la imagen para verla completa.</span>
+                )}{' '}
+                El plugin oculta comparaciones y acciones secundarias para priorizar el resultado final.
               </div>
             </div>
           </div>
