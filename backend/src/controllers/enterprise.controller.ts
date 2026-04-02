@@ -227,29 +227,32 @@ export const triggerEnterpriseSync = async (req: Request, res: Response) => {
 // POST /api/enterprise/sync-product — Webhook interno llamado por n8n para cada producto
 // Protegido por ENTERPRISE_SYNC_TOKEN (Bearer token secreto compartido con n8n)
 export const syncProductWebhook = async (req: Request, res: Response) => {
-  // Verificar token secreto
-  const authHeader = req.headers.authorization || '';
-  const expectedToken = process.env.ENTERPRISE_SYNC_TOKEN;
-
-  if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  const {
-    brand_id,
-    name,
-    description,
-    category,
-    image_url,  // URL ya procesada (background removed, en MinIO)
-    price,
-    external_id, // ID del producto en el sistema del cliente (para deduplicación)
-  } = req.body;
-
-  if (!brand_id || !name || !image_url) {
-    return res.status(400).json({ error: 'brand_id, name e image_url son requeridos' });
-  }
-
   try {
+    console.log('[Enterprise] syncProductWebhook iniciado');
+
+    const authHeader = req.headers.authorization || '';
+    const expectedToken = process.env.ENTERPRISE_SYNC_TOKEN;
+
+    console.log('[Enterprise] Token config:', { hasToken: !!expectedToken, hasHeader: !!authHeader });
+
+    if (!expectedToken) {
+      console.error('[Enterprise] ENTERPRISE_SYNC_TOKEN no configurado');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    if (authHeader !== `Bearer ${expectedToken}`) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { brand_id, name, description, category, image_url, price, external_id } = req.body;
+
+    console.log('[Enterprise] Datos recibidos:', { brand_id, name, image_url: !!image_url });
+
+    if (!brand_id || !name || !image_url) {
+      return res.status(400).json({ error: 'brand_id, name e image_url son requeridos' });
+    }
+
+    // Rest of the code...
     // Verificar si el producto ya existe (deduplicar por external_id o nombre+marca)
     let existingProduct = null;
 
@@ -342,15 +345,19 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
       return res.status(201).json({ action: 'created', product: created });
     }
   } catch (err: any) {
-    // Registrar el error en la config de sync (si falla, continuar sin fallar)
-    try {
-      await safeUpdateEnterpriseConfig(brand_id, {
-        last_sync_status: 'failed',
-        last_sync_message: err.message,
-        updated_at: new Date().toISOString(),
-      });
-    } catch (configError: any) {
-      console.warn('[Enterprise] Error actualizando config de error:', configError.message);
+    console.error('[Enterprise] Error general en syncProductWebhook:', err);
+
+    const errorBrandId = req.body?.brand_id;
+    if (errorBrandId) {
+      try {
+        await safeUpdateEnterpriseConfig(errorBrandId, {
+          last_sync_status: 'failed',
+          last_sync_message: err.message,
+          updated_at: new Date().toISOString(),
+        });
+      } catch (configError: any) {
+        console.warn('[Enterprise] Error actualizando config de error:', configError.message);
+      }
     }
 
     return res.status(500).json({ error: err.message });
