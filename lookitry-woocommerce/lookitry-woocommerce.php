@@ -26,13 +26,32 @@ require_once LOOKITRY_PLUGIN_DIR . 'includes/admin-settings.php';
 require_once LOOKITRY_PLUGIN_DIR . 'includes/frontend-hooks.php';
 
 /**
- * Check if WooCommerce is active
+ * Bootstrap plugin after all plugins are loaded.
+ *
+ * Avoid checking WooCommerce too early at file load time because plugin load
+ * order can prevent the class from existing yet, which hides the admin menu.
  */
-if (class_exists('WooCommerce')) {
-    // Initialize plugin logic
-    add_action('plugins_loaded', 'lookitry_init');
-    // Show admin notice about plan requirement
-    add_action('admin_notices', 'lookitry_plan_notice');
+add_action('plugins_loaded', 'lookitry_bootstrap');
+
+function lookitry_bootstrap()
+{
+    if (!class_exists('WooCommerce')) {
+        if (is_admin()) {
+            add_action('admin_notices', 'lookitry_missing_woocommerce_notice');
+        }
+        return;
+    }
+
+    lookitry_init();
+
+    if (is_admin()) {
+        add_action('admin_notices', 'lookitry_plan_notice');
+    }
+}
+
+function lookitry_missing_woocommerce_notice()
+{
+    echo '<div class="notice notice-error"><p><strong>Lookitry for WooCommerce</strong> requiere que WooCommerce est&eacute; activo para mostrar su configuraci&oacute;n y funcionar correctamente.</p></div>';
 }
 
 /**

@@ -10,12 +10,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Add Menu Item to WordPress Admin
  */
+function lookitry_get_admin_capability() {
+    return apply_filters( 'lookitry_admin_capability', 'manage_woocommerce' );
+}
+
 function lookitry_add_admin_menu() {
     add_submenu_page(
         'woocommerce',
         'Lookitry Settings',
         'Lookitry',
-        'manage_options',
+        lookitry_get_admin_capability(),
         'lookitry-settings',
         'lookitry_settings_page'
     );
@@ -934,7 +938,7 @@ function lookitry_settings_page() {
 function lookitry_ajax_get_catalog() {
     check_ajax_referer( 'lookitry_settings_nonce', 'nonce' );
 
-    if ( ! current_user_can( 'manage_options' ) ) {
+    if ( ! current_user_can( lookitry_get_admin_capability() ) ) {
         wp_send_json_error( 'No tienes permisos.' );
     }
 
