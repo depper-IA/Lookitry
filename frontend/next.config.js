@@ -22,7 +22,7 @@ const nextConfig = {
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline' ${isProd ? '' : "'unsafe-eval'"} https://challenges.cloudflare.com https://checkout.wompi.co`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https://*.supabase.co https://*.lookitry.com https://*.wilkiedevs.com https://images.unsplash.com",
+      "img-src 'self' data: blob: https://*.supabase.co https://*.lookitry.com https://*.wilkiedevs.com https://images.unsplash.com https://grainy-gradients.vercel.app",
       `connect-src 'self' ${isProd ? '' : 'http://localhost:3001'} https://*.lookitry.com https://*.supabase.co https://*.wilkiedevs.com https://checkout.wompi.co`,
       "font-src 'self' https://fonts.gstatic.com",
       "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co",
