@@ -100,5 +100,6 @@ function lookitry_init()
     // Register Frontend Hooks
     add_action('wp_enqueue_scripts', 'lookitry_enqueue_scripts');
     add_action('woocommerce_after_add_to_cart_button', 'lookitry_inject_button');
+    add_action('woocommerce_single_product_summary', 'lookitry_inject_button', 31);
     add_action('wp_footer', 'lookitry_render_modal');
 }
