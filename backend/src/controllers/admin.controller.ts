@@ -1710,3 +1710,269 @@ export const getBrandFull = async (req: any, res: Response) => {
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener ficha de marca' });
   }
 };
+
+// ── Gestión de Suscripciones ──────────────────────────────────────────────────
+
+export const getAllSubscriptions = async (_req: any, res: Response) => {
+  try {
+    const { data: brands, error } = await supabaseAdmin
+      .from('brands')
+      .select('id, name, email, slug, plan, subscription_status, subscription_start_date, subscription_end_date, last_payment_date, trial_end_date, trial_generations_limit, trial_payment_status, email_verified')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[getAllSubscriptions] Error:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al cargar suscripciones' });
+    }
+
+    const now = new Date();
+    const subscriptions = (brands || []).map((brand: any) => {
+      const isTrial = brand.plan === 'TRIAL';
+      let daysRemaining: number | null = null;
+      let trialDaysRemaining: number | null = null;
+
+      if (isTrial && brand.trial_end_date) {
+        const trialEnd = new Date(brand.trial_end_date);
+        trialDaysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        daysRemaining = trialDaysRemaining;
+      } else if (brand.subscription_end_date) {
+        const end = new Date(brand.subscription_end_date);
+        daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      }
+
+      let status = brand.subscription_status;
+      if (isTrial) {
+        status = trialDaysRemaining !== null && trialDaysRemaining < 0 ? 'expired' : 'active';
+      } else if (daysRemaining !== null) {
+        if (daysRemaining < 0) status = 'expired';
+        else if (daysRemaining <= 7) status = 'expiring_soon';
+        else status = 'active';
+      }
+
+      return {
+        id: brand.id,
+        name: brand.name,
+        email: brand.email,
+        slug: brand.slug,
+        plan: brand.plan,
+        is_in_trial: isTrial,
+        trial_end_date: brand.trial_end_date,
+        trial_days_remaining: trialDaysRemaining,
+        subscription_status: status,
+        subscription_start_date: brand.subscription_start_date,
+        subscription_end_date: brand.subscription_end_date,
+        last_payment_date: brand.last_payment_date,
+        next_payment_date: null,
+        daysRemaining,
+      };
+    });
+
+    return res.status(200).json({ subscriptions });
+  } catch (error: any) {
+    console.error('Error in getAllSubscriptions:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al cargar suscripciones' });
+  }
+};
+
+export const registerSubscriptionPayment = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { amount, months, plan, currency, status, payment_date, payment_method, notes } = req.body;
+
+    if (!id || !amount || !months || !plan) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'ID, monto, meses y plan son requeridos' });
+    }
+
+    const { data: brand, error: brandError } = await supabaseAdmin
+      .from('brands')
+      .select('id, name, email, plan')
+      .eq('id', id)
+      .single();
+
+    if (brandError || !brand) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+    }
+
+    const now = payment_date ? new Date(payment_date) : new Date();
+    const endDate = new Date(now.getTime() + 30 * months * 24 * 60 * 60 * 1000);
+
+    const { error: updateError } = await supabaseAdmin
+      .from('brands')
+      .update({
+        plan: plan.toUpperCase(),
+        subscription_status: 'active',
+        subscription_start_date: now.toISOString(),
+        subscription_end_date: endDate.toISOString(),
+        last_payment_date: now.toISOString(),
+        trial_end_date: null,
+        trial_payment_status: null,
+      })
+      .eq('id', id);
+
+    if (updateError) {
+      console.error('[registerSubscriptionPayment] Error updating brand:', updateError);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al actualizar suscripción' });
+    }
+
+    const { error: paymentError } = await supabaseAdmin
+      .from('subscription_payments')
+      .insert({
+        brand_id: id,
+        amount,
+        currency: currency || 'COP',
+        payment_date: now.toISOString(),
+        payment_method: payment_method || 'manual',
+        status: status || 'completed',
+        months_paid: months,
+        notes: notes || `Pago registrado manualmente por admin. Plan: ${plan}, ${months} mes(es).`,
+      });
+
+    if (paymentError) {
+      console.error('[registerSubscriptionPayment] Error inserting payment:', paymentError);
+    }
+
+    return res.status(200).json({
+      message: 'Pago registrado exitosamente',
+      subscription: {
+        plan: plan.toUpperCase(),
+        status: 'active',
+        endDate: endDate.toISOString(),
+      },
+    });
+  } catch (error: any) {
+    console.error('Error in registerSubscriptionPayment:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al registrar pago' });
+  }
+};
+
+export const suspendSubscription = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const { error: updateError } = await supabaseAdmin
+      .from('brands')
+      .update({ subscription_status: 'suspended' })
+      .eq('id', id);
+
+    if (updateError) {
+      console.error('[suspendSubscription] Error:', updateError);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al suspender' });
+    }
+
+    return res.status(200).json({ message: 'Suscripción suspendida exitosamente' });
+  } catch (error: any) {
+    console.error('Error in suspendSubscription:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al suspender suscripción' });
+  }
+};
+
+export const reactivateSubscription = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const { data: brand, error: brandError } = await supabaseAdmin
+      .from('brands')
+      .select('id, subscription_end_date, plan, trial_end_date')
+      .eq('id', id)
+      .single();
+
+    if (brandError || !brand) {
+      return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+    }
+
+    const now = new Date();
+    let status = 'active';
+
+    if (brand.plan === 'TRIAL' && brand.trial_end_date) {
+      const trialEnd = new Date(brand.trial_end_date);
+      if (trialEnd < now) {
+        return res.status(400).json({ error: 'TRIAL_EXPIRED', message: 'El trial ha expirado. Registra un pago para reactivar.' });
+      }
+    } else if (brand.subscription_end_date) {
+      const end = new Date(brand.subscription_end_date);
+      if (end < now) {
+        return res.status(400).json({ error: 'SUBSCRIPTION_EXPIRED', message: 'La suscripción ha expirado. Registra un pago para reactivar.' });
+      }
+    }
+
+    const { error: updateError } = await supabaseAdmin
+      .from('brands')
+      .update({ subscription_status: status })
+      .eq('id', id);
+
+    if (updateError) {
+      console.error('[reactivateSubscription] Error:', updateError);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al reactivar' });
+    }
+
+    return res.status(200).json({ message: 'Suscripción reactivada exitosamente' });
+  } catch (error: any) {
+    console.error('Error in reactivateSubscription:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al reactivar suscripción' });
+  }
+};
+
+// ── Estadísticas de Revenue ───────────────────────────────────────────────────
+
+export const getRevenueStats = async (_req: any, res: Response) => {
+  try {
+    const { data: payments, error } = await supabaseAdmin
+      .from('subscription_payments')
+      .select('amount, currency, payment_date, status, plan_before, plan_after')
+      .eq('status', 'completed')
+      .order('payment_date', { ascending: false });
+
+    if (error) {
+      console.error('[getRevenueStats] Error:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al cargar estadísticas' });
+    }
+
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+
+    let totalRevenue = 0;
+    let monthlyRevenue = 0;
+    let paymentCount = 0;
+    let monthlyPaymentCount = 0;
+    const planCounts: Record<string, number> = {};
+
+    (payments || []).forEach((p: any) => {
+      const amount = Number(p.amount || 0);
+      totalRevenue += amount;
+      paymentCount++;
+
+      const payDate = new Date(p.payment_date);
+      if (payDate.getMonth() === thisMonth && payDate.getFullYear() === thisYear) {
+        monthlyRevenue += amount;
+        monthlyPaymentCount++;
+      }
+
+      const plan = p.plan_after || 'UNKNOWN';
+      planCounts[plan] = (planCounts[plan] || 0) + 1;
+    });
+
+    const avgTicket = paymentCount > 0 ? totalRevenue / paymentCount : 0;
+
+    const recentPayments = (payments || []).slice(0, 20).map((p: any) => ({
+      id: p.id,
+      amount: Number(p.amount || 0),
+      currency: p.currency || 'COP',
+      payment_date: p.payment_date,
+      plan: p.plan_after || 'N/A',
+    }));
+
+    return res.status(200).json({
+      totalRevenue,
+      monthlyRevenue,
+      avgTicket,
+      paymentCount,
+      monthlyPaymentCount,
+      planDistribution: planCounts,
+      recentPayments,
+    });
+  } catch (error: any) {
+    console.error('Error in getRevenueStats:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al cargar estadísticas de revenue' });
+  }
+};
