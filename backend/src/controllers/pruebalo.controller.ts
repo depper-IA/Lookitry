@@ -1142,12 +1142,19 @@ function buildTryOnPrompt(product: { name: string; category?: string; descriptio
     `- Reproduce the garment EXACTLY as shown in the reference image: same colors, patterns, textures, logos, stitching, cuts, and fit.`,
     `- Do NOT invent, simplify, or alter any visual element of the product.`,
 
+    `[NO GENERATED GRAPHICS OR ARTIFACTS]`,
+    `- Do NOT generate any watermark, signature, caption, subtitle, label, sticker, badge, icon, UI element, or decorative symbol anywhere in the image.`,
+    `- Do NOT generate any fake brand mark, fake logo, fake text, fake lettering, or fake embroidery that is not explicitly visible in the reference product.`,
+    `- If the reference product contains a real logo or graphic, reproduce only that exact original element in its correct position. Never add extra marks.`,
+    `- Background objects, walls, lights, vehicles, and accessories must not contain invented words, signs, or graphic marks.`,
+    `- The final image must look like a clean camera photograph, not a poster, ad creative, screenshot, or designed composition.`,
+
     `[PERSON & REALISM]`,
     `- Keep the person's face, skin tone, hair, body proportions, and expression IDENTICAL to the selfie.`,
     `- The product must fit naturally on the body with correct perspective, lighting, and shadows.`,
     `- Photorealistic quality only — no illustrations, no stylization.`,
 
-    `Output: the final try-on image only. No text, no watermarks, no UI overlays.`,
+    `Output: the final try-on image only. No text, no watermarks, no signatures, no fake logos, no UI overlays.`,
   );
 
   return lines.join('\n');
