@@ -143,6 +143,7 @@
             container.setAttribute('data-product-id', productId);
             container.setAttribute('data-modal', 'true');
             container.setAttribute('data-hide-legal', 'true');
+            container.setAttribute('data-plugin-view', 'true');
             container.setAttribute('data-height', String(Math.max(680, $modalContainer.innerHeight() || 760)));
             container.style.width = '100%';
             container.style.height = '100%';
