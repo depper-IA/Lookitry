@@ -322,6 +322,15 @@ export class WompiController {
       const parsedMonths = Number.parseInt(months as string, 10);
       const monthsNum = Number.isNaN(parsedMonths) ? 1 : parsedMonths;
 
+      // SECURITY: If authenticated, the email must match the session email.
+      if (brand?.id && email && brand.email && email.trim().toLowerCase() !== brand.email.toLowerCase()) {
+        res.status(403).json({
+          error: 'EMAIL_MISMATCH',
+          message: 'El email del checkout debe coincidir con el email de tu cuenta activa.',
+        });
+        return;
+      }
+
       if (brand?.id && effectivePlan === 'TRIAL') {
         res.status(409).json({
           error: 'AUTHENTICATED_TRIAL_DISABLED',
@@ -477,6 +486,16 @@ export class WompiController {
       const monthsNum = months ? parseInt(months as string, 10) : 1;
       const planStr = (plan as string)?.toUpperCase() || 'BASIC';
       const isLandingPurchase = (req.query.includes_landing as string) === 'true';
+
+      // SECURITY: If authenticated, the email must match the session email.
+      // Prevents creating orders for a different account while logged in.
+      if (brand?.id && email && brand.email && email.trim().toLowerCase() !== brand.email.toLowerCase()) {
+        res.status(403).json({
+          error: 'EMAIL_MISMATCH',
+          message: 'El email del checkout debe coincidir con el email de tu cuenta activa.',
+        });
+        return;
+      }
 
       if (brand?.id && planStr === 'TRIAL') {
         res.status(409).json({

@@ -1,5 +1,41 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-01] - FIX CRÍTICO: Seguridad del checkout — email de sesión vs email de checkout
+
+### Problema
+Un usuario autenticado como `quemovidaco@gmail.com` podía ingresar `samu.wilkie@gmail.com` en el checkout y el sistema procesaba el pago sin verificar la coincidencia del email. Esto permitía que una compra se asociara a una cuenta incorrecta.
+
+### Cambios Realizados
+
+- **Frontend - `frontend/src/app/checkout/page.tsx`**:
+  - El draft de `sessionStorage` ya NO sobreescribe el email cuando hay sesión activa (línea 209-214)
+  - `validateStep2` ahora compara el email del input con el email de la sesión activa — si difieren, bloquea el avance (línea 296-306)
+  - `handlePagar` incluye doble verificación como safety net antes de enviar el pago (línea 383-387)
+
+- **Frontend - `frontend/src/components/checkout/UserDataStep.tsx`**:
+  - Campo de email es readOnly cuando hay sesión activa (no se puede modificar)
+  - Se muestra el email de la sesión en el banner de sesión activa
+  - Se incluye enlace para cerrar sesión si se quiere usar otro correo
+
+- **Backend - `backend/src/controllers/wompi.controller.ts`**:
+  - `getCheckoutUrl`: Valida que el email del query param coincida con `brand.email` del JWT (HTTP 403 si no)
+  - `freeCheckout`: Misma validación para checkouts gratuitos
+
+- **Backend - `backend/src/controllers/paypal.controller.ts`**:
+  - `getCheckoutUrl`: Valida que el email del query param coincida con `brand.email` del JWT (HTTP 403 si no)
+
+- **Backend - `backend/src/controllers/auth-post-payment.controller.ts`**:
+  - Eliminado `override_email` del body — siempre se usa `pending.email` de la referencia de pago (linea 182-184)
+
+### Archivos Modificados
+- `frontend/src/app/checkout/page.tsx` (seguridad email + draft)
+- `frontend/src/components/checkout/UserDataStep.tsx` (bloqueo email con sesión)
+- `backend/src/controllers/wompi.controller.ts` (validación email vs JWT)
+- `backend/src/controllers/paypal.controller.ts` (validación email vs JWT)
+- `backend/src/controllers/auth-post-payment.controller.ts` (eliminado override_email)
+
+---
+
 ## [2026-04-01] - Auditoría del dashboard admin completada
 
 ### Cambios Realizados
