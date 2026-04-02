@@ -15,6 +15,12 @@ inclusion: always
 - **NO hacer commits ni push** sin que el usuario lo pida explícitamente
 - **NO hacer deploy** sin autorización explícita del usuario
 
+### 1.1 Deploy
+
+- **SIEMPRE usar el script `_deploy_now.py`**Located in `C:\Users\Matt\Lookitry\scripts\_deploy_now.py`
+- **NUNCA usar GitHub Actions CI/CD** para deploys
+- Para ejecutar: `python _deploy_now.py` desde la carpeta `scripts/` o usar `--force` para forzar rebuild
+
 ---
 
 ## 2. Registro de Cambios (Changelog)
