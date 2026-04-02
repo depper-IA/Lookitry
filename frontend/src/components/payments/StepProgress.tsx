@@ -13,8 +13,8 @@ interface StepProgressProps {
 }
 
 const steps = [
-  { id: 1, name: 'Tus Datos', icon: User },
-  { id: 2, name: 'Plan', icon: LayoutPanelLeft },
+  { id: 1, name: 'Plan', icon: LayoutPanelLeft },
+  { id: 2, name: 'Tus Datos', icon: User },
   { id: 3, name: 'Pago', icon: CreditCard },
   { id: 4, name: 'Acceso', icon: Rocket },
 ];
