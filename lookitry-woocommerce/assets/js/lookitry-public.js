@@ -37,6 +37,30 @@
             return productId ? String(productId).trim() : '';
         }
 
+        function getProductUrl() {
+            return window.location.href;
+        }
+
+        function getAddToCartUrl(productId) {
+            const productUrl = getProductUrl();
+
+            if (!productId) {
+                return productUrl;
+            }
+
+            try {
+                const url = new URL(productUrl);
+                url.searchParams.set('add-to-cart', productId);
+                return url.toString();
+            } catch (error) {
+                return productUrl + (productUrl.indexOf('?') === -1 ? '?' : '&') + 'add-to-cart=' + encodeURIComponent(productId);
+            }
+        }
+
+        function getCartUrl() {
+            return lookitry_vars.cart_url || (window.location.origin + '/cart/');
+        }
+
         function getButtonMarkup(productId) {
             return '' +
                 '<div class="lookitry-tryon-container lookitry-tryon-container--fallback">' +
@@ -144,6 +168,9 @@
             container.setAttribute('data-modal', 'true');
             container.setAttribute('data-hide-legal', 'true');
             container.setAttribute('data-plugin-view', 'true');
+            container.setAttribute('data-product-url', getProductUrl());
+            container.setAttribute('data-add-to-cart-url', getAddToCartUrl(productId));
+            container.setAttribute('data-cart-url', getCartUrl());
             container.setAttribute('data-height', String(Math.max(680, $modalContainer.innerHeight() || 760)));
             container.style.width = '100%';
             container.style.height = '100%';

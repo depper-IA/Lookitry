@@ -69,6 +69,7 @@ function lookitry_enqueue_scripts() {
             'session_token'=> lookitry_get_session_token( $api_key, $store_domain ),
             'store_domain' => $store_domain,
             'button_text'  => $button_text,
+            'cart_url'     => function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/cart/' ),
         ));
     }
 }

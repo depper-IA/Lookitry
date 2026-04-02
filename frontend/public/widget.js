@@ -69,6 +69,9 @@
     const pluginView = container.getAttribute('data-plugin-view') === 'true';
     const initialHeight = normalizeHeight(container.getAttribute('data-height'), modalMode ? 760 : 700);
     const productId = resolveProductId(container);
+    const productUrl = container.getAttribute('data-product-url');
+    const addToCartUrl = container.getAttribute('data-add-to-cart-url');
+    const cartUrl = container.getAttribute('data-cart-url');
 
     if (!slug) {
       console.error('Lookitry: Falta el atributo data-slug en el contenedor.');
@@ -81,6 +84,15 @@
     }
     if (pluginView) {
       embedUrl.searchParams.set('plugin_view', '1');
+    }
+    if (productUrl) {
+      embedUrl.searchParams.set('product_url', productUrl);
+    }
+    if (addToCartUrl) {
+      embedUrl.searchParams.set('add_to_cart_url', addToCartUrl);
+    }
+    if (cartUrl) {
+      embedUrl.searchParams.set('cart_url', cartUrl);
     }
     embedUrl.searchParams.set('parent_url', window.location.href);
 
