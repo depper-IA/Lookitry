@@ -128,17 +128,33 @@ export function ResultDisplay({
     try {
       const shareTargetUrl = pluginView ? imageUrl : getProxiedImageUrl(imageUrl, brandPlan);
 
+      if (pluginView && !navigator.share) {
+        const popup = window.open(shareTargetUrl, '_blank', 'noopener,noreferrer');
+        if (popup) {
+          setShareError('Imagen abierta en una nueva pestaña para compartirla.');
+          return;
+        }
+      }
+
       if (navigator.share) {
         try {
-          const res = await fetch(shareTargetUrl);
-          const blob = await res.blob();
-          const file = new File([blob], 'prueba-virtual.jpg', { type: blob.type || 'image/jpeg' });
+          if (pluginView) {
+            await navigator.share({
+              title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
+              text: `Mira cómo me queda este producto: ${productName}`,
+              url: shareTargetUrl,
+            });
+          } else {
+            const res = await fetch(shareTargetUrl);
+            const blob = await res.blob();
+            const file = new File([blob], 'prueba-virtual.jpg', { type: blob.type || 'image/jpeg' });
 
-          await navigator.share({
-            title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
-            text: `Mira cómo me queda este producto: ${productName}`,
-            files: [file],
-          });
+            await navigator.share({
+              title: `Mi prueba virtual en ${brandName ?? 'Lookitry'}`,
+              text: `Mira cómo me queda este producto: ${productName}`,
+              files: [file],
+            });
+          }
           return;
         } catch (_nativeShareError) {
           try {
@@ -152,13 +168,21 @@ export function ResultDisplay({
         }
       }
 
+      if (pluginView) {
+        const popup = window.open(shareTargetUrl, '_blank', 'noopener,noreferrer');
+        if (popup) {
+          setShareError('Imagen abierta en una nueva pestaña para compartirla.');
+          return;
+        }
+      }
+
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(shareTargetUrl);
         setShareError('Enlace copiado. Ya puedes compartir la imagen.');
         return;
       }
 
-      window.open(shareTargetUrl, '_blank', 'noopener');
+      window.open(shareTargetUrl, '_blank', 'noopener,noreferrer');
     } catch (error) {
       console.error('Error al compartir:', error);
       setShareError('No se pudo compartir en este dispositivo.');

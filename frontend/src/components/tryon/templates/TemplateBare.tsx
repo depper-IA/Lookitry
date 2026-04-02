@@ -37,7 +37,7 @@ export function TemplateBare(props: TryOnTemplateProps) {
       style={{ backgroundColor: secondaryColor }}
     >
       {step === 'generating' && (
-        <div className="flex-1 flex items-center justify-center py-8">
+        <div className={`flex-1 flex items-center justify-center ${pluginView ? 'min-h-[70vh] px-4 py-0' : 'py-8'}`}>
           <GenerationLoader productName={selectedProduct?.name || ''} primaryColor={primaryColor} />
         </div>
       )}

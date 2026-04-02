@@ -3,7 +3,7 @@
  * Plugin Name: Lookitry for WooCommerce
  * Plugin URI: https://lookitry.com
  * Description: El probador virtual de Lookitry para tu tienda de WooCommerce.
- * Version: 1.3.7
+ * Version: 1.3.8
  * Author: Wilkie Devs
  * Author URI: https://wilkiedevs.com
  * License: GPL2
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 define('LOOKITRY_PLUGIN_FILE', __FILE__);
-define('LOOKITRY_PLUGIN_VERSION', '1.3.7');
+define('LOOKITRY_PLUGIN_VERSION', '1.3.8');
 define('LOOKITRY_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('LOOKITRY_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('LOOKITRY_API_BASE_URL', 'https://api.lookitry.com/api');
