@@ -84,7 +84,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
 
   const handleLogout = async () => {
     await logout();
-    router.push('/login');
+    router.push('/');
   };
 
   const sidebarContent = (
@@ -207,7 +207,80 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
       </div>
 
       <div className={`fixed inset-y-0 left-0 z-40 w-[280px] transform transition-transform duration-300 ease-in-out lg:hidden ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        {sidebarContent}
+        <div className="flex h-full flex-col bg-[#0a0a0a]">
+          <div className="flex h-[80px] flex-shrink-0 items-center justify-between px-6 bg-[#0a0a0a]">
+            <Link href="/dashboard" className="group flex items-center gap-3">
+              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-lg transition-all duration-500 group-hover:border-[#FF5C3A]/50">
+                <Image src="/logo.svg" alt="Lookitry" width={24} height={24} className="object-contain transition-transform duration-500 group-hover:rotate-12" priority />
+              </div>
+              <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="block shrink-0 text-lg leading-none">
+                <LookitryLogoText className="text-white" />
+              </motion.div>
+            </Link>
+            <button
+              className="rounded-xl p-2 text-gray-400 transition-all hover:bg-white/5 hover:text-white"
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Cerrar menú"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <nav className="no-scrollbar flex-1 space-y-1.5 overflow-y-auto py-6 px-4">
+            {visibleNavigation.map((item) => {
+              const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`group flex items-center gap-3 rounded-2xl px-5 py-3.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-300 ${
+                    isActive ? 'bg-[#FF5C3A] text-white shadow-xl shadow-[#FF5C3A]/20' : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <item.icon className={`h-5 w-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-600 group-hover:text-[#FF5C3A]'}`} />
+                  <span className="block leading-none">{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="flex-shrink-0 p-4">
+            <div className="group/profile flex items-center gap-3 rounded-[2.5rem] border border-white/5 bg-white/5 p-3 shadow-inner transition-all duration-300">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#FF5C3A] text-[13px] font-black text-white shadow-lg transition-all duration-500 group-hover/profile:scale-105">
+                {currentBrand?.logo ? (
+                  <img
+                    src={getProxiedUrl(currentBrand.logo)}
+                    alt={currentBrand.name}
+                    className="h-full w-full object-contain bg-white/5 p-1"
+                    onError={(event) => {
+                      (event.target as HTMLImageElement).style.display = 'none';
+                      (event.target as HTMLImageElement).parentElement!.innerHTML = currentBrand?.name?.charAt(0)?.toUpperCase() ?? 'M';
+                    }}
+                  />
+                ) : (
+                  currentBrand?.name?.charAt(0)?.toUpperCase() ?? 'M'
+                )}
+              </div>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="block min-w-0 flex-1">
+                <p className="truncate text-[12px] font-semibold leading-tight tracking-tight text-white">{currentBrand?.name}</p>
+                <div className="mt-1 flex items-center gap-1.5">
+                  <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                  <p className="truncate text-[10px] font-bold uppercase leading-none tracking-tighter text-gray-500">
+                    Plan {currentBrand?.plan}
+                  </p>
+                </div>
+              </motion.div>
+              <button
+                onClick={handleLogout}
+                className="group/logout flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-gray-600 transition-all hover:bg-white/10 hover:text-white"
+                title="Cerrar sesión"
+              >
+                <LogOut size={18} className="transition-transform group-hover/logout:translate-x-0.5" />
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className={`flex h-screen flex-col overflow-hidden transition-all duration-300 ${sidebarOpen ? 'blur-[2px]' : ''} ${isCollapsed ? 'lg:pl-[88px] xl:pl-[96px]' : 'lg:pl-[96px] xl:pl-[240px] 2xl:pl-[280px]'}`}>
@@ -261,11 +334,11 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         >
           <div className="flex items-center gap-3 lg:hidden">
             <button
-              className="rounded-xl border border-white/5 bg-white/5 p-2 text-[var(--text-secondary)] transition-all active:scale-95"
+              className="p-2 text-[var(--text-secondary)] transition-all hover:text-white active:scale-95"
               onClick={() => setSidebarOpen(true)}
               aria-label="Abrir menú"
             >
-              <Menu size={20} />
+              <Menu size={22} />
             </button>
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
               <Image src="/logo.svg" alt="L" width={18} height={18} priority />

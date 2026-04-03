@@ -35,44 +35,39 @@ export function DashboardBottomNav() {
     return pathname.startsWith(href);
   };
 
-  const handleLogout = async () => {
-    await authService.logout();
-    router.push('/login');
-  };
-
   if (!pathname.startsWith('/dashboard')) return null;
 
   return (
     <nav
       role="navigation"
       aria-label="Navegación del dashboard"
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#0a0a0a]/95 backdrop-blur-lg border-t border-white/10"
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
     >
-      <div className="flex items-center justify-around h-16 max-w-md mx-auto pb-safe">
-        {navItems.map((item) => {
-          const active = isActive(item.href);
-          
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={active ? 'page' : undefined}
-              className={`flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-200 active:scale-95 ${
-                active ? 'text-[#FF5C3A]' : 'text-white/50 hover:text-white/80'
-              }`}
-            >
-              <div className="relative">
-                {active && (
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#FF5C3A]" />
-                )}
-                {item.icon}
-              </div>
-              <span className="text-[10px] font-medium uppercase tracking-wider">
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
+      <div className="mx-auto max-w-sm px-4 pb-2 pt-1">
+        <div className="flex items-center justify-center gap-1 rounded-2xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/40 px-2 py-2 pb-safe">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? 'page' : undefined}
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+                  active
+                    ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                    : 'text-white/40 hover:text-white/70 active:text-white/60'
+                }`}
+              >
+                <div className="relative">
+                  {item.icon}
+                </div>
+                <span className="text-[9px] font-semibold uppercase tracking-wider truncate w-full text-center">
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
