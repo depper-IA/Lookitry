@@ -51,7 +51,7 @@ router.post('/logout', (_req, res) => {
 });
 
 // POST /api/auth/refresh-session — renueva el JWT y la cookie
-router.post('/refresh-session', authMiddleware, asyncHandler((req: any, res: Response) => {
+router.post('/refresh-session', authMiddleware, asyncHandler(async (req: any, res: Response) => {
   const { brand } = req;
   const { generateToken } = require('../utils/jwt');
   const newToken = generateToken({ brandId: brand.id, email: brand.email });
