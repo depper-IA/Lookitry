@@ -41,12 +41,20 @@ router.get('/check-email', asyncHandler((req, res) => authController.checkEmail(
 // POST /api/auth/logout — limpia la cookie HTTP-Only del lado del servidor
 router.post('/logout', (_req, res) => {
   const IS_PROD = process.env.NODE_ENV === 'production';
-  res.clearCookie('token', {
+  const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+  
+  const clearOptions: any = {
     path: '/',
     httpOnly: true,
     secure: IS_PROD,
     sameSite: IS_PROD ? 'strict' : 'lax',
-  });
+  };
+  
+  if (COOKIE_DOMAIN && IS_PROD) {
+    clearOptions.domain = COOKIE_DOMAIN;
+  }
+  
+  res.clearCookie('token', clearOptions);
   res.json({ ok: true });
 });
 
