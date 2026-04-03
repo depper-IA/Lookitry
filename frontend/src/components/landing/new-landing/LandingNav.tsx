@@ -337,55 +337,6 @@ export default function LandingNav({
 
             <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-            {/* Mobile Auth Section */}
-            <div className="flex flex-col gap-3">
-              {session ? (
-                <>
-                  <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10">
-                    <div className="w-10 h-10 rounded-full bg-[#FF5C3A] flex items-center justify-center text-white font-bold text-sm">
-                      {initials}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[12px] font-bold text-white">{session.name}</span>
-                      <span className="text-[10px] text-white/40 uppercase tracking-widest">Mi Panel</span>
-                    </div>
-                  </div>
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full flex items-center gap-3 py-3.5 px-4 text-white/80 font-bold uppercase tracking-widest text-[11px] border border-white/10 rounded-2xl active:scale-[0.98] transition-all hover:bg-white/5"
-                  >
-                    <User size={16} className="text-white/40" />
-                    Dashboard General
-                  </Link>
-                  <button
-                    onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
-                    className="w-full flex items-center gap-3 py-3.5 px-4 text-white/80 font-bold uppercase tracking-widest text-[11px] border border-red-500/20 rounded-2xl active:scale-[0.98] transition-all hover:bg-red-500/10"
-                  >
-                    <LogOut size={16} className="text-red-400" />
-                    Cerrar Sesión
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full py-3.5 text-center text-white/60 font-bold uppercase tracking-widest text-[11px] border border-white/10 rounded-2xl active:scale-[0.98] transition-all hover:bg-white/5"
-                  >
-                    Ingresar
-                  </Link>
-                  <Link
-                    href="/checkout?plan=TRIAL"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full bg-[#FF5C3A] text-white px-8 py-4 rounded-2xl font-jakarta font-black text-center transition-all active:scale-[0.98] hover:bg-[#ff7a5f] shadow-xl shadow-[#FF5C3A]/20"
-                  >
-                    Probar ahora
-                  </Link>
-                </>
-              )}
-            </div>
-
             <div className="flex flex-wrap gap-x-6 gap-y-3 text-[10px] text-white/30 font-medium pt-4">
               <Link href="/terminos" className="hover:text-white/60 transition-colors">Términos</Link>
               <Link href="/politicas-privacidad" className="hover:text-white/60 transition-colors">Privacidad</Link>
