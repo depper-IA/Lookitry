@@ -349,12 +349,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         >
           <div className="flex items-center gap-3">
             <button
-              className="lg:hidden p-2 rounded-lg -ml-1 cursor-pointer transition-colors"
-              style={{ color: 'var(--text-secondary)' }}
+              className="lg:hidden p-2 -ml-1 text-gray-500 transition-all hover:text-white"
               onClick={() => setSidebarOpen(true)}
               aria-label="Abrir menú"
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
