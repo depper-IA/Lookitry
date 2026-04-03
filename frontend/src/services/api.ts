@@ -35,12 +35,11 @@ async function apiFetch<T>(
   const data = await res.json().catch(() => ({}));
 
   if (res.status === 401) {
-    authService.logout();
+    authService.clearSession();
     if (typeof window !== 'undefined') {
       const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       if (!isAuthRoute(window.location.pathname)) {
-        const redirect = currentPath.startsWith('/') ? `?redirect=${encodeURIComponent(currentPath)}` : '';
-        window.location.href = `/login${redirect}`;
+        window.location.href = '/';
       }
     }
   }

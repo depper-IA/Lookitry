@@ -13,14 +13,14 @@ export interface AuthRequest extends Request {
   };
 }
 
-/** Extrae el token JWT de la cookie HTTP-Only o del header Authorization como fallback */
+/** Extrae el token JWT de la cookie HTTP-Only preferentemente */
 function extractToken(req: Request): string | null {
-  // 1️⃣ Header Bearer (máxima prioridad — enviado explícitamente por el frontend)
+  // 1️⃣ Cookie HTTP-Only (para sesiones persistentes)
+  if ((req as any).cookies?.token) return (req as any).cookies.token;
+
+  // 2️⃣ Solo como fallback: Header Bearer
   const authHeader = req.headers.authorization;
   if (authHeader?.startsWith('Bearer ')) return authHeader.substring(7);
-
-  // 2️⃣ Fallback: Cookie HTTP-Only (para sesiones persistentes en el mismo dominio)
-  if ((req as any).cookies?.token) return (req as any).cookies.token;
 
   return null;
 }
