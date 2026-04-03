@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { AuthController } from '../controllers/auth.controller';
 import { registerPostPayment, getPendingRegistration } from '../controllers/auth-post-payment.controller';
 import { authRateLimiter } from '../middleware/rateLimiter';
@@ -40,8 +40,36 @@ router.get('/check-email', asyncHandler((req, res) => authController.checkEmail(
 
 // POST /api/auth/logout — limpia la cookie HTTP-Only del lado del servidor
 router.post('/logout', (_req, res) => {
-  res.clearCookie('token', { path: '/', httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' });
+  const IS_PROD = process.env.NODE_ENV === 'production';
+  res.clearCookie('token', {
+    path: '/',
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: IS_PROD ? 'strict' : 'lax',
+  });
   res.json({ ok: true });
 });
+
+// POST /api/auth/refresh-session — renueva el JWT y la cookie
+router.post('/refresh-session', authMiddleware, asyncHandler((req: any, res: Response) => {
+  const { brand } = req;
+  const { generateToken } = require('../utils/jwt');
+  const newToken = generateToken({ brandId: brand.id, email: brand.email });
+  
+  const IS_PROD = process.env.NODE_ENV === 'production';
+  const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN;
+  const cookieOptions: any = {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: IS_PROD ? 'strict' : 'lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    path: '/',
+  };
+  if (COOKIE_DOMAIN && IS_PROD) {
+    cookieOptions.domain = COOKIE_DOMAIN;
+  }
+  res.cookie('token', newToken, cookieOptions);
+  res.json({ ok: true, message: 'Session refreshed' });
+}));
 
 export default router;

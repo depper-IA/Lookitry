@@ -1,46 +1,64 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { authService } from '@/services/auth.service';
 
-const IDLE_TIME = 30 * 60 * 1000; // 30 minutos en milisegundos
+const IDLE_TIMEOUT = 60 * 60 * 1000; // 60 minutos de inactividad
+const REFRESH_BEFORE_MS = 5 * 60 * 1000; // Refrescar 5 min antes de expirar
 
 export default function IdleTimer({ children }: { children: React.ReactNode }) {
   const { logout, brand } = useAuth();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
 
-  const resetTimer = () => {
+  const refreshSession = useCallback(async () => {
+    try {
+      await authService.refreshSession();
+      lastActivityRef.current = Date.now();
+      console.log('[IdleTimer] Sesión refresheda');
+    } catch (e) {
+      console.error('[IdleTimer] Error al refresh sesión:', e);
+    }
+  }, []);
+
+  const resetTimer = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
+
+    const timeSinceLastActivity = Date.now() - lastActivityRef.current;
+
+    if (timeSinceLastActivity > IDLE_TIMEOUT - REFRESH_BEFORE_MS) {
+      refreshSession();
+    }
+
+    lastActivityRef.current = Date.now();
+
     timerRef.current = setTimeout(() => {
       if (brand) {
-        console.log('[IdleTimer] Inactividad detectada (30 min). Cerrando sesión...');
+        console.log('[IdleTimer] Inactividad detectada (60 min). Cerrando sesión...');
         logout();
       }
-    }, IDLE_TIME);
-  };
+    }, IDLE_TIMEOUT);
+  }, [brand, logout, refreshSession]);
 
   useEffect(() => {
     if (!brand) return;
 
-    // Eventos que resetean el contador de inactividad
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'focus'];
     
-    // Iniciar el timer
     resetTimer();
 
-    // Agregar listeners
     events.forEach(event => {
       window.addEventListener(event, resetTimer);
     });
 
-    // Limpieza al desmontar
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       events.forEach(event => {
         window.removeEventListener(event, resetTimer);
       });
     };
-  }, [brand, logout]);
+  }, [brand, resetTimer]);
 
   return <>{children}</>;
 }
