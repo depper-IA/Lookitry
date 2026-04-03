@@ -156,7 +156,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
               currentBrand?.name?.charAt(0)?.toUpperCase() ?? 'M'
             )}
           </div>
-          {!isCollapsed && (
+              {!isCollapsed && (
             <>
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="block min-w-0 flex-1 lg:hidden xl:block">
                 <p className="truncate text-[12px] font-semibold leading-tight tracking-tight text-white">{currentBrand?.name}</p>
@@ -169,7 +169,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
               </motion.div>
               <button
                 onClick={logout}
-                className="group/logout hidden h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-gray-600 transition-all hover:bg-white/10 hover:text-white lg:flex xl:flex"
+                className="group/logout flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-gray-600 transition-all hover:bg-white/10 hover:text-white"
                 title="Cerrar sesión"
               >
                 <LogOut size={18} className="transition-transform group-hover/logout:translate-x-0.5" />
