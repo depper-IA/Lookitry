@@ -145,7 +145,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       await fetch(`${apiBase}/api/admin/auth/logout`, { method: 'POST', credentials: 'include' });
     } catch (e) { console.error('Error logging out:', e); }
     localStorage.removeItem('adminUser');
-    router.push('/admin/login');
+    router.push('/');
   };
 
   if (pathname === '/admin/login') return <>{children}</>;
