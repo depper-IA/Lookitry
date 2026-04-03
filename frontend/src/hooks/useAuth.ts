@@ -89,7 +89,7 @@ export function useAuth() {
   const logout = async () => {
     await authService.logout();
     setBrand(null);
-    window.location.href = '/login';
+    window.location.href = '/';
   };
 
   const refreshBrand = async () => {

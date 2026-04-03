@@ -80,8 +80,8 @@ class AuthService {
   async logout(): Promise<void> {
     localStorage.removeItem('brand');
     localStorage.removeItem('brand_plan');
-    localStorage.removeItem('token'); // Limpiar token de desarrollo
-    // Llamar al backend para limpiar la cookie HTTP-Only
+    localStorage.removeItem('token');
+    localStorage.removeItem('lastActivity');
     try {
       await fetch(`${API_URL}/api/auth/logout`, {
         method: 'POST',
@@ -90,6 +90,12 @@ class AuthService {
     } catch (e) {
       console.error('Logout error:', e);
     }
+  }
+
+  async refreshSession(): Promise<void> {
+    await apiFetch<{ ok: boolean }>('/api/auth/refresh-session', {
+      method: 'POST',
+    });
   }
 
   /** @deprecated El token ya viaja como cookie HTTP-Only. Solo se mantiene para retrocompatibilidad con código legacy. */
