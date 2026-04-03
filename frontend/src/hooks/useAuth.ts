@@ -89,7 +89,6 @@ export function useAuth() {
   const logout = async () => {
     authService.clearSession();
     setBrand(null);
-    await authService.logout();
   };
 
   const refreshBrand = async () => {

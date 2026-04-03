@@ -75,7 +75,7 @@ export default function LandingNav({
     await authService.logout();
     setSession(null);
     setDropdownOpen(false);
-    window.location.href = '/login';
+    window.location.href = '/';
   }
 
   const initials = session?.name
