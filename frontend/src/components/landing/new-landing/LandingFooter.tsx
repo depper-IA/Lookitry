@@ -99,37 +99,37 @@ export default function LandingFooter() {
   };
 
   return (
-    <footer className="bg-[#080808] dark:bg-[#080808] pt-16 sm:pt-20 md:pt-24 lg:pt-28 pb-8 px-4 sm:px-6 md:px-12 border-t border-white/5 relative z-10" role="contentinfo">
+    <footer className="bg-[#080808] dark:bg-[#080808] pt-12 sm:pt-20 md:pt-24 lg:pt-28 pb-6 px-4 sm:px-6 md:px-12 border-t border-white/5 relative z-10" role="contentinfo">
       <div className="max-w-7xl mx-auto">
-        {/* Mobile: Centered clean layout */}
-        <div className="md:hidden mb-10">
-          <div className="flex flex-col items-center text-center mb-8">
-            <Link href="/" className="inline-flex items-center gap-2.5 mb-4 group">
-              <div className="relative w-8 h-8">
+        {/* Mobile: Centered compact layout */}
+        <div className="md:hidden mb-8">
+          <div className="flex flex-col items-center text-center mb-5">
+            <Link href="/" className="inline-flex items-center gap-2.5 mb-3 group">
+              <div className="relative w-7 h-7">
                 <Image src="/logo.svg" alt="Lookitry" fill className="object-contain" />
               </div>
-              <span className="font-jakarta text-xl font-bold text-white tracking-tighter">
+              <span className="font-jakarta text-lg font-bold text-white tracking-tighter">
                 Look<span className="text-[#FF5C3A]">itry</span>
               </span>
             </Link>
-            <p className="text-white/50 text-sm leading-relaxed font-dm-sans max-w-xs">
+            <p className="text-white/40 text-xs leading-relaxed font-dm-sans max-w-[260px]">
               Empoderamos al retail con Inteligencia Artificial.
             </p>
           </div>
 
           {/* Social Icons - Mobile */}
-          <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="flex items-center justify-center gap-2.5 mb-5">
             {[
               { Icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
               { Icon: Facebook, href: socialLinks.facebook, label: 'Facebook' },
               { Icon: MessageCircle, href: socialLinks.whatsapp, label: 'WhatsApp' }
             ].map((item, idx) => (
-              <Link key={idx} href={item.href} target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-[#FF5C3A] hover:border-[#FF5C3A] transition-all duration-300" aria-label={item.label}>
-                <item.Icon size={18} aria-hidden="true" />
+              <Link key={idx} href={item.href} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white/40 hover:text-white hover:bg-[#FF5C3A] hover:border-[#FF5C3A] transition-all duration-300" aria-label={item.label}>
+                <item.Icon size={16} aria-hidden="true" />
               </Link>
             ))}
-            <Link href={socialLinks.tiktok} target="_blank" rel="noopener noreferrer" className="w-11 h-11 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-[#FF5C3A] hover:border-[#FF5C3A] transition-all duration-300" aria-label="TikTok">
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden="true">
+            <Link href={socialLinks.tiktok} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white/40 hover:text-white hover:bg-[#FF5C3A] hover:border-[#FF5C3A] transition-all duration-300" aria-label="TikTok">
+              <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current" aria-hidden="true">
                 <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.34 6.34 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
               </svg>
             </Link>
@@ -141,18 +141,18 @@ export default function LandingFooter() {
               <div key={section.title} className="border-b border-white/5">
                 <button
                   onClick={() => toggleSection(section.title)}
-                  className="w-full flex items-center justify-between py-4 text-[11px] font-bold text-white/70 uppercase tracking-wider"
+                  className="w-full flex items-center justify-between py-3 text-[10px] font-bold text-white/60 uppercase tracking-wider"
                   aria-expanded={openSections[section.title]}
                 >
                   {section.title}
-                  <ChevronDown size={16} className={`text-white/30 transition-transform ${openSections[section.title] ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={14} className={`text-white/25 transition-transform ${openSections[section.title] ? 'rotate-180' : ''}`} />
                 </button>
                 {openSections[section.title] && (
-                  <div className="pb-4 -mt-1">
-                    <ul className="flex flex-col gap-1">
+                  <div className="pb-3 -mt-0.5">
+                    <ul className="flex flex-col gap-0.5">
                       {section.links.map(item => (
                         <li key={item.name}>
-                          <Link href={item.href} className="block py-2.5 text-sm text-white/40 font-dm-sans hover:text-[#FF5C3A] transition-colors text-center">
+                          <Link href={item.href} className="block py-2 text-xs text-white/35 font-dm-sans hover:text-[#FF5C3A] transition-colors text-center">
                             {item.name}
                           </Link>
                         </li>
@@ -165,10 +165,10 @@ export default function LandingFooter() {
           </div>
 
           {/* Quick links - Mobile */}
-          <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-6 text-xs text-white/30 font-medium">
-            <Link href="/contacto" className="hover:text-white/60 transition-colors">Contacto</Link>
-            <Link href="/sobre-nosotros" className="hover:text-white/60 transition-colors">Nosotros</Link>
-            <Link href="/estado" className="hover:text-white/60 transition-colors">Estado</Link>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mt-4 text-[10px] text-white/25 font-medium">
+            <Link href="/contacto" className="hover:text-white/50 transition-colors">Contacto</Link>
+            <Link href="/sobre-nosotros" className="hover:text-white/50 transition-colors">Nosotros</Link>
+            <Link href="/estado" className="hover:text-white/50 transition-colors">Estado</Link>
           </div>
         </div>
 
@@ -242,11 +242,11 @@ export default function LandingFooter() {
           </div>
         </div>
 
-        <div className="pt-8 sm:pt-10 md:pt-12 border-t border-white/5 flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8 md:gap-10">
-          <div className="text-white/20 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] font-dm-sans text-center lg:text-left">
+        <div className="pt-6 sm:pt-10 md:pt-12 border-t border-white/5 flex flex-col items-center gap-4 sm:gap-8 md:gap-10">
+          <div className="text-white/15 text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] font-dm-sans text-center">
             © {currentYear} Lookitry / Una división de <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="hover:text-white/60 transition-colors">Wilkie Devs SAS</Link>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 md:gap-10 sm:opacity-60 transition-opacity">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-10 opacity-50">
             <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/30"><Globe size={14} aria-hidden="true" /> CALI. COLOMBIA</div>
             <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/30"><ShieldCheck size={14} aria-hidden="true" /> PCI Tier 1</div>
           </div>

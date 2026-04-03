@@ -35,8 +35,8 @@ export function AdminBottomNav() {
       aria-label="Navegación del admin"
       className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
     >
-      <div className="mx-auto max-w-sm px-4 pb-2 pt-1">
-        <div className="flex items-center justify-center gap-1 rounded-2xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/40 px-2 py-2 pb-safe">
+      <div className="mx-auto max-w-sm px-3 pb-2 pt-1">
+        <div className="flex items-center justify-center gap-0.5 rounded-2xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/40 px-1.5 py-1.5 pb-safe">
           {navItems.map((item) => {
             const active = isActive(item.href);
             return (
