@@ -56,6 +56,27 @@
   }
 }
 
+/* ── Breakpoints adicionales para experiencia premium ─────────────────────── */
+@media (min-width: 1920px) {
+  .container-premium {
+    max-width: 1600px;
+  }
+}
+
+@media (max-width: 640px) {
+  .text-responsive-hero {
+    font-size: 1.875rem;
+    line-height: 1.2;
+  }
+  .text-responsive-section {
+    font-size: 1.5rem;
+  }
+  .card-responsive {
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+}
+
 /* ── Base ──────────────────────────────────────────────────────────────────── */
 body {
   font-family: var(--font-dm-sans), sans-serif;
