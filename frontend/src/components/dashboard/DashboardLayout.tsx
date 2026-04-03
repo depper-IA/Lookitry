@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,6 +12,7 @@ import { LiveTryOnButton } from './LiveTryOnButton';
 import { DashboardNotifications } from './DashboardNotifications';
 import { TrialBanner } from './TrialBanner';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { DashboardBottomNav } from '@/components/ui/DashboardBottomNav';
 import { LookitryLogoText } from '@/components/mini-landing/shared';
 import { getProxiedUrl } from '@/utils/imageProxy';
 import type { Brand } from '@/types';
@@ -37,6 +38,7 @@ const navigation = [
 
 export function DashboardLayout({ children, brandOverride = null }: DashboardLayoutProps) {
   const { brand, logout } = useAuth();
+  const router = useRouter();
   const currentBrand = brandOverride ?? brand;
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -78,6 +80,11 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
     } finally {
       setResendSending(false);
     }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
   };
 
   const sidebarContent = (
@@ -168,7 +175,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
                 </div>
               </motion.div>
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="group/logout flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-gray-600 transition-all hover:bg-white/10 hover:text-white"
                 title="Cerrar sesión"
               >
@@ -284,6 +291,8 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">{children}</div>
         </main>
       </div>
+
+      <DashboardBottomNav />
     </div>
   );
 }

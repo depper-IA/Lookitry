@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { AdminNotifications } from '@/components/admin/AdminNotifications';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { ConfirmProvider } from '@/components/admin/ConfirmDialog';
+import { AdminBottomNav } from '@/components/ui/AdminBottomNav';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Building2, CreditCard, TrendingUp, History, Settings2, Tag, PieChart, MousePointer2, Layout, Megaphone, Bell, Clock, ShieldCheck, User, Shield, DollarSign, Activity, Zap, Brain, BookOpen, GitBranch } from 'lucide-react';
 
@@ -369,6 +370,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <main className="flex-1 p-5 sm:p-7">{children}</main>
       </div>
+
+      <AdminBottomNav />
     </div>
     </ConfirmProvider>
   );
