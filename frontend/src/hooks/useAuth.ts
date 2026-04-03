@@ -87,9 +87,9 @@ export function useAuth() {
   };
 
   const logout = async () => {
-    await authService.logout();
+    authService.clearSession();
     setBrand(null);
-    window.location.href = '/';
+    await authService.logout();
   };
 
   const refreshBrand = async () => {

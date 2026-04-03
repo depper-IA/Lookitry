@@ -82,20 +82,34 @@ class AuthService {
     localStorage.removeItem('brand_plan');
     localStorage.removeItem('token');
     localStorage.removeItem('lastActivity');
+    
     try {
-      await fetch(`${API_URL}/api/auth/logout`, {
+      const res = await fetch(`${API_URL}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });
+      
+      if (!res.ok) {
+        console.error('Logout API error:', res.status);
+      }
     } catch (e) {
       console.error('Logout error:', e);
     }
+    
+    window.location.href = '/';
   }
 
   async refreshSession(): Promise<void> {
     await apiFetch<{ ok: boolean }>('/api/auth/refresh-session', {
       method: 'POST',
     });
+  }
+
+  clearSession(): void {
+    localStorage.removeItem('brand');
+    localStorage.removeItem('brand_plan');
+    localStorage.removeItem('token');
+    localStorage.removeItem('lastActivity');
   }
 
   /** @deprecated El token ya viaja como cookie HTTP-Only. Solo se mantiene para retrocompatibilidad con código legacy. */
