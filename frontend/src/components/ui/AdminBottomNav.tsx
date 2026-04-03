@@ -5,22 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Building2, TrendingUp, Bell, Settings2 } from 'lucide-react';
 
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ReactNode;
-}
-
 export function AdminBottomNav() {
   const pathname = usePathname();
-
-  const navItems: NavItem[] = [
-    { label: 'Mission', href: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
-    { label: 'Marcas', href: '/admin/brands', icon: <Building2 size={20} /> },
-    { label: 'Ingresos', href: '/admin/revenue', icon: <TrendingUp size={20} /> },
-    { label: 'Actividad', href: '/admin/notifications', icon: <Bell size={20} /> },
-    { label: 'Config', href: '/admin/configuracion', icon: <Settings2 size={20} /> },
-  ];
 
   const isActive = (href: string) => {
     if (href === '/admin/dashboard') return pathname === '/admin/dashboard';
@@ -37,28 +23,70 @@ export function AdminBottomNav() {
     >
       <div className="mx-auto max-w-sm px-3 pb-2 pt-1">
         <div className="flex items-center justify-center gap-0.5 rounded-2xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/40 px-1.5 py-1.5 pb-safe">
-          {navItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={active ? 'page' : undefined}
-                className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
-                  active
-                    ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
-                    : 'text-white/40 hover:text-white/70 active:text-white/60'
-                }`}
-              >
-                <div className="relative">
-                  {item.icon}
-                </div>
-                <span className="text-[9px] font-semibold uppercase tracking-wider truncate w-full text-center">
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
+          <Link
+            href="/admin/dashboard"
+            aria-current={isActive('/admin/dashboard') ? 'page' : undefined}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+              isActive('/admin/dashboard')
+                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                : 'text-white/40 hover:text-white/70 active:text-white/60'
+            }`}
+          >
+            <LayoutDashboard size={20} />
+            <span className="text-[9px] font-semibold uppercase tracking-wider">Mission</span>
+          </Link>
+          
+          <Link
+            href="/admin/brands"
+            aria-current={isActive('/admin/brands') ? 'page' : undefined}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+              isActive('/admin/brands')
+                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                : 'text-white/40 hover:text-white/70 active:text-white/60'
+            }`}
+          >
+            <Building2 size={20} />
+            <span className="text-[9px] font-semibold uppercase tracking-wider">Marcas</span>
+          </Link>
+          
+          <Link
+            href="/admin/revenue"
+            aria-current={isActive('/admin/revenue') ? 'page' : undefined}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+              isActive('/admin/revenue')
+                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                : 'text-white/40 hover:text-white/70 active:text-white/60'
+            }`}
+          >
+            <TrendingUp size={20} />
+            <span className="text-[9px] font-semibold uppercase tracking-wider">Ingresos</span>
+          </Link>
+          
+          <Link
+            href="/admin/notifications"
+            aria-current={isActive('/admin/notifications') ? 'page' : undefined}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+              isActive('/admin/notifications')
+                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                : 'text-white/40 hover:text-white/70 active:text-white/60'
+            }`}
+          >
+            <Bell size={20} />
+            <span className="text-[9px] font-semibold uppercase tracking-wider">Actividad</span>
+          </Link>
+          
+          <Link
+            href="/admin/configuracion"
+            aria-current={isActive('/admin/configuracion') ? 'page' : undefined}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+              isActive('/admin/configuracion')
+                ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
+                : 'text-white/40 hover:text-white/70 active:text-white/60'
+            }`}
+          >
+            <Settings2 size={20} />
+            <span className="text-[9px] font-semibold uppercase tracking-wider">Config</span>
+          </Link>
         </div>
       </div>
     </nav>
