@@ -434,6 +434,30 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | `footer_brand_url` | text DEFAULT 'https://lookitry.com' | |
 | `ga_measurement_id` | text | Google Analytics |
 
+### 5.22 `admin_notifications`
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | uuid PK | |
+| `type` | text | |
+| `title` | text | |
+| `message` | text | |
+| `severity` | text | `info`, `warning`, `error` |
+| `brand_id` | uuid FK → brands | Nullable |
+| `metadata` | jsonb | |
+| `read` | boolean DEFAULT false | |
+| `created_at` | timestamptz | |
+
+### 5.23 `admin_notification_preferences`
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | uuid PK | |
+| `admin_id` | uuid FK → admins | |
+| `email_alerts` | boolean DEFAULT true | |
+| `system_errors` | boolean DEFAULT true | |
+| `new_brands` | boolean DEFAULT false | |
+| `payments` | boolean DEFAULT false | |
+| `created_at`, `updated_at` | timestamptz | |
+
 ---
 
 ## 6. Arquitectura n8n — El Motor de IA
@@ -544,6 +568,7 @@ LOOKITRY/
 │   └── src/services/           # Clientes HTTP
 ├── backend/                     # Express API
 │   ├── src/controllers/        # Lógica de negocio
+│   │   └── admin/              # Controladores modulares por dominio (Brands, Stats, Payments, etc.)
 │   ├── src/routes/             # 24 archivos de rutas (100+ endpoints)
 │   ├── src/services/           # 23 servicios (wompi, paypal, pricing, etc.)
 │   ├── src/auditor/            # Subsistema de auditoría
