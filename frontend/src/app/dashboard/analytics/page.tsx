@@ -102,7 +102,7 @@ export default function AnalyticsPage() {
   return (
     <motion.div 
       variants={containerVariants} initial="hidden" animate="visible"
-      className="max-w-[1400px] mx-auto space-y-12 pb-32"
+      className="relative isolate z-0 mx-auto max-w-[1400px] space-y-12 pb-40 md:pb-32"
     >
       {/* 🔮 ELEMENTOS DECORATIVOS 🔮 */}
       <div className="absolute top-0 -right-20 w-[400px] h-[400px] bg-indigo-500/5 blur-[150px] rounded-full -z-10" />

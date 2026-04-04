@@ -26,7 +26,7 @@ export default function ActiveCouponsBanner() {
     }
 
     fetch('/api/promotions')
-      .then(r => r.ok ? r.json() : null)
+      .then((r) => (r.ok ? r.json() : null))
       .then((d: { ok: boolean; data: any[] } | null) => {
         if (d?.ok && d.data) {
           const active = d.data
@@ -39,6 +39,7 @@ export default function ActiveCouponsBanner() {
               plan_ids: promo.config?.plan_ids || [],
               expires_at: promo.expires_at || promo.config?.expires_at,
             }));
+
           if (active.length > 0) {
             setCoupons(active);
             setVisible(true);
@@ -71,61 +72,59 @@ export default function ActiveCouponsBanner() {
 
   const formatPlans = (planIds: string[]) => {
     if (!planIds.length) return 'Todos los planes';
-    return planIds.map(p => {
-      if (p === 'BASIC') return 'Básico';
-      if (p === 'PRO') return 'Pro';
-      if (p === 'LANDING') return 'Mini-Landing';
-      return p;
-    }).join(', ');
+    return planIds
+      .map((p) => {
+        if (p === 'BASIC') return 'Basico';
+        if (p === 'PRO') return 'Pro';
+        if (p === 'LANDING') return 'Mini-Landing';
+        return p;
+      })
+      .join(', ');
   };
 
   if (loading) return null;
   if (!visible || coupons.length === 0) return null;
 
   return (
-    <div className="relative z-50 bg-gradient-to-r from-emerald-900/90 via-emerald-800/90 to-teal-900/90 border-b border-emerald-500/20">
-      <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between gap-4 mb-3">
+    <div className="relative z-50 border-b border-emerald-500/20 bg-gradient-to-r from-emerald-900/90 via-emerald-800/90 to-teal-900/90">
+      <div className="mx-auto max-w-7xl px-4 py-3">
+        <div className="mb-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-emerald-300">
             <Tag size={14} />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Cupones Disponibles</span>
           </div>
           <button
             onClick={handleClose}
-            className="text-emerald-400/60 hover:text-emerald-300 transition-colors"
+            className="text-emerald-400/60 transition-colors hover:text-emerald-300"
             aria-label="Cerrar cupones"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
-          {coupons.map(coupon => (
+        <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-1">
+          {coupons.map((coupon) => (
             <div
               key={coupon.id}
-              className="flex-shrink-0 bg-white/5 border border-emerald-500/20 rounded-xl px-4 py-2.5 flex items-center gap-3 hover:bg-white/10 hover:border-emerald-500/40 transition-all duration-300 min-w-[260px]"
+              className="flex min-w-[260px] flex-shrink-0 items-center gap-3 rounded-xl border border-emerald-500/20 bg-white/5 px-4 py-2.5 transition-all duration-300 hover:border-emerald-500/40 hover:bg-white/10"
             >
-              <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-[11px] font-bold text-white truncate">{formatDiscount(coupon)}</span>
-                <span className="text-[10px] text-emerald-300/60 truncate">{formatPlans(coupon.plan_ids)}</span>
+              <div className="min-w-0 flex-1">
+                <span className="block truncate text-[11px] font-bold text-white">{formatDiscount(coupon)}</span>
+                <span className="block truncate text-[10px] text-emerald-300/60">{formatPlans(coupon.plan_ids)}</span>
               </div>
 
               <div className="flex items-center gap-1.5">
-                <span className="font-mono text-[12px] font-bold text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 font-mono text-[12px] font-bold text-emerald-300">
                   {coupon.code}
                 </span>
                 <button
                   onClick={() => handleCopy(coupon.code, coupon.id)}
-                  className="p-1 rounded hover:bg-white/10 transition-colors text-emerald-300/60 hover:text-emerald-300"
-                  title="Copiar código"
+                  className="rounded p-1 text-emerald-300/60 transition-colors hover:bg-white/10 hover:text-emerald-300"
+                  title="Copiar codigo"
                 >
-                  {copiedId === coupon.id ? (
-                    <Check size={12} className="text-emerald-400" />
-                  ) : (
-                    <Copy size={12} />
-                  )}
+                  {copiedId === coupon.id ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
                 </button>
               </div>
             </div>
@@ -133,9 +132,11 @@ export default function ActiveCouponsBanner() {
         </div>
 
         <div className="mt-2 flex items-center justify-center gap-1 text-[10px] text-emerald-400/40">
-          <span>Haz clic en copiar y aplica el código al pagar</span>
+          <span>Haz clic en copiar y aplica el codigo al pagar</span>
           <ChevronRight size={10} />
-          <a href="/checkout" className="text-emerald-300 hover:text-emerald-200 transition-colors underline underline-offset-2">Ir al checkout</a>
+          <a href="/checkout" className="text-emerald-300 underline underline-offset-2 transition-colors hover:text-emerald-200">
+            Ir al checkout
+          </a>
         </div>
       </div>
     </div>

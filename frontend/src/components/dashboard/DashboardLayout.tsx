@@ -227,7 +227,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
               </svg>
             </button>
           </div>
-          <nav className="no-scrollbar flex-1 space-y-1.5 overflow-y-auto py-6 px-4">
+          <nav className="no-scrollbar flex-1 space-y-1.5 overflow-y-auto px-4 py-6 pb-24">
             {visibleNavigation.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
               return (
@@ -245,7 +245,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
               );
             })}
           </nav>
-          <div className="flex-shrink-0 p-4">
+          <div className="mb-[calc(5rem+env(safe-area-inset-bottom,0px))] flex-shrink-0 p-4">
             <div className="group/profile flex items-center gap-3 rounded-[2.5rem] border border-white/5 bg-white/5 p-3 shadow-inner transition-all duration-300">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-[#FF5C3A] text-[13px] font-black text-white shadow-lg transition-all duration-500 group-hover/profile:scale-105">
                 {currentBrand?.logo ? (
@@ -325,7 +325,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         )}
 
         <header
-          className="relative z-10 flex h-16 flex-shrink-0 items-center justify-between border-b px-4 md:h-20 md:px-6 xl:px-8"
+          className="fixed left-0 right-0 top-0 z-40 flex h-16 flex-shrink-0 items-center justify-between border-b px-4 md:sticky md:h-20 md:px-6 xl:px-8"
           style={{
             backgroundColor: 'var(--bg-header)',
             borderColor: 'var(--border-color)',
@@ -359,7 +359,7 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
           </div>
         </header>
 
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 scroll-smooth sm:p-4 md:p-6 xl:p-8 xl:pt-10">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 pt-20 pb-24 scroll-smooth sm:p-4 sm:pt-20 sm:pb-24 md:p-6 md:pt-6 md:pb-6 xl:p-8 xl:pt-10">
           {!isDashboardHome && <DashboardNotifications />}
           {!isDashboardHome && <TrialBanner />}
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">{children}</div>

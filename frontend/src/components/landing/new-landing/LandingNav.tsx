@@ -56,7 +56,9 @@ export default function LandingNav({
 
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [mobileMenuOpen]);
 
   const currency = externalCurrency || internalCurrency;
@@ -91,7 +93,7 @@ export default function LandingNav({
   const productLinks = [
     {
       title: 'MINI-LANDING PRO',
-      desc: 'Tu tienda online pro sin código.',
+      desc: 'Tu tienda online pro sin codigo.',
       href: '/mini-landing',
       icon: <Layout size={16} className="text-[#FF5C3A]" />,
       bgColor: 'bg-[#FF5C3A]/10'
@@ -117,52 +119,59 @@ export default function LandingNav({
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 py-6 sm:py-8 w-full ${navBg}`}
+        className={`fixed top-0 left-0 right-0 z-[70] w-full px-4 py-4 sm:px-6 sm:py-5 md:px-12 ${navBg}`}
         role="navigation"
-        aria-label="Navegación principal"
+        aria-label="Navegacion principal"
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center gap-2 md:gap-5">
-            <Link href="/" className="flex items-center gap-2.5 group shrink-0" aria-label="Lookitry - Inicio">
-              <div className="relative w-7 h-7 sm:w-8 sm:h-8">
+            <Link href="/" className="flex shrink-0 items-center gap-2.5 group" aria-label="Lookitry - Inicio">
+              <div className="relative h-7 w-7 sm:h-8 sm:w-8">
                 <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
-                <Image src="/logo.svg" alt="Lookitry" fill className="object-contain hidden dark:block" priority />
+                <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
               </div>
-              <span className="font-jakarta text-xl sm:text-2xl font-bold tracking-tighter text-[#0a0a0a] dark:text-white">
+              <span className="font-jakarta text-xl font-bold tracking-tighter text-[#0a0a0a] dark:text-white sm:text-2xl">
                 Look<span className="text-[#FF5C3A]">itry</span>
               </span>
             </Link>
 
-            {/* Currency Toggle */}
-            <div className="hidden sm:flex items-center bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-full px-2.5 sm:px-3 py-1.5 gap-2 sm:gap-2.5 ml-1 sm:ml-2" role="group" aria-label="Selector de moneda">
+            <div
+              className="ml-1 hidden items-center gap-2 rounded-full border border-black/10 bg-black/5 px-2.5 py-1.5 sm:ml-2 sm:flex sm:px-3 dark:border-white/10 dark:bg-white/5"
+              role="group"
+              aria-label="Selector de moneda"
+            >
               <button
                 onClick={() => onCurrencyChange('COP')}
                 aria-pressed={currency === 'COP'}
-                className={`text-[9px] sm:text-[8px] font-bold cursor-pointer transition-colors uppercase ${currency === 'COP' ? 'text-[#FF5C3A]' : 'text-black/45 dark:text-white/50 hover:text-[#0a0a0a] dark:hover:text-white'}`}
+                className={`cursor-pointer text-[9px] font-bold uppercase transition-colors sm:text-[8px] ${
+                  currency === 'COP' ? 'text-[#FF5C3A]' : 'text-black/45 hover:text-[#0a0a0a] dark:text-white/50 dark:hover:text-white'
+                }`}
               >
                 COP
               </button>
-              <div className="w-[1px] h-2.5 bg-black/10 dark:bg-white/10" aria-hidden="true" />
+              <div className="h-2.5 w-[1px] bg-black/10 dark:bg-white/10" aria-hidden="true" />
               <button
                 onClick={() => onCurrencyChange('USD')}
                 aria-pressed={currency === 'USD'}
-                className={`text-[9px] sm:text-[8px] font-bold cursor-pointer transition-colors uppercase ${currency === 'USD' ? 'text-[#FF5C3A]' : 'text-black/45 dark:text-white/50 hover:text-[#0a0a0a] dark:hover:text-white'}`}
+                className={`cursor-pointer text-[9px] font-bold uppercase transition-colors sm:text-[8px] ${
+                  currency === 'USD' ? 'text-[#FF5C3A]' : 'text-black/45 hover:text-[#0a0a0a] dark:text-white/50 dark:hover:text-white'
+                }`}
               >
                 USD
               </button>
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-4 xl:gap-8 grow justify-center">
-            {/* PRODUCTOS PRO Dropdown */}
+          <div className="hidden grow items-center justify-center gap-4 lg:flex xl:gap-8">
             <div className="relative" ref={productsRef}>
               <button
                 onMouseEnter={() => setProductsOpen(true)}
                 onClick={() => setProductsOpen(!productsOpen)}
                 aria-expanded={productsOpen}
                 aria-haspopup="true"
-                className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${productsOpen ? 'text-[#FF5C3A]' : 'text-black/60 dark:text-white/60 hover:text-[#0a0a0a] dark:hover:text-white'}`}
+                className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${
+                  productsOpen ? 'text-[#FF5C3A]' : 'text-black/60 hover:text-[#0a0a0a] dark:text-white/60 dark:hover:text-white'
+                }`}
               >
                 Productos Pro
                 <ChevronDown size={12} className={`transition-transform duration-300 ${productsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
@@ -171,7 +180,7 @@ export default function LandingNav({
               {productsOpen && (
                 <div
                   onMouseLeave={() => setProductsOpen(false)}
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-72 rounded-2xl border border-black/10 bg-white p-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-300 dark:border-white/10 dark:bg-[#111]"
+                  className="absolute left-1/2 top-full mt-4 w-72 -translate-x-1/2 rounded-2xl border border-black/10 bg-white p-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-300 dark:border-white/10 dark:bg-[#111]"
                   role="menu"
                 >
                   {productLinks.map((prod) => (
@@ -182,7 +191,7 @@ export default function LandingNav({
                       className="group flex items-start gap-4 rounded-xl p-4 transition-all hover:bg-black/5 dark:hover:bg-white/5"
                       role="menuitem"
                     >
-                      <div className={`w-10 h-10 rounded-xl ${prod.bgColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${prod.bgColor} transition-transform group-hover:scale-110`}>
                         {prod.icon}
                       </div>
                       <div className="overflow-hidden">
@@ -199,30 +208,29 @@ export default function LandingNav({
               <Link
                 key={item.label}
                 href={item.href}
-                className="text-[11px] font-bold uppercase tracking-[0.15em] text-black/60 dark:text-white/60 hover:text-[#0a0a0a] dark:hover:text-white transition-all duration-300 relative group"
+                className="group relative text-[11px] font-bold uppercase tracking-[0.15em] text-black/60 transition-all duration-300 hover:text-[#0a0a0a] dark:text-white/60 dark:hover:text-white"
               >
                 {item.label}
-                <span className="absolute bottom-0 left-0 right-0 h-[1px] bg-[#FF5C3A] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center" />
+                <span className="absolute bottom-0 left-0 right-0 h-[1px] origin-center scale-x-0 bg-[#FF5C3A] transition-transform duration-300 group-hover:scale-x-100" />
               </Link>
             ))}
           </div>
 
-          {/* Actions */}
           <div className="flex items-center gap-3 sm:gap-4 md:gap-6">
             {session ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 group p-1 pr-3 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 transition-all"
+                  className="group flex items-center gap-2 rounded-full border border-black/10 bg-black/5 p-1 pr-3 transition-all hover:bg-black/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
                 >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FF5C3A] flex items-center justify-center text-white font-bold text-xs">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FF5C3A] text-xs font-bold text-white sm:h-8 sm:w-8">
                     {initials}
                   </div>
-                  <div className="hidden sm:flex flex-col items-start mr-1">
-                    <span className="text-[10px] font-bold text-[#0a0a0a] dark:text-white truncate max-w-[100px]">{session.name}</span>
-                    <span className="text-[8px] text-black/30 dark:text-white/30 uppercase tracking-widest leading-none">Mi Panel</span>
+                  <div className="mr-1 hidden flex-col items-start sm:flex">
+                    <span className="max-w-[100px] truncate text-[10px] font-bold text-[#0a0a0a] dark:text-white">{session.name}</span>
+                    <span className="text-[8px] uppercase tracking-widest leading-none text-black/30 dark:text-white/30">Mi Panel</span>
                   </div>
-                  <ChevronDown size={14} className={`text-black/20 dark:text-white/20 transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={14} className={`text-black/20 transition-transform duration-300 dark:text-white/20 ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {dropdownOpen && (
@@ -233,14 +241,18 @@ export default function LandingNav({
                       className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                     >
                       <User size={16} className="text-black/30 transition-colors group-hover:text-[#FF5C3A] dark:text-white/30" />
-                      <span className="text-[12px] font-bold text-black/80 transition-colors group-hover:text-[#0a0a0a] dark:text-white/80 dark:group-hover:text-white">Dashboard General</span>
+                      <span className="text-[12px] font-bold text-black/80 transition-colors group-hover:text-[#0a0a0a] dark:text-white/80 dark:group-hover:text-white">
+                        Dashboard General
+                      </span>
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/10 transition-colors group"
+                      className="group flex w-full items-center gap-3 px-4 py-3 transition-colors hover:bg-red-500/10"
                     >
                       <LogOut size={16} className="text-black/30 transition-colors group-hover:text-red-500 dark:text-white/30" />
-                      <span className="text-[12px] font-bold text-black/80 transition-colors group-hover:text-red-500 dark:text-white/80">Cerrar Sesión</span>
+                      <span className="text-[12px] font-bold text-black/80 transition-colors group-hover:text-red-500 dark:text-white/80">
+                        Cerrar Sesion
+                      </span>
                     </button>
                   </div>
                 )}
@@ -248,7 +260,7 @@ export default function LandingNav({
             ) : (
               <Link
                 href="/login"
-                className="hidden sm:block text-[10px] font-bold uppercase tracking-[0.2em] text-black/60 dark:text-white/60 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
+                className="hidden text-[10px] font-bold uppercase tracking-[0.2em] text-black/60 transition-colors hover:text-[#0a0a0a] sm:block dark:text-white/60 dark:hover:text-white"
               >
                 Ingresar
               </Link>
@@ -256,17 +268,16 @@ export default function LandingNav({
 
             <Link
               href="/checkout?plan=TRIAL"
-              className="group relative overflow-hidden bg-[#FF5C3A] text-white text-[10px] font-bold uppercase tracking-[0.15em] px-6 sm:px-8 py-3 sm:py-3.5 rounded-full transition-all hover:scale-105 active:scale-95 shadow-xl shadow-[#FF5C3A]/20"
+              className="group relative hidden overflow-hidden rounded-full bg-[#FF5C3A] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-105 active:scale-95 sm:px-8 sm:py-3.5 md:inline-flex"
             >
               <span className="relative z-10">Probar ahora</span>
-              <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none opacity-20" />
+              <div className="pointer-events-none absolute inset-0 translate-y-full bg-white opacity-20 transition-transform duration-300 group-hover:translate-y-0" />
             </Link>
 
-            {/* Mobile Menu Toggle */}
             <button
-              className="lg:hidden text-[#0a0a0a]/80 dark:text-white/80 hover:text-[#0a0a0a] dark:hover:text-white transition-colors p-2"
+              className="p-2 text-[#0a0a0a]/80 transition-colors hover:text-[#0a0a0a] lg:hidden dark:text-white/80 dark:hover:text-white"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              aria-label={mobileMenuOpen ? 'Cerrar menu' : 'Abrir menu'}
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
@@ -275,77 +286,105 @@ export default function LandingNav({
         </div>
       </nav>
 
-      {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[55] bg-[rgba(10,10,10,0.98)] px-6 pb-8 pt-24 backdrop-blur-xl animate-in fade-in slide-in-from-right duration-300 overflow-y-auto sm:px-10 sm:pt-28" role="dialog" aria-modal="true" aria-label="Menú de navegación">
-          <div className="mx-auto flex max-w-sm flex-col items-center gap-6 rounded-[2rem] border border-white/8 bg-white/[0.03] px-5 py-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-            {/* Currency Selector - Mobile */}
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-[9px] font-bold text-white/25 uppercase tracking-widest">Moneda</span>
-              <div className="flex items-center bg-white/5 border border-white/10 rounded-full px-3 py-1.5 gap-2.5" role="group" aria-label="Selector de moneda">
+        <div
+          className="fixed inset-0 z-[55] flex items-center justify-center overflow-y-auto bg-white px-4 py-24 backdrop-blur-xl animate-in fade-in slide-in-from-right duration-300 dark:bg-[rgba(10,10,10,0.98)] sm:px-10 sm:py-28"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu de navegacion"
+        >
+          <div className="mx-auto my-auto flex w-full max-w-sm flex-col items-center gap-6 rounded-[2rem] border border-black/10 bg-white px-5 py-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.12)] dark:border-white/8 dark:bg-white/[0.03] dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+            <div className="flex flex-col items-center justify-center gap-3">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-black/25 dark:text-white/25">Moneda</span>
+              <div
+                className="flex items-center gap-2.5 rounded-full border border-black/10 bg-black/5 px-3 py-1.5 dark:border-white/10 dark:bg-white/5"
+                role="group"
+                aria-label="Selector de moneda"
+              >
                 <button
-                  onClick={() => { onCurrencyChange('COP'); }}
+                  onClick={() => onCurrencyChange('COP')}
                   aria-pressed={currency === 'COP'}
-                  className={`text-xs font-bold cursor-pointer transition-colors uppercase ${currency === 'COP' ? 'text-[#FF5C3A]' : 'text-white/35'}`}
+                  className={`cursor-pointer text-xs font-bold uppercase transition-colors ${
+                    currency === 'COP' ? 'text-[#FF5C3A]' : 'text-black/35 dark:text-white/35'
+                  }`}
                 >
                   COP
                 </button>
-                <div className="w-[1px] h-2.5 bg-white/10" aria-hidden="true" />
+                <div className="h-2.5 w-[1px] bg-black/10 dark:bg-white/10" aria-hidden="true" />
                 <button
-                  onClick={() => { onCurrencyChange('USD'); }}
+                  onClick={() => onCurrencyChange('USD')}
                   aria-pressed={currency === 'USD'}
-                  className={`text-xs font-bold cursor-pointer transition-colors uppercase ${currency === 'USD' ? 'text-[#FF5C3A]' : 'text-white/35'}`}
+                  className={`cursor-pointer text-xs font-bold uppercase transition-colors ${
+                    currency === 'USD' ? 'text-[#FF5C3A]' : 'text-black/35 dark:text-white/35'
+                  }`}
                 >
                   USD
                 </button>
               </div>
             </div>
 
-            {/* Products */}
-            <div className="flex flex-col items-center gap-2.5 w-full">
-              <p className="text-[9px] font-black text-[#FF5C3A]/60 uppercase tracking-[0.25em] mb-0.5">PRODUCTOS PRO</p>
+            <div className="flex w-full flex-col items-center gap-2.5">
+              <p className="mb-0.5 text-[9px] font-black uppercase tracking-[0.25em] text-[#FF5C3A]/80">Productos Pro</p>
               {productLinks.map((prod) => (
                 <Link
                   key={prod.title}
                   href={prod.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3.5 p-3.5 bg-white/5 rounded-2xl border border-white/5 active:scale-[0.98] transition-all hover:bg-white/10 hover:border-white/10 group w-full"
+                  className="group flex w-full items-center gap-3.5 rounded-2xl border border-black/8 bg-black/[0.03] p-3.5 text-left transition-all hover:border-black/12 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 dark:hover:bg-white/10"
                 >
-                  <div className={`w-9 h-9 rounded-xl ${prod.bgColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${prod.bgColor} transition-transform group-hover:scale-110`}>
                     {prod.icon}
                   </div>
                   <div className="text-left">
-                    <p className="text-[11px] font-black text-white uppercase tracking-wider">{prod.title}</p>
-                    <p className="text-[10px] text-white/35 font-medium">{prod.desc}</p>
+                    <p className="text-[11px] font-black uppercase tracking-wider text-[#0a0a0a] dark:text-white">{prod.title}</p>
+                    <p className="text-[10px] font-medium text-black/35 dark:text-white/35">{prod.desc}</p>
                   </div>
                 </Link>
               ))}
             </div>
 
-            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/8 to-transparent" />
-
-            {/* Main Links */}
-            <div className="flex flex-col items-center gap-4 w-full">
-              {menuLinks.map((item) => (
+            <div className="grid w-full grid-cols-2 gap-3">
+              {session ? (
                 <Link
-                  key={item.label}
-                  href={item.href}
+                  href="/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-2xl font-jakarta font-bold text-white/35 hover:text-white transition-colors"
+                  className="flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-colors hover:bg-black/[0.05] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                 >
-                  {item.label}
+                  Mi Panel
                 </Link>
-              ))}
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center rounded-2xl border border-black/10 bg-black/[0.03] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#0a0a0a] transition-colors hover:bg-black/[0.05] dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                >
+                  Ingresar
+                </Link>
+              )}
+              <Link
+                href="/checkout?plan=TRIAL"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center rounded-2xl bg-[#FF5C3A] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.15em] text-white shadow-xl shadow-[#FF5C3A]/20 transition-transform hover:scale-[1.01]"
+              >
+                Probar Ahora
+              </Link>
             </div>
 
-            <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/8 to-transparent" />
+            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-black/10 to-transparent dark:via-white/8" />
 
-            {/* Legal Links */}
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 pb-1 text-[10px] text-white/20 font-medium">
-              <Link href="/terminos" className="hover:text-white/40 transition-colors">Términos</Link>
-              <Link href="/politicas-privacidad" className="hover:text-white/40 transition-colors">Privacidad</Link>
-              <Link href="/cookies" className="hover:text-white/40 transition-colors">Cookies</Link>
-              <Link href="/contacto" className="hover:text-white/40 transition-colors">Contacto</Link>
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 pb-1 text-[10px] font-medium text-black/25 dark:text-white/20">
+              <Link href="/terminos" onClick={() => setMobileMenuOpen(false)} className="transition-colors hover:text-black/45 dark:hover:text-white/40">
+                Terminos
+              </Link>
+              <Link href="/politicas-privacidad" onClick={() => setMobileMenuOpen(false)} className="transition-colors hover:text-black/45 dark:hover:text-white/40">
+                Privacidad
+              </Link>
+              <Link href="/cookies" onClick={() => setMobileMenuOpen(false)} className="transition-colors hover:text-black/45 dark:hover:text-white/40">
+                Cookies
+              </Link>
+              <Link href="/contacto" onClick={() => setMobileMenuOpen(false)} className="transition-colors hover:text-black/45 dark:hover:text-white/40">
+                Contacto
+              </Link>
             </div>
           </div>
         </div>
@@ -353,5 +392,3 @@ export default function LandingNav({
     </>
   );
 }
-
-

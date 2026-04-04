@@ -8,6 +8,10 @@ import { Home, Sparkles, Mail, User, LogIn } from 'lucide-react';
 export function MobileBottomNav() {
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const itemClass =
+    'flex flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-2 text-center transition-all duration-200 min-w-0';
+  const labelClass =
+    'text-[8px] leading-[1.05] font-semibold uppercase tracking-[0.08em] text-center break-words';
 
   useEffect(() => {
     const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
@@ -40,42 +44,42 @@ export function MobileBottomNav() {
             <Link
               href="/"
               aria-current={isActive('/') ? 'page' : undefined}
-              className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+              className={`${itemClass} ${
                 isActive('/') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
               }`}
             >
             <Home size={20} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Inicio</span>
+            <span className={labelClass}>Inicio</span>
           </Link>
           
           <Link
             href="/probador-virtual"
             aria-current={isActive('/probador-virtual') ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+            className={`${itemClass} ${
               isActive('/probador-virtual') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
             }`}
           >
             <Sparkles size={20} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Probar</span>
+            <span className={labelClass}>Probar</span>
           </Link>
           
           <Link
             href="/contacto"
             aria-current={isActive('/contacto') ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+            className={`${itemClass} ${
               isActive('/contacto') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
             }`}
           >
             <Mail size={20} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Contacto</span>
+            <span className={labelClass}>Contacto</span>
           </Link>
           
           <Link
             href={getHref()}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${isActive(getHref()) ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'}`}
+            className={`${itemClass} ${isActive(getHref()) ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'}`}
           >
             {getIcon()}
-            <span className="text-[9px] font-semibold uppercase tracking-wider">{getLabel()}</span>
+            <span className={labelClass}>{getLabel()}</span>
           </Link>
         </div>
       </div>

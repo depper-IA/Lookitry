@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Cliente HTTP centralizado para el panel de administración.
  * Maneja automáticamente el token de admin y redirige a /admin/login en caso de 401.
  */

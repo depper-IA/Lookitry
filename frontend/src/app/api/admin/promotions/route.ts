@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;

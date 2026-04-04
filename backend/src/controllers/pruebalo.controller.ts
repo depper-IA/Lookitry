@@ -748,7 +748,7 @@ export class PruebaloController {
 
     const brand = await brandsService.getBrandByApiKey(apiKey);
     if (!brand) {
-      throw new ValidationError('Clave de API invÃ¡lida');
+      throw new ValidationError('Clave de API inválida');
     }
     this.assertPluginOperational(brand);
 
