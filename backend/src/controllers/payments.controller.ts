@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { addonCreditsService } from '../services/addonCredits.service';
+import { sanitizeError } from '../utils/sanitizeError';
 
 export class PaymentsController {
   async checkoutAddon(req: AuthRequest, res: Response) {
@@ -19,7 +20,7 @@ export class PaymentsController {
     } catch (error: any) {
       return res.status(400).json({
         error: 'BAD_REQUEST',
-        message: error.message || 'No se pudo iniciar el checkout del add-on',
+        message: sanitizeError(error, 'No se pudo iniciar el checkout del add-on'),
       });
     }
   }
