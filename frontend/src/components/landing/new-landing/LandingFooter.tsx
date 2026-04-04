@@ -122,7 +122,7 @@ export default function LandingFooter() {
     <footer className="theme-bg-base theme-text pt-12 sm:pt-20 md:pt-24 lg:pt-28 relative z-10" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
         {/* Mobile: Centered compact layout */}
-        <div className="md:hidden mb-8">
+        <div className="md:hidden mb-0">
           <div className="flex flex-col items-center text-center mb-5">
             <Link href="/" className="inline-flex items-center gap-2.5 mb-3 group">
               <div className="relative w-7 h-7">
@@ -263,8 +263,8 @@ export default function LandingFooter() {
         </div>
       </div>
 
-      <div className="w-full border-t border-black/5 dark:border-white/5 bg-[#FF5C3A]">
-        <div className="max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 md:px-12">
+      <div className="w-full bg-[#FF5C3A]">
+        <div className="max-w-7xl mx-auto py-4 sm:py-8 px-4 sm:px-6 md:px-12">
           <div className="text-white/80 text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] font-dm-sans text-center">
             © {currentYear} Lookitry / Una división de <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Wilkie Devs SAS</Link>
           </div>
