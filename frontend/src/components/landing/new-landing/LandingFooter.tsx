@@ -186,9 +186,9 @@ export default function LandingFooter() {
 
           {/* Quick links - Mobile */}
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mt-4 text-[10px] text-black/35 dark:text-white/25 font-medium">
-            <Link href="/contacto" className="hover:text-black/60 dark:hover:text-white/50 transition-colors">Contacto</Link>
-            <Link href="/sobre-nosotros" className="hover:text-black/60 dark:hover:text-white/50 transition-colors">Nosotros</Link>
-            <Link href="/estado" className="hover:text-black/60 dark:hover:text-white/50 transition-colors">Estado</Link>
+            <Link href="/contacto" className="hover:text-[#FF5C3A] transition-colors">Contacto</Link>
+            <Link href="/sobre-nosotros" className="hover:text-[#FF5C3A] transition-colors">Nosotros</Link>
+            <Link href="/estado" className="hover:text-[#FF5C3A] transition-colors">Estado</Link>
           </div>
         </div>
 
@@ -208,7 +208,7 @@ export default function LandingFooter() {
               Empoderamos al retail con Inteligencia Artificial. La primera solución de visualización personalizada líder en Colombia y Latinoamérica.
             </p>
             <div className="mb-6 sm:mb-8 md:mb-10">
-              <Link href="/sobre-nosotros" className="text-[10px] sm:text-[11px] font-bold text-[#FF5C3A] uppercase tracking-[0.15em] sm:tracking-[0.2em] hover:text-white transition-colors border-b border-[#FF5C3A]/30 pb-1">
+              <Link href="/sobre-nosotros" className="text-[10px] sm:text-[11px] font-bold text-[#FF5C3A] uppercase tracking-[0.15em] sm:tracking-[0.2em] hover:text-[#FF5C3A]/80 transition-colors border-b border-[#FF5C3A]/30 pb-1">
                 Conoce nuestra historia
               </Link>
             </div>
@@ -216,7 +216,6 @@ export default function LandingFooter() {
               {[
                 { Icon: Instagram, href: socialLinks.instagram, label: 'Instagram' },
                 { Icon: Facebook, href: socialLinks.facebook, label: 'Facebook' },
-                { Icon: Globe, href: socialLinks.website, label: 'Sitio web' },
                 { Icon: MessageCircle, href: socialLinks.whatsapp, label: 'WhatsApp' }
               ].map((item, idx) => (
                 <Link key={idx} href={item.href} target="_blank" rel="noopener noreferrer" className="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 rounded-lg sm:rounded-xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 flex items-center justify-center text-black/60 dark:text-white/60 hover:text-white hover:bg-[#FF5C3A] hover:border-[#FF5C3A] transition-all duration-300" aria-label={item.label}>
@@ -269,24 +268,25 @@ export default function LandingFooter() {
             © {currentYear} Lookitry / Una división de <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Wilkie Devs SAS</Link>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-10 opacity-60 mt-3">
-            <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/90"><Globe size={14} aria-hidden="true" /> CALI. COLOMBIA</div>
             <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/90"><ShieldCheck size={14} aria-hidden="true" /> PCI Tier 1</div>
           </div>
-          <button
-            onClick={toggle}
-            aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-            className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/90 hover:text-white hover:border-white/40 hover:bg-white/10 transition-all text-xs font-medium"
-          >
-            {isDark ? (
-              <>
-                <Sun size={14} aria-hidden="true" /> Modo claro
-              </>
-            ) : (
-              <>
-                <Moon size={14} aria-hidden="true" /> Modo oscuro
-              </>
-            )}
-          </button>
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={toggle}
+              aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/90 hover:text-white hover:border-white/40 hover:bg-white/10 transition-all text-xs font-medium"
+            >
+              {isDark ? (
+                <>
+                  <Sun size={14} aria-hidden="true" /> Modo claro
+                </>
+              ) : (
+                <>
+                  <Moon size={14} aria-hidden="true" /> Modo oscuro
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </footer>
