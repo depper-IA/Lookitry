@@ -21,6 +21,38 @@ export interface GoogleAuthResult {
 }
 
 /**
+ * Verifica un access token de Google consultando userinfo desde el backend.
+ * Evita confiar en email/googleId enviados por el cliente.
+ */
+export async function verifyGoogleAccessToken(accessToken: string): Promise<GoogleTokenPayload> {
+  const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('GOOGLE_ACCESS_TOKEN_INVALID');
+  }
+
+  const data = await response.json() as Record<string, any>;
+
+  if (!data.sub || !data.email) {
+    throw new Error('GOOGLE_NO_EMAIL');
+  }
+
+  return {
+    sub: data.sub,
+    email: String(data.email).toLowerCase(),
+    email_verified: data.email_verified === true || data.email_verified === 'true',
+    name: data.name || String(data.email).split('@')[0],
+    picture: data.picture,
+    given_name: data.given_name,
+    family_name: data.family_name,
+  };
+}
+
+/**
  * Verifica el JWT de Google con la API de Google
  */
 export async function verifyGoogleToken(token: string): Promise<GoogleTokenPayload> {

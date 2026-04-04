@@ -4,6 +4,7 @@ import { Mail, User, AlertCircle, ChevronLeft, ChevronRight, Lock } from 'lucide
 import { Step } from '@/components/payments/StepProgress';
 import { authService } from '@/services/auth.service';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
+import Link from 'next/link';
 
 interface UserDataStepProps {
   email: string;
@@ -23,6 +24,7 @@ interface UserDataStepProps {
   setCurrentStep: (step: Step) => void;
   handleGoogleCheckoutSuccess?: (data: any) => void;
   loginHint?: string;
+  existingAccountRedirectUrl?: string;
   stepNumber?: number;
   OA: string;
 }
@@ -44,9 +46,12 @@ export default function UserDataStep({
   handlePrevStep,
   setCurrentStep,
   handleGoogleCheckoutSuccess,
+  existingAccountRedirectUrl,
   stepNumber = 2,
   OA
 }: UserDataStepProps) {
+  const existingAccountDetected = !hasSession && emailExists?.exists;
+
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-500">
       <div className="flex items-center justify-between mb-8">
@@ -61,9 +66,10 @@ export default function UserDataStep({
         {!hasSession && (
         <div className="mb-6">
             <GoogleSignInButton 
-              mode="register" 
+              mode={existingAccountDetected ? 'login' : 'register'}
               onSuccess={handleGoogleCheckoutSuccess}
               onError={(err) => setEmailError(err)}
+              redirectTo={existingAccountRedirectUrl}
               loginHint={email || ''}
             />
             <div className="flex items-center gap-4 my-6">
@@ -130,7 +136,32 @@ export default function UserDataStep({
           )}
         </div>
 
-        {!hasSession && (
+        {existingAccountDetected && existingAccountRedirectUrl && (
+          <div className="rounded-2xl border border-[#FF5C3A]/30 bg-[#FF5C3A]/5 p-4 space-y-3">
+            <p className="text-sm font-bold text-white">Esta cuenta ya existe.</p>
+            <p className="text-[12px] text-[#bdbdbd]">
+              Continúa desde tu checkout interno para que el proceso se trate como upgrade y no como un registro nuevo.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href={existingAccountRedirectUrl}
+                className="flex-1 text-center rounded-xl px-4 py-3 text-sm font-bold text-white transition-all"
+                style={{ backgroundColor: OA }}
+              >
+                Iniciar sesión y continuar
+              </Link>
+              <button
+                type="button"
+                onClick={() => { window.location.href = existingAccountRedirectUrl; }}
+                className="flex-1 rounded-xl border border-white/10 px-4 py-3 text-sm font-bold text-white hover:bg-white/5 transition-all"
+              >
+                Ir al checkout interno
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!hasSession && !existingAccountDetected && (
           <div className="space-y-2">
             <label className="text-xs font-bold text-[#999] uppercase tracking-widest flex items-center gap-2">
               <User className="w-3.5 h-3.5" style={{ color: OA }} />
@@ -173,6 +204,11 @@ export default function UserDataStep({
         </button>
         <button
           onClick={async () => {
+            if (existingAccountDetected && existingAccountRedirectUrl) {
+              window.location.href = existingAccountRedirectUrl;
+              return;
+            }
+
             const isValid = await validateStep2();
             if (isValid) {
               setCurrentStep((stepNumber + 1) as Step);
@@ -187,7 +223,7 @@ export default function UserDataStep({
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
             <>
-              CONTINUAR AL PAGO
+              {existingAccountDetected ? 'IR AL CHECKOUT INTERNO' : 'CONTINUAR AL PAGO'}
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </>
           )}

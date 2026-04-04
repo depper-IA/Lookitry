@@ -9,9 +9,18 @@ interface GoogleSignInButtonProps {
   redirectTo?: string;
   variant?: 'user' | 'admin';
   loginHint?: string;
+  flow?: 'auth' | 'checkout';
 }
 
-export default function GoogleSignInButton({ onSuccess, onError, mode = 'login', redirectTo, variant = 'user', loginHint }: GoogleSignInButtonProps) {
+export default function GoogleSignInButton({
+  onSuccess,
+  onError,
+  mode = 'login',
+  redirectTo,
+  variant = 'user',
+  loginHint,
+  flow = 'auth',
+}: GoogleSignInButtonProps) {
   const [googleReady, setGoogleReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -67,6 +76,30 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
       
       const baseApiUrl = apiUrl.replace(/\/api$/, '');
+
+      if (flow === 'checkout' && variant === 'user') {
+        const checkRes = await fetch(
+          `${baseApiUrl}/api/auth/check-email?email=${encodeURIComponent(userInfo.email || '')}`,
+          { credentials: 'include' }
+        );
+
+        if (checkRes.ok) {
+          const checkData = await checkRes.json();
+
+          if (!checkData.exists) {
+            setError('');
+            onSuccess?.({
+              checkoutPrefill: true,
+              email: userInfo.email,
+              name: userInfo.name,
+              picture: userInfo.picture,
+              googleId: userInfo.sub,
+            });
+            return;
+          }
+        }
+      }
+
       const fullUrl = `${baseApiUrl}${apiEndpoint}`;
 
       const apiRes = await fetch(fullUrl, {
@@ -93,12 +126,15 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
 
       setError('');
 
+      if (variant === 'admin' && data.admin) {
+        localStorage.setItem('adminUser', JSON.stringify(data.admin));
+      }
+
       if (onSuccess) {
         onSuccess(data);
       } else if (data.needsOnboarding) {
         window.location.href = '/register/google-setup';
       } else if (variant === 'admin') {
-        localStorage.setItem('adminUser', JSON.stringify(data.admin));
         window.location.href = redirectTo || '/admin/dashboard';
       } else {
         window.location.href = redirectTo || '/dashboard';
@@ -108,7 +144,7 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
       setError(msg);
       onError?.(msg);
     }
-  }, [variant, redirectTo, onSuccess, onError]);
+  }, [variant, redirectTo, onSuccess, onError, flow]);
 
   const initTokenClient = useCallback(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
