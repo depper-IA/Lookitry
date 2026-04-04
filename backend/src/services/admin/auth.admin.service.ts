@@ -61,6 +61,15 @@ export class AuthAdminService {
     return data as Admin;
   }
 
+  async updateAdminGoogleId(adminId: string, googleId: string): Promise<void> {
+    const { error } = await supabaseAdmin
+      .from('admins')
+      .update({ google_id: googleId, updated_at: new Date().toISOString() })
+      .eq('id', adminId);
+
+    if (error) throw new Error('Error al vincular ID de Google: ' + error.message);
+  }
+
   async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
