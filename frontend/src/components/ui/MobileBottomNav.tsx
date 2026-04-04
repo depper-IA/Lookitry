@@ -2,11 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Home, Sparkles, Mail, User, LogIn } from 'lucide-react';
 
-export function MobileBottomNav() {
-  const pathname = usePathname();
+export function MobileBottomNav({ pathname }: { pathname: string }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const itemClass =
     'flex flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-2 text-center transition-all duration-200 min-w-0';
@@ -22,8 +20,6 @@ export function MobileBottomNav() {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
   };
-
-  if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) return null;
 
   const getIcon = () => {
     if (isLoggedIn) return <User size={20} />;
