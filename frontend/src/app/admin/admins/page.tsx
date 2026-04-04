@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Trash2, Plus, Shield, ShieldOff, Mail, Loader2, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { adminApi } from '@/services/adminApi';
 
 type Permission =
   | 'brands' | 'subscriptions' | 'revenue'
@@ -26,15 +27,6 @@ interface Admin {
   role: string;
   permissions: Permission[];
   created_at: string;
-}
-
-function adminFetch(path: string, options?: RequestInit) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-  return fetch(`${base}/api${path}`, {
-    ...options,
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', ...(options?.headers || {}) },
-  });
 }
 
 function PermissionBadge({ perm }: { perm: Permission }) {
@@ -91,9 +83,8 @@ export default function AdminsPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await adminFetch('/admin/admins');
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      const data = await adminApi.get('/admin/admins');
+      if (data.error) throw new Error(data.message);
       setAdmins(data.admins);
     } catch (e: any) {
       setError(e.message);
@@ -106,8 +97,8 @@ export default function AdminsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await adminFetch(`/admin/admins/${id}`, { method: 'DELETE' });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
+      const d = await adminApi.delete(`/admin/admins/${id}`);
+      if (d.error) throw new Error(d.message);
       setDeleteConfirm(null);
       load();
     } catch (e: any) {
@@ -117,11 +108,8 @@ export default function AdminsPage() {
 
   const handleUpdatePermissions = async (id: string, permissions: Permission[]) => {
     try {
-      const res = await adminFetch(`/admin/admins/${id}/permissions`, {
-        method: 'PATCH',
-        body: JSON.stringify({ permissions }),
-      });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
+      const d = await adminApi.patch(`/admin/admins/${id}/permissions`, { permissions });
+      if (d.error) throw new Error(d.message);
       setEditingAdmin(null);
       load();
     } catch (e: any) {
@@ -132,9 +120,8 @@ export default function AdminsPage() {
   const handleSendCredentials = async (admin: Admin) => {
     setSendingCredentials(true);
     try {
-      const res = await adminFetch(`/admin/admins/${admin.id}/send-credentials`, { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      const data = await adminApi.post(`/admin/admins/${admin.id}/send-credentials`);
+      if (data.error) throw new Error(data.message);
       setSendCredentialsConfirm(null);
       setToast({ message: `Credenciales enviadas a ${admin.email}`, type: 'success' });
     } catch (e: any) {
@@ -146,12 +133,8 @@ export default function AdminsPage() {
 
   const handleChangePassword = async (adminId: string, newPassword: string) => {
     try {
-      const res = await adminFetch(`/admin/admins/${adminId}/password`, {
-        method: 'PUT',
-        body: JSON.stringify({ newPassword }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      const data = await adminApi.put(`/admin/admins/${adminId}/password`, { newPassword });
+      if (data.error) throw new Error(data.message);
       setPasswordAdmin(null);
       setToast({ message: 'Contraseña actualizada correctamente', type: 'success' });
     } catch (e: any) {
@@ -162,7 +145,7 @@ export default function AdminsPage() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 256 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyItems: 'center', height: 256, justifyContent: 'center' }}>
         <div style={{
           width: 40, height: 40, borderRadius: '50%',
           border: '4px solid rgba(255,92,58,0.2)',
@@ -543,12 +526,8 @@ function CreateAdminModal({ onClose, onCreated }: { onClose: () => void; onCreat
     setLoading(true);
     setError('');
     try {
-      const res = await adminFetch('/admin/admins', {
-        method: 'POST',
-        body: JSON.stringify({ ...form, permissions: isSuperadmin ? [] : permissions }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      const data = await adminApi.post('/admin/admins', { ...form, permissions: isSuperadmin ? [] : permissions });
+      if (data.error) throw new Error(data.message);
       onCreated();
       onClose();
     } catch (e: any) {

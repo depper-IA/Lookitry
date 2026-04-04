@@ -3,8 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Shield, Check, AlertTriangle, Lock, Key, Users } from 'lucide-react';
 import { useConfirm } from '@/components/admin/ConfirmDialog';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+import { adminApi } from '@/services/adminApi';
 
 interface PaymentSettings {
   bypass_ip_protection: boolean;
@@ -20,10 +19,6 @@ interface AdminUser {
   role: string;
   permissions: string[];
   created_at: string;
-}
-
-function adminFetch(path: string) {
-  return fetch(`${API_URL}/api${path}`, { credentials: 'include' });
 }
 
 function Toggle({ value, onChange, disabled }: { value: boolean; onChange: () => void; disabled?: boolean }) {
@@ -65,9 +60,8 @@ export default function AdminSecurityPage() {
 
   const loadSettings = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, { credentials: 'include' });
-      if (res.ok) {
-        const data: PaymentSettings = await res.json();
+      const data = await adminApi.get('/admin/payment-settings');
+      if (!data.error) {
         setBypassIp(data.bypass_ip_protection ?? false);
         setIpWhitelist(data.ip_whitelist ?? '');
         setMaintenanceMode(data.maintenance_mode ?? false);
@@ -79,8 +73,7 @@ export default function AdminSecurityPage() {
   const loadAdmins = useCallback(async () => {
     setLoadingAdmins(true);
     try {
-      const res = await adminFetch('/admin/admins');
-      const data = await res.json();
+      const data = await adminApi.get('/admin/admins');
       setAdmins(data.admins || []);
     } catch { setError('Error al cargar administradores'); }
     finally { setLoadingAdmins(false); }
@@ -112,11 +105,8 @@ export default function AdminSecurityPage() {
     if (!ok) return;
     setSavingBypass(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bypass_ip_protection: newVal }),
-      });
-      if (!res.ok) throw new Error((await res.json()).message || 'Error');
+      const data = await adminApi.put('/admin/payment-settings', { bypass_ip_protection: newVal });
+      if (data.error) throw new Error(data.message || 'Error');
       setBypassIp(newVal);
       flash(newVal ? 'Bypass IP activado — modo test' : 'Bypass IP desactivado', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
@@ -126,11 +116,8 @@ export default function AdminSecurityPage() {
   async function handleSaveWhitelist() {
     setSavingWhitelist(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ip_whitelist: ipWhitelist }),
-      });
-      if (!res.ok) throw new Error((await res.json()).message || 'Error');
+      const data = await adminApi.put('/admin/payment-settings', { ip_whitelist: ipWhitelist });
+      if (data.error) throw new Error(data.message || 'Error');
       flash('Whitelist de IPs guardada', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
     finally { setSavingWhitelist(false); }
@@ -152,11 +139,11 @@ export default function AdminSecurityPage() {
     if (!ok) return;
     setSavingMaintenance(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ maintenance_mode: newVal, maintenance_message: maintenanceMessage }),
+      const data = await adminApi.put('/admin/payment-settings', { 
+        maintenance_mode: newVal, 
+        maintenance_message: maintenanceMessage 
       });
-      if (!res.ok) throw new Error((await res.json()).message || 'Error');
+      if (data.error) throw new Error(data.message || 'Error');
       setMaintenanceMode(newVal);
       flash(newVal ? 'Modo mantenimiento ACTIVADO' : 'Modo mantenimiento desactivado', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
@@ -166,11 +153,11 @@ export default function AdminSecurityPage() {
   async function handleSaveMaintenanceMessage() {
     setSavingMaintenance(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ maintenance_mode: maintenanceMode, maintenance_message: maintenanceMessage }),
+      const data = await adminApi.put('/admin/payment-settings', { 
+        maintenance_mode: maintenanceMode, 
+        maintenance_message: maintenanceMessage 
       });
-      if (!res.ok) throw new Error((await res.json()).message || 'Error');
+      if (data.error) throw new Error(data.message || 'Error');
       flash('Mensaje de mantenimiento guardado', 'ok');
     } catch (err: any) { flash(err.message, 'err'); }
     finally { setSavingMaintenance(false); }

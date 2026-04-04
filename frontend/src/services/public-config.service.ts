@@ -1,5 +1,7 @@
 'use client';
 
+import { api } from './api';
+
 export interface PublicPlanPrices {
   BASIC: number;
   PRO: number;
@@ -88,10 +90,10 @@ export async function fetchPublicPaymentSettings(): Promise<PublicPaymentSetting
 
   paymentSettingsPromise = (async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-      const response = await fetch(`${apiUrl}/api/payment-settings/public`);
-      if (!response.ok) return DEFAULT_PUBLIC_PAYMENT_SETTINGS;
-      const data = await response.json();
+      // Usamos el cliente api centralizado que maneja la normalización de /api
+      const response = await api.get<any>('/payment-settings/public');
+      const data = response.data;
+      
       cachedPaymentSettings = {
         ...DEFAULT_PUBLIC_PAYMENT_SETTINGS,
         ...data,

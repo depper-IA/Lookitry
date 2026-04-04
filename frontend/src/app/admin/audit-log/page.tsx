@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Activity, Search, Filter } from 'lucide-react';
 
+import { adminApi } from '@/services/adminApi';
+
 interface AuditEntry {
   id: string;
   admin_id: string;
@@ -17,11 +19,6 @@ interface AuditData {
   entries: AuditEntry[];
   count: number;
   message?: string;
-}
-
-function adminFetch(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-  return fetch(`${base}/api${path}`, { credentials: 'include' });
 }
 
 function formatDate(iso: string) {
@@ -61,8 +58,7 @@ export default function AdminAuditLogPage() {
     if (searchEmail) params.set('admin_email', searchEmail);
     if (searchAction) params.set('action', searchAction);
 
-    adminFetch(`/admin/audit-log?${params}`)
-      .then(r => r.json())
+    adminApi.get(`/admin/audit-log?${params}`)
       .then(d => { if (d.error) throw new Error(d.message); setData(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));

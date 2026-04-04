@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { TrendingUp, Users, UserCheck, CreditCard, Package, ArrowRight, AlertTriangle, Zap } from 'lucide-react';
 
+import { adminApi } from '@/services/adminApi';
+
 interface FunnelData {
   total_brands: number;
   registered: number;
@@ -27,11 +29,6 @@ interface FunnelData {
   }>;
 }
 
-function adminFetch(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-  return fetch(`${base}/api${path}`, { credentials: 'include' });
-}
-
 export default function AdminFunnelPage() {
   const [data, setData] = useState<FunnelData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,9 +36,9 @@ export default function AdminFunnelPage() {
 
   useEffect(() => {
     Promise.all([
-      adminFetch('/admin/stats').then(r => r.json()),
-      adminFetch('/admin/stats/conversion').then(r => r.json()),
-      adminFetch('/admin/risk').then(r => r.json()),
+      adminApi.get('/admin/stats'),
+      adminApi.get('/admin/stats/conversion'),
+      adminApi.get('/admin/risk'),
     ])
       .then(([stats, conversion, risk]) => {
         if (stats.error) throw new Error(stats.message);

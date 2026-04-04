@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { DollarSign, TrendingUp, BarChart3 } from 'lucide-react';
+import { adminApi } from '@/services/adminApi';
 
 interface PlanEconomics {
   plan: string;
@@ -26,11 +27,6 @@ interface EconomicsData {
   cohorts: Array<{ month: string; brands: number; revenue: number }>;
 }
 
-function adminFetch(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-  return fetch(`${base}/api${path}`, { credentials: 'include' });
-}
-
 function formatCOP(value: number) {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value);
 }
@@ -41,8 +37,7 @@ export default function AdminUnitEconomicsPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    adminFetch('/admin/economics')
-      .then(r => r.json())
+    adminApi.get('/admin/economics')
       .then(d => { if (d.error) throw new Error(d.message); setData(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
