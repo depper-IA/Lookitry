@@ -884,6 +884,30 @@ export default function AdminBrandsPage() {
                   </button>
                 </div>
               </div>
+
+              {/* Preview del widget */}
+              <div className="border-t pt-4">
+                <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Vista previa del widget</p>
+                <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border-color)' }}>
+                  <iframe
+                    src={`https://lookitry.com/embed/${selectedBrand.slug}`}
+                    className="w-full h-80"
+                    title={`Preview widget de ${selectedBrand.name}`}
+                  />
+                </div>
+                <a
+                  href={`https://lookitry.com/embed/${selectedBrand.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs mt-2 inline-flex items-center gap-1 hover:underline"
+                  style={{ color: '#FF5C3A' }}
+                >
+                  Abrir en nueva pestaña
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </div>
             </div>
             <div className="mt-5 flex justify-end">
               <button onClick={() => setShowDetailsModal(false)}

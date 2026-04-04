@@ -144,3 +144,53 @@ export const getAlerts = async (_req: Request, res: Response) => {
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener alertas' });
   }
 };
+
+/**
+ * GET /api/admin/stats/top-brands - Top 10 marcas por uso
+ */
+export const getTopBrands = async (_req: Request, res: Response) => {
+  try {
+    const { supabaseAdmin } = await import('../../config/supabase');
+    
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    
+    const { data: generations, error } = await supabaseAdmin
+      .from('generations')
+      .select('brand_id, status, brands(id, name, slug, plan)')
+      .gte('created_at', startOfMonth.toISOString())
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    const grouped = generations?.reduce((acc: Record<string, { count: number; success: number; brand: any }>, g) => {
+      if (!acc[g.brand_id]) {
+        acc[g.brand_id] = { count: 0, success: 0, brand: g.brands };
+      }
+      acc[g.brand_id].count++;
+      if (g.status === 'success') {
+        acc[g.brand_id].success++;
+      }
+      return acc;
+    }, {});
+    
+    const top10 = Object.values(grouped || {})
+      .sort((a: any, b: any) => b.count - a.count)
+      .slice(0, 10)
+      .map((item: any, index: number) => ({
+        rank: index + 1,
+        brand_id: item.brand?.id,
+        name: item.brand?.name,
+        slug: item.brand?.slug,
+        plan: item.brand?.plan,
+        generations: item.count,
+        success: item.success,
+        successRate: item.count > 0 ? Math.round((item.success / item.count) * 100) : 0,
+      }));
+    
+    return res.status(200).json({ topBrands: top10, month: startOfMonth.toISOString() });
+  } catch (error: any) {
+    console.error('Error in getTopBrands:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener top marcas' });
+  }
+};
