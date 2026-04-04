@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 const SECTIONS = [
   {
     title: '1. Responsable del tratamiento',
-    content: `Lookitry, operada por Wilkie Devs SAS, es responsable del tratamiento de los datos personales recopilados a través de la plataforma lookitry.com.\n\nContacto: info@lookitry.com · WhatsApp: +57 310 543 6281`,
+    content: `Lookitry, operada por Samuel Wilkie (NIT 700.403.166-3), bajo la marca Wilkie Devs, es responsable del tratamiento de los datos personales recopilados a través de la plataforma lookitry.com.\n\nContacto: info@lookitry.com · WhatsApp: +57 310 543 6281`,
   },
   {
     title: '2. Datos que recopilamos',
