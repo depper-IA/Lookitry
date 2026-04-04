@@ -50,6 +50,7 @@ router.use(adminAuthMiddleware);
 
 router.get('/stats', requirePermission('conversion'), getGlobalStats);
 router.get('/stats/conversion', requirePermission('conversion'), getConversionStats);
+router.get('/stats/top-brands', requirePermission('conversion'), getTopBrands);
 router.get('/alerts', requirePermission('conversion'), getAlerts);
 router.get('/brands', requirePermission('brands'), getAllBrands);
 router.post('/brands', requirePermission('brands'), createBrand);
