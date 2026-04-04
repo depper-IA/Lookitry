@@ -264,9 +264,8 @@ export default function LandingFooter() {
           </div>
         </div>
 
-        <div className="pt-6 sm:pt-10 md:pt-12 border-t border-black/5 dark:border-white/5 flex flex-col items-center gap-4 sm:gap-8 md:gap-10">
-          <div className="w-screen -mx-[50vw] bg-[#FF5C3A]">
-            <div className="max-w-7xl mx-auto py-6 sm:py-8 text-center text-white/90">
+        <div className="w-screen -mx-[50vw] border-t border-black/10 dark:border-white/10 bg-[#FF5C3A]">
+          <div className="max-w-7xl mx-auto py-6 sm:py-8 text-center text-white/90">
               <div className="text-white/80 text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] font-dm-sans text-center">
                 © {currentYear} Lookitry / Una división de <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Wilkie Devs SAS</Link>
               </div>
