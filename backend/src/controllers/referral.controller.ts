@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import { supabaseAdmin } from '../config/supabase';
+import { referralService } from '../services/referral.service';
 
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -35,15 +36,22 @@ export async function getReferralInfo(req: AuthRequest, res: Response) {
 
     const { data: referrals } = await supabaseAdmin
       .from('referrals')
-      .select('id, referred_brand_id, status, created_at, referrer_claimed, referred_claimed')
+      .select('id, referred_brand_id, status, created_at, referrer_claimed, reward_credits, converted_at')
       .eq('referrer_brand_id', brandId)
       .order('created_at', { ascending: false });
 
+    const rewardCredits = referralService.getDefaultRewardCredits();
+    const totalCreditsEarned = (referrals || [])
+      .filter(referral => referral.referrer_claimed)
+      .reduce((sum, referral) => sum + Number(referral.reward_credits || rewardCredits), 0);
+
     return res.status(200).json({
       referralCode,
+      rewardCredits,
       referralCount: referrals?.length || 0,
       successfulReferrals: referrals?.filter(r => r.status === 'converted').length || 0,
       pendingReferrals: referrals?.filter(r => r.status === 'pending').length || 0,
+      totalCreditsEarned,
       recentReferrals: referrals?.slice(0, 5) || [],
     });
   } catch (error) {
@@ -56,7 +64,7 @@ export async function validateReferralCode(req: AuthRequest, res: Response) {
   try {
     const { code } = req.body;
     if (!code) {
-      return res.status(400).json({ error: 'Código requerido' });
+      return res.status(400).json({ error: 'Codigo requerido' });
     }
 
     const upperCode = code.toUpperCase().trim();
@@ -68,12 +76,12 @@ export async function validateReferralCode(req: AuthRequest, res: Response) {
       .single();
 
     if (!referrer) {
-      return res.status(404).json({ error: 'Código de referido inválido' });
+      return res.status(404).json({ error: 'Codigo de referido invalido' });
     }
 
     const brandId = req.brand?.id;
     if (brandId === referrer.id) {
-      return res.status(400).json({ error: 'No puedes usar tu propio código' });
+      return res.status(400).json({ error: 'No puedes usar tu propio codigo' });
     }
 
     return res.status(200).json({
@@ -95,7 +103,7 @@ export async function claimReferralBonus(req: AuthRequest, res: Response) {
 
     const { code } = req.body;
     if (!code) {
-      return res.status(400).json({ error: 'Código requerido' });
+      return res.status(400).json({ error: 'Codigo requerido' });
     }
 
     const upperCode = code.toUpperCase().trim();
@@ -107,23 +115,24 @@ export async function claimReferralBonus(req: AuthRequest, res: Response) {
       .single();
 
     if (!referrer) {
-      return res.status(404).json({ error: 'Código de referido inválido' });
+      return res.status(404).json({ error: 'Codigo de referido invalido' });
     }
 
     if (referrer.id === brandId) {
-      return res.status(400).json({ error: 'No puedes usar tu propio código' });
+      return res.status(400).json({ error: 'No puedes usar tu propio codigo' });
     }
 
     const { data: existingReferral } = await supabaseAdmin
       .from('referrals')
       .select('id')
       .eq('referred_brand_id', brandId)
-      .single();
+      .maybeSingle();
 
     if (existingReferral) {
       return res.status(400).json({ error: 'Ya tienes un referido registrado' });
     }
 
+    const rewardCredits = referralService.getDefaultRewardCredits();
     const { data: newReferral } = await supabaseAdmin
       .from('referrals')
       .insert({
@@ -131,6 +140,7 @@ export async function claimReferralBonus(req: AuthRequest, res: Response) {
         referred_brand_id: brandId,
         referral_code: upperCode,
         bonus_months: 1,
+        reward_credits: rewardCredits,
         status: 'pending',
       })
       .select()
@@ -141,9 +151,23 @@ export async function claimReferralBonus(req: AuthRequest, res: Response) {
       .update({ referral_count: (referrer.referral_count || 0) + 1 })
       .eq('id', referrer.id);
 
+    const { data: currentBrand } = await supabaseAdmin
+      .from('brands')
+      .select('plan')
+      .eq('id', brandId)
+      .single();
+
+    if (currentBrand?.plan && referralService.isEligiblePlan(currentBrand.plan)) {
+      await referralService.convertReferralForFirstPaidPlan({
+        referredBrandId: brandId,
+        planPurchased: currentBrand.plan,
+        paymentReference: null,
+      });
+    }
+
     return res.status(200).json({
       success: true,
-      message: 'Código aplicado. ¡1 mes gratis disponible cuando tu referred complete su primer pago!',
+      message: `Codigo aplicado. Tu referente recibira ${rewardCredits} creditos extra cuando completes tu primer pago mensual.`,
       referralId: newReferral?.id,
     });
   } catch (error) {
@@ -160,11 +184,14 @@ export async function getAdminReferrals(req: AuthRequest, res: Response) {
         id,
         referral_code,
         bonus_months,
+        reward_credits,
         bonus_credited,
         referrer_claimed,
         referred_claimed,
         status,
         created_at,
+        converted_at,
+        conversion_payment_reference,
         referrer_claimed_at,
         referred_claimed_at,
         referrer:brands!referrer_brand_id(id, name, email, slug),
@@ -186,11 +213,11 @@ export async function creditReferralBonus(req: AuthRequest, res: Response) {
     const { target } = req.body;
 
     if (!referralId || !target) {
-      return res.status(400).json({ error: ' referralId y target requeridos' });
+      return res.status(400).json({ error: 'referralId y target requeridos' });
     }
 
-    if (!['referrer', 'referred'].includes(target)) {
-      return res.status(400).json({ error: 'Target debe ser referrer o referred' });
+    if (target !== 'referrer') {
+      return res.status(400).json({ error: 'Solo se permite acreditar al referente' });
     }
 
     const { data: referral } = await supabaseAdmin
@@ -207,49 +234,19 @@ export async function creditReferralBonus(req: AuthRequest, res: Response) {
       return res.status(400).json({ error: 'El referral debe estar convertido para aplicar bonus' });
     }
 
-    const updateField = target === 'referrer' ? 'referrer_claimed' : 'referred_claimed';
-    const dateField = target === 'referrer' ? 'referrer_claimed_at' : 'referred_claimed_at';
-
-    if (referral[updateField]) {
+    if (referral.referrer_claimed) {
       return res.status(400).json({ error: 'Bonus ya acreditado' });
     }
 
-    await supabaseAdmin
-      .from('referrals')
-      .update({
-        [updateField]: true,
-        [dateField]: new Date().toISOString(),
-        bonus_credited: true,
-        bonus_credited_at: new Date().toISOString(),
-      })
-      .eq('id', referralId);
-
-    const brandId = target === 'referrer' ? referral.referrer_brand_id : referral.referred_brand_id;
-    const months = referral.bonus_months || 1;
-
-    const { data: brand } = await supabaseAdmin
-      .from('brands')
-      .select('subscription_end_date, plan')
-      .eq('id', brandId)
-      .single();
-
-    let newEndDate: Date;
-    if (brand?.subscription_end_date && new Date(brand.subscription_end_date) > new Date()) {
-      newEndDate = new Date(brand.subscription_end_date);
-      newEndDate.setMonth(newEndDate.getMonth() + months);
-    } else {
-      newEndDate = new Date();
-      newEndDate.setMonth(newEndDate.getMonth() + months);
+    const credited = await referralService.creditReferrer(referralId);
+    if (!credited) {
+      return res.status(400).json({ error: 'No se pudo acreditar el bonus o ya fue aplicado' });
     }
 
-    await supabaseAdmin
-      .from('brands')
-      .update({ subscription_end_date: newEndDate.toISOString() })
-      .eq('id', brandId);
-
+    const rewardCredits = Number(referral.reward_credits || referralService.getDefaultRewardCredits());
     return res.status(200).json({
       success: true,
-      message: `Bonus de ${months} mes(es) acreditado`,
+      message: `Bonus de ${rewardCredits} creditos acreditado al referente`,
     });
   } catch (error) {
     console.error('Error crediting referral bonus:', error);

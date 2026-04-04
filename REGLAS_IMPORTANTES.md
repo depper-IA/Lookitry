@@ -162,6 +162,7 @@ Para detalles técnicos exhaustivos, referirse siempre a `TECH_STACK.md`.
 - **Registro:** Turnstile -> DB -> Email SMTP.
 - **Pagos (Wompi):** Webhooks validan firma e inician `renewSubscription`.
 - **Upgrade:** Se aplica crédito prorrateado del plan anterior. El nuevo plan inicia inmediatamente.
+- **Referidos:** El reward vigente es `500` créditos extra solo para el referente y se acredita automáticamente tras el primer pago mensual elegible del referido.
 
 ### 8.3 Infraestructura
 - **Docker:** Frontend, Backend, n8n y MinIO corren en contenedores aislados en el VPS (`31.220.18.39`).

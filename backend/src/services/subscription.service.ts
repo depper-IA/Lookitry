@@ -9,6 +9,7 @@ import {
 } from '../utils/paymentLedger';
 import { hasActivePaidSubscription, isTrialOperationalBrand, recordTrialEvent } from '../utils/brandLifecycle';
 import { pricingService } from './pricing.service';
+import { referralService } from './referral.service';
 
 /**
  * SubscriptionService
@@ -247,7 +248,22 @@ export class SubscriptionService {
       await recordTrialEvent(brandId, 'trial_converted', { planPurchased }).catch(() => {});
     }
 
+    if (billingType === 'subscription' && this.isEligibleReferralConversion(planPurchased, isUpgrade)) {
+      await referralService.convertReferralForFirstPaidPlan({
+        referredBrandId: brandId,
+        planPurchased,
+        paymentReference: paymentData.reference || null,
+      }).catch((error) => {
+        console.error('[Referral] Error applying referral reward after paid conversion:', error);
+      });
+    }
+
     return updatedBrand as Brand;
+  }
+
+  private isEligibleReferralConversion(planPurchased: string, isUpgrade: boolean): boolean {
+    if (isUpgrade) return false;
+    return referralService.isEligiblePlan(planPurchased);
   }
 
   async calculateUpgradeProration(

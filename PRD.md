@@ -65,7 +65,7 @@
 - Widget (Try-On) con IA.
 - Pagos: Wompi (COP), PayPal (USD), cupones de descuento.
 - Editor de mini-landing (4 templates: Classic, Editorial, Moderno, Bare).
-- Programa de referidos (código único, bonus de meses extra).
+- Programa de referidos (código único, reward de 500 créditos extra para el referente).
 - Gestión de perfil y configuración de notificaciones (email, WhatsApp, alertas de uso).
 - Historial de pagos y solicitudes de cambio de plan.
 - Solicitudes legales (data deletion, etc.).
@@ -165,8 +165,9 @@
 ### 4.9 Flujo de Referidos
 1. Cada marca tiene `referral_code` único.
 2. Nuevo usuario valida código en `/api/brands/me/referral/validate`.
-3. Al completar registro/pago, se reclama bonus en `/api/brands/me/referral/claim`.
-4. Ambos (referidor y referido) reciben `bonus_months` extra.
+3. La marca referida reclama el código una sola vez en `/api/brands/me/referral/claim`.
+4. Cuando esa marca completa su primer pago mensual elegible (`BASIC`, `PRO`, `ENTERPRISE`), el referral pasa a `converted`.
+5. El referente recibe `500` créditos extra en `extra_credits_balance`.
 
 ### 4.10 Flujo de Enterprise Sync
 1. Admin configura sync en `/api/admin/enterprise/:brandId/sync-config`.
@@ -202,7 +203,7 @@
 - **Límites**: Aplican inmediatamente al cambio de plan.
 - **Trial**: Configurables por campaña. Anti-abuso con IP + fingerprint. Guest trial permite pagar antes de registrarse.
 - **Cupones**: Pueden cubrir 100% del costo (free upgrade directo). Aplicables a planes específicos.
-- **Referidos**: Ambos reciben bonus de meses. Reclamación individual por cada parte.
+- **Referidos**: Solo el referente recibe `500` créditos extra. La recompensa se aplica una sola vez y solo tras el primer pago mensual elegible del referido.
 - **Enterprise**: Sync externo vía CSV/API. Productos se actualizan automáticamente.
 - **Add-ons**: Créditos extra comprables. Se descuentan del `extra_credits_balance`.
 - **Notificaciones**: Preferencias por marca (email, WhatsApp, recordatorios 7/3 días, alertas de uso).

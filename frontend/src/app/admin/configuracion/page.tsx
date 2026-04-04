@@ -89,7 +89,6 @@ interface LaunchSettings {
   googleSiteVerification: string;
   uptimerobotStatusUrl: string;
   gaMeasurementId: string;
-  referralBonusMonths: number;
   launchDiscountCode: string;
   launchDiscountPercent: number;
   launchEndDate: string;
@@ -339,7 +338,6 @@ export default function SystemConfigPage() {
     googleSiteVerification: 'F-LW3EGCNrjEhNaAT56Qrioyo4-UD2CRWYyqgS-sExE',
     uptimerobotStatusUrl: 'https://stats.uptimerobot.com/CTEnSD7d1j',
     gaMeasurementId: 'G-F8277E4Z39',
-    referralBonusMonths: 1,
     launchDiscountCode: 'LAUNCH20',
     launchDiscountPercent: 20,
     launchEndDate: '2026-04-30',
@@ -1192,17 +1190,14 @@ export default function SystemConfigPage() {
             <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold mb-4">Programa de Referidos</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Meses de bonus por referido</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={12}
-                  value={launchSettings.referralBonusMonths}
-                  onChange={e => setLaunchSettings(prev => ({ ...prev, referralBonusMonths: Number(e.target.value) }))}
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Reward activo</label>
+                <div
                   style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
-                />
-                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Meses gratis para ambos (referente y referido)</p>
+                  className="w-full rounded-xl border px-3 py-3 text-sm font-semibold"
+                >
+                  500 créditos extra solo para el referente
+                </div>
+                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Se acredita automáticamente cuando el referido completa su primer pago mensual de BASIC, PRO o ENTERPRISE.</p>
               </div>
             </div>
           </div>

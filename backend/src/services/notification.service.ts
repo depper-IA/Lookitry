@@ -597,11 +597,11 @@ export class NotificationService {
    * Envía email cuando se acredita el bonus de referido a una marca.
    *
    * @param brand - Información de la marca
-   * @param months - Meses de bonus acreditados
+   * @param credits - Creditos de bonus acreditados
    */
-  async sendReferralBonusCredited(brand: Brand, months: number): Promise<void> {
+  async sendReferralBonusCredited(brand: Brand, credits: number): Promise<void> {
     try {
-      const html = referralBonusCreditedEmail({ name: brand.name, email: brand.email }, months);
+      const html = referralBonusCreditedEmail({ name: brand.name, email: brand.email }, credits);
       await emailService.sendEmail({
         to: brand.email,
         subject: '🎉 ¡Tu bonus de referido ha sido aplicado!',
