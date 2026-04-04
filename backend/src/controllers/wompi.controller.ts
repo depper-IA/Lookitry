@@ -213,7 +213,8 @@ export class WompiController {
       } catch (notifError) {
         console.error('[Wompi] No se pudo registrar notificación de error:', notifError);
       }
-      res.status(200).json({ received: true, error: 'Error interno' });
+      // Retornar 500 para que Wompi reintente el webhook
+      res.status(500).json({ error: 'Error interno procesando webhook' });
     }
   }
 
@@ -316,11 +317,62 @@ export class WompiController {
   async freeCheckout(req: Request, res: Response): Promise<void> {
     try {
       const brand = (req as any).brand;
-      const { plan, months, includes_landing, reference: reqRef, email } = req.body;
+      const { plan, months, includes_landing, reference: reqRef, email, coupon_id } = req.body;
       
       const effectivePlan = (plan === 'LANDING' ? 'BASIC' : plan).toUpperCase();
       const parsedMonths = Number.parseInt(months as string, 10);
       const monthsNum = Number.isNaN(parsedMonths) ? 1 : parsedMonths;
+
+      // SECURITY: Verificar cupón válido del 100% antes de permitir checkout gratuito
+      if (coupon_id) {
+        const { data: coupon, error: couponErr } = await supabaseAdmin
+          .from('coupons')
+          .select('id, code, discount_type, discount_value, max_uses, uses_count, expires_at, plan_ids, active')
+          .eq('id', coupon_id)
+          .eq('active', true)
+          .maybeSingle();
+
+        if (couponErr || !coupon) {
+          res.status(400).json({ error: 'Cupón inválido o no encontrado' });
+          return;
+        }
+
+        const now = new Date();
+        if (coupon.expires_at && new Date(coupon.expires_at) < now) {
+          res.status(400).json({ error: 'Cupón expirado' });
+          return;
+        }
+
+        if (coupon.max_uses !== null && coupon.uses_count >= coupon.max_uses) {
+          res.status(400).json({ error: 'Cupón sin usos disponibles' });
+          return;
+        }
+
+        if (coupon.plan_ids && coupon.plan_ids.length > 0 && !coupon.plan_ids.includes(effectivePlan)) {
+          res.status(400).json({ error: 'Este cupón no aplica para el plan seleccionado' });
+          return;
+        }
+
+        // Verificar que el descuento sea 100% (percentage) o que cubra el total
+        if (coupon.discount_type === 'percentage' && coupon.discount_value < 100) {
+          res.status(400).json({ error: 'El cupón no cubre el 100% del valor. No se permite checkout gratuito.' });
+          return;
+        }
+
+        if (coupon.discount_type === 'fixed') {
+          const expectedTotal = brand?.id
+            ? await pricingService.calculateTotal(effectivePlan, monthsNum, !!includes_landing)
+            : await pricingService.calculateExternalCheckoutTotal(effectivePlan, monthsNum, !!includes_landing);
+          
+          if (coupon.discount_value < expectedTotal) {
+            res.status(400).json({ error: 'El cupón no cubre el total del checkout. No se permite checkout gratuito.' });
+            return;
+          }
+        }
+      } else if (!brand?.id) {
+        res.status(400).json({ error: 'Se requiere un cupón válido para checkout gratuito' });
+        return;
+      }
 
       // SECURITY: If authenticated, the email must match the session email.
       if (brand?.id && email && brand.email && email.trim().toLowerCase() !== brand.email.toLowerCase()) {
@@ -345,7 +397,7 @@ export class WompiController {
           return;
         }
 
-        const ref = reqRef || `FREE-visitor-${Date.now()}`;
+        const ref = reqRef || `FREE-visitor-${crypto.randomUUID()}`;
         
         const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({ 
           email, 
@@ -453,7 +505,7 @@ export class WompiController {
         }
       }
 
-      const brandId = brand?.id ?? `visitor_${Date.now()}`;
+      const brandId = brand?.id ?? `visitor_${crypto.randomUUID()}`;
       const config = await wompiService.getWidgetConfig(brandId, amountCOP, monthsNum, planStr, isLandingPurchase);
       const signature = await wompiService.generateIntegritySignature(config.reference, config.amountInCents, config.currency);
       res.json({ ...config, signature });
@@ -530,7 +582,7 @@ export class WompiController {
         }
       }
 
-      const brandId = brand?.id ?? `visitor_${Date.now()}`;
+      const brandId = brand?.id ?? `visitor_${crypto.randomUUID()}`;
       const reference = wompiService.generateReference(brandId, monthsNum, planStr, isLandingPurchase);
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
       let successPath = brand?.id

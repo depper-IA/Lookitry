@@ -13,16 +13,15 @@ function isAuthRoute(pathname: string): boolean {
 }
 
 // Wrapper que imita la interfaz de axios ({ data, status })
+// Las credenciales se envían exclusivamente vía cookies HTTP-Only.
 async function apiFetch<T>(
   method: string,
   path: string,
   body?: unknown,
   extraHeaders?: Record<string, string>
 ): Promise<{ data: T; status: number }> {
-  const token = authService.getToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(extraHeaders || {}),
   };
 

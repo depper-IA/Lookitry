@@ -35,11 +35,19 @@ export type UploadAssetType =
  * MinIO está en minio.wilkiedevs.com, bucket "images", acceso público de lectura.
  */
 export class UploadService {
-  private readonly endpoint = process.env.MINIO_ENDPOINT || 'https://minio.wilkiedevs.com';
-  private readonly bucket = process.env.MINIO_BUCKET || 'images';
-  private readonly accessKey = process.env.MINIO_ACCESS_KEY || 'Wilkiedevs';
-  private readonly secretKey = process.env.MINIO_SECRET_KEY || 'Travis2305*';
-  private readonly publicUrl = process.env.MINIO_PUBLIC_URL || 'https://minio.wilkiedevs.com';
+  private readonly endpoint = process.env.MINIO_ENDPOINT;
+  private readonly bucket = process.env.MINIO_BUCKET;
+  private readonly accessKey = process.env.MINIO_ACCESS_KEY;
+  private readonly secretKey = process.env.MINIO_SECRET_KEY;
+  private readonly publicUrl = process.env.MINIO_PUBLIC_URL;
+
+  constructor() {
+    if (!this.endpoint || !this.bucket || !this.accessKey || !this.secretKey || !this.publicUrl) {
+      throw new Error(
+        'Variables de entorno de MinIO requeridas: MINIO_ENDPOINT, MINIO_BUCKET, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_PUBLIC_URL'
+      );
+    }
+  }
 
   async uploadImage(data: UploadImageDto): Promise<UploadResponse> {
     const base64Data = data.image_base64.includes(',')

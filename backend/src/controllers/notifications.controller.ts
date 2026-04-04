@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { sanitizeError } from '../utils/sanitizeError';
 import { supabaseAdmin } from '../config/supabase';
 
 export type NotificationType =
@@ -290,7 +291,7 @@ export async function getNotificationPreferences(_req: Request, res: Response): 
     if (error) throw error;
     res.json({ preferences: data });
   } catch (error: any) {
-    res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+    res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al obtener notificaciones') });
   }
 }
 
@@ -309,6 +310,6 @@ export async function updateNotificationPreference(req: Request, res: Response):
     if (error) throw error;
     res.json({ ok: true, type, enabled });
   } catch (error: any) {
-    res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+    res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al obtener notificaciones') });
   }
 }

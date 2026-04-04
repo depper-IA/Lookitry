@@ -6,6 +6,7 @@ import { emailService } from '../../services/email.service';
 import { authAdminService } from '../../services/admin/auth.admin.service';
 import { GOOGLE_CONFIG } from '../../config/google';
 import { verifyGoogleToken } from '../../services/google-auth.service';
+import { sanitizeError } from '../../utils/sanitizeError';
 
 const adminService = new AdminService();
 
@@ -328,7 +329,7 @@ export const listAdmins = async (_req: any, res: Response) => {
     const admins = await adminService.listAdmins();
     return res.status(200).json({ admins });
   } catch (error: any) {
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al listar administradores') });
   }
 };
 

@@ -51,13 +51,6 @@ class AuthService {
       method: 'POST',
       body: JSON.stringify(data),
     });
-    if (response.brand) {
-      localStorage.setItem('brand', JSON.stringify(response.brand));
-    }
-    // Guardar token en localStorage para usarlo como Bearer header en requests autenticados.
-    if (response.token) {
-      localStorage.setItem('token', response.token);
-    }
     return response;
   }
 
@@ -66,14 +59,6 @@ class AuthService {
       method: 'POST',
       body: JSON.stringify(data),
     });
-    if (response.brand) {
-      localStorage.setItem('brand', JSON.stringify(response.brand));
-    }
-    // Guardar token en localStorage para usarlo como Bearer header en requests autenticados.
-    // Las cookies cross-origin (api.* vs frontend) no se envían de forma confiable en todos los browsers.
-    if (response.token) {
-      localStorage.setItem('token', response.token);
-    }
     return response;
   }
 

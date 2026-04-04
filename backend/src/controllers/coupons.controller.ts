@@ -154,7 +154,7 @@ export async function validateCoupon(req: Request, res: Response) {
     });
   } catch (err: any) {
     console.error('[Coupons] Error en validateCoupon:', err);
-    return res.status(500).json({ ok: false, error: err.message });
+    return res.status(500).json({ ok: false, error: sanitizeError(err, 'Error al validar cupón') });
   }
 }
 

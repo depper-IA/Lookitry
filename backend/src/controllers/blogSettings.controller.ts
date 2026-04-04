@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { sanitizeError } from '../utils/sanitizeError';
 import { supabaseAdmin } from '../config/supabase';
 import { inferBlogWebhookAuthMode, triggerBlogWebhook } from '../utils/blogWebhook';
 import { createAdminNotification } from '../utils/adminNotifications';
@@ -78,7 +79,7 @@ export const blogSettingsController = {
       });
     } catch (error: any) {
       console.error('[BlogSettings] Error fetching settings:', error);
-      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error al obtener configuración') });
     }
   },
 
@@ -134,7 +135,7 @@ export const blogSettingsController = {
       });
     } catch (error: any) {
       console.error('[BlogSettings] Error updating settings:', error);
-      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error al obtener configuración') });
     }
   },
 
@@ -209,7 +210,7 @@ export const blogSettingsController = {
       }
     } catch (error: any) {
       console.error('[BlogSettings] Error triggering n8n:', error.message);
-      return res.status(500).json({ error: 'TRIGGER_ERROR', message: error.message });
+      return res.status(500).json({ error: 'TRIGGER_ERROR', message: sanitizeError(error, 'Error al disparar n8n') });
     }
   },
 
@@ -256,7 +257,7 @@ export const blogSettingsController = {
       return res.json({ ok: true });
     } catch (error: any) {
       console.error('[BlogSettings] Error reporting execution status:', error);
-      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error al obtener configuración') });
     }
   }
 };

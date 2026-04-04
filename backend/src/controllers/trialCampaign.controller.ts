@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { sanitizeError } from '../utils/sanitizeError';
 import { supabaseAdmin } from '../config/supabase';
 
 /**
@@ -46,7 +47,7 @@ export const getTrialCampaign = async (_req: any, res: Response) => {
     return res.json({ campaigns: campaigns ?? [], activeCampaign: active ?? null });
   } catch (err: any) {
     console.error('[TrialCampaign] getTrialCampaign:', err);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: err.message });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al obtener campañas') });
   }
 };
 
@@ -89,7 +90,7 @@ export const createTrialCampaign = async (req: any, res: Response) => {
     return res.status(201).json({ message: 'Campaña creada y activada', campaign: data });
   } catch (err: any) {
     console.error('[TrialCampaign] createTrialCampaign:', err);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: err.message });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al obtener campañas') });
   }
 };
 
@@ -138,7 +139,7 @@ export const updateTrialCampaign = async (req: any, res: Response) => {
     return res.json({ message: 'Campaña actualizada', campaign: data });
   } catch (err: any) {
     console.error('[TrialCampaign] updateTrialCampaign:', err);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: err.message });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al obtener campañas') });
   }
 };
 

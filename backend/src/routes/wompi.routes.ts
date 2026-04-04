@@ -26,6 +26,18 @@ const webhookRateLimiter = rateLimit({
   },
 });
 
+// Rate limiter para endpoints de pago gratuito (free-checkout, apply-free-upgrade)
+const paymentMutationRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: {
+    error: 'RATE_LIMIT_EXCEEDED',
+    message: 'Demasiados intentos de checkout gratuito.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Se usa optionalAuth importado desde ../middleware/auth
 
 /**
@@ -45,13 +57,13 @@ router.get('/upgrade-preview', optionalAuth, (req, res) => wompiController.getUp
  * POST /api/payments/wompi/apply-free-upgrade
  * Aplica upgrade gratuito cuando el crédito cubre el costo. Requiere auth de marca.
  */
-router.post('/apply-free-upgrade', optionalAuth, (req, res) => wompiController.applyFreeUpgrade(req, res));
+router.post('/apply-free-upgrade', paymentMutationRateLimiter, optionalAuth, (req, res) => wompiController.applyFreeUpgrade(req, res));
 
 /**
  * POST /api/payments/wompi/free-checkout
  * Activa servicios directamente cuando el total es $0 (cupón del 100%). Requiere auth de marca.
  */
-router.post('/free-checkout', optionalAuth, (req, res) => wompiController.freeCheckout(req, res));
+router.post('/free-checkout', paymentMutationRateLimiter, optionalAuth, (req, res) => wompiController.freeCheckout(req, res));
 
 /**
  * GET /api/payments/wompi/config

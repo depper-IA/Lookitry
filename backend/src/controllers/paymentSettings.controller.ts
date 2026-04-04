@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { sanitizeError } from '../utils/sanitizeError';
 import { PaymentSettingsService } from '../services/paymentSettings.service';
 
 const service = new PaymentSettingsService();
@@ -12,7 +13,7 @@ export const getPaymentSettings = async (_req: Request, res: Response) => {
     const settings = await service.getSettings();
     return res.json(settings);
   } catch (error: any) {
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al obtener configuración') });
   }
 };
 
@@ -25,7 +26,7 @@ export const updatePaymentSettings = async (req: Request, res: Response) => {
     const updated = await service.updateSettings(req.body);
     return res.json({ message: 'Configuración guardada', settings: updated });
   } catch (error: any) {
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al obtener configuración') });
   }
 };
 
@@ -38,6 +39,6 @@ export const getPublicPaymentSettings = async (_req: Request, res: Response) => 
     const settings = await service.getPublicSettings();
     return res.json(settings);
   } catch (error: any) {
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al obtener configuración') });
   }
 };

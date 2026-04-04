@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { sanitizeError } from '../../utils/sanitizeError';
 import { AdminService } from '../../services/admin.service';
 import { auditService } from '../../services/audit.service';
 import { notificationService } from '../../services/notification.service';
@@ -102,7 +103,7 @@ export const createBrand = async (req: any, res: Response) => {
     });
   } catch (error: any) {
     const isValidationError = error.message === 'El email ya está registrado' || error.message === 'El slug ya está en uso';
-    return res.status(isValidationError ? 400 : 500).json({ error: isValidationError ? 'VALIDATION_ERROR' : 'INTERNAL_ERROR', message: error.message || 'Error al crear marca' });
+    return res.status(isValidationError ? 400 : 500).json({ error: isValidationError ? 'VALIDATION_ERROR' : 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al crear marca') });
   }
 };
 
@@ -118,7 +119,7 @@ export const deleteBrand = async (req: any, res: Response) => {
     return res.status(200).json({ message: 'Marca eliminada exitosamente' });
   } catch (error: any) {
     const isNotFound = error.message === 'Marca no encontrada';
-    return res.status(isNotFound ? 404 : 500).json({ error: isNotFound ? 'NOT_FOUND' : 'INTERNAL_ERROR', message: error.message || 'Error al eliminar marca' });
+    return res.status(isNotFound ? 404 : 500).json({ error: isNotFound ? 'NOT_FOUND' : 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al eliminar marca') });
   }
 };
 
@@ -131,7 +132,7 @@ export const deleteInactiveProduct = async (req: Request, res: Response) => {
     await adminService.deleteInactiveProduct(id, productId);
     return res.status(200).json({ message: 'Producto eliminado exitosamente' });
   } catch (error: any) {
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message || 'Error al eliminar producto' });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al eliminar producto') });
   }
 };
 

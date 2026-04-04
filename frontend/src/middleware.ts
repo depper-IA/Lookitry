@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
   const token = request.cookies.get('token')?.value;
   const adminToken = request.cookies.get('admin_token')?.value;
-  const isDev = process.env.NODE_ENV === 'development';
+  const allowDevBypass = process.env.ALLOW_DEV_AUTH_BYPASS === 'true';
 
   // ── Resolución de Dominios Personalizados ─────────────────────────────────────
   const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || '';
@@ -69,7 +69,7 @@ export async function middleware(request: NextRequest) {
 
   // ── Proteger rutas del dashboard de marca ─────────────────────────────────────
   if (pathname.startsWith('/dashboard')) {
-    if (!token && !isDev) {
+    if (!token && !allowDevBypass) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
@@ -81,7 +81,7 @@ export async function middleware(request: NextRequest) {
 
   // ── Proteger rutas del panel de admin ─────────────────────────────────────────
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-    if (!adminToken && !token && !isDev) {
+    if (!adminToken && !token && !allowDevBypass) {
       return NextResponse.redirect(new URL('/admin/login', request.url));
     }
     const response = NextResponse.next();
@@ -118,7 +118,7 @@ export async function middleware(request: NextRequest) {
     // Limpiar siempre X-Frame-Options para que nuestro CSP no tenga conflictos
     response.headers.delete('X-Frame-Options');
 
-    const baseCsp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://checkout.wompi.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob: 'self'; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co https://checkout.wompi.co; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://*.wordpress.com https://*.wixsite.com https://*.shopify.com; media-src 'self';";
+    const baseCsp = "default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://checkout.wompi.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob: 'self'; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co https://checkout.wompi.co; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://*.wordpress.com https://*.wixsite.com https://*.shopify.com; media-src 'self';";
 
     const frameAncestors = ["'self'", ...allowedOrigins, ...requestDerivedOrigins]
       .filter((origin, index, array) => array.indexOf(origin) === index)
@@ -127,8 +127,8 @@ export async function middleware(request: NextRequest) {
 
     response.headers.set('Content-Security-Policy', `frame-ancestors ${frameAncestors}; ${baseCsp}`);
 
-    // Configurar permisos de HW/SO con la sintaxis moderna
-    response.headers.set('Permissions-Policy', 'camera=*, clipboard-write=*');
+    // Configurar permisos de HW/SO con la sintaxis moderna — restringidos a self
+    response.headers.set('Permissions-Policy', "camera=(self), clipboard-write=(self)");
 
     return response;
   }
