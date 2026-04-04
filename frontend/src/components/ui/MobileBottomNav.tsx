@@ -33,15 +33,15 @@ export function MobileBottomNav() {
     <nav
       role="navigation"
       aria-label="Navegación principal"
-      className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-[#0a0a0a] via-[rgba(10,10,10,0.94)] to-transparent px-2 pb-safe pt-4 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 px-2 pb-safe pt-2 md:hidden"
     >
       <div className="mx-auto max-w-sm pb-2">
-        <div className="flex items-center justify-center gap-0.5 rounded-2xl border border-white/10 bg-[rgba(10,10,10,0.92)] px-1.5 py-1.5 shadow-2xl shadow-black/40 backdrop-blur-xl">
+        <div className="flex items-center justify-center gap-0.5 rounded-2xl border border-white/10 bg-[#0a0a0a]/96 px-1.5 py-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.28)] backdrop-blur-xl">
             <Link
               href="/"
               aria-current={isActive('/') ? 'page' : undefined}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
-                isActive('/') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-theme hover:text-white'
+                isActive('/') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-white/40 hover:text-white'
               }`}
             >
             <Home size={20} />
@@ -52,7 +52,7 @@ export function MobileBottomNav() {
             href="/probador-virtual"
             aria-current={isActive('/probador-virtual') ? 'page' : undefined}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
-              isActive('/probador-virtual') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-theme hover:text-white'
+              isActive('/probador-virtual') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-white/40 hover:text-white'
             }`}
           >
             <Sparkles size={20} />
@@ -63,7 +63,7 @@ export function MobileBottomNav() {
             href="/contacto"
             aria-current={isActive('/contacto') ? 'page' : undefined}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
-              isActive('/contacto') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-theme hover:text-white'
+              isActive('/contacto') ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-white/40 hover:text-white'
             }`}
           >
             <Mail size={20} />
@@ -72,7 +72,7 @@ export function MobileBottomNav() {
           
           <Link
             href={getHref()}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${isActive(getHref()) ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-theme hover:text-white'}`}
+            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${isActive(getHref()) ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]' : 'text-white/40 hover:text-white'}`}
           >
             {getIcon()}
             <span className="text-[9px] font-semibold uppercase tracking-wider">{getLabel()}</span>

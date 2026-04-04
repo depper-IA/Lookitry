@@ -112,13 +112,12 @@ export default function LandingNav({
     }
   ];
 
-  // Use theme-aware background and text colors for light/dark modes
-  const navBg = 'bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5';
+  const navBg = 'bg-white/92 dark:bg-[#0a0a0a]/82 backdrop-blur-md border-b border-black/5 dark:border-white/5';
 
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 py-6 sm:py-8 w-full theme-bg-base theme-text ${navBg}`}
+        className={`fixed top-0 left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 py-6 sm:py-8 w-full ${navBg}`}
         role="navigation"
         aria-label="Navegación principal"
       >
@@ -128,25 +127,25 @@ export default function LandingNav({
               <div className="relative w-7 h-7 sm:w-8 sm:h-8">
                 <Image src="/logo.svg" alt="Lookitry" fill className="object-contain" priority />
               </div>
-              <span className="font-jakarta text-xl sm:text-2xl font-bold tracking-tighter text-white">
+              <span className="font-jakarta text-xl sm:text-2xl font-bold tracking-tighter text-[#0a0a0a] dark:text-white">
                 Look<span className="text-[#FF5C3A]">itry</span>
               </span>
             </Link>
 
             {/* Currency Toggle */}
-            <div className="hidden sm:flex items-center bg-white/5 border border-white/10 rounded-full px-2.5 sm:px-3 py-1.5 gap-2 sm:gap-2.5 ml-1 sm:ml-2" role="group" aria-label="Selector de moneda">
+            <div className="hidden sm:flex items-center bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-full px-2.5 sm:px-3 py-1.5 gap-2 sm:gap-2.5 ml-1 sm:ml-2" role="group" aria-label="Selector de moneda">
               <button
                 onClick={() => onCurrencyChange('COP')}
                 aria-pressed={currency === 'COP'}
-                className={`text-[9px] sm:text-[8px] font-bold cursor-pointer transition-colors uppercase ${currency === 'COP' ? 'text-[#FF5C3A]' : 'text-white/50 hover:text-white'}`}
+                className={`text-[9px] sm:text-[8px] font-bold cursor-pointer transition-colors uppercase ${currency === 'COP' ? 'text-[#FF5C3A]' : 'text-black/45 dark:text-white/50 hover:text-[#0a0a0a] dark:hover:text-white'}`}
               >
                 COP
               </button>
-              <div className="w-[1px] h-2.5 bg-white/10" aria-hidden="true" />
+              <div className="w-[1px] h-2.5 bg-black/10 dark:bg-white/10" aria-hidden="true" />
               <button
                 onClick={() => onCurrencyChange('USD')}
                 aria-pressed={currency === 'USD'}
-                className={`text-[9px] sm:text-[8px] font-bold cursor-pointer transition-colors uppercase ${currency === 'USD' ? 'text-[#FF5C3A]' : 'text-white/50 hover:text-white'}`}
+                className={`text-[9px] sm:text-[8px] font-bold cursor-pointer transition-colors uppercase ${currency === 'USD' ? 'text-[#FF5C3A]' : 'text-black/45 dark:text-white/50 hover:text-[#0a0a0a] dark:hover:text-white'}`}
               >
                 USD
               </button>
@@ -162,7 +161,7 @@ export default function LandingNav({
                 onClick={() => setProductsOpen(!productsOpen)}
                 aria-expanded={productsOpen}
                 aria-haspopup="true"
-                className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${productsOpen ? 'text-[#FF5C3A]' : 'text-white/60 hover:text-white'}`}
+                className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${productsOpen ? 'text-[#FF5C3A]' : 'text-black/60 dark:text-white/60 hover:text-[#0a0a0a] dark:hover:text-white'}`}
               >
                 Productos Pro
                 <ChevronDown size={12} className={`transition-transform duration-300 ${productsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
@@ -199,7 +198,7 @@ export default function LandingNav({
               <Link
                 key={item.label}
                 href={item.href}
-                className="text-[11px] font-bold uppercase tracking-[0.15em] text-white/60 hover:text-white transition-all duration-300 relative group"
+                className="text-[11px] font-bold uppercase tracking-[0.15em] text-black/60 dark:text-white/60 hover:text-[#0a0a0a] dark:hover:text-white transition-all duration-300 relative group"
               >
                 {item.label}
                 <span className="absolute bottom-0 left-0 right-0 h-[1px] bg-[#FF5C3A] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center" />
@@ -213,16 +212,16 @@ export default function LandingNav({
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 group p-1 pr-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                  className="flex items-center gap-2 group p-1 pr-3 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/10 transition-all"
                 >
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FF5C3A] flex items-center justify-center text-white font-bold text-xs">
                     {initials}
                   </div>
                   <div className="hidden sm:flex flex-col items-start mr-1">
-                    <span className="text-[10px] font-bold text-white truncate max-w-[100px]">{session.name}</span>
-                    <span className="text-[8px] text-white/30 uppercase tracking-widest leading-none">Mi Panel</span>
+                    <span className="text-[10px] font-bold text-[#0a0a0a] dark:text-white truncate max-w-[100px]">{session.name}</span>
+                    <span className="text-[8px] text-black/30 dark:text-white/30 uppercase tracking-widest leading-none">Mi Panel</span>
                   </div>
-                  <ChevronDown size={14} className={`text-white/20 transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={14} className={`text-black/20 dark:text-white/20 transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {dropdownOpen && (
@@ -248,7 +247,7 @@ export default function LandingNav({
             ) : (
               <Link
                 href="/login"
-                className="hidden sm:block text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 hover:text-white transition-colors"
+                className="hidden sm:block text-[10px] font-bold uppercase tracking-[0.2em] text-black/60 dark:text-white/60 hover:text-[#0a0a0a] dark:hover:text-white transition-colors"
               >
                 Ingresar
               </Link>
@@ -264,7 +263,7 @@ export default function LandingNav({
 
             {/* Mobile Menu Toggle */}
             <button
-              className="lg:hidden text-white/80 hover:text-white transition-colors p-2"
+              className="lg:hidden text-[#0a0a0a]/80 dark:text-white/80 hover:text-[#0a0a0a] dark:hover:text-white transition-colors p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
               aria-expanded={mobileMenuOpen}
