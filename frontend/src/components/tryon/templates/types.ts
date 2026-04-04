@@ -22,6 +22,7 @@ export interface TryOnTemplateProps {
   secondaryColor: string;
   buttonText: string;
   welcomeMessage: string;
+  privacyNotice?: string;
 
   selfiePreview: string | null;
   selectedProduct: Product | null;

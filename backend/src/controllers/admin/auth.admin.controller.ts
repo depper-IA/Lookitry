@@ -288,12 +288,11 @@ export const adminGoogleLogin = async (req: any, res: Response) => {
     res.cookie('admin_token', token, cookieOptions);
 
     auditService.log({
-      adminId: admin.id,
-      action: 'ADMIN_LOGIN_GOOGLE',
-      targetType: 'admin',
-      targetId: admin.id,
-      metadata: { email: admin.email },
-    }).catch(console.error);
+      admin_id: admin.id,
+      admin_email: admin.email,
+      action: 'admin.login',
+      details: { method: 'google' },
+    });
 
     return res.status(200).json({
       admin: {

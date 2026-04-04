@@ -46,9 +46,9 @@ export function TemplateBare(props: TryOnTemplateProps) {
           <div className={`${centerUploadInEmbed ? 'w-full max-w-lg' : (pluginView && step === 'result' ? 'mx-auto w-full max-w-6xl' : 'max-w-lg mx-auto w-full')}`}>
             <ErrorBanner error={error} isService={errorIsService} />
             <NoticeBanner notice={notice} />
-            {step === 'upload' && (
-              <SelfieUploader onUpload={onSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} />
-            )}
+             {step === 'upload' && (
+               <SelfieUploader onUpload={onSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} privacyNotice="Tu selfie solo se usa en tu navegador y se elimina al subir una nueva foto" />
+             )}
             {step === 'select' && (
               <div className="space-y-3 md:space-y-4">
                 <SelfieThumb preview={selfiePreview} onReset={onReset} />

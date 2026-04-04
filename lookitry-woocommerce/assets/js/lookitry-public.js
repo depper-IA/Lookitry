@@ -189,18 +189,39 @@
         function ensureWidgetScript(scriptUrl) {
             const finalUrl = scriptUrl || widgetScriptFallbackUrl;
 
+            // Si ya está cargado y disponible, retornarlo inmediatamente
             if (window.LookitryWidget && typeof window.LookitryWidget.init === 'function') {
                 return Promise.resolve(window.LookitryWidget);
             }
 
             return new Promise(function(resolve, reject) {
+                // Evitar cargar múltiples veces el mismo script
                 const existing = document.querySelector('script[data-lookitry-widget-loader="true"]');
 
                 if (existing) {
-                    existing.addEventListener('load', function() {
-                        resolve(window.LookitryWidget);
-                    }, { once: true });
-                    existing.addEventListener('error', reject, { once: true });
+                    // Si ya existe, esperar su carga o error
+                    const handleLoad = function() {
+                        if (window.LookitryWidget && typeof window.LookitryWidget.init === 'function') {
+                            resolve(window.LookitryWidget);
+                        } else {
+                            reject(new Error('Widget loader not available after load'));
+                        }
+                    };
+                    
+                    const handleError = function() {
+                        reject(new Error('Widget script failed to load'));
+                    };
+
+                    existing.removeEventListener('load', handleLoad);
+                    existing.removeEventListener('error', handleError);
+                    
+                    existing.addEventListener('load', handleLoad, { once: true });
+                    existing.addEventListener('error', handleError, { once: true });
+                    
+                    // Si ya estaba cargado, verificar inmediatamente
+                    if (existing.readyState === 'loaded' || existing.readyState === 'complete') {
+                        handleLoad();
+                    }
                     return;
                 }
 
@@ -210,14 +231,20 @@
                 script.defer = true;
                 script.dataset.lookitryWidgetLoader = 'true';
                 script.onload = function() {
-                    if (window.LookitryWidget && typeof window.LookitryWidget.init === 'function') {
-                        resolve(window.LookitryWidget);
-                    } else {
-                        reject(new Error('Widget loader not available'));
-                    }
+                    // Pequeña pausa para asegurar que el script se haya ejecutado completamente
+                    setTimeout(function() {
+                        if (window.LookitryWidget && typeof window.LookitryWidget.init === 'function') {
+                            resolve(window.LookitryWidget);
+                        } else {
+                            reject(new Error('Widget loader not available after script execution'));
+                        }
+                    }, 100);
                 };
                 script.onerror = function() {
                     reject(new Error('Widget script failed to load'));
+                };
+                script.onabort = function() {
+                    reject(new Error('Widget script loading aborted'));
                 };
                 document.head.appendChild(script);
             });
@@ -468,42 +495,32 @@
                 success: function(response) {
                     clearTimeout(loadingTimeout);
 
-                    if (response.success && response.embedUrl) {
-                        const widgetUrl = response.widgetUrl || widgetScriptFallbackUrl;
-                        const brandSlug = response.brandSlug || (function() {
-                            try {
-                                const parsed = new URL(response.embedUrl);
-                                const segments = parsed.pathname.split('/').filter(Boolean);
-                                return segments[1] || '';
-                            } catch (error) {
-                                return '';
-                            }
-                        })();
-                        const lookitryProductId = response.product && response.product.id ? String(response.product.id) : '';
+            if (response.success && response.embedUrl) {
+                const widgetUrl = response.widgetUrl || widgetScriptFallbackUrl;
+                const brandSlug = response.brandSlug || (function() {
+                    try {
+                        const parsed = new URL(response.embedUrl);
+                        const segments = parsed.pathname.split('/').filter(Boolean);
+                        return segments[1] || '';
+                    } catch (error) {
+                        return '';
+                    }
+                })();
+                const lookitryProductId = response.product && response.product.id ? String(response.product.id) : '';
 
-                        ensureWidgetScript(widgetUrl)
-                            .then(function() {
-                                $overlay.find('.lookitry-error-overlay').remove();
-                                renderWidgetInModal({
-                                    brandSlug: brandSlug,
-                                    productId: lookitryProductId
-                                });
-                                $overlay.css('display', 'flex');
-
-                                window.setTimeout(function() {
-                                    if (!$modalBody.find('iframe').length && !$modalBody.find('[data-lookitry-widget="true"] iframe').length) {
-                                        renderIframeFallback(response.embedUrl);
-                                    }
-                                }, 1200);
-                            })
-                            .catch(function() {
-                                try {
-                                    renderIframeFallback(response.embedUrl);
-                                    $overlay.css('display', 'flex');
-                                } catch (fallbackError) {
-                                    showRequestError('Error al cargar el widget', 'No se pudo inicializar el loader del probador.', false);
-                                }
-                            });
+                ensureWidgetScript(widgetUrl)
+                    .then(function() {
+                        $overlay.find('.lookitry-error-overlay').remove();
+                        renderWidgetInModal({
+                            brandSlug: brandSlug,
+                            productId: lookitryProductId
+                        });
+                        $overlay.css('display', 'flex');
+                    })
+                    .catch(function(error) {
+                        console.error('[Lookitry] Error cargando widget JS:', error);
+                        showRequestError('Error al cargar el widget', 'No se pudo inicializar el loader del probador. Por favor, intenta de nuevo o contacta al soporte.', false);
+                    });
                     } else {
                         showRequestError('Error al inicializar', response.message || response.error || 'El probador no esta disponible en este momento.', false);
                     }

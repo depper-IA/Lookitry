@@ -443,21 +443,25 @@ export function ResultDisplay({
             Probar otro
           </button>
 
-          {generationId && brandSlug && (
-            <button
-              onClick={() => setFeedbackOpen(true)}
-              className={`w-full py-2 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${feedbackSent ? 'text-green-600 bg-green-50' : 'text-gray-300 hover:text-gray-500'}`}
-            >
-              {feedbackSent ? (
-                <>
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  Reporte enviado
-                </>
-              ) : '¿Problemas con la imagen? Reportar'}
-            </button>
-          )}
+           {generationId && brandSlug && (
+             <button
+               onClick={() => setFeedbackOpen(true)}
+               className={`w-full py-2 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${feedbackSent ? 'text-green-600 bg-green-50' : 'text-gray-300 hover:text-gray-500'}`}
+             >
+               {feedbackSent ? (
+                 <>
+                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                   </svg>
+                   Reporte enviado
+                 </>
+               ) : '¿Problemas con la imagen? Reportar'}
+             </button>
+           )}
+           
+           <div className="text-center text-[9px] md:text-[10px] text-gray-500 mt-4 font-medium italic">
+             Esta imagen se guardó para evitar repetir esta prueba con la misma selfie.
+           </div>
         </div>
       </div>
 

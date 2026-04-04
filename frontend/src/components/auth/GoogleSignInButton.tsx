@@ -3,7 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 
 interface GoogleSignInButtonProps {
-  onSuccess?: (data: any) => void;
+  onSuccess?: (data?: any) => void;
   onError?: (error: string) => void;
   mode?: 'login' | 'register';
   redirectTo?: string;

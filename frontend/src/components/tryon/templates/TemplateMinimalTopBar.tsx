@@ -58,9 +58,9 @@ export function TemplateMinimalTopBar(props: TryOnTemplateProps) {
         <ErrorBanner error={error} isService={errorIsService} />
         <NoticeBanner notice={notice} />
 
-        {step === 'upload' && (
-          <SelfieUploader onUpload={onSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} />
-        )}
+         {step === 'upload' && (
+           <SelfieUploader onUpload={onSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} privacyNotice="Tu selfie solo se usa en tu navegador y se elimina al subir una nueva foto" />
+         )}
 
         {step === 'select' && (
           <div className="space-y-3 md:space-y-4">
