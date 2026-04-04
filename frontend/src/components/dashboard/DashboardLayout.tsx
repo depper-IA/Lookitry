@@ -50,7 +50,6 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
 
   const isPro = currentBrand?.plan === 'PRO';
   const visibleNavigation = navigation.filter((item) => {
-    if (item.href === '/dashboard/review' && currentBrand?.plan === 'TRIAL') return false;
     if (item.href === '/dashboard/integrations' && !isPro) return false;
     return true;
   });
