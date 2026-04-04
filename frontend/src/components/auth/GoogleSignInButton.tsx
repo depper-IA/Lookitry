@@ -126,6 +126,15 @@ export default function GoogleSignInButton({
 
       setError('');
 
+      // IMPORTANTE: Almacenar la sesión en localStorage ANTES de redirigir
+      // Esto asegura que la cookie HTTP-Only se haya establecido correctamente
+      if (data.brand) {
+        localStorage.setItem('brand', JSON.stringify(data.brand));
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+      }
+
       if (variant === 'admin' && data.admin) {
         localStorage.setItem('adminUser', JSON.stringify(data.admin));
       }
@@ -133,13 +142,21 @@ export default function GoogleSignInButton({
       if (onSuccess) {
         onSuccess(data);
       } else if (data.needsOnboarding) {
-        window.location.href = '/register/google-setup';
+        // Pequeña pausa para asegurar que la cookie se ha propagado
+        setTimeout(() => {
+          window.location.href = '/register/google-setup';
+        }, 100);
       } else if (variant === 'admin') {
-        window.location.href = redirectTo || '/admin/dashboard';
+        setTimeout(() => {
+          window.location.href = redirectTo || '/admin/dashboard';
+        }, 100);
       } else {
-        window.location.href = redirectTo || '/dashboard';
+        setTimeout(() => {
+          window.location.href = redirectTo || '/dashboard';
+        }, 100);
       }
-    } catch {
+    } catch (err: any) {
+      console.error('[GoogleSignIn] Error en sendToBackend:', err);
       const msg = 'Error de conexión al iniciar sesión con Google';
       setError(msg);
       onError?.(msg);

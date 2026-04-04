@@ -1,5 +1,20 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-04] - Sincronización de Documentación Arquitectónica (TECH_STACK.md)
+
+### Cambio
+- Actualización de `TECH_STACK.md` para reflejar con exactitud la arquitectura modular actual del panel de administración y las tablas recientes de base de datos, cumpliendo con la regla 0 de `REGLAS_IMPORTANTES.md`.
+
+### Detalles
+- Se agregó el desglose de tablas de base de datos para `admin_notifications` y `admin_notification_preferences`.
+- Se especificó la refactorización arquitectónica de los controladores del panel de administrador que ahora residen en la carpeta `admin/` como controladores modulares por dominio.
+- El resto de los documentos (`PRD.md`, `DESIGN.md`) ya se encontraban correctamente sincronizados con las últimas interfaces de error y configuraciones.
+
+### Archivos modificados
+- `TECH_STACK.md`
+
+---
+
 ## [2026-04-04] - Rediseño del programa de referidos a créditos extra
 
 ### Cambio

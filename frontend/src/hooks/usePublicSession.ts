@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { brandsService } from '@/services/brands.service';
 import { AUTH_STATE_CHANGED_EVENT } from '@/lib/sessionEvents';
 
@@ -29,8 +29,36 @@ function readStoredSession(): PublicSession {
 
 export function usePublicSession() {
   const [session, setSession] = useState<PublicSession>(null);
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSyncTimeRef = useRef<number>(0);
+  const isAuthRouteRef = useRef<boolean>(false);
+
+  // Detectar si estamos en una ruta de autenticación
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const authRoutes = ['/login', '/register', '/auth/', '/registro-pro', '/onboarding', '/register/google-setup', '/checkout', '/trial-checkout'];
+      isAuthRouteRef.current = authRoutes.some(route => window.location.pathname.startsWith(route));
+    }
+  }, []);
 
   const syncSession = useCallback(async () => {
+    // IMPORTANTE: Si estamos en una ruta de autenticación, no hacer sync agresivo
+    // Esto evita interrumpir el flujo de login/onboarding con múltiples 401s
+    if (isAuthRouteRef.current) {
+      const storedSession = readStoredSession();
+      if (storedSession) {
+        setSession(storedSession);
+      }
+      return;
+    }
+
+    // Debounce: evitar múltiples sincronizaciones en corto tiempo (500ms mínimo)
+    const now = Date.now();
+    if (now - lastSyncTimeRef.current < 500) {
+      return;
+    }
+    lastSyncTimeRef.current = now;
+
     const storedSession = readStoredSession();
     if (storedSession) {
       setSession(storedSession);
@@ -45,9 +73,14 @@ export function usePublicSession() {
 
       setSession(nextSession);
       localStorage.setItem('brand', JSON.stringify(brand));
-    } catch {
-      setSession(null);
-      localStorage.removeItem('brand');
+    } catch (err: any) {
+      // Si el error es 401, no limpiar la sesión local si estamos en auth route
+      // Esto permite que el usuario complete el flujo de login/onboarding
+      if (err?.response?.status !== 401) {
+        setSession(null);
+        localStorage.removeItem('brand');
+      }
+      // Si es 401 en auth route, simplemente ignorar el error
     }
   }, []);
 
@@ -56,7 +89,13 @@ export function usePublicSession() {
 
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        void syncSession();
+        // Debounce con timeout para evitar múltiples llamadas
+        if (syncTimeoutRef.current) {
+          clearTimeout(syncTimeoutRef.current);
+        }
+        syncTimeoutRef.current = setTimeout(() => {
+          void syncSession();
+        }, 100);
       }
     };
 
@@ -76,6 +115,9 @@ export function usePublicSession() {
       window.removeEventListener(AUTH_STATE_CHANGED_EVENT, syncSession);
       window.removeEventListener('storage', handleStorage);
       document.removeEventListener('visibilitychange', handleVisibility);
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
     };
   }, [syncSession]);
 

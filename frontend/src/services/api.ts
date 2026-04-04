@@ -8,7 +8,10 @@ function isAuthRoute(pathname: string): boolean {
     pathname.startsWith('/register') ||
     pathname.startsWith('/auth/') ||
     pathname.startsWith('/registro-pro') ||
-    pathname.startsWith('/onboarding')
+    pathname.startsWith('/onboarding') ||
+    pathname.startsWith('/register/google-setup') ||
+    pathname.startsWith('/checkout') ||
+    pathname.startsWith('/trial-checkout')
   );
 }
 
@@ -45,12 +48,18 @@ async function apiFetch<T>(
   const data = await res.json().catch(() => ({}));
 
   if (res.status === 401) {
-    authService.clearSession();
-    if (typeof window !== 'undefined') {
-      if (!isAuthRoute(window.location.pathname)) {
+    // IMPORTANTE: No limpiar sesión ni redirigir si estamos en rutas de autenticación.
+    // Esto permite que los hooks de sesión pública se recuperen sin interrumpir el flujo de login/onboarding.
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+    
+    if (!isAuthRoute(currentPath)) {
+      // Solo limpiar sesión y redirigir si NO estamos en una ruta de auth
+      authService.clearSession();
+      if (typeof window !== 'undefined') {
         window.location.href = '/';
       }
     }
+    // Si estamos en una ruta de auth, dejamos que el error se propague sin limpiar la sesión
   }
 
   if (!res.ok) {
