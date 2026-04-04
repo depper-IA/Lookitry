@@ -111,7 +111,7 @@ export default function AdminDashboardPage() {
             <a href="/admin/subscriptions?filter=expiring" className="flex items-center gap-3 p-4 rounded-xl transition-all hover:scale-[1.01]" style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)' }}>
               <Clock className="w-5 h-5 text-amber-500" />
               <div className="flex-1">
-                <p className="text-sm font-semibold text-amber-500">{alerts.expiring} suscripción{alerts.expiring > 1 ? 'es' : ''} vence{n alerts.expiring === 1 ? 'n' : ''} en los próximos 7 días</p>
+                <p className="text-sm font-semibold text-amber-500">{alerts.expiring} suscripción{alerts.expiring > 1 ? 'es' : ''} vence{alerts.expiring === 1 ? '' : 'n'} en los próximos 7 días</p>
                 <p className="text-xs text-amber-500/70">Requiere atención antes de que venzan</p>
               </div>
               <ArrowRight className="w-4 h-4 text-amber-500" />

@@ -153,18 +153,37 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 | `/register` | 0.8 | monthly |
 | `/login` | 0.5 | monthly |
 | `/sobre-nosotros` | 0.6 | monthly |
+| `/contacto` | 0.6 | monthly |
+| `/casos-de-exito` | 0.7 | weekly |
+| `/blog` | 0.8 | weekly |
+| `/blog/[slug]` | 0.7 | weekly |
+| `/probador-virtual` | 0.8 | weekly |
+| `/api-developer` | 0.5 | monthly |
+| `/plugin-woocommerce` | 0.6 | monthly |
+| `/mini-landing` | 0.5 | monthly |
+| `/ayuda` | 0.5 | monthly |
+| `/estado` | 0.4 | monthly |
 | `/terminos` | 0.4 | yearly |
 | `/politicas-privacidad` | 0.4 | yearly |
+| `/politica-de-uso` | 0.4 | yearly |
+| `/aviso-legal` | 0.4 | yearly |
+| `/cookies` | 0.4 | yearly |
 
 ### 7.4 Páginas NO Indexadas (No en sitemap)
 - `/dashboard/*`
 - `/admin/*`
 - `/checkout`
+- `/trial-checkout`, `/trial-payment`, `/trial-activado`
 - `/pago-exitoso`
-- `/trial-payment`
+- `/registro-pro`
 - `/pruebalo/*`
 - `/sitio/*`
 - `/embed/*`
+- `/marca/*`
+- `/auth/verify`, `/verify-email`
+- `/register/google-setup`
+- `/mantenimiento`
+- `/test-not-found`, `/test-error`
 
 ---
 
@@ -174,6 +193,7 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 - `RegisterForm.tsx` — Registro con Turnstile
 - `LoginForm.tsx` — Login
 - `IdleTimer.tsx` — Timer de sesión
+- `GoogleAuthButton.tsx` — Botón Google Sign-In
 
 ### 8.2 Landing
 - `LandingNav.tsx` — Navegación
@@ -186,6 +206,7 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 - `SelfieUploader.tsx` — Subida de selfie
 - `ResultDisplay.tsx` — Resultado
 - `GenerationLoader.tsx` — Loader durante generación
+- `LiveTryOnButton.tsx` — Botón try-on en vivo
 
 ### 8.4 Dashboard
 - `DashboardLayout.tsx` — Layout con sidebar
@@ -193,17 +214,49 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 - `ProductList.tsx` — Lista de productos
 - `UsageStats.tsx` — Stats de uso
 - `SubscriptionBadge.tsx` — Badge del plan
+- `OnboardingWizard.tsx` — Wizard de onboarding
+- `EmbedSection.tsx` — Sección de embed para plugins
+- `CreditUsageAlert.tsx` — Alerta de uso de créditos
+- `SuspensionModal.tsx` — Modal de suspensión de landing
+- `ReviewPromptModal.tsx` — Prompt para solicitar review
+- `LandingTutorial.tsx` — Tutorial de mini-landing
+- `DashboardNotifications.tsx` — Notificaciones del dashboard
+- `TrialBanner.tsx` — Banner de trial
+- `ProUpgradeBanner.tsx` — Banner de upgrade a PRO
 
-### 8.5 Pagos
+### 8.5 Pagos y Checkout
 - `WompiButton.tsx` — Botón de pago Wompi
 - `StepProgress.tsx` — Progress en flujos multi-step
+- `CheckoutHeader.tsx` — Header del checkout
+- `UserDataStep.tsx` — Paso de datos de usuario
+- `PlanSelectionStep.tsx` — Paso de selección de plan
+- `PaymentMethodStep.tsx` — Paso de método de pago
+- `OrderSummary.tsx` — Resumen de orden
+- `CouponInput.tsx` — Input de cupón de descuento
+- `ReferralInput.tsx` — Input de código de referido
 
 ### 8.6 Mini-Landing
 - `MiniLanding.tsx` — Componente principal
 - `TemplateClassic.tsx`
 - `TemplateEditorial.tsx`
-- `TemplateProbador.tsx`
-- `TemplateModerno.tsx`
+- `TemplateModerno.tsx` (antes TemplateProbador)
+- `TemplateBare.tsx`
+
+### 8.7 Blog
+- `BlogList.tsx` — Lista de posts
+- `BlogCard.tsx` — Card de post individual
+- `BlogShareRail.tsx` — Barra de compartir en redes
+
+### 8.8 Admin
+- `EnterpriseCalculator.tsx` — Calculadora de plan enterprise
+- `ConfirmDialog.tsx` — Diálogo de confirmación
+- `AdminNotifications.tsx` — Panel de notificaciones admin
+
+### 8.9 Widget Templates
+- `TemplateBare` — Minimal, básico
+- `TemplateMinimalTopBar` — Top bar minimal
+- `TemplateModernSidebar` — Sidebar moderno
+- `TemplateBoldProStudio` — Bold Pro Studio
 
 ---
 
@@ -227,6 +280,7 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 | `expiring_soon` | Por expirar |
 | `expired` | Expirada |
 | `suspended` | Suspendida |
+| `trial` | Período de prueba |
 
 ### 10.2 Estados de Generación
 | Estado | Descripción |
@@ -235,13 +289,31 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 | `SUCCESS` | Exitosa |
 | `FAILED` | Fallida |
 
-### 10.3 Páginas de Error y Estado
+### 10.3 Estados de Pago
+| Estado | Descripción |
+|--------|-------------|
+| `pending` | Pago pendiente |
+| `completed` | Pago completado |
+| `failed` | Pago fallido |
+| `refunded` | Reembolsado |
+
+### 10.4 Estados de Plan Change Request
+| Estado | Descripción |
+|--------|-------------|
+| `pending` | Solicitud pendiente |
+| `processing` | En proceso |
+| `completed` | Completada |
+| `failed` | Fallida |
+
+### 10.5 Páginas de Error y Estado
 | Página | Archivo | Estándar de Diseño |
 |--------|---------|---------------------|
 | **404 Not Found** | `not-found.tsx` | Branding central, soporte Light/Dark, `pt-40` para Navbar. |
 | **Runtime Error** | `error.tsx` | Fondo dinámico, botón `reset()`, ID de error monospaciado. |
 | **Mantenimiento** | `mantenimiento/page.tsx` | Indicador de pulso activo, mensaje dinámico, branding premium. |
 | **Global Error** | `global-error.tsx` | Root level recovery, layout minimalista, máxima resiliencia. |
+| **Estado del Sistema** | `estado/page.tsx` | Indicadores de salud de servicios. |
+| **Ayuda** | `ayuda/page.tsx` | Centro de ayuda y soporte. |
 
 ---
 

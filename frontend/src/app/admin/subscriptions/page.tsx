@@ -567,7 +567,7 @@ export default function AdminSubscriptionsPage() {
     expired: subscriptions.filter(s => s.subscription_status === 'expired').length,
     suspended: subscriptions.filter(s => s.subscription_status === 'suspended').length,
     trial: subscriptions.filter(s => s.plan === 'TRIAL').length,
-    vencimiento: subscriptions.filter(s => s.plan !== 'TRIAL' && s.daysRemaining !== null && s.daysRemaining >= 0 && s.daysRemaining <= 7).length,
+    venciendo: subscriptions.filter(s => s.plan !== 'TRIAL' && s.daysRemaining !== null && s.daysRemaining >= 0 && s.daysRemaining <= 7).length,
   };
 
   const expiringSoon = subscriptions.filter(s =>
@@ -611,15 +611,15 @@ export default function AdminSubscriptionsPage() {
           style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           className="w-full px-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
         <div className="flex flex-wrap gap-2">
-          {(['all', 'active', 'venciendo', 'expired', 'suspended', 'trial'] as FilterStatus[]).map(f => {
-            const labels: Record<FilterStatus, string> = { all: 'Todas', active: 'Activas', vencimiento: 'Vencen 7d', expiring_soon: 'Por vencer', expired: 'Vencidas', suspended: 'Suspendidas', trial: 'Trial' };
-            const colors: Record<FilterStatus, string> = { all: 'bg-[#FF5C3A]', active: 'bg-emerald-600', vencimiento: 'bg-red-500', expiring_soon: 'bg-amber-500', expired: 'bg-red-600', suspended: 'bg-gray-600', trial: 'bg-[#6366f1]' };
+          {(['all', 'active', 'venciendo', 'expired', 'suspended', 'trial', 'expiring_soon'] as FilterStatus[]).map(f => {
+            const labels: Record<FilterStatus, string> = { all: 'Todas', active: 'Activas', venciendo: 'Vencen 7d', expiring_soon: 'Por vencer', expired: 'Vencidas', suspended: 'Suspendidas', trial: 'Trial' };
+            const colors: Record<FilterStatus, string> = { all: 'bg-[#FF5C3A]', active: 'bg-emerald-600', venciendo: 'bg-red-500', expiring_soon: 'bg-amber-500', expired: 'bg-red-600', suspended: 'bg-gray-600', trial: 'bg-[#6366f1]' };
             const active = filter === f;
             return (
               <button key={f} onClick={() => setFilter(f)}
                 style={!active ? { background: 'var(--bg-hover)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)' } : {}}
-                className={`px-3 py-1.5 min-h-[36px] rounded-xl text-sm font-medium transition-colors border ${active ? `${colors[f]} text-white border-transparent` : 'hover:opacity-80'}`}>
-                {labels[f]} ({counts[f]})
+                className={`px-3 py-1.5 min-h-[36px] rounded-xl text-sm font-medium transition-colors border ${active ? `${colors[f as FilterStatus]} text-white border-transparent` : 'hover:opacity-80'}`}>
+                {labels[f as FilterStatus]} ({counts[f as FilterStatus]})
               </button>
             );
           })}

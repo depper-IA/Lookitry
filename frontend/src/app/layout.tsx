@@ -1,5 +1,19 @@
 import type { Metadata } from 'next';
+import { Inter, Outfit } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const outfit = Outfit({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-outfit',
+});
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
@@ -95,9 +109,12 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Analytics } from '@/components/analytics/Analytics';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
+
   return (
     <html
       lang="es"
+      className={`${inter.variable} ${outfit.variable} scroll-smooth antialiased`}
       suppressHydrationWarning
       style={
         {
@@ -117,7 +134,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta property="og:locale" content="es_CO" />
         <meta name="twitter:site" content="@lookitry" />
         {/* Google Identity Services para Sign-In con Google */}
-        <script src="https://accounts.google.com/gsi/client" async defer />
+        <Script src="https://accounts.google.com/gsi/client" strategy="beforeInteractive" />
         {/* Script de tema bloqueante: aplica dark/light ANTES del primer paint para evitar flash */}
         <script
           dangerouslySetInnerHTML={{
@@ -125,13 +142,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
 
       <body className="font-sans">
         {/* Google Tag Manager (noscript) */}
-        {GTM_ID && <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`} height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>}
+        {GTM_ID && (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+              height="0"
+              width="0"
+              style={{ display: 'none', visibility: 'hidden' }}
+            ></iframe>
+          </noscript>
+        )}
         {/* Google Tag Manager (script) */}
-        {GTM_ID && <script dangerouslySetInnerHTML={{ __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GTM_ID}');` }} />}
+        {GTM_ID && (
+          <Script
+            id="gtm-script"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GTM_ID}');`,
+            }}
+          />
+        )}
         <ThemeProvider>
           <Analytics />
           {children}
