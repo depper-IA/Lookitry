@@ -43,7 +43,7 @@ export function PromoBanner() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const dismissed = sessionStorage.getItem('promo_banner_dismissed');
+    const dismissed = sessionStorage.getItem('promo_banner_dismissed') || localStorage.getItem('promo_banner_dismissed');
     if (dismissed) return;
 
     fetch(`/api/promotions?t=${Date.now()}`)
@@ -69,7 +69,7 @@ export function PromoBanner() {
   const handleClose = () => {
     setVisible(false);
     setBannerVisible(false);
-    sessionStorage.setItem('promo_banner_dismissed', '1');
+    localStorage.setItem('promo_banner_dismissed', '1');
   };
 
   if (!visible || !promo) return null;

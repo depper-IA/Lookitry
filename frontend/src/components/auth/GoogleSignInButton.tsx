@@ -19,29 +19,31 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
     const checkGoogle = () => {
       if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
         setGoogleReady(true);
+        return true;
       }
+      return false;
     };
 
-    checkGoogle();
+    if (checkGoogle()) return;
 
-    if (!googleReady) {
-      const interval = setInterval(() => {
-        checkGoogle();
-      }, 100);
-
-      const timeout = setTimeout(() => {
+    const interval = setInterval(() => {
+      if (checkGoogle()) {
         clearInterval(interval);
-        if (!googleReady) {
-          console.error('[GoogleSignIn] Google Identity Services no se cargó después de 5s');
-        }
-      }, 5000);
+      }
+    }, 200);
 
-      return () => {
-        clearInterval(interval);
-        clearTimeout(timeout);
-      };
-    }
-  }, [googleReady]);
+    const timeout = setTimeout(() => {
+      if (!(window as any).google?.accounts?.id) {
+        console.warn('[GoogleSignIn] Google Identity Services está tardando en cargar...');
+        setError('El inicio sesión de Google está tardando. Si usas bloqueador de anuncios, intentalo pausarlo.');
+      }
+    }, 6000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, []);
 
   const handleGoogleResponse = useCallback(async (response: any) => {
     setLoading(false);

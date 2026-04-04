@@ -8,14 +8,14 @@ interface PromoBannerContextValue {
   bannerHeight: number;
 }
 
-const PromoBannerContext = createContext<PromoBannerContextValue>({
-  bannerVisible: false,
-  setBannerVisible: () => {},
-  bannerHeight: 0,
-});
+const PromoBannerContext = createContext<PromoBannerContextValue | null>(null);
 
 export function usePromoBanner() {
-  return useContext(PromoBannerContext);
+  const context = useContext(PromoBannerContext);
+  if (!context) {
+    return { bannerVisible: false, setBannerVisible: () => {}, bannerHeight: 0 };
+  }
+  return context;
 }
 
 export function PromoBannerProvider({ children }: { children: ReactNode }) {
