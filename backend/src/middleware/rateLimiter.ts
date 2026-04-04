@@ -3,11 +3,11 @@ import { Request, Response, NextFunction } from 'express';
 
 /**
  * Rate limiter para endpoints públicos
- * 100 requests por 15 minutos por IP
+ * 500 requests por 15 minutos por IP (Aumentado de 100)
  */
 export const publicRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Límite de 100 requests por ventana
+  max: 500, // Límite aumentado para evitar falsos positivos por hooks de sesión
   message: {
     error: 'RATE_LIMIT_EXCEEDED',
     message: 'Demasiadas solicitudes desde esta IP, por favor intenta de nuevo más tarde.',
@@ -37,11 +37,11 @@ export const publicRateLimiter = rateLimit({
 
 /**
  * Rate limiter más estricto para endpoints de generación de imágenes
- * 20 requests por 15 minutos por IP
+ * 50 requests por 15 minutos por IP (Aumentado de 20)
  */
 export const generationRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 20, // Límite de 20 generaciones por ventana
+  max: 50, // Límite aumentado
   message: {
     error: 'GENERATION_RATE_LIMIT_EXCEEDED',
     message: 'Has excedido el límite de generaciones por IP. Por favor intenta de nuevo más tarde.',
@@ -68,11 +68,11 @@ export const generationRateLimiter = rateLimit({
 
 /**
  * Rate limiter para endpoints de autenticación
- * 10 intentos por 15 minutos por IP
+ * 50 intentos por 15 minutos por IP (Aumentado de 10)
  */
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 10, // Máximo 10 intentos de login por ventana
+  max: 50, // Límite aumentado para permitir flujos de Google Auth y check-email
   message: {
     error: 'AUTH_RATE_LIMIT_EXCEEDED',
     message: 'Demasiados intentos de autenticación. Por favor intenta de nuevo más tarde.',
@@ -112,11 +112,11 @@ setInterval(() => {
 
 /**
  * Crea un rate limiter por brandSlug (no por IP)
- * Máximo 10 generaciones por hora por brandSlug
+ * Máximo 20 generaciones por hora por brandSlug (Aumentado de 10)
  */
 function createSlugRateLimiter() {
   const WINDOW_MS = 60 * 60 * 1000; // 1 hora
-  const MAX_REQUESTS = 10;
+  const MAX_REQUESTS = 20;
 
   return (req: Request, res: Response, next: NextFunction): void => {
     const { brandSlug } = req.params;
@@ -158,11 +158,11 @@ export const slugGenerationRateLimiter = createSlugRateLimiter();
 
 /**
  * Rate limiter global para toda la API
- * 1000 requests por 15 minutos por IP
+ * 2000 requests por 15 minutos por IP (Aumentado de 1000)
  */
 export const globalRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 1000, // Límite de 1000 requests por ventana
+  max: 2000, // Límite aumentado
   message: {
     error: 'GLOBAL_RATE_LIMIT_EXCEEDED',
     message: 'Demasiadas solicitudes. Por favor intenta de nuevo más tarde.',
