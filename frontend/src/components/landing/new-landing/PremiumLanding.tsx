@@ -15,6 +15,7 @@ import { PromoBanner } from './PromoBanner';
 import { PromoModal } from './PromoModal';
 import { ReviewsSlider } from './ReviewsSlider';
 import ActiveCouponsBanner from './ActiveCouponsBanner';
+import { PromoBannerProvider } from '@/context/PromoBannerContext';
 
 import { PricingConfig } from '@/lib/pricing';
 import { PublicReview } from '@/types';
@@ -35,25 +36,25 @@ export default function PremiumLanding({
   trm = 4000 
 }: PremiumLandingProps & { realReviewsCount?: number; usingMockReviews?: boolean }) {
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-[#0a0a0a] dark:text-white selection:bg-[#FF5C3A]/30 selection:text-white font-dm-sans overflow-x-clip">
-      <div className="relative z-[100]">
+    <PromoBannerProvider>
+      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-[#0a0a0a] dark:text-white selection:bg-[#FF5C3A]/30 selection:text-white font-dm-sans overflow-x-clip">
         <PromoBanner />
         <LandingNav />
+        <main className="relative">
+          <LandingHero />
+          <LandingStats />
+          <LandingSteps />
+          <LandingMiniLanding />
+          <LandingPlugin />
+          <LandingPricing pricing={pricing} currency={currency} trm={trm} />
+          <ActiveCouponsBanner />
+          <LandingPayments />
+          <ReviewsSlider reviews={reviews} realReviewsCount={realReviewsCount} usingMockReviews={usingMockReviews} />
+          <LandingFaq />
+        </main>
+        <LandingFooter />
+        <PromoModal />
       </div>
-      <main className="relative">
-        <LandingHero />
-        <LandingStats />
-        <LandingSteps />
-        <LandingMiniLanding />
-        <LandingPlugin />
-        <LandingPricing pricing={pricing} currency={currency} trm={trm} />
-        <ActiveCouponsBanner />
-        <LandingPayments />
-        <ReviewsSlider reviews={reviews} realReviewsCount={realReviewsCount} usingMockReviews={usingMockReviews} />
-        <LandingFaq />
-      </main>
-      <LandingFooter />
-      <PromoModal />
-    </div>
+    </PromoBannerProvider>
   );
 }
