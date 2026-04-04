@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { StepProgress } from '@/components/payments/StepProgress';
+import GoogleSignInButton from './GoogleSignInButton';
 import { 
   Eye, 
   EyeOff, 
@@ -63,6 +64,7 @@ export default function RegisterForm() {
   const trialDays = 7;
   const [fingerprint, setFingerprint] = useState<string | null>(null);
   const [prefilledFields, setPrefilledFields] = useState<Record<string, boolean>>({});
+  const [googleError, setGoogleError] = useState<string | null>(null);
 
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptDataAuth, setAcceptDataAuth] = useState(false);
@@ -271,6 +273,29 @@ export default function RegisterForm() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Google Sign-In - shown first for quick registration */}
+            {!isPaidFlow && (
+              <>
+                <GoogleSignInButton
+                  mode="register"
+                  onError={(msg) => setGoogleError(msg)}
+                />
+                {googleError && (
+                  <p className="text-[11px] text-red-500 text-center -mt-2">{googleError}</p>
+                )}
+
+                {/* Divider */}
+                <div className="relative my-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/10" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-[#0a0a0a] px-3 text-[#666]">o regístrate con email</span>
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Brand Name */}
               <div className="space-y-1.5">
