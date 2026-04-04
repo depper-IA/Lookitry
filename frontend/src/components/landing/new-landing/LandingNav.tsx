@@ -112,7 +112,7 @@ export default function LandingNav({
     }
   ];
 
-  const navBg = 'bg-white/92 dark:bg-[#0a0a0a]/82 backdrop-blur-md border-b border-black/5 dark:border-white/5';
+  const navBg = 'bg-white dark:bg-[#0a0a0a] border-b border-black/5 dark:border-white/5';
 
   return (
     <>
@@ -171,7 +171,7 @@ export default function LandingNav({
               {productsOpen && (
                 <div
                   onMouseLeave={() => setProductsOpen(false)}
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-72 rounded-2xl border border-black/10 bg-white/95 p-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-300 dark:border-white/10 dark:bg-[#111]/95"
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-72 rounded-2xl border border-black/10 bg-white p-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-300 dark:border-white/10 dark:bg-[#111]"
                   role="menu"
                 >
                   {productLinks.map((prod) => (
@@ -226,7 +226,7 @@ export default function LandingNav({
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 top-full mt-3 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white/95 py-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 dark:border-white/10 dark:bg-[#111]/95">
+                  <div className="absolute right-0 top-full mt-3 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white py-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 dark:border-white/10 dark:bg-[#111]">
                     <Link
                       href="/dashboard"
                       onClick={() => setDropdownOpen(false)}
