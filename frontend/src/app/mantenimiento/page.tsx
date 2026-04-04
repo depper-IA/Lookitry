@@ -104,7 +104,7 @@ export default function MaintenancePage() {
             © {new Date().getFullYear()} Lookitry · Luxury Try-On AI
           </p>
           <p className="mt-2 text-[9px] text-[#bbb] uppercase tracking-widest font-medium opacity-50">
-            Una division de Wilkie Devs SAS
+            Un producto de Wilkie Devs
           </p>
         </div>
       </motion.div>

@@ -10,12 +10,12 @@ const ARTICLES = [
   {
     id: 'art1',
     title: 'Articulo 1. Identificacion del prestador',
-    content: 'Lookitry es una plataforma de probador virtual con inteligencia artificial operada por Wilkie Devs SAS, sociedad comercial constituida bajo las leyes de la Republica de Colombia.\n\nRazon social: Wilkie Devs SAS\nNIT: 700.403.166-3\nMarca comercial: Lookitry\nCorreo electronico: info@lookitry.com\nWhatsApp: +57 310 543 6281\nSitio web: https://lookitry.com\nAPI: https://api.lookitry.com\nHorario de atencion: Lunes a Viernes, 9:00 AM - 6:00 PM (hora de Colombia)',
+    content: 'Lookitry es una plataforma de probador virtual con inteligencia artificial operada por Samuel Wilkie, persona natural con NIT 700.403.166-3, bajo la marca Wilkie Devs.\n\nTitular: Samuel Wilkie\nNIT: 700.403.166-3 (persona natural)\nMarca: Wilkie Devs\nSitio de la marca: https://wilkiedevs.com\nMarca comercial: Lookitry\nCorreo electronico: info@lookitry.com\nWhatsApp: +57 310 543 6281\nSitio web: https://lookitry.com\nAPI: https://api.lookitry.com\nHorario de atencion: Lunes a Viernes, 9:00 AM - 6:00 PM (hora de Colombia)',
   },
   {
     id: 'art2',
     title: 'Articulo 2. Aceptacion de los terminos',
-    content: 'El acceso, registro y uso de la plataforma Lookitry implica la aceptacion plena e incondicional de los presentes Terminos y Condiciones de Servicio.\n\nEstos terminos constituyen un acuerdo vinculante entre el usuario y Wilkie Devs SAS. Si el usuario no esta de acuerdo con estos terminos, debera abstenerse de utilizar la plataforma.\n\nMarco legal aplicable:\n- Ley 527 de 1999: Comercio electronico y firmas digitales\n- Ley 1480 de 2011: Estatuto del consumidor\n- Ley 1581 de 2012: Proteccion de datos personales\n- Decreto 1377 de 2013: Reglamentacion de proteccion de datos',
+    content: 'El acceso, registro y uso de la plataforma Lookitry implica la aceptacion plena e incondicional de los presentes Terminos y Condiciones de Servicio.\n\nEstos terminos constituyen un acuerdo vinculante entre el usuario y Samuel Wilkie (NIT 700.403.166-3), operando bajo la marca Wilkie Devs. Si el usuario no esta de acuerdo con estos terminos, debera abstenerse de utilizar la plataforma.\n\nMarco legal aplicable:\n- Ley 527 de 1999: Comercio electronico y firmas digitales\n- Ley 1480 de 2011: Estatuto del consumidor\n- Ley 1581 de 2012: Proteccion de datos personales\n- Decreto 1377 de 2013: Reglamentacion de proteccion de datos',
   },
   {
     id: 'art3',
@@ -60,7 +60,7 @@ const ARTICLES = [
   {
     id: 'art10',
     title: 'Articulo 10. Propiedad intelectual',
-    content: 'Plataforma Lookitry:\n- Todos los derechos de propiedad intelectual sobre la plataforma Lookitry, incluyendo pero no limitandose a codigo fuente, diseño, logotipos, marcas, algoritmos y documentacion, son propiedad exclusiva de Wilkie Devs SAS o sus licenciantes\n- Queda prohibida la reproduccion, distribucion o modificacion de cualquier elemento protegido sin autorizacion expresa\n\nImagenes del usuario:\n- El usuario conserva todos los derechos sobre las imagenes que sube a la plataforma (selfies, fotos de productos, etc.)\n- Al utilizar el servicio, el usuario otorga a Lookitry una licencia limitada, no exclusiva, revocable y sin regalías para procesar dichas imagenes con el unico fin de prestar el servicio de probador virtual\n\nImagenes generadas por IA:\n- Los resultados del probador virtual son aproximaciones generadas por inteligencia artificial y no constituyen una representacion exacta de como lucira la prenda en la realidad\n- Lookitry no garantiza la precision, exactitud o fidelidad de los resultados generados\n- La calidad de los resultados depende de la calidad de las imagenes de entrada (selfie del usuario y foto del producto)\n\nRestricciones:\n- Las imagenes de los usuarios NO seran compartidas con terceros con fines comerciales\n- Las imagenes de los usuarios NO seran utilizadas para entrenar modelos de inteligencia artificial\n- Las imagenes procesadas (selfies) se eliminan automaticamente despues de la generacion del resultado',
+    content: 'Plataforma Lookitry:\n- Todos los derechos de propiedad intelectual sobre la plataforma Lookitry, incluyendo pero no limitandose a codigo fuente, diseño, logotipos, marcas, algoritmos y documentacion, son propiedad exclusiva de Samuel Wilkie (NIT 700.403.166-3) o sus licenciantes\n- Queda prohibida la reproduccion, distribucion o modificacion de cualquier elemento protegido sin autorizacion expresa\n\nImagenes del usuario:\n- El usuario conserva todos los derechos sobre las imagenes que sube a la plataforma (selfies, fotos de productos, etc.)\n- Al utilizar el servicio, el usuario otorga a Lookitry una licencia limitada, no exclusiva, revocable y sin regalías para procesar dichas imagenes con el unico fin de prestar el servicio de probador virtual\n\nImagenes generadas por IA:\n- Los resultados del probador virtual son aproximaciones generadas por inteligencia artificial y no constituyen una representacion exacta de como lucira la prenda en la realidad\n- Lookitry no garantiza la precision, exactitud o fidelidad de los resultados generados\n- La calidad de los resultados depende de la calidad de las imagenes de entrada (selfie del usuario y foto del producto)\n\nRestricciones:\n- Las imagenes de los usuarios NO seran compartidas con terceros con fines comerciales\n- Las imagenes de los usuarios NO seran utilizadas para entrenar modelos de inteligencia artificial\n- Las imagenes procesadas (selfies) se eliminan automaticamente despues de la generacion del resultado',
   },
   {
     id: 'art11',
@@ -162,7 +162,7 @@ export default function TerminosClient() {
 
             <div className="mt-12 pt-8 border-t border-[#e8e4df] text-center">
               <p className="text-[11px] text-[#aaa]">
-                Ultima actualizacion: 4 de abril de 2026 · Lookitry / Wilkie Devs SAS · NIT 700.403.166-3
+                Ultima actualizacion: 4 de abril de 2026 · Lookitry / Samuel Wilkie · NIT 700.403.166-3 · Marca Wilkie Devs
               </p>
             </div>
           </div>

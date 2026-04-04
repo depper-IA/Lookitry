@@ -293,11 +293,10 @@ export default function LandingFooter() {
       <div className="mt-5 w-full bg-[#FF5C3A] md:mt-0">
         <div className="mx-auto max-w-7xl px-4 pt-4 pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))] sm:px-6 sm:py-8 md:px-12 md:py-8">
           <div className="text-center font-dm-sans text-[8px] font-bold uppercase tracking-[0.2em] text-white/80 sm:text-[10px] sm:tracking-[0.3em]">
-            © {currentYear} Lookitry / Una division de{' '}
+            © {currentYear} Lookitry / Un producto de{' '}
             <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">
-              Wilkie Devs SAS
+              Wilkie Devs
             </Link>
-            {' '} · NIT 700.403.166-3
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-4 opacity-60 sm:gap-8 md:gap-10">
             <div className="flex items-center gap-1.5 font-dm-sans text-[8px] font-bold uppercase tracking-widest text-white/90 sm:gap-2 sm:text-[9px]">

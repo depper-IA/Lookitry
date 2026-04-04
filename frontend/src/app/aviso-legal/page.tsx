@@ -27,8 +27,9 @@ export default function AvisoLegalPage() {
         <section className="px-6 md:px-8 py-12 md:py-16">
           <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 space-y-2 text-sm text-[#bbb]">
-              <p><strong className="text-white">Razón social:</strong> Wilkie Devs SAS</p>
-              <p><strong className="text-white">NIT:</strong> 700.403.166-3</p>
+              <p><strong className="text-white">Titular:</strong> Samuel Wilkie</p>
+              <p><strong className="text-white">NIT:</strong> 700.403.166-3 (persona natural)</p>
+              <p><strong className="text-white">Marca:</strong> Wilkie Devs</p>
               <p><strong className="text-white">Marca comercial:</strong> Lookitry</p>
               <p><strong className="text-white">País:</strong> Colombia</p>
             </div>
