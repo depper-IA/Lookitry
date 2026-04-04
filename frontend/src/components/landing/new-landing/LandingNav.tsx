@@ -112,12 +112,13 @@ export default function LandingNav({
     }
   ];
 
+  // Use theme-aware background and text colors for light/dark modes
   const navBg = 'bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5';
 
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 py-6 sm:py-8 w-full ${navBg}`}
+        className={`fixed top-0 left-0 right-0 z-[70] px-4 sm:px-6 md:px-12 py-6 sm:py-8 w-full theme-bg-base theme-text ${navBg}`}
         role="navigation"
         aria-label="Navegación principal"
       >
@@ -276,8 +277,8 @@ export default function LandingNav({
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[55] bg-[#0a0a0a]/98 backdrop-blur-xl pt-16 sm:pt-20 px-6 sm:px-10 overflow-y-auto animate-in fade-in slide-in-from-right duration-300" role="dialog" aria-modal="true" aria-label="Menú de navegación">
-          <div className="flex flex-col items-center gap-6 pb-16 max-w-sm mx-auto">
+        <div className="fixed inset-0 z-[55] bg-[rgba(10,10,10,0.98)] px-6 pb-8 pt-24 backdrop-blur-xl animate-in fade-in slide-in-from-right duration-300 overflow-y-auto sm:px-10 sm:pt-28" role="dialog" aria-modal="true" aria-label="Menú de navegación">
+          <div className="mx-auto flex max-w-sm flex-col items-center gap-6 rounded-[2rem] border border-white/8 bg-white/[0.03] px-5 py-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
             {/* Currency Selector - Mobile */}
             <div className="flex items-center justify-center gap-3">
               <span className="text-[9px] font-bold text-white/25 uppercase tracking-widest">Moneda</span>
@@ -340,7 +341,7 @@ export default function LandingNav({
             <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/8 to-transparent" />
 
             {/* Legal Links */}
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[10px] text-white/20 font-medium">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 pb-1 text-[10px] text-white/20 font-medium">
               <Link href="/terminos" className="hover:text-white/40 transition-colors">Términos</Link>
               <Link href="/politicas-privacidad" className="hover:text-white/40 transition-colors">Privacidad</Link>
               <Link href="/cookies" className="hover:text-white/40 transition-colors">Cookies</Link>
@@ -352,3 +353,4 @@ export default function LandingNav({
     </>
   );
 }
+
