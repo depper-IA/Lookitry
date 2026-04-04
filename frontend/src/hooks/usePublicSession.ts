@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { brandsService } from '@/services/brands.service';
+import { authService } from '@/services/auth.service';
 import { AUTH_STATE_CHANGED_EVENT } from '@/lib/sessionEvents';
 
 type PublicSession = {
@@ -62,6 +63,14 @@ export function usePublicSession() {
     const storedSession = readStoredSession();
     if (storedSession) {
       setSession(storedSession);
+    }
+
+    const hasLocalSession =
+      !!storedSession || !!authService.getBrand() || !!authService.getToken();
+
+    if (!hasLocalSession) {
+      setSession(null);
+      return;
     }
 
     try {
