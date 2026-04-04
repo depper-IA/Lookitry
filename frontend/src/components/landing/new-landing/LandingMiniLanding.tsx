@@ -14,14 +14,14 @@ export default function LandingMiniLanding() {
   ];
 
   return (
-    <section id="mini-landing" className="bg-[#0a0a0a] dark:bg-white py-16 sm:py-20 px-4 sm:px-6 overflow-hidden" aria-label="Mini Landing Pro">
+    <section id="mini-landing" className="bg-black dark:bg-white py-16 sm:py-20 px-4 sm:px-6 overflow-hidden" aria-label="Mini Landing Pro">
       <div className="max-w-7xl mx-auto px-0 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div>
             <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-4 sm:mb-6 font-medium text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] bg-[#FF5C3A]/5 border border-[#FF5C3A]/20 text-[#FF5C3A]">
               Tu propia página
             </div>
-            <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white dark:text-[#0a0a0a] mb-4 sm:mb-6 leading-tight">
+            <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white dark:text-black mb-4 sm:mb-6 leading-tight">
               Tu tienda online, <br />
               <span className="text-[#FF5C3A]">sin pagar un diseñador.</span>
             </h2>
@@ -32,7 +32,7 @@ export default function LandingMiniLanding() {
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
                     {feat.icon}
                   </div>
-                  <h4 className="font-jakarta font-bold text-sm sm:text-base text-white dark:text-[#0a0a0a] mb-1.5 sm:mb-2">{feat.title}</h4>
+                  <h4 className="font-jakarta font-bold text-sm sm:text-base text-white dark:text-black mb-1.5 sm:mb-2">{feat.title}</h4>
                   <p className="text-white/60 dark:text-[#666] text-xs leading-relaxed">{feat.desc}</p>
                 </div>
               ))}

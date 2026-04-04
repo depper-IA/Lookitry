@@ -84,11 +84,11 @@ export default function LandingFaq() {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   return (
-    <section className="bg-white dark:bg-[#0a0a0a] py-20 sm:py-24 md:py-28 lg:py-40 px-4 sm:px-6 md:px-12 border-t border-[#eeebe7] dark:border-white/5" aria-label="Preguntas frecuentes">
+    <section className="bg-white dark:bg-black py-20 sm:py-24 md:py-28 lg:py-40 px-4 sm:px-6 md:px-12 border-t border-[#eeebe7] dark:border-white/5" aria-label="Preguntas frecuentes">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12 sm:mb-16 md:mb-20">
           <SectionTag text="Resolviendo dudas" light />
-          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#0a0a0a] dark:text-white tracking-tight mb-6 sm:mb-8">Preguntas <span className="text-[#FF5C3A]">frecuentes.</span></h2>
+          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white tracking-tight mb-6 sm:mb-8">Preguntas <span className="text-[#FF5C3A]">frecuentes.</span></h2>
         </div>
 
         {/* Tabs */}

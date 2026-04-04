@@ -116,7 +116,7 @@ export default function LandingNav({
     }
   ];
 
-  const navBg = 'bg-white dark:bg-[#0a0a0a] border-b border-black/5 dark:border-white/5';
+  const navBg = 'bg-white dark:bg-black border-b border-black/5 dark:border-white/5';
 
   return (
     <>
@@ -132,7 +132,7 @@ export default function LandingNav({
                 <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
                 <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
               </div>
-              <span className="font-jakarta text-xl font-bold tracking-tighter text-[#0a0a0a] dark:text-white sm:text-2xl">
+              <span className="font-jakarta text-xl font-bold tracking-tighter text-black dark:text-white sm:text-2xl">
                 Look<span className="text-[#FF5C3A]">itry</span>
               </span>
             </Link>

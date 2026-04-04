@@ -130,7 +130,7 @@ export default function LandingFooter() {
                 <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
                 <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
               </div>
-              <span className="font-jakarta text-lg font-bold tracking-tighter text-[#0a0a0a] dark:text-white">
+              <span className="font-jakarta text-lg font-bold tracking-tighter text-black dark:text-white">
                 Look<span className="text-[#FF5C3A]">itry</span>
               </span>
             </Link>
@@ -225,7 +225,7 @@ export default function LandingFooter() {
                 <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
                 <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
               </div>
-              <span className="font-jakarta text-2xl font-bold tracking-tighter text-[#0a0a0a] dark:text-white sm:text-3xl">
+              <span className="font-jakarta text-2xl font-bold tracking-tighter text-black dark:text-white sm:text-3xl">
                 Look<span className="text-[#FF5C3A]">itry</span>
               </span>
             </Link>
@@ -273,7 +273,7 @@ export default function LandingFooter() {
 
           {footerSections.map((section) => (
             <div key={section.title}>
-              <h5 className="mb-6 font-jakarta text-[9px] font-bold uppercase tracking-[0.25em] text-[#0a0a0a] dark:text-white sm:mb-8 sm:text-[10px] sm:tracking-[0.3em] md:mb-10">
+              <h5 className="mb-6 font-jakarta text-[9px] font-bold uppercase tracking-[0.25em] text-black dark:text-white sm:mb-8 sm:text-[10px] sm:tracking-[0.3em] md:mb-10">
                 {section.title}
               </h5>
               <ul className="flex flex-col gap-3 sm:gap-4 md:gap-5">

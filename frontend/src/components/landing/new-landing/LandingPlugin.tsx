@@ -25,13 +25,13 @@ export default function LandingPlugin() {
   ];
 
   return (
-    <section id="plugin" className="bg-[#0a0a0a] dark:bg-white py-20 sm:py-24 md:py-32 px-4 sm:px-6 overflow-hidden relative border-t border-white/5 dark:border-[#eeebe7]" aria-label="Plugin WooCommerce">
+    <section id="plugin" className="bg-black dark:bg-white py-20 sm:py-24 md:py-32 px-4 sm:px-6 overflow-hidden relative border-t border-white/5 dark:border-[#eeebe7]" aria-label="Plugin WooCommerce">
       <div className="max-w-7xl mx-auto px-0 sm:px-6">
         <div className="text-center lg:text-left mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#FF5C3A]/10 border border-[#FF5C3A]/20 text-[#FF5C3A] text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-4 sm:mb-6">
             Plugin Oficial WordPress
           </div>
-          <h3 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold text-white dark:text-[#0a0a0a] mb-4 sm:mb-6 tracking-tight">
+          <h3 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold text-white dark:text-black mb-4 sm:mb-6 tracking-tight">
             Potencia tu tienda <span className="text-[#FF5C3A]">WooCommerce</span>
           </h3>
           <p className="text-white/60 dark:text-[#666] text-base sm:text-lg font-dm-sans max-w-2xl leading-relaxed">
@@ -46,7 +46,7 @@ export default function LandingPlugin() {
               <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mb-4 sm:mb-6 group-hover:scale-110 group-hover:bg-[#FF5C3A] group-hover:text-white transition-all duration-500">
                 {item.icon}
               </div>
-              <h4 className="font-jakarta font-bold text-lg sm:text-xl text-white dark:text-[#0a0a0a] mb-3 sm:mb-4">{item.title}</h4>
+              <h4 className="font-jakarta font-bold text-lg sm:text-xl text-white dark:text-black mb-3 sm:mb-4"> {item.title}</h4>
               <p className="text-white/60 dark:text-[#666] text-sm leading-relaxed font-dm-sans">{item.desc}</p>
             </div>
           ))}
