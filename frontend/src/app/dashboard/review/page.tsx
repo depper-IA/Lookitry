@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Lock, MessageSquare, ShieldAlert, Star } from 'lucide-react';
+import { MessageSquare, ShieldAlert, Star } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { reviewsService } from '@/services/reviews.service';
 import { ReviewPromptModal } from '@/components/dashboard/ReviewPromptModal';
@@ -56,26 +55,10 @@ export default function DashboardReviewPage() {
     };
   }, []);
 
-  if (brand?.plan === 'TRIAL') {
+  if (!brand) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="w-full max-w-xl rounded-[2rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-8 text-center shadow-2xl">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-white/5 text-[#FF5C3A]">
-            <Lock className="h-8 w-8" />
-          </div>
-          <h1 className="font-jakarta text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-            Función disponible desde el plan BASIC
-          </h1>
-          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[var(--text-secondary)]">
-            Las reviews están habilitadas para marcas con plan activo. Actualiza tu plan para compartir tu experiencia.
-          </p>
-          <Link
-            href="/dashboard/subscription"
-            className="mt-6 inline-flex min-h-[46px] items-center justify-center rounded-2xl bg-[#FF5C3A] px-5 py-3 text-sm font-black uppercase tracking-[0.18em] text-white transition-all hover:brightness-110"
-          >
-            Ver planes
-          </Link>
-        </div>
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#FF5C3A]/20 border-t-[#FF5C3A]" />
       </div>
     );
   }

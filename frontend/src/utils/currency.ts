@@ -49,13 +49,15 @@ export function formatPrice(
   return formatCurrency(amountInCOP, 'COP');
 }
 
+import { FALLBACK_PRICES } from '@/config/pricing';
+
 /**
  * Obtiene el precio mensual de un plan
  * @param plan - Tipo de plan ('BASIC' o 'PRO')
  * @returns Precio mensual en COP
  */
 export function getPlanPrice(plan: 'BASIC' | 'PRO'): number {
-  return plan === 'PRO' ? 250000 : 150000;
+  return FALLBACK_PRICES[plan];
 }
 
 /**

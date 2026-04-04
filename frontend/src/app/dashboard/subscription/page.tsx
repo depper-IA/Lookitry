@@ -30,6 +30,7 @@ import type { SubscriptionInfo } from '@/services/subscription.service';
 import { Spinner } from '@/components/ui/Spinner';
 import type { UsageStats } from '@/types';
 import { getSubscriptionDisplayState } from '@/lib/subscription-display';
+import { DEFAULT_PRICING, FALLBACK_PRICES, FALLBACK_GENERATIONS } from '@/config/pricing';
 
 // ── Animaciones ──────────────────────────────────────────────────────────────
 const containerVariants = {
@@ -130,8 +131,8 @@ export default function SubscriptionPage() {
   const [info, setInfo] = useState<SubscriptionInfo | null>(null);
   const [payments, setPayments] = useState<SubscriptionPayment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dynamicPrices, setDynamicPrices] = useState<{ BASIC: number; PRO: number; TRIAL: number }>({ BASIC: 150000, PRO: 250000, TRIAL: 0 });
-  const [dynamicGenerations, setDynamicGenerations] = useState<{ BASIC: number; PRO: number }>({ BASIC: 400, PRO: 1200 });
+  const [dynamicPrices, setDynamicPrices] = useState<{ BASIC: number; PRO: number; TRIAL: number }>({ ...FALLBACK_PRICES });
+  const [dynamicGenerations, setDynamicGenerations] = useState<{ BASIC: number; PRO: number }>({ ...FALLBACK_GENERATIONS });
   const [paySettings, setPaySettings] = useState<any>(null);
   const [usage, setUsage] = useState<UsageStats | null>(null);
   const [buyingAddon, setBuyingAddon] = useState(false);
@@ -163,27 +164,31 @@ export default function SubscriptionPage() {
         if (usageResult.status === 'fulfilled') setUsage(usageResult.value);
         if (settingsResult.status === 'fulfilled') setPaySettings(settingsResult.value);
         if (pricingResult.status === 'fulfilled' && Array.isArray(pricingResult.value)) {
-          const prices = { BASIC: 150000, PRO: 250000, TRIAL: 20000 };
-          const gens = { BASIC: 400, PRO: 1200 };
+          const prices = { ...FALLBACK_PRICES };
+          const gens = { ...FALLBACK_GENERATIONS };
           pricingResult.value.forEach((row: any) => {
             if (row.id === 'basic') {
-              prices.BASIC = row.data.precio_mensual_cop;
+              prices.BASIC = row.data.precio_mensual_cop ?? FALLBACK_PRICES.BASIC;
               if (row.data.generaciones_mensuales || row.data.generaciones_mes) {
                 gens.BASIC = row.data.generaciones_mensuales || row.data.generaciones_mes;
               }
             }
             if (row.id === 'pro') {
-              prices.PRO = row.data.precio_mensual_cop;
+              prices.PRO = row.data.precio_mensual_cop ?? FALLBACK_PRICES.PRO;
               if (row.data.generaciones_mensuales || row.data.generaciones_mes) {
                 gens.PRO = row.data.generaciones_mensuales || row.data.generaciones_mes;
               }
             }
             if (row.id === 'trial') {
-              prices.TRIAL = row.data.precio_mensual_cop || row.data.precio_cop || 20000;
+              prices.TRIAL = row.data.precio_mensual_cop || row.data.precio_cop ?? FALLBACK_PRICES.TRIAL;
             }
           });
           setDynamicPrices(prices);
           setDynamicGenerations(gens);
+        } else if (pricingResult.status === 'rejected') {
+          console.warn('[SubscriptionPage] Error fetching pricing config, using fallbacks:', pricingResult.reason);
+          setDynamicPrices({ ...FALLBACK_PRICES });
+          setDynamicGenerations({ ...FALLBACK_GENERATIONS });
         }
       } finally {
         setLoading(false);
