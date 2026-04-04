@@ -134,6 +134,26 @@ function CheckoutContent() {
   const [activePromos, setActivePromos] = useState<any[]>([]);
   const trialBlockedBySession = hasSession && selectedPlan === 'TRIAL';
 
+  const buildInternalCheckoutUrl = () => {
+    if (selectedPlan === 'LANDING') {
+      const params = new URLSearchParams();
+      params.set('plan', subPlan);
+      params.set('months', String(selectedMonths));
+      return `/dashboard/checkout-landing?${params.toString()}`;
+    }
+
+    if (selectedPlan === 'TRIAL') {
+      return '/dashboard/subscription';
+    }
+
+    const params = new URLSearchParams();
+    params.set('plan', selectedPlan);
+    params.set('months', String(isTrial ? 1 : selectedMonths));
+    return `/dashboard/checkout?${params.toString()}`;
+  };
+
+  const existingAccountRedirectUrl = `/login?redirect=${encodeURIComponent(buildInternalCheckoutUrl())}`;
+
   // ── Ciclo de vida ──────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -194,6 +214,11 @@ function CheckoutContent() {
       if (savedCurrency === 'USD') setPaymentMethod('paypal');
     }
   }, []);
+
+  useEffect(() => {
+    if (!hasSession || selectedPlan === 'TRIAL') return;
+    router.replace(buildInternalCheckoutUrl());
+  }, [hasSession, selectedPlan, selectedMonths, subPlan, router]);
 
   useEffect(() => {
     const draft = loadCheckoutDraft(CHECKOUT_DRAFT_KEY);
@@ -295,6 +320,7 @@ function CheckoutContent() {
 
   const validateStep2 = async () => {
     let valid = true;
+    let existingEmailDetected = false;
     
     // SECURITY: If user has an active session, the email MUST match the session email.
     // Changing the email while authenticated would create orders for the wrong account.
@@ -325,8 +351,9 @@ function CheckoutContent() {
           const res = await fetch(`${API_URL}/api/auth/check-email?email=${encodeURIComponent(email.trim())}`);
           const data = await res.json();
           if (data.exists) {
-            setEmailExists({ exists: true, name: data.brand?.name });
-            setEmailError('Este correo ya está registrado');
+            existingEmailDetected = true;
+            setEmailExists({ exists: true });
+            setEmailError('Esta cuenta ya existe. Inicia sesión para continuar el upgrade desde tu dashboard.');
             valid = false;
           } else {
             setEmailExists({ exists: false });
@@ -340,7 +367,7 @@ function CheckoutContent() {
       }
     }
     
-    if (!hasSession && !brandName.trim()) {
+    if (!hasSession && !existingEmailDetected && !emailExists?.exists && !brandName.trim()) {
       setBrandNameError('El nombre de la marca es obligatorio');
       valid = false;
     } else {
@@ -461,6 +488,17 @@ function CheckoutContent() {
   };
 
   const handleGoogleCheckoutSuccess = async (data: any) => {
+    if (data?.checkoutPrefill) {
+      setHasSession(false);
+      setSessionInfo(null);
+      setEmail(data.email || '');
+      setBrandName(data.name || '');
+      setEmailError('');
+      setEmailExists({ exists: false });
+      setBrandNameError('');
+      return;
+    }
+
     localStorage.setItem('brand', JSON.stringify(data.brand));
     if (data.token) localStorage.setItem('token', data.token);
     setHasSession(true);
@@ -519,6 +557,7 @@ function CheckoutContent() {
                 setCurrentStep={setCurrentStep}
                 handleGoogleCheckoutSuccess={handleGoogleCheckoutSuccess}
                 loginHint={email || ''}
+                existingAccountRedirectUrl={existingAccountRedirectUrl}
                 stepNumber={1}
                 OA={OA}
               />

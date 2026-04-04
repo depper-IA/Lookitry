@@ -6,7 +6,7 @@ import { RegisterBrandDto, LoginDto } from '../types';
 import { AuthRequest } from '../middleware/auth';
 import { generateToken } from '../utils/jwt';
 import { supabaseAdmin } from '../config/supabase';
-import { loginWithGoogle } from '../services/google-auth.service';
+import { loginWithGoogle, verifyGoogleAccessToken } from '../services/google-auth.service';
 
 const authService = new AuthService();
 const emailService = new EmailService();
@@ -378,24 +378,13 @@ export class AuthController {
 
   async googleLogin(req: Request, res: Response) {
     try {
-      const { credential, accessToken, email, name, picture, googleId } = req.body;
+      const { credential, accessToken } = req.body;
 
       let result: any;
 
       if (accessToken) {
-        // OAuth2 flow (popup) - frontend ya verificó el token con userinfo
-        const userInfo = {
-          sub: googleId,
-          email: email?.toLowerCase(),
-          email_verified: true,
-          name: name || email?.split('@')[0] || 'User',
-          picture,
-        };
-
-        if (!userInfo.sub || !userInfo.email) {
-          return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Datos de Google incompletos' });
-        }
-
+        // OAuth2 flow (popup) - validar access token en backend
+        const userInfo = await verifyGoogleAccessToken(accessToken);
         const { findOrCreateBrandFromGoogle } = await import('../services/google-auth.service');
         result = await findOrCreateBrandFromGoogle(userInfo);
       } else if (credential) {
@@ -430,7 +419,11 @@ export class AuthController {
       return res.status(503).json({ error: 'SERVICE_NOT_CONFIGURED', message: 'Google Auth no está configurado' });
     }
 
-    if (errMsg === 'GOOGLE_TOKEN_INVALID' || errMsg === 'GOOGLE_AUDIENCE_MISMATCH') {
+    if (
+      errMsg === 'GOOGLE_TOKEN_INVALID' ||
+      errMsg === 'GOOGLE_AUDIENCE_MISMATCH' ||
+      errMsg === 'GOOGLE_ACCESS_TOKEN_INVALID'
+    ) {
       return res.status(401).json({ error: 'INVALID_GOOGLE_TOKEN', message: 'Token de Google inválido' });
     }
 

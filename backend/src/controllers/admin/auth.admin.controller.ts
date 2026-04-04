@@ -5,7 +5,7 @@ import { generateToken } from '../../utils/jwt';
 import { emailService } from '../../services/email.service';
 import { authAdminService } from '../../services/admin/auth.admin.service';
 import { GOOGLE_CONFIG } from '../../config/google';
-import { verifyGoogleToken } from '../../services/google-auth.service';
+import { verifyGoogleAccessToken, verifyGoogleToken } from '../../services/google-auth.service';
 import { sanitizeError } from '../../utils/sanitizeError';
 
 const adminService = new AdminService();
@@ -242,15 +242,16 @@ export const adminLogout = async (_req: any, res: Response) => {
  */
 export const adminGoogleLogin = async (req: any, res: Response) => {
   try {
-    const { credential, accessToken, email, googleId } = req.body;
+    const { credential, accessToken } = req.body;
 
     let googleSub: string;
     let googleEmail: string;
 
     if (accessToken) {
       // OAuth2 flow - frontend ya verificó con userinfo
-      googleSub = googleId;
-      googleEmail = email?.toLowerCase();
+      const googlePayload = await verifyGoogleAccessToken(accessToken);
+      googleSub = googlePayload.sub;
+      googleEmail = googlePayload.email;
     } else if (credential) {
       // ID Token flow
       const googlePayload = await verifyGoogleToken(credential);
@@ -336,7 +337,12 @@ export const adminGoogleLogin = async (req: any, res: Response) => {
   } catch (error: any) {
     console.error('Error in adminGoogleLogin:', error);
 
-    if (error.message === 'GOOGLE_NOT_CONFIGURED' || error.message === 'GOOGLE_TOKEN_INVALID' || error.message === 'GOOGLE_AUDIENCE_MISMATCH') {
+    if (
+      error.message === 'GOOGLE_NOT_CONFIGURED' ||
+      error.message === 'GOOGLE_TOKEN_INVALID' ||
+      error.message === 'GOOGLE_AUDIENCE_MISMATCH' ||
+      error.message === 'GOOGLE_ACCESS_TOKEN_INVALID'
+    ) {
       return res.status(401).json({
         error: 'INVALID_GOOGLE_TOKEN',
         message: 'Token de Google inválido',
