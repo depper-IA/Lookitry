@@ -22,7 +22,7 @@ export default function LandingReviews({ reviews }: LandingReviewsProps) {
   if (!reviews || reviews.length === 0) return null;
 
   return (
-    <section className="bg-white dark:bg-[#0a0a0a] py-20 sm:py-24 md:py-28 lg:py-32 px-4 sm:px-6 border-y border-[#eeebe7] dark:border-white/5 relative overflow-hidden" aria-label="Testimonios de clientes">
+    <section className="bg-white dark:bg-black py-20 sm:py-24 md:py-28 lg:py-32 px-4 sm:px-6 border-y border-[#eeebe7] dark:border-white/5 relative overflow-hidden" aria-label="Testimonios de clientes">
       <div className="absolute inset-0 z-0 opacity-30 pointer-events-none" aria-hidden="true">
         <div className="absolute top-1/2 left-0 w-72 sm:w-96 h-72 sm:h-96 bg-[#FF5C3A]/5 blur-[120px] rounded-full" />
       </div>
@@ -30,7 +30,7 @@ export default function LandingReviews({ reviews }: LandingReviewsProps) {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="text-center mb-12 sm:mb-16 md:mb-20">
           <SectionTag text="Casos de Éxito" light />
-          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold text-[#0a0a0a] dark:text-white mb-4 sm:mb-6">Marcas que ya <span className="text-[#FF5C3A]">brillan con IA.</span></h2>
+          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold text-black dark:text-white mb-4 sm:mb-6">Marcas que ya <span className="text-[#FF5C3A]">brillan con IA.</span></h2>
           <p className="font-dm-sans text-[#666] dark:text-white/50 text-base sm:text-lg max-w-2xl mx-auto font-light">
             Únete a la revolución del retail digital con tecnología de vanguardia.
           </p>
@@ -40,7 +40,7 @@ export default function LandingReviews({ reviews }: LandingReviewsProps) {
           {reviews.slice(0, 6).map((rev, i) => (
             <div key={i} className="bg-[#f8f6f4] dark:bg-[#111] border border-[#e8e4df] dark:border-white/5 p-6 sm:p-8 rounded-2xl sm:rounded-[2.5rem] hover:border-[#FF5C3A]/40 transition-all duration-500 group relative overflow-hidden">
               <div className="absolute top-0 right-0 p-6 sm:p-8 opacity-[0.03] dark:opacity-[0.07] group-hover:opacity-[0.07] transition-opacity" aria-hidden="true">
-                <Star size={80} fill="currentColor" className="text-[#0a0a0a] dark:text-white" />
+                <Star size={80} fill="currentColor" className="text-black dark:text-white" />
               </div>
 
               <div className="flex items-center gap-1 mb-4 sm:mb-6 text-[#FF5C3A]" aria-label={`${rev.rating} de 5 estrellas`}>
@@ -64,7 +64,7 @@ export default function LandingReviews({ reviews }: LandingReviewsProps) {
                   {rev.reviewer_name.charAt(0)}
                 </div>
                 <div>
-                  <h4 className="font-jakarta font-bold text-xs sm:text-sm text-[#0a0a0a] dark:text-white group-hover:text-[#FF5C3A] transition-colors">{rev.reviewer_name}</h4>
+                  <h4 className="font-jakarta font-bold text-xs sm:text-sm text-black dark:text-white group-hover:text-[#FF5C3A] transition-colors">{rev.reviewer_name}</h4>
                   <p className="text-[9px] sm:text-[10px] text-[#666] dark:text-white/40 uppercase tracking-[0.15em] sm:tracking-[0.2em] font-bold">{rev.reviewer_plan}</p>
                 </div>
               </div>

@@ -218,7 +218,7 @@ export default function PluginWooCommercePage() {
               </div>
 
               <div className="p-10 md:p-14 rounded-[3.5rem] bg-[#FF5C3A] border border-[#FF5C3A]/20 flex flex-col relative overflow-hidden group shadow-2xl shadow-[#FF5C3A]/20">
-                <div className="absolute top-0 left-0 w-full h-full bg-[url('/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay" />
+                {/* Noise overlay removed for premium clean look */}
                 <div className="relative z-10 flex flex-col h-full">
                   <h3 className="font-jakarta text-2xl font-bold mb-8 text-white">Lo que resuelve Lookitry en WooCommerce:</h3>
                   <div className="space-y-8 flex-1">

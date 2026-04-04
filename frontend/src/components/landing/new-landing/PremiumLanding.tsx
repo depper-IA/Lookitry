@@ -37,7 +37,7 @@ export default function PremiumLanding({
 }: PremiumLandingProps & { realReviewsCount?: number; usingMockReviews?: boolean }) {
   return (
     <PromoBannerProvider>
-      <div className="min-h-screen bg-white dark:bg-[#0a0a0a] text-[#0a0a0a] dark:text-white selection:bg-[#FF5C3A]/30 selection:text-white font-dm-sans overflow-x-clip">
+      <div className="min-h-screen bg-white dark:bg-black text-[#0a0a0a] dark:text-white selection:bg-[#FF5C3A]/30 selection:text-white font-dm-sans overflow-x-clip">
         <PromoBanner />
         <LandingNav />
         <main className="relative">

@@ -25,13 +25,17 @@ export default function LandingHero() {
   return (
     <section
       id="hero"
-      className="relative flex min-h-screen items-start overflow-hidden bg-white px-4 pt-20 pb-16 dark:bg-[#0a0a0a] sm:px-6 sm:pt-24 sm:pb-24 md:px-12"
+      className="relative flex min-h-screen items-start overflow-hidden bg-white px-4 pt-20 pb-16 dark:bg-black sm:px-6 sm:pt-24 sm:pb-24 md:px-12"
       aria-label="Seccion principal"
     >
-      <div className="absolute inset-0 z-0" aria-hidden="true">
-        <div className="bg-circle absolute top-[-10%] right-[-10%] h-[80vw] w-[80vw] rounded-full bg-[#FF5C3A]/5 blur-[200px]" />
-        <div className="bg-circle absolute bottom-[-10%] left-[-10%] h-[60vw] w-[60vw] rounded-full bg-black/5 blur-[150px] dark:bg-white/5" />
-        <div className="pointer-events-none absolute inset-0 bg-[url('/noise.svg')] opacity-20 mix-blend-overlay dark:opacity-20" />
+      <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
+        {/* Gradientes Premium Lookitry */}
+        <div className="absolute top-[-15%] right-[-10%] h-[100vw] w-[100vw] rounded-full bg-[#FF5C3A]/10 blur-[180px] sm:h-[80vw] sm:w-[80vw]" />
+        <div className="absolute bottom-[-15%] left-[-15%] h-[80vw] w-[80vw] rounded-full bg-[#FF5C3A]/5 blur-[200px]" />
+        <div className="absolute top-[20%] left-[-10%] h-[40vw] w-[40vw] rounded-full bg-white/5 blur-[120px] dark:bg-white/2" />
+        
+        {/* Glow central suave */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[60vh] w-[60vw] bg-[#FF5C3A]/5 blur-[250px] opacity-20" />
       </div>
 
       <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">

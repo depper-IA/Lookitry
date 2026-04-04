@@ -43,11 +43,11 @@ const STEPS = [
 
 export default function LandingSteps() {
   return (
-    <section id="como-funciona" className="bg-[#0a0a0a] dark:bg-white py-16 sm:py-20 px-4 sm:px-6 md:px-12 relative" aria-label="Cómo funciona">
+    <section id="como-funciona" className="bg-black dark:bg-white py-16 sm:py-20 px-4 sm:px-6 md:px-12 relative" aria-label="Cómo funciona">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16 md:mb-24">
           <SectionTag text="Proceso impecable" />
-          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white dark:text-[#0a0a0a] mb-4 sm:mb-6 md:mb-8">
+          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white dark:text-black mb-4 sm:mb-6 md:mb-8">
             Tus clientes lo aman,<br /><span className="text-[#FF5C3A]">tú vendes más.</span>
           </h2>
           <p className="font-dm-sans text-base sm:text-lg text-white/60 dark:text-[#666] max-w-2xl mx-auto font-light leading-relaxed">
@@ -73,7 +73,7 @@ export default function LandingSteps() {
                   {step.n}
                 </div>
               </div>
-              <h3 className="font-jakarta text-xl sm:text-2xl font-bold text-white dark:text-[#0a0a0a] mb-3 sm:mb-4 transition-colors group-hover:text-[#FF5C3A]">{step.title}</h3>
+              <h3 className="font-jakarta text-xl sm:text-2xl font-bold text-white dark:text-black mb-3 sm:mb-4 transition-colors group-hover:text-[#FF5C3A]">{step.title}</h3>
               <p className="font-dm-sans text-white/60 dark:text-[#666] leading-relaxed text-sm font-light">
                 {step.desc}
               </p>

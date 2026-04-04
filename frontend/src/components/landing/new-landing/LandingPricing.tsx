@@ -47,13 +47,13 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
   const hasProDiscount = proPrice < pricing.pro.precio_mensual_cop;
 
   return (
-    <section id="planes" className="py-20 sm:py-24 md:py-32 lg:py-40 px-4 sm:px-6 bg-white dark:bg-[#0a0a0a] relative overflow-hidden" aria-label="Planes y precios">
+    <section id="planes" className="py-20 sm:py-24 md:py-32 lg:py-40 px-4 sm:px-6 bg-white dark:bg-black relative overflow-hidden" aria-label="Planes y precios">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[100%] h-[1px] bg-gradient-to-r from-transparent via-black/10 dark:via-white/10 to-transparent" aria-hidden="true" />
 
       <div className="max-w-7xl mx-auto px-0 sm:px-6">
         <div className="text-center mb-12 sm:mb-16 md:mb-20 lg:mb-24">
           <SectionTag text="Planes de Crecimiento" light />
-          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#0a0a0a] dark:text-white mb-4 sm:mb-6">
+          <h2 className="font-jakarta text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black dark:text-white mb-4 sm:mb-6">
             Precios claros, <span className="text-[#FF5C3A]">sin sorpresas.</span>
           </h2>
           <p className="font-dm-sans text-base sm:text-lg text-[#666] dark:text-white/70 max-w-xl mx-auto">Activa tu plan en minutos con pasarelas 100% seguras y soporte en español.</p>
@@ -68,10 +68,10 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
               </div>
             )}
             <div className="text-[#FF5C3A] font-bold text-[9px] sm:text-[10px] uppercase tracking-[.2em] sm:tracking-[.25em] mb-3 sm:mb-4">Emprendedores</div>
-            <h3 className="font-jakarta font-bold text-2xl sm:text-3xl text-[#0a0a0a] dark:text-white mb-3 sm:mb-4">Básico</h3>
+            <h3 className="font-jakarta font-bold text-2xl sm:text-3xl text-black dark:text-white mb-3 sm:mb-4">Básico</h3>
             <div className="flex flex-col mb-6 sm:mb-8">
               <div className="flex items-baseline gap-2">
-                <span className="font-jakarta font-black text-3xl sm:text-4xl text-[#0a0a0a] dark:text-white tracking-tighter">{formatPrice(basicPrice)}</span>
+                <span className="font-jakarta font-black text-3xl sm:text-4xl text-black dark:text-white tracking-tighter">{formatPrice(basicPrice)}</span>
                 <span className="text-[10px] sm:text-[12px] font-bold text-[#666] dark:text-white/60 uppercase tracking-widest">{currency} / mes</span>
               </div>
               {hasBasicDiscount && basicOriginal > basicPrice && (
@@ -92,7 +92,7 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
                 </li>
               ))}
             </ul>
-            <Link href={`/checkout?plan=BASIC&currency=${currency}`} className="mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-[1.5rem] bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-[#0a0a0a] dark:text-white font-bold text-sm text-center hover:bg-[#FF5C3A] hover:text-white hover:border-[#FF5C3A] transition-all">
+            <Link href={`/checkout?plan=BASIC&currency=${currency}`} className="mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-[1.5rem] bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white font-bold text-sm text-center hover:bg-[#FF5C3A] hover:text-white hover:border-[#FF5C3A] transition-all">
               Contratar Básico
             </Link>
           </div>
@@ -140,9 +140,9 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
           {/* Enterprise */}
           <div className="feature-card w-full sm:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-2.5rem)] max-w-sm bg-[#f8f6f4] dark:bg-[#1a1a1a] border border-[#e8e4df] dark:border-white/10 rounded-2xl sm:rounded-[2.5rem] md:rounded-[3rem] p-6 sm:p-8 md:p-10 flex flex-col hover:border-[#FF5C3A]/60 transition-all duration-500">
             <div className="text-[#FF5C3A] font-bold text-[9px] sm:text-[10px] uppercase tracking-[.2em] sm:tracking-[.25em] mb-3 sm:mb-4">Retail y Corp</div>
-            <h3 className="font-jakarta font-bold text-2xl sm:text-3xl text-[#0a0a0a] dark:text-white mb-3 sm:mb-4">Enterprise</h3>
+            <h3 className="font-jakarta font-bold text-2xl sm:text-3xl text-black dark:text-white mb-3 sm:mb-4">Enterprise</h3>
             <div className="flex items-baseline gap-2 mb-6 sm:mb-8">
-              <span className="font-jakarta font-black text-3xl sm:text-4xl text-[#0a0a0a] dark:text-white tracking-tighter">Custom</span>
+              <span className="font-jakarta font-black text-3xl sm:text-4xl text-black dark:text-white tracking-tighter">Custom</span>
             </div>
             <div className="h-[1px] w-full bg-black/10 dark:bg-white/10 mb-6 sm:mb-8 md:mb-10" />
             <ul className="flex flex-col gap-4 sm:gap-5 mb-8 sm:mb-10 md:mb-12 shrink-0">
@@ -155,7 +155,7 @@ export default function LandingPricing({ pricing, currency, trm }: LandingPricin
                 </li>
               ))}
             </ul>
-            <Link href="/contacto" className="mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-[1.5rem] bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-[#0a0a0a] dark:text-white font-bold text-sm text-center hover:border-[#FF5C3A] hover:text-[#FF5C3A] dark:hover:text-[#FF5C3A] transition-all">
+            <Link href="/contacto" className="mt-auto w-full py-4 sm:py-5 rounded-xl sm:rounded-[1.5rem] bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white font-bold text-sm text-center hover:border-[#FF5C3A] hover:text-[#FF5C3A] dark:hover:text-[#FF5C3A] transition-all">
               Hablar con Ventas
             </Link>
           </div>
