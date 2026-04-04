@@ -143,7 +143,7 @@ export default function ApiDeveloperPage() {
 
                 {/* Solución */}
                 <div className="p-12 rounded-[3.5rem] bg-[#FF5C3A] border border-[#FF5C3A]/20 flex flex-col relative overflow-hidden shadow-2xl shadow-[#FF5C3A]/20">
-                   <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay" />
+                   <div className="absolute top-0 left-0 w-full h-full bg-[url('/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay" />
                    <div className="relative z-10 flex flex-col h-full">
                       <h3 className="font-jakarta text-2xl font-bold mb-10 text-white">Externaliza la complejidad:</h3>
                       <div className="space-y-10 flex-1">
