@@ -235,6 +235,14 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 | `SUCCESS` | Exitosa |
 | `FAILED` | Fallida |
 
+### 10.3 Páginas de Error y Estado
+| Página | Archivo | Estándar de Diseño |
+|--------|---------|---------------------|
+| **404 Not Found** | `not-found.tsx` | Branding central, soporte Light/Dark, `pt-40` para Navbar. |
+| **Runtime Error** | `error.tsx` | Fondo dinámico, botón `reset()`, ID de error monospaciado. |
+| **Mantenimiento** | `mantenimiento/page.tsx` | Indicador de pulso activo, mensaje dinámico, branding premium. |
+| **Global Error** | `global-error.tsx` | Root level recovery, layout minimalista, máxima resiliencia. |
+
 ---
 
 ## 11. Animaciones y Transiciones

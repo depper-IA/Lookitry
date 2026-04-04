@@ -1,5 +1,25 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-04] - Estandarización de Páginas de Error y Mantenimiento (Brand & Theme Compliance)
+
+### Problema
+- Las páginas de error (404) y mantenimiento no tenían soporte consistente para Light/Dark Mode.
+- Falta de cohesión visual con la nueva identidad premium (Jakarta Sans, espaciado "breathing room").
+- Ausencia de un manejador de errores global (`error.tsx`) para fallos en tiempo de ejecución.
+
+### Solución
+- **Rediseño de Error 404**: Implementación de `bg-white dark:bg-[#0a0a0a]` y ajuste de márgenes superiores para el Navbar.
+- **Actualización de Mantenimiento**: Nueva UI con efectos de glow radial, tipografía `font-jakarta`, branding exacto y soporte total de temas.
+- **Creación de Global Error (`error.tsx`)**: Implementación de una página de error de tiempo de ejecución con botón de reintento (`reset()`), glassmorphism y diseño alineado a la plataforma.
+- **Cumplimiento de Paleta**: Uso estricto de `#FF5C3A`, `#999`, `#bbb` y exclusión de grises prohibidos.
+
+### Archivos Modificados
+- `frontend/src/app/not-found.tsx`
+- `frontend/src/app/mantenimiento/page.tsx`
+- `frontend/src/app/error.tsx` [NUEVO]
+
+---
+
 ## [2026-04-02] - Refactorización y Modularización del Admin Controller
 
 ### Problema
