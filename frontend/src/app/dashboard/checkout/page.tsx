@@ -485,13 +485,11 @@ function CheckoutContent() {
     if (!isUpgrade || loadingInfo) { setProrationPreview(null); return; }
     setLoadingProration(true);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-    const token  = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const currentPlanPriceFallback = planInfo[currentPlan as PlanType].price; // Precio mensual base
     fetch(
       `${apiUrl}/api/payments/wompi/upgrade-preview?newPlan=${selectedPlan}&newMonths=${selectedMonths}&newPlanTotal=${planTotal}&currentPlanPriceTotalFallback=${currentPlanPriceFallback}`,
       {
         credentials: 'include',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
       }
     )
       .then(r => r.ok ? r.json() : null)
@@ -504,16 +502,11 @@ function CheckoutContent() {
     if (!prorationPreview?.isFree) return;
     setApplyingFreeUpgrade(true);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-    const token  = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
     try {
       const res = await fetch(`${apiUrl}/api/payments/wompi/apply-free-upgrade`, {
         method: 'POST',
         credentials: 'include',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           newPlan: selectedPlan, newMonths: selectedMonths,
           creditAmount: prorationPreview.creditAmount, newPlanTotal: prorationPreview.newPlanTotal,

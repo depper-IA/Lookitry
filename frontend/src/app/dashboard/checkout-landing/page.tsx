@@ -119,14 +119,14 @@ export default function CheckoutLandingPage() {
       const monthsToSend = includePlan ? months : 0;
       
       // CASO ESPECIAL: TOTAL 0 (Cupón 100% o Crédito total)
-      if (totalPrice === 0) {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/free-checkout`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({
+        if (totalPrice === 0) {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/free-checkout`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
             plan: planToSend,
             months: monthsToSend,
             includes_landing: true,
@@ -143,28 +143,22 @@ export default function CheckoutLandingPage() {
         }
       }
 
-      if (paymentMethod === 'wompi') {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/checkout-url?plan=${planToSend}&months=${monthsToSend}&includes_landing=true&amount=${totalPrice}`, {
-          credentials: 'include',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
+        if (paymentMethod === 'wompi') {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/wompi/checkout-url?plan=${planToSend}&months=${monthsToSend}&includes_landing=true&amount=${totalPrice}`, {
+            credentials: 'include',
+          });
         const data = await res.json();
         if (data.checkoutUrl) window.location.href = data.checkoutUrl;
         else if (data.url) window.location.href = data.url;
         else throw new Error(data.error || 'Error al generar link de pago');
       } else {
         // PayPal real: backend convierte COP -> USD con TRM y devuelve checkout URL
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/payments/paypal/checkout-url?plan=${planToSend}&months=${monthsToSend}&includes_landing=true&amount=${totalPrice}&trm=${pricing.trm}`,
-          {
-            credentials: 'include',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/payments/paypal/checkout-url?plan=${planToSend}&months=${monthsToSend}&includes_landing=true&amount=${totalPrice}&trm=${pricing.trm}`,
+            {
+              credentials: 'include',
             }
-          }
-        );
+          );
         const data = await res.json();
         if (data.checkoutUrl) window.location.href = data.checkoutUrl;
         else throw new Error(data.error || 'Error al generar link de PayPal');
