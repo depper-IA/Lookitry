@@ -172,7 +172,6 @@ export default function GoogleSignInButton({
     tokenClientRef.current = (window as any).google.accounts.oauth2.initTokenClient({
       client_id: clientId,
       scope: 'openid email profile',
-      prompt: 'consent',
       login_hint: loginHint || undefined,
       callback: (response: any) => {
         setLoading(false);
