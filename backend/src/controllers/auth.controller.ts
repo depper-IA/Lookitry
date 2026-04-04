@@ -378,13 +378,32 @@ export class AuthController {
 
   async googleLogin(req: Request, res: Response) {
     try {
-      const { credential } = req.body;
+      const { credential, accessToken, email, name, picture, googleId } = req.body;
 
-      if (!credential) {
-        return res.status(400).json({ error: 'CREDENTIAL_REQUIRED', message: 'Credential de Google requerido' });
+      let result: any;
+
+      if (accessToken) {
+        // OAuth2 flow (popup) - frontend ya verificó el token con userinfo
+        const userInfo = {
+          sub: googleId,
+          email: email?.toLowerCase(),
+          email_verified: true,
+          name: name || email?.split('@')[0] || 'User',
+          picture,
+        };
+
+        if (!userInfo.sub || !userInfo.email) {
+          return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Datos de Google incompletos' });
+        }
+
+        const { findOrCreateBrandFromGoogle } = await import('../services/google-auth.service');
+        result = await findOrCreateBrandFromGoogle(userInfo);
+      } else if (credential) {
+        // ID Token flow (One Tap)
+        result = await loginWithGoogle(credential);
+      } else {
+        return res.status(400).json({ error: 'CREDENTIAL_REQUIRED', message: 'Credential o accessToken de Google requerido' });
       }
-
-      const result = await loginWithGoogle(credential);
 
       if (result.token) setCookieToken(res, result.token);
 

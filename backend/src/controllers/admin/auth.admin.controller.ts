@@ -242,25 +242,35 @@ export const adminLogout = async (_req: any, res: Response) => {
  */
 export const adminGoogleLogin = async (req: any, res: Response) => {
   try {
-    const { credential } = req.body;
+    const { credential, accessToken, email, googleId } = req.body;
 
-    if (!credential) {
+    let googleSub: string;
+    let googleEmail: string;
+
+    if (accessToken) {
+      // OAuth2 flow - frontend ya verificó con userinfo
+      googleSub = googleId;
+      googleEmail = email?.toLowerCase();
+    } else if (credential) {
+      // ID Token flow
+      const googlePayload = await verifyGoogleToken(credential);
+      googleSub = googlePayload.sub;
+      googleEmail = googlePayload.email;
+    } else {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
-        message: 'Credential de Google requerido',
+        message: 'Credential o accessToken de Google requerido',
       });
     }
 
-    const googlePayload = await verifyGoogleToken(credential);
-
-    if (!googlePayload.email) {
+    if (!googleSub || !googleEmail) {
       return res.status(400).json({
         error: 'VALIDATION_ERROR',
-        message: 'No se pudo obtener el email de Google',
+        message: 'Datos de Google incompletos',
       });
     }
 
-    const admin = await adminService.getAdminByGoogleId(googlePayload.sub);
+    const admin = await adminService.getAdminByGoogleId(googleSub);
 
     if (!admin) {
       return res.status(401).json({
