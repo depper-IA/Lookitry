@@ -22,14 +22,14 @@ export function DashboardBottomNav() {
       className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
     >
       <div className="mx-auto max-w-sm px-3 pb-2 pt-1">
-        <div className="flex items-center justify-center gap-0.5 rounded-2xl bg-[#0a0a0a]/90 backdrop-blur-xl border border-white/10 shadow-2xl shadow-black/40 px-1.5 py-1.5 pb-safe">
+        <div className="flex items-center justify-center gap-0.5 rounded-2xl bg-white/90 dark:bg-[#0a0a0a]/90 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-2xl shadow-black/20 dark:shadow-black/40 px-1.5 py-1.5 pb-safe">
           <Link
             href="/dashboard"
             aria-current={isActive('/dashboard') ? 'page' : undefined}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
               isActive('/dashboard')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
-                : 'text-white/40 hover:text-white/70 active:text-white/60'
+                : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
             <Home size={20} />
@@ -42,7 +42,7 @@ export function DashboardBottomNav() {
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
               isActive('/dashboard/products')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
-                : 'text-white/40 hover:text-white/70 active:text-white/60'
+                : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
             <Package size={20} />
@@ -55,7 +55,7 @@ export function DashboardBottomNav() {
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
               isActive('/dashboard/generations')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
-                : 'text-white/40 hover:text-white/70 active:text-white/60'
+                : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
             <Sparkles size={20} />
@@ -68,7 +68,7 @@ export function DashboardBottomNav() {
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
               isActive('/dashboard/analytics')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
-                : 'text-white/40 hover:text-white/70 active:text-white/60'
+                : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
             <BarChart3 size={20} />
@@ -81,7 +81,7 @@ export function DashboardBottomNav() {
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
               isActive('/dashboard/profile')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
-                : 'text-white/40 hover:text-white/70 active:text-white/60'
+                : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
             <User size={20} />

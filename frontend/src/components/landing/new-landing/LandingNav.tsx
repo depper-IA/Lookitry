@@ -125,7 +125,8 @@ export default function LandingNav({
           <div className="flex items-center gap-2 md:gap-5">
             <Link href="/" className="flex items-center gap-2.5 group shrink-0" aria-label="Lookitry - Inicio">
               <div className="relative w-7 h-7 sm:w-8 sm:h-8">
-                <Image src="/logo.svg" alt="Lookitry" fill className="object-contain" priority />
+                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
+                <Image src="/logo.svg" alt="Lookitry" fill className="object-contain hidden dark:block" priority />
               </div>
               <span className="font-jakarta text-xl sm:text-2xl font-bold tracking-tighter text-[#0a0a0a] dark:text-white">
                 Look<span className="text-[#FF5C3A]">itry</span>
