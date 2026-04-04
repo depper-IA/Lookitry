@@ -11,7 +11,7 @@ export function Analytics() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (GA_ID) return;
+    if (GA_ID) return; // Ya tenemos el ID desde env
     
     const fetchGaId = async () => {
       try {
@@ -32,11 +32,12 @@ export function Analytics() {
   useEffect(() => {
     if (!gaId) return;
 
-    const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
-
-    window.gtag('config', gaId, {
-      page_path: url,
-    });
+    if (typeof window !== 'undefined' && window.gtag) {
+      const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+      window.gtag('config', gaId, {
+        page_path: url,
+      });
+    }
   }, [pathname, searchParams, gaId]);
 
   if (!gaId) return null;
@@ -73,7 +74,7 @@ export function trackEvent(eventName: string, params?: Record<string, string | n
 
 declare global {
   interface Window {
-    gtag: (...args: unknown[]) => void;
-    dataLayer: unknown[];
+    gtag: (...args: any[]) => void;
+    dataLayer: any[];
   }
 }

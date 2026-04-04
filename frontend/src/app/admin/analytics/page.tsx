@@ -9,8 +9,6 @@ import {
   Package,
   Sparkles,
   Users,
-  Trophy,
-  TrendingUp,
 } from 'lucide-react';
 import { adminApi } from '@/services/adminApi';
 
@@ -140,93 +138,13 @@ export default function AdminAnalyticsPage() {
     );
   }
 
-  const [activeAnalyticsTab, setActiveAnalyticsTab] = useState<'overview' | 'top-brands'>('overview');
-  const [topBrands, setTopBrands] = useState<any[]>([]);
-  const [loadingTopBrands, setLoadingTopBrands] = useState(false);
-
-  useEffect(() => {
-    if (activeAnalyticsTab === 'top-brands' && topBrands.length === 0) {
-      setLoadingTopBrands(true);
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats/top-brands`, { credentials: 'include' })
-        .then(r => r.json())
-        .then(data => setTopBrands(data.topBrands || []))
-        .finally(() => setLoadingTopBrands(false));
-    }
-  }, [activeAnalyticsTab]);
-
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-            Analítica global
-          </h1>
-          <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            Métricas de uso, rendimiento y conversión
-          </p>
-        </div>
-        <div className="flex gap-1 p-1 rounded-xl" style={{ backgroundColor: 'var(--bg-hover)' }}>
-          <button
-            onClick={() => setActiveAnalyticsTab('overview')}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-            style={activeAnalyticsTab === 'overview' ? { backgroundColor: 'var(--bg-card)', color: '#FF5C3A' } : { color: 'var(--text-secondary)' }}
-          >
-            Resumen
-          </button>
-          <button
-            onClick={() => setActiveAnalyticsTab('top-brands')}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
-            style={activeAnalyticsTab === 'top-brands' ? { backgroundColor: 'var(--bg-card)', color: '#FF5C3A' } : { color: 'var(--text-secondary)' }}
-          >
-            <Trophy className="w-4 h-4" /> Top Marcas
-          </button>
-        </div>
-      </div>
-
-      {activeAnalyticsTab === 'top-brands' && (
-        <div className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <h2 className="text-lg font-jakarta font-bold tracking-tight mb-4" style={{ color: 'var(--text-primary)' }}>
-            🏆 Top 10 Marcas por Uso
-          </h2>
-          <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-            Marcas con más generaciones este mes
-          </p>
-          
-          {loadingTopBrands ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#FF5C3A]" />
-            </div>
-          ) : topBrands.length === 0 ? (
-            <p className="text-center py-8" style={{ color: 'var(--text-muted)' }}>No hay datos de uso este mes</p>
-          ) : (
-            <div className="space-y-3">
-              {topBrands.map((brand: any) => (
-                <div key={brand.rank} className="flex items-center gap-4 p-3 rounded-xl" style={{ backgroundColor: 'var(--bg-base)' }}>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${brand.rank <= 3 ? 'bg-yellow-500/20 text-yellow-500' : 'bg-[var(--bg-hover)] text-[var(--text-secondary)]'}`}>
-                    {brand.rank}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{brand.name}</p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{brand.slug} · {brand.plan}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-lg" style={{ color: '#FF5C3A' }}>{brand.generations}</p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>generaciones</p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-bold ${brand.successRate >= 90 ? 'text-emerald-500' : brand.successRate >= 70 ? 'text-amber-500' : 'text-red-500'}`}>
-                      {brand.successRate}%
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>éxito</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeAnalyticsTab === 'overview' && (
+      <div>
+        <h1 className="text-2xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          Analítica global
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
           Volumen real de uso, rendimiento de generaciones y distribución operativa del ecosistema.
         </p>
       </div>
@@ -367,7 +285,6 @@ export default function AdminAnalyticsPage() {
             ))}
           </div>
         </section>
-      )}
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -377,7 +294,6 @@ export default function AdminAnalyticsPage() {
         </div>
         <span>Fuente: `/api/admin/stats`</span>
       </div>
-      </div>)}
     </div>
   );
 }

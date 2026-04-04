@@ -17,6 +17,7 @@ export type AuditAction =
   | 'brand.landing_suspend'
   | 'brand.landing_restore'
   | 'brand.modal_config_update'
+  | 'brand.notes_update'
   | 'brand.send_reset_email'
   | 'system.config_update'
   | 'subscription.renew'

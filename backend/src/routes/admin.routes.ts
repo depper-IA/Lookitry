@@ -1,41 +1,47 @@
 import { Router } from 'express';
 import { adminAuthMiddleware, requirePermission } from '../middleware/adminAuth';
-import {
-  getTrialCampaign,
-  createTrialCampaign,
-  updateTrialCampaign,
-  getAlerts,
-} from '../controllers/admin.controller';
-import { getAdminReferrals, creditReferralBonus } from '../controllers/referral.controller';
-import {
-  getOpenRouterCredits,
-  getReplicateCredits,
-  getSystemStats,
-} from '../controllers/admin/system.admin.controller';
-import {
-  getWooBrandsSummary,
-  getWooBrandProducts,
-  setWooProductActive,
-} from '../controllers/admin/woo.admin.controller';
-import {
-  getPaymentSettings,
-  updatePaymentSettings,
-} from '../controllers/paymentSettings.controller';
-import {
-  getAdminNotifications,
-  getNotificationPreferences,
-  updateNotificationPreference,
-} from '../controllers/notifications.controller';
-import {
-  getTrialCampaign,
-  createTrialCampaign,
-  updateTrialCampaign,
-} from '../controllers/trialCampaign.controller';
-
 import { authRateLimiter } from '../middleware/rateLimiter';
+
+// Todas las funciones de controladores admin modularizados se exportan desde admin.controller facade
+import {
+  // Auth
+  adminLogin, adminLogout, adminForgotPassword, adminResetPassword,
+  listAdmins, createAdmin, updateAdminPermissions, deleteAdmin, 
+  sendAdminCredentials, changeOwnPassword, changeAdminPassword,
+  // Brands
+  getAllBrands, createBrand, deleteBrand, getBrandProducts, 
+  deleteInactiveProduct, changeBrandPlan, activateBrandPlan, 
+  toggleLandingPage, updateBrandNotes, updateModalConfig, 
+  sendBrandResetEmail, getMiniLandingsAdmin, suspendMiniLanding, 
+  restoreMiniLanding, getBrandFull,
+  // Stats
+  getGlobalStats, getConversionStats, getTopBrands, getAlerts, 
+  getRiskData, getEconomics, getMissionControl,
+  // Payments
+  getPayments, getAllSubscriptions, registerSubscriptionPayment, 
+  suspendSubscription, reactivateSubscription,
+  // Operational (Pricing, Audit)
+  getAuditLog, getPricingConfig, updatePricingConfig,
+  // Promotion
+  getAllPromotions, createPromotion, updatePromotion, deletePromotion,
+  // Feedback
+  getFeedbacks, getFeedbackStats, resolveFeedback, deleteFeedback, 
+  getUnresolvedFeedbackCount,
+  // System
+  getSystemStats, getOpenRouterCredits, getReplicateCredits,
+  // Woo Integration
+  getWooBrandsSummary, getWooBrandProducts, setWooProductActive
+} from '../controllers/admin.controller';
+
+// Otros controladores fuera de la carpeta admin/ o casos específicos
+import { getAdminReferrals, creditReferralBonus } from '../controllers/referral.controller';
+import { getPaymentSettings, updatePaymentSettings } from '../controllers/paymentSettings.controller';
+import { getAdminNotifications, getNotificationPreferences, updateNotificationPreference } from '../controllers/notifications.controller';
+import { getTrialCampaign, createTrialCampaign, updateTrialCampaign } from '../controllers/trialCampaign.controller';
 
 const router = Router();
 
+// Auth routes (not requiring adminAuthMiddleware yet, but using authRateLimiter)
 router.post('/auth/login', authRateLimiter, adminLogin);
 router.post('/auth/logout', adminLogout);
 router.post('/auth/forgot-password', authRateLimiter, adminForgotPassword);
@@ -46,12 +52,16 @@ router.get('/verify', adminAuthMiddleware, (req: any, res) => {
   return res.status(200).json({ ok: true, admin: req.admin });
 });
 
+// Middleware de autenticación para el resto de las rutas
 router.use(adminAuthMiddleware);
 
+// Estadísticas y Métricas
 router.get('/stats', requirePermission('conversion'), getGlobalStats);
 router.get('/stats/conversion', requirePermission('conversion'), getConversionStats);
 router.get('/stats/top-brands', requirePermission('conversion'), getTopBrands);
 router.get('/alerts', requirePermission('conversion'), getAlerts);
+
+// Gestión de Marcas (Brands)
 router.get('/brands', requirePermission('brands'), getAllBrands);
 router.post('/brands', requirePermission('brands'), createBrand);
 router.delete('/brands/:id', requirePermission('brands'), deleteBrand);
@@ -68,6 +78,8 @@ router.post('/brands/:id/send-reset-email', requirePermission('brands'), sendBra
 router.get('/mini-landings', requirePermission('brands'), getMiniLandingsAdmin);
 router.patch('/mini-landings/:id/suspend', requirePermission('brands'), suspendMiniLanding);
 router.patch('/mini-landings/:id/restore', requirePermission('brands'), restoreMiniLanding);
+
+// Configuración y Notificaciones
 router.get('/payment-settings', requirePermission('settings'), getPaymentSettings);
 router.put('/payment-settings', requirePermission('settings'), updatePaymentSettings);
 router.get('/notifications', requirePermission('notifications'), getAdminNotifications);
@@ -90,14 +102,14 @@ router.get('/trial-campaign', requirePermission('settings'), getTrialCampaign);
 router.post('/trial-campaign', requirePermission('settings'), createTrialCampaign);
 router.patch('/trial-campaign/:id', requirePermission('settings'), updateTrialCampaign);
 
-// Feedback de generaciones (51.8)
+// Feedback de generaciones
 router.get('/feedback/count-unresolved', requirePermission('brands'), getUnresolvedFeedbackCount);
 router.get('/feedback/stats', requirePermission('brands'), getFeedbackStats);
 router.get('/feedback', requirePermission('brands'), getFeedbacks);
 router.patch('/feedback/:id/resolve', requirePermission('brands'), resolveFeedback);
 router.delete('/feedback/:id', requirePermission('brands'), deleteFeedback);
 
-// Monitor de créditos OpenRouter
+// Monitor de créditos e IA
 router.get('/openrouter-credits', requirePermission('settings'), getOpenRouterCredits);
 router.get('/replicate-credits', requirePermission('settings'), getReplicateCredits);
 
@@ -107,7 +119,7 @@ router.get('/system/stats', requirePermission('settings'), getSystemStats);
 // Historial de pagos global (Auditoría Marzo 2026)
 router.get('/revenue/payments', requirePermission('subscriptions'), getPayments);
 
-// Gestión de promociones (Nueva ruta centralizada en backend)
+// Gestión de promociones
 router.get('/promotions', requirePermission('settings'), getAllPromotions);
 router.post('/promotions', requirePermission('settings'), createPromotion);
 router.put('/promotions/:id', requirePermission('settings'), updatePromotion);
