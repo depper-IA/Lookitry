@@ -78,6 +78,15 @@ const DESIGN_SYSTEM = {
      bg: 'bg-[var(--bg-card)]',
      icon: <Zap className="w-8 h-8" />,
      label: 'Acceso trial'
+  },
+  ENTERPRISE: {
+     name: 'Lookitry Enterprise',
+     color: '#FF5C3A',
+     secondaryColor: '#FF5C3A',
+     glow: 'rgba(255, 92, 58, 0.12)',
+     bg: 'bg-[var(--bg-card)]',
+     icon: <Rocket className="w-8 h-8" />,
+     label: 'Plan enterprise'
   }
 };
 
@@ -227,7 +236,9 @@ export default function SubscriptionPage() {
 
   const subscriptionState = getSubscriptionDisplayState(info?.brand);
   const inTrial = (info?.isInTrial ?? false) || subscriptionState.isTrial || subscriptionState.displayPlan === 'TRIAL';
-  const planKey = (subscriptionState.displayPlan ?? info?.brand?.plan ?? 'BASIC') as keyof typeof DESIGN_SYSTEM;
+  const rawPlanKey = (subscriptionState.displayPlan ?? info?.brand?.plan ?? 'BASIC') as keyof typeof DESIGN_SYSTEM;
+  const planKey = rawPlanKey in DESIGN_SYSTEM ? rawPlanKey : 'BASIC';
+  const paidPlanKey = planKey === 'ENTERPRISE' ? 'PRO' : planKey;
   const currentDesign = inTrial ? DESIGN_SYSTEM.TRIAL : DESIGN_SYSTEM[planKey];
   const planStatus = inTrial
     ? {
@@ -396,7 +407,7 @@ export default function SubscriptionPage() {
                        {inTrial ? 'Siguiente paso' : 'Precio mensual'}
                      </p>
                      <p className="text-xl font-bold text-[#FF5C3A]">
-                       {inTrial ? 'Activa un plan' : formatCurrency(dynamicPrices[planKey] ?? 0)}
+                       {inTrial ? 'Activa un plan' : formatCurrency(dynamicPrices[paidPlanKey] ?? 0)}
                      </p>
                   </div>
                </div>
