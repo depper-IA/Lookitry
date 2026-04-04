@@ -105,7 +105,7 @@ function PagoExitosoContent() {
           if (isGuestTrial && currentRef) {
             setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
           } else if (isStandardVisitor && currentRef) {
-            setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}`);
+            setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
           } else if (token) {
             setDashboardHref('/dashboard');
           } else {
@@ -125,7 +125,7 @@ function PagoExitosoContent() {
         if (isGuestTrial && currentRef) {
           setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
         } else if (isStandardVisitor && currentRef) {
-          setDashboardHref(`/registro-pro?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}`);
+          setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
         } else if (token) {
           setDashboardHref('/dashboard');
         } else {
@@ -139,8 +139,8 @@ function PagoExitosoContent() {
   }, [ref, resolvedMonths, method, paypalToken, wompiId]);
 
   const dashboardLabel =
-    dashboardHref.startsWith('/registro-pro') || dashboardHref.startsWith('/register')
-      ? 'ACTIVAR MI CUENTA'
+    dashboardHref.startsWith('/onboarding') || dashboardHref.startsWith('/registro-pro') || dashboardHref.startsWith('/register')
+      ? 'COMPLETAR REGISTRO'
       : 'IR AL DASHBOARD';
 
   if (loading) {
@@ -227,7 +227,7 @@ function PagoExitosoContent() {
               Pago confirmado
             </h1>
             <p className="text-[15px] leading-relaxed mb-8 text-[#a0a0a0]">
-              {dashboardHref.startsWith('/registro-pro') || dashboardHref.startsWith('/register')
+              {dashboardHref.startsWith('/onboarding') || dashboardHref.startsWith('/registro-pro') || dashboardHref.startsWith('/register')
                 ? 'Tu transaccion ha sido validada con exito. Ahora solo falta activar tu acceso para entrar a Lookitry.'
                 : isTrial
                   ? 'Tu periodo trial fue confirmado correctamente. Ya puedes activar tu cuenta y empezar a usar Lookitry.'

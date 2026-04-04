@@ -46,6 +46,7 @@ router.post('/auth/login', authRateLimiter, adminLogin);
 router.post('/auth/logout', adminLogout);
 router.post('/auth/forgot-password', authRateLimiter, adminForgotPassword);
 router.post('/auth/reset-password', authRateLimiter, adminResetPassword);
+router.post('/auth/google', authRateLimiter, (req, res) => require('../controllers/admin/auth.admin.controller').adminGoogleLogin(req, res));
 
 // Ruta de verificación de token (usada por Next.js API routes)
 router.get('/verify', adminAuthMiddleware, (req: any, res) => {

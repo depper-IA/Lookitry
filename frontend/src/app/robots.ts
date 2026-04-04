@@ -17,6 +17,7 @@ export default function robots(): MetadataRoute.Robots {
           '/trial-payment/',
           '/trial-activado/',
           '/registro-pro/',
+          '/onboarding-post-pago/',
           '/auth/',
           '/verify-email/',
           '/embed/',

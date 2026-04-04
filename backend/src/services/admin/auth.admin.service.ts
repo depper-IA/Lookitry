@@ -55,6 +55,12 @@ export class AuthAdminService {
     return data as Admin;
   }
 
+  async getAdminByGoogleId(googleId: string): Promise<Admin | null> {
+    const { data, error } = await supabaseAdmin.from('admins').select('*').eq('google_id', googleId).single();
+    if (error || !data) return null;
+    return data as Admin;
+  }
+
   async verifyPassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
