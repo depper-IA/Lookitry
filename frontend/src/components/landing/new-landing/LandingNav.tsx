@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Menu, X, ChevronDown, Layout, Zap, Terminal, User, LogOut } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 import { usePromoBanner } from '@/context/PromoBannerContext';
+import { usePublicSession } from '@/hooks/usePublicSession';
 
 interface LandingNavProps {
   currency?: 'COP' | 'USD';
@@ -18,12 +19,12 @@ export default function LandingNav({
 }: LandingNavProps) {
   const { bannerHeight } = usePromoBanner();
   const [internalCurrency, setInternalCurrency] = useState<'COP' | 'USD'>('COP');
-  const [session, setSession] = useState<{ name: string; email: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const productsRef = useRef<HTMLDivElement>(null);
+  const { session } = usePublicSession();
 
   useEffect(() => {
     if (!externalCurrency) {
@@ -31,17 +32,6 @@ export default function LandingNav({
       if (saved) setInternalCurrency(saved);
     }
   }, [externalCurrency]);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-    if (!token) return;
-    try {
-      const brand = JSON.parse(localStorage.getItem('brand') || 'null');
-      if (brand?.name || brand?.email) {
-        setSession({ name: brand.name || '', email: brand.email || '' });
-      }
-    } catch {}
-  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -77,7 +67,6 @@ export default function LandingNav({
 
   async function handleLogout() {
     await authService.logout();
-    setSession(null);
     setDropdownOpen(false);
     window.location.href = '/';
   }

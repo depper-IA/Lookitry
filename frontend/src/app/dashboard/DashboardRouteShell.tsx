@@ -12,6 +12,7 @@ import { reviewsService } from '@/services/reviews.service';
 import IdleTimer from '@/components/auth/IdleTimer';
 import type { Brand } from '@/types';
 import { ReviewPromptModal } from '@/components/dashboard/ReviewPromptModal';
+import { dispatchAuthStateChanged } from '@/lib/sessionEvents';
 
 export function DashboardRouteShell({
   children,
@@ -36,6 +37,7 @@ export function DashboardRouteShell({
           const brand = await brandsService.getCurrentBrand();
           setBrandData(brand);
           localStorage.setItem('brand', JSON.stringify(brand));
+          dispatchAuthStateChanged();
 
           const prevPlan = localStorage.getItem('brand_plan');
           const proBannerSeenKey = `pro_upgrade_banner_seen_${brand.id}`;

@@ -1,6 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 import { Brand } from '@/types';
+import { dispatchAuthStateChanged } from '@/lib/sessionEvents';
 
 export interface RegisterData {
   email: string;
@@ -75,6 +76,7 @@ class AuthService {
     localStorage.removeItem('brand_plan');
     localStorage.removeItem('token');
     localStorage.removeItem('lastActivity');
+    dispatchAuthStateChanged();
     
     try {
       const fullUrl = getFullUrl('/auth/logout');
@@ -104,6 +106,7 @@ class AuthService {
     localStorage.removeItem('brand_plan');
     localStorage.removeItem('token');
     localStorage.removeItem('lastActivity');
+    dispatchAuthStateChanged();
   }
 
   /** @deprecated El token ya viaja como cookie HTTP-Only. Solo se mantiene para retrocompatibilidad con código legacy. */

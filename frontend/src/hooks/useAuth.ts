@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService, RegisterData, LoginData, AuthResponse } from '@/services/auth.service';
 import { brandsService } from '@/services/brands.service';
+import { dispatchAuthStateChanged } from '@/lib/sessionEvents';
 
 export function useAuth() {
   const router = useRouter();
@@ -25,11 +26,13 @@ export function useAuth() {
         if (!cancelled) {
           setBrand(currentBrand);
           localStorage.setItem('brand', JSON.stringify(currentBrand));
+          dispatchAuthStateChanged();
         }
       } catch {
         if (!cancelled) {
           setBrand(null);
           localStorage.removeItem('brand');
+          dispatchAuthStateChanged();
         }
       } finally {
         if (!cancelled) {
@@ -97,6 +100,7 @@ export function useAuth() {
       const data = await brandsService.getCurrentBrand();
       setBrand(data);
       localStorage.setItem('brand', JSON.stringify(data));
+      dispatchAuthStateChanged();
     } catch (err) {
       console.error('Error refreshing brand:', err);
     } finally {
