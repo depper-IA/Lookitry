@@ -11,6 +11,14 @@ function handleUnauthorized() {
   window.location.href = '/admin/login';
 }
 
+function getFullUrl(path: string): string {
+  // Asegurar que API_BASE no termina en /api si el path ya lo maneja, 
+  // o viceversa. Aquí normalizamos para que siempre se use la base correcta.
+  const base = API_BASE.replace(/\/api$/, '');
+  const cleanPath = path.startsWith('/api') ? path : `/api${path}`;
+  return `${base}${cleanPath}`;
+}
+
 export async function adminFetch<T = any>(
   path: string,
   options: RequestInit = {}
@@ -20,7 +28,9 @@ export async function adminFetch<T = any>(
     ...(options.headers as Record<string, string> || {}),
   };
 
-  const res = await fetch(`${API_BASE}/api${path}`, {
+  const url = getFullUrl(path);
+
+  const res = await fetch(url, {
     ...options,
     headers,
     credentials: 'include',

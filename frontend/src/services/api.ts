@@ -12,6 +12,12 @@ function isAuthRoute(pathname: string): boolean {
   );
 }
 
+function getFullUrl(path: string): string {
+  const base = (API_URL || '').replace(/\/api$/, '');
+  const cleanPath = path.startsWith('/api') ? path : `/api${path}`;
+  return `${base}${cleanPath}`;
+}
+
 // Wrapper que imita la interfaz de axios ({ data, status })
 // Las credenciales se envían exclusivamente vía cookies HTTP-Only.
 async function apiFetch<T>(
@@ -25,7 +31,9 @@ async function apiFetch<T>(
     ...(extraHeaders || {}),
   };
 
-  const res = await fetch(`${API_URL}/api${path}`, {
+  const url = getFullUrl(path);
+
+  const res = await fetch(url, {
     method,
     headers,
     credentials: 'include',

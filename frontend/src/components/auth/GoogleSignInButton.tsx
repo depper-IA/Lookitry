@@ -65,8 +65,11 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
 
       const apiEndpoint = variant === 'admin' ? '/api/admin/auth/google' : '/api/auth/google';
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      
+      const baseApiUrl = apiUrl.replace(/\/api$/, '');
+      const fullUrl = `${baseApiUrl}${apiEndpoint}`;
 
-      const apiRes = await fetch(`${apiUrl}${apiEndpoint}`, {
+      const apiRes = await fetch(fullUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
