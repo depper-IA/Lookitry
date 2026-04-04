@@ -79,6 +79,40 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // ── Proteger /trial-checkout: si ya tiene trial activo o plan pago, redirigir ──
+  if (pathname.startsWith('/trial-checkout')) {
+    if (token) {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+        if (apiUrl) {
+          const res = await fetch(`${apiUrl}/api/brands/me`, {
+            headers: { Cookie: `token=${token}` },
+          });
+          if (res.ok) {
+            const { data: brand } = await res.json();
+            if (brand) {
+              const isTrialActive =
+                brand.plan === 'TRIAL' &&
+                brand.trial_end_date &&
+                new Date(brand.trial_end_date) > new Date() &&
+                brand.subscription_status !== 'suspended';
+
+              const hasPaidPlan =
+                brand.subscription_status === 'active' ||
+                brand.subscription_status === 'expiring_soon';
+
+              if (isTrialActive || hasPaidPlan) {
+                return NextResponse.redirect(new URL('/dashboard/subscription', request.url));
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[Middleware] Error verificando trial-checkout:', error);
+      }
+    }
+  }
+
   // ── Proteger rutas del panel de admin ─────────────────────────────────────────
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     if (!adminToken && !token && !allowDevBypass) {

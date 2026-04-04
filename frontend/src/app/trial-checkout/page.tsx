@@ -35,6 +35,44 @@ export default function TrialCheckoutPage() {
   const [guestName, setGuestName] = useState('');
   const [emailError, setEmailError] = useState('');
   const [nameError, setNameError] = useState('');
+  const [redirecting, setRedirecting] = useState(false);
+
+  // Guard: si el usuario ya tiene trial activo o plan pago, redirigir al dashboard
+  useEffect(() => {
+    let cancelled = false;
+    const checkExistingSubscription = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/brands/me`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!res.ok) return; // No autenticado, permitir acceso guest
+
+        const { data: brand } = await res.json();
+        if (cancelled || !brand) return;
+
+        const isTrialActive =
+          brand.plan === 'TRIAL' &&
+          brand.trial_end_date &&
+          new Date(brand.trial_end_date) > new Date() &&
+          brand.subscription_status !== 'suspended';
+
+        const hasPaidPlan =
+          brand.subscription_status === 'active' ||
+          brand.subscription_status === 'expiring_soon';
+
+        if (isTrialActive || hasPaidPlan) {
+          setRedirecting(true);
+          router.replace('/dashboard/subscription');
+        }
+      } catch {
+        // Si falla la verificación, permitir acceso normal
+      }
+    };
+
+    checkExistingSubscription();
+    return () => { cancelled = true; };
+  }, [router]);
 
   useEffect(() => {
     Promise.all([
@@ -172,6 +210,17 @@ export default function TrialCheckoutPage() {
       setLoading(false);
     }
   };
+
+  if (redirecting) {
+    return (
+      <main className="min-h-screen bg-[#030303] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-[#FF5C3A] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[#999] text-sm">Redirigiendo al dashboard...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#030303] text-white selection:bg-[#FF5C3A]/30">

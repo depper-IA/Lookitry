@@ -75,6 +75,36 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'Email válido es requerido' });
   }
 
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Verificar si ya existe una marca con este email
+  const { data: existingBrand } = await supabaseAdmin
+    .from('brands')
+    .select('id, plan, subscription_status, trial_end_date, trial_payment_status')
+    .ilike('email', normalizedEmail)
+    .maybeSingle();
+
+  if (existingBrand) {
+    const isTrialActive =
+      existingBrand.plan === 'TRIAL' &&
+      existingBrand.trial_end_date &&
+      new Date(existingBrand.trial_end_date) > new Date() &&
+      existingBrand.subscription_status !== 'suspended';
+
+    const hasPaidPlan =
+      existingBrand.subscription_status === 'active' ||
+      existingBrand.subscription_status === 'expiring_soon';
+
+    if (isTrialActive || hasPaidPlan) {
+      return res.status(409).json({
+        error: 'BRAND_ALREADY_EXISTS',
+        message: 'Ya tienes una cuenta activa. Redirigiendo al dashboard...',
+        redirectUrl: '/dashboard/subscription',
+        brandId: existingBrand.id,
+      });
+    }
+  }
+
   const now = new Date().toISOString();
   const { data: campaign } = await supabaseAdmin
     .from('trial_campaigns')
@@ -91,7 +121,7 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
   const reference = `GUEST-TRIAL-${guestId}`;
 
   const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({
-    email,
+    email: normalizedEmail,
     brand_name: brandName,
     reference,
     plan: 'TRIAL',
@@ -120,7 +150,7 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
     await paypalService.recordOrder({
       reference,
       brand_id: null,
-      email,
+      email: normalizedEmail,
       plan: 'TRIAL',
       months: 0,
       amount_cop: price,
