@@ -23,8 +23,10 @@ export async function adminFetch<T = any>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const isFormData = typeof window !== 'undefined' && options.body instanceof FormData;
+
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(options.headers as Record<string, string> || {}),
   };
 
@@ -58,14 +60,26 @@ export const adminApi = {
     adminFetch<T>(path, { method: 'GET' }),
 
   post: <T = any>(path: string, body?: unknown) =>
-    adminFetch<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+    adminFetch<T>(path, { 
+      method: 'POST', 
+      body: body instanceof FormData ? body : JSON.stringify(body) 
+    }),
 
   put: <T = any>(path: string, body?: unknown) =>
-    adminFetch<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
+    adminFetch<T>(path, { 
+      method: 'PUT', 
+      body: body instanceof FormData ? body : JSON.stringify(body) 
+    }),
 
   patch: <T = any>(path: string, body?: unknown) =>
-    adminFetch<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
+    adminFetch<T>(path, { 
+      method: 'PATCH', 
+      body: body instanceof FormData ? body : JSON.stringify(body) 
+    }),
 
   delete: <T = any>(path: string, body?: unknown) =>
-    adminFetch<T>(path, { method: 'DELETE', ...(body ? { body: JSON.stringify(body) } : {}) }),
+    adminFetch<T>(path, { 
+      method: 'DELETE', 
+      ...(body ? { body: body instanceof FormData ? body : JSON.stringify(body) } : {}) 
+    }),
 };

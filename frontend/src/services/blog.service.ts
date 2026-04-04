@@ -1,3 +1,6 @@
+import { api } from './api';
+import { adminApi } from './adminApi';
+
 export interface BlogCategory {
   id: string;
   name: string;
@@ -43,7 +46,6 @@ export interface BlogSettings {
   execution_updated_at?: string | null;
 }
 
-const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
 
 export function extractFirstImageFromContent(content?: string | null): string | null {
@@ -94,10 +96,8 @@ export function getBlogTeaser(
 
 export async function fetchBlogCategories(): Promise<BlogCategory[]> {
   try {
-    const response = await fetch('/api/blog/categories');
-    if (!response.ok) return [];
-    const payload = await response.json();
-    return Array.isArray(payload?.data) ? payload.data : [];
+    const payload = await api.get<any>('/blog/categories');
+    return Array.isArray(payload.data) ? payload.data : (payload.data as any)?.data || [];
   } catch (error) {
     console.error('Error fetching blog categories:', error);
     return [];
@@ -106,12 +106,9 @@ export async function fetchBlogCategories(): Promise<BlogCategory[]> {
 
 export async function fetchBlogPosts(categoryId?: string): Promise<BlogPost[]> {
   try {
-    const path = categoryId ? `/api/blog?category_id=${encodeURIComponent(categoryId)}` : '/api/blog';
-    const url = typeof window === 'undefined' ? `${appBaseUrl}${path}` : path;
-    const response = await fetch(url, typeof window === 'undefined' ? { next: { revalidate: 60 } } : undefined);
-    if (!response.ok) return [];
-    const payload = await response.json();
-    return Array.isArray(payload?.data) ? payload.data : [];
+    const path = categoryId ? `/blog?category_id=${encodeURIComponent(categoryId)}` : '/blog';
+    const payload = await api.get<any>(path);
+    return Array.isArray(payload.data) ? payload.data : (payload.data as any)?.data || [];
   } catch (error) {
     console.error('Error fetching blog posts:', error);
     return [];
@@ -132,14 +129,8 @@ export async function fetchRecentBlogPosts(limit = 3, excludeSlug?: string): Pro
 
 export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
-    const path = `/api/blog/${encodeURIComponent(slug)}`;
-    const url = typeof window === 'undefined' ? `${appBaseUrl}${path}` : path;
-    const response = await fetch(url, {
-      next: { revalidate: 60 },
-    });
-    if (!response.ok) return null;
-    const payload = await response.json();
-    return payload?.data ?? null;
+    const payload = await api.get<any>(`/blog/${encodeURIComponent(slug)}`);
+    return (payload.data as any)?.data ?? payload.data ?? null;
   } catch (error) {
     console.error('Error fetching blog post by slug:', error);
     return null;
@@ -148,9 +139,7 @@ export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost | null
 
 export async function adminFetchPosts(): Promise<BlogPost[]> {
   try {
-    const response = await fetch(`${apiBase}/api/blog/admin`, { credentials: 'include' });
-    if (!response.ok) return [];
-    const data = await response.json();
+    const data = await adminApi.get('/blog/admin');
     return Array.isArray(data) ? data : (data.posts || []);
   } catch (error) {
     console.error('Error admin fetching posts:', error);
@@ -160,9 +149,7 @@ export async function adminFetchPosts(): Promise<BlogPost[]> {
 
 export async function adminFetchPostById(id: string): Promise<BlogPost | null> {
   try {
-    const response = await fetch(`${apiBase}/api/blog/admin/${id}`, { credentials: 'include' });
-    if (!response.ok) return null;
-    const data = await response.json();
+    const data = await adminApi.get(`/blog/admin/${id}`);
     return data.post || data || null;
   } catch (error) {
     console.error('Error admin fetching post by id:', error);
@@ -172,13 +159,8 @@ export async function adminFetchPostById(id: string): Promise<BlogPost | null> {
 
 export async function adminUpdatePost(id: string, postData: Partial<BlogPost>): Promise<boolean> {
   try {
-    const response = await fetch(`${apiBase}/api/blog/admin/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(postData),
-      credentials: 'include',
-    });
-    return response.ok;
+    await adminApi.put(`/blog/admin/${id}`, postData);
+    return true;
   } catch (error) {
     console.error('Error admin updating post:', error);
     return false;
@@ -187,11 +169,8 @@ export async function adminUpdatePost(id: string, postData: Partial<BlogPost>): 
 
 export async function adminDeletePost(id: string): Promise<boolean> {
   try {
-    const response = await fetch(`${apiBase}/api/blog/admin/${id}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
-    return response.ok;
+    await adminApi.delete(`/blog/admin/${id}`);
+    return true;
   } catch (error) {
     console.error('Error admin deleting post:', error);
     return false;
@@ -200,14 +179,7 @@ export async function adminDeletePost(id: string): Promise<boolean> {
 
 export async function adminCreatePost(postData: Partial<BlogPost>): Promise<BlogPost | null> {
   try {
-    const response = await fetch(`${apiBase}/api/blog/admin`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(postData),
-      credentials: 'include',
-    });
-    if (!response.ok) return null;
-    const data = await response.json();
+    const data = await adminApi.post('/blog/admin', postData);
     return data.post || null;
   } catch (error) {
     console.error('Error admin creating post:', error);
@@ -217,9 +189,7 @@ export async function adminCreatePost(postData: Partial<BlogPost>): Promise<Blog
 
 export async function fetchBlogSettings(): Promise<BlogSettings | null> {
   try {
-    const response = await fetch(`${apiBase}/api/blog/settings`, { credentials: 'include' });
-    if (!response.ok) return null;
-    return await response.json();
+    return await adminApi.get('/blog/settings');
   } catch (error) {
     console.error('Error fetching blog settings:', error);
     return null;
@@ -228,13 +198,8 @@ export async function fetchBlogSettings(): Promise<BlogSettings | null> {
 
 export async function updateBlogSettings(settings: Partial<BlogSettings>): Promise<boolean> {
   try {
-    const response = await fetch(`${apiBase}/api/blog/settings`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(settings),
-      credentials: 'include',
-    });
-    return response.ok;
+    await adminApi.put('/blog/settings', settings);
+    return true;
   } catch (error) {
     console.error('Error updating blog settings:', error);
     return false;
@@ -248,30 +213,18 @@ export async function triggerBlogPulse(): Promise<{
   status?: number;
 }> {
   try {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 20000);
-
-    const response = await fetch(`${apiBase}/api/blog/settings/trigger`, {
-      method: 'POST',
-      credentials: 'include',
-      signal: controller.signal,
-    });
-    window.clearTimeout(timeoutId);
-    const data = await response.json();
+    const data = await adminApi.post('/blog/settings/trigger');
     return {
-      success: response.ok,
-      message: data.message || (response.ok ? 'Éxito' : 'Error'),
+      success: true,
+      message: data.message || 'Éxito',
       attempt: data.attempt,
       status: data.status,
     };
   } catch (error: any) {
     console.error('Error triggering blog pulse:', error);
-    if (error?.name === 'AbortError') {
-      return {
-        success: false,
-        message: 'El disparo manual tardó demasiado en responder. Revisa si n8n quedó esperando una respuesta o si el webhook no respondió a tiempo.',
-      };
-    }
-    return { success: false, message: error.message };
+    return { 
+      success: false, 
+      message: error.message || 'Error desconocido' 
+    };
   }
 }

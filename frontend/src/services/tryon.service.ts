@@ -1,6 +1,5 @@
+import { api } from './api';
 import type { TryOnConfigResponse, GenerateTryOnDto, GenerateTryOnResponse } from '@/types';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 /** Tiempo máximo (ms) que esperamos una respuesta del endpoint de generación */
 const GENERATION_TIMEOUT_MS = 95_000;
@@ -28,10 +27,8 @@ function isCreditsExhaustedErrorPayload(payload: any): boolean {
 class TryOnService {
   async getConfig(brandSlug: string): Promise<TryOnConfigResponse> {
     try {
-      const res = await fetch(`${API_URL}/api/pruebalo/${brandSlug}`);
-      if (res.status === 404) throw new Error('Marca no encontrada');
-      if (!res.ok) throw new Error('Error al cargar la configuración');
-      const data = await res.json();
+      const response = await api.get<any>(`/pruebalo/${brandSlug}`);
+      const data = response.data;
 
       return {
         brand: {
@@ -61,8 +58,9 @@ class TryOnService {
           description: p?.description ?? '',
         })),
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('[TryOnService] Error en getConfig:', error);
+      if (error?.response?.status === 404) throw new Error('Marca no encontrada');
       throw error;
     }
   }
@@ -72,38 +70,31 @@ class TryOnService {
     formData.append('productId', data.productId);
     formData.append('selfie', data.selfieFile);
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), GENERATION_TIMEOUT_MS);
-
     try {
-      const res = await fetch(`${API_URL}/api/pruebalo/${brandSlug}/generate`, {
-        method: 'POST',
-        body: formData,
-        signal: controller.signal,
-      });
+      // Usamos el cliente api centralizado que ya maneja /api y credentials
+      const response = await api.post<GenerateTryOnResponse>(
+        `/pruebalo/${brandSlug}/generate`, 
+        formData
+      );
 
-      const json = await res.json();
-
-      if (res.status === 429) throw new Error(json.message || 'Límite de generaciones excedido');
-      if (!res.ok) {
-        const msg: string = json.message || 'Error al generar la imagen';
-        // Marcar errores de servicio (créditos agotados / saldo insuficiente) para que el widget los trate diferente
-        if (isCreditsExhaustedErrorPayload(json)) {
-          const err = new Error('SERVICE_CREDITS_EXHAUSTED') as any;
-          err.isServiceError = true;
-          throw err;
-        }
-        throw new Error(msg);
-      }
-
-      return json as GenerateTryOnResponse;
+      return response.data;
     } catch (err: any) {
-      if (err.name === 'AbortError') {
-        throw new Error('La generación está tardando demasiado. Por favor intenta de nuevo.');
+      const json = err?.response?.data || {};
+      
+      if (err?.response?.status === 429) {
+        throw new Error(json.message || 'Límite de generaciones excedido');
       }
-      throw err;
-    } finally {
-      clearTimeout(timeout);
+
+      const msg: string = json.message || 'Error al generar la imagen';
+      
+      // Marcar errores de servicio (créditos agotados / saldo insuficiente)
+      if (isCreditsExhaustedErrorPayload(json)) {
+        const serviceErr = new Error('SERVICE_CREDITS_EXHAUSTED') as any;
+        serviceErr.isServiceError = true;
+        throw serviceErr;
+      }
+      
+      throw new Error(msg);
     }
   }
 }

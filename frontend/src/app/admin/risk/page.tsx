@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, ArrowRight, Shield, TrendingDown, Clock, XCircle } from 'lucide-react';
+import { adminApi } from '@/services/adminApi';
 
 interface RiskBrand {
   id: string; name: string; email: string; plan: string;
@@ -17,11 +18,6 @@ interface RiskData {
   summary: { total_at_risk: number; high_risk: number; medium_risk: number; low_risk: number; };
 }
 
-function adminFetch(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-  return fetch(`${base}/api${path}`, { credentials: 'include' });
-}
-
 export default function AdminRiskPage() {
   const [data, setData] = useState<RiskData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,8 +25,7 @@ export default function AdminRiskPage() {
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
 
   useEffect(() => {
-    adminFetch('/admin/risk')
-      .then(r => r.json())
+    adminApi.get('/admin/risk')
       .then(d => { if (d.error) throw new Error(d.message); setData(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));

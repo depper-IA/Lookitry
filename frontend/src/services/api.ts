@@ -26,8 +26,10 @@ async function apiFetch<T>(
   body?: unknown,
   extraHeaders?: Record<string, string>
 ): Promise<{ data: T; status: number }> {
+  const isFormData = typeof window !== 'undefined' && body instanceof FormData;
+  
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(extraHeaders || {}),
   };
 
@@ -37,7 +39,7 @@ async function apiFetch<T>(
     method,
     headers,
     credentials: 'include',
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: isFormData ? (body as any) : (body !== undefined ? JSON.stringify(body) : undefined),
   });
 
   const data = await res.json().catch(() => ({}));
@@ -45,7 +47,6 @@ async function apiFetch<T>(
   if (res.status === 401) {
     authService.clearSession();
     if (typeof window !== 'undefined') {
-      const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
       if (!isAuthRoute(window.location.pathname)) {
         window.location.href = '/';
       }

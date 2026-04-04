@@ -20,12 +20,20 @@ export interface AuthResponse {
 }
 
 /**
+ * Normaliza la URL para evitar duplicación de /api
+ */
+function getFullUrl(path: string): string {
+  const base = (API_URL || '').replace(/\/api$/, '');
+  const cleanPath = path.startsWith('/api') ? path : `/api${path}`;
+  return `${base}${cleanPath}`;
+}
+
+/**
  * apiFetch — wrapper de fetch que siempre envía cookies (credentials: 'include').
  * Esto es necesario para que el backend reciba/envíe la cookie HTTP-Only del JWT.
  */
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const normalizedApiUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
-  const fullUrl = `${normalizedApiUrl}${path}`;
+  const fullUrl = getFullUrl(path);
   
   const res = await fetch(fullUrl, {
     credentials: 'include', // ← enviar y recibir cookies cross-origin
@@ -47,7 +55,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
 class AuthService {
   async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await apiFetch<AuthResponse>('/api/auth/register', {
+    const response = await apiFetch<AuthResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -55,7 +63,7 @@ class AuthService {
   }
 
   async login(data: LoginData): Promise<AuthResponse> {
-    const response = await apiFetch<AuthResponse>('/api/auth/login', {
+    const response = await apiFetch<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -69,7 +77,8 @@ class AuthService {
     localStorage.removeItem('lastActivity');
     
     try {
-      const res = await fetch(`${API_URL}/api/auth/logout`, {
+      const fullUrl = getFullUrl('/auth/logout');
+      const res = await fetch(fullUrl, {
         method: 'POST',
         credentials: 'include',
       });
@@ -85,7 +94,7 @@ class AuthService {
   }
 
   async refreshSession(): Promise<void> {
-    await apiFetch<{ ok: boolean }>('/api/auth/refresh-session', {
+    await apiFetch<{ ok: boolean }>('/auth/refresh-session', {
       method: 'POST',
     });
   }
@@ -126,7 +135,7 @@ class AuthService {
   }
 
   async resendVerification(email: string): Promise<{ message: string }> {
-    return await apiFetch<{ message: string }>('/api/auth/resend-verification', {
+    return await apiFetch<{ message: string }>('/auth/resend-verification', {
       method: 'POST',
       body: JSON.stringify({ email }),
     });

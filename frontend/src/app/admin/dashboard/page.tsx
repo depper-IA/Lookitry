@@ -13,9 +13,16 @@ interface ConversionStats {
   conversionsByMonth: { month: string; count: number }[];
 }
 
-function adminFetch(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-  return fetch(`${base}/api${path}`, { credentials: 'include' });
+import { adminApi } from '@/services/adminApi';
+
+interface GlobalStats {
+  totalBrands: number; totalProducts: number; totalGenerations: number;
+  generationsThisMonth: number; successRate: number; brandsByPlan: { BASIC: number; PRO: number; TRIAL: number };
+  landingStats: { active: number; suspended: number; inactive: number };
+}
+interface ConversionStats {
+  totalBrands: number; inTrial: number; paidTrials: number; trialToBasic: number; trialToPro: number; trialToEnterprise: number; converted: number; conversionRate: number;
+  conversionsByMonth: { month: string; count: number }[];
 }
 
 function formatMonth(key: string) {
@@ -37,8 +44,8 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     Promise.all([
-      adminFetch('/admin/stats').then(r => r.json()),
-      adminFetch('/admin/stats/conversion').then(r => r.json()),
+      adminApi.get('/admin/stats'),
+      adminApi.get('/admin/stats/conversion'),
     ])
       .then(([g, c]) => { if (g.error) throw new Error(g.message); setGlobal(g); setConversion(c); })
       .catch(e => setError(e.message))
@@ -46,9 +53,9 @@ export default function AdminDashboardPage() {
       
     // Cargar alertas críticas y actividad reciente
     Promise.all([
-      adminFetch('/admin/alerts').then(r => r.json()).catch(() => ({})),
-      adminFetch('/api/payments?limit=5').then(r => r.json()).catch(() => ({ payments: [] })),
-      adminFetch('/api/brands?limit=5&sort=created_at:desc').then(r => r.json()).catch(() => ({ brands: [] })),
+      adminApi.get('/admin/alerts').catch(() => ({})),
+      adminApi.get('/payments?limit=5').catch(() => ({ payments: [] })),
+      adminApi.get('/brands?limit=5&sort=created_at:desc').catch(() => ({ brands: [] })),
     ])
       .then(([alertsData, paymentsData, brandsData]) => {
         if (alertsData.expiring) setAlerts(prev => ({ ...prev, expiring: alertsData.expiring }));

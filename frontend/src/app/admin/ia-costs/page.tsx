@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { CreditCard, ExternalLink, RefreshCw, AlertTriangle, Brain } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+import { adminApi } from '@/services/adminApi';
 
 interface ProviderCredits {
   provider: 'openrouter' | 'replicate';
@@ -26,10 +26,6 @@ interface PaymentSettings {
   ai_prompt_negative: string;
 }
 
-function adminFetch(path: string) {
-  return fetch(`${API_URL}/api${path}`, { credentials: 'include' });
-}
-
 export default function AdminIACostsPage() {
   const [openRouterCredits, setOpenRouterCredits] = useState<ProviderCredits | null>(null);
   const [replicateCredits, setReplicateCredits] = useState<ProviderCredits | null>(null);
@@ -43,21 +39,20 @@ export default function AdminIACostsPage() {
   const loadCredits = useCallback(async () => {
     setLoadingCredits(true);
     try {
-      const [orRes, repRes] = await Promise.all([
-        fetch(`${API_URL}/api/admin/openrouter-credits`, { credentials: 'include' }),
-        fetch(`${API_URL}/api/admin/replicate-credits`, { credentials: 'include' }),
+      const [orData, repData] = await Promise.all([
+        adminApi.get('/admin/openrouter-credits'),
+        adminApi.get('/admin/replicate-credits'),
       ]);
-      if (orRes.ok) setOpenRouterCredits(await orRes.json());
-      if (repRes.ok) setReplicateCredits(await repRes.json());
+      if (!orData.error) setOpenRouterCredits(orData);
+      if (!repData.error) setReplicateCredits(repData);
     } catch { /* silencioso */ }
     finally { setLoadingCredits(false); }
   }, []);
 
   const loadPaymentSettings = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, { credentials: 'include' });
-      if (res.ok) {
-        const data: PaymentSettings = await res.json();
+      const data = await adminApi.get('/admin/payment-settings');
+      if (!data.error) {
         if (data.ai_prompt_master) setAiPromptMaster(data.ai_prompt_master);
         if (data.ai_prompt_negative) setAiPromptNegative(data.ai_prompt_negative);
       }
@@ -72,11 +67,11 @@ export default function AdminIACostsPage() {
   async function handleSaveAI() {
     setSavingAI(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ai_prompt_master: aiPromptMaster, ai_prompt_negative: aiPromptNegative }),
+      const data = await adminApi.put('/admin/payment-settings', { 
+        ai_prompt_master: aiPromptMaster, 
+        ai_prompt_negative: aiPromptNegative 
       });
-      if (!res.ok) throw new Error((await res.json()).message || 'Error');
+      if (data.error) throw new Error(data.message || 'Error');
       setSuccess('Configuración de IA guardada');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) { setError(err.message); setTimeout(() => setError(''), 4000); }

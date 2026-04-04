@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Package, Activity, DollarSign, Shield, AlertTriangle, Clock, CheckCircle, XCircle } from 'lucide-react';
 
+import { adminApi } from '@/services/adminApi';
+
 interface BrandFullData {
   brand: {
     id: string; name: string; email: string; slug: string; plan: string;
@@ -33,11 +35,6 @@ interface BrandFullData {
   recent_generations: Array<{ id: string; status: string; generated_at: string; error_message: string | null; product_id: string | null }>;
 }
 
-function adminFetch(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-  return fetch(`${base}/api${path}`, { credentials: 'include' });
-}
-
 function formatDate(iso: string | null) {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit' });
@@ -58,12 +55,15 @@ export default function BrandDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    adminFetch(`/admin/brands/${id}/full`)
-      .then(r => {
-        if (r.status === 404) { setError('Marca no encontrada'); return; }
-        return r.json();
+    adminApi.get(`/admin/brands/${id}/full`)
+      .then(d => { 
+        if (d?.error) {
+          if (d.status === 404) setError('Marca no encontrada');
+          else throw new Error(d.message);
+          return;
+        }
+        if (d) setData(d); 
       })
-      .then(d => { if (d?.error) throw new Error(d.message); if (d) setData(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, [id]);
