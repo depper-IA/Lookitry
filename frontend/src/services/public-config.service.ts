@@ -19,10 +19,10 @@ export const DEFAULT_PUBLIC_PAYMENT_SETTINGS: Required<PublicPaymentSettings> = 
   manualWhatsapp: '573105436281',
   manualEmail: 'info@lookitry.com',
   manualInstructions: '',
-  socialInstagram: '@looki.try',
+  socialInstagram: '@lookitry',
   socialTiktok: '@lookitry',
-  socialFacebook: '',
-  socialYoutube: '',
+  socialFacebook: 'lookitry',
+  socialYoutube: 'lookitry',
 };
 
 const PLAN_PRICE_FALLBACK: PublicPlanPrices = {

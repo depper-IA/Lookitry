@@ -65,6 +65,7 @@ export default function AdminBrandsPage() {
   const [savingModalConfig, setSavingModalConfig] = useState(false);
   const [sendingReset, setSendingReset] = useState<string | null>(null);
   const [resetToast, setResetToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [savingNotes, setSavingNotes] = useState(false);
   const confirm = useConfirm();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -288,7 +289,6 @@ export default function AdminBrandsPage() {
         body: JSON.stringify({ has_landing_page: newValue }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
-      // Actualizar localmente sin refetch completo
       setBrands(prev => prev.map(b => b.id === brand.id ? { ...b, has_landing_page: newValue } as any : b));
       if (selectedBrand?.id === brand.id) {
         setSelectedBrand(prev => prev ? { ...prev, has_landing_page: newValue } as any : prev);
@@ -297,6 +297,25 @@ export default function AdminBrandsPage() {
       alert(err.message || 'Error al actualizar mini-landing');
     } finally {
       setTogglingLanding(false);
+    }
+  };
+
+  const handleSaveNotes = async (brand: Brand) => {
+    setSavingNotes(true);
+    try {
+      const res = await fetch(`${API_URL}/api/admin/brands/${brand.id}/notes`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ internal_notes: (brand as any).internal_notes || '' }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
+      setBrands(prev => prev.map(b => b.id === brand.id ? { ...b, internal_notes: (brand as any).internal_notes } as any : b));
+      alert('Notas guardadas correctamente');
+    } catch (err: any) {
+      alert(err.message || 'Error al guardar notas');
+    } finally {
+      setSavingNotes(false);
     }
   };
 
@@ -834,6 +853,34 @@ export default function AdminBrandsPage() {
                       className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
                       style={{ transform: (selectedBrand as any).has_landing_page ? 'translateX(1.375rem)' : 'translateX(0.25rem)' }}
                     />
+                  </button>
+                </div>
+              </div>
+
+              {/* Notas internas */}
+              <div className="border-t pt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Notas internas</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Solo visibles para el equipo</p>
+                  </div>
+                </div>
+                <textarea
+                  value={(selectedBrand as any).internal_notes || ''}
+                  onChange={(e) => setSelectedBrand({ ...selectedBrand, internal_notes: e.target.value } as any)}
+                  placeholder="Añadir notas sobre esta marca... (ej. Contacto en WhatsApp, preferencias, problemas resueltos)"
+                  className="w-full px-3 py-2 rounded-xl text-sm resize-none"
+                  style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+                  rows={3}
+                />
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={() => handleSaveNotes(selectedBrand)}
+                    disabled={savingNotes}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                    style={{ backgroundColor: '#FF5C3A', color: 'white' }}
+                  >
+                    {savingNotes ? 'Guardando...' : 'Guardar notas'}
                   </button>
                 </div>
               </div>

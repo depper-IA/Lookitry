@@ -72,8 +72,8 @@ const DEFAULTS: PricingConfig = {
     productos_max: 5,
     generaciones_mensuales: 400,
     subtitulo: 'Para marcas pequeñas en Instagram y WhatsApp',
-    boton_texto: 'Prueba $20.000 — 7 días',
-    boton_texto_sin_trial: 'Contratar Básico',
+    boton_texto: 'Probar ahora',
+    boton_texto_sin_trial: 'Contratar ahora',
     features: [
       'Hasta 5 productos en el probador',
       '400 generaciones por mes',
@@ -97,7 +97,7 @@ const DEFAULTS: PricingConfig = {
     productos_max: 15,
     generaciones_mensuales: 1000,
     subtitulo: 'Para tiendas online con mayor volumen',
-    boton_texto: 'Contratar Pro',
+    boton_texto: 'Contratar ahora',
     features: [
       'Hasta 15 productos en el probador',
       '1.000 generaciones por mes',

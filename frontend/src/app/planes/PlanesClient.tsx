@@ -225,7 +225,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                   onClick={() => router.push(`/checkout?plan=BASIC&months=${selectedMonths}`)}
                   className="block w-full text-center py-4 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-sm font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-95 mb-10 shadow-lg shadow-[#FF5C3A]/20"
                 >
-                  {basic.boton_texto_sin_trial ?? 'Contratar plan Básico ahora'}
+                  {basic.boton_texto_sin_trial ?? 'Contratar ahora'}
                 </button>
 
                 <ul className="flex flex-col gap-3.5 flex-1 font-dm-sans">
@@ -413,7 +413,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                 onClick={() => router.push(`/checkout?plan=BASIC&months=${selectedMonths}`)}
                 className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center gap-3 active:scale-95"
               >
-                Contratar Plan Básico <IconArrow />
+                Contratar ahora <IconArrow />
               </button>
               <button
                 onClick={() => router.push(`/checkout?plan=PRO&months=${selectedMonths}`)}

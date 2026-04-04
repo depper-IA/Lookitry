@@ -3,6 +3,7 @@ import { BrandsController } from '../controllers/brands.controller';
 import { authMiddleware } from '../middleware/auth';
 import { checkActiveSubscription } from '../middleware/checkSubscription';
 import { SubscriptionService } from '../services/subscription.service';
+import { getReferralInfo, validateReferralCode, claimReferralBonus } from '../controllers/referral.controller';
 
 const router = Router();
 const brandsController = new BrandsController();
@@ -69,5 +70,10 @@ router.patch('/notification-preferences', (req, res) =>
 router.post('/request-upgrade', (req, res) =>
   brandsController.requestUpgrade(req, res)
 );
+
+// ==== REFERRALS ====
+router.get('/me/referral', getReferralInfo);
+router.post('/me/referral/validate', validateReferralCode);
+router.post('/me/referral/claim', claimReferralBonus);
 
 export default router;

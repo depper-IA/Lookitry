@@ -99,6 +99,8 @@ function RegistroProContent() {
   const [showAltEmail, setShowAltEmail] = useState(false);
   const [altEmail, setAltEmail] = useState('');
   const [altEmailError, setAltEmailError] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptDataAuth, setAcceptDataAuth] = useState(false);
   const [pendingData, setPendingData] = useState<{
     plan: string;
     months: number;
@@ -393,6 +395,14 @@ function RegistroProContent() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!acceptTerms) {
+      setApiError('Debes aceptar los Términos y Condiciones para continuar');
+      return;
+    }
+    if (!acceptDataAuth) {
+      setApiError('Debes autorizar el tratamiento de tus datos personales para continuar');
+      return;
+    }
     if (!validate()) return;
     setLoading(true);
     setApiError('');
@@ -588,6 +598,41 @@ function RegistroProContent() {
                   />
                 </div>
                 {errors.confirmPassword && <p className="text-[11px] text-red-500 mt-1.5">{errors.confirmPassword}</p>}
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="acceptTerms"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-[#333] bg-[#0d0d0d] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="acceptTerms" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                  Acepto los{' '}
+                  <Link href="/terminos" target="_blank" className="text-[#FF5C3A] hover:underline">
+                    Términos y Condiciones
+                  </Link>{' '}
+                  del servicio.
+                </label>
+              </div>
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="acceptDataAuth"
+                  checked={acceptDataAuth}
+                  onChange={(e) => setAcceptDataAuth(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-[#333] bg-[#0d0d0d] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="acceptDataAuth" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                  Autorizo expresamente el tratamiento de mis datos personales de acuerdo a la{' '}
+                  <Link href="/politicas-privacidad" target="_blank" className="text-[#FF5C3A] hover:underline">
+                    Política de Privacidad
+                  </Link>{' '}
+                  de Lookitry (Ley 1581 de 2012).
+                </label>
               </div>
             </div>
 

@@ -5,7 +5,7 @@ export const DEFAULT_PRICING = {
   },
   PRO: {
     price: 250000,
-    generations: 1200,
+    generations: 1000,
   },
   TRIAL: {
     price: 20000,
@@ -21,7 +21,7 @@ export const FALLBACK_PRICES = {
 
 export const FALLBACK_GENERATIONS = {
   BASIC: 400,
-  PRO: 1200,
+  PRO: 1000,
   TRIAL: 15,
 } as const;
 

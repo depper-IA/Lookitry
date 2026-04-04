@@ -1,53 +1,10 @@
 import { Router } from 'express';
 import { adminAuthMiddleware, requirePermission } from '../middleware/adminAuth';
 import {
-  adminLogin,
-  adminLogout,
-  adminForgotPassword,
-  adminResetPassword,
-  getAllBrands,
-  changeBrandPlan,
-  getGlobalStats,
-  getBrandProducts,
-  activateBrandPlan,
-  deleteInactiveProduct,
-  createBrand,
-  deleteBrand,
-  getConversionStats,
-  toggleLandingPage,
-  updateModalConfig,
-  getMiniLandingsAdmin,
-  suspendMiniLanding,
-  restoreMiniLanding,
-  listAdmins,
-  createAdmin,
-  updateAdminPermissions,
-  changeAdminPassword,
-  deleteAdmin,
-  sendAdminCredentials,
-  changeOwnPassword,
-  getFeedbacks,
-  getFeedbackStats,
-  resolveFeedback,
-  deleteFeedback,
-  getUnresolvedFeedbackCount,
-  sendBrandResetEmail,
-  getPayments,
-  getAllPromotions,
-  createPromotion,
-  updatePromotion,
-  deletePromotion,
-  getPricingConfig,
-  updatePricingConfig,
-  getMissionControl,
-  getRiskData,
-  getEconomics,
-  getAuditLog,
-  getBrandFull,
-  getAllSubscriptions,
-  registerSubscriptionPayment,
-  suspendSubscription,
-  reactivateSubscription,
+  getTrialCampaign,
+  createTrialCampaign,
+  updateTrialCampaign,
+  getAlerts,
 } from '../controllers/admin.controller';
 import { getAdminReferrals, creditReferralBonus } from '../controllers/referral.controller';
 import {
@@ -93,6 +50,7 @@ router.use(adminAuthMiddleware);
 
 router.get('/stats', requirePermission('conversion'), getGlobalStats);
 router.get('/stats/conversion', requirePermission('conversion'), getConversionStats);
+router.get('/alerts', requirePermission('conversion'), getAlerts);
 router.get('/brands', requirePermission('brands'), getAllBrands);
 router.post('/brands', requirePermission('brands'), createBrand);
 router.delete('/brands/:id', requirePermission('brands'), deleteBrand);
@@ -101,6 +59,7 @@ router.delete('/brands/:id/products/:productId', requirePermission('brands'), de
 router.patch('/brands/:id/plan', requirePermission('subscriptions'), changeBrandPlan);
 router.patch('/brands/:id/activate-plan', requirePermission('subscriptions'), activateBrandPlan);
 router.patch('/brands/:id/landing-page', requirePermission('brands'), toggleLandingPage);
+router.patch('/brands/:id/notes', requirePermission('brands'), updateBrandNotes);
 router.patch('/brands/:id/modal-config', requirePermission('brands'), updateModalConfig);
 router.post('/brands/:id/send-reset-email', requirePermission('brands'), sendBrandResetEmail);
 

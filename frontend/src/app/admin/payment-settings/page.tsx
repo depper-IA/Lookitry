@@ -37,9 +37,11 @@ interface PaymentSettings {
   transfer_account_holder: string;
   transfer_nit: string;
   currency: string;
+  // Analytics
+  ga_measurement_id: string;
 }
 
-type Tab = 'wompi' | 'paypal' | 'manual' | 'transfer';
+type Tab = 'wompi' | 'paypal' | 'manual' | 'transfer' | 'analytics';
 
 export default function PaymentSettingsPage() {
   const [settings, setSettings] = useState<PaymentSettings | null>(null);
@@ -126,6 +128,10 @@ export default function PaymentSettingsPage() {
     {
       id: 'transfer', label: 'Transferencia', enabled: settings.transfer_enabled,
       icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>,
+    },
+    {
+      id: 'analytics', label: 'Analytics', enabled: true,
+      icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
     },
   ];
 
@@ -409,18 +415,19 @@ export default function PaymentSettingsPage() {
             </div>
           )}
 
-          {/* TRANSFERENCIA */}
+{/* TRANSFERENCIA */}
           {activeTab === 'transfer' && (
-            <div className="space-y-5">
+            <div className="space-y-6">
               <div style={{ borderColor: 'var(--border-color)' }} className="flex flex-col gap-4 pb-4 border-b sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <h3 style={{ color: 'var(--text-primary)' }} className="font-semibold">Transferencia Bancaria</h3>
-                  <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">Muestra los datos bancarios al cliente para que realice la transferencia.</p>
+                  <h3 style={{ color: 'var(--text-primary)' }} className="font-semibold">Transferencia bancaria</h3>
+                  <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">Recepcón de pagos por transferencia directa.</p>
                 </div>
                 <Toggle enabled={settings.transfer_enabled} onChange={v => set('transfer_enabled', v)} />
               </div>
+
               {settings.transfer_enabled && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <Field label="Banco" value={settings.transfer_bank_name} onChange={v => set('transfer_bank_name', v)} placeholder="Bancolombia" />
                   <div>
                     <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Tipo de cuenta</label>
@@ -440,6 +447,68 @@ export default function PaymentSettingsPage() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* ANALYTICS */}
+          {activeTab === 'analytics' && (
+            <div className="space-y-6">
+              <div className="flex flex-col gap-4 pb-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
+                <div className="min-w-0">
+                  <h3 style={{ color: 'var(--text-primary)' }} className="font-semibold">Google Analytics 4</h3>
+                  <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-0.5">Configura el tracking de Google Analytics para medir el tráfico y conversiones.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4">
+                <Field 
+                  label="GA4 Measurement ID" 
+                  value={settings.ga_measurement_id || ''} 
+                  onChange={v => set('ga_measurement_id', v)} 
+                  placeholder="G-XXXXXXXXXX"
+                  hint="El ID de medición se encuentra en Google Analytics > Admin > Data Streams"
+                  type="text"
+                />
+              </div>
+
+              <div className="p-4 rounded-xl border" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-input)' }}>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p style={{ color: 'var(--text-primary)' }} className="text-sm font-medium">¿Cómo obtener tu Measurement ID?</p>
+                    <ol style={{ color: 'var(--text-muted)' }} className="text-xs mt-2 list-decimal list-inside space-y-1">
+                      <li>Ve a <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">Google Analytics</a></li>
+                      <li>Dirígete a <strong>Admin {'>'} Data Streams</strong></li>
+                      <li>Selecciona tu property o crea una nueva</li>
+                      <li>Copia el <strong>Measurement ID</strong> (formato G-XXXXXXX)</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+
+              {settings.ga_measurement_id ? (
+                <div className="p-4 rounded-xl border bg-emerald-500/10 border-emerald-500/20">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm text-emerald-500 font-medium">Analytics configurado correctamente</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl border bg-amber-500/10 border-amber-500/20">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span className="text-sm text-amber-500 font-medium">Analytics no está configurado</span>
+                  </div>
+                </div>
+              )}
+</div>
           )}
         </div>
       </div>

@@ -50,7 +50,7 @@ export function CookieConsent() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5">
         <div className="flex-1 text-[13px] leading-relaxed text-gray-400">
           <p>
-            Utilizamos cookies propias y de terceros fundamentales para el funcionamiento del servicio, analíticas de rendimiento y personalización de la experiencia. Operamos en estricto cumplimiento del <strong>GDPR (Europa) y CCPA (USA)</strong>. 
+            Utilizamos cookies propias y de terceros fundamentales para el funcionamiento del servicio, analíticas de rendimiento y personalización de la experiencia. Operamos en estricto cumplimiento del <strong>GDPR (Europa)</strong>, <strong>CCPA (USA)</strong> y la <strong>Ley 1581 (Colombia)</strong>. 
             Al hacer clic en <strong className="text-white">&quot;Aceptar todas&quot;</strong>, consientes el uso de cookies no esenciales. Puedes optar por <strong className="text-white">&quot;Rechazar&quot;</strong> el seguimiento publicitario sin que afecte el uso de nuestras funciones principales. Conoce más en nuestra{' '}
             <Link href="/politicas-privacidad" className="text-[#FF5C3A] hover:text-white transition-colors underline decoration-[#FF5C3A]/30 hover:decoration-white">
               Política de Privacidad

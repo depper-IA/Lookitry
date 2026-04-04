@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Zap, RefreshCw, Settings, Download } from 'lucide-react';
 
 export default function LandingPlugin() {
@@ -66,9 +67,9 @@ export default function LandingPlugin() {
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 md:gap-8 md:gap-10 opacity-100 transition-all duration-700">
             <span className="text-[9px] sm:text-[10px] font-bold text-white dark:text-black uppercase tracking-[0.15em] sm:tracking-[0.2em]">Compatible con:</span>
             <div className="flex items-center gap-6 sm:gap-8">
-              <img src="/integrations/Woo_logo_color.svg" alt="WooCommerce" className="h-7 sm:h-8 md:h-10" />
-              <img src="/integrations/shopify.svg" alt="Shopify" className="h-5 sm:h-6 md:h-8 grayscale hover:grayscale-0 transition-all" />
-              <img src="/integrations/Wix.svg" alt="Wix" className="h-5 sm:h-6 md:h-8 grayscale hover:grayscale-0 transition-all" />
+              <Image src="/integrations/Woo_logo_color.svg" alt="WooCommerce" width={60} height={40} className="h-7 sm:h-8 md:h-10 w-auto" />
+              <Image src="/integrations/shopify.svg" alt="Shopify" width={40} height={30} className="h-5 sm:h-6 md:h-8 w-auto grayscale hover:grayscale-0 transition-all" />
+              <Image src="/integrations/Wix.svg" alt="Wix" width={40} height={30} className="h-5 sm:h-6 md:h-8 w-auto grayscale hover:grayscale-0 transition-all" />
             </div>
           </div>
         </div>

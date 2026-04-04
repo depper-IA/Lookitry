@@ -9,7 +9,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { ConfirmProvider } from '@/components/admin/ConfirmDialog';
 import { AdminBottomNav } from '@/components/ui/AdminBottomNav';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Building2, CreditCard, TrendingUp, History, Settings2, Tag, PieChart, MousePointer2, Layout, Megaphone, Bell, Clock, ShieldCheck, User, Shield, DollarSign, Activity, Zap, Brain, BookOpen, GitBranch } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Building2, CreditCard, TrendingUp, History, Settings2, Tag, PieChart, MousePointer2, Layout, Megaphone, Bell, Clock, ShieldCheck, User, Shield, DollarSign, Activity, Zap, Brain, BookOpen, GitBranch, Gift } from 'lucide-react';
 
 const adminNav = [
   {
@@ -25,6 +25,7 @@ const adminNav = [
     items: [
       { href: '/admin/brands',        label: 'Marcas',           icon: BrandsIcon },
       { href: '/admin/subscriptions', label: 'Suscripciones',    icon: SubsIcon },
+      { href: '/admin/referrals',     label: 'Referidos',        icon: Gift },
       { href: '/admin/revenue',       label: 'Ingresos',         icon: RevenueIcon },
       { href: '/admin/payments',      label: 'Historial Pagos',  icon: PaymentsIcon },
       { href: '/admin/unit-economics',label: 'Economía',         icon: DollarSign },
@@ -58,7 +59,9 @@ const adminNav = [
       { href: '/admin/audit-log',     label: 'Auditoría',       icon: Activity },
       { href: '/admin/admins',        label: 'Administradores', icon: AdminsIcon },
       { href: '/admin/notifications', label: 'Actividad',       icon: BellIcon },
+      { href: '/admin/soporte',       label: 'Soporte',         icon: BellIcon },
       { href: '/admin/enterprise',    label: 'Enterprise Sync', icon: EnterpriseIcon },
+      { href: '/admin/configuracion?tab=launch', label: '🚀 Launch', icon: TrialIcon },
       { href: '/admin/configuracion', label: 'Configuración',   icon: TrialIcon },
     ],
   },
@@ -379,6 +382,7 @@ function PageTitle({ pathname }: { pathname: string }) {
     '/admin/dashboard':            'Mission Control',
     '/admin/brands':               'Marcas',
     '/admin/subscriptions':        'Suscripciones',
+    '/admin/referrals':            'Programa de Referidos',
     '/admin/revenue':              'Ingresos',
     '/admin/payments':             'Historial de Pagos',
     '/admin/payment-settings':     'Medios de Pago',

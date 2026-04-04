@@ -57,6 +57,46 @@ export default function DocsPage() {
       ]
     },
     {
+      id: 'iframe',
+      title: 'Script Incrustado (Universal)',
+      subtitle: 'Funciona en cualquier sitio web',
+      icon: <Code2 className="w-5 h-5 text-[#FF5C3A]" />,
+      content: 'Copia y pega nuestro script en cualquier página HTML. Funciona en WordPress, Wix, Shopify, Squarespace, Webflow, o cualquier CMS que permita insertar código personalizado.',
+      code: `<!-- Lookitry Try-On Widget -->
+<script src="https://lookitry.com/widget/v1/embed.js" 
+  data-brand="tu-marca" 
+  data-position="bottom-right"
+  data-trigger="button">
+</script>
+
+<!-- O usa el botón personalizado -->
+<button onclick="Lookitry.open()">Probarme Virtual</button>`,
+      language: 'html'
+    },
+    {
+      id: 'embed',
+      title: 'Iframe (Para Blogs y Artículos)',
+      subtitle: 'Incrustado en cualquier CMS',
+      icon: <Layers className="w-5 h-5 text-[#FF5C3A]" />,
+      content: 'Si tu plataforma no permite JavaScript, puedes usar un iframe. Ideal para blogs, artículos de contenido, y plataformas que solo soportan HTML básico.',
+      code: `<iframe 
+  src="https://lookitry.com/tu-marca/embed" 
+  width="100%" 
+  height="600" 
+  frameborder="0"
+  style="border-radius: 16px;">
+</iframe>
+
+<!-- Para un producto específico -->
+<iframe 
+  src="https://lookitry.com/tu-marca/embed?product=SKU123" 
+  width="100%" 
+  height="600" 
+  frameborder="0">
+</iframe>`,
+      language: 'html'
+    },
+    {
       id: 'api',
       title: 'Direct API (REST)',
       subtitle: 'Control total de la arquitectura',

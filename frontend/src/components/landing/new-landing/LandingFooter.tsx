@@ -297,10 +297,11 @@ export default function LandingFooter() {
             <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">
               Wilkie Devs SAS
             </Link>
+            {' '} · NIT 700.403.166-3
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-4 opacity-60 sm:gap-8 md:gap-10">
             <div className="flex items-center gap-1.5 font-dm-sans text-[8px] font-bold uppercase tracking-widest text-white/90 sm:gap-2 sm:text-[9px]">
-              <ShieldCheck size={14} aria-hidden="true" /> PCI Tier 1
+              <ShieldCheck size={14} aria-hidden="true" /> Pagos seguros
             </div>
           </div>
           <div className="mt-4 flex justify-center">

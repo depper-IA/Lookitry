@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, TrendingUp, UserCheck, BarChart2, Image as ImageIcon, Package, Globe, PauseCircle, MinusCircle, CreditCard, Building2 } from 'lucide-react';
+import { Users, TrendingUp, UserCheck, BarChart2, Image as ImageIcon, Package, Globe, PauseCircle, MinusCircle, CreditCard, Building2, AlertTriangle, XCircle, Clock, ArrowRight, ExternalLink } from 'lucide-react';
 
 interface GlobalStats {
   totalBrands: number; totalProducts: number; totalGenerations: number;
@@ -28,6 +28,12 @@ export default function AdminDashboardPage() {
   const [conversion, setConversion] = useState<ConversionStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // alertas críticas
+  const [alerts, setAlerts] = useState<{ expiring: number; failed: number; critical: number }>({ expiring: 0, failed: 0, critical: 0 });
+  const [recentPayments, setRecentPayments] = useState<any[]>([]);
+  const [recentBrands, setRecentBrands] = useState<any[]>([]);
+  const [loadingActivity, setLoadingActivity] = useState(true);
 
   useEffect(() => {
     Promise.all([
@@ -37,6 +43,21 @@ export default function AdminDashboardPage() {
       .then(([g, c]) => { if (g.error) throw new Error(g.message); setGlobal(g); setConversion(c); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
+      
+    // Cargar alertas críticas y actividad reciente
+    Promise.all([
+      adminFetch('/admin/alerts').then(r => r.json()).catch(() => ({})),
+      adminFetch('/api/payments?limit=5').then(r => r.json()).catch(() => ({ payments: [] })),
+      adminFetch('/api/brands?limit=5&sort=created_at:desc').then(r => r.json()).catch(() => ({ brands: [] })),
+    ])
+      .then(([alertsData, paymentsData, brandsData]) => {
+        if (alertsData.expiring) setAlerts(prev => ({ ...prev, expiring: alertsData.expiring }));
+        if (alertsData.failed) setAlerts(prev => ({ ...prev, failed: alertsData.failed }));
+        if (alertsData.critical) setAlerts(prev => ({ ...prev, critical: alertsData.critical }));
+        setRecentPayments(paymentsData.payments || paymentsData || []);
+        setRecentBrands(brandsData.brands || brandsData || []);
+      })
+      .finally(() => setLoadingActivity(false));
   }, []);
 
   if (loading) return (
@@ -82,6 +103,32 @@ export default function AdminDashboardPage() {
         <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Métricas globales y seguimiento de conversiones</p>
       </div>
+
+      {/* ALERTAS CRÍTICAS */}
+      {(alerts.expiring > 0 || alerts.failed > 0) && (
+        <div className="space-y-2">
+          {alerts.expiring > 0 && (
+            <a href="/admin/subscriptions?filter=expiring" className="flex items-center gap-3 p-4 rounded-xl transition-all hover:scale-[1.01]" style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)' }}>
+              <Clock className="w-5 h-5 text-amber-500" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-amber-500">{alerts.expiring} suscripción{alerts.expiring > 1 ? 'es' : ''} vence{n alerts.expiring === 1 ? 'n' : ''} en los próximos 7 días</p>
+                <p className="text-xs text-amber-500/70">Requiere atención antes de que venzan</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-amber-500" />
+            </a>
+          )}
+          {alerts.failed > 0 && (
+            <a href="/admin/payments?filter=failed" className="flex items-center gap-3 p-4 rounded-xl transition-all hover:scale-[1.01]" style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)' }}>
+              <XCircle className="w-5 h-5 text-red-500" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-red-500">{alerts.failed} pago{alerts.failed > 1 ? 's' : ''} fallido{alerts.failed > 1 ? '' : 's'}</p>
+                <p className="text-xs text-red-500/70">Revisar y contactar a los clientes afectados</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-red-500" />
+            </a>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {topCards.map(c => (
@@ -196,6 +243,66 @@ export default function AdminDashboardPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* ACTIVIDAD RECIENTE */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-jakarta font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Últimos pagos</h2>
+            <a href="/admin/payments" className="text-xs text-[#FF5C3A] hover:underline flex items-center gap-1">
+              Ver todos <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+          <div className="space-y-3">
+            {recentPayments.length > 0 ? recentPayments.slice(0, 5).map((p: any) => (
+              <div key={p.id} className="flex items-center justify-between py-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${p.status === 'completed' ? 'bg-emerald-500' : p.status === 'failed' ? 'bg-red-500' : 'bg-amber-500'}`} />
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{p.brands?.name || p.brandName || '—'}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{p.payment_method || p.paymentMethod || '—'}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>${(p.amount_cop || p.amount || 0).toLocaleString('es-CO')}</p>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{new Date(p.created_at || p.payment_date).toLocaleDateString('es-CO')}</p>
+                </div>
+              </div>
+            )) : (
+              <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>Sin pagos recientes</p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-jakarta font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Últimas marcas</h2>
+            <a href="/admin/brands" className="text-xs text-[#FF5C3A] hover:underline flex items-center gap-1">
+              Ver todas <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+          <div className="space-y-3">
+            {recentBrands.length > 0 ? recentBrands.slice(0, 5).map((b: any) => (
+              <a href={`/admin/brands/${b.id}`} key={b.id} className="flex items-center justify-between py-2 hover:bg-[var(--bg-hover)] rounded-lg px-2 -mx-2 transition-colors" style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center">
+                    <span className="text-xs font-bold text-[#FF5C3A]">{(b.name || 'M').charAt(0).toUpperCase()}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{b.name}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{b.email}</p>
+                  </div>
+                </div>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${b.plan === 'PRO' ? 'bg-[#FF5C3A]/10 text-[#FF5C3A]' : b.plan === 'TRIAL' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-gray-500/10 text-gray-400'}`}>
+                  {b.plan}
+                </span>
+              </a>
+            )) : (
+              <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>Sin marcas registradas</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

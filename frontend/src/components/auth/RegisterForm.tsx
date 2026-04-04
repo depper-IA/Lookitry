@@ -64,6 +64,9 @@ export default function RegisterForm() {
   const [fingerprint, setFingerprint] = useState<string | null>(null);
   const [prefilledFields, setPrefilledFields] = useState<Record<string, boolean>>({});
 
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptDataAuth, setAcceptDataAuth] = useState(false);
+
   const [isPaidFlow, setIsPaidFlow] = useState(false);
   const [paymentRef, setPaymentRef] = useState<string | null>(null);
 
@@ -165,6 +168,14 @@ export default function RegisterForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!acceptTerms) {
+      setError('Debes aceptar los Términos y Condiciones para continuar');
+      return;
+    }
+    if (!acceptDataAuth) {
+      setError('Debes autorizar el tratamiento de tus datos personales para continuar');
+      return;
+    }
     if (!passwordComplexity.isValid) {
       setError(passwordComplexity.message);
       return;
@@ -410,6 +421,41 @@ export default function RegisterForm() {
               <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
                 <span className={`inline-block h-2 w-2 rounded-full ${form.confirmPassword && passwordsMatch ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
                 Confirmacion igual a la contrasena
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="acceptTerms"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="acceptTerms" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                  Acepto los{' '}
+                  <Link href="/terminos" target="_blank" className="text-[#FF5C3A] hover:underline">
+                    Términos y Condiciones
+                  </Link>{' '}
+                  del servicio.
+                </label>
+              </div>
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="acceptDataAuth"
+                  checked={acceptDataAuth}
+                  onChange={(e) => setAcceptDataAuth(e.target.checked)}
+                  className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                />
+                <label htmlFor="acceptDataAuth" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                  Autorizo expresamente el tratamiento de mis datos personales de acuerdo a la{' '}
+                  <Link href="/politicas-privacidad" target="_blank" className="text-[#FF5C3A] hover:underline">
+                    Política de Privacidad
+                  </Link>{' '}
+                  de Lookitry (Ley 1581 de 2012).
+                </label>
               </div>
             </div>
 

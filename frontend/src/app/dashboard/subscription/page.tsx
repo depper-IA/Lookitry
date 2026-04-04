@@ -169,18 +169,18 @@ export default function SubscriptionPage() {
           pricingResult.value.forEach((row: any) => {
             if (row.id === 'basic') {
               prices.BASIC = row.data.precio_mensual_cop ?? FALLBACK_PRICES.BASIC;
-              if (row.data.generaciones_mensuales || row.data.generaciones_mes) {
-                gens.BASIC = row.data.generaciones_mensuales || row.data.generaciones_mes;
+              if (row.data.generaciones_mensuales ?? row.data.generaciones_mes) {
+                gens.BASIC = row.data.generaciones_mensuales ?? row.data.generaciones_mes;
               }
             }
             if (row.id === 'pro') {
               prices.PRO = row.data.precio_mensual_cop ?? FALLBACK_PRICES.PRO;
-              if (row.data.generaciones_mensuales || row.data.generaciones_mes) {
-                gens.PRO = row.data.generaciones_mensuales || row.data.generaciones_mes;
+              if (row.data.generaciones_mensuales ?? row.data.generaciones_mes) {
+                gens.PRO = row.data.generaciones_mensuales ?? row.data.generaciones_mes;
               }
             }
             if (row.id === 'trial') {
-              prices.TRIAL = row.data.precio_mensual_cop || row.data.precio_cop ?? FALLBACK_PRICES.TRIAL;
+              prices.TRIAL = row.data.precio_mensual_cop ?? row.data.precio_cop ?? FALLBACK_PRICES.TRIAL;
             }
           });
           setDynamicPrices(prices);
