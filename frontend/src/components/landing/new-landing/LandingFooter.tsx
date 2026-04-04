@@ -119,8 +119,8 @@ export default function LandingFooter() {
   };
 
   return (
-    <footer className="theme-bg-base theme-text pt-12 sm:pt-20 md:pt-24 lg:pt-28 pb-6 px-4 sm:px-6 md:px-12 border-t border-black/5 dark:border-white/5 relative z-10" role="contentinfo">
-      <div className="max-w-7xl mx-auto">
+    <footer className="theme-bg-base theme-text pt-12 sm:pt-20 md:pt-24 lg:pt-28 relative z-10" role="contentinfo">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 pb-6">
         {/* Mobile: Centered compact layout */}
         <div className="md:hidden mb-8">
           <div className="flex flex-col items-center text-center mb-5">
@@ -261,32 +261,32 @@ export default function LandingFooter() {
             </ul>
           </div>
         </div>
+      </div>
 
-        <div className="w-screen -mx-[50vw] border-t border-black/10 dark:border-white/10 bg-[#FF5C3A]">
-          <div className="max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 md:px-12">
-            <div className="text-white/80 text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] font-dm-sans text-center">
-              © {currentYear} Lookitry / Una división de <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Wilkie Devs SAS</Link>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-10 opacity-60 mt-3">
-              <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/90"><Globe size={14} aria-hidden="true" /> CALI. COLOMBIA</div>
-              <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/90"><ShieldCheck size={14} aria-hidden="true" /> PCI Tier 1</div>
-            </div>
-            <button
-              onClick={toggle}
-              aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-              className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/90 hover:text-white hover:border-white/40 hover:bg-white/10 transition-all text-xs font-medium"
-            >
-              {isDark ? (
-                <>
-                  <Sun size={14} aria-hidden="true" /> Modo claro
-                </>
-              ) : (
-                <>
-                  <Moon size={14} aria-hidden="true" /> Modo oscuro
-                </>
-              )}
-            </button>
+      <div className="w-full border-t border-black/5 dark:border-white/5 bg-[#FF5C3A]">
+        <div className="max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 md:px-12">
+          <div className="text-white/80 text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] font-dm-sans text-center">
+            © {currentYear} Lookitry / Una división de <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Wilkie Devs SAS</Link>
           </div>
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-10 opacity-60 mt-3">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/90"><Globe size={14} aria-hidden="true" /> CALI. COLOMBIA</div>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/90"><ShieldCheck size={14} aria-hidden="true" /> PCI Tier 1</div>
+          </div>
+          <button
+            onClick={toggle}
+            aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/90 hover:text-white hover:border-white/40 hover:bg-white/10 transition-all text-xs font-medium"
+          >
+            {isDark ? (
+              <>
+                <Sun size={14} aria-hidden="true" /> Modo claro
+              </>
+            ) : (
+              <>
+                <Moon size={14} aria-hidden="true" /> Modo oscuro
+              </>
+            )}
+          </button>
         </div>
       </div>
     </footer>
