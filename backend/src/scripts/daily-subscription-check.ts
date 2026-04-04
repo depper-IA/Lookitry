@@ -68,24 +68,30 @@ async function sendExpirationNotifications(days: number): Promise<number> {
 
 /**
  * Envía notificaciones de suspensión a marcas suspendidas
+ * Solo envía a marcas suspendidas en las últimas 24 horas para evitar spam.
  */
 async function sendSuspensionNotifications(): Promise<number> {
   try {
     console.log('\n📧 Enviando notificaciones de suspensión...');
     
-    // Obtener marcas suspendidas (usando supabaseAdmin directamente)
     const { supabaseAdmin } = await import('../config/supabase');
+    
+    // Solo marcas suspendidas en las últimas 24 horas
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
     const { data: suspendedBrands, error } = await supabaseAdmin
       .from('brands')
       .select('*')
-      .eq('subscription_status', 'suspended');
+      .eq('subscription_status', 'suspended')
+      .gte('subscription_end_date', yesterday.toISOString());
 
     if (error) {
       throw new Error('Error al obtener marcas suspendidas: ' + error.message);
     }
 
     if (!suspendedBrands || suspendedBrands.length === 0) {
-      console.log('   ℹ️  No hay marcas suspendidas para notificar');
+      console.log('   ℹ️  No hay marcas recién suspendidas para notificar');
       return 0;
     }
 
