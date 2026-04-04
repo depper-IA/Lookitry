@@ -120,7 +120,7 @@ export default function LandingFooter() {
 
   return (
     <footer className="theme-bg-base theme-text pt-12 sm:pt-20 md:pt-24 lg:pt-28 relative z-10" role="contentinfo">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 pb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
         {/* Mobile: Centered compact layout */}
         <div className="md:hidden mb-8">
           <div className="flex flex-col items-center text-center mb-5">
