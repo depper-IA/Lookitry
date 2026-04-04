@@ -21,6 +21,7 @@ interface UserDataStepProps {
   validateStep2: () => Promise<boolean>;
   handlePrevStep: () => void;
   setCurrentStep: (step: Step) => void;
+  handleGoogleCheckoutSuccess?: (data: any) => void;
   stepNumber?: number;
   OA: string;
 }
@@ -41,6 +42,7 @@ export default function UserDataStep({
   validateStep2,
   handlePrevStep,
   setCurrentStep,
+  handleGoogleCheckoutSuccess,
   stepNumber = 2,
   OA
 }: UserDataStepProps) {
@@ -57,7 +59,11 @@ export default function UserDataStep({
       <div className="space-y-6 bg-[#0d0d0d] border border-[#1f1f1f] p-8 rounded-3xl">
         {!hasSession && (
           <div className="mb-6">
-            <GoogleSignInButton mode="register" />
+            <GoogleSignInButton 
+              mode="register" 
+              onSuccess={handleGoogleCheckoutSuccess}
+              onError={(err) => setEmailError(err)}
+            />
             <div className="flex items-center gap-4 my-6">
               <div className="flex-1 h-px bg-[#222]"></div>
               <span className="text-[11px] text-[#666] uppercase tracking-wider">o continúa con correo</span>

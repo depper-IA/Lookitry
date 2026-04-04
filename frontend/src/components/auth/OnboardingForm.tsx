@@ -1,41 +1,43 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Loader2, Store, Globe, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Loader2, Store, Globe, AlertCircle, CheckCircle2, User } from 'lucide-react';
 
-function slugify(value: string) {
-  return value
+const slugify = (value: string) =>
+  value
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9\s-]/g, '')
     .trim()
     .replace(/\s+/g, '-');
+
+export interface OnboardingFormProps {
+  title: string;
+  subtitle: string;
+  showContactName?: boolean;
+  showPassword?: boolean;
+  onSubmit: (data: { name: string; slug: string; contactName?: string; password?: string }) => Promise<void>;
+  loginLink?: string;
 }
 
-function OnboardingContent() {
-  const searchParams = useSearchParams();
+export default function OnboardingForm({
+  title,
+  subtitle,
+  showContactName = false,
+  showPassword = false,
+  onSubmit,
+  loginLink = '/login',
+}: OnboardingFormProps) {
   const router = useRouter();
-
-  const plan = searchParams.get('plan') || 'PRO';
-  const months = Number(searchParams.get('months') || 1);
-  const ref = searchParams.get('ref') || '';
-  const isTrial = searchParams.get('isTrial') === 'true';
-
-  const [form, setForm] = useState({
-    name: '',
-    slug: '',
-    password: '',
-    confirmPassword: '',
-  });
+  const [form, setForm] = useState({ name: '', slug: '', contactName: '', password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [slugSuggested, setSlugSuggested] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordText, setShowPasswordText] = useState(false);
 
   const suggestSlug = () => {
     const base = form.name ? slugify(form.name) : 'mi-marca';
@@ -74,68 +76,40 @@ function OnboardingContent() {
       return;
     }
 
-    if (!form.password.trim()) {
-      setError('La contraseña es requerida');
-      return;
-    }
+    if (showPassword) {
+      if (!form.password.trim()) {
+        setError('La contraseña es requerida');
+        return;
+      }
 
-    const pwdError = validatePassword(form.password);
-    if (pwdError) {
-      setError(pwdError);
-      return;
-    }
+      const pwdError = validatePassword(form.password);
+      if (pwdError) {
+        setError(pwdError);
+        return;
+      }
 
-    if (form.password !== form.confirmPassword) {
-      setError('Las contraseñas no coinciden');
-      return;
+      if (form.password !== form.confirmPassword) {
+        setError('Las contraseñas no coinciden');
+        return;
+      }
     }
 
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/register-post-payment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: form.name.trim(),
-          slug: form.slug.trim(),
-          password: form.password,
-          reference: ref,
-          plan,
-          months,
-          isTrial,
-        }),
+      await onSubmit({
+        name: form.name.trim(),
+        slug: form.slug.trim(),
+        contactName: form.contactName.trim() || undefined,
+        password: showPassword ? form.password : undefined,
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (data.error === 'SLUG_TAKEN') {
-          setError('Esta URL ya está en uso. Prueba con otra o usa "Sugerir".');
-        } else if (data.error === 'REFERENCE_NOT_FOUND') {
-          setError('No se encontró el pago asociado. Contacta a soporte.');
-        } else {
-          setError(data.message || 'Error al completar la configuración');
-        }
-        setLoading(false);
-        return;
-      }
-
-      if (data.token) {
-        localStorage.setItem('token', data.token);
-      }
-      if (data.brand) {
-        localStorage.setItem('brand', JSON.stringify(data.brand));
-        localStorage.setItem('brand_plan', data.brand.plan);
-      }
 
       setSuccess(true);
       setTimeout(() => {
         router.push('/dashboard');
       }, 1500);
-    } catch {
-      setError('Error de conexión. Intenta de nuevo.');
+    } catch (err: any) {
+      setError(err.message || 'Error de conexión. Intenta de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -146,7 +120,7 @@ function OnboardingContent() {
       <div className="w-full max-w-lg">
         <div className="flex flex-col items-center mb-10">
           <Link href="/" className="flex items-center gap-3 group mb-4">
-            <Image src="/logo.svg" alt="Lookitry" width={32} height={32} className="group-hover:rotate-12 transition-transform duration-500" priority />
+            <img src="/logo.svg" alt="Lookitry" className="w-8 h-8 group-hover:rotate-12 transition-transform duration-500" />
             <span className="font-jakarta font-extrabold text-2xl text-white tracking-tighter">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
@@ -162,10 +136,10 @@ function OnboardingContent() {
               Último paso
             </div>
             <h1 className="text-3xl font-jakarta font-bold text-white tracking-tight mb-2">
-              Configura tu marca
+              {title}
             </h1>
             <p className="text-sm text-[#999] max-w-xs mx-auto leading-relaxed">
-              Tu pago fue confirmado. Solo necesitamos el nombre de tu marca y crear una contraseña para tu cuenta.
+              {subtitle}
             </p>
           </div>
 
@@ -177,6 +151,20 @@ function OnboardingContent() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {showContactName && (
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                    <User className="w-3 h-3 text-[#FF5C3A]" /> Nombre de contacto
+                  </label>
+                  <input
+                    value={form.contactName}
+                    onChange={e => setForm(prev => ({ ...prev, contactName: e.target.value }))}
+                    placeholder="Tu nombre completo"
+                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
+                  />
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
                   <Store className="w-3 h-3 text-[#FF5C3A]" /> Nombre de tu marca
@@ -214,40 +202,44 @@ function OnboardingContent() {
                 </p>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  Crear contraseña
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={form.password}
-                    onChange={e => setForm(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder="Mínimo 8 caracteres"
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 pr-20 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#666] hover:text-[#FF5C3A] transition-colors"
-                  >
-                    {showPassword ? 'Ocultar' : 'Mostrar'}
-                  </button>
-                </div>
-              </div>
+              {showPassword && (
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                      Crear contraseña
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPasswordText ? 'text' : 'password'}
+                        value={form.password}
+                        onChange={e => setForm(prev => ({ ...prev, password: e.target.value }))}
+                        placeholder="Mínimo 8 caracteres"
+                        className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 pr-20 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordText(!showPasswordText)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-[#666] hover:text-[#FF5C3A] transition-colors"
+                      >
+                        {showPasswordText ? 'Ocultar' : 'Mostrar'}
+                      </button>
+                    </div>
+                  </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  Confirmar contraseña
-                </label>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={form.confirmPassword}
-                  onChange={e => setForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                  placeholder="Repite tu contraseña"
-                  className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
-                />
-              </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
+                      Confirmar contraseña
+                    </label>
+                    <input
+                      type={showPasswordText ? 'text' : 'password'}
+                      value={form.confirmPassword}
+                      onChange={e => setForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      placeholder="Repite tu contraseña"
+                      className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
+                    />
+                  </div>
+                </>
+              )}
 
               {error && (
                 <div className="bg-red-500/5 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-start gap-3">
@@ -258,7 +250,7 @@ function OnboardingContent() {
 
               <button
                 type="submit"
-                disabled={loading || success}
+                disabled={loading}
                 className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[#FF5C3A] font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all active:scale-95 hover:bg-[#ff6c4d] disabled:opacity-50"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-[#FF5C3A] to-[#ff7a5f] opacity-100 transition-opacity" />
@@ -267,11 +259,6 @@ function OnboardingContent() {
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
                       <span className="text-xs uppercase tracking-widest">Guardando...</span>
-                    </>
-                  ) : success ? (
-                    <>
-                      <CheckCircle2 className="w-5 h-5 text-white" />
-                      <span className="text-xs uppercase tracking-widest">¡Cuenta creada!</span>
                     </>
                   ) : (
                     <>
@@ -286,19 +273,16 @@ function OnboardingContent() {
             </form>
           )}
 
-          <p className="text-center text-xs text-[#999] mt-8">
-            Al registrarte, aceptas nuestros Términos y Condiciones
-          </p>
+          {loginLink && (
+            <p className="text-center text-xs text-[#999] mt-8">
+              ¿Ya tienes cuenta?{' '}
+              <Link href={loginLink} className="text-[#FF5C3A] hover:text-[#ff7a5f] font-bold tracking-tight border-b border-transparent hover:border-[#FF5C3A] transition-all ml-1">
+                Inicia sesión
+              </Link>
+            </p>
+          )}
         </div>
       </div>
     </div>
-  );
-}
-
-export default function OnboardingPostPagoPage() {
-  return (
-    <Suspense>
-      <OnboardingContent />
-    </Suspense>
   );
 }

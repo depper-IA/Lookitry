@@ -460,6 +460,18 @@ function CheckoutContent() {
     window.location.href = '/trial-checkout';
   };
 
+  const handleGoogleCheckoutSuccess = async (data: any) => {
+    localStorage.setItem('brand', JSON.stringify(data.brand));
+    if (data.token) localStorage.setItem('token', data.token);
+    setHasSession(true);
+    setSessionInfo({ name: data.brand.name || '', email: data.brand.email || '' });
+    setEmail(data.brand.email || '');
+    setBrandName(data.brand.name || '');
+    setEmailError('');
+    setEmailExists({ exists: false });
+    setBrandNameError('');
+  };
+
   const getTrialName = () => {
     const trialPrice = planBase.TRIAL ?? 20000;
     return trialPrice > 0 ? 'Prueba' : 'Prueba Gratuita';
@@ -505,6 +517,7 @@ function CheckoutContent() {
                 validateStep2={validateStep2}
                 handlePrevStep={handlePrevStep}
                 setCurrentStep={setCurrentStep}
+                handleGoogleCheckoutSuccess={handleGoogleCheckoutSuccess}
                 stepNumber={1}
                 OA={OA}
               />
