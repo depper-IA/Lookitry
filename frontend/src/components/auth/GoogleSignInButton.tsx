@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface GoogleSignInButtonProps {
   onSuccess?: (data?: any) => void;
@@ -15,28 +15,33 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
   const [googleReady, setGoogleReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const tokenClientRef = useRef<any>(null);
 
   useEffect(() => {
     const checkGoogle = () => {
-      if (typeof window !== 'undefined' && (window as any).google?.accounts?.id) {
-        setGoogleReady(true);
+      if (typeof window !== 'undefined' && (window as any).google?.accounts?.oauth2) {
         return true;
       }
       return false;
     };
 
-    if (checkGoogle()) return;
+    if (checkGoogle()) {
+      setGoogleReady(true);
+      return;
+    }
 
     const interval = setInterval(() => {
       if (checkGoogle()) {
         clearInterval(interval);
+        setGoogleReady(true);
       }
     }, 200);
 
     const timeout = setTimeout(() => {
-      if (!(window as any).google?.accounts?.id) {
-        console.warn('[GoogleSignIn] Google Identity Services está tardando en cargar...');
-        setError('El inicio sesión de Google está tardando. Si usas bloqueador de anuncios, intentalo pausarlo.');
+      clearInterval(interval);
+      if (!checkGoogle()) {
+        console.warn('[GoogleSignIn] Google Identity Services no cargó en 6s');
+        setError('El inicio de sesión de Google no está disponible. Si usas bloqueador de anuncios, páusalo para este sitio.');
       }
     }, 6000);
 
@@ -46,25 +51,32 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
     };
   }, []);
 
-  const handleGoogleResponse = useCallback(async (response: any) => {
-    setLoading(false);
-
-    if (!response.credential) {
-      const msg = 'No se recibió credencial de Google';
-      setError(msg);
-      onError?.(msg);
-      return;
-    }
-
-    const apiEndpoint = variant === 'admin' ? '/api/admin/auth/google' : '/api/auth/google';
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
+  const sendToBackend = useCallback(async (accessToken: string) => {
     try {
+      const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (!userInfoRes.ok) {
+        throw new Error('Failed to fetch user info');
+      }
+
+      const userInfo = await userInfoRes.json();
+
+      const apiEndpoint = variant === 'admin' ? '/api/admin/auth/google' : '/api/auth/google';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
       const apiRes = await fetch(`${apiUrl}${apiEndpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ credential: response.credential, redirectTo }),
+        body: JSON.stringify({
+          accessToken,
+          email: userInfo.email,
+          name: userInfo.name,
+          picture: userInfo.picture,
+          googleId: userInfo.sub,
+        }),
       });
 
       const data = await apiRes.json();
@@ -95,6 +107,40 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
     }
   }, [variant, redirectTo, onSuccess, onError]);
 
+  const initTokenClient = useCallback(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId) return null;
+
+    if (tokenClientRef.current) return tokenClientRef.current;
+
+    tokenClientRef.current = (window as any).google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: 'openid email profile',
+      prompt: 'consent',
+      login_hint: loginHint || undefined,
+      callback: (response: any) => {
+        setLoading(false);
+
+        if (response.error) {
+          const msg = response.error_description || 'Error al autenticar con Google';
+          setError(msg);
+          onError?.(msg);
+          return;
+        }
+
+        if (response.access_token) {
+          sendToBackend(response.access_token);
+        } else {
+          const msg = 'No se recibió token de Google';
+          setError(msg);
+          onError?.(msg);
+        }
+      },
+    });
+
+    return tokenClientRef.current;
+  }, [loginHint, sendToBackend, onError]);
+
   const handleClick = useCallback(() => {
     setError('');
     setLoading(true);
@@ -104,7 +150,7 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
       return;
     }
 
-    if (!(window as any).google?.accounts?.id) {
+    if (!(window as any).google?.accounts?.oauth2) {
       const msg = 'Google Sign-In no está disponible. Recarga la página e intenta de nuevo.';
       setError(msg);
       onError?.(msg);
@@ -122,44 +168,16 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
     }
 
     try {
-      (window as any).google.accounts.id.initialize({
-        client_id: clientId,
-        callback: handleGoogleResponse,
-        ux_mode: 'popup',
-        login_hint: loginHint || undefined,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-      });
+      const client = initTokenClient();
+      if (!client) {
+        const msg = 'Error al inicializar Google Sign-In';
+        setError(msg);
+        onError?.(msg);
+        setLoading(false);
+        return;
+      }
 
-      (window as any).google.accounts.id.prompt((notification: any) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          console.log('[GoogleSignIn] One Tap no disponible, usando popup');
-          (window as any).google.accounts.id.prompt((innerNotification: any) => {
-            if (innerNotification.isNotDisplayed() || innerNotification.isSkippedMoment()) {
-              (window as any).google.accounts.oauth2.initTokenClient({
-                client_id: clientId,
-                scope: 'email profile',
-                callback: (tokenResponse: any) => {
-                  if (tokenResponse.access_token) {
-                    fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`)
-                      .then(r => r.json())
-                      .then(userInfo => {
-                        handleGoogleResponse({ credential: tokenResponse.access_token, userInfo });
-                      })
-                      .catch(() => {
-                        setLoading(false);
-                        setError('Error al obtener información de Google');
-                      });
-                  } else {
-                    setLoading(false);
-                    setError('No se pudo autenticar con Google');
-                  }
-                },
-              }).requestAccessToken();
-            }
-          });
-        }
-      });
+      client.requestAccessToken();
     } catch (e: any) {
       console.error('[GoogleSignIn] Error:', e);
       const msg = 'Error al iniciar Google Sign-In. Intenta de nuevo.';
@@ -167,7 +185,7 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
       onError?.(msg);
       setLoading(false);
     }
-  }, [handleGoogleResponse, onError]);
+  }, [initTokenClient, onError]);
 
   return (
     <div className="w-full">
