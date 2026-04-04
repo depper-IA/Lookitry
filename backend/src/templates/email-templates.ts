@@ -567,21 +567,21 @@ export const landingDeletedNoticeEmail = (brand: BrandInfo): string => {
   return baseTemplate(content);
 };
 
-export const referralBonusCreditedEmail = (brand: BrandInfo, months: number): string => {
+export const referralBonusCreditedEmail = (brand: BrandInfo, credits: number): string => {
   const content = `
     <div style="text-align: center; margin-bottom: 20px;">
       <span style="font-size: 48px;">🎉</span>
     </div>
-    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 22px; text-align: center;">¡Tu bonus de referido ha sido aplicado!</h2>
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 22px; text-align: center;">¡Tu bonus de referido ya está disponible!</h2>
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
-      ¡Tenemos buenas noticias! Tu bonus de referido de <strong>${months} mes${months > 1 ? 'es' : ''} gratis</strong> ha sido aplicado exitosamente a tu suscripción.
+      ¡Tenemos buenas noticias! Tu bonus de referido de <strong>${credits} créditos extra</strong> fue aplicado exitosamente a tu cuenta.
     </p>
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
-      Tu suscripción ha sido extendida y ahora puedes disfrutar de tiempo extra con LOOKITRY.
+      Ya puedes usarlos como saldo adicional cuando tu plan necesite más generaciones.
     </p>
     <div style="margin: 24px 0; padding: 16px; background-color: #f5f2ee; border-radius: 8px; text-align: center;">
       <p style="margin: 0; color: #0a0a0a; font-size: 14px;">
-        <strong>¡Sigue compartiendo tu código de referido para ganar más meses gratis!</strong>
+        <strong>¡Sigue compartiendo tu código de referido para ganar más créditos extra!</strong>
       </p>
     </div>
     <div style="text-align: center; margin: 32px 0;">
@@ -601,14 +601,14 @@ export const referralConvertedNotifierEmail = (referrer: BrandInfo, referredName
     </div>
     <h2 style="color: #0a0a0a; margin-top: 0; font-size: 22px; text-align: center;">¡Uno de tus referidos se convirtió a plan pago!</h2>
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
-      ¡Excelentes noticias! <strong>${referredName}</strong> acaba de actualizar a un plan pago. Esto significa que has ganado <strong>1 mes gratis</strong> de LOOKITRY.
+      ¡Excelentes noticias! <strong>${referredName}</strong> acaba de activar un plan pago. Esto significa que has ganado <strong>500 créditos extra</strong> en LOOKITRY.
     </p>
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
-      Tu bonus ha sido aplicado automáticamente a tu suscripción. Puedes revisar tu nueva fecha de vencimiento en el dashboard.
+      Tu bonus ya fue aplicado automáticamente a tu saldo adicional. Puedes revisarlo desde el dashboard.
     </p>
     <div style="margin: 24px 0; padding: 16px; background-color: #f5f2ee; border-radius: 8px; text-align: center;">
       <p style="margin: 0; color: #0a0a0a; font-size: 14px;">
-        <strong>¡Sigue refiriendo más tiendas para ganar meses gratis!</strong>
+        <strong>¡Sigue refiriendo más tiendas para ganar más créditos extra!</strong>
       </p>
     </div>
     <div style="text-align: center; margin: 32px 0;">

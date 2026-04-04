@@ -1,5 +1,40 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-04] - Rediseño del programa de referidos a créditos extra
+
+### Cambio
+- El sistema de referidos dejó de regalar meses gratis y ahora acredita `500` créditos extra solo al referente.
+
+### Detalles
+- Nuevo servicio `referral.service` para centralizar la conversión automática del referido y la acreditación idempotente del reward.
+- La conversión del referido ahora se dispara desde `SubscriptionService.renewSubscription`, únicamente en el primer pago mensual elegible de `BASIC`, `PRO` o `ENTERPRISE`.
+- Se excluyen explícitamente `TRIAL`, add-ons y upgrades del reward automático.
+- Nueva migración `20260404_referrals_reward_credits.sql` con `reward_credits`, `converted_at` y `conversion_payment_reference`.
+- El panel admin de referidos ahora muestra reward en créditos, fecha de conversión y referencia del pago; la acreditación manual queda solo como fallback para el referente.
+- El dashboard de referidos fue actualizado para explicar el reward vigente de `500` créditos extra.
+- Se eliminó de configuración admin la UI engañosa de “meses de bonus por referido”.
+- Términos, PRD, DESIGN, TECH_STACK y REGLAS_IMPORTANTES fueron alineados al nuevo contrato del programa.
+- Se añadieron pruebas unitarias de `referral.service` y se validó que `subscription.service` siga pasando con la integración nueva.
+
+### Archivos modificados
+- `supabase/migrations/20260404_referrals_reward_credits.sql`
+- `backend/src/services/referral.service.ts`
+- `backend/src/controllers/referral.controller.ts`
+- `backend/src/services/subscription.service.ts`
+- `backend/src/services/__tests__/referral.service.test.ts`
+- `backend/src/templates/email-templates.ts`
+- `backend/src/services/notification.service.ts`
+- `frontend/src/app/admin/referrals/page.tsx`
+- `frontend/src/app/dashboard/referral/page.tsx`
+- `frontend/src/app/admin/configuracion/page.tsx`
+- `frontend/src/app/terminos/TerminosClient.tsx`
+- `PRD.md`
+- `DESIGN.md`
+- `TECH_STACK.md`
+- `REGLAS_IMPORTANTES.md`
+
+---
+
 ## [2026-04-04] - Actualizacion Integral de Terminos y Condiciones
 
 ### Cambio

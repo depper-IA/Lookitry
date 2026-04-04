@@ -1,29 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Users, Gift, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Copy, Gift, Loader2, Users } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
 interface ReferralData {
   referralCode: string;
+  rewardCredits: number;
   referralCount: number;
   successfulReferrals: number;
   pendingReferrals: number;
+  totalCreditsEarned: number;
   recentReferrals: Array<{
     id: string;
     referred_brand_id: string;
     status: string;
     created_at: string;
+    converted_at?: string | null;
   }>;
 }
 
 export default function ReferralPage() {
   const [data, setData] = useState<ReferralData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showClaimModal, setShowClaimModal] = useState(false);
   const [claimCode, setClaimCode] = useState('');
   const [claimLoading, setClaimLoading] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState<string | null>(null);
@@ -39,8 +40,6 @@ export default function ReferralPage() {
       if (!res.ok) throw new Error('Error al cargar');
       const json = await res.json();
       setData(json);
-    } catch (err: any) {
-      setError('Error al cargar datos de referidos');
     } finally {
       setLoading(false);
     }
@@ -69,6 +68,7 @@ export default function ReferralPage() {
       if (!res.ok) throw new Error(json.error || 'Error');
       setClaimSuccess(json.message);
       setClaimCode('');
+      await loadReferralData();
     } catch (err: any) {
       setClaimError(err.message || 'Código inválido');
     } finally {
@@ -78,105 +78,103 @@ export default function ReferralPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#FF5C3A]" />
+      <div className="flex min-h-[400px] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#FF5C3A]" />
       </div>
     );
   }
 
+  const rewardCredits = data?.rewardCredits || 500;
+
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
+    <div className="mx-auto max-w-4xl space-y-8 p-6">
       <div>
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Programa de Referidos</h1>
-        <p className="text-[var(--text-muted)] mt-1">Invita a otras tiendas y gana meses gratis</p>
+        <p className="mt-1 text-[var(--text-muted)]">Invita a otras tiendas y gana {rewardCredits} créditos extra por cada conversión válida.</p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-[#FF5C3A]/10 rounded-lg">
-              <Gift className="w-5 h-5 text-[#FF5C3A]" />
+      <div className="grid gap-4 md:grid-cols-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
+          <div className="mb-2 flex items-center gap-3">
+            <div className="rounded-lg bg-[#FF5C3A]/10 p-2">
+              <Gift className="h-5 w-5 text-[#FF5C3A]" />
             </div>
             <span className="text-sm text-[var(--text-muted)]">Tu código</span>
           </div>
-          <div className="flex items-center gap-2 mt-3">
-            <code className="text-2xl font-mono font-bold text-white">{data?.referralCode || '—'}</code>
-            <button onClick={copyCode} className="p-2 hover:bg-[var(--bg-hover)] rounded-lg transition-colors" title="Copiar">
-              <Copy className="w-4 h-4 text-[var(--text-muted)]" />
+          <div className="mt-3 flex items-center gap-2">
+            <code className="text-2xl font-bold text-white">{data?.referralCode || '—'}</code>
+            <button onClick={copyCode} className="rounded-lg p-2 transition-colors hover:bg-[var(--bg-hover)]" title="Copiar">
+              <Copy className="h-4 w-4 text-[var(--text-muted)]" />
             </button>
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-emerald-500/10 rounded-lg">
-              <Users className="w-5 h-5 text-emerald-500" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
+          <div className="mb-2 flex items-center gap-3">
+            <div className="rounded-lg bg-emerald-500/10 p-2">
+              <Users className="h-5 w-5 text-emerald-500" />
             </div>
             <span className="text-sm text-[var(--text-muted)]">Total referidos</span>
           </div>
           <p className="text-3xl font-bold text-white">{data?.referralCount || 0}</p>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6"
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-amber-500/10 rounded-lg">
-              <CheckCircle2 className="w-5 h-5 text-amber-500" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
+          <div className="mb-2 flex items-center gap-3">
+            <div className="rounded-lg bg-amber-500/10 p-2">
+              <CheckCircle2 className="h-5 w-5 text-amber-500" />
             </div>
             <span className="text-sm text-[var(--text-muted)]">Convertidos</span>
           </div>
           <p className="text-3xl font-bold text-white">{data?.successfulReferrals || 0}</p>
         </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
+          <div className="mb-2 flex items-center gap-3">
+            <div className="rounded-lg bg-sky-500/10 p-2">
+              <Gift className="h-5 w-5 text-sky-400" />
+            </div>
+            <span className="text-sm text-[var(--text-muted)]">Créditos ganados</span>
+          </div>
+          <p className="text-3xl font-bold text-white">{data?.totalCreditsEarned || 0}</p>
+        </motion.div>
       </div>
 
-      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6">
-        <h2 className="text-lg font-bold text-white mb-4">¿Cómo funciona?</h2>
+      <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
+        <h2 className="mb-4 text-lg font-bold text-white">¿Cómo funciona?</h2>
         <div className="space-y-4">
           <div className="flex gap-4">
-            <div className="w-8 h-8 rounded-full bg-[#FF5C3A] text-white flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">1</div>
             <div>
-              <p className="text-white font-medium">Comparte tu código</p>
-              <p className="text-sm text-[var(--text-muted)]">Envía tu código a otros dueños de tiendas de moda</p>
+              <p className="font-medium text-white">Comparte tu código</p>
+              <p className="text-sm text-[var(--text-muted)]">Envíalo a otras tiendas que puedan necesitar el probador virtual.</p>
             </div>
           </div>
           <div className="flex gap-4">
-            <div className="w-8 h-8 rounded-full bg-[#FF5C3A] text-white flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">2</div>
             <div>
-              <p className="text-white font-medium">Ellos se registran</p>
-              <p className="text-sm text-[var(--text-muted)]">Usan tu código al crear su cuenta</p>
+              <p className="font-medium text-white">Ellos lo reclaman</p>
+              <p className="text-sm text-[var(--text-muted)]">La nueva marca registra tu código una sola vez desde su cuenta.</p>
             </div>
           </div>
           <div className="flex gap-4">
-            <div className="w-8 h-8 rounded-full bg-[#FF5C3A] text-white flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-[#FF5C3A] text-sm font-bold text-white">3</div>
             <div>
-              <p className="text-white font-medium">Ambos ganan 1 mes gratis</p>
-              <p className="text-sm text-[var(--text-muted)]">Cuando ellos convierten a plan pago</p>
+              <p className="font-medium text-white">Tú ganas {rewardCredits} créditos extra</p>
+              <p className="text-sm text-[var(--text-muted)]">Se liberan automáticamente cuando ese referido paga por primera vez un plan mensual real.</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6">
-        <h2 className="text-lg font-bold text-white mb-4">¿Tienes un código de referido?</h2>
-        <p className="text-sm text-[var(--text-muted)] mb-4">Ingresa el código que te dio un amigo para obtener 1 mes gratis</p>
-        
+      <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
+        <h2 className="mb-4 text-lg font-bold text-white">¿Tienes un código de referido?</h2>
+        <p className="mb-4 text-sm text-[var(--text-muted)]">Ingresa el código que te compartieron. El beneficio se acredita al referente cuando completes tu primer pago mensual elegible.</p>
+
         {claimSuccess ? (
-          <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
-            <p className="text-emerald-400 flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" />
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+            <p className="flex items-center gap-2 text-emerald-400">
+              <CheckCircle2 className="h-5 w-5" />
               {claimSuccess}
             </p>
           </div>
@@ -187,26 +185,26 @@ export default function ReferralPage() {
               value={claimCode}
               onChange={(e) => setClaimCode(e.target.value.toUpperCase())}
               placeholder="Ej: ABC12345"
-              className="flex-1 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 text-white placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[#FF5C3A]"
+              className="flex-1 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-white placeholder:text-[var(--text-muted)] focus:border-[#FF5C3A] focus:outline-none"
             />
             <button
               onClick={handleClaim}
               disabled={claimLoading || !claimCode.trim()}
-              className="px-6 py-3 bg-[#FF5C3A] text-white font-medium rounded-xl hover:bg-[#FF5C3A]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="flex items-center gap-2 rounded-xl bg-[#FF5C3A] px-6 py-3 font-medium text-white transition-colors hover:bg-[#FF5C3A]/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {claimLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Aplicar <ArrowRight className="w-4 h-4" /></>}
+              {claimLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Aplicar <ArrowRight className="h-4 w-4" /></>}
             </button>
           </div>
         )}
-        {claimError && <p className="text-red-400 text-sm mt-2">{claimError}</p>}
+        {claimError && <p className="mt-2 text-sm text-red-400">{claimError}</p>}
       </div>
 
       {data?.recentReferrals && data.recentReferrals.length > 0 && (
-        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-white mb-4">Referidos Recientes</h2>
+        <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-6">
+          <h2 className="mb-4 text-lg font-bold text-white">Referidos recientes</h2>
           <div className="space-y-3">
-            {data.recentReferrals.map((ref) => (
-              <div key={ref.id} className="flex items-center justify-between p-3 bg-[var(--bg-primary)] rounded-xl">
+            {data.recentReferrals.map(ref => (
+              <div key={ref.id} className="flex items-center justify-between rounded-xl bg-[var(--bg-primary)] p-3">
                 <span className="text-sm text-[var(--text-muted)]">Referido #{ref.id.slice(0, 8)}</span>
                 <span className={`text-sm font-medium ${ref.status === 'converted' ? 'text-emerald-400' : 'text-amber-400'}`}>
                   {ref.status === 'converted' ? 'Convertido' : 'Pendiente'}

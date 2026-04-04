@@ -233,7 +233,7 @@ Lookitry es un probador virtual con IA para tiendas de ropa, accesorios y calzad
 - `PaymentMethodStep.tsx` — Paso de método de pago
 - `OrderSummary.tsx` — Resumen de orden
 - `CouponInput.tsx` — Input de cupón de descuento
-- `ReferralInput.tsx` — Input de código de referido
+- `ReferralInput.tsx` — Input de código de referido para asociar una marca referida; el reward vigente es de 500 créditos extra para el referente
 
 ### 8.6 Mini-Landing
 - `MiniLanding.tsx` — Componente principal

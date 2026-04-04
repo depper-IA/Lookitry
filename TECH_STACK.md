@@ -313,10 +313,13 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | `referred_brand_id` | uuid FK → brands | |
 | `referral_code` | varchar(50) | |
 | `bonus_months` | integer DEFAULT 1 | |
+| `reward_credits` | integer DEFAULT 500 | Reward real aplicado al referente |
 | `bonus_credited` | boolean DEFAULT false | |
 | `bonus_credited_at` | timestamptz | |
 | `referrer_claimed`, `referred_claimed` | boolean DEFAULT false | |
 | `status` | varchar(20) DEFAULT 'pending' | |
+| `converted_at` | timestamptz | Fecha de conversión automática |
+| `conversion_payment_reference` | varchar(255) | Referencia del primer pago elegible |
 | `created_at`, `updated_at` | timestamptz | |
 
 ### 5.13 `notification_preferences`
@@ -510,7 +513,7 @@ Motor de reglas de prompt por categoría de producto con 15+ categorías:
 | `cleanup.service` | Limpieza de archivos temporales |
 | `enterprise.service` | Sync de productos enterprise |
 | `coupon.service` | Validación y redención de cupones |
-| `referral.service` | Programa de referidos |
+| `referral.service` | Conversión automática de referidos y acreditación de 500 créditos extra al referente |
 | `review.service` | Gestión de reviews |
 
 ### 7.6 Subsistema de Auditoría (`auditor/`)
