@@ -1,5 +1,23 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-04] - Guard de trial: evitar que usuarios con trial activo o plan pago sigan en /trial-checkout
+
+### Cambio
+- Se añadió protección en frontend y backend para impedir que usuarios ya logueados con trial activo o plan pago puedan seguir el flujo de checkout del trial.
+
+### Detalles
+- **Backend (`trial.routes.ts`)**: `POST /trial/initiate-guest` ahora verifica si el email ya existe en `brands` con trial activo o plan pago. Si es así, retorna 409 con `redirectUrl` al dashboard.
+- **Frontend (`trial-checkout/page.tsx`)**: Guard client-side que al montar verifica vía `/api/brands/me` si el usuario tiene trial activo o plan pago. Si es así, redirige a `/dashboard/subscription` con un estado de carga visual.
+- **Frontend (`middleware.ts`)**: Guard edge que intercepta `/trial-checkout`. Si hay cookie `token`, consulta la API y redirige al dashboard si el usuario ya tiene trial activo o plan pago.
+- Se evitaron bucles de redirección: el guard solo redirige de `/trial-checkout` → `/dashboard/subscription` (nunca al revés), y `/dashboard/subscription` no redirige de vuelta a `/trial-checkout`.
+
+### Archivos modificados
+- `backend/src/routes/trial.routes.ts`
+- `frontend/src/app/trial-checkout/page.tsx`
+- `frontend/src/middleware.ts`
+
+---
+
 ## [2026-04-04] - Sincronización de Documentación Arquitectónica (TECH_STACK.md)
 
 ### Cambio
