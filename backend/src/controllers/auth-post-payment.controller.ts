@@ -9,6 +9,7 @@ import { paypalService } from '../services/paypal.service';
 import { notificationService } from '../services/notification.service';
 import { AuthRequest } from '../middleware/auth';
 import { isTrialLandingBlocked } from '../utils/brandLifecycle';
+import { sanitizeError } from '../utils/sanitizeError';
 
 const authService = new AuthService();
 const emailService = new EmailService();
@@ -274,7 +275,7 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
     return res.status(201).json(result);
   } catch (error: any) {
     console.error('[PostPayment] Error en registro:', error);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message || 'Error al crear la cuenta' });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al crear la cuenta') });
   }
 }
 

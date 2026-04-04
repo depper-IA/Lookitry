@@ -369,11 +369,6 @@ export class AuthController {
 
       return res.status(200).json({
         exists: true,
-        brand: {
-          name: brand.name,
-          plan: brand.plan,
-          subscriptionStatus: brand.subscription_status
-        }
       });
     } catch (error: any) {
       console.error('Error en checkEmail:', error);

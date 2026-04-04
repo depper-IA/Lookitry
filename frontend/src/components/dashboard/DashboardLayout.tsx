@@ -155,8 +155,12 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
                 alt={currentBrand.name}
                 className="h-full w-full object-contain bg-white/5 p-1"
                 onError={(event) => {
-                  (event.target as HTMLImageElement).style.display = 'none';
-                  (event.target as HTMLImageElement).parentElement!.innerHTML = currentBrand?.name?.charAt(0)?.toUpperCase() ?? 'M';
+                  const target = event.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.textContent = currentBrand?.name?.charAt(0)?.toUpperCase() ?? 'M';
+                  }
                 }}
               />
             ) : (
@@ -254,8 +258,12 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
                     alt={currentBrand.name}
                     className="h-full w-full object-contain bg-white/5 p-1"
                     onError={(event) => {
-                      (event.target as HTMLImageElement).style.display = 'none';
-                      (event.target as HTMLImageElement).parentElement!.innerHTML = currentBrand?.name?.charAt(0)?.toUpperCase() ?? 'M';
+                      const target = event.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.textContent = currentBrand?.name?.charAt(0)?.toUpperCase() ?? 'M';
+                      }
                     }}
                   />
                 ) : (

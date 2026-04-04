@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { sanitizeError } from '../utils/sanitizeError';
 import { supabaseAdmin } from '../config/supabase';
 import { UploadService, type UploadAssetType } from '../services/upload.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -208,7 +209,7 @@ export const blogController = {
       return res.status(201).json({ message: 'Post creado exitosamente', post: data });
     } catch (error: any) {
       console.error('[BlogController] Webhook error:', error);
-      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error interno del servidor') });
     }
   },
 
@@ -223,7 +224,7 @@ export const blogController = {
       if (error) throw error;
       return res.json(data);
     } catch (error: any) {
-      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error interno del servidor') });
     }
   },
 
@@ -242,7 +243,7 @@ export const blogController = {
 
       return res.json(data);
     } catch (error: any) {
-      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error interno del servidor') });
     }
   },
 
@@ -273,7 +274,7 @@ export const blogController = {
       if (error) throw error;
       return res.json({ message: 'Post actualizado', post: data });
     } catch (error: any) {
-      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error interno del servidor') });
     }
   },
 
@@ -285,7 +286,7 @@ export const blogController = {
       if (error) throw error;
       return res.json({ message: 'Post eliminado correctamente' });
     } catch (error: any) {
-      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error interno del servidor') });
     }
   },
 
@@ -322,7 +323,7 @@ export const blogController = {
       return res.status(201).json({ message: 'Post creado exitosamente', post: data });
     } catch (error: any) {
       console.error('[BlogController] Create error:', error);
-      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error interno del servidor') });
     }
   },
 
@@ -333,7 +334,7 @@ export const blogController = {
       if (error) throw error;
       return res.json(data);
     } catch (error: any) {
-      return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error interno del servidor') });
     }
   },
 
@@ -387,7 +388,7 @@ export const blogController = {
       return res.status(200).json(result);
     } catch (error: any) {
       console.error('[Blog Upload] Error:', error);
-      return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al subir imagen') });
     }
   }
 };

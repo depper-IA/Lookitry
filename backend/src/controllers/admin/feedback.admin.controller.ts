@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { FeedbackService } from '../../services/feedback.service';
+import { sanitizeError } from '../../utils/sanitizeError';
 
 const feedbackService = new FeedbackService();
 
@@ -17,7 +18,7 @@ export const getFeedbacks = async (req: Request, res: Response) => {
     });
     return res.status(200).json({ feedbacks });
   } catch (error: any) {
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al obtener feedbacks') });
   }
 };
 
@@ -26,10 +27,10 @@ export const getFeedbacks = async (req: Request, res: Response) => {
  */
 export const getFeedbackStats = async (_req: Request, res: Response) => {
   try {
-    const stats = await feedbackService.getErrorStats();
+    const stats = await feedbackService.getFeedbackStats();
     return res.status(200).json({ stats });
   } catch (error: any) {
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al obtener estadísticas') });
   }
 };
 
@@ -42,7 +43,7 @@ export const resolveFeedback = async (req: any, res: Response) => {
     await feedbackService.resolveFeedback(id, req.admin?.email ?? 'admin');
     return res.status(200).json({ message: 'Feedback marcado como resuelto' });
   } catch (error: any) {
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al resolver feedback') });
   }
 };
 
@@ -55,7 +56,7 @@ export const deleteFeedback = async (req: Request, res: Response) => {
     await feedbackService.deleteFeedback(id);
     return res.status(200).json({ message: 'Feedback eliminado del RAG' });
   } catch (error: any) {
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al eliminar feedback') });
   }
 };
 

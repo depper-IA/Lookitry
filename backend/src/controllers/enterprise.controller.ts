@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { sanitizeError } from '../utils/sanitizeError';
 import { recordTrialEvent } from '../utils/brandLifecycle';
 import { supabaseAdmin } from '../config/supabase';
 
@@ -60,7 +61,7 @@ export const listEnterpriseSyncConfigs = async (req: Request, res: Response) => 
           moduleMessage: getEnterpriseModuleUnavailableMessage(),
         });
       }
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: sanitizeError(error, 'Error de base de datos') });
     }
 
     const configs = data || [];
@@ -75,7 +76,7 @@ export const listEnterpriseSyncConfigs = async (req: Request, res: Response) => 
         .in('id', brandIds);
 
       if (brandsError) {
-        return res.status(500).json({ error: brandsError.message });
+        return res.status(500).json({ error: sanitizeError(brandsError, 'Error al obtener marcas') });
       }
 
       brandsById = new Map((brands || []).map((brand: any) => [brand.id, brand]));
@@ -88,7 +89,7 @@ export const listEnterpriseSyncConfigs = async (req: Request, res: Response) => 
 
     return res.json({ configs: hydratedConfigs });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: sanitizeError(err, 'Error interno del servidor') });
   }
 };
 
@@ -143,7 +144,7 @@ export const upsertEnterpriseSyncConfig = async (req: Request, res: Response) =>
       if (isMissingEnterpriseSyncTableError(error)) {
         return res.status(503).json({ error: getEnterpriseModuleUnavailableMessage() });
       }
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: sanitizeError(error, 'Error de base de datos') });
     }
 
     return res.json({
@@ -151,7 +152,7 @@ export const upsertEnterpriseSyncConfig = async (req: Request, res: Response) =>
       config: data,
     });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: sanitizeError(err, 'Error interno del servidor') });
   }
 };
 
@@ -220,7 +221,7 @@ export const triggerEnterpriseSync = async (req: Request, res: Response) => {
 
     return res.json({ message: 'Sync disparado exitosamente. n8n procesará los productos en breve.' });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: sanitizeError(err, 'Error interno del servidor') });
   }
 };
 
@@ -281,7 +282,7 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
         .select()
         .single();
 
-      if (error) return res.status(500).json({ error: error.message });
+      if (error) return res.status(500).json({ error: sanitizeError(error, 'Error al actualizar producto') });
 
       // Actualizar contador de sync (si falla, continuar sin fallar)
       try {
@@ -319,10 +320,10 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
         if (error.message.includes('external_id')) {
           delete insertPayload.external_id;
           const retry = await supabaseAdmin.from('products').insert(insertPayload).select().single();
-          if (retry.error) return res.status(500).json({ error: retry.error.message });
+          if (retry.error) return res.status(500).json({ error: sanitizeError(retry.error, 'Error al crear producto') });
           return res.json({ action: 'created', product: retry.data });
         }
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: sanitizeError(error, 'Error de base de datos') });
       }
 
       // Actualizar timestamp y contador en enterprise_sync_configs (si falla, continuar sin fallar)
@@ -359,7 +360,7 @@ export const syncProductWebhook = async (req: Request, res: Response) => {
       }
     }
 
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: sanitizeError(err, 'Error interno del servidor') });
   }
 };
 
@@ -398,12 +399,12 @@ export const updateSyncStatus = async (req: Request, res: Response) => {
       return res.status(503).json({ error: getEnterpriseModuleUnavailableMessage() });
     }
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error)         return res.status(500).json({ error: sanitizeError(error, 'Error al crear producto') });
 
     return res.json({ message: 'Estado de sync actualizado', config: data });
   } catch (err: any) {
     console.error('[Enterprise] Error en updateSyncStatus:', err.message);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: sanitizeError(err, 'Error interno del servidor') });
   }
 };
 
@@ -509,7 +510,7 @@ export const createEnterpriseClient = async (req: Request, res: Response) => {
       console.error('[Enterprise] Error creando marca:', createError);
       return res.status(500).json({
         error: 'ERROR_CREATING_BRAND',
-        message: createError?.message || 'Error desconocido al crear la marca',
+        message: sanitizeError(createError, 'Error desconocido al crear la marca'),
       });
     }
 
@@ -585,6 +586,6 @@ export const createEnterpriseClient = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     console.error('[Enterprise] Error en createEnterpriseClient:', err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: sanitizeError(err, 'Error interno del servidor') });
   }
 };
