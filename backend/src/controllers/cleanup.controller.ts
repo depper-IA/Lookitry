@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { CleanupService } from '../services/cleanup.service';
+import { sanitizeError } from '../utils/sanitizeError';
 
 const cleanupService = new CleanupService();
 
@@ -22,7 +23,7 @@ export const runCleanup = async (_req: Request, res: Response) => {
     console.error('[Cleanup Controller] Error:', error);
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
-      message: error.message || 'Error al ejecutar limpieza',
+      message: sanitizeError(error, 'Error al ejecutar limpieza'),
     });
   }
 };
@@ -45,7 +46,7 @@ export const getStorageStats = async (_req: Request, res: Response) => {
     console.error('[Cleanup Controller] Error:', error);
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
-      message: error.message || 'Error al obtener estadísticas',
+      message: sanitizeError(error, 'Error al obtener estadísticas'),
     });
   }
 };

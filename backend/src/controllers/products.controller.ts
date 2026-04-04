@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { ProductsService, CreateProductDto, UpdateProductDto } from '../services/products.service';
 import { AuthRequest } from '../middleware/auth';
 import { invalidateBrandConfigCache } from '../utils/brandConfigCache';
+import { sanitizeError } from '../utils/sanitizeError';
 
 const productsService = new ProductsService();
 
@@ -68,13 +69,13 @@ export class ProductsController {
       if (error.message.includes('límite') || error.message.includes('requerido') || error.message.includes('vacío')) {
         return res.status(400).json({
           error: 'VALIDATION_ERROR',
-          message: error.message,
+          message: sanitizeError(error, 'Error de validación en producto'),
         });
       }
 
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: 'Error al crear el producto',
+        message: sanitizeError(error, 'Error al crear el producto'),
       });
     }
   }
@@ -150,21 +151,21 @@ export class ProductsController {
       if (error.message.includes('no encontrado')) {
         return res.status(404).json({
           error: 'NOT_FOUND',
-          message: error.message,
+          message: sanitizeError(error, 'Producto no encontrado'),
         });
       }
 
       if (error.message.includes('permiso')) {
         return res.status(403).json({
           error: 'FORBIDDEN',
-          message: error.message,
+          message: sanitizeError(error, 'No tienes permiso para esta acción'),
         });
       }
 
       if (error.message.includes('vacío') || error.message.includes('requerido')) {
         return res.status(400).json({
           error: 'VALIDATION_ERROR',
-          message: error.message,
+          message: sanitizeError(error, 'Error de validación en producto'),
         });
       }
 
@@ -212,20 +213,20 @@ export class ProductsController {
       if (error.message.includes('no encontrado')) {
         return res.status(404).json({
           error: 'NOT_FOUND',
-          message: error.message,
+          message: sanitizeError(error, 'Producto no encontrado'),
         });
       }
 
       if (error.message.includes('permiso')) {
         return res.status(403).json({
           error: 'FORBIDDEN',
-          message: error.message,
+          message: sanitizeError(error, 'No tienes permiso para esta acción'),
         });
       }
 
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: 'Error al eliminar el producto',
+        message: sanitizeError(error, 'Error al eliminar el producto'),
       });
     }
   }
@@ -310,7 +311,7 @@ export class ProductsController {
       console.error('[AI-Descriptor] Error general:', error);
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: error.message || 'Error al procesar la descripción con IA',
+        message: sanitizeError(error, 'Error al procesar la descripción con IA'),
       });
     }
   }

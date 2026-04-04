@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import multer from 'multer';
 import { UploadService } from '../services/upload.service';
 import { AuthRequest } from '../middleware/auth';
+import { sanitizeError } from '../utils/sanitizeError';
 
 // Multer en memoria para recibir archivos binarios desde n8n
 export const multerMemory = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -37,7 +38,7 @@ export const uploadImage = async (req: AuthRequest, res: Response) => {
     console.error('[Upload Controller] Error:', error);
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
-      message: error.message || 'Error al subir imagen',
+      message: sanitizeError(error, 'Error al subir imagen'),
     });
   }
 };
@@ -98,7 +99,7 @@ export const uploadSelfie = async (req: Request, res: Response) => {
     console.error('[Upload Selfie] Error:', error);
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
-      message: error.message || 'Error al subir selfie',
+      message: sanitizeError(error, 'Error al subir selfie'),
     });
   }
 };

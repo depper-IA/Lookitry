@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { UsageService } from '../services/usage.service';
 import { AuthRequest } from '../middleware/auth';
+import { sanitizeError } from '../utils/sanitizeError';
 
 const usageService = new UsageService();
 
@@ -23,7 +24,7 @@ export class UsageController {
       if (error.message === 'Marca no encontrada') {
         return res.status(404).json({
           error: 'NOT_FOUND',
-          message: error.message,
+          message: sanitizeError(error, 'Marca no encontrada'),
         });
       }
 

@@ -8,6 +8,7 @@ import { invalidateBrandConfigCache } from '../utils/brandConfigCache';
 import { createAdminNotification } from '../utils/adminNotifications';
 import { getWooProductSummary, getWooTelemetrySummary } from '../utils/wooTelemetry';
 import { sanitizeDomainList } from '../utils/storeDomain';
+import { sanitizeError } from '../utils/sanitizeError';
 import { buildLegalDataExport, createLegalRequest, getBrandSocialLinks, getLegalDataExports, getLegalRequests, recordTrialEvent } from '../utils/brandLifecycle';
 
 const brandsService = new BrandsService();
@@ -255,7 +256,7 @@ export class BrandsController {
       if (error.message.includes('hexadecimal') || error.message.includes('slug') || error.message.includes('uso')) {
         return res.status(400).json({
           error: 'VALIDATION_ERROR',
-          message: error.message,
+          message: sanitizeError(error, 'Error de validación en perfil'),
         });
       }
 
@@ -339,7 +340,7 @@ export class BrandsController {
       if (error.message.includes('No hay campos')) {
         return res.status(400).json({
           error: 'VALIDATION_ERROR',
-          message: error.message,
+          message: sanitizeError(error, 'Error de validación en preferencias'),
         });
       }
 

@@ -344,7 +344,7 @@ export const getBrandFull = async (req: Request, res: Response) => {
     const result = await adminService.getBrandFull(id);
     return res.status(200).json(result);
   } catch (error: any) {
-    if (error.message === 'Marca no encontrada') return res.status(404).json({ error: 'NOT_FOUND', message: error.message });
+    if (error.message === 'Marca no encontrada') return res.status(404).json({ error: 'NOT_FOUND', message: sanitizeError(error, 'Marca no encontrada') });
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener ficha de marca' });
   }
 };

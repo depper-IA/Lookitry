@@ -3,6 +3,7 @@ import { supabaseAdmin } from '../config/supabase';
 import { PaymentSettingsService } from '../services/paymentSettings.service';
 import { getReportingTrm, normalizePaymentRecordToCop, convertPaymentToCop } from '../utils/paymentNormalization';
 import { inferBillingType, inferPlanPurchased } from '../utils/paymentLedger';
+import { sanitizeError } from '../utils/sanitizeError';
 
 const paymentSettingsService = new PaymentSettingsService();
 
@@ -250,7 +251,7 @@ export class RevenueController {
       console.error('Error in getRevenueStats:', error);
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: error.message || 'Error al obtener estadísticas de ingresos',
+        message: sanitizeError(error, 'Error al obtener estadísticas de ingresos'),
       });
     }
   }
@@ -335,7 +336,7 @@ export class RevenueController {
     } catch (error: any) {
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: error.message || 'Error al obtener pagos',
+        message: sanitizeError(error, 'Error al obtener pagos'),
       });
     }
   }
