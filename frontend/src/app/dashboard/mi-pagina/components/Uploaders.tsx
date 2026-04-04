@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useRef, useState } from 'react';
 import { Spinner } from '@/components/ui/Spinner';

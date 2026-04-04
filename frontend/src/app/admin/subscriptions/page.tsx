@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle, XCircle, RefreshCw, Ban, RotateCcw, ArrowUpDown } from 'lucide-react';

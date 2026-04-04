@@ -7,6 +7,10 @@ import { Home, Package, Sparkles, BarChart3, User } from 'lucide-react';
 
 export function DashboardBottomNav() {
   const pathname = usePathname();
+  const itemClass =
+    'flex flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-2 text-center transition-all duration-200 min-w-0';
+  const labelClass =
+    'text-[8px] leading-[1.05] font-semibold uppercase tracking-[0.08em] text-center break-words';
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard';
@@ -26,66 +30,66 @@ export function DashboardBottomNav() {
           <Link
             href="/dashboard"
             aria-current={isActive('/dashboard') ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+            className={`${itemClass} ${
               isActive('/dashboard')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
             <Home size={20} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Inicio</span>
+            <span className={labelClass}>Inicio</span>
           </Link>
           
           <Link
             href="/dashboard/products"
             aria-current={isActive('/dashboard/products') ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+            className={`${itemClass} ${
               isActive('/dashboard/products')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
             <Package size={20} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Productos</span>
+            <span className={labelClass}>Productos</span>
           </Link>
           
           <Link
             href="/dashboard/generations"
             aria-current={isActive('/dashboard/generations') ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+            className={`${itemClass} ${
               isActive('/dashboard/generations')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
             <Sparkles size={20} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Pruebas IA</span>
+            <span className={labelClass}>Pruebas IA</span>
           </Link>
           
           <Link
             href="/dashboard/analytics"
             aria-current={isActive('/dashboard/analytics') ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+            className={`${itemClass} ${
               isActive('/dashboard/analytics')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
             <BarChart3 size={20} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Resultados</span>
+            <span className={labelClass}>Resultados</span>
           </Link>
           
           <Link
             href="/dashboard/profile"
             aria-current={isActive('/dashboard/profile') ? 'page' : undefined}
-            className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
+            className={`${itemClass} ${
               isActive('/dashboard/profile')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
             <User size={20} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Perfil</span>
+            <span className={labelClass}>Perfil</span>
           </Link>
         </div>
       </div>

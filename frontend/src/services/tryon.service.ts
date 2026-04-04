@@ -1,4 +1,4 @@
-﻿import type { TryOnConfigResponse, GenerateTryOnDto, GenerateTryOnResponse } from '@/types';
+import type { TryOnConfigResponse, GenerateTryOnDto, GenerateTryOnResponse } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 

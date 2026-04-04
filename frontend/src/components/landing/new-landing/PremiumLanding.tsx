@@ -40,7 +40,7 @@ export default function PremiumLanding({
         <PromoBanner />
         <LandingNav />
       </div>
-      <main className="relative" style={{ paddingTop: '140px' }}>
+      <main className="relative">
         <LandingHero />
         <LandingStats />
         <LandingSteps />

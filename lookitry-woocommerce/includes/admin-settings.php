@@ -867,7 +867,7 @@ function lookitry_settings_page() {
 
                         currentKey = key;
                         persistApiKey(key).fail(function() {
-                            showNotice('La conexiÃ³n fue vÃ¡lida, pero no se pudo guardar la API Key en WordPress.', 'error');
+                            showNotice('La conexión fue válida, pero no se pudo guardar la API Key en WordPress.', 'error');
                         });
 
                         if (!silent) {
@@ -1108,7 +1108,7 @@ function lookitry_settings_page() {
                 return;
             }
 
-            if (!window.confirm('Â¿Desincronizar "' + productName + '" de Lookitry? El producto dejarÃ¡ de estar disponible en el probador, pero no se borrarÃ¡ el historial.')) {
+            if (!window.confirm('¿Desincronizar "' + productName + '" de Lookitry? El producto dejará de estar disponible en el probador, pero no se borrará el historial.')) {
                 return;
             }
 
@@ -1136,7 +1136,7 @@ function lookitry_settings_page() {
                     }
                 },
                 error: function(xhr) {
-                    var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Fallo de conexiÃ³n.';
+                    var msg = xhr.responseJSON ? xhr.responseJSON.message : 'Fallo de conexión.';
                     showNotice(msg, 'error');
                 },
                 complete: function() {

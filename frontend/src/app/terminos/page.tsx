@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import TerminosClient from './TerminosClient';
 
 const BASE_URL = 'https://lookitry.com';

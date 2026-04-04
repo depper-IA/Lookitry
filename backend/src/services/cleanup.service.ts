@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 import { supabaseAdmin } from '../config/supabase';
 
 interface CleanupConfig {
