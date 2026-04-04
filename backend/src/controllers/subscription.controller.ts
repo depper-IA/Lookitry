@@ -1,10 +1,11 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { SubscriptionService } from '../services/subscription.service';
 import { NotificationService } from '../services/notification.service';
 import { auditService } from '../services/audit.service';
 import { planChangeService } from '../services/planChange.service';
 import { AuthRequest } from '../middleware/auth';
 import { CreatePaymentDto } from '../types';
+import { sanitizeError } from '../utils/sanitizeError';
 
 const notificationService = new NotificationService();
 
@@ -54,7 +55,7 @@ export class SubscriptionController {
     } catch (error: any) {
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: error.message || 'Error al obtener información de suscripción',
+        message: sanitizeError(error, 'Error al obtener información de suscripción'),
       });
     }
   }
@@ -118,7 +119,7 @@ export class SubscriptionController {
     } catch (error: any) {
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: error.message || 'Error al obtener suscripciones',
+        message: sanitizeError(error, 'Error al obtener suscripciones'),
       });
     }
   }
@@ -171,7 +172,7 @@ export class SubscriptionController {
     } catch (error: any) {
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: error.message || 'Error al renovar suscripción',
+        message: sanitizeError(error, 'Error al renovar suscripción'),
       });
     }
   }
@@ -207,7 +208,7 @@ export class SubscriptionController {
     } catch (error: any) {
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: error.message || 'Error al suspender marca',
+        message: sanitizeError(error, 'Error al suspender marca'),
       });
     }
   }
@@ -250,7 +251,7 @@ export class SubscriptionController {
 
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: error.message || 'Error al reactivar marca',
+        message: sanitizeError(error, 'Error al reactivar marca'),
       });
     }
   }
@@ -331,7 +332,7 @@ export class SubscriptionController {
     } catch (error: any) {
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: error.message || 'Error al registrar pago',
+        message: sanitizeError(error, 'Error al registrar pago'),
       });
     }
   }
@@ -452,7 +453,7 @@ export class SubscriptionController {
     } catch (error: any) {
       return res.status(500).json({
         error: 'INTERNAL_ERROR',
-        message: error.message || 'Error al reprocessar el pago',
+        message: sanitizeError(error, 'Error al reprocesar el pago'),
       });
     }
   }

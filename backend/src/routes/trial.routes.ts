@@ -87,7 +87,7 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
 
   const price = campaign?.price_cop ?? 20000;
 
-  const guestId = `visitor_${Date.now()}`;
+  const guestId = `visitor_${crypto.randomUUID()}`;
   const reference = `GUEST-TRIAL-${guestId}`;
 
   const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({
