@@ -48,8 +48,8 @@ import {
   registerSubscriptionPayment,
   suspendSubscription,
   reactivateSubscription,
-  getRevenueStats,
 } from '../controllers/admin.controller';
+import { getAdminReferrals, creditReferralBonus } from '../controllers/referral.controller';
 import {
   getOpenRouterCredits,
   getReplicateCredits,
@@ -174,5 +174,9 @@ router.get('/subscriptions', requirePermission('subscriptions'), getAllSubscript
 router.post('/subscriptions/:id/payment', requirePermission('subscriptions'), registerSubscriptionPayment);
 router.patch('/subscriptions/:id/suspend', requirePermission('subscriptions'), suspendSubscription);
 router.patch('/subscriptions/:id/reactivate', requirePermission('subscriptions'), reactivateSubscription);
+
+// Programa de Referidos
+router.get('/referrals', requirePermission('brands'), getAdminReferrals);
+router.post('/referrals/:referralId/credit', requirePermission('brands'), creditReferralBonus);
 
 export default router;

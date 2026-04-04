@@ -25,6 +25,7 @@ import { globalRateLimiter } from './middleware/rateLimiter';
 // Importación de servicios
 import { systemService } from './services/system.service';
 import { addonCreditsService } from './services/addonCredits.service';
+import { startSchedulers } from './scheduler';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -32,6 +33,9 @@ dotenv.config();
 addonCreditsService.ensureDefaultPackages().catch((err) => {
   console.error('[AddonCredits] Error inicializando paquetes por defecto:', err);
 });
+
+// Iniciar schedulers automáticos (suscripciones, alertas de uso, limpieza)
+startSchedulers();
 
 const app = express();
 
