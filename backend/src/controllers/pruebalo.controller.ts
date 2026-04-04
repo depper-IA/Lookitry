@@ -8,6 +8,7 @@ import { ProductsService } from '../services/products.service';
 import { UsageService } from '../services/usage.service';
 import { GenerationsService } from '../services/generations.service';
 import { N8nClient } from '../services/n8n.client';
+import { sanitizeError } from '../utils/sanitizeError';
 import { PaymentSettingsService } from '../services/paymentSettings.service';
 import { FeedbackService, GenerationErrorType } from '../services/feedback.service';
 import { PromptRagService } from '../services/prompt-rag.service';
@@ -1074,12 +1075,12 @@ export class PruebaloController {
       if (error instanceof ValidationError) {
         return res.status(400).json({
           error: 'INVALID_IMAGE_URL',
-          message: error.message,
+          message: sanitizeError(error, 'URL de imagen inválida'),
         });
       }
       return res.status(500).json({ 
         error: 'FAILED_TO_PROXY_IMAGE', 
-        message: detail 
+        message: sanitizeError(error, 'Error al procesar la imagen')
       });
     }
   });

@@ -335,7 +335,7 @@ export class PaypalController {
     const { trm: currentTrm, source } = await pricingService.getEffectiveTrm(overrideTrm);
     console.log(`[PaypalController] TRM usada para checkout: ${currentTrm} (source=${source})`);
 
-    const brandId = (req as any).brand?.id || `visitor_${Date.now()}`;
+    const brandId = (req as any).brand?.id || `visitor_${crypto.randomUUID()}`;
     const reference = `PAYPAL-${brandId}-M${selectedMonths}-P${planStr}${landing ? '-LANDING' : ''}-${Date.now()}`;
     const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
     const returnUrl = hasAuthenticatedBrand
