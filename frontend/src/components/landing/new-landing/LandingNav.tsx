@@ -170,7 +170,7 @@ export default function LandingNav({
               {productsOpen && (
                 <div
                   onMouseLeave={() => setProductsOpen(false)}
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-72 bg-[#111] border border-white/10 rounded-2xl shadow-2xl p-2 animate-in fade-in slide-in-from-top-2 duration-300"
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-4 w-72 rounded-2xl border border-black/10 bg-white/95 p-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-300 dark:border-white/10 dark:bg-[#111]/95"
                   role="menu"
                 >
                   {productLinks.map((prod) => (
@@ -178,15 +178,15 @@ export default function LandingNav({
                       key={prod.title}
                       href={prod.href}
                       onClick={() => setProductsOpen(false)}
-                      className="flex items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-all group"
+                      className="group flex items-start gap-4 rounded-xl p-4 transition-all hover:bg-black/5 dark:hover:bg-white/5"
                       role="menuitem"
                     >
                       <div className={`w-10 h-10 rounded-xl ${prod.bgColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
                         {prod.icon}
                       </div>
                       <div className="overflow-hidden">
-                        <p className="text-[11px] font-black text-white uppercase tracking-wider mb-0.5">{prod.title}</p>
-                        <p className="text-[10px] text-white/50 leading-relaxed font-medium">{prod.desc}</p>
+                        <p className="mb-0.5 text-[11px] font-black uppercase tracking-wider text-[#0a0a0a] dark:text-white">{prod.title}</p>
+                        <p className="text-[10px] font-medium leading-relaxed text-black/50 dark:text-white/50">{prod.desc}</p>
                       </div>
                     </Link>
                   ))}
@@ -225,21 +225,21 @@ export default function LandingNav({
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 top-full mt-3 w-56 bg-[#111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute right-0 top-full mt-3 w-56 overflow-hidden rounded-2xl border border-black/10 bg-white/95 py-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200 dark:border-white/10 dark:bg-[#111]/95">
                     <Link
                       href="/dashboard"
                       onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors group"
+                      className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                     >
-                      <User size={16} className="text-white/30 group-hover:text-[#FF5C3A] transition-colors" />
-                      <span className="text-[12px] font-bold text-white/80 group-hover:text-white transition-colors">Dashboard General</span>
+                      <User size={16} className="text-black/30 transition-colors group-hover:text-[#FF5C3A] dark:text-white/30" />
+                      <span className="text-[12px] font-bold text-black/80 transition-colors group-hover:text-[#0a0a0a] dark:text-white/80 dark:group-hover:text-white">Dashboard General</span>
                     </Link>
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/10 transition-colors group"
                     >
-                      <LogOut size={16} className="text-white/30 group-hover:text-red-500 transition-colors" />
-                      <span className="text-[12px] font-bold text-white/80 group-hover:text-red-500 transition-colors">Cerrar Sesión</span>
+                      <LogOut size={16} className="text-black/30 transition-colors group-hover:text-red-500 dark:text-white/30" />
+                      <span className="text-[12px] font-bold text-black/80 transition-colors group-hover:text-red-500 dark:text-white/80">Cerrar Sesión</span>
                     </button>
                   </div>
                 )}
@@ -352,4 +352,5 @@ export default function LandingNav({
     </>
   );
 }
+
 
