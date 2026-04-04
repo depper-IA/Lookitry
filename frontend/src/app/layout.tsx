@@ -116,6 +116,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta property="og:site_name" content="Lookitry" />
         <meta property="og:locale" content="es_CO" />
         <meta name="twitter:site" content="@lookitry" />
+        {/* Google Identity Services para Sign-In con Google */}
+        <script src="https://accounts.google.com/gsi/client" async defer />
         {/* Script de tema bloqueante: aplica dark/light ANTES del primer paint para evitar flash */}
         <script
           dangerouslySetInnerHTML={{

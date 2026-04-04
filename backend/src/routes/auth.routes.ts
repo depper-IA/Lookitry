@@ -38,6 +38,12 @@ router.post('/change-password', authMiddleware, asyncHandler((req, res) => authC
 // GET /api/auth/check-email?email=xxx — verifica si el email ya existe
 router.get('/check-email', asyncHandler((req, res) => authController.checkEmail(req, res)));
 
+// POST /api/auth/google — Login/registro con Google
+router.post('/google', authRateLimiter, asyncHandler((req, res) => authController.googleLogin(req, res)));
+
+// POST /api/auth/google/onboarding — Completar setup después de registro con Google
+router.post('/google/onboarding', authMiddleware, asyncHandler((req, res) => authController.completeGoogleOnboarding(req as any, res)));
+
 // POST /api/auth/logout — limpia la cookie HTTP-Only del lado del servidor
 router.post('/logout', (_req, res) => {
   const IS_PROD = process.env.NODE_ENV === 'production';

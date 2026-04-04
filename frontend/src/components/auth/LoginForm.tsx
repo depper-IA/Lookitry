@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { authService } from '@/services/auth.service';
 import Link from 'next/link';
 import Image from 'next/image';
+import GoogleSignInButton from './GoogleSignInButton';
 
 function EyeIcon() {
   return (
@@ -33,6 +34,7 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
   const [resending, setResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState<string | null>(null);
   const [showResendBtn, setShowResendBtn] = useState(false);
+  const [googleError, setGoogleError] = useState<string | null>(null);
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -199,6 +201,25 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
               {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
           </form>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-[#141414] px-3 text-[#666]">o continúa con</span>
+            </div>
+          </div>
+
+          {/* Google Sign-In */}
+          <GoogleSignInButton
+            mode="login"
+            onError={(msg) => setGoogleError(msg)}
+          />
+          {googleError && (
+            <p className="mt-2 text-[11px] text-red-500 text-center">{googleError}</p>
+          )}
 
           <p className="text-center text-[13px] text-[#999] mt-8">
             ¿No tienes cuenta?{' '}

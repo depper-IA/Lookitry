@@ -6,6 +6,7 @@ import { RegisterBrandDto, LoginDto } from '../types';
 import { AuthRequest } from '../middleware/auth';
 import { generateToken } from '../utils/jwt';
 import { supabaseAdmin } from '../config/supabase';
+import { loginWithGoogle } from '../services/google-auth.service';
 
 const authService = new AuthService();
 const emailService = new EmailService();
@@ -377,6 +378,105 @@ export class AuthController {
     } catch (error: any) {
       console.error('Error en checkEmail:', error);
       return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al verificar email' });
+    }
+  }
+
+  async googleLogin(req: Request, res: Response) {
+    try {
+      const { credential } = req.body;
+
+      if (!credential) {
+        return res.status(400).json({ error: 'CREDENTIAL_REQUIRED', message: 'Credential de Google requerido' });
+      }
+
+      const result = await loginWithGoogle(credential);
+
+      if (result.token) setCookieToken(res, result.token);
+
+      return res.status(200).json({
+        token: result.token,
+        brand: {
+          id: result.brand.id,
+          name: result.brand.name,
+          email: result.brand.email,
+          slug: result.brand.slug,
+          plan: result.brand.plan,
+          emailVerified: true,
+          authProvider: result.brand.auth_provider || 'google',
+        },
+        needsOnboarding: result.needsOnboarding,
+        isNewBrand: result.isNewBrand,
+        accountLinked: result.accountLinked,
+      });
+    } catch (error: any) {
+      console.error('Error en googleLogin:', error);
+
+      if (error.message === 'GOOGLE_NOT_CONFIGURED') {
+        return res.status(503).json({ error: 'SERVICE_NOT_CONFIGURED', message: 'Google Auth no está configurado' });
+      }
+
+      if (error.message === 'GOOGLE_TOKEN_INVALID' || error.message === 'GOOGLE_AUDIENCE_MISMATCH') {
+        return res.status(401).json({ error: 'INVALID_GOOGLE_TOKEN', message: 'Token de Google inválido' });
+      }
+
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al iniciar sesión con Google' });
+    }
+  }
+
+  async completeGoogleOnboarding(req: AuthRequest, res: Response) {
+    try {
+      const brandId = req.brand!.id;
+      const { name, slug } = req.body;
+
+      if (!name || !slug) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Nombre de marca y slug son requeridos' });
+      }
+
+      const slugRegex = /^[a-z0-9-]+$/;
+      if (!slugRegex.test(slug)) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El slug solo puede contener letras minúsculas, números y guiones' });
+      }
+
+      const { data: existingSlug } = await supabaseAdmin
+        .from('brands')
+        .select('id')
+        .eq('slug', slug)
+        .maybeSingle();
+
+      if (existingSlug) {
+        return res.status(409).json({ error: 'SLUG_TAKEN', message: 'Este slug ya está en uso. Prueba con otro.' });
+      }
+
+      const { data: updatedBrand, error } = await supabaseAdmin
+        .from('brands')
+        .update({ name, slug, needs_onboarding: false })
+        .eq('id', brandId)
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('[GoogleOnboarding] Error actualizando marca:', error);
+        return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al completar configuración' });
+      }
+
+      const newToken = generateToken({ brandId: updatedBrand.id, email: updatedBrand.email });
+      setCookieToken(res, newToken);
+
+      return res.status(200).json({
+        message: 'Configuración completada',
+        brand: {
+          id: updatedBrand.id,
+          name: updatedBrand.name,
+          email: updatedBrand.email,
+          slug: updatedBrand.slug,
+          plan: updatedBrand.plan,
+          emailVerified: true,
+        },
+        token: newToken,
+      });
+    } catch (error: any) {
+      console.error('Error en completeGoogleOnboarding:', error);
+      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al completar configuración' });
     }
   }
 }
