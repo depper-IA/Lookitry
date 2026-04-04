@@ -10,24 +10,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Detectar cambios
         id: changes
         run: |
-          PREV=$(git rev-parse HEAD~1)
+          PREV=$(git rev-parse HEAD~1 2>/dev/null || echo "HEAD")
           CURR=$(git rev-parse HEAD)
-          CHANGED=$(git diff --name-only $PREV $CURR)
-          echo "$CHANGED"
-          # Si el commit message contiene [deploy-all] o [force] o está vacío → deploy ambos
-          MSG=$(git log -1 --pretty=%s)
-          if echo "$MSG" | grep -qE '\[deploy-all\]|\[force\]|force deploy'; then
+          if [ "$PREV" = "$CURR" ]; then
+            echo "No hay commit previo, deploy completo"
             echo "frontend=true" >> $GITHUB_OUTPUT
             echo "backend=true" >> $GITHUB_OUTPUT
           else
-            echo "frontend=$(echo "$CHANGED" | grep -q '^frontend/' && echo true || echo false)" >> $GITHUB_OUTPUT
-            echo "backend=$(echo "$CHANGED" | grep -q '^backend/' && echo true || echo false)" >> $GITHUB_OUTPUT
+            CHANGED=$(git diff --name-only $PREV $CURR)
+            echo "$CHANGED"
+            MSG=$(git log -1 --pretty=%s)
+            if echo "$MSG" | grep -qE '\[deploy-all\]|\[force\]|force deploy'; then
+              echo "frontend=true" >> $GITHUB_OUTPUT
+              echo "backend=true" >> $GITHUB_OUTPUT
+            else
+              echo "frontend=$(echo "$CHANGED" | grep -q '^frontend/' && echo true || echo false)" >> $GITHUB_OUTPUT
+              echo "backend=$(echo "$CHANGED" | grep -q '^backend/' && echo true || echo false)" >> $GITHUB_OUTPUT
+            fi
           fi
+          echo "Frontend deploy: ${{ steps.changes.outputs.frontend }}"
+          echo "Backend deploy: ${{ steps.changes.outputs.backend }}"
 
       - name: Deploy frontend
         if: steps.changes.outputs.frontend == 'true'
@@ -37,21 +44,35 @@ jobs:
           username: root
           password: ${{ secrets.VPS_PASS }}
           port: 22
-          timeout: 300s
-          command_timeout: 300s
+          timeout: 600s
+          command_timeout: 600s
           script: |
             set -e
+            echo "=== Deploy Frontend ==="
             cd /root/virtual-tryon
+            echo "Pulling latest code..."
+            git reset --hard origin/main
             git pull origin main
+            echo "Current HEAD: $(git rev-parse --short HEAD)"
+            
             # Detectar compose file del frontend
             if [ -f docker-compose.frontend.yml ]; then
               COMPOSE_FILE=docker-compose.frontend.yml
             else
               COMPOSE_FILE=docker-compose.yml
             fi
+            
+            echo "Building frontend with $COMPOSE_FILE..."
             docker compose -f $COMPOSE_FILE build frontend
+            echo "Starting frontend..."
             docker compose -f $COMPOSE_FILE up -d frontend
-            echo "Frontend desplegado: $(git rev-parse --short HEAD)"
+            
+            # Esperar a que el contenedor esté healthy
+            sleep 5
+            echo "Frontend container status:"
+            docker compose -f $COMPOSE_FILE ps frontend
+            
+            echo "Frontend desplegado exitosamente: $(git rev-parse --short HEAD)"
 
       - name: Deploy backend
         if: steps.changes.outputs.backend == 'true'
@@ -61,17 +82,31 @@ jobs:
           username: root
           password: ${{ secrets.VPS_PASS }}
           port: 22
-          timeout: 300s
-          command_timeout: 300s
+          timeout: 600s
+          command_timeout: 600s
           script: |
             set -e
+            echo "=== Deploy Backend ==="
             cd /root/virtual-tryon
+            echo "Pulling latest code..."
+            git reset --hard origin/main
             git pull origin main
+            echo "Current HEAD: $(git rev-parse --short HEAD)"
+            
             if [ -f docker-compose.backend.yml ]; then
               COMPOSE_FILE=docker-compose.backend.yml
             else
               COMPOSE_FILE=docker-compose.yml
             fi
+            
+            echo "Building backend with $COMPOSE_FILE..."
             docker compose -f $COMPOSE_FILE build backend
+            echo "Starting backend..."
             docker compose -f $COMPOSE_FILE up -d backend
-            echo "Backend desplegado: $(git rev-parse --short HEAD)"
+            
+            # Esperar a que el contenedor esté healthy
+            sleep 5
+            echo "Backend container status:"
+            docker compose -f $COMPOSE_FILE ps backend
+            
+            echo "Backend desplegado exitosamente: $(git rev-parse --short HEAD)"
