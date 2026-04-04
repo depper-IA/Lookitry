@@ -31,7 +31,7 @@ export default function LandingHero() {
       <div className="absolute inset-0 z-0" aria-hidden="true">
         <div className="bg-circle absolute top-[-10%] right-[-10%] h-[80vw] w-[80vw] rounded-full bg-[#FF5C3A]/5 blur-[200px]" />
         <div className="bg-circle absolute bottom-[-10%] left-[-10%] h-[60vw] w-[60vw] rounded-full bg-black/5 blur-[150px] dark:bg-white/5" />
-        <div className="pointer-events-none absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay dark:opacity-20" />
+        <div className="pointer-events-none absolute inset-0 bg-[url('/noise.svg')] opacity-20 mix-blend-overlay dark:opacity-20" />
       </div>
 
       <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">

@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic';
-import { getPricingConfig } from '@/lib/pricing';
+import { getPricingConfig, type PricingConfig } from '@/lib/pricing';
 
 // Carga dinámica para evitar errores de GSAP/Window en el build de servidor
 const PremiumLanding = dynamic(
@@ -24,8 +24,16 @@ export const metadata = {
 };
 
 export default async function HomePage() {
-  const pricing = await getPricingConfig();
-  
+  let pricing;
+  try {
+    pricing = await getPricingConfig();
+  } catch {
+    pricing = null;
+  }
+
+  const basicPrice = pricing?.basic?.precio_mensual_cop ?? 150000;
+  const proPrice = pricing?.pro?.precio_mensual_cop ?? 250000;
+
   // Testimonios curados para la home premium
   const reviews = [
     {
@@ -98,7 +106,7 @@ export default async function HomePage() {
           {
             '@type': 'Offer',
             name: 'Plan Basico',
-            price: String(pricing.basic.precio_mensual_cop),
+            price: String(basicPrice),
             priceCurrency: 'COP',
             priceValidUntil: '2027-12-31',
             availability: 'https://schema.org/InStock',
@@ -107,7 +115,7 @@ export default async function HomePage() {
           {
             '@type': 'Offer',
             name: 'Plan Pro',
-            price: String(pricing.pro.precio_mensual_cop),
+            price: String(proPrice),
             priceCurrency: 'COP',
             priceValidUntil: '2027-12-31',
             availability: 'https://schema.org/InStock',
@@ -124,7 +132,7 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <PremiumLanding pricing={pricing} reviews={reviews} />
+      <PremiumLanding pricing={pricing as PricingConfig} reviews={reviews} />
     </>
   );
 }
