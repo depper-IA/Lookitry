@@ -422,19 +422,20 @@ export class AuthController {
         isNewBrand: result.isNewBrand,
         accountLinked: result.accountLinked,
       });
-    } catch (error: any) {
-      console.error('Error en googleLogin:', error);
+  } catch (error: any) {
+    const errMsg = error?.message || 'UNKNOWN_ERROR';
+    console.error('Error en googleLogin:', errMsg, error?.stack);
 
-      if (error.message === 'GOOGLE_NOT_CONFIGURED') {
-        return res.status(503).json({ error: 'SERVICE_NOT_CONFIGURED', message: 'Google Auth no está configurado' });
-      }
-
-      if (error.message === 'GOOGLE_TOKEN_INVALID' || error.message === 'GOOGLE_AUDIENCE_MISMATCH') {
-        return res.status(401).json({ error: 'INVALID_GOOGLE_TOKEN', message: 'Token de Google inválido' });
-      }
-
-      return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al iniciar sesión con Google' });
+    if (errMsg === 'GOOGLE_NOT_CONFIGURED') {
+      return res.status(503).json({ error: 'SERVICE_NOT_CONFIGURED', message: 'Google Auth no está configurado' });
     }
+
+    if (errMsg === 'GOOGLE_TOKEN_INVALID' || errMsg === 'GOOGLE_AUDIENCE_MISMATCH') {
+      return res.status(401).json({ error: 'INVALID_GOOGLE_TOKEN', message: 'Token de Google inválido' });
+    }
+
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al iniciar sesión con Google', detail: errMsg });
+  }
   }
 
   async completeGoogleOnboarding(req: AuthRequest, res: Response) {
