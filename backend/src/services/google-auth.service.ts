@@ -23,7 +23,7 @@ export interface GoogleAuthResult {
 /**
  * Verifica el JWT de Google con la API de Google
  */
-async function verifyGoogleToken(token: string): Promise<GoogleTokenPayload> {
+export async function verifyGoogleToken(token: string): Promise<GoogleTokenPayload> {
   const response = await fetch(
     `${GOOGLE_CONFIG.tokenInfoUrl}?id_token=${encodeURIComponent(token)}`
   );

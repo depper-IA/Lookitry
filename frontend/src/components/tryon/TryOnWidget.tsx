@@ -45,6 +45,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
   const [error, setError] = useState<string | null>(null);
   const [errorIsService, setErrorIsService] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [uploadPrivacyNotice, setUploadPrivacyNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   // Productos ya generados en esta sesión: productId → imageUrl
   const [generatedProducts, setGeneratedProducts] = useState<Map<string, string>>(new Map());
@@ -144,6 +145,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     });
     setSelfieFile(file); 
     setNotice(null);
+    setUploadPrivacyNotice('Tu selfie solo se usa en tu navegador y se elimina al subir una nueva foto');
     
     // Invalida el caché cuando se sube una COMPLETAMENTE NUEVA selfie
     const key = `tryon_gen_${brandSlug}`;

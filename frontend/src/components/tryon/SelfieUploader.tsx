@@ -8,9 +8,10 @@ interface SelfieUploaderProps {
   onUpload: (file: File, preview: string) => void;
   primaryColor?: string;
   welcomeMessage?: string;
+  privacyNotice?: string;
 }
 
-export function SelfieUploader({ onUpload, primaryColor = '#FF5C3A', welcomeMessage }: SelfieUploaderProps) {
+export function SelfieUploader({ onUpload, primaryColor = '#FF5C3A', welcomeMessage, privacyNotice }: SelfieUploaderProps) {
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
@@ -190,7 +191,12 @@ export function SelfieUploader({ onUpload, primaryColor = '#FF5C3A', welcomeMess
           ))}
         </div>
 
-        <p className="text-center text-[9px] md:text-xs text-gray-300 mt-3 font-black uppercase tracking-[0.2em]">JPG, PNG o WEBP · Máx. 5MB</p>
+         <p className="text-center text-[9px] md:text-xs text-gray-300 mt-3 font-black uppercase tracking-[0.2em]">JPG, PNG o WEBP · Máx. 5MB</p>
+         {privacyNotice && (
+           <p className="text-center text-[8px] md:text-[9px] text-gray-500 mt-2 font-medium italic">
+             {privacyNotice}
+           </p>
+         )}
 
         {error && (
           <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-xl">

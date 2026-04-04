@@ -126,7 +126,7 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
         <div className="flex-1 p-6">
           <ErrorBanner error={error} isService={errorIsService} />
           <NoticeBanner notice={notice} />
-          {step === 'upload' && <SelfieUploader onUpload={onSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} />}
+           {step === 'upload' && <SelfieUploader onUpload={onSelfieUpload} primaryColor={primaryColor} welcomeMessage={welcomeMessage} privacyNotice="Tu selfie solo se usa en tu navegador y se elimina al subir una nueva foto" />}
           {step === 'select' && (
             <div>
               <SelfieThumb preview={selfiePreview} onReset={onReset} />
