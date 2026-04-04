@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { supabaseAdmin } from '../config/supabase';
+import { sanitizeError } from '../utils/sanitizeError';
 
 // GET /api/admin/coupons — listar todos los cupones
 export async function listCoupons(req: Request, res: Response) {
@@ -12,7 +13,7 @@ export async function listCoupons(req: Request, res: Response) {
     if (error) throw error;
     return res.json({ data: data ?? [] });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: sanitizeError(err, 'Error al listar cupones') });
   }
 }
 
@@ -48,7 +49,7 @@ export async function createCoupon(req: Request, res: Response) {
     }
     return res.status(201).json({ data });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: sanitizeError(err, 'Error al crear cupón') });
   }
 }
 
@@ -78,7 +79,7 @@ export async function updateCoupon(req: Request, res: Response) {
     if (!data) return res.status(404).json({ error: 'Cupón no encontrado' });
     return res.json({ data });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: sanitizeError(err, 'Error al actualizar cupón') });
   }
 }
 
@@ -90,7 +91,7 @@ export async function deleteCoupon(req: Request, res: Response) {
     if (error) throw error;
     return res.json({ success: true });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: sanitizeError(err, 'Error al eliminar cupón') });
   }
 }
 
@@ -163,23 +164,26 @@ export async function redeemCoupon(req: Request, res: Response) {
     const { coupon_id } = req.body as { coupon_id?: string };
     if (!coupon_id) return res.status(400).json({ error: 'coupon_id requerido' });
 
-    // Leer uses_count actual y sumar 1 (operación simple — tráfico bajo)
-    const { data: current, error: fetchErr } = await supabaseAdmin
-      .from('coupons')
-      .select('uses_count')
-      .eq('id', coupon_id)
-      .single();
+    const brandId = (req as any).brand?.id;
+    if (!brandId) return res.status(401).json({ error: 'Autenticación requerida' });
 
-    if (fetchErr || !current) return res.status(404).json({ error: 'Cupón no encontrado' });
+    // Actualización atómica vía RPC: incrementa uses_count SOLO si no alcanzó max_uses
+    // Esto elimina la condición de carrera TOCTOU del patrón read-then-write
+    const { data: newCount, error } = await supabaseAdmin
+      .rpc('increment_coupon_uses', { coupon_id_input: coupon_id });
 
-    const { error: updateErr } = await supabaseAdmin
-      .from('coupons')
-      .update({ uses_count: (current.uses_count ?? 0) + 1 })
-      .eq('id', coupon_id);
+    if (error) {
+      console.error('[Coupons] Error al redimir cupón:', error);
+      return res.status(400).json({ error: 'No se pudo redimir el cupón' });
+    }
 
-    if (updateErr) throw updateErr;
+    if (newCount === null) {
+      return res.status(404).json({ error: 'Cupón no encontrado o sin usos disponibles' });
+    }
+
     return res.json({ ok: true });
   } catch (err: any) {
-    return res.status(500).json({ error: err.message });
+    console.error('[Coupons] Error inesperado en redeemCoupon:', err);
+    return res.status(500).json({ error: sanitizeError(err, 'Error interno del servidor') });
   }
 }
