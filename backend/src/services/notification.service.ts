@@ -15,9 +15,11 @@ import {
   usageAlert80Email,
   usageAlert100Email,
   adminWelcomeEmail,
+  landingActivatedEmail,
   landingDeletionWarningEmail,
   landingDeletedNoticeEmail,
-  landingActivatedEmail,
+  referralBonusCreditedEmail,
+  referralConvertedNotifierEmail,
 } from '../templates/email-templates';
 
 /**
@@ -588,6 +590,46 @@ export class NotificationService {
     } catch (error) {
       console.error(`[Notification] Error enviando aviso de eliminación definitiva a ${brand.email}:`, error);
       throw error;
+    }
+  }
+
+  /**
+   * Envía email cuando se acredita el bonus de referido a una marca.
+   *
+   * @param brand - Información de la marca
+   * @param months - Meses de bonus acreditados
+   */
+  async sendReferralBonusCredited(brand: Brand, months: number): Promise<void> {
+    try {
+      const html = referralBonusCreditedEmail({ name: brand.name, email: brand.email }, months);
+      await emailService.sendEmail({
+        to: brand.email,
+        subject: '🎉 ¡Tu bonus de referido ha sido aplicado!',
+        html,
+      });
+      console.log(`[Notification] Email de bonus de referido enviado a ${brand.email}`);
+    } catch (error) {
+      console.error(`[Notification] Error enviando email de bonus de referido a ${brand.email}:`, error);
+    }
+  }
+
+  /**
+   * Envía email al referente cuando uno de sus referidos se convierte a plan pago.
+   *
+   * @param referrer - Información del referente
+   * @param referredName - Nombre del referido convertido
+   */
+  async sendReferralConvertedNotifier(referrer: Brand, referredName: string): Promise<void> {
+    try {
+      const html = referralConvertedNotifierEmail({ name: referrer.name, email: referrer.email }, referredName);
+      await emailService.sendEmail({
+        to: referrer.email,
+        subject: '🎊 ¡Uno de tus referidos se convirtió!',
+        html,
+      });
+      console.log(`[Notification] Email de referido convertido enviado a ${referrer.email}`);
+    } catch (error) {
+      console.error(`[Notification] Error enviando email de referido convertido a ${referrer.email}:`, error);
     }
   }
 }

@@ -401,10 +401,17 @@ export const adminWelcomeEmail = (
       Tu cuenta ha sido creada. A continuación encontrarás tus datos de acceso y los detalles de tu período de prueba.
     </p>
 
-    <div style="background-color: #fff8f6; border-left: 4px solid ${ACCENT_COLOR}; padding: 20px; border-radius: 8px; margin: 24px 0;">
-      <h3 style="color: #c0392b; margin-top: 0; font-size: 15px;">Datos de acceso</h3>
-      <p style="color: #333; margin: 6px 0; font-size: 15px;"><strong>Email:</strong> ${brand.email}</p>
-      <p style="color: #333; margin: 6px 0; font-size: 15px;"><strong>Contraseña:</strong> <code style="background:#f5f2ee;padding:2px 8px;border-radius:4px;font-size:14px;border:1px solid #e0dcd7;">${password}</code></p>
+    <div style="background-color: #f5f2ee; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${ACCENT_COLOR};">
+      <h3 style="color: #0a0a0a; margin-top: 0; font-size: 15px;">Detalles de tu cuenta</h3>
+      <p style="color: #555; margin: 6px 0;"><strong>Plan:</strong> ${plan}</p>
+      <p style="color: #555; margin: 6px 0;"><strong>Email:</strong> ${brand.email}</p>
+      <p style="color: #555; margin: 6px 0;"><strong>Contraseña:</strong> <code style="background:#fff;padding:2px 8px;border-radius:4px;font-size:14px;border:1px solid #e0dcd7;">${password}</code></p>
+    </div>
+
+    <div style="background-color: #fff8f6; padding: 16px 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${ACCENT_COLOR};">
+      <h3 style="color: #c0392b; margin-top: 0; font-size: 15px;">Período de prueba</h3>
+      <p style="color: #555; margin: 6px 0;"><strong>Duración:</strong> ${trialDays} días</p>
+      <p style="color: #555; margin: 6px 0;"><strong>Fecha de finalización:</strong> ${trialEndDate}</p>
     </div>
 
     <div style="text-align: center; margin: 32px 0 8px 0;">
@@ -475,6 +482,9 @@ export const passwordResetTemplate = (brand: BrandInfo, resetUrl: string): strin
   const content = `
     <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">Restablecer contraseña</h2>
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
       Recibimos una solicitud para restablecer tu contraseña en LOOKITRY.
     </p>
     <div style="text-align: center; margin: 32px 0;">
@@ -483,6 +493,13 @@ export const passwordResetTemplate = (brand: BrandInfo, resetUrl: string): strin
         Restablecer contraseña
       </a>
     </div>
+    <p style="color: #888; font-size: 13px; text-align: center;">
+      Este enlace expira en 1 hora. Si no solicitaste este cambio, ignora este mensaje.
+    </p>
+    <p style="color: #aaa; font-size: 12px; text-align: center; margin-top: 16px; word-break: break-all;">
+      O copia este enlace en tu navegador:<br/>
+      <a href="${resetUrl}" style="color: ${ACCENT_COLOR};">${resetUrl}</a>
+    </p>
   `;
   return baseTemplate(content);
 };
@@ -546,6 +563,60 @@ export const landingDeletedNoticeEmail = (brand: BrandInfo): string => {
     <p style="color: #555; line-height: 1.6; font-size: 15px;">
       Si deseas volver a usar LOOKITRY, puedes crear una nueva cuenta en cualquier momento.
     </p>
+  `;
+  return baseTemplate(content);
+};
+
+export const referralBonusCreditedEmail = (brand: BrandInfo, months: number): string => {
+  const content = `
+    <div style="text-align: center; margin-bottom: 20px;">
+      <span style="font-size: 48px;">🎉</span>
+    </div>
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 22px; text-align: center;">¡Tu bonus de referido ha sido aplicado!</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      ¡Tenemos buenas noticias! Tu bonus de referido de <strong>${months} mes${months > 1 ? 'es' : ''} gratis</strong> ha sido aplicado exitosamente a tu suscripción.
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Tu suscripción ha sido extendida y ahora puedes disfrutar de tiempo extra con LOOKITRY.
+    </p>
+    <div style="margin: 24px 0; padding: 16px; background-color: #f5f2ee; border-radius: 8px; text-align: center;">
+      <p style="margin: 0; color: #0a0a0a; font-size: 14px;">
+        <strong>¡Sigue compartiendo tu código de referido para ganar más meses gratis!</strong>
+      </p>
+    </div>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${APP_URL}/dashboard"
+         style="background-color: ${ACCENT_COLOR}; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px;">
+        Ir al Dashboard
+      </a>
+    </div>
+  `;
+  return baseTemplate(content);
+};
+
+export const referralConvertedNotifierEmail = (referrer: BrandInfo, referredName: string): string => {
+  const content = `
+    <div style="text-align: center; margin-bottom: 20px;">
+      <span style="font-size: 48px;">🎊</span>
+    </div>
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 22px; text-align: center;">¡Uno de tus referidos se convirtió a plan pago!</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      ¡Excelentes noticias! <strong>${referredName}</strong> acaba de actualizar a un plan pago. Esto significa que has ganado <strong>1 mes gratis</strong> de LOOKITRY.
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Tu bonus ha sido aplicado automáticamente a tu suscripción. Puedes revisar tu nueva fecha de vencimiento en el dashboard.
+    </p>
+    <div style="margin: 24px 0; padding: 16px; background-color: #f5f2ee; border-radius: 8px; text-align: center;">
+      <p style="margin: 0; color: #0a0a0a; font-size: 14px;">
+        <strong>¡Sigue refiriendo más tiendas para ganar meses gratis!</strong>
+      </p>
+    </div>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${APP_URL}/dashboard"
+         style="background-color: ${ACCENT_COLOR}; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px;">
+        Ver mi Dashboard
+      </a>
+    </div>
   `;
   return baseTemplate(content);
 };
