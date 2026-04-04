@@ -22,7 +22,7 @@ function getFullUrl(path: string): string {
 }
 
 // Wrapper que imita la interfaz de axios ({ data, status })
-// Las credenciales se envían exclusivamente vía cookies HTTP-Only.
+// Las credenciales se envian exclusivamente via cookies HTTP-Only.
 async function apiFetch<T>(
   method: string,
   path: string,
@@ -30,7 +30,7 @@ async function apiFetch<T>(
   extraHeaders?: Record<string, string>
 ): Promise<{ data: T; status: number }> {
   const isFormData = typeof window !== 'undefined' && body instanceof FormData;
-  
+
   const headers: Record<string, string> = {
     ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(extraHeaders || {}),
@@ -48,18 +48,16 @@ async function apiFetch<T>(
   const data = await res.json().catch(() => ({}));
 
   if (res.status === 401) {
-    // IMPORTANTE: No limpiar sesión ni redirigir si estamos en rutas de autenticación.
-    // Esto permite que los hooks de sesión pública se recuperen sin interrumpir el flujo de login/onboarding.
+    // En rutas publicas, un visitante anonimo puede recibir 401 en /brands/me
+    // sin que eso implique una sesion rota. Solo invalidamos/redirigimos si
+    // realmente habia una sesion local previa.
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-    
-    if (!isAuthRoute(currentPath)) {
-      // Solo limpiar sesión y redirigir si NO estamos en una ruta de auth
+    const hasLocalSession = !!authService.getBrand() || !!authService.getToken();
+
+    if (!isAuthRoute(currentPath) && hasLocalSession && typeof window !== 'undefined') {
       authService.clearSession();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/';
-      }
+      window.location.href = '/';
     }
-    // Si estamos en una ruta de auth, dejamos que el error se propague sin limpiar la sesión
   }
 
   if (!res.ok) {
