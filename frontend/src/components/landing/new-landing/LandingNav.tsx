@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, ChevronDown, Layout, Zap, Terminal, User, LogOut } from 'lucide-react';
 import { authService } from '@/services/auth.service';
+import { usePromoBanner } from '@/context/PromoBannerContext';
 
 interface LandingNavProps {
   currency?: 'COP' | 'USD';
@@ -15,6 +16,7 @@ export default function LandingNav({
   currency: externalCurrency,
   onCurrencyChange: externalOnCurrencyChange
 }: LandingNavProps) {
+  const { bannerHeight } = usePromoBanner();
   const [internalCurrency, setInternalCurrency] = useState<'COP' | 'USD'>('COP');
   const [session, setSession] = useState<{ name: string; email: string } | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -119,7 +121,8 @@ export default function LandingNav({
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-[70] w-full px-4 py-4 sm:px-6 sm:py-5 md:px-12 ${navBg}`}
+        className={`fixed left-0 right-0 z-[70] w-full px-4 py-4 sm:px-6 sm:py-5 md:px-12 ${navBg}`}
+        style={{ top: `${bannerHeight}px` }}
         role="navigation"
         aria-label="Navegacion principal"
       >
@@ -288,7 +291,8 @@ export default function LandingNav({
 
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-[55] flex items-center justify-center overflow-y-auto bg-white px-4 py-24 backdrop-blur-xl animate-in fade-in slide-in-from-right duration-300 dark:bg-[rgba(10,10,10,0.98)] sm:px-10 sm:py-28"
+          className="fixed z-[55] flex items-center justify-center overflow-y-auto bg-white px-4 backdrop-blur-xl animate-in fade-in slide-in-from-right duration-300 dark:bg-[rgba(10,10,10,0.98)] sm:px-10"
+          style={{ top: `${bannerHeight}px`, left: 0, right: 0, bottom: 0, paddingTop: '6rem', paddingBottom: '6rem' }}
           role="dialog"
           aria-modal="true"
           aria-label="Menu de navegacion"

@@ -23,12 +23,12 @@ const nextConfig = {
   async headers() {
     const csp = [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline' ${isProd ? '' : "'unsafe-eval'"} https://challenges.cloudflare.com https://checkout.wompi.co`,
+      `script-src 'self' 'unsafe-inline' ${isProd ? '' : "'unsafe-eval'"} https://challenges.cloudflare.com https://checkout.wompi.co https://accounts.google.com https://www.google.com https://apis.google.com`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https://*.supabase.co https://*.lookitry.com https://*.wilkiedevs.com https://images.unsplash.com https://grainy-gradients.vercel.app",
-      `connect-src 'self' ${isProd ? '' : 'http://localhost:3001'} https://*.lookitry.com https://*.supabase.co https://*.wilkiedevs.com https://checkout.wompi.co`,
+      `connect-src 'self' ${isProd ? '' : 'http://localhost:3001'} https://*.lookitry.com https://*.supabase.co https://*.wilkiedevs.com https://checkout.wompi.co https://accounts.google.com https://www.googleapis.com https://www.google.com`,
       "font-src 'self' https://fonts.gstatic.com",
-      "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co",
+      "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://accounts.google.com https://www.google.com",
       "object-src 'none'",
     ].join('; ');
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePromoBanner } from '@/context/PromoBannerContext';
 
 interface PromoBannerConfig {
   text: string;
@@ -36,6 +37,7 @@ function IconCopy() {
 }
 
 export function PromoBanner() {
+  const { setBannerVisible } = usePromoBanner();
   const [promo, setPromo] = useState<Promotion | null>(null);
   const [visible, setVisible] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -52,9 +54,10 @@ export function PromoBanner() {
         if (!banner) return;
         setPromo(banner);
         setVisible(true);
+        setBannerVisible(true);
       })
       .catch(() => {});
-  }, []);
+  }, [setBannerVisible]);
 
   const handleCopy = () => {
     if (!promo?.config?.coupon_code) return;
@@ -65,6 +68,7 @@ export function PromoBanner() {
 
   const handleClose = () => {
     setVisible(false);
+    setBannerVisible(false);
     sessionStorage.setItem('promo_banner_dismissed', '1');
   };
 
