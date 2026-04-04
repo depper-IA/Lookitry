@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
-export function CookieConsent() {
+export function CookieConsent({ pathname }: { pathname: string }) {
   const [show, setShow] = useState(false);
-  const pathname = usePathname();
 
   const isEmbeddedRoute =
     pathname?.startsWith('/embed/') ||

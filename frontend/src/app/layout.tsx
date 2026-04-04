@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Outfit } from 'next/font/google';
 import Script from 'next/script';
+import { Suspense } from 'react';
 import './globals.css';
 
 const inter = Inter({
@@ -103,10 +104,9 @@ export const metadata: Metadata = {
   },
 };
 
-import { CookieConsent } from '@/components/ui/CookieConsent';
-import { MobileBottomNav } from '@/components/ui/MobileBottomNav';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Analytics } from '@/components/analytics/Analytics';
+import { RouteChrome } from '@/components/layout/RouteChrome';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
@@ -167,10 +167,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Google Identity Services — afterInteractive funciona correctamente en App Router */}
         <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
         <ThemeProvider>
-          <Analytics />
+          <Suspense fallback={null}>
+            <Analytics />
+          </Suspense>
           {children}
-          <MobileBottomNav />
-          <CookieConsent />
+          <Suspense fallback={null}>
+            <RouteChrome />
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>
