@@ -126,7 +126,8 @@ export default function LandingFooter() {
           <div className="flex flex-col items-center text-center mb-5">
             <Link href="/" className="inline-flex items-center gap-2.5 mb-3 group">
               <div className="relative w-7 h-7">
-                <Image src="/logo.svg" alt="Lookitry" fill className="object-contain" />
+                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
+                <Image src="/logo.svg" alt="Lookitry" fill className="object-contain hidden dark:block" />
               </div>
               <span className="font-jakarta text-lg font-bold text-[#0a0a0a] dark:text-white tracking-tighter">
                 Look<span className="text-[#FF5C3A]">itry</span>
@@ -198,7 +199,8 @@ export default function LandingFooter() {
           <div>
             <Link href="/" className="inline-flex items-center gap-2.5 sm:gap-3 mb-6 sm:mb-8 md:mb-10 group">
               <div className="relative w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10">
-                <Image src="/logo.svg" alt="Lookitry" fill className="object-contain" />
+                <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
+                <Image src="/logo.svg" alt="Lookitry" fill className="object-contain hidden dark:block" />
               </div>
               <span className="font-jakarta text-2xl sm:text-3xl font-bold text-[#0a0a0a] dark:text-white tracking-tighter">
                 Look<span className="text-[#FF5C3A]">itry</span>

@@ -91,6 +91,7 @@ export const metadata: Metadata = {
 
 import { CookieConsent } from '@/components/ui/CookieConsent';
 import { MobileBottomNav } from '@/components/ui/MobileBottomNav';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -121,9 +122,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="font-sans">
-        {children}
-        <MobileBottomNav />
-        <CookieConsent />
+        <ThemeProvider>
+          {children}
+          <MobileBottomNav />
+          <CookieConsent />
+        </ThemeProvider>
       </body>
     </html>
   );

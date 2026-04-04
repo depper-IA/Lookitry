@@ -334,14 +334,15 @@ export function DashboardLayout({ children, brandOverride = null }: DashboardLay
         >
           <div className="flex items-center gap-3 lg:hidden">
             <button
-              className="p-2 text-[var(--text-secondary)] transition-all hover:text-white active:scale-95"
+              className="p-2 text-[var(--text-secondary)] transition-all hover:text-[var(--text-primary)] active:scale-95"
               onClick={() => setSidebarOpen(true)}
               aria-label="Abrir menú"
             >
               <Menu size={22} />
             </button>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5">
-              <Image src="/logo.svg" alt="L" width={18} height={18} priority />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 dark:bg-black/5">
+              <Image src="/Lookitry-logo-dark.svg" alt="L" width={18} height={18} className="object-contain dark:hidden" priority />
+              <Image src="/logo.svg" alt="L" width={18} height={18} className="object-contain hidden dark:block" priority />
             </div>
           </div>
 
