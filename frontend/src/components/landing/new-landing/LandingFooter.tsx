@@ -265,28 +265,24 @@ export default function LandingFooter() {
         </div>
 
         <div className="pt-6 sm:pt-10 md:pt-12 border-t border-black/5 dark:border-white/5 flex flex-col items-center gap-4 sm:gap-8 md:gap-10">
-          <div className="w-full -mx-4 sm:-mx-6 md:-mx-12 px-4 sm:px-6 md:px-12 py-6 sm:py-8 bg-[#FF5C3A]">
-            <div className="flex flex-col items-center gap-4 sm:gap-8 md:gap-10">
+          <div className="w-full bg-[#FF5C3A]">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-6 sm:py-8 text-center text-white/90">
               <div className="text-white/80 text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] font-dm-sans text-center">
                 © {currentYear} Lookitry / Una división de <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Wilkie Devs SAS</Link>
               </div>
-              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-10 opacity-70">
-                <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/80"><Globe size={14} aria-hidden="true" /> CALI. COLOMBIA</div>
-                <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/80"><ShieldCheck size={14} aria-hidden="true" /> PCI Tier 1</div>
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 md:gap-10 opacity-60 mt-3">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/90"><Globe size={14} aria-hidden="true" /> CALI. COLOMBIA</div>
+                <div className="flex items-center gap-1.5 sm:gap-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest font-dm-sans text-white/90"><ShieldCheck size={14} aria-hidden="true" /> PCI Tier 1</div>
               </div>
               <button
                 onClick={toggle}
                 aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/80 hover:text-white hover:border-white/40 hover:bg-white/10 transition-all text-xs font-medium"
+                className="mt-4 flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 text-white/90 hover:text-white hover:border-white/40 hover:bg-white/10 transition-all text-xs font-medium"
               >
                 {isDark ? (
-                  <>
-                    <Sun size={14} aria-hidden="true" /> Modo claro
-                  </>
+                  <><Sun size={14} aria-hidden="true" /> Modo claro</>
                 ) : (
-                  <>
-                    <Moon size={14} aria-hidden="true" /> Modo oscuro
-                  </>
+                  <><Moon size={14} aria-hidden="true" /> Modo oscuro</>
                 )}
               </button>
             </div>
