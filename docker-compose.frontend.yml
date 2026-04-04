@@ -22,39 +22,6 @@ services:
       - "traefik.http.routers.vt-frontend.tls.certresolver=mytlschallenge"
       - "traefik.http.services.vt-frontend.loadbalancer.server.port=3000"
 
-  backend:
-    build:
-      context: /root/virtual-tryon/backend
-      dockerfile: Dockerfile
-    container_name: lookitry-backend
-    restart: unless-stopped
-    env_file:
-      - /root/virtual-tryon/backend/.env.production
-    networks:
-      - proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.vt-backend.rule=Host(`api.lookitry.com`)"
-      - "traefik.http.routers.vt-backend.entrypoints=websecure"
-      - "traefik.http.routers.vt-backend.tls.certresolver=mytlschallenge"
-      - "traefik.http.services.vt-backend.loadbalancer.server.port=3001"
-
-  error-pages:
-    build:
-      context: /root/virtual-tryon/error-pages
-      dockerfile: Dockerfile
-    container_name: lookitry-error-pages
-    restart: unless-stopped
-    networks:
-      - proxy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.vt-fallback.rule=Host(`lookitry.com`) || Host(`www.lookitry.com`) || Host(`api.lookitry.com`)"
-      - "traefik.http.routers.vt-fallback.entrypoints=websecure"
-      - "traefik.http.routers.vt-fallback.tls.certresolver=mytlschallenge"
-      - "traefik.http.routers.vt-fallback.priority=1"
-      - "traefik.http.services.vt-fallback.loadbalancer.server.port=80"
-
 networks:
   proxy:
     external: true

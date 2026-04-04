@@ -166,6 +166,10 @@ if do_frontend and "frontend/package.json" in changed_files and not no_cache:
 if do_backend and "backend/package.json" in changed_files and not no_cache:
     print("\n[AVISO] backend/package.json cambio. Considera usar --no-cache")
 
+# Asegurar que la pantalla de mantenimiento esté arriba ANTES de tocar nada
+print("\n=== Preparando pantalla de mantenimiento ===")
+run(ssh, f"cd {REPO} && docker compose -f docker-compose.errors.yml up -d")
+
 if do_backend:
     print("\n=== Rebuild BACKEND ===")
     run(
