@@ -44,35 +44,44 @@ jobs:
           username: root
           password: ${{ secrets.VPS_PASS }}
           port: 22
-          timeout: 600s
-          command_timeout: 600s
+          timeout: 900s
+          command_timeout: 900s
           script: |
-            set -e
             echo "=== Deploy Frontend ==="
-            cd /root/virtual-tryon
+            cd /root/virtual-tryon || { echo "ERROR: /root/virtual-tryon no existe"; exit 1; }
+            
             echo "Pulling latest code..."
-            git reset --hard origin/main
-            git pull origin main
+            git fetch origin main || { echo "ERROR: git fetch falló"; exit 1; }
+            git reset --hard origin/main || { echo "ERROR: git reset falló"; exit 1; }
             echo "Current HEAD: $(git rev-parse --short HEAD)"
             
             # Detectar compose file del frontend
             if [ -f docker-compose.frontend.yml ]; then
               COMPOSE_FILE=docker-compose.frontend.yml
-            else
+            elif [ -f docker-compose.yml ]; then
               COMPOSE_FILE=docker-compose.yml
+            else
+              echo "ERROR: No se encontró docker-compose file"
+              exit 1
             fi
             
             echo "Building frontend with $COMPOSE_FILE..."
-            docker compose -f $COMPOSE_FILE build frontend
-            echo "Starting frontend..."
-            docker compose -f $COMPOSE_FILE up -d frontend
+            docker compose -f $COMPOSE_FILE build frontend 2>&1 || { 
+              echo "ERROR: docker compose build falló"
+              exit 1
+            }
             
-            # Esperar a que el contenedor esté healthy
-            sleep 5
+            echo "Starting frontend..."
+            docker compose -f $COMPOSE_FILE up -d frontend 2>&1 || {
+              echo "ERROR: docker compose up falló"
+              exit 1
+            }
+            
+            sleep 10
             echo "Frontend container status:"
             docker compose -f $COMPOSE_FILE ps frontend
             
-            echo "Frontend desplegado exitosamente: $(git rev-parse --short HEAD)"
+            echo "=== Frontend desplegado exitosamente: $(git rev-parse --short HEAD) ==="
 
       - name: Deploy backend
         if: steps.changes.outputs.backend == 'true'
@@ -82,31 +91,40 @@ jobs:
           username: root
           password: ${{ secrets.VPS_PASS }}
           port: 22
-          timeout: 600s
-          command_timeout: 600s
+          timeout: 900s
+          command_timeout: 900s
           script: |
-            set -e
             echo "=== Deploy Backend ==="
-            cd /root/virtual-tryon
+            cd /root/virtual-tryon || { echo "ERROR: /root/virtual-tryon no existe"; exit 1; }
+            
             echo "Pulling latest code..."
-            git reset --hard origin/main
-            git pull origin main
+            git fetch origin main || { echo "ERROR: git fetch falló"; exit 1; }
+            git reset --hard origin/main || { echo "ERROR: git reset falló"; exit 1; }
             echo "Current HEAD: $(git rev-parse --short HEAD)"
             
             if [ -f docker-compose.backend.yml ]; then
               COMPOSE_FILE=docker-compose.backend.yml
-            else
+            elif [ -f docker-compose.yml ]; then
               COMPOSE_FILE=docker-compose.yml
+            else
+              echo "ERROR: No se encontró docker-compose file"
+              exit 1
             fi
             
             echo "Building backend with $COMPOSE_FILE..."
-            docker compose -f $COMPOSE_FILE build backend
-            echo "Starting backend..."
-            docker compose -f $COMPOSE_FILE up -d backend
+            docker compose -f $COMPOSE_FILE build backend 2>&1 || {
+              echo "ERROR: docker compose build falló"
+              exit 1
+            }
             
-            # Esperar a que el contenedor esté healthy
-            sleep 5
+            echo "Starting backend..."
+            docker compose -f $COMPOSE_FILE up -d backend 2>&1 || {
+              echo "ERROR: docker compose up falló"
+              exit 1
+            }
+            
+            sleep 10
             echo "Backend container status:"
             docker compose -f $COMPOSE_FILE ps backend
             
-            echo "Backend desplegado exitosamente: $(git rev-parse --short HEAD)"
+            echo "=== Backend desplegado exitosamente: $(git rev-parse --short HEAD) ==="
