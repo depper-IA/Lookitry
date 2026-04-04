@@ -34,6 +34,7 @@ export class AdminService {
   // ── Auth & Admin Management ──────────────────────────────────
   getAdminByEmail(email: string) { return this.auth.getAdminByEmail(email); }
   getAdminById(adminId: string) { return this.auth.getAdminById(adminId); }
+  getAdminByGoogleId(googleId: string) { return this.auth.getAdminByGoogleId(googleId); }
   verifyPassword(plain: string, hashed: string) { return this.auth.verifyPassword(plain, hashed); }
   listAdmins() { return this.auth.listAdmins(); }
   createAdmin(data: Parameters<AuthAdminService['createAdmin']>[0]) { return this.auth.createAdmin(data); }

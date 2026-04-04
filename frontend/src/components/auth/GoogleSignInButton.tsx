@@ -1,12 +1,16 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
+
 interface GoogleSignInButtonProps {
   onSuccess?: () => void;
   onError?: (error: string) => void;
   mode?: 'login' | 'register';
+  redirectTo?: string;
+  variant?: 'user' | 'admin';
 }
 
-export default function GoogleSignInButton({ onSuccess, onError, mode = 'login' }: GoogleSignInButtonProps) {
+export default function GoogleSignInButton({ onSuccess, onError, mode = 'login', redirectTo, variant = 'user' }: GoogleSignInButtonProps) {
   const handleClick = () => {
     if (typeof window === 'undefined' || !(window as any).google) return;
 
@@ -32,12 +36,14 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login' 
       return;
     }
 
+    const apiEndpoint = variant === 'admin' ? '/api/admin/auth/google' : '/api/auth/google';
+
     try {
-      const apiRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/google`, {
+      const apiRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}${apiEndpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ credential: response.credential }),
+        body: JSON.stringify({ credential: response.credential, redirectTo }),
       });
 
       const data = await apiRes.json();
@@ -47,10 +53,15 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login' 
         return;
       }
 
-      if (data.needsOnboarding) {
+      if (onSuccess) {
+        onSuccess(data);
+      } else if (data.needsOnboarding) {
         window.location.href = '/register/google-setup';
+      } else if (variant === 'admin') {
+        localStorage.setItem('adminUser', JSON.stringify(data.admin));
+        window.location.href = redirectTo || '/admin/dashboard';
       } else {
-        window.location.href = '/dashboard';
+        window.location.href = redirectTo || '/dashboard';
       }
     } catch {
       onError?.('Error de conexión al iniciar sesión con Google');

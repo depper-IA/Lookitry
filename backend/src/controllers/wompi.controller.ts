@@ -535,7 +535,7 @@ export class WompiController {
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
       let successPath = brand?.id
         ? `/dashboard/checkout?plan=${planStr}&months=${monthsNum}&method=wompi&ref=${encodeURIComponent(reference)}`
-        : `/registro-pro?plan=${planStr}&months=${monthsNum}`;
+        : `/onboarding-post-pago?plan=${planStr}&months=${monthsNum}`;
 
       if (!brand?.id && email) {
         const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({ 
@@ -554,7 +554,7 @@ export class WompiController {
           return;
         }
         
-        successPath = `/registro-pro?ref=${reference}`;
+        successPath = `/onboarding-post-pago?ref=${reference}`;
       }
 
       let productName = `Plan ${planStr} Lookitry`;

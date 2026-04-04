@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 
 function EyeIcon() {
   return (
@@ -106,6 +107,20 @@ export default function AdminLoginPage() {
           <p className="text-[13px] text-[#555] mb-7">
             Área restringida — solo administradores
           </p>
+
+          <div className="mb-6">
+            <GoogleSignInButton 
+              mode="login" 
+              variant="admin"
+              onSuccess={() => router.push('/admin/dashboard')}
+              onError={(err) => setError(err)}
+            />
+            <div className="flex items-center gap-4 my-5">
+              <div className="flex-1 h-px bg-[#2a2a2a]"></div>
+              <span className="text-[11px] text-[#444] uppercase tracking-wider">o continúa con correo</span>
+              <div className="flex-1 h-px bg-[#2a2a2a]"></div>
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (

@@ -87,7 +87,7 @@ export class NotificationService {
 
   private buildPendingRegistrationUrl(reference: string): string {
     const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
-    return `${frontendUrl}/registro-pro?ref=${encodeURIComponent(reference)}`;
+    return `${frontendUrl}/onboarding-post-pago?ref=${encodeURIComponent(reference)}`;
   }
 
   /**

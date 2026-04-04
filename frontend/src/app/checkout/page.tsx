@@ -414,7 +414,7 @@ function CheckoutContent() {
         if (!res.ok) throw new Error(responseData.error || 'Error en checkout gratuito');
         if (responseData.isVisitor && responseData.reference) {
           clearCheckoutDraft(CHECKOUT_DRAFT_KEY);
-          window.location.href = `/registro-pro?ref=${responseData.reference}&free=1`;
+          window.location.href = `/onboarding-post-pago?ref=${responseData.reference}&free=1`;
           return;
         }
         clearCheckoutDraft(CHECKOUT_DRAFT_KEY);

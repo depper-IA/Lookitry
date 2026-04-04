@@ -3,6 +3,7 @@
 import { Mail, User, AlertCircle, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import { Step } from '@/components/payments/StepProgress';
 import { authService } from '@/services/auth.service';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 
 interface UserDataStepProps {
   email: string;
@@ -54,6 +55,17 @@ export default function UserDataStep({
       </div>
 
       <div className="space-y-6 bg-[#0d0d0d] border border-[#1f1f1f] p-8 rounded-3xl">
+        {!hasSession && (
+          <div className="mb-6">
+            <GoogleSignInButton mode="register" />
+            <div className="flex items-center gap-4 my-6">
+              <div className="flex-1 h-px bg-[#222]"></div>
+              <span className="text-[11px] text-[#666] uppercase tracking-wider">o continúa con correo</span>
+              <div className="flex-1 h-px bg-[#222]"></div>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2">
           <label className="text-xs font-bold text-[#999] uppercase tracking-widest flex items-center gap-2">
             <Mail className="w-3.5 h-3.5" style={{ color: OA }} />

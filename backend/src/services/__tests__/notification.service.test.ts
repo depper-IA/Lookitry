@@ -121,7 +121,7 @@ describe('NotificationService', () => {
   });
 
   describe('sendCompleteRegistrationEmail', () => {
-    it('should send resume email with registro-pro link for paid pending registration', async () => {
+    it('should send resume email with onboarding-post-pago link for paid pending registration', async () => {
       await notificationService.sendCompleteRegistrationEmail({
         email: mockBrand.email,
         reference: 'PAYPAL-visitor_123-M1-PBASIC-123',
@@ -133,7 +133,7 @@ describe('NotificationService', () => {
         expect.objectContaining({
           to: mockBrand.email,
           subject: 'Completa tu registro en Lookitry',
-          html: expect.stringContaining('/registro-pro?ref=PAYPAL-visitor_123-M1-PBASIC-123'),
+          html: expect.stringContaining('/onboarding-post-pago?ref=PAYPAL-visitor_123-M1-PBASIC-123'),
         })
       );
     });

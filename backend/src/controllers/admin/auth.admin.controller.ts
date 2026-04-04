@@ -4,6 +4,8 @@ import { auditService } from '../../services/audit.service';
 import { generateToken } from '../../utils/jwt';
 import { emailService } from '../../services/email.service';
 import { authAdminService } from '../../services/admin/auth.admin.service';
+import { GOOGLE_CONFIG } from '../../config/google';
+import { verifyGoogleToken } from '../../services/google-auth.service';
 
 const adminService = new AdminService();
 
@@ -229,6 +231,91 @@ export const adminLogout = async (_req: any, res: Response) => {
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
       message: 'Error interno del servidor al cerrar sesión',
+    });
+  }
+};
+
+/**
+ * POST /api/admin/auth/google
+ * Login de administrador con Google
+ */
+export const adminGoogleLogin = async (req: any, res: Response) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'Credential de Google requerido',
+      });
+    }
+
+    const googlePayload = await verifyGoogleToken(credential);
+
+    if (!googlePayload.email) {
+      return res.status(400).json({
+        error: 'VALIDATION_ERROR',
+        message: 'No se pudo obtener el email de Google',
+      });
+    }
+
+    const admin = await adminService.getAdminByGoogleId(googlePayload.sub);
+
+    if (!admin) {
+      return res.status(401).json({
+        error: 'UNAUTHORIZED',
+        message: 'Esta cuenta no tiene acceso de administrador',
+      });
+    }
+
+    const token = generateToken({
+      adminId: admin.id,
+      email: admin.email,
+    });
+
+    const cookieOptions: any = {
+      httpOnly: true,
+      secure: IS_PROD,
+      sameSite: IS_PROD ? 'strict' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    };
+
+    if (COOKIE_DOMAIN && IS_PROD) {
+      cookieOptions.domain = COOKIE_DOMAIN;
+    }
+
+    res.cookie('admin_token', token, cookieOptions);
+
+    auditService.log({
+      adminId: admin.id,
+      action: 'ADMIN_LOGIN_GOOGLE',
+      targetType: 'admin',
+      targetId: admin.id,
+      metadata: { email: admin.email },
+    }).catch(console.error);
+
+    return res.status(200).json({
+      admin: {
+        id: admin.id,
+        email: admin.email,
+        name: admin.name,
+        role: admin.role,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error in adminGoogleLogin:', error);
+
+    if (error.message === 'GOOGLE_NOT_CONFIGURED' || error.message === 'GOOGLE_TOKEN_INVALID' || error.message === 'GOOGLE_AUDIENCE_MISMATCH') {
+      return res.status(401).json({
+        error: 'INVALID_GOOGLE_TOKEN',
+        message: 'Token de Google inválido',
+      });
+    }
+
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Error al iniciar sesión con Google',
     });
   }
 };

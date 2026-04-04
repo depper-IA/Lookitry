@@ -7,7 +7,8 @@ function isAuthRoute(pathname: string): boolean {
     pathname.startsWith('/login') ||
     pathname.startsWith('/register') ||
     pathname.startsWith('/auth/') ||
-    pathname.startsWith('/registro-pro')
+    pathname.startsWith('/registro-pro') ||
+    pathname.startsWith('/onboarding')
   );
 }
 
