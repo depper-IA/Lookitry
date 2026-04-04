@@ -17,9 +17,9 @@ const subscriptionController = new SubscriptionController();
  * 
  * Requirement 11.5: Marca puede consultar su estado de suscripción
  */
-router.get('/brands/subscription', authMiddleware, (req, res) =>
-  subscriptionController.getBrandSubscription(req, res)
-);
+router.get('/brands/subscription', authMiddleware, (req: any, res: any) => {
+  subscriptionController.getBrandSubscription(req, res);
+});
 
 /**
  * Rutas de administración de suscripciones
@@ -33,9 +33,9 @@ router.get('/brands/subscription', authMiddleware, (req, res) =>
  * 
  * Requirements 12.1, 12.2: Admin puede ver todas las suscripciones con filtros
  */
-router.get('/admin/subscriptions', adminAuthMiddleware, (req, res) =>
-  subscriptionController.getAllSubscriptions(req, res)
-);
+router.get('/admin/subscriptions', adminAuthMiddleware, (req: any, res: any) => {
+  subscriptionController.getAllSubscriptions(req, res);
+});
 
 /**
  * PATCH /api/admin/subscriptions/:brandId/renew
@@ -44,9 +44,9 @@ router.get('/admin/subscriptions', adminAuthMiddleware, (req, res) =>
  * 
  * Requirement 12.4: Admin puede renovar suscripciones manualmente
  */
-router.patch('/admin/subscriptions/:brandId/renew', adminAuthMiddleware, (req, res) =>
-  subscriptionController.renewSubscription(req, res)
-);
+router.patch('/admin/subscriptions/:brandId/renew', adminAuthMiddleware, (req: any, res: any) => {
+  subscriptionController.renewSubscription(req, res);
+});
 
 /**
  * PATCH /api/admin/subscriptions/:brandId/suspend
@@ -54,9 +54,9 @@ router.patch('/admin/subscriptions/:brandId/renew', adminAuthMiddleware, (req, r
  * 
  * Requirement 12.5: Admin puede suspender marcas
  */
-router.patch('/admin/subscriptions/:brandId/suspend', adminAuthMiddleware, (req, res) =>
-  subscriptionController.suspendSubscription(req, res)
-);
+router.patch('/admin/subscriptions/:brandId/suspend', adminAuthMiddleware, (req: any, res: any) => {
+  subscriptionController.suspendSubscription(req, res);
+});
 
 /**
  * PATCH /api/admin/subscriptions/:brandId/reactivate
@@ -64,9 +64,9 @@ router.patch('/admin/subscriptions/:brandId/suspend', adminAuthMiddleware, (req,
  * 
  * Requirement 12.6: Admin puede reactivar marcas suspendidas
  */
-router.patch('/admin/subscriptions/:brandId/reactivate', adminAuthMiddleware, (req, res) =>
-  subscriptionController.reactivateSubscription(req, res)
-);
+router.patch('/admin/subscriptions/:brandId/reactivate', adminAuthMiddleware, (req: any, res: any) => {
+  subscriptionController.reactivateSubscription(req, res);
+});
 
 /**
  * POST /api/admin/subscriptions/:brandId/payment
@@ -75,15 +75,17 @@ router.patch('/admin/subscriptions/:brandId/reactivate', adminAuthMiddleware, (r
  * 
  * Requirement 11.14: Registrar pagos en historial
  */
-router.post('/admin/subscriptions/:brandId/payment', adminAuthMiddleware, (req, res) =>
-  subscriptionController.registerPayment(req, res)
-);
+router.post('/admin/subscriptions/:brandId/payment', adminAuthMiddleware, (req: any, res: any) => {
+  subscriptionController.registerPayment(req, res);
+});
 
 /**
  * POST /api/admin/subscriptions/reprocess-wompi/:reference
  * Reprocessa un pago de Wompi que fue cobrado pero no activó la suscripción.
  * Útil cuando el webhook falló silenciosamente. Requiere auth de admin.
  */
-router.post('/admin/reprocess-wompi/:reference', adminAuthMiddleware, (req, res) => subscriptionController.reprocessWompiPayment(req, res));
+router.post('/admin/reprocess-wompi/:reference', adminAuthMiddleware, (req: any, res: any) => {
+  subscriptionController.reprocessWompiPayment(req, res);
+});
 
 export default router;

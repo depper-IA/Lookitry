@@ -7,7 +7,7 @@ import { BlogShareRail } from '@/components/blog/BlogShareRail';
 import { fetchBlogPostBySlug, fetchRecentBlogPosts, getBlogFeaturedImage, getBlogShareImage, getBlogTeaser } from '@/services/blog.service';
 import { Calendar, Tag, ChevronLeft, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
-import { SanitizedHtml } from '@/components/blog/SanitizedHtml';
+import SanitizedHtml from '@/components/blog/SanitizedHtml';
 
 interface BlogPostPageProps {
   params: {

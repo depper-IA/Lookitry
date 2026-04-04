@@ -27,7 +27,7 @@ export const getFeedbacks = async (req: Request, res: Response) => {
  */
 export const getFeedbackStats = async (_req: Request, res: Response) => {
   try {
-    const stats = await feedbackService.getFeedbackStats();
+    const stats = await feedbackService.getErrorStats();
     return res.status(200).json({ stats });
   } catch (error: any) {
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al obtener estadísticas') });
