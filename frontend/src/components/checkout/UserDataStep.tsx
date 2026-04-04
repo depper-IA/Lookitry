@@ -58,11 +58,12 @@ export default function UserDataStep({
 
       <div className="space-y-6 bg-[#0d0d0d] border border-[#1f1f1f] p-8 rounded-3xl">
         {!hasSession && (
-          <div className="mb-6">
+        <div className="mb-6">
             <GoogleSignInButton 
               mode="register" 
               onSuccess={handleGoogleCheckoutSuccess}
               onError={(err) => setEmailError(err)}
+              loginHint={email || ''}
             />
             <div className="flex items-center gap-4 my-6">
               <div className="flex-1 h-px bg-[#222]"></div>

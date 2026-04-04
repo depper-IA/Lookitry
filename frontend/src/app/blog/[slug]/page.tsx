@@ -7,6 +7,7 @@ import { BlogShareRail } from '@/components/blog/BlogShareRail';
 import { fetchBlogPostBySlug, fetchRecentBlogPosts, getBlogFeaturedImage, getBlogShareImage, getBlogTeaser } from '@/services/blog.service';
 import { Calendar, Tag, ChevronLeft, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
+import { SanitizedHtml } from '@/components/blog/SanitizedHtml';
 
 interface BlogPostPageProps {
   params: {
@@ -206,12 +207,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
             )}
 
-            {/* Contenido (HTML renderizado) */}
+            {/* Contenido (HTML renderizado con sanitización XSS) */}
             <section className="rounded-[2rem] border border-white/10 bg-[#f6f0ee] text-[#1f1f1f] shadow-[0_30px_80px_rgba(0,0,0,0.24)] overflow-hidden">
-              <div
-                className={articleProseClass}
-                dangerouslySetInnerHTML={{ __html: articleHtml }}
-              />
+              <SanitizedHtml html={articleHtml} className={articleProseClass} />
             </section>
 
             <section className="mt-10 rounded-[2rem] border border-white/10 bg-[#111111] p-8 md:p-10 shadow-[0_24px_70px_rgba(0,0,0,0.22)]">
