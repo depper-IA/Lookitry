@@ -1,5 +1,70 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-04] - Auditoría y Corrección de Seguridad Integral (Énfasis en Pagos)
+
+### Problema
+- Vulnerabilidades críticas en el flujo de pagos: race condition en cupones, freeCheckout sin verificación de cupón, webhook retornando 200 en errores.
+- Credenciales de MinIO hardcodeadas en el código fuente.
+- Tokens JWT almacenados en localStorage (vulnerable a XSS).
+- SSRF en proxy de imágenes sin validación de dominios ni bloqueo de IPs internas.
+- XSS almacenado en blog (dangerouslySetInnerHTML sin sanitizar) y en DashboardLayout (innerHTML).
+- Bypass de autenticación en modo desarrollo basado en NODE_ENV.
+- CSP débil con 'unsafe-inline' y 'unsafe-eval', permissions-policy demasiado permisivo.
+- Información interna expuesta en mensajes de error 500 (detalles de BD, schema).
+- User enumeration en endpoint checkEmail (revelaba plan, nombre, estado de suscripción).
+- Endpoints de pago sin rate limiting (free-checkout, apply-free-upgrade).
+
+### Solución
+- **Race condition en cupones**: Creación de migración SQL con RPC atómico `increment_coupon_uses` que incrementa uses_count solo si no se alcanzó max_uses.
+- **Auth en coupon redeem**: Agregado `authRateLimiter` + `authMiddleware` a `POST /api/coupons/redeem`.
+- **Credenciales MinIO**: Eliminados fallbacks hardcodeados; ahora lanza error si las env vars no están configuradas.
+- **Tokens en localStorage**: Eliminada toda escritura de tokens/brand en localStorage. Autenticación exclusivamente vía cookies HTTP-Only.
+- **SSRF en img-proxy**: Implementada allowlist de dominios permitidos, resolución DNS con bloqueo de IPs internas (10.x, 172.16-31.x, 192.168.x, 127.x, 169.254.x).
+- **Verificación de cupón en freeCheckout**: Validación server-side de cupón 100% antes de permitir checkout gratuito.
+- **Webhook Wompi**: Ahora retorna HTTP 500 en errores de procesamiento para que Wompi reintente.
+- **IDs de visitante**: Reemplazado `Date.now()` por `crypto.randomUUID()` para evitar IDs predecibles.
+- **Sanitización de errores**: Creado utility `sanitizeError.ts` que retorna mensajes genéricos en producción. Aplicado en 41+ ocurrencias en 10 controladores.
+- **XSS en DashboardLayout**: Reemplazado `innerHTML` por `textContent` en fallback de avatares.
+- **XSS en blog**: Implementado componente `SanitizedHtml` con DOMPurify para sanitizar contenido antes de renderizar.
+- **Auth bypass en dev**: Reemplazada dependencia de `NODE_ENV` por variable explícita `ALLOW_DEV_AUTH_BYPASS` (default: false).
+- **CSP endurecido**: Eliminados 'unsafe-inline' y 'unsafe-eval' de script-src. Permissions-Policy restringido a `(self)`.
+- **Rate limiting en pagos**: Agregado `paymentMutationRateLimiter` (5 req/15min) a free-checkout y apply-free-upgrade.
+- **User enumeration**: Endpoint checkEmail ahora retorna solo `{ exists: true/false }` sin detalles de la marca.
+
+### Nuevos Archivos
+- `backend/src/utils/sanitizeError.ts` [NUEVO]
+- `supabase/migrations/20260404_fix_coupon_race_condition.sql` [NUEVO]
+- `frontend/src/components/blog/SanitizedHtml.tsx` [NUEVO]
+
+### Archivos Modificados
+- `backend/src/controllers/coupons.controller.ts`
+- `backend/src/app.ts`
+- `backend/src/services/upload.service.ts`
+- `backend/src/controllers/wompi.controller.ts`
+- `backend/src/routes/wompi.routes.ts`
+- `backend/src/controllers/auth.controller.ts`
+- `backend/src/controllers/admin/auth.admin.controller.ts`
+- `backend/src/controllers/admin/feedback.admin.controller.ts`
+- `backend/src/controllers/admin/brand.admin.controller.ts`
+- `backend/src/controllers/trialCampaign.controller.ts`
+- `backend/src/controllers/paymentSettings.controller.ts`
+- `backend/src/controllers/notifications.controller.ts`
+- `backend/src/controllers/enterprise.controller.ts`
+- `backend/src/controllers/blogSettings.controller.ts`
+- `backend/src/controllers/blog.controller.ts`
+- `backend/src/controllers/auth-post-payment.controller.ts`
+- `frontend/src/services/auth.service.ts`
+- `frontend/src/services/api.ts`
+- `frontend/src/app/api/img-proxy/route.ts`
+- `frontend/src/components/dashboard/DashboardLayout.tsx`
+- `frontend/src/app/blog/[slug]/page.tsx`
+- `frontend/src/middleware.ts`
+
+### Dependencias Agregadas
+- `dompurify`, `jsdom`, `@types/dompurify` (frontend)
+
+---
+
 ## [2026-04-04] - Estandarización de Páginas de Error y Mantenimiento (Brand & Theme Compliance)
 
 ### Problema

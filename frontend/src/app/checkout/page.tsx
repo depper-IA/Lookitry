@@ -518,6 +518,7 @@ function CheckoutContent() {
                 handlePrevStep={handlePrevStep}
                 setCurrentStep={setCurrentStep}
                 handleGoogleCheckoutSuccess={handleGoogleCheckoutSuccess}
+                loginHint={email || ''}
                 stepNumber={1}
                 OA={OA}
               />

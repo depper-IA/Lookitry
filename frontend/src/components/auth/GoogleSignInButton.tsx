@@ -8,9 +8,10 @@ interface GoogleSignInButtonProps {
   mode?: 'login' | 'register';
   redirectTo?: string;
   variant?: 'user' | 'admin';
+  loginHint?: string;
 }
 
-export default function GoogleSignInButton({ onSuccess, onError, mode = 'login', redirectTo, variant = 'user' }: GoogleSignInButtonProps) {
+export default function GoogleSignInButton({ onSuccess, onError, mode = 'login', redirectTo, variant = 'user', loginHint }: GoogleSignInButtonProps) {
   const [googleReady, setGoogleReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -124,6 +125,8 @@ export default function GoogleSignInButton({ onSuccess, onError, mode = 'login',
       (window as any).google.accounts.id.initialize({
         client_id: clientId,
         callback: handleGoogleResponse,
+        ux_mode: 'popup',
+        login_hint: loginHint || undefined,
         auto_select: false,
         cancel_on_tap_outside: true,
       });
