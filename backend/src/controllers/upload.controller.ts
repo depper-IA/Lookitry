@@ -134,7 +134,7 @@ export const cleanupTempSelfies = async (req: Request, res: Response) => {
     console.error('[Cleanup Temp] Error:', error);
     return res.status(500).json({
       error: 'INTERNAL_ERROR',
-      message: error.message || 'Error al limpiar archivos temporales',
+      message: sanitizeError(error, 'Error al limpiar archivos temporales'),
     });
   }
 };

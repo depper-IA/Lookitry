@@ -22,6 +22,7 @@ interface UserDataStepProps {
   handlePrevStep: () => void;
   setCurrentStep: (step: Step) => void;
   handleGoogleCheckoutSuccess?: (data: any) => void;
+  loginHint?: string;
   stepNumber?: number;
   OA: string;
 }

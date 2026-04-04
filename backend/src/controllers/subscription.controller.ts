@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { SubscriptionService } from '../services/subscription.service';
 import { NotificationService } from '../services/notification.service';
 import { auditService } from '../services/audit.service';
@@ -68,7 +68,7 @@ export class SubscriptionController {
    */
   async getAllSubscriptions(req: AdminAuthRequest, res: Response): Promise<Response> {
     try {
-      const { status } = req.query;
+      const { status } = req.query as any;
 
       // Importar supabaseAdmin para consultas
       const { supabaseAdmin } = await import('../config/supabase');
@@ -92,7 +92,7 @@ export class SubscriptionController {
       // Calcular días restantes y estado trial para cada marca
       const now = new Date();
       const subscriptionsWithDays = await Promise.all(
-        (data || []).map(async (brand) => {
+        (data || []).map(async (brand: any) => {
           const daysRemaining = await subscriptionService.getDaysRemaining(brand.id);
           const trialEnd = brand.trial_end_date ? new Date(brand.trial_end_date) : null;
           const is_in_trial =

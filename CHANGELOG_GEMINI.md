@@ -1,5 +1,33 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-04] - Actualizacion Integral de Terminos y Condiciones
+
+### Cambio
+- Actualizacion completa de la pagina de Terminos y Condiciones (`/terminos`) con contenido exhaustivo basado en el estado actual del proyecto
+
+### Detalles
+- Expandido de 14 a 15 articulos (nuevo Art. 14: Suspension y Terminacion)
+- Art. 1: Agregado NIT, API URL, horario de atencion
+- Art. 2: Detallado marco legal completo (Ley 527/1999, 1480/2011, 1581/2012, Decreto 1377/2013)
+- Art. 3: Descripcion completa del servicio incluyendo widget, Mini-Landing, API, RAG, referidos, cupones
+- Art. 4: Detallados metodos de registro (estandar, Google OAuth, trial invitado), obligaciones y derechos
+- Art. 5: Todos los planes con precios actualizados (TRIAL, BASICO, PRO, ENTERPRISE), descuentos, add-ons, reglas de facturacion
+- Art. 6: Agregado PayPal como medio de pago, detalles de seguridad
+- Art. 8.1: SLA actualizado con plan ENTERPRISE
+- Art. 9: Uso aceptable expandido con usos permitidos y prohibiciones detalladas
+- Art. 10: Propiedad intelectual con secciones de imagenes generadas por IA y disclaimers
+- Art. 11: Tratamiento de datos con detalles de seguridad, terceros, retencion
+- Art. 12: Limitacion de responsabilidad con ejemplos especificos
+- Art. 14 (nuevo): Suspension y terminacion del servicio, periodo de gracia de 90 dias
+- Art. 15: Ley aplicable y jurisdiccion (anteriormente Art. 14)
+- Aumentado max-h del accordion de 500px a 1200px para contenido extendido
+- Fecha actualizada a 4 de abril de 2026
+
+### Archivos modificados
+- `frontend/src/app/terminos/TerminosClient.tsx`
+
+---
+
 ## [2026-04-04] - Auditoría y Corrección de Seguridad Integral (Énfasis en Pagos)
 
 ### Problema

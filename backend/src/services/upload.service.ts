@@ -116,8 +116,8 @@ export class UploadService {
   }
 
   private async putObject(key: string, body: Buffer, contentType: string): Promise<void> {
-    const host = this.endpoint.replace(/^https?:\/\//, '');
-    const url = `${this.endpoint}/${this.bucket}/${key}`;
+    const host = this.endpoint!.replace(/^https?:\/\//, '');
+    const url = `${this.endpoint!}/${this.bucket!}/${key}`;
 
     const now = new Date();
     const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
@@ -220,8 +220,8 @@ this.accessKey}/${credentialScope}, ` +
   }
 
   private async deleteObject(key: string): Promise<void> {
-    const host = this.endpoint.replace(/^https?:\/\//, '');
-    const url = `${this.endpoint}/${this.bucket}/${key}`;
+    const host = this.endpoint!.replace(/^https?:\/\//, '');
+    const url = `${this.endpoint!}/${this.bucket!}/${key}`;
 
     const now = new Date();
     const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
@@ -234,7 +234,7 @@ this.accessKey}/${credentialScope}, ` +
 
     const canonicalRequest = [
       'DELETE',
-      `/${this.bucket}/${key}`,
+      `/${this.bucket!}/${key}`,
       '',
       canonicalHeaders,
       signedHeaders,
@@ -253,7 +253,7 @@ this.accessKey}/${credentialScope}, ` +
     const signature = crypto.createHmac('sha256', signingKey).update(stringToSign).digest('hex');
 
     const authorization =
-      `AWS4-HMAC-SHA256 Credential=${this.accessKey}/${credentialScope}, ` +
+      `AWS4-HMAC-SHA256 Credential=${this.accessKey!}/${credentialScope}, ` +
       `SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
     await axios.delete(url, {
