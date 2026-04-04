@@ -44,7 +44,11 @@ export class AuthAdminService {
   // ──────────────────────────────────────── Lookup ──
 
   async getAdminByEmail(email: string): Promise<Admin | null> {
-    const { data, error } = await supabaseAdmin.from('admins').select('*').eq('email', email).single();
+    const { data, error } = await supabaseAdmin
+      .from('admins')
+      .select('*')
+      .ilike('email', email.trim())
+      .single();
     if (error || !data) return null;
     return data as Admin;
   }

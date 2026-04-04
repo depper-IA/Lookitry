@@ -274,20 +274,25 @@ export const adminGoogleLogin = async (req: any, res: Response) => {
 
     // Si no se encuentra por Google ID, intentar vincular por email
     if (!admin) {
-      console.log(`[AdminAuth] Admin no encontrado por google_id: ${googleSub}. Buscando por email: ${googleEmail}`);
+      console.log(`[AdminAuth] Admin no encontrado por google_id: [${googleSub}]. Intentando vincular por email: [${googleEmail}]`);
       admin = await adminService.getAdminByEmail(googleEmail);
 
       if (admin) {
-        console.log(`[AdminAuth] Vinculando google_id ${googleSub} a la cuenta admin de ${googleEmail}`);
+        console.log(`[AdminAuth] Coincidencia por email encontrada. Vinculando google_id [${googleSub}] a la cuenta ID: [${admin.id}]`);
         await adminService.updateAdminGoogleId(admin.id, googleSub);
         
         // Refrescar datos del admin para asegurarnos de tener todo actualizado (opcional pero recomendado)
         admin = await adminService.getAdminById(admin.id);
+        console.log(`[AdminAuth] Vinculación exitosa para: [${googleEmail}]`);
+      } else {
+        console.warn(`[AdminAuth] No se encontró ningún administrador con el email: [${googleEmail}]`);
       }
+    } else {
+      console.log(`[AdminAuth] Admin autenticado correctamente vía google_id: [${googleSub}] (${googleEmail})`);
     }
 
     if (!admin) {
-      console.warn(`[AdminAuth] Intento de acceso fallido: ${googleEmail} no es administrador.`);
+      console.warn(`[AdminAuth] ACCESO DENEGADO: El usuario [${googleEmail}] no tiene permisos de administrador.`);
       return res.status(401).json({
         error: 'UNAUTHORIZED',
         message: 'Esta cuenta no tiene acceso de administrador',
