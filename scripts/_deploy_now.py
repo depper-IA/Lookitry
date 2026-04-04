@@ -138,8 +138,8 @@ frontend_changed = False
 
 if not only_back and not only_front:
     if current_sha != remote_sha:
-        backend_changed = contains_path(changed_files, "backend/")
-        frontend_changed = contains_path(changed_files, "frontend/")
+        backend_changed = contains_path(changed_files, "backend/") or "docker-compose.backend.yml" in changed_files
+        frontend_changed = contains_path(changed_files, "frontend/") or "docker-compose.frontend.yml" in changed_files
         if contains_path(changed_files, "lookitry-woocommerce/"):
             print(
                 "\n[INFO] Cambios del plugin WooCommerce detectados. "
