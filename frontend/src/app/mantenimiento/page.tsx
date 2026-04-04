@@ -34,10 +34,10 @@ export default function MaintenancePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center transition-colors duration-300 overflow-hidden">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center transition-colors duration-300 overflow-hidden">
       {/* Glow decorativo sutil */}
       <div 
-        className="absolute w-[600px] h-[600px] rounded-full pointer-events-none opacity-[0.05] dark:opacity-10 blur-[120px]"
+        className="absolute w-[600px] h-[600px] rounded-full pointer-events-none opacity-10 blur-[120px]"
         style={{ 
           background: 'radial-gradient(circle, #6366f1 0%, transparent 70%)',
           top: '-10%',
@@ -46,7 +46,7 @@ export default function MaintenancePage() {
         aria-hidden="true"
       />
       <div 
-        className="absolute w-[600px] h-[600px] rounded-full pointer-events-none opacity-[0.05] dark:opacity-10 blur-[120px]"
+        className="absolute w-[600px] h-[600px] rounded-full pointer-events-none opacity-10 blur-[120px]"
         style={{ 
           background: 'radial-gradient(circle, #FF5C3A 0%, transparent 70%)',
           bottom: '-10%',

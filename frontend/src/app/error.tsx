@@ -19,11 +19,11 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center transition-colors duration-300">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-6 text-center transition-colors duration-300">
       {/* Background radial effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#FF5C3A]/[0.03] dark:bg-[#FF5C3A]/[0.05] blur-[100px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#6366f1]/[0.03] dark:bg-[#6366f1]/[0.05] blur-[100px] rounded-full" />
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#FF5C3A]/[0.05] blur-[100px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#6366f1]/[0.05] blur-[100px] rounded-full" />
       </div>
 
       <motion.div 
@@ -37,7 +37,7 @@ export default function Error({
             <div className="relative h-8 w-8">
               <Image src="/logo.svg" alt="Lookitry" fill className="object-contain" priority />
             </div>
-            <span className="font-jakarta text-2xl font-black tracking-tighter text-[#0a0a0a] dark:text-white">
+            <span className="font-jakarta text-2xl font-black tracking-tighter text-white">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </div>
@@ -46,14 +46,14 @@ export default function Error({
         {/* Error Icon with Glassmorphism */}
         <div className="relative w-24 h-24 mx-auto mb-10">
           <div className="absolute inset-0 bg-[#FF5C3A]/20 blur-2xl rounded-full animate-pulse" />
-          <div className="relative w-full h-full bg-white dark:bg-white/5 backdrop-blur-xl border border-neutral-100 dark:border-white/10 rounded-3xl flex items-center justify-center shadow-2xl">
+          <div className="relative w-full h-full bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl flex items-center justify-center shadow-2xl">
             <AlertTriangle className="w-10 h-10 text-[#FF5C3A]" strokeWidth={2.5} />
           </div>
         </div>
 
         {/* Text Content */}
         <div className="space-y-4 mb-12">
-          <h1 className="text-4xl font-black tracking-tighter text-[#0a0a0a] dark:text-white font-jakarta">
+          <h1 className="text-4xl font-black tracking-tighter text-white font-jakarta">
             Ups, algo salió <span className="text-[#FF5C3A] italic font-medium">mal</span>
           </h1>
           <p className="text-[#999] text-base font-medium max-w-[280px] mx-auto leading-relaxed">
@@ -70,7 +70,7 @@ export default function Error({
         <div className="flex flex-col gap-4">
           <button
             onClick={() => reset()}
-            className="w-full flex items-center justify-center gap-3 bg-[#0a0a0a] dark:bg-white text-white dark:text-[#0a0a0a] font-black uppercase text-[11px] tracking-[0.2em] py-5 rounded-2xl transition-all duration-300 hover:-translate-y-1 active:scale-95 shadow-xl dark:shadow-white/5 group"
+            className="w-full flex items-center justify-center gap-3 bg-white text-[#0a0a0a] font-black uppercase text-[11px] tracking-[0.2em] py-5 rounded-2xl transition-all duration-300 hover:-translate-y-1 active:scale-95 shadow-xl shadow-white/5 group"
           >
             <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
             Reintentar ahora
@@ -78,7 +78,7 @@ export default function Error({
           
           <Link
             href="/"
-            className="w-full flex items-center justify-center gap-3 bg-neutral-50 dark:bg-white/5 border border-neutral-200 dark:border-white/10 text-[#888] dark:text-[#bbb] hover:text-[#0a0a0a] dark:hover:text-white font-black uppercase text-[11px] tracking-[0.2em] py-5 rounded-2xl transition-all duration-300 hover:-translate-y-1 active:scale-95"
+            className="w-full flex items-center justify-center gap-3 bg-white/5 border border-white/10 text-[#bbb] hover:text-white font-black uppercase text-[11px] tracking-[0.2em] py-5 rounded-2xl transition-all duration-300 hover:-translate-y-1 active:scale-95"
           >
             <Home className="w-4 h-4" />
             Volver al inicio
@@ -94,5 +94,6 @@ export default function Error({
         </p>
       </motion.div>
     </div>
+
   );
 }
