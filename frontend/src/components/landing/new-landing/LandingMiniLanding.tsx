@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Globe, Box, Sparkles, MessageCircle } from 'lucide-react';
 
 export default function LandingMiniLanding() {
@@ -49,7 +50,7 @@ export default function LandingMiniLanding() {
 
           <div className="hidden lg:block relative">
             <div className="relative z-10 rounded-2xl sm:rounded-[2rem] overflow-hidden border border-white/10 dark:border-[#e8e4df] shadow-2xl">
-               <img src="/hero/promo_landing.png" alt="Vista previa de Lookitry Landing" className="w-full h-auto" />
+               <Image src="/hero/promo_landing.png" alt="Vista previa de Lookitry Landing" width={600} height={400} className="w-full h-auto" />
             </div>
             <div className="absolute -top-6 sm:-top-10 -right-6 sm:-right-10 w-32 h-32 sm:w-40 sm:h-40 bg-[#FF5C3A]/10 blur-3xl rounded-full" aria-hidden="true" />
           </div>

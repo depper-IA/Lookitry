@@ -1,0 +1,311 @@
+{
+  "name": "Lookitry — Auto-credit Referral Bonus",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */6 * * *"
+            }
+          ]
+        }
+      },
+      "id": "cron-6hours",
+      "name": "Cron — Cada 6 horas",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT r.id, r.referrer_brand_id, r.referred_brand_id, r.referral_code, r.bonus_months, r.status, r.referrer_claimed, r.referred_claimed, br.name as referrer_name, br.email as referrer_email, bd.name as referred_name, bd.email as referred_email, bd.subscription_end_date as referred_sub_end FROM referrals r JOIN brands br ON r.referrer_brand_id = br.id JOIN brands bd ON r.referred_brand_id = bd.id WHERE r.status = 'pending' AND bd.subscription_status = 'active' AND bd.plan NOT IN ('TRIAL', 'FREE') LIMIT 20;",
+        "options": {}
+      },
+      "id": "supabase-get-pending",
+      "name": "Supabase — Buscar referidos convertidos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [450, 300],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_LOOKITRY_LOCAL",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "loop-referrals",
+      "name": "Loop — Procesar referral",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE referrals SET status = 'converted', converted_at = NOW() WHERE id = '{{ $json.id }}' RETURNING *;",
+        "options": {}
+      },
+      "id": "supabase-mark-converted",
+      "name": "Supabase — Marcar convertido",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [850, 300],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_LOOKITRY_LOCAL",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE brands SET subscription_end_date = COALESCE(NULLIF(subscription_end_date, '')::timestamp, NOW()) + INTERVAL '1 month' WHERE id = '{{ $json.referrer_brand_id }}' RETURNING subscription_end_date;",
+        "options": {}
+      },
+      "id": "supabase-extend-referrer",
+      "name": "Supabase — +1 mes al referente",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [1050, 200],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_LOOKITRY_LOCAL",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE brands SET subscription_end_date = COALESCE(NULLIF(subscription_end_date, '')::timestamp, NOW()) + INTERVAL '1 month' WHERE id = '{{ $json.referred_brand_id }}' RETURNING subscription_end_date;",
+        "options": {}
+      },
+      "id": "supabase-extend-referred",
+      "name": "Supabase — +1 mes al referido",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [1050, 400],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_LOOKITRY_LOCAL",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE referrals SET referrer_claimed = true, referrer_claimed_at = NOW(), bonus_credited = true, bonus_credited_at = NOW() WHERE id = '{{ $json.id }}';",
+        "options": {}
+      },
+      "id": "supabase-mark-referrer-claimed",
+      "name": "Supabase — Marcar referente agradecido",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [1250, 200],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_LOOKITRY_LOCAL",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE referrals SET referred_claimed = true, referred_claimed_at = NOW() WHERE id = '{{ $json.id }}';",
+        "options": {}
+      },
+      "id": "supabase-mark-referred-claimed",
+      "name": "Supabase — Marcar referido agradecido",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [1250, 400],
+      "credentials": {
+        "postgres": {
+          "id": "SUPABASE_LOOKITRY_LOCAL",
+          "name": "Supabase Lookitry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.brevo.com/v3/smtp/email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api-key",
+              "value": "***REMOVED-SECRET***"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"sender\": { \"name\": \"LOOKITRY\", \"email\": \"info@lookitry.com\" },\n  \"to\": [{ \"email\": \"{{ $json.referrer_email }}\", \"name\": \"{{ $json.referrer_name }}\" }],\n  \"subject\": \"🎉 ¡Tu referido se convirtió! Tienes 1 mes gratis\",\n  \"htmlContent\": \"<!DOCTYPE html><html><head><meta charset=\\\"UTF-8\\\"><title>LOOKITRY</title></head><body style=\\\"margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f2ee;\\\"><table width=\\\"100%\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#f5f2ee;padding:24px 16px;\\\"><tr><td align=\\\"center\\\"><table width=\\\"600\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);\\\"><tr><td style=\\\"background-color:#0a0a0a;padding:28px 32px;text-align:center;\\\"><h1 style=\\\"color:#FF5C3A;margin:0;font-size:24px;\\\">LOOKITRY</h1><p style=\\\"color:rgba(255,255,255,0.6);margin:12px 0 0 0;font-size:13px;letter-spacing:0.5px;\\\">Probador virtual para tu marca</p></td></tr><tr><td style=\\\"padding:36px 32px;background-color:#ffffff;\\\"><div style=\\\"text-align:center;margin-bottom:20px;\\\"><span style=\\\"font-size:48px;\\\"🎉</span></div><h2 style=\\\"color:#0a0a0a;margin-top:0;font-size:22px;text-align:center;\\\">¡Felicidades {{ $json.referrer_name }}!</h2><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Uno de tus referidos se acaba de convertir a plan pago.</p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\"><strong>Premio: 1 mes gratis de LOOKITRY</strong></p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Este mes extra ya ha sido aplicado a tu suscripción.</p><div style=\\\"margin:24px 0;padding:16px;background-color:#f5f2ee;border-radius:8px;text-align:center;\\\"><p style=\\\"margin:0;color:#0a0a0a;font-size:14px;\\\"><strong>¡Sigue invitando para ganar más meses gratis!</strong></p></div><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Visita tu <a href=\\\"https://lookitry.com/dashboard/referral\\\" style=\\\"color:#FF5C3A;text-decoration:none;\\\">dashboard de referidos</a> para ver tus estadísticas.</p></td></tr><tr><td style=\\\"background-color:#f5f2ee;padding:20px 32px;text-align:center;border-top:1px solid #e0dcd7;\\\"><p style=\\\"margin:0;color:#888;font-size:12px;\\\">© 2026 LOOKITRY. Todos los derechos reservados.</p></td></tr></table></td></tr></table></body></html>\\\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "brevo-referrer-email",
+      "name": "Brevo — Email al referente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1450, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.brevo.com/v3/smtp/email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api-key",
+              "value": "***REMOVED-SECRET***"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"sender\": { \"name\": \"LOOKITRY\", \"email\": \"info@lookitry.com\" },\n  \"to\": [{ \"email\": \"{{ $json.referred_email }}\", \"name\": \"{{ $json.referred_name }}\" }],\n  \"subject\": \"🎁 ¡Tu código de referido fue aplicado! 1 mes gratis\",\n  \"htmlContent\": \"<!DOCTYPE html><html><head><meta charset=\\\"UTF-8\\\"><title>LOOKITRY</title></head><body style=\\\"margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f2ee;\\\"><table width=\\\"100%\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#f5f2ee;padding:24px 16px;\\\"><tr><td align=\\\"center\\\"><table width=\\\"600\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);\\\"><tr><td style=\\\"background-color:#0a0a0a;padding:28px 32px;text-align:center;\\\"><h1 style=\\\"color:#FF5C3A;margin:0;font-size:24px;\\\">LOOKITRY</h1><p style=\\\"color:rgba(255,255,255,0.6);margin:12px 0 0 0;font-size:13px;letter-spacing:0.5px;\\\">Probador virtual para tu marca</p></td></tr><tr><td style=\\\"padding:36px 32px;background-color:#ffffff;\\\"><div style=\\\"text-align:center;margin-bottom:20px;\\\"><span style=\\\"font-size:48px;\\\"🎁</span></div><h2 style=\\\"color:#0a0a0a;margin-top:0;font-size:22px;text-align:center;\\\">¡Felicidades {{ $json.referred_name }}!</h2><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Tu código de referido ha sido aplicado correctamente.</p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\"><strong>Premio: 1 mes gratis de LOOKITRY</strong></p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Este mes extra ya ha sido aplicado a tu suscripción.</p></td></tr><tr><td style=\\\"background-color:#f5f2ee;padding:20px 32px;text-align:center;border-top:1px solid #e0dcd7;\\\"><p style=\\\"margin:0;color:#888;font-size:12px;\\\">© 2026 LOOKITRY. Todos los derechos reservados.</p></td></tr></table></td></tr></table></body></html>\\\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "brevo-referred-email",
+      "name": "Brevo — Email al referido",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1450, 400]
+    }
+  ],
+  "connections": {
+    "Cron — Cada 6 horas": {
+      "main": [
+        [
+          {
+            "node": "Supabase — Buscar referidos convertidos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase — Buscar referidos convertidos": {
+      "main": [
+        [
+          {
+            "node": "Loop — Procesar referral",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop — Procesar referral": {
+      "main": [
+        [
+          {
+            "node": "Supabase — Marcar convertido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase — Marcar convertido": {
+      "main": [
+        [
+          {
+            "node": "Supabase — +1 mes al referente",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Supabase — +1 mes al referido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase — +1 mes al referente": {
+      "main": [
+        [
+          {
+            "node": "Supabase — Marcar referente agradecido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase — +1 mes al referido": {
+      "main": [
+        [
+          {
+            "node": "Supabase — Marcar referido agradecido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase — Marcar referente agradecido": {
+      "main": [
+        [
+          {
+            "node": "Brevo — Email al referente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase — Marcar referido agradecido": {
+      "main": [
+        [
+          {
+            "node": "Brevo — Email al referido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": ["referrals", "bonus", "automation", "lookitry"],
+  "trigger": "schedule",
+  "updatedAt": "2026-04-03T00:00:00.000Z",
+  "versionId": "1"
+}

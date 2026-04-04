@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useConfirm } from '@/components/admin/ConfirmDialog';
+import Link from 'next/link';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -82,7 +83,19 @@ interface ContactMeta {
   replicate_monthly_budget_usd?: number;
 }
 
-type SysTab = 'trial' | 'contact';
+type SysTab = 'trial' | 'contact' | 'launch';
+
+interface LaunchSettings {
+  googleSiteVerification: string;
+  uptimerobotStatusUrl: string;
+  gaMeasurementId: string;
+  referralBonusMonths: number;
+  launchDiscountCode: string;
+  launchDiscountPercent: number;
+  launchEndDate: string;
+  betaToPaidDiscount: number;
+  sendLaunchEmail: boolean;
+}
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 
@@ -139,6 +152,13 @@ function IconCopy({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+    </svg>
+  );
+}
+function IconRocket({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
     </svg>
   );
 }
@@ -314,6 +334,20 @@ export default function SystemConfigPage() {
   const [replicateCredits, setReplicateCredits] = useState<ProviderCredits | null>(null);
   const [loadingCredits, setLoadingCredits] = useState(true);
 
+  // Launch y Analytics
+  const [launchSettings, setLaunchSettings] = useState<LaunchSettings>({
+    googleSiteVerification: 'F-LW3EGCNrjEhNaAT56Qrioyo4-UD2CRWYyqgS-sExE',
+    uptimerobotStatusUrl: 'https://stats.uptimerobot.com/CTEnSD7d1j',
+    gaMeasurementId: 'G-F8277E4Z39',
+    referralBonusMonths: 1,
+    launchDiscountCode: 'LAUNCH20',
+    launchDiscountPercent: 20,
+    launchEndDate: '2026-04-30',
+    betaToPaidDiscount: 20,
+    sendLaunchEmail: false,
+  });
+  const [savingLaunch, setSavingLaunch] = useState(false);
+
   // Alertas globales
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -447,15 +481,24 @@ export default function SystemConfigPage() {
     loadPaymentSettings();
     loadPricingMeta();
     loadCredits();
+    
+    // Cargar configuración de launch desde localStorage
+    const saved = localStorage.getItem('launchSettings');
+    if (saved) {
+      try {
+        setLaunchSettings(JSON.parse(saved));
+      } catch {}
+    }
   }, []);
 
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab === 'trial' || tab === 'contact') {
+    if (tab === 'trial' || tab === 'contact' || tab === 'launch') {
       setActiveTab(tab);
     }
   }, [searchParams]);
 
+  // Función flash para mensajes
   function flash(msg: string, type: 'ok' | 'err') {
     if (type === 'ok') { setSuccess(msg); setTimeout(() => setSuccess(''), 3000); }
     else { setError(msg); setTimeout(() => setError(''), 4000); }
@@ -801,6 +844,7 @@ export default function SystemConfigPage() {
   const TABS: ReadonlyArray<{ id: SysTab; label: string; icon: React.ReactNode }> = [
     { id: 'trial',   label: 'Trial',        icon: <IconClock className="w-4 h-4" /> },
     { id: 'contact', label: 'Contacto y redes', icon: <IconExternalLink className="w-4 h-4" /> },
+    { id: 'launch',  label: '🚀 Launch',    icon: <IconRocket className="w-4 h-4" /> },
   ];
 
   const isSaving = savingAIConfig || savingPricingConfig || savingCurrency || savingWhitelist || savingContactConfig || savingTrm;
@@ -1096,7 +1140,183 @@ export default function SystemConfigPage() {
           </div>
         </div>
       </Section>
-      )} {/* fin tab landing */}
+      )} {/* fin tab contact */}
+
+      {/* ── TAB: Launch ── */}
+      {activeTab === 'launch' && (
+      <Section title="🚀 Configuración de Launch" icon={<IconRocket className="w-4 h-4" />}>
+        <div className="space-y-6">
+          
+          {/* SEO y Analytics */}
+          <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
+            <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold mb-4">SEO y Analytics</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Google Site Verification</label>
+                <input
+                  type="text"
+                  value={launchSettings.googleSiteVerification}
+                  onChange={e => setLaunchSettings(prev => ({ ...prev, googleSiteVerification: e.target.value }))}
+                  placeholder="Código de verificación Google"
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
+                />
+              </div>
+              <div>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">GA4 Measurement ID</label>
+                <input
+                  type="text"
+                  value={launchSettings.gaMeasurementId}
+                  onChange={e => setLaunchSettings(prev => ({ ...prev, gaMeasurementId: e.target.value }))}
+                  placeholder="G-XXXXXXXXXX"
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">UptimeRobot Status URL</label>
+                <input
+                  type="url"
+                  value={launchSettings.uptimerobotStatusUrl}
+                  onChange={e => setLaunchSettings(prev => ({ ...prev, uptimerobotStatusUrl: e.target.value }))}
+                  placeholder="https://stats.uptimerobot.com/..."
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Programa de Referidos */}
+          <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
+            <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold mb-4">Programa de Referidos</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Meses de bonus por referido</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={12}
+                  value={launchSettings.referralBonusMonths}
+                  onChange={e => setLaunchSettings(prev => ({ ...prev, referralBonusMonths: Number(e.target.value) }))}
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+                />
+                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Meses gratis para ambos (referente y referido)</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Lanzamiento */}
+          <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
+            <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold mb-4">Campaña de Lanzamiento</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Código de descuento</label>
+                <input
+                  type="text"
+                  value={launchSettings.launchDiscountCode}
+                  onChange={e => setLaunchSettings(prev => ({ ...prev, launchDiscountCode: e.target.value.toUpperCase() }))}
+                  placeholder="LAUNCH20"
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm font-mono"
+                />
+              </div>
+              <div>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">% Descuento</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={launchSettings.launchDiscountPercent}
+                  onChange={e => setLaunchSettings(prev => ({ ...prev, launchDiscountPercent: Number(e.target.value) }))}
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+                />
+              </div>
+              <div>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Fecha fin</label>
+                <input
+                  type="date"
+                  value={launchSettings.launchEndDate}
+                  onChange={e => setLaunchSettings(prev => ({ ...prev, launchEndDate: e.target.value }))}
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Beta to Paid */}
+          <div style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="rounded-xl border p-4">
+            <p style={{ color: 'var(--text-primary)' }} className="text-sm font-semibold mb-4">Conversión Beta → Paid</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label style={{ color: 'var(--text-secondary)' }} className="block text-xs font-semibold uppercase tracking-wide mb-2">Descuento para marcas beta (%)</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={launchSettings.betaToPaidDiscount}
+                  onChange={e => setLaunchSettings(prev => ({ ...prev, betaToPaidDiscount: Number(e.target.value) }))}
+                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                  className="w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5C3A] text-sm"
+                />
+                <p style={{ color: 'var(--text-muted)' }} className="text-xs mt-1">Descuento especial para las 120+ marcas beta</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Acciones */}
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={async () => {
+                setSavingLaunch(true);
+                try {
+                  // Guardar en backend
+                  await fetch(`${API_URL}/api/admin/payment-settings`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      ga_measurement_id: launchSettings.gaMeasurementId,
+                      google_site_verification: launchSettings.googleSiteVerification,
+                    }),
+                  });
+                  
+                  // Guardar en localStorage para referencias rápidas
+                  localStorage.setItem('launchSettings', JSON.stringify(launchSettings));
+                  
+                  flash('Configuración guardada correctamente', 'ok');
+                } catch {
+                  flash('Error al guardar', 'err');
+                } finally {
+                  setSavingLaunch(false);
+                }
+              }}
+              disabled={savingLaunch}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors"
+            >
+              {savingLaunch
+                ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />
+                : <IconCheck className="w-4 h-4" />}
+              Guardar Configuración
+            </button>
+            <a
+              href={launchSettings.uptimerobotStatusUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold hover:bg-[var(--bg-hover)] transition-colors"
+              style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+            >
+              <IconExternalLink className="w-4 h-4" />
+              Ver Status Page
+            </a>
+          </div>
+
+        </div>
+      </Section>
+      )} {/* fin tab launch */}
 
       </div>
     </div>

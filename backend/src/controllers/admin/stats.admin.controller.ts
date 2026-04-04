@@ -108,3 +108,39 @@ export const getEconomics = async (_req: Request, res: Response) => {
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener datos de economía unitaria' });
   }
 };
+
+/**
+ * GET /api/admin/alerts - Alertas críticas para el dashboard
+ */
+export const getAlerts = async (_req: Request, res: Response) => {
+  try {
+    const { supabaseAdmin } = await import('../../config/supabase');
+    
+    const now = new Date();
+    const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    // Suscripciones por vencer en 7 días
+    const { data: expiring } = await supabaseAdmin
+      .from('brands')
+      .select('id')
+      .eq('subscription_status', 'active')
+      .lte('subscription_end_date', in7Days.toISOString())
+      .gte('subscription_end_date', now.toISOString());
+    
+    // Pagos fallidos recientes
+    const { data: failed } = await supabaseAdmin
+      .from('subscription_payments')
+      .select('id')
+      .eq('status', 'failed')
+      .gte('created_at', new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString());
+    
+    return res.status(200).json({
+      expiring: expiring?.length || 0,
+      failed: failed?.length || 0,
+      critical: (expiring?.length || 0) + (failed?.length || 0),
+    });
+  } catch (error: any) {
+    console.error('Error in getAlerts:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener alertas' });
+  }
+};

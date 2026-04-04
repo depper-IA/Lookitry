@@ -216,6 +216,28 @@ export const updateModalConfig = async (req: any, res: Response) => {
 };
 
 /**
+ * PATCH /api/admin/brands/:id/notes
+ */
+export const updateBrandNotes = async (req: any, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { internal_notes } = req.body;
+    const { supabaseAdmin } = await import('../../config/supabase');
+    const { data, error } = await supabaseAdmin.from('brands').update({ 
+      internal_notes,
+      internal_notes_updated_at: new Date().toISOString(),
+      internal_notes_updated_by: req.admin?.id ?? null
+    }).eq('id', id).select('id, name, internal_notes').single();
+    if (error || !data) return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
+
+    auditService.log({ admin_id: req.admin?.id ?? 'unknown', admin_email: req.admin?.email ?? 'unknown', action: 'brand.notes_update', target_brand_id: id, details: { notes_length: internal_notes?.length || 0 } });
+    return res.status(200).json({ message: 'Notas actualizadas', brand: data });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al actualizar notas' });
+  }
+};
+
+/**
  * GET /api/admin/mini-landings
  */
 export const getMiniLandingsAdmin = async (_req: Request, res: Response) => {

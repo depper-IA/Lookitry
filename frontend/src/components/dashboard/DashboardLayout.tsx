@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, LogOut, Menu } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogOut, Menu, Gift } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { SubscriptionBadge } from './SubscriptionBadge';
 import { LiveTryOnButton } from './LiveTryOnButton';
@@ -33,6 +33,7 @@ const navigation = [
   { name: 'Consumo', href: '/dashboard/usage', icon: UsageIcon },
   { name: 'Suscripción', href: '/dashboard/subscription', icon: SubscriptionIcon },
   { name: 'Resultados', href: '/dashboard/analytics', icon: AnalyticsIcon },
+  { name: 'Referidos', href: '/dashboard/referral', icon: GiftIcon },
   { name: 'Perfil', href: '/dashboard/profile', icon: ProfileIcon },
 ];
 
@@ -457,5 +458,11 @@ function ReviewIcon({ className }: { className?: string }) {
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h7m-7 4h4m10-9a2 2 0 00-2-2H5a2 2 0 00-2 2v11l4-3h12a2 2 0 002-2V7z" />
     </svg>
+  );
+}
+
+function GiftIcon({ className }: { className?: string }) {
+  return (
+    <Gift className={className} strokeWidth={1.75} />
   );
 }

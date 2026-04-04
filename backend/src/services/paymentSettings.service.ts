@@ -59,6 +59,8 @@ export interface PaymentSettings {
   ip_whitelist: string; // IPs separadas por coma que siempre pasan el check
   maintenance_mode: boolean;
   maintenance_message: string;
+  // Analytics
+  ga_measurement_id: string;
   updated_at?: string;
 }
 
@@ -108,6 +110,7 @@ const DEFAULT_SETTINGS: PaymentSettings = {
   ip_whitelist: '',
   maintenance_mode: false,
   maintenance_message: 'Estamos realizando mejoras en nuestra plataforma. Volveremos pronto.',
+  ga_measurement_id: '',
 };
 
 export class PaymentSettingsService {
@@ -201,6 +204,7 @@ export class PaymentSettingsService {
     maintenanceMode: boolean;
     maintenanceMessage: string;
     trm: number;
+    gaMeasurementId: string;
   }> {
     const s = await this.getSettings();
     // En modo producción usar la llave pública de producción
@@ -248,7 +252,8 @@ export class PaymentSettingsService {
       miniLandingPreviewSeconds: s.mini_landing_preview_seconds,
       maintenanceMode: s.maintenance_mode,
       maintenanceMessage: s.maintenance_message,
-      trm, // Agregado para el frontend
+      trm,
+      gaMeasurementId: s.ga_measurement_id || '',
     };
   }
 }

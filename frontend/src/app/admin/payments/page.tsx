@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Search, CreditCard, RefreshCw, CheckCircle, XCircle, Clock, Banknote, Wifi, ArrowUpDown } from 'lucide-react';
+import { Search, CreditCard, RefreshCw, CheckCircle, XCircle, Clock, Banknote, Wifi, ArrowUpDown, Download } from 'lucide-react';
 import { formatCurrency } from '@/utils/currency';
 import { adminApi } from '@/services/adminApi';
 
@@ -178,6 +178,27 @@ export default function AdminPaymentsPage() {
   }), [payments, sortField, sortOrder]);
   const paginated = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+  const exportToCSV = () => {
+    const headers = ['Fecha', 'Marca', 'Email', 'Plan', 'Monto (COP)', 'Método', 'Estado'];
+    const rows = sorted.map(p => [
+      new Date(p.payment_date || p.created_at).toLocaleDateString('es-CO'),
+      p.brands?.name || '',
+      p.brands?.email || '',
+      p.brands?.plan || '',
+      (p.amount_cop || p.amount).toString(),
+      p.payment_method || '',
+      p.status,
+    ]);
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pagos_lookitry_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // Resumen por método
   const byMethod = payments.reduce<Record<string, { count: number; total: number }>>((acc, p) => {
     const m = p.payment_method || 'otro';
@@ -197,11 +218,18 @@ export default function AdminPaymentsPage() {
           <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-bold tracking-tight">Pagos</h1>
           <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">Historial completo de pagos registrados</p>
         </div>
-        <button onClick={fetchPayments}
-          style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
-          className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl border text-sm hover:opacity-80 transition-opacity">
-          <RefreshCw className="w-4 h-4" /> Actualizar
-        </button>
+        <div className="flex gap-2">
+          <button onClick={exportToCSV}
+            style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+            className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl border text-sm hover:opacity-80 transition-opacity">
+            <Download className="w-4 h-4" /> Exportar CSV
+          </button>
+          <button onClick={fetchPayments}
+            style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
+            className="flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl border text-sm hover:opacity-80 transition-opacity">
+            <RefreshCw className="w-4 h-4" /> Actualizar
+          </button>
+        </div>
       </div>
 
       {/* Resumen por método */}
