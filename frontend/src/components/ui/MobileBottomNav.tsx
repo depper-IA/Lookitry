@@ -3,18 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Home, Sparkles, Mail, User, LogIn } from 'lucide-react';
+import { usePublicSession } from '@/hooks/usePublicSession';
 
 export function MobileBottomNav({ pathname }: { pathname: string }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn } = usePublicSession();
   const itemClass =
     'flex flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-2 text-center transition-all duration-200 min-w-0';
   const labelClass =
     'text-[8px] leading-[1.05] font-semibold uppercase tracking-[0.08em] text-center break-words';
-
-  useEffect(() => {
-    const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
-    setIsLoggedIn(!!token);
-  }, [pathname]);
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
