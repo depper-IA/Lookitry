@@ -98,11 +98,26 @@ function PagoExitosoContent() {
           if (!res.ok) throw new Error(data.message || 'Error al capturar el pago');
 
           const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
+          const brandData = localStorage.getItem('brand');
           const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-');
           const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
+          const isGoogleUser = brandData ? JSON.parse(brandData)?.google_id : false;
           const isStandardVisitor = (currentRef?.includes('visitor_') || !token) && !isTrialRef;
 
-          if (isGuestTrial && currentRef) {
+          if (isGuestTrial && currentRef && (isGoogleUser || token)) {
+            // Usuario Google o con sesión - Activar trial y redirigir
+            try {
+              await fetch(`${API_URL}/api/trial/activate-guest`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ ref: currentRef }),
+              });
+            } catch {
+              // Ignorar errores - el trial se activará en siguiente visita
+            }
+            setDashboardHref('/dashboard');
+          } else if (isGuestTrial && currentRef) {
             setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
           } else if (isStandardVisitor && currentRef) {
             setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
@@ -118,11 +133,27 @@ function PagoExitosoContent() {
         }
       } else {
         const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
+        const brandData = localStorage.getItem('brand');
         const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-');
         const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
+        const isGoogleUser = brandData ? JSON.parse(brandData)?.google_id : false;
         const isStandardVisitor = (currentRef?.includes('visitor_') || !token) && !isTrialRef;
 
-        if (isGuestTrial && currentRef) {
+        if (isGuestTrial && currentRef && (isGoogleUser || token)) {
+          // Usuario Google o con sesión - Activar trial y redirigir
+          try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+            await fetch(`${API_URL}/api/trial/activate-guest`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ ref: currentRef }),
+            });
+          } catch {
+            // Ignorar errores - el trial se activará en siguiente visita
+          }
+          setDashboardHref('/dashboard');
+        } else if (isGuestTrial && currentRef) {
           setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
         } else if (isStandardVisitor && currentRef) {
           setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);

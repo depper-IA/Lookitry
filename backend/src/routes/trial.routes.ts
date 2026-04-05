@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { authMiddleware } from '../middleware/auth';
 import { supabaseAdmin } from '../config/supabase';
@@ -163,8 +163,106 @@ router.post('/initiate-guest', asyncHandler(async (req, res) => {
     return res.json({ checkoutUrl: createdOrder.checkoutUrl, reference });
   }
 
-  const checkoutUrl = await wompiService.getCheckoutUrl(guestId, price, successUrl, false, 0, 'TRIAL', reference);
+    const checkoutUrl = await wompiService.getCheckoutUrl(guestId, price, successUrl, false, 0, 'TRIAL', reference);
   return res.json({ checkoutUrl, reference });
+}));
+
+/**
+ * POST /api/trial/activate-guest
+ * Activa el trial para un usuario autenticado (Google) después del pago.
+ * Requiere cookie de sesión válida.
+ */
+router.post('/activate-guest', authMiddleware, asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { ref } = req.body;
+
+  if (!ref) {
+    return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'La referencia es requerida' });
+  }
+
+  const normalizedRef = String(ref).toUpperCase();
+  if (!normalizedRef.startsWith('GUEST-TRIAL-')) {
+    return res.status(400).json({ error: 'INVALID_REFERENCE', message: 'Referencia de trial inválida' });
+  }
+
+  // Buscar pending_registration
+  const { data: pending, error: pendingError } = await supabaseAdmin
+    .from('pending_registrations')
+    .select('*')
+    .eq('reference', ref)
+    .maybeSingle();
+
+  if (pendingError || !pending) {
+    return res.status(404).json({ error: 'NOT_FOUND', message: 'Referencia no encontrada' });
+  }
+
+  if (pending.status === 'used') {
+    // Ya fue utilizada, verificar si la brand ya tiene trial activo
+    const brandId = req.brand?.id;
+    if (brandId) {
+      const { data: brand } = await supabaseAdmin
+        .from('brands')
+        .select('id, plan, trial_end_date, subscription_status')
+        .eq('id', brandId)
+        .single();
+
+      if (brand?.plan === 'TRIAL' && brand?.trial_end_date) {
+        return res.json({ success: true, alreadyActivated: true });
+      }
+    }
+    return res.status(409).json({ error: 'ALREADY_USED', message: 'Esta referencia ya fue utilizada' });
+  }
+
+  if (pending.status !== 'paid') {
+    return res.status(402).json({ error: 'PAYMENT_NOT_CONFIRMED', message: 'El pago no ha sido confirmado' });
+  }
+
+  // Obtener la campaign para calcular trial_end_date
+  const now = new Date();
+  const { data: campaign } = await supabaseAdmin
+    .from('trial_campaigns')
+    .select('trial_days, trial_generations_limit')
+    .eq('active', true)
+    .or(`ends_at.is.null,ends_at.gt.${now.toISOString()}`)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  const trialDays = campaign?.trial_days || 7;
+  const trialLimit = campaign?.trial_generations_limit || 15;
+  const trialEndDate = new Date(now);
+  trialEndDate.setDate(trialEndDate.getDate() + trialDays);
+
+  // Actualizar la brand del usuario autenticado
+  const brandId = req.brand?.id;
+  if (!brandId) {
+    return res.status(401).json({ error: 'UNAUTHORIZED', message: 'No hay sesión activa' });
+  }
+
+  const { data: updatedBrand, error: updateError } = await supabaseAdmin
+    .from('brands')
+    .update({
+      plan: 'TRIAL',
+      subscription_status: 'active',
+      trial_end_date: trialEndDate.toISOString(),
+      trial_generations_limit: trialLimit,
+      trial_payment_status: 'active',
+    })
+    .eq('id', brandId)
+    .select('id, email, name, plan, trial_end_date')
+    .single();
+
+  if (updateError) {
+    console.error('[Trial] Error activando trial:', updateError);
+    return res.status(500).json({ error: 'ACTIVATION_FAILED', message: 'Error al activar el trial' });
+  }
+
+  // Marcar referencia como utilizada
+  await supabaseAdmin
+    .from('pending_registrations')
+    .update({ status: 'used', updated_at: now.toISOString() } as any)
+    .eq('reference', ref);
+
+  return res.json({ success: true, brand: updatedBrand });
 }));
 
 export default router;
