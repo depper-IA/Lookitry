@@ -102,7 +102,7 @@ function PagoExitosoContent() {
           const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-');
           const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
           const isGoogleUser = brandData ? JSON.parse(brandData)?.google_id : false;
-          const isStandardVisitor = (currentRef?.includes('visitor_') || !token) && !isTrialRef;
+          const isStandardVisitor = (currentRef?.includes('visitor_') || currentRef?.startsWith('PAYPAL-') || !token) && !isTrialRef;
 
           if (isGuestTrial && currentRef && (isGoogleUser || token)) {
             // Usuario Google o con sesión - Activar trial y redirigir
@@ -121,6 +121,9 @@ function PagoExitosoContent() {
             setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
           } else if (isStandardVisitor && currentRef) {
             setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
+          } else if (token && currentRef) {
+            // Usuario con sesión pero tiene pago pendiente - ir a onboarding
+            setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
           } else if (token) {
             setDashboardHref('/dashboard');
           } else {
@@ -137,7 +140,7 @@ function PagoExitosoContent() {
         const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-');
         const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
         const isGoogleUser = brandData ? JSON.parse(brandData)?.google_id : false;
-        const isStandardVisitor = (currentRef?.includes('visitor_') || !token) && !isTrialRef;
+        const isStandardVisitor = (currentRef?.includes('visitor_') || currentRef?.startsWith('PAYPAL-') || !token) && !isTrialRef;
 
         if (isGuestTrial && currentRef && (isGoogleUser || token)) {
           // Usuario Google o con sesión - Activar trial y redirigir
@@ -156,6 +159,8 @@ function PagoExitosoContent() {
         } else if (isGuestTrial && currentRef) {
           setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
         } else if (isStandardVisitor && currentRef) {
+          setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
+        } else if (token && currentRef) {
           setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
         } else if (token) {
           setDashboardHref('/dashboard');
