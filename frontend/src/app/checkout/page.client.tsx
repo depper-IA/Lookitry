@@ -158,7 +158,10 @@ function CheckoutContent() {
     }
 
     if (selectedPlan === 'TRIAL') {
-      return '/dashboard/subscription';
+      if (brandFromStorage?.trialPaymentStatus === 'pending_payment') {
+        return '/dashboard/subscription';
+      }
+      return '/trial-checkout';
     }
 
     const params = new URLSearchParams();
