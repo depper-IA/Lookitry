@@ -1,24 +1,24 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { StepProgress, Step } from '@/components/payments/StepProgress';
+import { CheckoutStepper, Step } from '@/components/checkout/CheckoutStepper';
 import { clearCheckoutDraft, loadCheckoutDraft, saveCheckoutDraft } from '@/lib/checkoutDraft';
 import { formatCop, formatUsd, priceInUsd } from '@/lib/paymentDisplay';
 import { authService } from '@/services/auth.service';
 
-// Modular Components Types (matching those in components)
 export type PlanKey = 'BASIC' | 'PRO' | 'LANDING' | 'TRIAL';
 export type SubPlan = 'BASIC' | 'PRO';
 
-// New Modular Components
 import CheckoutHeader from '@/components/checkout/CheckoutHeader';
 import PlanSelectionStep from '@/components/checkout/PlanSelectionStep';
 import UserDataStep from '@/components/checkout/UserDataStep';
 import PaymentMethodStep from '@/components/checkout/PaymentMethodStep';
-import OrderSummary from '@/components/checkout/OrderSummary';
+import OrderSummaryAdapter from '@/components/checkout/OrderSummaryAdapter';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 const CHECKOUT_DRAFT_KEY = 'lookitry:checkout-draft';
@@ -326,7 +326,7 @@ function CheckoutContent() {
           const data = await res.json();
           if (data.exists) {
             setEmailExists({ exists: true, name: data.brand?.name });
-            setEmailError('Este correo ya está registrado');
+            setEmailError('Esta cuenta ya existe. Inicia sesión para continuar el upgrade desde tu dashboard.');
             valid = false;
           } else {
             setEmailExists({ exists: false });
@@ -494,7 +494,7 @@ function CheckoutContent() {
       <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
         {/* Progress Bar */}
         <div className="mb-12">
-          <StepProgress currentStep={currentStep} stepLabels={['Tus Datos', 'Plan', 'Pago', 'Acceso']} maxNavigableStep={canNavigateToStep} onStepChange={handleStepChange} />
+          <CheckoutStepper currentStep={currentStep} maxNavigableStep={canNavigateToStep} onStepChange={handleStepChange} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -576,7 +576,7 @@ function CheckoutContent() {
           </div>
 
           {/* Sidebar: Resumen */}
-          <OrderSummary
+          <OrderSummaryAdapter
             isLanding={isLanding}
             landingPrice={landingPrice}
             subPlanTotal={subPlanTotal}
@@ -584,8 +584,6 @@ function CheckoutContent() {
             planNames={planNames}
             isTrial={isTrial}
             selectedMonths={selectedMonths}
-            formatCop={formatCop}
-            formatUsd={formatUsd}
             couponCode={couponCode}
             setCouponCode={setCouponCode}
             couponLoading={couponLoading}

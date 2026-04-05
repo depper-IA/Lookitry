@@ -133,7 +133,7 @@ export default function PlanSelectionStep({
                     <div className="text-2xl font-jakarta font-extrabold text-white">
                       {p === 'TRIAL' 
                         ? (planBase.TRIAL > 0 ? formatCop(planBase.TRIAL) : 'GRATIS')
-                        : formatCop(planBase[p])
+                        : formatCop(planBase[p as keyof typeof planBase])
                       }
                     </div>
                     <div className="text-[10px] text-[#999] font-bold uppercase mt-0.5">
@@ -145,6 +145,27 @@ export default function PlanSelectionStep({
             </button>
           );
         })}
+      </div>
+
+      {/* Enlace a Enterprise */}
+      <div className="bg-gradient-to-r from-[#0d0d0d] to-[#0a0a0a] border border-[#1f1f1f] rounded-2xl p-5 mb-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#FF5C3A]/10 to-[#FF5C3A]/5 border border-[#FF5C3A]/20">
+              <Building2 className="w-5 h-5" style={{ color: OA }} />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-white">¿Necesitas un plan personalizado?</p>
+              <p className="text-[11px] text-[#999]">Para empresas con necesidades especiales, contáctanos.</p>
+            </div>
+          </div>
+          <a
+            href="/contacto?source=checkout&plan=ENTERPRISE"
+            className="px-5 py-2.5 rounded-xl border border-[#FF5C3A]/30 text-[11px] font-bold text-[#FF5C3A] hover:bg-[#FF5C3A]/10 transition-all whitespace-nowrap"
+          >
+            Plan Enterprise
+          </a>
+        </div>
       </div>
 
       {/* Sub-plan para LANDING */}

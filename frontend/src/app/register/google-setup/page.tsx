@@ -1,17 +1,36 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
 import OnboardingForm from '@/components/auth/OnboardingForm';
 
-export default function GoogleSetupPage() {
+function GoogleSetupContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [ref, setRef] = useState<string | null>(null);
+
+  useEffect(() => {
+    const refParam = searchParams.get('ref');
+    if (refParam) {
+      setRef(refParam);
+      localStorage.setItem('pendingRegistrationId', refParam);
+    } else {
+      const stored = localStorage.getItem('pendingRegistrationId');
+      if (stored) setRef(stored);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (data: { name: string; slug: string }) => {
+    const body: { name: string; slug: string; ref?: string } = { name: data.name, slug: data.slug };
+    if (ref) {
+      body.ref = ref;
+    }
+
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/google/onboarding`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ name: data.name, slug: data.slug }),
+      body: JSON.stringify(body),
     });
 
     const result = await res.json();
@@ -21,6 +40,17 @@ export default function GoogleSetupPage() {
         throw new Error('Esta URL ya está en uso. Prueba con otra o usa "Sugerir".');
       }
       throw new Error(result.message || 'Error al completar la configuración');
+    }
+
+    // Limpiar pendingRegistrationId
+    localStorage.removeItem('pendingRegistrationId');
+
+    // Guardar brand y token del onboarding
+    if (result.brand) {
+      localStorage.setItem('brand', JSON.stringify(result.brand));
+    }
+    if (result.token) {
+      localStorage.setItem('token', result.token);
     }
   };
 
@@ -45,5 +75,18 @@ export default function GoogleSetupPage() {
       onSuccess={handleSuccess}
       loginLink="/login"
     />
+  );
+}
+
+export default function GoogleSetupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-[#999]">
+        <div className="w-8 h-8 border-2 border-t-[#FF5C3A] rounded-full animate-spin mb-4" />
+        <p className="text-xs font-bold uppercase tracking-widest animate-pulse">Cargando...</p>
+      </div>
+    }>
+      <GoogleSetupContent />
+    </Suspense>
   );
 }

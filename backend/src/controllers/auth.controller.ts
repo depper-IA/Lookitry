@@ -34,6 +34,21 @@ function setCookieToken(res: Response, token: string): void {
 export class AuthController {
   async register(req: Request, res: Response) {
     try {
+      // Si el usuario ya tiene sesión activa, rechazar el registro
+      const token = (req as any).cookies?.token || req.headers.authorization?.replace('Bearer ', '');
+      if (token) {
+        try {
+          const { verifyToken } = await import('../utils/jwt');
+          const payload = verifyToken(token);
+          if (payload.brandId) {
+            return res.status(400).json({
+              error: 'ALREADY_AUTHENTICATED',
+              message: 'Ya tienes una sesión activa. Usa el dashboard para gestionar tu cuenta.',
+            });
+          }
+        } catch {}
+      }
+
       const data: RegisterBrandDto = req.body;
 
       if (!data.email || !data.password || !data.name || !data.slug) {
@@ -86,6 +101,29 @@ export class AuthController {
       const slugRegex = /^[a-z0-9-]+$/;
       if (!slugRegex.test(data.slug)) {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El slug solo puede contener letras minúsculas, números y guiones' });
+      }
+
+      if (data.slug.length < 3 || data.slug.length > 50) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El slug debe tener entre 3 y 50 caracteres' });
+      }
+
+      const reservedSlugs = [
+        'admin', 'api', 'app', 'blog', 'checkout', 'dashboard', 'home', 'login', 
+        'logout', 'register', 'signup', 'signin', 'password', 'reset', 'forgot',
+        'account', 'accounts', 'auth', 'authorize', 'callback', 'contact', 'docs',
+        'documentation', 'download', 'downloads', 'email', 'help', 'home', 'jobs',
+        'legal', 'market', 'markets', 'news', 'onboarding', 'payment', 'payments',
+        'plans', 'pricing', 'privacy', 'products', 'profile', 'public', 'root',
+        'secure', 'security', 'settings', 'shop', 'site', 'sites', 'static', 
+        'support', 'terms', 'tools', 'trial', 'trial-checkout', 'upload', 'uploads',
+        'users', 'verify', 'webhook', 'webhooks', 'www', 'mail', 'email', 'support', 
+        'help', 'docs', 'documentation', 'admin', 'superadmin', 'root', 'system',
+        'null', 'undefined', 'true', 'false', 'none', 'default', 'main', 'test',
+        'demo', 'dev', 'development', 'staging', 'stage', 'prod', 'production',
+        'lookitry', 'lookitrycom', 'wwwlookitry', 'lookitrycom', 'mobile', 'desktop'
+      ];
+      if (reservedSlugs.includes(data.slug.toLowerCase())) {
+        return res.status(400).json({ error: 'SLUG_RESERVED', message: 'Este slug está reservado. Elige otro.' });
       }
 
       if (data.password.length < 8) {
@@ -396,6 +434,21 @@ export class AuthController {
 
   async googleLogin(req: Request, res: Response) {
     try {
+      // Si el usuario ya tiene sesión activa, rechazar nuevo login
+      const token = (req as any).cookies?.token || req.headers.authorization?.replace('Bearer ', '');
+      if (token) {
+        try {
+          const { verifyToken } = await import('../utils/jwt');
+          const payload = verifyToken(token);
+          if (payload.brandId) {
+            return res.status(400).json({
+              error: 'ALREADY_AUTHENTICATED',
+              message: 'Ya tienes una sesión activa. Usa el dashboard para gestionar tu cuenta.',
+            });
+          }
+        } catch {}
+      }
+
       const { credential, accessToken } = req.body;
 
       let result: any;
@@ -420,14 +473,15 @@ export class AuthController {
           id: result.brand.id,
           name: result.brand.name,
           email: result.brand.email,
-          slug: result.brand.slug,
-          plan: result.brand.plan,
+          slug: result.brand.slug || null,
+          plan: result.brand.plan || 'TRIAL',
           emailVerified: true,
           authProvider: result.brand.auth_provider || 'google',
         },
         needsOnboarding: result.needsOnboarding,
         isNewBrand: result.isNewBrand,
         accountLinked: result.accountLinked,
+        pendingRegistrationId: result.pendingRegistrationId || null,
       });
   } catch (error: any) {
     const errMsg = error?.message || 'UNKNOWN_ERROR';
@@ -435,6 +489,10 @@ export class AuthController {
 
     if (errMsg === 'GOOGLE_NOT_CONFIGURED') {
       return res.status(503).json({ error: 'SERVICE_NOT_CONFIGURED', message: 'Google Auth no está configurado' });
+    }
+
+    if (errMsg === 'DISPOSABLE_EMAIL') {
+      return res.status(400).json({ error: 'DISPOSABLE_EMAIL', message: 'No se permiten correos temporales. Usa tu correo real.' });
     }
 
     if (
@@ -451,8 +509,7 @@ export class AuthController {
 
   async completeGoogleOnboarding(req: AuthRequest, res: Response) {
     try {
-      const brandId = req.brand!.id;
-      const { name, slug } = req.body;
+      const { ref, name, slug } = req.body;
 
       if (!name || !slug) {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Nombre de marca y slug son requeridos' });
@@ -463,6 +520,30 @@ export class AuthController {
         return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El slug solo puede contener letras minúsculas, números y guiones' });
       }
 
+      if (slug.length < 3 || slug.length > 50) {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'El slug debe tener entre 3 y 50 caracteres' });
+      }
+
+      const reservedSlugs = [
+        'admin', 'api', 'app', 'blog', 'checkout', 'dashboard', 'home', 'login', 
+        'logout', 'register', 'signup', 'signin', 'password', 'reset', 'forgot',
+        'account', 'accounts', 'auth', 'authorize', 'callback', 'contact', 'docs',
+        'documentation', 'download', 'downloads', 'email', 'help', 'jobs',
+        'legal', 'market', 'markets', 'news', 'onboarding', 'payment', 'payments',
+        'plans', 'pricing', 'privacy', 'products', 'profile', 'public', 'root',
+        'secure', 'security', 'settings', 'shop', 'site', 'sites', 'static', 
+        'support', 'terms', 'tools', 'trial', 'trial-checkout', 'upload', 'uploads',
+        'users', 'verify', 'webhook', 'webhooks', 'www', 'mail', 'support', 
+        'help', 'docs', 'documentation', 'superadmin', 'system', 'null', 'undefined',
+        'true', 'false', 'none', 'default', 'main', 'test', 'demo', 'dev', 
+        'development', 'staging', 'stage', 'prod', 'production', 'lookitry', 
+        'lookitrycom', 'wwwlookitry', 'mobile', 'desktop'
+      ];
+      if (reservedSlugs.includes(slug.toLowerCase())) {
+        return res.status(400).json({ error: 'SLUG_RESERVED', message: 'Este slug está reservado. Elige otro.' });
+      }
+
+      // Verificar slug único
       const { data: existingSlug } = await supabaseAdmin
         .from('brands')
         .select('id')
@@ -473,29 +554,88 @@ export class AuthController {
         return res.status(409).json({ error: 'SLUG_TAKEN', message: 'Este slug ya está en uso. Prueba con otro.' });
       }
 
-      const { data: updatedBrand, error } = await supabaseAdmin
-        .from('brands')
-        .update({ name, slug, needs_onboarding: false })
-        .eq('id', brandId)
-        .select('*')
-        .single();
+      let brandData: any;
 
-      if (error) {
-        console.error('[GoogleOnboarding] Error actualizando marca:', error);
-        return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al completar configuración' });
+      if (ref) {
+        // FLUJO NUEVO: Crear marca desde pending_registrations
+        const { data: pendingReg, error: pendingError } = await supabaseAdmin
+          .from('pending_registrations')
+          .select('*')
+          .eq('id', ref)
+          .maybeSingle();
+
+        if (pendingError || !pendingReg) {
+          return res.status(404).json({ error: 'NOT_FOUND', message: 'Registro pendiente no encontrado' });
+        }
+
+        // Generar slug bonito basado en el nombre si el slug proporcionado contiene "G-"
+        const finalSlug = slug.includes('G-') ? slug : slug;
+
+        // Crear la marca usando los datos de pending_registrations
+        const { data: newBrand, error: brandError } = await supabaseAdmin
+          .from('brands')
+          .insert({
+            email: pendingReg.email,
+            password: null,
+            name: name,
+            slug: finalSlug,
+            contact_name: pendingReg.brand_name || name,
+            google_id: pendingReg.reference?.includes('G-') ? pendingReg.reference.split('-')[1] : null,
+            auth_provider: 'google',
+            email_verified: true,
+            needs_onboarding: false,
+            plan: pendingReg.plan || 'TRIAL',
+            subscription_status: null,
+            trial_end_date: null,
+            trial_generations_limit: 0,
+            primary_color: '#000000',
+            secondary_color: '#ffffff',
+          })
+          .select('*')
+          .single();
+
+        if (brandError) {
+          console.error('[GoogleOnboarding] Error creando marca:', brandError);
+          return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al crear la marca' });
+        }
+
+        // Marcar pending_registrations como completado
+        await supabaseAdmin
+          .from('pending_registrations')
+          .update({ status: 'completed' })
+          .eq('id', ref);
+
+        brandData = newBrand;
+      } else if (req.brand?.id) {
+        // FLUJO LEGACY: Actualizar marca existente (para usuarios que ya tenían marca)
+        const { data: updatedBrand, error } = await supabaseAdmin
+          .from('brands')
+          .update({ name, slug, needs_onboarding: false })
+          .eq('id', req.brand.id)
+          .select('*')
+          .single();
+
+        if (error) {
+          console.error('[GoogleOnboarding] Error actualizando marca:', error);
+          return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al completar configuración' });
+        }
+
+        brandData = updatedBrand;
+      } else {
+        return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Se requiere ref o sesión activa' });
       }
 
-      const newToken = generateToken({ brandId: updatedBrand.id, email: updatedBrand.email });
+      const newToken = generateToken({ brandId: brandData.id, email: brandData.email });
       setCookieToken(res, newToken);
 
       return res.status(200).json({
         message: 'Configuración completada',
         brand: {
-          id: updatedBrand.id,
-          name: updatedBrand.name,
-          email: updatedBrand.email,
-          slug: updatedBrand.slug,
-          plan: updatedBrand.plan,
+          id: brandData.id,
+          name: brandData.name,
+          email: brandData.email,
+          slug: brandData.slug,
+          plan: brandData.plan,
           emailVerified: true,
         },
         token: newToken,

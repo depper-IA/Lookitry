@@ -1,4 +1,5 @@
 import LoginForm from '@/components/auth/LoginForm';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 export default function LoginPage({
   searchParams,
@@ -10,5 +11,9 @@ export default function LoginPage({
       ? searchParams.redirect
       : '/dashboard';
 
-  return <LoginForm redirectTo={redirectTo} />;
+  return (
+    <AuthGuard redirectTo="/dashboard">
+      <LoginForm redirectTo={redirectTo} />
+    </AuthGuard>
+  );
 }
