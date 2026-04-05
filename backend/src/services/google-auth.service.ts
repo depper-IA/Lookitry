@@ -156,12 +156,20 @@ export async function findOrCreateBrandFromGoogle(
     };
   }
 
-  // 3. Crear nueva marca (necesitará completar onboarding)
+  // 3. Crear nueva marca (Google tiene el nombre, no necesita onboarding)
   const contactName = [payload.given_name, payload.family_name]
     .filter(Boolean)
     .join(' ') || payload.name;
 
-  const temporarySlug = `google-${payload.sub.substring(0, 8)}-${Date.now()}`;
+  const baseSlug = contactName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .substring(0, 30);
+  const slug = `${baseSlug}-${payload.sub.substring(0, 6)}`;
 
   const { data: newBrand, error } = await supabaseAdmin
     .from('brands')
@@ -169,12 +177,12 @@ export async function findOrCreateBrandFromGoogle(
       email: payload.email.toLowerCase(),
       password: null,
       name: contactName,
-      slug: temporarySlug, // Se actualiza en onboarding
+      slug,
       contact_name: contactName,
       google_id: payload.sub,
       auth_provider: 'google',
       email_verified: true,
-      needs_onboarding: true,
+      needs_onboarding: false, // Google tiene el nombre, no necesita onboarding
       plan: 'TRIAL',
       subscription_status: null, // Se activa después del pago
       trial_end_date: null, // No activo hasta que pague
@@ -195,7 +203,7 @@ export async function findOrCreateBrandFromGoogle(
   return {
     token,
     brand: newBrand,
-    needsOnboarding: true,
+    needsOnboarding: false, // Ir directo a trial-checkout
     isNewBrand: true,
     accountLinked: false,
   };
