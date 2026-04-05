@@ -34,6 +34,14 @@ function setCookieToken(res: Response, token: string): void {
   res.cookie('token', token, cookieOptions);
 }
 
+function isVisitorRegistrationReference(reference: string): boolean {
+  return /^PAYPAL-visitor_/i.test(reference)
+    || /^TRYON-visitor_/i.test(reference)
+    || /^FREE-visitor_/i.test(reference)
+    || /^GUEST-TRIAL-visitor_/i.test(reference)
+    || /^TRIAL-visitor_/i.test(reference);
+}
+
 /**
  * Registro exclusivo para el flujo post-pago.
  * Soporta Wompi y PayPal.
@@ -155,7 +163,17 @@ export async function registerPostPayment(req: AuthRequest, res: Response) {
     // 5. Crear la cuenta o Usar la existente si hay sesión
     let result: any;
     let shouldActivateSubscription = true;
-    const existingBrandId = req.brand?.id;
+    const pendingEmail = String(pending.email || '').trim().toLowerCase();
+    const sessionEmail = String(req.brand?.email || '').trim().toLowerCase();
+    const hasSessionEmailMismatch = Boolean(req.brand?.id && pendingEmail && sessionEmail && pendingEmail !== sessionEmail);
+    const shouldIgnoreExistingSession = isVisitorRegistrationReference(ref) || hasSessionEmailMismatch;
+    const existingBrandId = shouldIgnoreExistingSession ? undefined : req.brand?.id;
+
+    if (shouldIgnoreExistingSession && req.brand?.id) {
+      console.warn(
+        `[PostPayment] Ignorando sesión activa para referencia ${ref}. sessionBrand=${req.brand.id} pendingEmail=${pending.email}`
+      );
+    }
 
     if (existingBrandId) {
       // 5.1 Si el usuario ya está logueado, la activación se hace una sola vez en renewSubscription
