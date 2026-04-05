@@ -340,7 +340,6 @@ function CheckoutContent() {
           const res = await fetch(`${API_URL}/api/auth/check-email?email=${encodeURIComponent(email.trim())}`);
           const data = await res.json();
           if (data.exists) {
-            // Usuario con cuenta existente - no permitir checkout público
             const existingPlan = data.plan;
             
             if (existingPlan === 'ENTERPRISE') {
@@ -348,10 +347,16 @@ function CheckoutContent() {
               setEmailError('Tu cuenta tiene un plan Enterprise. Por favor contacta a soporte para cambios.');
               valid = false;
             } else {
-              // BASIC/PRO/TRIAL - redirigir al dashboard para upgrade
-              setEmailExists({ exists: true, name: data.brand?.name, plan: existingPlan });
-              setEmailError('');
-              // No bloqueamos el paso, permitimos avanzar pero mostraremos opciones en el siguiente paso
+              // Redirigir inmediatamente según el plan
+              let redirectUrl = '/dashboard';
+              if (existingPlan === 'BASIC') {
+                redirectUrl = '/dashboard/checkout?plan=PRO';
+              } else if (existingPlan === 'PRO') {
+                redirectUrl = '/dashboard/checkout?plan=BASIC';
+              }
+              // TRIAL vencido → modal en dashboard
+              window.location.href = redirectUrl;
+              return false;
             }
           } else {
             setEmailExists({ exists: false });
