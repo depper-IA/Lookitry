@@ -102,10 +102,9 @@ function PagoExitosoContent() {
           const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-') || /PAYPAL-.+-PTRIAL-/.test(currentRef || '');
           const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
           const isGoogleUser = brandData ? JSON.parse(brandData)?.google_id : false;
-          const isStandardVisitor = (currentRef?.includes('visitor_') || currentRef?.startsWith('PAYPAL-') || !token) && !isTrialRef;
+          const isNewVisitor = !token && currentRef && !isTrialRef;
 
           if (isGuestTrial && currentRef && (isGoogleUser || token)) {
-            // Usuario Google o con sesión - Activar trial y redirigir
             try {
               await fetch(`${API_URL}/api/trial/activate-guest`, {
                 method: 'POST',
@@ -121,11 +120,10 @@ function PagoExitosoContent() {
             setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
           } else if (isTrialRef && currentRef && !token) {
             setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
-          } else if (isStandardVisitor && currentRef) {
+          } else if (isNewVisitor && currentRef) {
             setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
           } else if (token && currentRef) {
-            // Usuario con sesión pero tiene pago pendiente - ir a onboarding
-            setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
+            setDashboardHref('/dashboard');
           } else if (token) {
             setDashboardHref('/dashboard');
           } else {
@@ -142,10 +140,9 @@ function PagoExitosoContent() {
         const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-') || /PAYPAL-.+-PTRIAL-/.test(currentRef || '');
         const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
         const isGoogleUser = brandData ? JSON.parse(brandData)?.google_id : false;
-        const isStandardVisitor = (currentRef?.includes('visitor_') || currentRef?.startsWith('PAYPAL-') || !token) && !isTrialRef;
+        const isNewVisitor = !token && currentRef && !isTrialRef;
 
         if (isGuestTrial && currentRef && (isGoogleUser || token)) {
-          // Usuario Google o con sesión - Activar trial y redirigir
           try {
             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
             await fetch(`${API_URL}/api/trial/activate-guest`, {
@@ -159,11 +156,11 @@ function PagoExitosoContent() {
           }
           setDashboardHref('/dashboard');
         } else if (isGuestTrial && currentRef) {
-          setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&isTrial=true&plan=TRIAL`);
-        } else if (isStandardVisitor && currentRef) {
+          setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true&plan=TRIAL`);
+        } else if (isNewVisitor && currentRef) {
           setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
         } else if (token && currentRef) {
-          setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
+          setDashboardHref('/dashboard');
         } else if (token) {
           setDashboardHref('/dashboard');
         } else {
