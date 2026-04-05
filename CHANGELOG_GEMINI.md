@@ -1,5 +1,34 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Checkout: Ocultar TRIAL para usuarios con cuenta existente
+
+### Problema
+- Usuarios con cuenta existente podían ver opción TRIAL en checkout público
+- Enterprise debía quedar excluido de cualquier redirección
+
+### Solución
+- **Backend auth.controller.ts**: checkEmail ahora retorna `{ exists, plan, subscription_status }`
+- **Frontend checkout/page.tsx**: Valida si email existe y guarda existingAccountPlan
+- **Frontend PlanSelectionStep.tsx**: Oculta TRIAL y LANDING si usuario tiene cuenta
+- **Frontend GoogleSignInButton.tsx**: Valida cuenta existente en flujo checkout, redirige según plan
+
+### Comportamiento por plan
+| Plan | Comportamiento |
+|------|----------------|
+| Sin cuenta | Checkout normal con TRIAL visible |
+| TRIAL activo/vencido | Redirigir a dashboard |
+| BASIC | Redirigir a dashboard para upgrade |
+| PRO | Redirigir a dashboard |
+| ENTERPRISE | No redirigir (compra manual) |
+
+### Archivos modificados
+- `backend/src/controllers/auth.controller.ts`
+- `frontend/src/app/checkout/page.tsx`
+- `frontend/src/components/checkout/PlanSelectionStep.tsx`
+- `frontend/src/components/auth/GoogleSignInButton.tsx`
+
+---
+
 ## [2026-04-05] - Flujo de Trial y Checkout - Corrección de UX
 
 ### Problema

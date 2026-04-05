@@ -157,7 +157,7 @@ function PagoExitosoContent() {
           }
           setDashboardHref('/dashboard');
         } else if (isGuestTrial && currentRef) {
-          setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
+          setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&isTrial=true&plan=TRIAL`);
         } else if (isStandardVisitor && currentRef) {
           setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
         } else if (token && currentRef) {
