@@ -665,11 +665,22 @@ export class WompiController {
       }
 
       if (brand?.id && effectivePlan === 'TRIAL') {
-        res.status(409).json({
-          error: 'AUTHENTICATED_TRIAL_DISABLED',
-          message: 'El trial solo puede comprarse sin una sesion activa. Cierra sesion y usa /trial-checkout.',
-        });
-        return;
+        const { data: brandData } = await supabaseAdmin
+          .from('brands')
+          .select('trial_end_date, trial_generations_limit')
+          .eq('id', brand.id)
+          .maybeSingle();
+
+        const hasHadTrial = brandData?.trial_end_date !== null || brandData?.trial_generations_limit !== null;
+        
+        if (hasHadTrial) {
+          res.status(409).json({
+            error: 'TRIAL_ALREADY_USED',
+            message: 'Ya usaste tu prueba gratuita. ¡Upgrade a Basic o Pro para continuar!',
+          });
+          return;
+        }
+        // Si no ha tenido trial, permitir comprar trial para su cuenta existente
       }
 
       if (!brand?.id) {

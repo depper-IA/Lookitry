@@ -63,25 +63,25 @@ export default function PlanSelectionStep({
         <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso {stepNumber} de 3</div>
       </div>
 
-      {/* Alerta de Trial */}
+      {/* Alerta de Trial - solo mostrar si el usuario ya tuvo trial */}
       {trialBlockedBySession && (
         <div className="mb-8 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
-          <p className="text-sm font-bold text-amber-300">La sesion activa bloquea compras de trial.</p>
+          <p className="text-sm font-bold text-amber-300">Ya usaste tu prueba gratuita.</p>
           <p className="mt-2 text-sm text-[#d6d6d6]">
-            El trial publico debe comprarse sin una cuenta abierta. Asi evitamos que el pago se aplique sobre tu marca actual.
+            ¡Tu cuenta ya tuvo un trial! Te invitamos a hacer upgrade a Basic o Pro para continuar.
           </p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <button
-              onClick={handleLogoutAndGoToTrial}
+              onClick={() => setSelectedPlan('BASIC')}
               className="rounded-xl bg-[#FF5C3A] px-5 py-3 text-sm font-bold text-white transition-all flex-1"
             >
-              Cerrar sesion y seguir con trial
+              Ver planes pagos
             </button>
             <button
               onClick={() => window.location.href = '/dashboard'}
               className="rounded-xl border border-[#2a2a2a] px-5 py-3 text-sm font-bold text-white transition-all hover:bg-white/5 flex-1"
             >
-              Volver al dashboard
+              Ir al dashboard
             </button>
           </div>
         </div>

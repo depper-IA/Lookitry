@@ -1,5 +1,39 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Flujo de Trial y Checkout - Corrección de UX
+
+### Problema
+- Google Auth creaba sesión falsa al precargar datos en checkout (checkoutPrefill)
+- Trial se bloqueaba para usuarios sin cuenta real
+- El mensaje de bloqueo era agresivo ("sesión activa bloquea compras")
+
+### Solución
+- **Frontend GoogleSignInButton.tsx**: 
+  - Si check-email retorna "no existe",llama onSuccess con checkoutPrefill=true
+  - NO llama a /api/auth/google para crear sesión prematura
+- **Frontend checkout/page.tsx**:
+  - handleGoogleCheckoutSuccess ahora differentiate entre:
+    - checkoutPrefill (usuario nuevo): solo precarga datos, NO establece hasSession
+    - Sesión real: establece hasSession=true
+  - Nuevo useEffect carga checkoutPrefill desde localStorage
+- **Frontend PlanSelectionStep.tsx**:
+  - Mensaje mejorado: "Ya usaste tu prueba gratuita" en lugar de "sesión activa bloquea"
+  - Botón "Ver planes pagos" en lugar de "cerrar sesión"
+- **Backend wompi.controller.ts**:
+  - free-checkout ahora permite TRIAL a usuario logueado si NO ha tenido trial
+  - Verifica trial_end_date y trial_generations_limit en brands
+- **Backend paypal.controller.ts**:
+  - Misma lógica que wompi.controller para checkout-url
+
+### Archivos modificados
+- `frontend/src/components/auth/GoogleSignInButton.tsx`
+- `frontend/src/app/checkout/page.tsx`
+- `frontend/src/components/checkout/PlanSelectionStep.tsx`
+- `backend/src/controllers/wompi.controller.ts`
+- `backend/src/controllers/paypal.controller.ts`
+
+---
+
 ## [2026-04-05] - Validación de slug reforzada
 
 ### Problema
