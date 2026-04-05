@@ -162,6 +162,8 @@ export async function findOrCreateBrandFromGoogle(
     .filter(Boolean)
     .join(' ') || payload.name;
 
+  const temporarySlug = `google-${payload.sub.substring(0, 8)}-${Date.now()}`;
+
   const campaign = await getActiveCampaign();
   let trialEndDate: string | null = null;
   let trialGenerationsLimit = 0;
@@ -186,7 +188,7 @@ export async function findOrCreateBrandFromGoogle(
       email: payload.email.toLowerCase(),
       password: null,
       name: contactName,
-      slug: null, // Se completará en onboarding
+      slug: temporarySlug, // Se actualiza en onboarding
       contact_name: contactName,
       google_id: payload.sub,
       auth_provider: 'google',
