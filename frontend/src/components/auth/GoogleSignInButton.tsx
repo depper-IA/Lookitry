@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 interface GoogleSignInButtonProps {
   onSuccess?: (data?: any) => void;
   onError?: (error: string) => void;
+  onRedirect?: (url: string) => void;
   mode?: 'login' | 'register';
   redirectTo?: string;
   variant?: 'user' | 'admin';
@@ -18,6 +19,7 @@ interface GoogleSignInButtonProps {
 export default function GoogleSignInButton({
   onSuccess,
   onError,
+  onRedirect,
   mode = 'login',
   redirectTo,
   variant = 'user',
@@ -103,7 +105,24 @@ export default function GoogleSignInButton({
             });
             return;
           }
-          // Si existe, el flujo normal del /api/auth/google creará la sesión
+
+          // Usuario con cuenta existente - no permitir crear nueva sesión en checkout
+          // BASIC/PRO → puede hacer upgrade en dashboard
+          // ENTERPRISE → compra manual, no redirigir
+          if (checkData.plan === 'ENTERPRISE') {
+            setError('Tu cuenta tiene un plan Enterprise. Por favor contacta a soporte para cambios.');
+            return;
+          }
+
+          // Para TRIAL/BASIC/PRO, redirigir al dashboard para upgrade
+          setError('');
+          const redirectUrl = '/dashboard';
+          if (onRedirect) {
+            onRedirect(redirectUrl);
+          } else {
+            window.location.href = redirectUrl;
+          }
+          return;
         }
       }
 

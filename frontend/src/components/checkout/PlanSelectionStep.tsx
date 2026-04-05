@@ -26,6 +26,8 @@ interface PlanSelectionStepProps {
   hasSession: boolean;
   clearCheckoutDraft: (key: string) => void;
   CHECKOUT_DRAFT_KEY: string;
+  existingAccountPlan?: string;
+  hasEmailAccount?: boolean;
 }
 
 export default function PlanSelectionStep({
@@ -49,19 +51,45 @@ export default function PlanSelectionStep({
   OA,
   hasSession,
   clearCheckoutDraft,
-  CHECKOUT_DRAFT_KEY
+  CHECKOUT_DRAFT_KEY,
+  existingAccountPlan,
+  hasEmailAccount
 }: PlanSelectionStepProps) {
+  const isTrialDisabled = hasEmailAccount && existingAccountPlan !== undefined;
+  
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-jakarta font-bold text-white tracking-tight">Elige tu plan</h2>
           <p className="mt-1 text-sm text-[#999]">
-            Selecciona el plan que mejor se adapte a tu negocio.
+            {hasEmailAccount && existingAccountPlan 
+              ? `Ya tienes el plan ${existingAccountPlan}. Gestiona tu suscripción desde el dashboard.`
+              : 'Selecciona el plan que mejor se adapte a tu negocio.'}
           </p>
         </div>
         <div className="text-[10px] font-bold px-2 py-1 rounded border uppercase" style={{ color: OA, backgroundColor: 'rgba(255,92,58,0.07)', borderColor: 'rgba(255,92,58,0.2)' }}>Paso {stepNumber} de 3</div>
       </div>
+
+      {/* Alerta para usuarios con cuenta existente */}
+      {hasEmailAccount && existingAccountPlan && existingAccountPlan !== 'ENTERPRISE' && (
+        <div className="mb-8 rounded-2xl border border-blue-500/30 bg-blue-500/10 p-5">
+          <p className="text-sm font-bold text-blue-300">Ya tienes una cuenta activa.</p>
+          <p className="mt-2 text-sm text-[#d6d6d6]">
+            {existingAccountPlan === 'BASIC' && 'Puedes hacer upgrade a Pro desde tu dashboard.'}
+            {existingAccountPlan === 'PRO' && 'Ya tienes el plan Pro. Gestiona tu suscripción desde el dashboard.'}
+            {existingAccountPlan === 'TRIAL' && 'Tu trial ha vencido. ¡Upgrade a Basic o Pro para continuar!'}
+          </p>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+            <button
+              onClick={() => window.location.href = '/dashboard'}
+              className="rounded-xl bg-[#FF5C3A] px-5 py-3 text-sm font-bold text-white transition-all flex-1"
+            >
+              Ir al dashboard
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Alerta de Trial - solo mostrar si el usuario ya tuvo trial */}
       {trialBlockedBySession && (
@@ -90,19 +118,32 @@ export default function PlanSelectionStep({
       {/* Grid de Planes */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         {(['TRIAL', 'BASIC', 'PRO', 'LANDING'] as PlanKey[]).map(p => {
+          // Ocultar TRIAL y LANDING para usuarios con cuenta existente
+          if ((p === 'TRIAL' || p === 'LANDING') && hasEmailAccount) {
+            return null;
+          }
+          
           const isSelected = selectedPlan === p;
           return (
             <button
               key={p}
               onClick={() => {
-                if (p === 'TRIAL' && !hasSession) {
+                if (p === 'TRIAL' && isTrialDisabled) {
+                  return;
+                }
+                if (p === 'TRIAL' && !hasSession && !hasEmailAccount) {
                   clearCheckoutDraft(CHECKOUT_DRAFT_KEY);
                   window.location.href = '/trial-checkout';
                   return;
                 }
+                if (p === 'LANDING' && hasEmailAccount) {
+                  window.location.href = '/dashboard/checkout-landing';
+                  return;
+                }
                 setSelectedPlan(p);
               }}
-              className={`relative text-left rounded-2xl border-2 p-5 transition-all duration-300`}
+              disabled={isTrialDisabled}
+              className={`relative text-left rounded-2xl border-2 p-5 transition-all duration-300 ${isTrialDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               style={{
                 borderColor: isSelected ? OA : '#1f1f1f',
                 backgroundColor: isSelected ? 'rgba(255,92,58,0.04)' : '#0d0d0d',

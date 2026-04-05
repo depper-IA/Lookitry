@@ -110,7 +110,7 @@ function CheckoutContent() {
   const [emailError, setEmailError] = useState('');
   const [brandNameError, setBrandNameError] = useState('');
   const [emailChecking, setEmailChecking] = useState(false);
-  const [emailExists, setEmailExists] = useState<{ exists: boolean; name?: string } | null>(null);
+  const [emailExists, setEmailExists] = useState<{ exists: boolean; name?: string; plan?: string } | null>(null);
 
   const [hasSession, setHasSession] = useState(false);
   const [sessionInfo, setSessionInfo] = useState<{ name: string; email: string } | null>(null);
@@ -340,9 +340,19 @@ function CheckoutContent() {
           const res = await fetch(`${API_URL}/api/auth/check-email?email=${encodeURIComponent(email.trim())}`);
           const data = await res.json();
           if (data.exists) {
-            setEmailExists({ exists: true, name: data.brand?.name });
-            setEmailError('Esta cuenta ya existe. Inicia sesión para continuar el upgrade desde tu dashboard.');
-            valid = false;
+            // Usuario con cuenta existente - no permitir checkout público
+            const existingPlan = data.plan;
+            
+            if (existingPlan === 'ENTERPRISE') {
+              setEmailExists({ exists: true, name: data.brand?.name, plan: existingPlan });
+              setEmailError('Tu cuenta tiene un plan Enterprise. Por favor contacta a soporte para cambios.');
+              valid = false;
+            } else {
+              // BASIC/PRO/TRIAL - redirigir al dashboard para upgrade
+              setEmailExists({ exists: true, name: data.brand?.name, plan: existingPlan });
+              setEmailError('');
+              // No bloqueamos el paso, permitimos avanzar pero mostraremos opciones en el siguiente paso
+            }
           } else {
             setEmailExists({ exists: false });
             setEmailError('');
@@ -579,6 +589,8 @@ function CheckoutContent() {
                 hasSession={hasSession}
                 clearCheckoutDraft={clearCheckoutDraft}
                 CHECKOUT_DRAFT_KEY={CHECKOUT_DRAFT_KEY}
+                existingAccountPlan={emailExists?.plan}
+                hasEmailAccount={emailExists?.exists}
               />
             )}
 
