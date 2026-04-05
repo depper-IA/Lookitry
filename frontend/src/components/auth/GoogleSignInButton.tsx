@@ -151,8 +151,9 @@ export default function GoogleSignInButton({
           window.location.href = redirectTo || '/admin/dashboard';
         }, 100);
       } else {
+        // Usuario Google logueado - Ir directo a trial checkout
         setTimeout(() => {
-          window.location.href = redirectTo || '/dashboard';
+          window.location.href = '/trial-checkout';
         }, 100);
       }
     } catch (err: any) {
