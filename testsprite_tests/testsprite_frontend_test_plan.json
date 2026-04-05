@@ -1,0 +1,103 @@
+[
+  {
+    "id": "TC001",
+    "title": "AuthGuard - unauthenticated user on /register",
+    "description": "Verify unauthenticated user can access /register (no redirect)",
+    "steps": [
+      "Navigate to /register",
+      "Wait for page load",
+      "Verify URL is /register",
+      "Verify page contains registration form"
+    ],
+    "expected_result": "Page loads with registration form, no redirect"
+  },
+  {
+    "id": "TC002", 
+    "title": "AuthGuard - unauthenticated user on /login",
+    "description": "Verify unauthenticated user can access /login (no redirect)",
+    "steps": [
+      "Navigate to /login",
+      "Wait for page load",
+      "Verify URL is /login",
+      "Verify page contains login form"
+    ],
+    "expected_result": "Page loads with login form, no redirect"
+  },
+  {
+    "id": "TC003",
+    "title": "Email validation - invalid format",
+    "description": "Test email validation with invalid format",
+    "steps": [
+      "Navigate to /register",
+      "Fill brand name",
+      "Fill full name",
+      "Fill slug with valid value",
+      "Fill email with invalid format (notanemail)",
+      "Fill password",
+      "Fill confirm password",
+      "Check terms checkbox",
+      "Click submit",
+      "Wait for validation"
+    ],
+    "expected_result": "Error message shown for invalid email format"
+  },
+  {
+    "id": "TC004",
+    "title": "Slug validation - too short",
+    "description": "Test slug validation with too short slug",
+    "steps": [
+      "Navigate to /register",
+      "Fill brand name",
+      "Fill full name",
+      "Fill slug with 'ab' (too short)",
+      "Fill valid email",
+      "Fill password",
+      "Fill confirm password",
+      "Check terms checkbox",
+      "Click submit",
+      "Wait for validation"
+    ],
+    "expected_result": "Error message shown for slug too short (min 3 chars)"
+  },
+  {
+    "id": "TC005",
+    "title": "Slug validation - reserved slug",
+    "description": "Test slug validation with reserved slug",
+    "steps": [
+      "Navigate to /register",
+      "Fill brand name",
+      "Fill full name",
+      "Fill slug with 'login' (reserved)",
+      "Fill valid email",
+      "Fill password",
+      "Fill confirm password",
+      "Check terms checkbox",
+      "Click submit",
+      "Wait for validation"
+    ],
+    "expected_result": "Error message shown for reserved slug"
+  },
+  {
+    "id": "TC006",
+    "title": "Checkout requires authentication",
+    "description": "Verify /checkout redirects unauthenticated users",
+    "steps": [
+      "Navigate to /checkout (no auth)",
+      "Wait for redirect",
+      "Check URL"
+    ],
+    "expected_result": "User redirected to login or stayed but cannot access checkout"
+  },
+  {
+    "id": "TC007",
+    "title": "Onboarding post-pago - valid slug",
+    "description": "Test onboarding form with valid slug",
+    "steps": [
+      "Navigate to /onboarding-post-pago",
+      "Fill valid brand name",
+      "Fill valid slug",
+      "Submit form"
+    ],
+    "expected_result": "Form accepts valid slug"
+  }
+]
