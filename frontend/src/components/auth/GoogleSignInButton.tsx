@@ -10,6 +10,9 @@ interface GoogleSignInButtonProps {
   variant?: 'user' | 'admin';
   loginHint?: string;
   flow?: 'auth' | 'checkout';
+  plan?: string;
+  months?: number;
+  className?: string;
 }
 
 export default function GoogleSignInButton({
@@ -20,6 +23,9 @@ export default function GoogleSignInButton({
   variant = 'user',
   loginHint,
   flow = 'auth',
+  plan,
+  months,
+  className = 'w-full',
 }: GoogleSignInButtonProps) {
   const [googleReady, setGoogleReady] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -151,9 +157,19 @@ export default function GoogleSignInButton({
           window.location.href = redirectTo || '/admin/dashboard';
         }, 100);
       } else {
-        // Usuario Google logueado - Ir directo a trial checkout
         setTimeout(() => {
-          window.location.href = '/trial-checkout';
+          if (plan && ['TRIAL', 'BASIC', 'PRO', 'LANDING'].includes(plan.toUpperCase())) {
+            const params = new URLSearchParams();
+            params.set('plan', plan.toUpperCase());
+            if (plan.toUpperCase() !== 'TRIAL' && months && [3, 6, 12].includes(months)) {
+              params.set('months', String(months));
+            }
+            window.location.href = `/checkout?${params.toString()}`;
+          } else if (data.brand?.plan) {
+            window.location.href = `/checkout?plan=${data.brand.plan}`;
+          } else {
+            window.location.href = '/trial-checkout';
+          }
         }, 100);
       }
     } catch (err: any) {
@@ -162,7 +178,7 @@ export default function GoogleSignInButton({
       setError(msg);
       onError?.(msg);
     }
-  }, [variant, redirectTo, onSuccess, onError, flow]);
+  }, [variant, redirectTo, onSuccess, onError, flow, plan, months]);
 
   const initTokenClient = useCallback(() => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;

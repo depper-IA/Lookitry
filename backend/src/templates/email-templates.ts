@@ -552,6 +552,103 @@ export const landingActivatedEmail = (
 };
 
 /**
+ * Email de pago fallido
+ */
+export const paymentFailedEmail = (
+  brand: BrandInfo,
+  plan: string,
+  amount: string,
+  errorReason?: string
+): string => {
+  const content = `
+    <h2 style="color: #c0392b; margin-top: 0; font-size: 20px;">Tu pago no pudo ser procesado</h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Intentamos procesar el pago de tu plan <strong>${plan}</strong> por <strong>${amount}</strong>, pero no fue posible completar la transacción.
+    </p>
+    ${errorReason ? `
+    <div style="background-color: #fff5f5; padding: 16px 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #c0392b;">
+      <p style="color: #c0392b; margin: 0; font-size: 14px;">
+        <strong>Motivo posible:</strong> ${errorReason}
+      </p>
+    </div>
+    ` : ''}
+    <div style="background-color: #fff8f6; padding: 16px 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${ACCENT_COLOR};">
+      <h3 style="color: #0a0a0a; margin-top: 0; font-size: 15px;">¿Qué puedes hacer?</h3>
+      <ul style="color: #555; margin: 10px 0 0 0; padding-left: 20px; font-size: 14px;">
+        <li>Verifica que tu tarjeta tenga fondos suficientes</li>
+        <li>Comprueba que la tarjeta esté activa para compras en línea</li>
+        <li>Intenta con otro método de pago (PSE, Nequi o PayPal)</li>
+        <li>Contacta a tu banco si el problema persiste</li>
+      </ul>
+    </div>
+    <div style="text-align: center; margin: 32px 0;">
+      <a href="${APP_URL}/checkout"
+         style="background-color: ${ACCENT_COLOR}; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 15px;">
+        Reintentar pago
+      </a>
+    </div>
+    <p style="color: #888; font-size: 13px; text-align: center;">
+      ¿Necesitas ayuda? Escríbenos a 
+      <a href="mailto:info@lookitry.com" style="color: ${ACCENT_COLOR};">info@lookitry.com</a>
+    </p>
+  `;
+  return baseTemplate(content);
+};
+
+/**
+ * Email de confirmación de compra (nuevo - unificado)
+ */
+export const purchaseConfirmationEmail = (
+  brand: BrandInfo,
+  plan: string,
+  amount: string,
+  months: number,
+  nextPaymentDate: string,
+  includesLanding: boolean = false
+): string => {
+  const isTrial = plan.toUpperCase() === 'TRIAL';
+  const content = `
+    <h2 style="color: #0a0a0a; margin-top: 0; font-size: 20px;">
+      ${isTrial ? '¡Tu prueba está activa!' : '¡Tu plan está activo!'}
+    </h2>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      Hola <strong>${brand.name}</strong>,
+    </p>
+    <p style="color: #555; line-height: 1.6; font-size: 15px;">
+      ${isTrial 
+        ? 'Tu período de prueba fue activado exitosamente. Ya puedes configurar tu probador virtual y comenzar a usarlo.'
+        : `Tu pago fue confirmado y tu plan <strong>${plan}</strong> está ahora activo.`}
+    </p>
+    <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+      <h3 style="color: #065f46; margin-top: 0; font-size: 15px;">Detalles de tu compra:</h3>
+      <p style="color: #065f46; margin: 6px 0;"><strong>Plan:</strong> ${plan}</p>
+      <p style="color: #065f46; margin: 6px 0;"><strong>Monto pagado:</strong> ${amount}</p>
+      ${!isTrial ? `<p style="color: #065f46; margin: 6px 0;"><strong>Período:</strong> ${months} mes${months > 1 ? 'es' : ''}</p>` : ''}
+      <p style="color: #065f46; margin: 6px 0;"><strong>${isTrial ? 'Fecha de fin de prueba' : 'Próximo cobro'}:</strong> ${nextPaymentDate}</p>
+      ${includesLanding ? '<p style="color: #065f46; margin: 6px 0;"><strong>Incluye:</strong> Mini-Landing Page</p>' : ''}
+    </div>
+    ${isTrial ? `
+    <div style="background-color: #fff8f6; padding: 16px 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${ACCENT_COLOR};">
+      <p style="color: #555; margin: 0; font-size: 14px; line-height: 1.6;">
+        <strong>¿Qué sigue?</strong><br/>
+        Configura tu marca, sube tu primer producto y personaliza tu probador virtual desde el dashboard.
+      </p>
+    </div>
+    ` : ''}
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${APP_URL}/dashboard"
+         style="background-color: ${ACCENT_COLOR}; color: #ffffff; padding: 13px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 14px;">
+        Ir al Dashboard
+      </a>
+    </div>
+  `;
+  return baseTemplate(content);
+};
+
+/**
  * Email de notificación de eliminación definitiva de mini-landing
  */
 export const landingDeletedNoticeEmail = (brand: BrandInfo): string => {

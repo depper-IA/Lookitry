@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AdminService } from '../../services/admin.service';
 import { SubscriptionService } from '../../services/subscription.service';
+import { emailService } from '../../services/email.service';
 
 const adminService = new AdminService();
 const subscriptionService = new SubscriptionService();
@@ -90,6 +91,7 @@ export const getAllSubscriptions = async (_req: Request, res: Response) => {
 
 /**
  * POST /api/admin/subscriptions/:id/payment
+ * Registra un pago manual (transferencia, efectivo, etc.) y activa la suscripción
  */
 export const registerSubscriptionPayment = async (req: Request, res: Response) => {
   try {
@@ -101,9 +103,11 @@ export const registerSubscriptionPayment = async (req: Request, res: Response) =
     }
 
     const { supabaseAdmin } = await import('../../config/supabase');
+    const adminId = (req as any).admin?.id;
+
     const { data: brand, error: brandError } = await supabaseAdmin
       .from('brands')
-      .select('id')
+      .select('id, name, email')
       .eq('id', id)
       .single();
 
@@ -111,11 +115,13 @@ export const registerSubscriptionPayment = async (req: Request, res: Response) =
       return res.status(404).json({ error: 'NOT_FOUND', message: 'Marca no encontrada' });
     }
 
-    const periodMonths = [1, 3, 6].includes(Number(months)) ? Number(months) : 1;
+    const periodMonths = [1, 3, 6, 12].includes(Number(months)) ? Number(months) : 1;
     const planUpper = String(plan).toUpperCase();
-    if (!['BASIC', 'PRO', 'ENTERPRISE'].includes(planUpper)) {
-      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Plan no valido para pago manual' });
+    if (!['BASIC', 'PRO', 'ENTERPRISE', 'TRIAL'].includes(planUpper)) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Plan no válido para pago manual' });
     }
+
+    const reference = `MANUAL-${id}-${Date.now()}`;
 
     const updatedBrand = await subscriptionService.renewSubscription(
       id,
@@ -126,11 +132,64 @@ export const registerSubscriptionPayment = async (req: Request, res: Response) =
         payment_date: payment_date || new Date().toISOString(),
         payment_method: payment_method || 'manual',
         status: status || 'completed',
-        notes: notes || `Pago registrado manualmente por admin. Plan: ${planUpper}, ${periodMonths} mes(es).`,
+        notes: notes || `Pago registrado manualmente por admin. Plan: ${planUpper}, ${periodMonths} mes(es). Ref: ${reference}`,
+        reference,
       },
       periodMonths,
       planUpper
     );
+
+    // Registrar en payment_logs
+    try {
+      await supabaseAdmin.from('payment_logs').insert({
+        event_type: 'manual_payment_registered',
+        gateway: 'manual',
+        reference,
+        brand_id: id,
+        transaction_id: reference,
+        amount_cents: Math.round(Number(amount) * 100),
+        currency: currency || 'COP',
+        status: 'completed',
+        payload: {
+          admin_id: adminId || null,
+          plan: planUpper,
+          months: periodMonths,
+          amount,
+          payment_method,
+          notes,
+        },
+        processed_at: new Date().toISOString(),
+        error_message: null,
+      });
+    } catch (logError) {
+      console.warn('[AdminPayment] Error inserting payment_logs:', logError);
+    }
+
+    // Enviar email de confirmación al cliente
+    const { purchaseConfirmationEmail } = await import('../../templates/email-templates');
+    const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
+
+    const nextPaymentDate = updatedBrand.subscription_end_date
+      ? new Date(updatedBrand.subscription_end_date).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })
+      : 'N/A';
+
+    const formattedAmount = new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: currency || 'COP',
+      minimumFractionDigits: 0,
+    }).format(Number(amount));
+
+    emailService.sendEmail({
+      to: brand.email,
+      subject: `Tu plan ${planUpper} está activo — Lookitry`,
+      html: purchaseConfirmationEmail(
+        { name: brand.name, email: brand.email },
+        planUpper,
+        formattedAmount,
+        periodMonths,
+        nextPaymentDate
+      ),
+    }).catch((err: unknown) => console.error('[AdminPayment] Error sending confirmation email:', err));
 
     return res.status(200).json({
       message: 'Pago registrado exitosamente',
@@ -138,7 +197,9 @@ export const registerSubscriptionPayment = async (req: Request, res: Response) =
         plan: planUpper,
         status: updatedBrand.subscription_status || 'active',
         endDate: updatedBrand.subscription_end_date,
+        nextPaymentDate,
       },
+      reference,
     });
   } catch (error: any) {
     console.error('Error in registerSubscriptionPayment:', error);

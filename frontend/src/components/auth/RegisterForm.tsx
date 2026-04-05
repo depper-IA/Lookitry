@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { StepProgress } from '@/components/payments/StepProgress';
-import GoogleSignInButton from './GoogleSignInButton';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Eye, 
   EyeOff, 
@@ -16,134 +15,187 @@ import {
   User as UserIcon, 
   Globe, 
   Mail,
-  Loader2
+  Loader2,
+  Check,
+  X,
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
+import GoogleSignInButton from './GoogleSignInButton';
 
-async function getFingerprint(): Promise<string | null> {
+function formatCOP(amount: number): string {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+const PLANS_PREVIEW = {
+  TRIAL: {
+    name: 'Trial',
+    price: 20000,
+    badge: '#6366f1',
+    features: ['1 producto en el probador', '15 generaciones', '7 días de acceso', 'Logo y colores de marca'],
+  },
+  BASIC: {
+    name: 'Básico',
+    price: 150000,
+    badge: null,
+    features: ['Hasta 5 productos', '400 generaciones/mes', 'Branding básico', 'URL propia del probador'],
+  },
+  PRO: {
+    name: 'Pro',
+    price: 250000,
+    badge: '#FF5C3A',
+    features: ['Hasta 15 productos', '1.200 generaciones/mes', 'Plugin WooCommerce', 'Templates Pro'],
+  },
+};
+
+const RESERVED_SLUGS = [
+  'admin', 'api', 'dashboard', 'login', 'register', 'checkout', 'planes',
+  'blog', 'ayuda', 'sobre-nosotros', 'contacto', 'estado', 'terminos',
+  'politicas-privacidad', 'politica-de-uso', 'pruebalo', 'sitio', 'probador-virtual',
+  'auth', 'verify', 'reset', 'confirmar', 'wompi', 'paypal', 'subscription',
+  'brand', 'brands', 'product', 'products', 'generation', 'generations',
+  'payment', 'payments', 'invoice', ' receipt', 'success', 'cancel', 'error',
+  'www', 'mail', 'email', 'support', 'help', 'docs', 'documentation',
+  'app', 'panel', 'cms', 'manage', 'settings', 'config', '密', '的公司',
+];
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+}
+
+function validateSlug(slug: string): { valid: boolean; error?: string } {
+  if (!slug || slug.length < 3) {
+    return { valid: false, error: 'El slug debe tener al menos 3 caracteres' };
+  }
+  if (slug.length > 50) {
+    return { valid: false, error: 'El slug no puede exceder 50 caracteres' };
+  }
+  if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug)) {
+    return { valid: false, error: 'Solo letras minúsculas, números y guiones' };
+  }
+  if (RESERVED_SLUGS.includes(slug)) {
+    return { valid: false, error: 'Este URL no está disponible' };
+  }
+  if (slug.startsWith('-') || slug.endsWith('-')) {
+    return { valid: false, error: 'No puede empezar ni terminar con guión' };
+  }
+  return { valid: true };
+}
+
+async function checkSlugAvailable(slug: string): Promise<boolean> {
   try {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.textBaseline = 'top';
-      ctx.font = '14px Arial';
-      ctx.fillText('fingerprint', 2, 2);
-    }
-    const nav = [
-      navigator.userAgent,
-      navigator.language,
-      screen.width + 'x' + screen.height,
-      new Date().getTimezoneOffset(),
-      canvas.toDataURL(),
-    ].join('|');
-    let hash = 0;
-    for (let i = 0; i < nav.length; i++) {
-      hash = ((hash << 5) - hash) + nav.charCodeAt(i);
-      hash |= 0;
-    }
-    return Math.abs(hash).toString(36);
+    const res = await fetch(`/api/slug-check?slug=${encodeURIComponent(slug)}`);
+    const data = await res.json();
+    return data.available === true;
   } catch {
-    return null;
+    return false;
   }
 }
 
 export default function RegisterForm() {
   const router = useRouter();
+  
   const [form, setForm] = useState({ 
     name: '', 
-    contact_name: '', 
+    contact_name: '',
     email: '', 
     password: '', 
     confirmPassword: '',
     slug: '' 
   });
+  
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const trialActive = true;
-  const trialDays = 7;
-  const [fingerprint, setFingerprint] = useState<string | null>(null);
-  const [prefilledFields, setPrefilledFields] = useState<Record<string, boolean>>({});
   const [googleError, setGoogleError] = useState<string | null>(null);
-
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptDataAuth, setAcceptDataAuth] = useState(false);
-
-  const [isPaidFlow, setIsPaidFlow] = useState(false);
-  const [paymentRef, setPaymentRef] = useState<string | null>(null);
-
-  const slugify = (value: string) =>
-    value
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '-');
-
-  const suggestAlternativeSlug = () => {
-    const base = (form.slug || slugify(form.name) || 'mi-marca').replace(/-+$/g, '');
-    const suffix = Math.floor(100 + Math.random() * 900);
-    setForm(prev => ({ ...prev, slug: `${base}-${suffix}` }));
-    setError('');
-  };
+  
+  const [slugError, setSlugError] = useState('');
+  const [slugChecking, setSlugChecking] = useState(false);
+  const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
+  
+  const [planParam, setPlanParam] = useState<keyof typeof PLANS_PREVIEW | null>(null);
+  const [monthsParam, setMonthsParam] = useState(1);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const ref = params.get('ref');
-
-    if (ref) {
-      setPaymentRef(ref);
-      setIsPaidFlow(true);
-      setLoadingStep('Verificando tu acceso...');
-
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/pending-registration/${ref}`)
-        .then(r => r.json())
-        .then(data => {
-          if (data.email) {
-            const brandName = data.brand_name || '';
-            const slug = (data as any).slug || (brandName ? slugify(brandName) : '');
-
-            setForm(prev => ({
-              ...prev,
-              email: data.email,
-              name: brandName,
-              slug: slug || prev.slug
-            }));
-
-            setPrefilledFields({
-              email: !!data.email,
-              name: !!brandName,
-              slug: !!(data as any).slug || !!slug
-            });
-          }
-          setLoadingStep('');
-        })
-        .catch(err => {
-          console.error('[Register] Error fetching pending:', err);
-          setLoadingStep('');
-        });
-    } else {
-      // Si no hay referencia de pago, redirigir al checkout unificado para comprar el TRIAL
-      router.push('/checkout?plan=TRIAL');
+    const plan = params.get('plan')?.toUpperCase();
+    const months = parseInt(params.get('months') || '1', 10);
+    
+    if (plan && plan in PLANS_PREVIEW) {
+      setPlanParam(plan as keyof typeof PLANS_PREVIEW);
     }
-
-    getFingerprint().then(setFingerprint);
-  }, [router]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (name === 'name') {
-      const newSlug = slugify(value);
-      setForm((prev) => ({ 
-        ...prev, 
-        name: value, 
-        slug: prev.slug && prefilledFields.slug ? prev.slug : newSlug 
-      }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
+    if (months && [1, 3, 6, 12].includes(months)) {
+      setMonthsParam(months);
     }
+  }, []);
+
+  const suggestedPlan = planParam ? PLANS_PREVIEW[planParam] : null;
+  const planDiscount = monthsParam > 1 ? (monthsParam === 3 ? 5 : monthsParam === 6 ? 10 : 15) : 0;
+  const planTotal = suggestedPlan ? suggestedPlan.price * monthsParam : 0;
+  const planTotalWithDiscount = planDiscount > 0 ? Math.round(planTotal * (1 - planDiscount / 100)) : planTotal;
+
+  const slugifyName = useCallback((value: string) => {
+    const generated = slugify(value);
+    setForm(prev => ({ ...prev, name: value, slug: prev.slug ? prev.slug : generated }));
+  }, []);
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    slugifyName(e.target.value);
+    setSlugAvailable(null);
+    setSlugError('');
   };
+
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = slugify(e.target.value);
+    setForm(prev => ({ ...prev, slug: value }));
+    setSlugAvailable(null);
+    setSlugError('');
+  };
+
+  const checkSlug = useCallback(async (slug: string) => {
+    if (!slug || slug.length < 3) return;
+    
+    const validation = validateSlug(slug);
+    if (!validation.valid) {
+      setSlugError(validation.error || 'Slug inválido');
+      setSlugAvailable(false);
+      return;
+    }
+    
+    setSlugChecking(true);
+    try {
+      const available = await checkSlugAvailable(slug);
+      setSlugAvailable(available);
+      if (!available) {
+        setSlugError('Este URL ya está en uso');
+      } else {
+        setSlugError('');
+      }
+    } finally {
+      setSlugChecking(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!form.slug || form.slug.length < 3) return;
+    const timer = setTimeout(() => checkSlug(form.slug), 500);
+    return () => clearTimeout(timer);
+  }, [form.slug, checkSlug]);
 
   const validatePasswordComplexity = (password: string): { isValid: boolean; message: string } => {
     if (password.length < 8) {
@@ -170,12 +222,14 @@ export default function RegisterForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
     if (!acceptTerms) {
-      setError('Debes aceptar los Términos y Condiciones para continuar');
+      setError('Debes aceptar los Términos y Condiciones');
       return;
     }
     if (!acceptDataAuth) {
-      setError('Debes autorizar el tratamiento de tus datos personales para continuar');
+      setError('Debes autorizar el tratamiento de tus datos personales');
       return;
     }
     if (!passwordComplexity.isValid) {
@@ -186,28 +240,41 @@ export default function RegisterForm() {
       setError('Las contraseñas no coinciden');
       return;
     }
+    if (!form.slug || slugAvailable !== true) {
+      setError(slugError || 'Elige un URL disponible para tu probador');
+      return;
+    }
 
-    setError('');
     setLoading(true);
 
     try {
-      setLoadingStep('Configurando tu espacio...');
+      setLoadingStep('Creando tu cuenta...');
 
-      const endpoint = isPaidFlow ? '/api/auth/register-post-payment' : '/api/auth/register';
-      const body = isPaidFlow ? { ...form, ref: paymentRef } : { ...form, fingerprint };
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          email: form.email.trim(),
+          password: form.password,
+          brandName: form.name.trim(),
+          contactName: form.contact_name.trim(),
+          slug: form.slug,
+          plan: planParam || undefined,
+          months: monthsParam,
+        }),
       });
+
       const data = await res.json();
 
       if (!res.ok) {
-        if (data.error === 'TRIAL_ABUSE') {
-          setError('Ya existe una cuenta desde este dispositivo. Elige un plan para continuar.');
+        if (data.error === 'EMAIL_EXISTS') {
+          setError('Este correo ya está registrado. ¿Ya tienes cuenta?');
+        } else if (data.error === 'SLUG_TAKEN') {
+          setError('Este URL ya está en uso. Prueba otro.');
+        } else if (data.error === 'TRIAL_ABUSE') {
+          setError('Ya creaste una cuenta de prueba. Elige un plan de pago para continuar.');
         } else {
-          setError(data.message || data.error || 'Error al completar el registro');
+          setError(data.message || data.error || 'Error al crear la cuenta');
         }
         setLoading(false);
         return;
@@ -215,317 +282,435 @@ export default function RegisterForm() {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('brandToken', data.token);
+      if (data.brand) {
+        localStorage.setItem('brand', JSON.stringify(data.brand));
+      }
 
-      setLoadingStep('¡Configuración lista! Entrando...');
-      router.push('/dashboard');
+      setLoadingStep('¡Cuenta creada! Redirigiendo al pago...');
+
+      const redirectTo = data.redirectTo || '/checkout';
+      const checkoutUrl = new URL(redirectTo, window.location.origin);
+      if (planParam) {
+        checkoutUrl.searchParams.set('plan', planParam);
+        checkoutUrl.searchParams.set('months', String(monthsParam));
+      }
+      router.push(checkoutUrl.toString());
+
     } catch (err: any) {
       setError(err.message || 'Error de conexión. Intenta de nuevo.');
       setLoading(false);
     }
   };
 
-  if (trialActive === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050505]">
-        <Loader2 className="w-8 h-8 text-[#FF5C3A] animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#050505] selection:bg-[#FF5C3A]/30">
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
         
-        <div className="flex flex-col items-center mb-10">
-          <Link href="/" className="flex items-center gap-3 group mb-4">
+        {/* Left: Form */}
+        <div className="lg:col-span-3">
+          <div className="flex flex-col items-center mb-8 lg:hidden">
+            <Link href="/" className="flex items-center gap-3 group mb-4">
+              <Image src="/logo.svg" alt="Lookitry" width={32} height={32} className="group-hover:rotate-12 transition-transform duration-500" priority />
+              <span className="font-jakarta font-extrabold text-2xl text-white tracking-tighter">
+                Look<span className="text-[#FF5C3A]">itry</span>
+              </span>
+            </Link>
+          </div>
+
+          <div className="relative overflow-hidden rounded-3xl border border-[#FF5C3A]/12 bg-[#0a0a0a] p-8 md:p-10 shadow-2xl">
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#FF5C3A]/50 to-transparent" />
+            
+            <div className="mb-8 text-center lg:text-left">
+              <h1 className="text-3xl font-jakarta font-bold text-white tracking-tight mb-2">
+                Crea tu cuenta
+              </h1>
+              <p className="text-sm text-[#999] leading-relaxed">
+                Empieza en menos de 2 minutos
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              
+              {/* Google Sign-In */}
+              <GoogleSignInButton
+                mode="register"
+                onError={(msg) => setGoogleError(msg)}
+                className="w-full"
+              />
+              {googleError && (
+                <p className="text-[11px] text-red-500 text-center -mt-2">{googleError}</p>
+              )}
+
+              {/* Divider */}
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-[#0a0a0a] px-3 text-[#666]">o regístrate con email</span>
+                </div>
+              </div>
+
+              {/* Name + Contact */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                    <Store className="w-3 h-3 text-[#FF5C3A]" /> Nombre de marca
+                  </label>
+                  <input
+                    name="name"
+                    value={form.name}
+                    onChange={handleNameChange}
+                    required
+                    placeholder="Ej: Velvet Studio"
+                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                    <UserIcon className="w-3 h-3 text-[#FF5C3A]" /> Tu nombre
+                  </label>
+                  <input
+                    name="contact_name"
+                    value={form.contact_name}
+                    onChange={(e) => setForm(prev => ({ ...prev, contact_name: e.target.value }))}
+                    required
+                    placeholder="Tu nombre completo"
+                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                  />
+                </div>
+              </div>
+
+              {/* Slug */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                  <Globe className="w-3 h-3 text-[#FF5C3A]" /> URL de tu probador
+                </label>
+                <div className="flex items-center overflow-hidden rounded-xl border bg-[#050505] transition-all focus-within:border-[#FF5C3A]"
+                  style={{ borderColor: slugError ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)' }}
+                >
+                  <span className="select-none py-3 pl-3 text-xs font-medium text-[#666]">lookitry.com/sitio/</span>
+                  <input
+                    name="slug"
+                    value={form.slug}
+                    onChange={handleSlugChange}
+                    className="flex-1 bg-transparent px-1 py-3 text-sm text-white placeholder-[#666] focus:outline-none"
+                    placeholder="mi-marca"
+                  />
+                  {slugChecking && (
+                    <div className="pr-3">
+                      <Loader2 className="w-4 h-4 text-[#666] animate-spin" />
+                    </div>
+                  )}
+                  {!slugChecking && slugAvailable === true && (
+                    <div className="pr-3">
+                      <Check className="w-4 h-4 text-[#10b981]" />
+                    </div>
+                  )}
+                  {!slugChecking && slugAvailable === false && (
+                    <div className="pr-3">
+                      <X className="w-4 h-4 text-red-500" />
+                    </div>
+                  )}
+                </div>
+                {slugError ? (
+                  <p className="text-[11px] text-red-500 ml-1">{slugError}</p>
+                ) : (
+                  <p className="text-[11px] text-[#999] ml-1">
+                    Esta URL identificará tu probador. Solo letras minúsculas, números y guiones.
+                  </p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                  <Mail className="w-3 h-3 text-[#FF5C3A]" /> Correo electrónico
+                </label>
+                <input
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                  placeholder="correo@tuempresa.com"
+                  className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                />
+              </div>
+
+              {/* Password */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                    <ShieldCheck className="w-3 h-3 text-[#FF5C3A]" /> Contraseña
+                  </label>
+                  <div className="relative">
+                    <input
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={form.password}
+                      onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
+                      required
+                      placeholder="8+ caracteres"
+                      className="w-full rounded-xl border bg-[#050505] px-4 py-3 pr-10 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                      style={{ borderColor: form.password && !isPasswordValid ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666] transition-colors hover:text-white"
+                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                    Confirmar
+                  </label>
+                  <input
+                    name="confirmPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.confirmPassword}
+                    onChange={(e) => setForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    required
+                    placeholder="Repite tu contraseña"
+                    className="w-full rounded-xl border bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                    style={{ borderColor: form.confirmPassword && !passwordsMatch ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)' }}
+                  />
+                </div>
+              </div>
+
+              {/* Password checklist */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 rounded-xl border border-[rgba(255,255,255,0.05)] bg-[#050505]/50 px-4 py-3">
+                {[
+                  { test: form.password.length >= 8, label: '8+ caracteres' },
+                  { test: /[A-Z]/.test(form.password), label: 'Mayúscula' },
+                  { test: /[a-z]/.test(form.password), label: 'Minúscula' },
+                  { test: /[0-9]/.test(form.password), label: 'Número' },
+                  { test: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(form.password), label: 'Símbolo' },
+                  { test: form.confirmPassword && passwordsMatch, label: 'Contraseñas coinciden' },
+                ].map(({ test, label }) => (
+                  <div key={label} className="flex items-center gap-2 text-[11px] text-[#bbb]">
+                    <span className={`inline-block h-1.5 w-1.5 rounded-full ${test ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
+                    {label}
+                  </div>
+                ))}
+              </div>
+
+              {/* Terms */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="acceptTerms"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                  />
+                  <label htmlFor="acceptTerms" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                    Acepto los{' '}
+                    <Link href="/terminos" target="_blank" className="text-[#FF5C3A] hover:underline">Términos y Condiciones</Link>
+                    {' '}del servicio.
+                  </label>
+                </div>
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="acceptDataAuth"
+                    checked={acceptDataAuth}
+                    onChange={(e) => setAcceptDataAuth(e.target.checked)}
+                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                  />
+                  <label htmlFor="acceptDataAuth" className="text-xs text-[#999] leading-relaxed cursor-pointer">
+                    Autorizo el tratamiento de mis datos de acuerdo a la{' '}
+                    <Link href="/politicas-privacidad" target="_blank" className="text-[#FF5C3A] hover:underline">Política de Privacidad</Link>.
+                  </label>
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-500/5 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-start gap-3">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <p className="text-[11px] font-bold leading-normal">{error}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading || slugChecking || slugAvailable === false}
+                className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[#FF5C3A] font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all active:scale-95 hover:bg-[#ff6c4d] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="relative flex items-center justify-center gap-3">
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span className="text-xs uppercase tracking-widest">{loadingStep || 'Creando cuenta...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Rocket className="w-5 h-5 text-white group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
+                      <span className="text-[13px] uppercase tracking-[0.2em] font-black">
+                        Crear mi cuenta
+                      </span>
+                    </>
+                  )}
+                </div>
+              </button>
+            </form>
+
+            <p className="text-center text-xs text-[#999] mt-8">
+              ¿Ya tienes cuenta?{' '}
+              <Link href="/login" className="text-[#FF5C3A] hover:text-[#ff7a5f] font-bold tracking-tight border-b border-transparent hover:border-[#FF5C3A] transition-all ml-1">
+                Inicia sesión
+              </Link>
+            </p>
+          </div>
+        </div>
+
+        {/* Right: Plan Summary Sidebar */}
+        <AnimatePresence>
+          {suggestedPlan && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+              className="lg:col-span-2"
+            >
+              <div className="sticky top-8">
+                <div className="hidden lg:block">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-[#FF5C3A]" />
+                    </div>
+                    <span className="text-xs text-[#FF5C3A] font-medium uppercase tracking-wider">
+                      Plan seleccionado
+                    </span>
+                  </div>
+
+                  {/* Plan Card */}
+                  <div className="rounded-2xl border border-[#FF5C3A]/20 bg-[#0a0a0a] overflow-hidden shadow-xl">
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-jakarta font-bold text-xl text-white">
+                              {suggestedPlan.name}
+                            </span>
+                            {planParam === 'PRO' && (
+                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#FF5C3A]/20 text-[#FF5C3A]">
+                                Popular
+                              </span>
+                            )}
+                            {planParam === 'TRIAL' && (
+                              <span 
+                                className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                                style={{ backgroundColor: 'rgba(99,102,241,0.2)', color: '#6366f1' }}
+                              >
+                                Trial
+                              </span>
+                            )}
+                          </div>
+                          {monthsParam > 1 && (
+                            <p className="text-xs text-[#999]">
+                              {monthsParam} meses con {planDiscount}% de descuento
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="font-jakarta font-bold text-2xl text-white">
+                            {formatCOP(planTotalWithDiscount / monthsParam)}
+                          </div>
+                          <div className="text-[11px] text-[#666]">/ mes</div>
+                        </div>
+                      </div>
+
+                      {monthsParam > 1 && (
+                        <div className="flex items-center gap-2 p-2 rounded-lg bg-[#10b981]/10 border border-[#10b981]/20 mb-4">
+                          <Check className="w-3 h-3 text-[#10b981]" />
+                          <span className="text-[11px] text-[#10b981] font-medium">
+                            Ahorras {formatCOP(planTotal - planTotalWithDiscount)} con {monthsParam} meses
+                          </span>
+                        </div>
+                      )}
+
+                      {planTotal > 0 && monthsParam > 1 && (
+                        <div className="border-t border-white/10 pt-4 mb-4">
+                          <div className="flex justify-between text-xs text-[#666] mb-1">
+                            <span>Precio mensual</span>
+                            <span>{formatCOP(suggestedPlan.price)}</span>
+                          </div>
+                          <div className="flex justify-between text-xs text-[#666] mb-1">
+                            <span>Descuento {monthsParam} meses</span>
+                            <span className="text-[#10b981]">-{planDiscount}%</span>
+                          </div>
+                          <div className="flex justify-between font-medium text-sm text-white pt-2 border-t border-white/10">
+                            <span>Total a pagar</span>
+                            <span>{formatCOP(planTotalWithDiscount)}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {planTotal > 0 && monthsParam === 1 && (
+                        <div className="flex justify-between font-medium text-sm text-white pt-2 border-t border-white/10">
+                          <span>Total a pagar</span>
+                          <span>{formatCOP(planTotalWithDiscount)}</span>
+                        </div>
+                      )}
+
+                      {planParam === 'TRIAL' && (
+                        <div className="flex justify-between font-medium text-sm text-white pt-2 border-t border-white/10">
+                          <span>Pago único</span>
+                          <span>{formatCOP(20000)}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Features */}
+                    <div className="px-6 pb-6">
+                      <ul className="space-y-2.5">
+                        {suggestedPlan.features.map((feature) => (
+                          <li key={feature} className="flex items-center gap-2 text-xs text-[#999]">
+                            <Check className="w-3.5 h-3.5 text-[#FF5C3A] flex-shrink-0" />
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* CTA Arrow */}
+                    <div className="px-6 pb-6">
+                      <div className="flex items-center justify-between text-[11px] text-[#666]">
+                        <span>Después del registro</span>
+                        <div className="flex items-center gap-1 text-[#FF5C3A]">
+                          <span>Ir al pago</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-center text-[10px] text-[#666] mt-4">
+                    Pago seguro con Wompi o PayPal
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Desktop Logo */}
+        <div className="hidden lg:flex absolute top-8 left-8">
+          <Link href="/" className="flex items-center gap-3 group">
             <Image src="/logo.svg" alt="Lookitry" width={32} height={32} className="group-hover:rotate-12 transition-transform duration-500" priority />
             <span className="font-jakarta font-extrabold text-2xl text-white tracking-tighter">
               Look<span className="text-[#FF5C3A]">itry</span>
             </span>
           </Link>
-          <div className="h-1 w-12 rounded-full bg-[#FF5C3A]" />
-        </div>
-
-        {isPaidFlow && (
-          <div className="mb-8">
-            <StepProgress currentStep={4} maxNavigableStep={4} lockedAfterPayment />
-          </div>
-        )}
-
-        <div className="relative overflow-hidden rounded-3xl border border-[#FF5C3A]/12 bg-[#0a0a0a] p-8 shadow-2xl md:p-10">
-          <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#FF5C3A]/50 to-transparent" />
-          
-          <div className="mb-10 text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20">
-              {isPaidFlow ? 'Paso Final: Activación' : 'Inicia tu prueba'}
-            </div>
-            <h1 className="text-3xl font-jakarta font-bold text-white tracking-tight mb-2">
-              {isPaidFlow ? 'Activa tu acceso' : 'Crea tu cuenta'}
-            </h1>
-            <p className="text-sm text-[#999] max-w-xs mx-auto leading-relaxed">
-              {isPaidFlow 
-                ? 'Tu pago fue confirmado. Define tu contraseña y entra a tu probador.'
-                : `Prueba Lookitry por ${trialDays} días y transforma tu tienda.`}
-            </p>
-            <p className="mt-3 text-[11px] uppercase tracking-[0.18em] text-[#666]">
-              {isPaidFlow ? 'Solo falta activar tu acceso' : 'Te tomara menos de 2 minutos'}
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Google Sign-In - shown first for quick registration */}
-            {!isPaidFlow && (
-              <>
-                <GoogleSignInButton
-                  mode="register"
-                  onError={(msg) => setGoogleError(msg)}
-                />
-                {googleError && (
-                  <p className="text-[11px] text-red-500 text-center -mt-2">{googleError}</p>
-                )}
-
-                {/* Divider */}
-                <div className="relative my-2">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10" />
-                  </div>
-                  <div className="relative flex justify-center text-xs">
-                    <span className="bg-[#0a0a0a] px-3 text-[#666]">o regístrate con email</span>
-                  </div>
-                </div>
-              </>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Brand Name */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  <Store className="w-3 h-3 text-[#FF5C3A]" /> Marca
-                </label>
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="Ej: Velvet Studio"
-                  className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
-                />
-              </div>
-
-              {/* Contact Name */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  <UserIcon className="w-3 h-3 text-[#FF5C3A]" /> Responsable
-                </label>
-                <input
-                  name="contact_name"
-                  value={form.contact_name}
-                  onChange={handleChange}
-                  required
-                  placeholder="Tu nombre completo"
-                  className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all shadow-inner focus:border-[#FF5C3A]"
-                />
-              </div>
-            </div>
-
-            {/* Slug UI */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                <Globe className="w-3 h-3 text-[#FF5C3A]" /> URL del probador
-              </label>
-              <div className="flex items-center overflow-hidden rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-1 shadow-inner transition-all focus-within:border-[#FF5C3A]">
-                <span className="select-none py-3 pl-3 text-xs font-medium text-[#666]">lookitry.com/sitio/</span>
-                <input
-                  name="slug"
-                  value={form.slug}
-                  onChange={(e) => setForm({ ...form, slug: slugify(e.target.value) })}
-                  className="flex-1 bg-transparent px-1 py-3 text-sm text-white placeholder-[#666] focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={suggestAlternativeSlug}
-                  className="mr-1 h-8 px-2.5 text-[9px] font-black text-[#FF5C3A] hover:text-[#ff7a5f] uppercase tracking-tighter transition-colors"
-                >
-                  Sugerir
-                </button>
-              </div>
-              <p className="ml-1 text-[11px] leading-relaxed text-[#999]">
-                Esta URL identificara tu probador. Puedes ajustarla ahora para que quede simple y facil de compartir.
-              </p>
-            </div>
-
-            {/* Email */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                <Mail className="w-3 h-3 text-[#FF5C3A]" /> Email corporativo
-              </label>
-              <input
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                required
-                readOnly={isPaidFlow && prefilledFields.email}
-                className={`w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white outline-none transition-all shadow-inner focus:border-[#FF5C3A] ${isPaidFlow && prefilledFields.email ? 'opacity-50 grayscale' : ''}`}
-              />
-              <p className="ml-1 text-[11px] leading-relaxed text-[#999]">
-                {isPaidFlow
-                  ? 'Usaremos este correo para recuperar acceso y enviarte avisos importantes de tu cuenta.'
-                  : 'Sera tu correo de acceso y donde recibiras la confirmacion para entrar al dashboard.'}
-              </p>
-            </div>
-
-            {/* Password Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                  <ShieldCheck className="w-3 h-3 text-[#FF5C3A]" /> Contraseña
-                </label>
-                <div className="relative">
-                  <input
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={form.password}
-                    onChange={handleChange}
-                    required
-                    placeholder="8+ caracteres, mayúscula, minúscula, número y símbolo"
-                    className={`w-full rounded-xl border ${form.password && !isPasswordValid ? 'border-red-500/40' : 'border-[rgba(255,255,255,0.08)]'} bg-[#050505] px-4 py-3 pr-10 text-sm text-white outline-none transition-all shadow-inner focus:border-[#FF5C3A]`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#666] transition-colors hover:text-white"
-                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                    title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <p className="ml-1 text-[11px] leading-relaxed text-[#999]">
-                  Usa una contrasena de al menos 8 caracteres. Sera la clave con la que administraras tu espacio en Lookitry.
-                </p>
-              </div>
-              
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
-                   Confirmar
-                </label>
-                <input
-                  name="confirmPassword"
-                  type={showPassword ? 'text' : 'password'}
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  required
-                  placeholder="Repite tu contrasena"
-                  className={`w-full rounded-xl border ${form.confirmPassword && !passwordsMatch ? 'border-red-500/40' : 'border-[rgba(255,255,255,0.08)]'} bg-[#050505] px-4 py-3 text-sm text-white outline-none transition-all shadow-inner focus:border-[#FF5C3A]`}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3">
-              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
-                <span className={`inline-block h-2 w-2 rounded-full ${passwordComplexity.isValid ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
-                Minimo 8 caracteres
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
-                <span className={`inline-block h-2 w-2 rounded-full ${/[A-Z]/.test(form.password) ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
-                Una letra mayuscula
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
-                <span className={`inline-block h-2 w-2 rounded-full ${/[a-z]/.test(form.password) ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
-                Una letra minuscula
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
-                <span className={`inline-block h-2 w-2 rounded-full ${/[0-9]/.test(form.password) ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
-                Un numero
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
-                <span className={`inline-block h-2 w-2 rounded-full ${/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(form.password) ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
-                Un caracter especial
-              </div>
-              <div className="flex items-center gap-2 text-[11px] text-[#bbb]">
-                <span className={`inline-block h-2 w-2 rounded-full ${form.confirmPassword && passwordsMatch ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
-                Confirmacion igual a la contrasena
-              </div>
-            </div>
-
-            <div className="space-y-3 pt-2">
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  id="acceptTerms"
-                  checked={acceptTerms}
-                  onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
-                />
-                <label htmlFor="acceptTerms" className="text-xs text-[#999] leading-relaxed cursor-pointer">
-                  Acepto los{' '}
-                  <Link href="/terminos" target="_blank" className="text-[#FF5C3A] hover:underline">
-                    Términos y Condiciones
-                  </Link>{' '}
-                  del servicio.
-                </label>
-              </div>
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  id="acceptDataAuth"
-                  checked={acceptDataAuth}
-                  onChange={(e) => setAcceptDataAuth(e.target.checked)}
-                  className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
-                />
-                <label htmlFor="acceptDataAuth" className="text-xs text-[#999] leading-relaxed cursor-pointer">
-                  Autorizo expresamente el tratamiento de mis datos personales de acuerdo a la{' '}
-                  <Link href="/politicas-privacidad" target="_blank" className="text-[#FF5C3A] hover:underline">
-                    Política de Privacidad
-                  </Link>{' '}
-                  de Lookitry (Ley 1581 de 2012).
-                </label>
-              </div>
-            </div>
-
-            {error && (
-              <div className="bg-red-500/5 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-start gap-3 animate-in shake duration-300">
-                <AlertCircle className="w-4 h-4 mt-0.5" />
-                <p className="text-[11px] font-bold uppercase tracking-tight leading-normal">{error}</p>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[#FF5C3A] font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all active:scale-95 hover:bg-[#ff6c4d] disabled:opacity-50"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-[#FF5C3A] to-[#ff7a5f] opacity-100 transition-opacity" />
-              <div className="relative flex items-center justify-center gap-3">
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span className="text-xs uppercase tracking-widest">{loadingStep || 'Activando...'}</span>
-                  </>
-                ) : (
-                  <>
-                    <Rocket className="w-5 h-5 text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                    <span className="text-[13px] uppercase tracking-[0.2em] font-black">
-                      {isPaidFlow ? 'Activar Mi Acceso' : 'Empezar ahora'}
-                    </span>
-                  </>
-                )}
-              </div>
-            </button>
-          </form>
-
-          <p className="text-center text-xs text-[#999] mt-8">
-            ¿Ya tienes cuenta?{' '}
-            <Link href="/login" className="text-[#FF5C3A] hover:text-[#ff7a5f] font-bold tracking-tight border-b border-transparent hover:border-[#FF5C3A] transition-all ml-1">
-              Inicia sesión
-            </Link>
-          </p>
-        </div>
-
-        <div className="mt-8 flex justify-center items-center gap-6 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
-           <Image src="/logo.svg" alt="SSL" width={20} height={20} className="invert brightness-0" />
-           <p className="text-[10px] font-black text-[#999] uppercase tracking-widest">Acceso Encriptado de Punto a Punto</p>
         </div>
       </div>
     </div>

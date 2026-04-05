@@ -46,7 +46,7 @@ export class AuthController {
 
       // Verificar Turnstile si está habilitado
       // Se omite en el flujo post-pago (cuando viene con referencia de pago Wompi)
-      const turnstileEnabled = process.env.TURNSTILE_ENABLED === 'true' && false; // Desactivado temporalmente
+      const turnstileEnabled = process.env.TURNSTILE_ENABLED === 'true';
       const isPostPayment = !!req.body.ref;
       if (turnstileEnabled && !isPostPayment) {
         const token = req.body.turnstileToken;
@@ -124,12 +124,30 @@ export class AuthController {
 
       // Emitir token como cookie HTTP-Only (más seguro que localStorage)
       if (result.token) setCookieToken(res, result.token);
-      return res.status(201).json(result);
+
+      // Construir redirectTo basado en plan seleccionado (para flujo post-registro)
+      const plan = req.body.plan?.toUpperCase();
+      const months = parseInt(req.body.months || '1', 10);
+      let redirectTo = '/checkout';
+      if (plan && ['TRIAL', 'BASIC', 'PRO', 'LANDING'].includes(plan)) {
+        const params = new URLSearchParams();
+        params.set('plan', plan);
+        if (plan !== 'TRIAL' && [3, 6, 12].includes(months)) {
+          params.set('months', String(months));
+        }
+        redirectTo = `/checkout?${params.toString()}`;
+      }
+
+      return res.status(201).json({ ...result, redirectTo });
     } catch (error: any) {
       console.error('Error en register:', error);
 
-      if (error.message.includes('ya está')) {
-        return res.status(409).json({ error: 'CONFLICT', message: error.message });
+      if (error.message.includes('email') && error.message.includes('ya')) {
+        return res.status(409).json({ error: 'EMAIL_EXISTS', message: 'Este correo ya está registrado. ¿Ya tienes cuenta?' });
+      }
+
+      if (error.message.includes('slug') && error.message.includes('uso')) {
+        return res.status(409).json({ error: 'SLUG_TAKEN', message: 'Este URL ya está en uso. Prueba otro.' });
       }
 
       if (error.message === 'TRIAL_ABUSE') {
