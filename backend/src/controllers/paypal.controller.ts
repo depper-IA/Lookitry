@@ -287,10 +287,21 @@ export class PaypalController {
 
     const hasAuthenticatedBrand = Boolean((req as any).brand?.id);
     if (hasAuthenticatedBrand && planStr === 'TRIAL') {
-      return res.status(409).json({
-        error: 'AUTHENTICATED_TRIAL_DISABLED',
-        message: 'El trial solo puede comprarse sin una sesion activa. Cierra sesion y usa /trial-checkout.',
-      });
+      const { data: brandData } = await supabaseAdmin
+        .from('brands')
+        .select('trial_end_date, trial_generations_limit')
+        .eq('id', (req as any).brand.id)
+        .maybeSingle();
+
+      const hasHadTrial = brandData?.trial_end_date !== null || brandData?.trial_generations_limit !== null;
+      
+      if (hasHadTrial) {
+        return res.status(409).json({
+          error: 'TRIAL_ALREADY_USED',
+          message: 'Ya usaste tu prueba gratuita. ¡Upgrade a Basic o Pro para continuar!',
+        });
+      }
+      // Si no ha tenido trial, permitir comprar trial para su cuenta existente
     }
 
     let amountCOP = hasAuthenticatedBrand

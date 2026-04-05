@@ -132,7 +132,8 @@ function CheckoutContent() {
   } | null>(null);
 
   const [activePromos, setActivePromos] = useState<any[]>([]);
-  const trialBlockedBySession = hasSession && selectedPlan === 'TRIAL';
+  const [hasHadTrial, setHasHadTrial] = useState(false);
+  const trialBlockedBySession = hasSession && selectedPlan === 'TRIAL' && hasHadTrial;
 
   // ── Ciclo de vida ──────────────────────────────────────────────────────────
 
@@ -185,8 +186,22 @@ function CheckoutContent() {
           setSessionInfo({ name: brand.name || '', email: brand.email || '' });
           setEmail(brand.email || '');
           setBrandName(brand.name || '');
+          setHasHadTrial(!!(brand.trial_end_date || brand.trial_generations_limit));
         }
       } catch {}
+    } else {
+      // Verificar si hay datos de checkoutPrefill (usuario nuevo con Google)
+      const prefillStr = localStorage.getItem('checkoutPrefill');
+      if (prefillStr) {
+        try {
+          const prefill = JSON.parse(prefillStr);
+          if (prefill) {
+            setEmail(prefill.email || '');
+            setBrandName(prefill.name || '');
+            // No establecemos hasSession - es un usuario nuevo sin cuenta
+          }
+        } catch {}
+      }
     }
     const savedCurrency = localStorage.getItem('currency') as 'COP' | 'USD';
     if (savedCurrency) {
@@ -386,7 +401,7 @@ function CheckoutContent() {
     setError('');
     try {
       if (trialBlockedBySession) {
-        throw new Error('El trial solo puede comprarse sin una sesion activa. Cierra sesion y continua desde el checkout de trial.');
+        throw new Error('Ya usaste tu prueba gratuita. ¡Upgrade a Basic o Pro para continuar!');
       }
 
       // SECURITY: Double-check email matches session before sending payment.
@@ -461,15 +476,32 @@ function CheckoutContent() {
   };
 
   const handleGoogleCheckoutSuccess = async (data: any) => {
-    localStorage.setItem('brand', JSON.stringify(data.brand));
-    if (data.token) localStorage.setItem('token', data.token);
-    setHasSession(true);
-    setSessionInfo({ name: data.brand.name || '', email: data.brand.email || '' });
-    setEmail(data.brand.email || '');
-    setBrandName(data.brand.name || '');
-    setEmailError('');
-    setEmailExists({ exists: false });
-    setBrandNameError('');
+    if (data.checkoutPrefill) {
+      // Usuario nuevo - solo precargar datos, NO crear sesión
+      // Guardar en localStorage temporal para el checkout
+      localStorage.setItem('checkoutPrefill', JSON.stringify({
+        email: data.email,
+        name: data.name,
+        googleId: data.googleId,
+      }));
+      setEmail(data.email || '');
+      setBrandName(data.name || '');
+      setEmailError('');
+      setEmailExists({ exists: false });
+      setBrandNameError('');
+      // NO establecemos hasSession = true - es un usuario nuevo sin cuenta
+    } else {
+      // Usuario existente con cuenta real - crear sesión
+      localStorage.setItem('brand', JSON.stringify(data.brand));
+      if (data.token) localStorage.setItem('token', data.token);
+      setHasSession(true);
+      setSessionInfo({ name: data.brand.name || '', email: data.brand.email || '' });
+      setEmail(data.brand.email || '');
+      setBrandName(data.brand.name || '');
+      setEmailError('');
+      setEmailExists({ exists: false });
+      setBrandNameError('');
+    }
   };
 
   const getTrialName = () => {

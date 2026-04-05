@@ -103,6 +103,7 @@ export default function GoogleSignInButton({
             });
             return;
           }
+          // Si existe, el flujo normal del /api/auth/google creará la sesión
         }
       }
 
