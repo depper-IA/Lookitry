@@ -35,6 +35,18 @@ function extractMonthsFromReference(reference: string | null): number | null {
   return Number.isFinite(parsedMonths) ? parsedMonths : null;
 }
 
+function isVisitorPaypalReference(reference: string | null): boolean {
+  if (!reference) return false;
+  return /^PAYPAL-visitor_[^-]+-M\d+-P[A-Z]+(?:-|$)/i.test(reference);
+}
+
+function clearLocalBrandSession() {
+  localStorage.removeItem('brand');
+  localStorage.removeItem('brand_plan');
+  localStorage.removeItem('token');
+  localStorage.removeItem('brandToken');
+}
+
 function PagoExitosoContent() {
   const searchParams = useSearchParams();
   const planParam = searchParams.get('plan');
@@ -96,15 +108,23 @@ function PagoExitosoContent() {
           });
           const data = await res.json();
           if (!res.ok) throw new Error(data.message || 'Error al capturar el pago');
+          if (data?.reference) {
+            currentRef = data.reference;
+            setResolvedRef(data.reference);
+          }
 
           const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
           const brandData = localStorage.getItem('brand');
           const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-') || /PAYPAL-.+-PTRIAL-/.test(currentRef || '');
           const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
           const isGoogleUser = brandData ? JSON.parse(brandData)?.google_id : false;
+          const isVisitorPaypal = isVisitorPaypalReference(currentRef);
           const isNewVisitor = !token && currentRef && !isTrialRef;
 
-          if (isGuestTrial && currentRef && (isGoogleUser || token)) {
+          if (isVisitorPaypal && currentRef) {
+            clearLocalBrandSession();
+            setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
+          } else if (isGuestTrial && currentRef && (isGoogleUser || token)) {
             try {
               await fetch(`${API_URL}/api/trial/activate-guest`, {
                 method: 'POST',
@@ -140,9 +160,13 @@ function PagoExitosoContent() {
         const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-') || /PAYPAL-.+-PTRIAL-/.test(currentRef || '');
         const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
         const isGoogleUser = brandData ? JSON.parse(brandData)?.google_id : false;
+        const isVisitorPaypal = isVisitorPaypalReference(currentRef);
         const isNewVisitor = !token && currentRef && !isTrialRef;
 
-        if (isGuestTrial && currentRef && (isGoogleUser || token)) {
+        if (isVisitorPaypal && currentRef) {
+          clearLocalBrandSession();
+          setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
+        } else if (isGuestTrial && currentRef && (isGoogleUser || token)) {
           try {
             const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
             await fetch(`${API_URL}/api/trial/activate-guest`, {
@@ -172,6 +196,16 @@ function PagoExitosoContent() {
 
     validatePayment();
   }, [ref, resolvedMonths, method, paypalToken, wompiId]);
+
+  useEffect(() => {
+    if (loading || error || !dashboardHref.startsWith('/onboarding-post-pago')) return;
+
+    const timeout = window.setTimeout(() => {
+      window.location.href = dashboardHref;
+    }, 1200);
+
+    return () => window.clearTimeout(timeout);
+  }, [dashboardHref, error, loading]);
 
   const dashboardLabel =
     dashboardHref.startsWith('/onboarding') || dashboardHref.startsWith('/registro-pro') || dashboardHref.startsWith('/register')

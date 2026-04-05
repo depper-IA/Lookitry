@@ -1,5 +1,51 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Corrección docs y fix bugs en sistema de referidos
+
+### Cambios Realizados
+- `REGLAS_IMPORTANTES.md` actualizado para reflejar que el sistema de referidos otorga:
+  - **500 créditos** al referente (ya estaba correcto)
+  - **100 créditos** al referido (información añadida)
+- `backend/src/services/referral.service.ts`:
+  - Agregado `rewardedReferred` al tipo de retorno de `convertReferralForFirstPaidPlan`
+  - Corregidos 3 early returns que no incluían `rewardedReferred`
+- `backend/src/services/__tests__/referral.service.test.ts`:
+  - Actualizados assertions para incluir `rewardedReferred`
+  - Agregados mocks para `creditReferred` en los 3 tests
+
+### Archivos Modificados
+- `REGLAS_IMPORTANTES.md`
+- `backend/src/services/referral.service.ts`
+- `backend/src/services/__tests__/referral.service.test.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+- La documentación indicaba que solo el referente recibía 500 créditos, omitiendo que el referido también recibe 100 créditos según la implementación real en `referral.service.ts`
+- Bug de TypeScript: el método retornaba `rewardedReferred` pero el tipo no lo declaraba
+- Tests desactualizados que no mockeaban todas las llamadas DB de `creditReferred`
+
+---
+
+## [2026-04-05] - Corrección de redirección post-pago de PayPal hacia onboarding
+
+### Cambios Realizados
+- `frontend/src/app/pago-exitoso/page.tsx` ahora detecta referencias `PAYPAL-visitor_...` para forzar el paso a `/onboarding-post-pago`, aunque exista estado viejo en `localStorage`.
+- La pantalla de pago exitoso limpia sesión local obsoleta antes de continuar con el onboarding, evitando desvíos erróneos hacia dashboard o inicio.
+- El flujo de captura PayPal toma la referencia devuelta por el backend y redirige automáticamente al onboarding cuando el registro todavía no ha sido completado.
+- `backend/src/controllers/auth-post-payment.controller.ts` ahora ignora sesiones activas ajenas cuando la referencia corresponde a un registro nuevo o el email pendiente no coincide con la sesión actual, evitando que un pago nuevo se vincule por error a otra marca.
+- Se añadió cobertura en `backend/src/controllers/__tests__/auth-post-payment.controller.test.ts` para el caso de referencia visitante con cookie/sesión vieja presente.
+- `frontend/src/services/api.ts` ahora envía `Authorization: Bearer` con el token legado en localStorage como fallback para la hidratación del dashboard, reduciendo redirecciones espurias a home cuando la cookie todavía no está sincronizada.
+
+### Archivos Modificados
+- `frontend/src/app/pago-exitoso/page.tsx`
+- `frontend/src/services/api.ts`
+- `backend/src/controllers/auth-post-payment.controller.ts`
+- `backend/src/controllers/__tests__/auth-post-payment.controller.test.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+- Corregir el caso reportado donde un pago exitoso por PayPal durante el registro/checkout no continuaba al onboarding de marca y terminaba dejando al usuario en la home sin completar el alta.
+
 ## [2026-04-05] - Sammy: transcripción de audios de Telegram con Groq
 
 ### Cambios Realizados

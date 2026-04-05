@@ -30,9 +30,11 @@ async function apiFetch<T>(
   extraHeaders?: Record<string, string>
 ): Promise<{ data: T; status: number }> {
   const isFormData = typeof window !== 'undefined' && body instanceof FormData;
+  const storedToken = typeof window !== 'undefined' ? authService.getToken() : null;
 
   const headers: Record<string, string> = {
     ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+    ...(storedToken && !(extraHeaders || {})['Authorization'] ? { Authorization: `Bearer ${storedToken}` } : {}),
     ...(extraHeaders || {}),
   };
 
