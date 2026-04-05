@@ -110,33 +110,30 @@ export class PaypalService {
     const returnUrlFinal = returnUrl || `${process.env.FRONTEND_URL}/pago-exitoso?method=paypal&ref=${encodeURIComponent(reference)}`;
     const cancelUrlFinal = cancelUrl || `${process.env.FRONTEND_URL}/checkout`;
 
+    const orderPayload: Record<string, any> = {
+      intent: 'CAPTURE',
+      purchase_units: [
+        {
+          reference_id: shortRef,
+          amount: {
+            currency_code: 'USD',
+            value: amountUSD.toFixed(2)
+          },
+          description: `Suscripción Lookitry - Plan ${planStr}`
+        }
+      ],
+      application_context: {
+        brand_name: 'Lookitry',
+        landing_page: 'BILLING',
+        user_action: 'PAY_NOW',
+        return_url: returnUrlFinal,
+        cancel_url: cancelUrlFinal
+      }
+    };
+
     const response = await axios.post(
       `${baseUrl}/v2/checkout/orders`,
-      {
-        intent: 'CAPTURE',
-        payment_source: {
-          paypal: {
-            experience_context: {
-              brand_name: 'Lookitry',
-              landing_page: 'BILLING',
-              user_action: 'PAY_NOW',
-              return_url: returnUrlFinal,
-              cancel_url: cancelUrlFinal
-            }
-          }
-        },
-        purchase_units: [
-          {
-            reference_id: shortRef,
-            amount: {
-              currency_code: 'USD',
-              value: amountUSD.toFixed(2)
-            },
-            description: `Suscripción Lookitry - Plan ${planStr}`
-          }
-        ]
-      },
-
+      orderPayload,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -146,8 +143,11 @@ export class PaypalService {
     );
 
     // Buscar el link de aprobación
-    const approveLink = response.data.links.find((l: any) => l.rel === 'approve');
-    if (!approveLink) throw new Error('No se pudo generar el link de aprobación de PayPal');
+    const approveLink = response.data.links?.find((l: any) => l.rel === 'approve');
+    if (!approveLink) {
+      console.error('[PayPal] Respuesta completa:', JSON.stringify(response.data, null, 2));
+      throw new Error('No se pudo generar el link de aprobación de PayPal');
+    }
 
     return {
       checkoutUrl: approveLink.href,
