@@ -97,6 +97,26 @@ export default function TrialCheckoutPage() {
     if (draft?.currency) setCurrency(draft.currency);
     if (draft?.paymentMethod) setPaymentMethod(draft.paymentMethod);
     if (typeof draft?.trm === 'number' && draft.trm > 0) setTrm(draft.trm);
+
+    // Pre-llenar datos de Google si existen en localStorage
+    const brandData = localStorage.getItem('brand');
+    if (brandData) {
+      try {
+        const brand = JSON.parse(brandData);
+        if (brand?.email && !draft?.email) {
+          setGuestEmail(brand.email);
+        }
+        if (brand?.name && !draft?.brandName) {
+          setGuestName(brand.name);
+        }
+        // Si es usuario Google (tiene google_id), ir directo al paso de pago
+        if (brand?.google_id) {
+          setCurrentStep(3);
+        }
+      } catch {
+        // Ignorar errores de parsing
+      }
+    }
   }, []);
 
   useEffect(() => {
