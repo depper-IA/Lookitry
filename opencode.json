@@ -42,6 +42,18 @@
       "environment": {
         "API_TOKEN": "BcWwrZofYVB3FXhPLpxMYddXC5ptfzENd7IeH9hZ50b5f8cb"
       }
+    },
+    "context7": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp@latest"
+      ],
+      "enabled": true,
+      "environment": {
+        "CONTEXT7_API_KEY": "ctx7sk-2a79898f-a150-4027-b9af-9d339aec2e81"
+      }
     }
   }
 }

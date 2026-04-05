@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
   const [wooMetrics, setWooMetrics] = useState<WooMetricsSummary>(null);
   const [loading, setLoading] = useState(true);
+  const [showTrialExpiredModal, setShowTrialExpiredModal] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -94,6 +95,13 @@ export default function DashboardPage() {
     [brand, usage, analytics, subscriptionInfo, wooMetrics],
   );
   const subscriptionDisplayState = useMemo(() => getSubscriptionDisplayState(subscriptionInfo?.brand ?? brand), [subscriptionInfo?.brand, brand]);
+  const trialExpired = subscriptionDisplayState.isTrialExpired;
+
+  useEffect(() => {
+    if (trialExpired) {
+      setShowTrialExpiredModal(true);
+    }
+  }, [trialExpired]);
 
   if (loading) {
     return (
@@ -123,6 +131,44 @@ export default function DashboardPage() {
   const monthlyGenerations = usage?.currentMonth?.generationsUsed ?? 0;
   const generationsLimit = usage?.currentMonth?.generationsLimit ?? 0;
   const revenueView = isTrial ? 'Activación en curso' : subscriptionInfo?.status === 'active' || subscriptionInfo?.status === 'expiring_soon' ? 'Plan al día' : 'Revisión requerida';
+
+  if (showTrialExpiredModal) {
+    return (
+      <div className="mx-auto max-w-[1400px] space-y-8 px-4 pb-20 md:space-y-10 md:px-0">
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="w-full max-w-lg rounded-3xl border border-[#FF5C3A]/20 bg-[#0a0a0a] p-8 text-center shadow-2xl">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-rose-500/10">
+              <Sparkles className="h-8 w-8 text-rose-500" />
+            </div>
+            <h2 className="mb-3 text-2xl font-bold text-white">Tu trial ha vencido</h2>
+            <p className="mb-8 text-sm text-[#999]">
+              Para seguir usando Lookitry, elige uno de nuestros planes pagos. Tu probador virtual y todos los datos están seguros.
+            </p>
+            <div className="flex flex-col gap-4">
+              <button
+                onClick={() => window.location.href = '/dashboard/checkout?plan=PRO'}
+                className="w-full rounded-xl bg-[#FF5C3A] py-4 text-sm font-bold text-white transition-all hover:bg-[#ff785c]"
+              >
+                Comprar Pro
+              </button>
+              <button
+                onClick={() => window.location.href = '/dashboard/checkout?plan=BASIC'}
+                className="w-full rounded-xl border border-[#2a2a2a] py-4 text-sm font-bold text-white transition-all hover:bg-white/5"
+              >
+                Comprar Basic
+              </button>
+              <button
+                onClick={() => setShowTrialExpiredModal(false)}
+                className="w-full py-3 text-xs text-[#666] transition-all hover:text-white"
+              >
+                Continuar al dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-8 px-4 pb-20 md:space-y-10 md:px-0">
