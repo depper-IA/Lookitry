@@ -11,7 +11,9 @@ inclusion: always
 ---
 
 ## 0. Documentación Viva (Regla de Sincronicidad)
-**TODA VEZ que se realicen cambios estructurales en la arquitectura, componentes base, o diseño, es OBLIGATORIO actualizar `PRD.md`, `DESIGN.md`, `TECH_STACK.md` y `REGLAS_IMPORTANTES.md` para que reflejen inmediatamente la realidad del sistema. Los documentos nunca deben quedar obsoletos.**
+**TODA VEZ que se realicen cambios estructurales en la arquitectura, componentes base, o diseño, es OBLIGATORIO:**
+1. **Usar el agente `docs-writter`** para documentar los cambios y mantener actualizados los archivos: `PRD.md`, `DESIGN.md`, `TECH_STACK.md` y `REGLAS_IMPORTANTES.md`
+2. Estos documentos deben reflejar inmediatamente la realidad del sistema. Los documentos nunca deben quedar obsoletos.
 
 **REGLA DE ORO: NO ELIMINAR información técnica que siga siendo válida o funcional (versiones de librerías, estructuras de carpetas, reglas previas). Solo se debe incluir la información que falta o se actualiza, manteniendo el historial y contexto previo.**
 
