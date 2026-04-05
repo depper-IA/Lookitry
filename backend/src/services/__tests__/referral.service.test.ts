@@ -29,7 +29,7 @@ describe('ReferralService', () => {
       paymentReference: 'PTRIAL-1',
     });
 
-    expect(result).toEqual({ converted: false, rewarded: false, rewardCredits: 0 });
+    expect(result).toEqual({ converted: false, rewarded: false, rewardedReferred: false, rewardCredits: 0 });
     expect(supabaseAdmin.from).not.toHaveBeenCalled();
   });
 
@@ -45,13 +45,18 @@ describe('ReferralService', () => {
     };
     const convertedReferral = { ...pendingReferral, status: 'converted' };
     const claimedReferral = { referrer_brand_id: 'referrer-1', reward_credits: 500 };
+    const claimedReferralReferred = { referred_brand_id: 'brand-1', reward_credits: 500 };
 
     const referralsFetch = buildChain({ data: pendingReferral, error: null });
     const referralsConvert = buildChain({ data: convertedReferral, error: null });
     const referralsClaimFetch = buildChain({ data: convertedReferral, error: null });
     const referralsClaimUpdate = buildChain({ data: claimedReferral, error: null });
+    const referralsReferredFetch = buildChain({ data: convertedReferral, error: null });
+    const referralsReferredUpdate = buildChain({ data: claimedReferralReferred, error: null });
     const brandBalanceFetch = buildChain({ data: { extra_credits_balance: 100 }, error: null });
     const brandBalanceUpdate = buildChain({ data: { extra_credits_balance: 600 }, error: null });
+    const brandReferredBalanceFetch = buildChain({ data: { extra_credits_balance: 0 }, error: null });
+    const brandReferredBalanceUpdate = buildChain({ data: { extra_credits_balance: 100 }, error: null });
 
     (supabaseAdmin.from as jest.Mock)
       .mockReturnValueOnce(referralsFetch)
@@ -59,7 +64,11 @@ describe('ReferralService', () => {
       .mockReturnValueOnce(referralsClaimFetch)
       .mockReturnValueOnce(referralsClaimUpdate)
       .mockReturnValueOnce(brandBalanceFetch)
-      .mockReturnValueOnce(brandBalanceUpdate);
+      .mockReturnValueOnce(brandBalanceUpdate)
+      .mockReturnValueOnce(referralsReferredFetch)
+      .mockReturnValueOnce(referralsReferredUpdate)
+      .mockReturnValueOnce(brandReferredBalanceFetch)
+      .mockReturnValueOnce(brandReferredBalanceUpdate);
 
     const result = await referralService.convertReferralForFirstPaidPlan({
       referredBrandId: 'brand-1',
@@ -70,10 +79,12 @@ describe('ReferralService', () => {
     expect(result).toEqual({
       converted: true,
       rewarded: true,
+      rewardedReferred: true,
       rewardCredits: 500,
       referralId: 'ref-1',
     });
     expect(brandBalanceUpdate.update).toHaveBeenCalledWith({ extra_credits_balance: 600 });
+    expect(brandReferredBalanceUpdate.update).toHaveBeenCalledWith({ extra_credits_balance: 100 });
   });
 
   it('no duplica creditos si el referral ya estaba acreditado', async () => {
@@ -86,13 +97,22 @@ describe('ReferralService', () => {
       referrer_claimed: true,
       status: 'converted',
     };
+    const claimedReferralReferred = { referred_brand_id: 'brand-1', reward_credits: 500 };
 
     const referralsFetch = buildChain({ data: convertedReferral, error: null });
     const referralsClaimFetch = buildChain({ data: convertedReferral, error: null });
+    const referralsReferredFetch = buildChain({ data: convertedReferral, error: null });
+    const referralsReferredUpdate = buildChain({ data: claimedReferralReferred, error: null });
+    const brandReferredBalanceFetch = buildChain({ data: { extra_credits_balance: 0 }, error: null });
+    const brandReferredBalanceUpdate = buildChain({ data: { extra_credits_balance: 100 }, error: null });
 
     (supabaseAdmin.from as jest.Mock)
       .mockReturnValueOnce(referralsFetch)
-      .mockReturnValueOnce(referralsClaimFetch);
+      .mockReturnValueOnce(referralsClaimFetch)
+      .mockReturnValueOnce(referralsReferredFetch)
+      .mockReturnValueOnce(referralsReferredUpdate)
+      .mockReturnValueOnce(brandReferredBalanceFetch)
+      .mockReturnValueOnce(brandReferredBalanceUpdate);
 
     const result = await referralService.convertReferralForFirstPaidPlan({
       referredBrandId: 'brand-1',
@@ -103,6 +123,7 @@ describe('ReferralService', () => {
     expect(result).toEqual({
       converted: true,
       rewarded: false,
+      rewardedReferred: true,
       rewardCredits: 500,
       referralId: 'ref-1',
     });

@@ -68,11 +68,11 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE brands SET subscription_end_date = COALESCE(NULLIF(subscription_end_date, '')::timestamp, NOW()) + INTERVAL '1 month' WHERE id = '{{ $json.referrer_brand_id }}' RETURNING subscription_end_date;",
+        "query": "UPDATE brands SET extra_credits_balance = COALESCE(extra_credits_balance, 0) + 500 WHERE id = '{{ $json.referrer_brand_id }}' RETURNING extra_credits_balance;",
         "options": {}
       },
-      "id": "supabase-extend-referrer",
-      "name": "Supabase — +1 mes al referente",
+      "id": "supabase-credit-referrer",
+      "name": "Supabase — 500 creditos al referente",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [1050, 200],
@@ -86,11 +86,11 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE brands SET subscription_end_date = COALESCE(NULLIF(subscription_end_date, '')::timestamp, NOW()) + INTERVAL '1 month' WHERE id = '{{ $json.referred_brand_id }}' RETURNING subscription_end_date;",
+        "query": "UPDATE brands SET extra_credits_balance = COALESCE(extra_credits_balance, 0) + 100 WHERE id = '{{ $json.referred_brand_id }}' RETURNING extra_credits_balance;",
         "options": {}
       },
-      "id": "supabase-extend-referred",
-      "name": "Supabase — +1 mes al referido",
+      "id": "supabase-credit-referred",
+      "name": "Supabase — 100 creditos al referido",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [1050, 400],
@@ -156,7 +156,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"sender\": { \"name\": \"LOOKITRY\", \"email\": \"info@lookitry.com\" },\n  \"to\": [{ \"email\": \"{{ $json.referrer_email }}\", \"name\": \"{{ $json.referrer_name }}\" }],\n  \"subject\": \"🎉 ¡Tu referido se convirtió! Tienes 1 mes gratis\",\n  \"htmlContent\": \"<!DOCTYPE html><html><head><meta charset=\\\"UTF-8\\\"><title>LOOKITRY</title></head><body style=\\\"margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f2ee;\\\"><table width=\\\"100%\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#f5f2ee;padding:24px 16px;\\\"><tr><td align=\\\"center\\\"><table width=\\\"600\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);\\\"><tr><td style=\\\"background-color:#0a0a0a;padding:28px 32px;text-align:center;\\\"><h1 style=\\\"color:#FF5C3A;margin:0;font-size:24px;\\\">LOOKITRY</h1><p style=\\\"color:rgba(255,255,255,0.6);margin:12px 0 0 0;font-size:13px;letter-spacing:0.5px;\\\">Probador virtual para tu marca</p></td></tr><tr><td style=\\\"padding:36px 32px;background-color:#ffffff;\\\"><div style=\\\"text-align:center;margin-bottom:20px;\\\"><span style=\\\"font-size:48px;\\\"🎉</span></div><h2 style=\\\"color:#0a0a0a;margin-top:0;font-size:22px;text-align:center;\\\">¡Felicidades {{ $json.referrer_name }}!</h2><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Uno de tus referidos se acaba de convertir a plan pago.</p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\"><strong>Premio: 1 mes gratis de LOOKITRY</strong></p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Este mes extra ya ha sido aplicado a tu suscripción.</p><div style=\\\"margin:24px 0;padding:16px;background-color:#f5f2ee;border-radius:8px;text-align:center;\\\"><p style=\\\"margin:0;color:#0a0a0a;font-size:14px;\\\"><strong>¡Sigue invitando para ganar más meses gratis!</strong></p></div><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Visita tu <a href=\\\"https://lookitry.com/dashboard/referral\\\" style=\\\"color:#FF5C3A;text-decoration:none;\\\">dashboard de referidos</a> para ver tus estadísticas.</p></td></tr><tr><td style=\\\"background-color:#f5f2ee;padding:20px 32px;text-align:center;border-top:1px solid #e0dcd7;\\\"><p style=\\\"margin:0;color:#888;font-size:12px;\\\">© 2026 LOOKITRY. Todos los derechos reservados.</p></td></tr></table></td></tr></table></body></html>\\\"\n}",
+        "jsonBody": "={\n  \"sender\": { \"name\": \"LOOKITRY\", \"email\": \"info@lookitry.com\" },\n  \"to\": [{ \"email\": \"{{ $json.referrer_email }}\", \"name\": \"{{ $json.referrer_name }}\" }],\n  \"subject\": \"🎉 ¡Tu referido se convirtió! Tienes 500 créditos\",\n  \"htmlContent\": \"<!DOCTYPE html><html><head><meta charset=\\\"UTF-8\\\"><title>LOOKITRY</title></head><body style=\\\"margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f2ee;\\\"><table width=\\\"100%\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#f5f2ee;padding:24px 16px;\\\"><tr><td align=\\\"center\\\"><table width=\\\"600\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);\\\"><tr><td style=\\\"background-color:#0a0a0a;padding:28px 32px;text-align:center;\\\"><h1 style=\\\"color:#FF5C3A;margin:0;font-size:24px;\\\">LOOKITRY</h1><p style=\\\"color:rgba(255,255,255,0.6);margin:12px 0 0 0;font-size:13px;letter-spacing:0.5px;\\\">Probador virtual para tu marca</p></td></tr><tr><td style=\\\"padding:36px 32px;background-color:#ffffff;\\\"><div style=\\\"text-align:center;margin-bottom:20px;\\\"><span style=\\\"font-size:48px;\\\">🎉</span></div><h2 style=\\\"color:#0a0a0a;margin-top:0;font-size:22px;text-align:center;\\\">¡Felicidades {{ $json.referrer_name }}!</h2><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Uno de tus referidos se acaba de convertir a plan pago.</p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\"><strong>Premio: 500 créditos extra en tu cuenta</strong></p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Estos créditos ya han sido acreditados a tu saldo.</p><div style=\\\"margin:24px 0;padding:16px;background-color:#f5f2ee;border-radius:8px;text-align:center;\\\"><p style=\\\"margin:0;color:#0a0a0a;font-size:14px;\\\"><strong>¡Sigue invitando para ganar más créditos!</strong></p></div><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Visita tu <a href=\\\"https://lookitry.com/dashboard/referral\\\" style=\\\"color:#FF5C3A;text-decoration:none;\\\">dashboard de referidos</a> para ver tus estadísticas.</p></td></tr><tr><td style=\\\"background-color:#f5f2ee;padding:20px 32px;text-align:center;border-top:1px solid #e0dcd7;\\\"><p style=\\\"margin:0;color:#888;font-size:12px;\\\">© 2026 LOOKITRY. Todos los derechos reservados.</p></td></tr></table></td></tr></table></body></html>\\\"\n}",
         "options": {
           "response": {
             "response": {
@@ -190,7 +190,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"sender\": { \"name\": \"LOOKITRY\", \"email\": \"info@lookitry.com\" },\n  \"to\": [{ \"email\": \"{{ $json.referred_email }}\", \"name\": \"{{ $json.referred_name }}\" }],\n  \"subject\": \"🎁 ¡Tu código de referido fue aplicado! 1 mes gratis\",\n  \"htmlContent\": \"<!DOCTYPE html><html><head><meta charset=\\\"UTF-8\\\"><title>LOOKITRY</title></head><body style=\\\"margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f2ee;\\\"><table width=\\\"100%\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#f5f2ee;padding:24px 16px;\\\"><tr><td align=\\\"center\\\"><table width=\\\"600\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);\\\"><tr><td style=\\\"background-color:#0a0a0a;padding:28px 32px;text-align:center;\\\"><h1 style=\\\"color:#FF5C3A;margin:0;font-size:24px;\\\">LOOKITRY</h1><p style=\\\"color:rgba(255,255,255,0.6);margin:12px 0 0 0;font-size:13px;letter-spacing:0.5px;\\\">Probador virtual para tu marca</p></td></tr><tr><td style=\\\"padding:36px 32px;background-color:#ffffff;\\\"><div style=\\\"text-align:center;margin-bottom:20px;\\\"><span style=\\\"font-size:48px;\\\"🎁</span></div><h2 style=\\\"color:#0a0a0a;margin-top:0;font-size:22px;text-align:center;\\\">¡Felicidades {{ $json.referred_name }}!</h2><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Tu código de referido ha sido aplicado correctamente.</p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\"><strong>Premio: 1 mes gratis de LOOKITRY</strong></p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Este mes extra ya ha sido aplicado a tu suscripción.</p></td></tr><tr><td style=\\\"background-color:#f5f2ee;padding:20px 32px;text-align:center;border-top:1px solid #e0dcd7;\\\"><p style=\\\"margin:0;color:#888;font-size:12px;\\\">© 2026 LOOKITRY. Todos los derechos reservados.</p></td></tr></table></td></tr></table></body></html>\\\"\n}",
+        "jsonBody": "={\n  \"sender\": { \"name\": \"LOOKITRY\", \"email\": \"info@lookitry.com\" },\n  \"to\": [{ \"email\": \"{{ $json.referred_email }}\", \"name\": \"{{ $json.referred_name }}\" }],\n  \"subject\": \"🎁 ¡Tu código de referido fue aplicado! Tienes 100 créditos\",\n  \"htmlContent\": \"<!DOCTYPE html><html><head><meta charset=\\\"UTF-8\\\"><title>LOOKITRY</title></head><body style=\\\"margin:0;padding:0;font-family:Arial,sans-serif;background-color:#f5f2ee;\\\"><table width=\\\"100%\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#f5f2ee;padding:24px 16px;\\\"><tr><td align=\\\"center\\\"><table width=\\\"600\\\" cellpadding=\\\"0\\\" cellspacing=\\\"0\\\" style=\\\"background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);\\\"><tr><td style=\\\"background-color:#0a0a0a;padding:28px 32px;text-align:center;\\\"><h1 style=\\\"color:#FF5C3A;margin:0;font-size:24px;\\\">LOOKITRY</h1><p style=\\\"color:rgba(255,255,255,0.6);margin:12px 0 0 0;font-size:13px;letter-spacing:0.5px;\\\">Probador virtual para tu marca</p></td></tr><tr><td style=\\\"padding:36px 32px;background-color:#ffffff;\\\"><div style=\\\"text-align:center;margin-bottom:20px;\\\"><span style=\\\"font-size:48px;\\\">🎁</span></div><h2 style=\\\"color:#0a0a0a;margin-top:0;font-size:22px;text-align:center;\\\">¡Felicidades {{ $json.referred_name }}!</h2><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Tu código de referido ha sido aplicado correctamente.</p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\"><strong>Premio: 100 créditos extra en tu cuenta</strong></p><p style=\\\"color:#555;line-height:1.6;font-size:15px;\\\">Estos créditos ya han sido acreditados a tu saldo.</p></td></tr><tr><td style=\\\"background-color:#f5f2ee;padding:20px 32px;text-align:center;border-top:1px solid #e0dcd7;\\\"><p style=\\\"margin:0;color:#888;font-size:12px;\\\">© 2026 LOOKITRY. Todos los derechos reservados.</p></td></tr></table></td></tr></table></body></html>\\\"\n}",
         "options": {
           "response": {
             "response": {
@@ -244,19 +244,19 @@
       "main": [
         [
           {
-            "node": "Supabase — +1 mes al referente",
+            "node": "Supabase — 500 creditos al referente",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Supabase — +1 mes al referido",
+            "node": "Supabase — 100 creditos al referido",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Supabase — +1 mes al referente": {
+    "Supabase — 500 creditos al referente": {
       "main": [
         [
           {
@@ -267,7 +267,7 @@
         ]
       ]
     },
-    "Supabase — +1 mes al referido": {
+    "Supabase — 100 creditos al referido": {
       "main": [
         [
           {
@@ -306,6 +306,6 @@
   },
   "tags": ["referrals", "bonus", "automation", "lookitry"],
   "trigger": "schedule",
-  "updatedAt": "2026-04-03T00:00:00.000Z",
-  "versionId": "1"
+  "updatedAt": "2026-04-05T00:00:00.000Z",
+  "versionId": "2"
 }

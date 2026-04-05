@@ -12,7 +12,8 @@ export type AdminPermission =
   | 'health'
   | 'notifications'
   | 'settings'
-  | 'admins';
+  | 'admins'
+  | 'marketing';
 
 export interface AdminAuthRequest extends Request {
   admin?: {

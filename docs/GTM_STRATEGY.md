@@ -129,11 +129,11 @@
 | Estrategia de comunicación | ✅ Documento GTM | `docs/GTM_STRATEGY.md` |
 | Redes sociales unificadas | ✅ Configuradas | `frontend/src/services/public-config.service.ts` |
 | Programa de referidos | ✅ Backend + Frontend | `backend/src/controllers/referral.controller.ts`, `frontend/src/app/dashboard/referral/page.tsx`, `supabase/migrations/20260403_referrals_program.sql` |
-| Email a betas | ✅ Workflow n8n | `docs/n8n/workflows/beta_launch_email_campaign.json` |
+| Sistema Email Campaigns (Brevo) | ✅ Backend + Frontend | `backend/src/services/brevo-campaign.service.ts`, `backend/src/services/email-campaign.service.ts`, `frontend/src/app/admin/email-campaigns/page.tsx`, `supabase/migrations/20260405_email_campaigns.sql` |
 | Tabla de referidos en DB | ✅ Migración SQL | `supabase/migrations/20260403_referrals_program.sql` |
 
 ### Pendiente
-- [ ] Ejecutar campaña de email a betas (3 de abril)
+- [ ] Ejecutar campaña de email a betas
 - [ ] Activar cuenta de Instagram con contenido
 - [ ] Configurar TikTok
 - [ ] Revisar cupón LOOKITRY20 en el checkout
