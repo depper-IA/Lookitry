@@ -99,7 +99,7 @@ function PagoExitosoContent() {
 
           const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
           const brandData = localStorage.getItem('brand');
-          const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-');
+          const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-') || /PAYPAL-.+-PTRIAL-/.test(currentRef || '');
           const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
           const isGoogleUser = brandData ? JSON.parse(brandData)?.google_id : false;
           const isStandardVisitor = (currentRef?.includes('visitor_') || currentRef?.startsWith('PAYPAL-') || !token) && !isTrialRef;
@@ -119,6 +119,8 @@ function PagoExitosoContent() {
             setDashboardHref('/dashboard');
           } else if (isGuestTrial && currentRef) {
             setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
+          } else if (isTrialRef && currentRef && !token) {
+            setDashboardHref(`/register?ref=${encodeURIComponent(currentRef)}&isTrial=true`);
           } else if (isStandardVisitor && currentRef) {
             setDashboardHref(`/onboarding-post-pago?ref=${encodeURIComponent(currentRef)}&months=${resolvedMonths}&plan=${resolvedPlan}`);
           } else if (token && currentRef) {
@@ -137,7 +139,7 @@ function PagoExitosoContent() {
       } else {
         const token = localStorage.getItem('token') || localStorage.getItem('brandToken');
         const brandData = localStorage.getItem('brand');
-        const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-');
+        const isTrialRef = currentRef?.startsWith('TRIAL-') || currentRef?.startsWith('GUEST-TRIAL-') || /PAYPAL-.+-PTRIAL-/.test(currentRef || '');
         const isGuestTrial = currentRef?.startsWith('GUEST-TRIAL-');
         const isGoogleUser = brandData ? JSON.parse(brandData)?.google_id : false;
         const isStandardVisitor = (currentRef?.includes('visitor_') || currentRef?.startsWith('PAYPAL-') || !token) && !isTrialRef;

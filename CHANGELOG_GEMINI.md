@@ -1,5 +1,21 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Fix: PayPal trial redirigia a onboarding en lugar de register
+
+### Problema
+- Referencias PayPal trial (`PAYPAL-visitor_xxx-M1-PTRIAL-xxx`) no se detectaban como trial
+- Se redirigia a `/onboarding-post-pago` en lugar de `/register`
+- Wompi trial funcionaba bien porque usaba `GUEST-TRIAL-xxx`
+
+### Solucion
+- **pago-exitoso/page.tsx**: Añadido regex `/PAYPAL-.+-PTRIAL-/` para detectar trial de PayPal
+- Nueva condición para redirigir a `/register` si es trial sin token existente
+
+### Archivos modificados
+- `frontend/src/app/pago-exitoso/page.tsx`
+
+---
+
 ## [2026-04-05] - Dashboard: Modal de conversion para trial vencido
 
 ### Problema
