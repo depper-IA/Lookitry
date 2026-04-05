@@ -96,7 +96,8 @@ export class PaypalService {
     trm: number,
     reference: string,
     returnUrl?: string,
-    cancelUrl?: string
+    cancelUrl?: string,
+    planStr: string = 'UNKNOWN'
   ): Promise<{ checkoutUrl: string; orderId: string; amountUSD: number }> {
     const accessToken = await this.getAccessToken();
     const { sandbox } = await this.getActiveKeys();
@@ -104,6 +105,10 @@ export class PaypalService {
 
     // Convertir COP a USD (PayPal no acepta COP directamente para suscripciones)
     const amountUSD = this.convertCopToUsd(amountCOP, trm);
+
+    const shortRef = reference.length > 254 ? reference.substring(0, 254) : reference;
+    const returnUrlFinal = returnUrl || `${process.env.FRONTEND_URL}/pago-exitoso?method=paypal&ref=${encodeURIComponent(reference)}`;
+    const cancelUrlFinal = cancelUrl || `${process.env.FRONTEND_URL}/checkout`;
 
     const response = await axios.post(
       `${baseUrl}/v2/checkout/orders`,
@@ -115,30 +120,21 @@ export class PaypalService {
               brand_name: 'Lookitry',
               landing_page: 'BILLING',
               user_action: 'PAY_NOW',
-              return_url: returnUrl || `${process.env.FRONTEND_URL}/pago-exitoso?method=paypal&ref=${reference}`,
-              cancel_url: cancelUrl || `${process.env.FRONTEND_URL}/checkout`
+              return_url: returnUrlFinal,
+              cancel_url: cancelUrlFinal
             }
           }
         },
         purchase_units: [
           {
-            reference_id: reference,
-            custom_id: reference,
-            invoice_id: reference,
+            reference_id: shortRef,
             amount: {
               currency_code: 'USD',
               value: amountUSD.toFixed(2)
             },
-            description: `Suscripción Lookitry - Ref: ${reference}`
+            description: `Suscripción Lookitry - Plan ${planStr}`
           }
-        ],
-        application_context: {
-          brand_name: 'Lookitry',
-          landing_page: 'BILLING',
-          user_action: 'PAY_NOW',
-          return_url: returnUrl || `${process.env.FRONTEND_URL}/pago-exitoso?method=paypal&ref=${reference}`,
-          cancel_url: cancelUrl || `${process.env.FRONTEND_URL}/checkout`
-        }
+        ]
       },
 
       {

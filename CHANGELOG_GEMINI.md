@@ -1,5 +1,31 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Fix error 422 PayPal checkout-url
+
+### Problema
+- Error 500 en `/api/payments/paypal/checkout-url` con plan TRIAL
+- Logs mostraban: `Request failed with status code 422` desde PayPal API
+- La referencia se usaba en 3 campos (`reference_id`, `custom_id`, `invoice_id`) causando conflicto
+
+### Solución
+- Simplificada estructura del request a PayPal API:
+  - Eliminado `custom_id` e `invoice_id` redundantes
+  - Solo mantener `reference_id` (truncado a 254 chars si es necesario)
+  - Agregado `planStr` como parámetro para descripción más clara
+- Mejorado manejo de errores con mensajes detallados de PayPal
+- Mejor logging para diagnostico
+
+### Archivos Modificados
+- `backend/src/services/paypal.service.ts`
+- `backend/src/controllers/paypal.controller.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+- El 422 de PayPal indica que la referencia duplicada en múltiples campos causaba validación fallida
+- Mejorar el error handling para diagnostico futuro
+
+---
+
 ## [2026-04-05] - Deploy: Lead Generation CRM + Email Campaigns + PayPal Fix
 
 ### Deploy Realizado

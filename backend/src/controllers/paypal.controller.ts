@@ -372,7 +372,19 @@ export class PaypalController {
       }
     }
 
-    const createdOrder = await paypalService.createOrder(amountCOP, currentTrm, reference, returnUrl, cancelUrl);
+    let createdOrder;
+    try {
+      createdOrder = await paypalService.createOrder(amountCOP, currentTrm, reference, returnUrl, cancelUrl, planStr);
+    } catch (paypalError: any) {
+      console.error('[Paypal] Error al crear orden PayPal:', paypalError.response?.data || paypalError.message);
+      const statusCode = paypalError.response?.status || 500;
+      const paypalMessage = paypalError.response?.data?.message || paypalError.response?.data?.details?.[0]?.description || 'Error al procesar con PayPal';
+      return res.status(statusCode).json({
+        error: 'PAYPAL_ERROR',
+        message: paypalMessage,
+        details: paypalError.response?.data?.details || []
+      });
+    }
     await paypalService.recordOrder({
       reference,
       brand_id: (req as any).brand?.id || null,
