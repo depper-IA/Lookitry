@@ -39,8 +39,7 @@ const FAQ_TABS = [
       { q: '¿Hay descuentos por pagar varios meses?', a: 'Pagar 3 meses te da 5% de descuento, 6 meses 10% y 12 meses 15%. Se aplican automáticamente al finalizar la compra.' },
       { q: '¿El pago es seguro?', a: 'Sí. Todos los pagos se procesan a través de Wompi, una pasarela certificada. Nosotros nunca almacenamos los datos de tu tarjeta.' },
       { q: '¿Puedo cancelar en cualquier momento?', a: 'Sí. No hay contratos de permanencia. Puedes cancelar tu suscripción cuando quieras desde tu dashboard.' },
-      { q: '¿Qué pasa si no renuevo mi plan?', a: 'Tu cuenta queda suspendida al vencer el período pagado. Tus datos se conservan por 30 días para que puedas reactivar sin perder nada.' },
-      { q: '¿Ofrecen factura legal?', a: 'Sí, emitimos factura para todas las transacciones. Puedes solicitarla directamente a nuestro equipo administrativo.' }
+      { q: '¿Qué pasa si no renuevo mi plan?', a: 'Tu cuenta queda suspendida al vencer el período pagado. Tus datos se conservan por 30 días para que puedas reactivar sin perder nada.' }
     ]
   },
   {
@@ -52,7 +51,7 @@ const FAQ_TABS = [
       { q: '¿Qué pasa si agoto mis generaciones?', a: 'El probador deja de estar disponible hasta que se reinicie el contador el siguiente mes o hasta que hagas un upgrade de plan.' },
       { q: '¿Cuántas generaciones incluye cada plan?', a: 'El Plan Básico incluye 400 generaciones por mes. El Plan Pro incluye 1.200 generaciones por mes. El contador se reinicia el primer día de cada mes.' },
       { q: '¿Puedo ver cuántas he usado?', a: 'Sí. En tu dashboard tienes analíticas en tiempo real del consumo de generaciones y visitas a tu catálogo.' },
-      { q: '¿Las no usadas se acumulan?', a: 'No. Las generaciones no utilizadas en el periodo actual no se transfieren al siguiente mes.' },
+      { q: '¿Las generaciones no usadas se acumulan?', a: 'No. Las generaciones no utilizadas en el periodo actual no se transfieren al siguiente mes.' },
       { q: '¿Cuánto tarda en generar una imagen?', a: 'Normalmente entre 10 y 25 segundos, dependiendo de la complejidad de la prenda y la pose del cliente.' }
     ]
   },
