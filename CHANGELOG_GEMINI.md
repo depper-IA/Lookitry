@@ -1,5 +1,47 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Fix flujo Google Auth con TRIAL
+
+### Problema
+- Usuarios que hacían Google Auth eran redirigidos directamente a `/dashboard/subscription` con mensaje "Verificando tu pago"
+- El brand se creaba con `plan='TRIAL'` y `trial_end_date=null`, causando que `DashboardRouteShell` mostrara el SuspensionModal incorrectamente
+
+### Cambios
+- **DashboardRouteShell.tsx**: Simplificada condición para mostrar SuspensionModal. Ahora solo muestra el modal cuando `trialPaymentStatus === 'pending_payment'` (pago en proceso) o `trialExpired` (trial vencido). Ya NO muestra modal para usuarios con `plan='TRIAL' && !trialEndDate` que simplemente no han activado el trial
+- **checkout/page.client.tsx**: Corregido `buildInternalCheckoutUrl()` para que plan TRIAL vaya a `/trial-checkout` en lugar de `/dashboard/subscription`. Si `trialPaymentStatus === 'pending_payment'`, sí va a `/dashboard/subscription` para ver el estado del pago
+
+### Archivos modificados
+- `frontend/src/app/dashboard/DashboardRouteShell.tsx`
+- `frontend/src/app/checkout/page.client.tsx`
+
+### Flujo corregido
+1. Google Auth → brand con `plan='TRIAL'`, `trial_end_date=null`, sin trial_registration
+2. Redirect a `/checkout?plan=TRIAL` → `/trial-checkout` (antes iba a `/dashboard/subscription`)
+3. Usuario completa proceso de trial en `/trial-checkout`
+4. Después de activar trial, `trial_end_date` se configura y usuario puede ver `/dashboard/subscription` normalmente
+
+---
+
+## [2026-04-04] - Auditoría de seguridad y tipos de base de datos
+
+### Cambios
+- **Auditoría Supabase**: Ejecutada revisión completa de seguridad y performance
+- **RLS habilitado**: 5 tablas sin RLS ahora lo tienen (`addon_packages`, `brand_reviews`, `paypal_orders`, `pending_registrations`, `referrals`)
+- **Políticas corregidas**: Eliminadas políticas `WITH CHECK (true)` en `blog_topics` y `brands`
+- **Tipos Database**: Actualizados en `backend/src/config/supabase.ts` con las 26 tablas completas
+- **Schema SQL**: Actualizado `backend/supabase-schema.sql` con el schema completo actual
+
+### Archivos modificados
+- `backend/src/config/supupabase.ts` - Types completos para 26 tablas
+- `backend/supabase-schema.sql` - Schema completo con todas las tablas, índices, triggers y políticas RLS
+
+### Detalles técnicos
+- Migración aplicada: `fix_rls_disabled_and_permissive_policies`
+- Todas las políticas RLS ahora usan `auth.role() = 'service_role'` para tablas internas
+- Tipos exportados: `PlanType`, `GenerationStatus`, `SubscriptionStatus`, `DiscountType`, `PromotionType`, `GenerationErrorType`
+
+---
+
 ## [2026-04-04] - Skill seo-audit (marketing skills)
 
 ### Cambio
