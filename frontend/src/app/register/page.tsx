@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import RegisterForm from '@/components/auth/RegisterForm';
+import AuthGuard from '@/components/auth/AuthGuard';
 
 export const metadata: Metadata = {
   title: 'Prueba Lookitry por $20.000',
@@ -12,5 +13,9 @@ export const metadata: Metadata = {
 };
 
 export default function RegisterPage() {
-  return <RegisterForm />;
+  return (
+    <AuthGuard redirectTo="/dashboard">
+      <RegisterForm />
+    </AuthGuard>
+  );
 }

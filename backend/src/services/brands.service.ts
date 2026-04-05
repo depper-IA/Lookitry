@@ -67,9 +67,27 @@ export class BrandsService {
     // 1. Validar slug
     if (updates.slug) {
       const slugRegex = /^[a-z0-9-]+$/;
-      if (!slugRegex.test(updates.slug) || updates.slug.length < 3) {
-        throw new Error('El slug solo puede contener letras minúsculas, números y guiones (mínimo 3 caracteres)');
+      if (!slugRegex.test(updates.slug) || updates.slug.length < 3 || updates.slug.length > 50) {
+        throw new Error('El slug debe tener entre 3 y 50 caracteres, solo letras minúsculas, números y guiones');
       }
+      
+      const reservedSlugs = [
+        'admin', 'api', 'app', 'blog', 'checkout', 'dashboard', 'home', 'login', 
+        'logout', 'register', 'signup', 'signin', 'password', 'reset', 'forgot',
+        'account', 'accounts', 'auth', 'authorize', 'callback', 'contact', 'docs',
+        'documentation', 'download', 'downloads', 'email', 'help', 'jobs', 'legal',
+        'market', 'markets', 'news', 'onboarding', 'payment', 'payments', 'plans',
+        'pricing', 'privacy', 'products', 'profile', 'public', 'root', 'secure',
+        'security', 'settings', 'shop', 'site', 'sites', 'static', 'support', 'terms',
+        'tools', 'trial', 'trial-checkout', 'upload', 'uploads', 'users', 'verify',
+        'webhook', 'webhooks', 'www', 'mail', 'superadmin', 'system', 'null', 'undefined',
+        'true', 'false', 'none', 'default', 'main', 'test', 'demo', 'dev', 'development',
+        'staging', 'stage', 'prod', 'production', 'lookitry', 'mobile', 'desktop'
+      ];
+      if (reservedSlugs.includes(updates.slug.toLowerCase())) {
+        throw new Error('Este slug está reservado. Elige otro.');
+      }
+
       const existing = await this.getBrandBySlug(updates.slug);
       if (existing && existing.id !== brandId) {
         throw new Error('Ese slug ya está en uso por otra marca');

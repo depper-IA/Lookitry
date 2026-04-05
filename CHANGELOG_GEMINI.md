@@ -1,5 +1,147 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Validación de slug reforzada
+
+### Problema
+- No se validaba longitud máxima (50 caracteres)
+- No había lista de slugs reservados bloqueados
+
+### Solución
+- **Backend auth.controller.ts**: 
+  - Añadida validación de longitud (3-50 caracteres)
+  - Añadida lista de ~70 slugs reservados
+- **Backend brands.service.ts**: 
+  - Añadida validación de longitud máxima y slugs reservados
+- **Frontend RegisterForm.tsx**: 
+  - Validación de formato, longitud y slugs reservados
+- **Frontend OnboardingForm.tsx**: 
+  - Validación de formato, longitud y slugs reservados
+- **Frontend onboarding-post-pago/page.tsx**: 
+  - Validación de formato, longitud y slugs reservados
+
+### Slugs reservados bloqueados
+admin, api, app, blog, checkout, dashboard, home, login, logout, register, signup, password, reset, account, auth, contact, docs, email, help, jobs, legal, news, payment, plans, pricing, privacy, profile, root, security, settings, shop, site, support, terms, trial, upload, users, verify, webhook, www, mail, test, demo, dev, production, lookitry, etc.
+
+### Archivos modificados
+- `backend/src/controllers/auth.controller.ts`
+- `backend/src/services/brands.service.ts`
+- `frontend/src/components/auth/RegisterForm.tsx`
+- `frontend/src/components/auth/OnboardingForm.tsx`
+- `frontend/src/app/onboarding-post-pago/page.tsx`
+
+---
+
+## [2026-04-05] - Validación de email reforzada
+
+### Problema
+- Frontend RegisterForm no validaba formato de email (solo rely en HTML5 type="email")
+- Backend googleLogin no bloqueaba dominios desechables
+
+### Solución
+- **RegisterForm.tsx**: Añadida validación regex `/^[^\s@]+@[^\s@]+\.[^\s@]+$/` en handleSubmit
+- **google-auth.service.ts**: Añadida lista de 26 dominios desechables (mailinator, yopmail, etc.)
+- **auth.controller.ts**: Manejo de error `DISPOSABLE_EMAIL` para Google Login
+
+### Archivos modificados
+- `frontend/src/components/auth/RegisterForm.tsx`
+- `backend/src/services/google-auth.service.ts`
+- `backend/src/controllers/auth.controller.ts`
+
+---
+
+## [2026-04-05] - Protección de rutas para usuarios autenticados
+
+### Problema
+- Usuarios con sesión activa podían acceder a `/register` y `/login` sin ser redirigidos
+- Backend permitía registrar nuevos usuarios aunque ya tuvieran sesión activa
+
+### Solución
+
+**Frontend:**
+- **AuthGuard.tsx**: Nuevo componente para proteger rutas
+- **/register/page.tsx**: Ahora redirige a `/dashboard` si ya tiene sesión
+- **/login/page.tsx**: Ahora redirige a `/dashboard` si ya tiene sesión
+
+**Backend:**
+- **auth.controller.ts register()**: Verifica si hay token activo antes de permitir registro
+- **auth.controller.ts googleLogin()**: Verifica si hay token activo antes de permitir login con Google
+- Retorna error `ALREADY_AUTHENTICATED` si el usuario ya está logueado
+
+### Archivos modificados
+- `frontend/src/components/auth/AuthGuard.tsx` (NUEVO)
+- `frontend/src/app/register/page.tsx`
+- `frontend/src/app/login/page.tsx`
+- `backend/src/controllers/auth.controller.ts`
+
+---
+
+## [2026-04-05] - Fix: Google Auth ya no crea marca antes del pago
+
+### Problema
+- Google Auth creaba la marca en `brands` INMEDIATAMENTE al autenticar
+- Esto generaba "marcas fantasma" si el usuario abandonaba antes de pagar
+- El slug se generaba automáticamente de forma fea (`nombre-abc123`)
+
+### Solución
+- **google-auth.service.ts**: Nuevo flujo para usuarios nuevos:
+  - Crea registro en `pending_registrations` (NO en `brands`)
+  - Devuelve `needsOnboarding: true` y `pendingRegistrationId`
+  - No genera token hasta completar onboarding
+- **auth.controller.ts googleLogin**: Respuesta incluye `pendingRegistrationId`
+- **auth.controller.ts completeGoogleOnboarding**: 
+  - Acepta `ref` (pendingRegistrationId) para crear marca desde registro pendiente
+  - Flujo legacy (con token) sigue funcionando para usuarios existentes
+- **auth.routes.ts**: Endpoint `/google/onboarding` ya no requiere authMiddleware (acepta ref sin token)
+- **GoogleSignInButton.tsx**: Guarda `pendingRegistrationId` y redirige a `/register/google-setup?ref={id}`
+- **register/google-setup/page.tsx**: 
+  - Lee `ref` de query params
+  - Lo envía al backend en el onboarding
+  - Guarda brand y token del onboarding completado
+
+### Archivos modificados
+- `backend/src/services/google-auth.service.ts`
+- `backend/src/controllers/auth.controller.ts`
+- `backend/src/routes/auth.routes.ts`
+- `frontend/src/components/auth/GoogleSignInButton.tsx`
+- `frontend/src/app/register/google-setup/page.tsx`
+
+### Flujo corregido
+1. Usuario hace Google Auth → Registro en `pending_registrations` (sin marca aún)
+2. Redirige a `/register/google-setup?ref={id}` para configurar brand name + slug
+3. Completa onboarding → Backend crea marca en `brands` desde `pending_registrations`
+4. Procede al checkout y pago
+5. Webhook confirma pago → Marca se activa
+
+---
+
+## [2026-04-05] - Unificación checkout público y ajuste Enterprise
+
+### Problema
+- Duplicación de lógica entre `checkout/page.tsx` y `checkout/page.client.tsx`
+- Plan ENTERPRISE no visible en checkout (era correcto no mostrarlo ya que es venta manual)
+
+### Cambios
+- **checkout/page.tsx**: Fusionada lógica de `page.client.tsx`:
+  - Añadido `export const dynamic = 'force-dynamic'`
+  - Cambiado de `StepProgress` a `CheckoutStepper`
+  - Cambiado de `OrderSummary` a `OrderSummaryAdapter`
+  - Mejorado manejo de `trialBlockedBySession` con `hasActiveTrial`
+  - Mejorado mensaje de email existente para sugerir upgrade desde dashboard
+- **PlanSelectionStep.tsx**: 
+  - Añadido enlace a "Plan Enterprise" (contacto manual) visible pero no selectable
+  - Añadido `Building2` icon para la sección de contact
+- **ELIMINADO**: `checkout/page.client.tsx` (redundante tras unificación)
+
+### Archivos modificados
+- `frontend/src/app/checkout/page.tsx`
+- `frontend/src/components/checkout/PlanSelectionStep.tsx`
+- `frontend/src/components/checkout/OrderSummaryAdapter.tsx`
+
+### Archivos eliminados
+- `frontend/src/app/checkout/page.client.tsx`
+
+---
+
 ## [2026-04-05] - Fix flujo Google Auth con TRIAL
 
 ### Problema

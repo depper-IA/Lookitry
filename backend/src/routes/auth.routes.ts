@@ -97,7 +97,8 @@ router.get('/slug-check', publicRateLimiter, asyncHandler(async (req, res) => {
 router.post('/google', authRateLimiter, asyncHandler((req, res) => authController.googleLogin(req, res)));
 
 // POST /api/auth/google/onboarding — Completar setup después de registro con Google
-router.post('/google/onboarding', authMiddleware, asyncHandler((req, res) => authController.completeGoogleOnboarding(req as any, res)));
+// NO requiere authMiddleware porque puede ser llamado con ref (sin token) o con token
+router.post('/google/onboarding', asyncHandler((req, res) => authController.completeGoogleOnboarding(req as any, res)));
 
 // POST /api/auth/logout — limpia la cookie HTTP-Only del lado del servidor
 router.post('/logout', (_req, res) => {

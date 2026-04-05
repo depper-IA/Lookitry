@@ -78,6 +78,29 @@ export default function OnboardingForm({
       return;
     }
 
+    if (form.slug.length < 3 || form.slug.length > 50) {
+      setError('La URL debe tener entre 3 y 50 caracteres');
+      return;
+    }
+
+    const reservedSlugs = [
+      'admin', 'api', 'app', 'blog', 'checkout', 'dashboard', 'home', 'login',
+      'logout', 'register', 'signup', 'signin', 'password', 'reset', 'forgot',
+      'account', 'accounts', 'auth', 'authorize', 'callback', 'contact', 'docs',
+      'documentation', 'download', 'downloads', 'email', 'help', 'jobs', 'legal',
+      'market', 'markets', 'news', 'onboarding', 'payment', 'payments', 'plans',
+      'pricing', 'privacy', 'products', 'profile', 'public', 'root', 'secure',
+      'security', 'settings', 'shop', 'site', 'sites', 'static', 'support', 'terms',
+      'tools', 'trial', 'trial-checkout', 'upload', 'uploads', 'users', 'verify',
+      'webhook', 'webhooks', 'www', 'mail', 'superadmin', 'system', 'null', 'undefined',
+      'true', 'false', 'none', 'default', 'main', 'test', 'demo', 'dev', 'development',
+      'staging', 'stage', 'prod', 'production', 'lookitry', 'mobile', 'desktop'
+    ];
+    if (reservedSlugs.includes(form.slug.toLowerCase())) {
+      setError('Esta URL está reservada. Elige otra.');
+      return;
+    }
+
     if (showPassword) {
       if (!form.password.trim()) {
         setError('La contraseña es requerida');

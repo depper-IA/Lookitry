@@ -148,9 +148,14 @@ export default function GoogleSignInButton({
       if (onSuccess) {
         onSuccess(data);
       } else if (data.needsOnboarding) {
+        // Guardar pendingRegistrationId para usarlo en el onboarding
+        if (data.pendingRegistrationId) {
+          localStorage.setItem('pendingRegistrationId', data.pendingRegistrationId);
+        }
         // Pequeña pausa para asegurar que la cookie se ha propagado
         setTimeout(() => {
-          window.location.href = '/register/google-setup';
+          const ref = data.pendingRegistrationId ? `?ref=${data.pendingRegistrationId}` : '';
+          window.location.href = `/register/google-setup${ref}`;
         }, 100);
       } else if (variant === 'admin') {
         setTimeout(() => {

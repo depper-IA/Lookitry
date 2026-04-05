@@ -13,11 +13,12 @@ export interface GoogleTokenPayload {
 }
 
 export interface GoogleAuthResult {
-  token: string;
+  token: string | null;
   brand: any;
   needsOnboarding: boolean;
   isNewBrand: boolean;
   accountLinked: boolean;
+  pendingRegistrationId?: string;
 }
 
 /**
@@ -109,6 +110,13 @@ async function getActiveCampaign() {
 export async function findOrCreateBrandFromGoogle(
   payload: GoogleTokenPayload
 ): Promise<GoogleAuthResult> {
+  // 0. Bloquear dominios de email desechables
+  const disposableDomains = ['mailinator.com','guerrillamail.com','tempmail.com','throwam.com','yopmail.com','sharklasers.com','grr.la','guerrillamail.info','spam4.me','trashmail.com','trashmail.me','dispostable.com','fakeinbox.com','maildrop.cc','mailnull.com','spamgourmet.com','tempr.email','discard.email','10minutemail.com','minutemail.com','throwaway.email','getairmail.com','filzmail.com','spamgourmet.net','spamgourmet.org'];
+  const emailDomain = payload.email.split('@')[1]?.toLowerCase();
+  if (emailDomain && disposableDomains.includes(emailDomain)) {
+    throw new Error('DISPOSABLE_EMAIL');
+  }
+
   // 1. Buscar por google_id primero
   const { data: brandByGoogleId } = await supabaseAdmin
     .from('brands')
@@ -156,56 +164,46 @@ export async function findOrCreateBrandFromGoogle(
     };
   }
 
-  // 3. Crear nueva marca (Google tiene el nombre, no necesita onboarding)
+  // 3. Usuario nuevo → Crear registro pendiente en pending_registrations (NO crear marca aún)
+  // Esto evita "marcas fantasma" si el usuario abandona antes de pagar
   const contactName = [payload.given_name, payload.family_name]
     .filter(Boolean)
     .join(' ') || payload.name;
 
-  const baseSlug = contactName
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .substring(0, 30);
-  const slug = `${baseSlug}-${payload.sub.substring(0, 6)}`;
+  const pendingRef = `G-${payload.sub.substring(0, 8)}-${Date.now()}`;
 
-  const { data: newBrand, error } = await supabaseAdmin
-    .from('brands')
+  const { data: pendingReg, error: pendingError } = await supabaseAdmin
+    .from('pending_registrations')
     .insert({
       email: payload.email.toLowerCase(),
-      password: null,
-      name: contactName,
-      slug,
-      contact_name: contactName,
-      google_id: payload.sub,
-      auth_provider: 'google',
-      email_verified: true,
-      needs_onboarding: false, // Google tiene el nombre, no necesita onboarding
-      plan: 'TRIAL',
-      subscription_status: null, // Se activa después del pago
-      trial_end_date: null, // No activo hasta que pague
-      trial_generations_limit: 0,
-      primary_color: '#000000',
-      secondary_color: '#ffffff',
+      reference: pendingRef,
+      plan: 'TRIAL', // Plan por defecto, se puede cambiar en checkout
+      months: 1,
+      amount: 0,
+      includes_landing: false,
+      status: 'initiated',
+      brand_name: contactName,
     })
     .select()
     .single();
 
-  if (error) {
-    console.error('[GoogleAuth] Error creando marca:', error);
-    throw new Error('GOOGLE_BRAND_CREATE_FAILED');
+  if (pendingError) {
+    console.error('[GoogleAuth] Error creando registro pendiente:', pendingError);
+    throw new Error('GOOGLE_PENDING_REG_FAILED');
   }
 
-  const token = generateToken({ brandId: newBrand.id, email: newBrand.email });
-
+  // Devolver pendingRegistrationId para que el frontend rediriga al onboarding
   return {
-    token,
-    brand: newBrand,
-    needsOnboarding: false, // Ir directo a trial-checkout
+    token: null, // Sin token - el usuario debe completar onboarding primero
+    brand: {
+      id: pendingReg.id,
+      email: payload.email.toLowerCase(),
+      name: contactName,
+    },
+    needsOnboarding: true,
     isNewBrand: true,
     accountLinked: false,
+    pendingRegistrationId: pendingReg.id,
   };
 }
 
