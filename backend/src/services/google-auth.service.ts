@@ -175,8 +175,10 @@ export async function findOrCreateBrandFromGoogle(
       auth_provider: 'google',
       email_verified: true,
       needs_onboarding: true,
-      plan: 'BASIC',
-      subscription_status: 'active',
+      plan: 'TRIAL',
+      subscription_status: null, // Se activa después del pago
+      trial_end_date: null, // No activo hasta que pague
+      trial_generations_limit: 0,
       primary_color: '#000000',
       secondary_color: '#ffffff',
     })
