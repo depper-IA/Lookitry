@@ -7,7 +7,7 @@ import Image from 'next/image';
 
 import { Alert } from '@/components/ui/Alert';
 import { fetchPublicPaymentSettings } from '@/services/public-config.service';
-import { StepProgress } from '@/components/payments/StepProgress';
+import { CheckoutStepper } from '@/components/checkout/CheckoutStepper';
 
 function IconCheck() {
   return (
@@ -223,7 +223,7 @@ function PagoExitosoContent() {
     <div className="dark">
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-[#030303] selection:bg-[#FF5C3A]/30">
         <div className="w-full max-w-xl mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
-          <StepProgress currentStep={4} maxNavigableStep={4} lockedAfterPayment />
+          <CheckoutStepper currentStep={4} variant="success" />
         </div>
 
         <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">

@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { StepProgress, Step } from '@/components/payments/StepProgress';
+import { CheckoutStepper, Step } from '@/components/checkout/CheckoutStepper';
 import { clearCheckoutDraft, loadCheckoutDraft, saveCheckoutDraft } from '@/lib/checkoutDraft';
 import { formatCop, formatUsd, priceInUsd } from '@/lib/paymentDisplay';
 import { authService } from '@/services/auth.service';
@@ -18,7 +18,7 @@ import CheckoutHeader from '@/components/checkout/CheckoutHeader';
 import PlanSelectionStep from '@/components/checkout/PlanSelectionStep';
 import UserDataStep from '@/components/checkout/UserDataStep';
 import PaymentMethodStep from '@/components/checkout/PaymentMethodStep';
-import OrderSummary from '@/components/checkout/OrderSummary';
+import OrderSummaryAdapter from '@/components/checkout/OrderSummaryAdapter';
 
 export const dynamic = 'force-dynamic';
 
@@ -134,7 +134,20 @@ function CheckoutContent() {
   } | null>(null);
 
   const [activePromos, setActivePromos] = useState<any[]>([]);
-  const trialBlockedBySession = hasSession && selectedPlan === 'TRIAL';
+
+  // Verificar si el usuario tiene un trial activo (no solo sesión)
+  const brandFromStorage = (() => {
+    try {
+      const brandStr = localStorage.getItem('brand');
+      return brandStr ? JSON.parse(brandStr) : null;
+    } catch {
+      return null;
+    }
+  })();
+  const hasActiveTrial = brandFromStorage?.plan === 'TRIAL' && 
+                         brandFromStorage?.trialEndDate && 
+                         new Date(brandFromStorage.trialEndDate) > new Date();
+  const trialBlockedBySession = hasActiveTrial && selectedPlan === 'TRIAL';
 
   const buildInternalCheckoutUrl = () => {
     if (selectedPlan === 'LANDING') {
@@ -501,15 +514,29 @@ function CheckoutContent() {
       return;
     }
 
-    localStorage.setItem('brand', JSON.stringify(data.brand));
-    if (data.token) localStorage.setItem('token', data.token);
-    setHasSession(true);
-    setSessionInfo({ name: data.brand.name || '', email: data.brand.email || '' });
-    setEmail(data.brand.email || '');
-    setBrandName(data.brand.name || '');
-    setEmailError('');
-    setEmailExists({ exists: false });
-    setBrandNameError('');
+    if (data?.brand) {
+      localStorage.setItem('brand', JSON.stringify(data.brand));
+      if (data.token) localStorage.setItem('token', data.token);
+      setHasSession(true);
+      setSessionInfo({ name: data.brand.name || '', email: data.brand.email || '' });
+      setEmail(data.brand.email || '');
+      setBrandName(data.brand.name || '');
+      setEmailError('');
+      setEmailExists({ exists: false });
+      setBrandNameError('');
+
+      const planToSend = isLanding ? subPlan : selectedPlan;
+      const monthsToSend = isTrial ? 1 : selectedMonths;
+
+      if (isLanding) {
+        router.replace(`/dashboard/checkout-landing?plan=${subPlan}&months=${monthsToSend}`);
+      } else if (selectedPlan === 'TRIAL') {
+        router.replace('/dashboard/subscription');
+      } else {
+        const finalPlan = isLanding ? subPlan : selectedPlan;
+        router.replace(`/dashboard/checkout?plan=${finalPlan}&months=${monthsToSend}`);
+      }
+    }
   };
 
   const getTrialName = () => {
@@ -534,7 +561,7 @@ function CheckoutContent() {
       <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
         {/* Progress Bar */}
         <div className="mb-12">
-          <StepProgress currentStep={currentStep} stepLabels={['Tus Datos', 'Plan', 'Pago', 'Acceso']} maxNavigableStep={canNavigateToStep} onStepChange={handleStepChange} />
+          <CheckoutStepper currentStep={currentStep} maxNavigableStep={canNavigateToStep} onStepChange={handleStepChange} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -617,7 +644,7 @@ function CheckoutContent() {
           </div>
 
           {/* Sidebar: Resumen */}
-          <OrderSummary
+          <OrderSummaryAdapter
             isLanding={isLanding}
             landingPrice={landingPrice}
             subPlanTotal={subPlanTotal}
@@ -625,8 +652,6 @@ function CheckoutContent() {
             planNames={planNames}
             isTrial={isTrial}
             selectedMonths={selectedMonths}
-            formatCop={formatCop}
-            formatUsd={formatUsd}
             couponCode={couponCode}
             setCouponCode={setCouponCode}
             couponLoading={couponLoading}

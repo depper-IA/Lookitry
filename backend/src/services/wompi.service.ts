@@ -23,7 +23,7 @@ export class WompiService {
   }
 
   /** Obtiene las llaves activas según el modo configurado en payment_settings */
-  private async getActiveKeys(): Promise<{
+  async getActiveKeys(): Promise<{
     publicKey: string;
     privateKey: string;
     eventsSecret: string;

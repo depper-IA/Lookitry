@@ -97,6 +97,68 @@ export const authRateLimiter = rateLimit({
   },
 });
 
+/**
+ * Rate limiter MUY estricto para /login
+ * 5 intentos por 15 minutos por IP — protección contra fuerza bruta
+ */
+export const loginRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: {
+    error: 'LOGIN_RATE_LIMIT_EXCEEDED',
+    message: 'Demasiados intentos de inicio de sesión. Por favor espera 15 minutos.',
+    retryAfter: '15 minutos',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    console.warn(`⚠️  Login rate limit excedido para IP: ${req.ip}`);
+    res.status(429).json({
+      error: 'LOGIN_RATE_LIMIT_EXCEEDED',
+      message: 'Demasiados intentos de inicio de sesión. Por favor espera 15 minutos.',
+      retryAfter: '15 minutos',
+      timestamp: new Date().toISOString(),
+    });
+  },
+  skip: (req: Request) => {
+    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
+      return true;
+    }
+    return false;
+  },
+});
+
+/**
+ * Rate limiter para registro
+ * 3 registros por hora por IP — prevenir spam de cuentas
+ */
+export const registerRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  message: {
+    error: 'REGISTER_RATE_LIMIT_EXCEEDED',
+    message: 'Demasiados intentos de registro. Por favor intenta de nuevo en una hora.',
+    retryAfter: '1 hora',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    console.warn(`⚠️  Register rate limit excedido para IP: ${req.ip}`);
+    res.status(429).json({
+      error: 'REGISTER_RATE_LIMIT_EXCEEDED',
+      message: 'Demasiados intentos de registro. Por favor intenta de nuevo en una hora.',
+      retryAfter: '1 hora',
+      timestamp: new Date().toISOString(),
+    });
+  },
+  skip: (req: Request) => {
+    if (process.env.NODE_ENV === 'development' && req.ip === '::1') {
+      return true;
+    }
+    return false;
+  },
+});
+
 // Store en memoria para rate limiting por brandSlug
 const slugStore = new Map<string, { count: number; resetAt: number }>();
 

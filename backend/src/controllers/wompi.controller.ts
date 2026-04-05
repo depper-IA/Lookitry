@@ -16,10 +16,46 @@ const notificationService = new NotificationService();
 
 export class WompiController {
   /**
+   * Helper para insertar logs de pago
+   */
+  private async insertPaymentLog(params: {
+    eventType: string;
+    reference: string;
+    brandId?: string | null;
+    transactionId?: string | null;
+    amountCents?: number | null;
+    status: string;
+    payload?: Record<string, unknown>;
+    errorMessage?: string | null;
+    ipAddress?: string | null;
+  }): Promise<void> {
+    try {
+      await supabaseAdmin.from('payment_logs').insert({
+        event_type: params.eventType,
+        gateway: 'wompi',
+        reference: params.reference,
+        brand_id: params.brandId || null,
+        transaction_id: params.transactionId || null,
+        amount_cents: params.amountCents || null,
+        currency: 'COP',
+        status: params.status,
+        payload: params.payload || null,
+        processed_at: new Date().toISOString(),
+        error_message: params.errorMessage || null,
+        ip_address: params.ipAddress || null,
+      });
+    } catch (logError) {
+      console.warn('[Wompi] Error insertando payment_log:', logError);
+    }
+  }
+
+  /**
    * POST /api/payments/wompi/webhook
    * Recibe eventos de Wompi (transaction.updated, etc.).
    */
   async handleWebhook(req: Request, res: Response): Promise<void> {
+    const ipAddress = req.ip || req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || null;
+    
     try {
       const checksum = req.headers['x-event-checksum'] as string;
       const rawBody = Buffer.isBuffer(req.body)
@@ -28,10 +64,39 @@ export class WompiController {
 
       console.log(`[Wompi Webhook] Recibido. Checksum: ${checksum || 'NINGUNO'}. Body length: ${rawBody.length}`);
 
+      // Intentar parsear para logging inicial (antes de validar firma)
+      let eventData: Record<string, unknown> = {};
+      try {
+        eventData = JSON.parse(rawBody);
+      } catch {}
+
+      // Log evento recibido (sin firma validada aún)
+      const referenceForLog = (eventData as any)?.data?.transaction?.reference || 'UNKNOWN';
+      await this.insertPaymentLog({
+        eventType: 'webhook_received',
+        reference: referenceForLog,
+        status: 'received',
+        payload: {
+          event: (eventData as any)?.event,
+          checksumPresent: !!checksum,
+          bodyLength: rawBody.length,
+          signatureStatus: 'pending_validation',
+        },
+        ipAddress,
+      });
+
       const firmaValida = await wompiService.verifyWebhookSignature(rawBody, checksum);
 
       if (!checksum || !firmaValida) {
         console.warn(`[Wompi] Firma inválida detectada para checksum: ${checksum}`);
+        await this.insertPaymentLog({
+          eventType: 'webhook_received',
+          reference: referenceForLog,
+          status: 'signature_invalid',
+          payload: { checksumPresent: !!checksum },
+          errorMessage: 'Firma HMAC inválida',
+          ipAddress,
+        });
         res.status(401).json({ error: 'Firma inválida' });
         return;
       }
@@ -39,6 +104,17 @@ export class WompiController {
       const event = (typeof req.body === 'object' && !Buffer.isBuffer(req.body)) ? req.body : JSON.parse(rawBody);
 
       if (event?.event !== 'transaction.updated' || event?.data?.transaction?.status !== 'APPROVED') {
+        // Log evento ignorado (no es APPROVED)
+        await this.insertPaymentLog({
+          eventType: 'webhook_ignored',
+          reference: (event as any)?.data?.transaction?.reference || 'UNKNOWN',
+          status: 'ignored',
+          payload: {
+            event: event?.event,
+            transactionStatus: (event as any)?.data?.transaction?.status,
+          },
+          ipAddress,
+        });
         res.status(200).json({ received: true });
         return;
       }
@@ -47,6 +123,22 @@ export class WompiController {
       const reference: string = transaction.reference;
       const amountInCents: number = transaction.amount_in_cents;
 
+      // Log transacción APPROVED recibida
+      await this.insertPaymentLog({
+        eventType: 'payment_approved',
+        reference,
+        transactionId: transaction.id,
+        amountCents: amountInCents,
+        status: 'processing',
+        payload: {
+          event: event.event,
+          transactionStatus: transaction.status,
+          paymentMethod: (transaction as any).payment_method,
+          paymentMethodType: (transaction as any).payment_method_type,
+        },
+        ipAddress,
+      });
+
       if (addonCreditsService.isAddonReference(reference)) {
         await addonCreditsService.applyPurchasedCredits(
           reference,
@@ -54,6 +146,14 @@ export class WompiController {
           amountInCents / 100,
           String(transaction.id)
         );
+        await this.insertPaymentLog({
+          eventType: 'addon_credits_applied',
+          reference,
+          transactionId: transaction.id,
+          amountCents: amountInCents,
+          status: 'completed',
+          ipAddress,
+        });
         res.status(200).json({ received: true });
         return;
       }
@@ -61,11 +161,20 @@ export class WompiController {
       const brandId = wompiService.extractBrandIdFromReference(reference);
       if (!brandId) {
         console.error('[Wompi] Referencia inválida:', reference);
+        await this.insertPaymentLog({
+          eventType: 'payment_approved',
+          reference,
+          transactionId: transaction.id,
+          amountCents: amountInCents,
+          status: 'failed',
+          errorMessage: 'Referencia inválida - no se pudo extraer brandId',
+          ipAddress,
+        });
         res.status(200).json({ received: true });
         return;
       }
 
-      if (brandId.startsWith('visitor_')) {
+      if (brandId.startsWith('visitor_') || brandId.startsWith('GUEST') || brandId.startsWith('FREE')) {
         const { data: pendingRegistration } = await supabaseAdmin
           .from('pending_registrations')
           .select('email, reference, plan, amount, status')
@@ -83,7 +192,19 @@ export class WompiController {
           })
           .eq('reference', reference);
 
-        if (updateError) console.error('[Wompi] Error al marcar registro:', updateError.message);
+        if (updateError) {
+          console.error('[Wompi] Error al marcar registro:', updateError.message);
+          await this.insertPaymentLog({
+            eventType: 'visitor_registration_update_failed',
+            reference,
+            transactionId: transaction.id,
+            amountCents: amountInCents,
+            status: 'failed',
+            errorMessage: updateError.message,
+            ipAddress,
+          });
+        }
+
         if (!updateError && wasPending && pendingRegistration?.email && ['BASIC', 'PRO'].includes((pendingRegistration.plan || '').toUpperCase())) {
           notificationService.sendCompleteRegistrationEmail({
             email: pendingRegistration.email,
@@ -92,6 +213,22 @@ export class WompiController {
             amount: pendingRegistration.amount,
           }).catch(err => console.error('[Wompi] Error email registro pendiente:', err));
         }
+
+        await this.insertPaymentLog({
+          eventType: wasPending ? 'visitor_registration_completed' : 'visitor_registration_already_paid',
+          reference,
+          transactionId: transaction.id,
+          amountCents: amountInCents,
+          brandId,
+          status: 'completed',
+          payload: {
+            email: pendingRegistration?.email,
+            plan: pendingRegistration?.plan,
+            wasPending,
+          },
+          ipAddress,
+        });
+
         res.status(200).json({ received: true });
         return;
       }
@@ -99,14 +236,44 @@ export class WompiController {
       const { months, plan, includesLanding } = wompiService.extractMetaFromReference(reference);
 
       if (reference.startsWith('TRIAL-')) {
-        const { data: updatedBrand } = await supabaseAdmin
+        const { data: updatedBrand, error: updateError } = await supabaseAdmin
           .from('brands')
           .update({ plan: 'TRIAL', trial_payment_status: 'active' })
           .eq('id', brandId)
           .select('id, email, name, email_verification_token, email_verified')
           .single();
 
+        if (updateError) {
+          console.error('[Wompi] Error activando trial:', updateError);
+          await this.insertPaymentLog({
+            eventType: 'trial_activation_failed',
+            reference,
+            transactionId: transaction.id,
+            amountCents: amountInCents,
+            brandId,
+            status: 'failed',
+            errorMessage: updateError.message,
+            ipAddress,
+          });
+          throw updateError;
+        }
+
         if (updatedBrand) {
+          await this.insertPaymentLog({
+            eventType: 'trial_activated',
+            reference,
+            transactionId: transaction.id,
+            amountCents: amountInCents,
+            brandId,
+            status: 'completed',
+            payload: {
+              plan: 'TRIAL',
+              email: updatedBrand.email,
+              emailVerified: updatedBrand.email_verified,
+            },
+            ipAddress,
+          });
+
           notificationService.sendWelcomeEmail(updatedBrand as any, true)
             .catch(err => console.error('[Wompi] Error email bienvenida trial:', err));
 
@@ -144,10 +311,40 @@ export class WompiController {
               reference,
               notes: `Pago automático Wompi. SOLO Landing Page. Ref: ${reference}. ID: ${transaction.id}`
             });
+            await this.insertPaymentLog({
+              eventType: 'landing_payment_recorded',
+              reference,
+              transactionId: transaction.id,
+              amountCents: amountInCents,
+              brandId,
+              status: 'completed',
+              payload: { plan: 'NONE', activateLanding },
+              ipAddress,
+            });
+          } else {
+            await this.insertPaymentLog({
+              eventType: 'landing_payment_duplicate',
+              reference,
+              transactionId: transaction.id,
+              amountCents: amountInCents,
+              brandId,
+              status: 'ignored',
+              payload: { plan: 'NONE', existingPaymentId: existingLandingPayment.id },
+              ipAddress,
+            });
           }
 
           if (activateLanding) {
             await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
+            await this.insertPaymentLog({
+              eventType: 'landing_activated',
+              reference,
+              transactionId: transaction.id,
+              brandId,
+              status: 'completed',
+              payload: { plan: 'NONE' },
+              ipAddress,
+            });
           }
         } else {
           const { data: currentBrand } = await supabaseAdmin.from('brands').select('plan, name, subscription_status, trial_end_date').eq('id', brandId).single();
@@ -156,10 +353,34 @@ export class WompiController {
             currentBrand?.plan === 'BASIC' &&
             effectivePlan === 'PRO';
 
+          if (isActualUpgrade) {
+            await this.insertPaymentLog({
+              eventType: 'upgrade_processing_started',
+              reference,
+              transactionId: transaction.id,
+              amountCents: amountInCents,
+              brandId,
+              status: 'processing',
+              payload: { fromPlan: 'BASIC', toPlan: effectivePlan, months, isActualUpgrade },
+              ipAddress,
+            });
+          }
+
           try {
             if (isActualUpgrade) {
               await planChangeService.markProcessing(reference, amountInCents / 100);
             }
+
+            await this.insertPaymentLog({
+              eventType: 'subscription_renewal_starting',
+              reference,
+              transactionId: transaction.id,
+              amountCents: amountInCents,
+              brandId,
+              status: 'processing',
+              payload: { plan: effectivePlan, months, isActualUpgrade, activateLanding },
+              ipAddress,
+            });
 
             await subscriptionService.renewSubscription(
               brandId,
@@ -179,24 +400,84 @@ export class WompiController {
               isActualUpgrade
             );
 
+            await this.insertPaymentLog({
+              eventType: 'subscription_renewal_completed',
+              reference,
+              transactionId: transaction.id,
+              amountCents: amountInCents,
+              brandId,
+              status: 'completed',
+              payload: { plan: effectivePlan, months, isActualUpgrade },
+              ipAddress,
+            });
+
             if (isActualUpgrade) {
               await planChangeService.markCompleted(reference, amountInCents / 100);
+              await this.insertPaymentLog({
+                eventType: 'upgrade_completed',
+                reference,
+                transactionId: transaction.id,
+                amountCents: amountInCents,
+                brandId,
+                status: 'completed',
+                payload: { fromPlan: 'BASIC', toPlan: effectivePlan, months },
+                ipAddress,
+              });
             }
           } catch (error) {
             if (isActualUpgrade) {
               await planChangeService.markFailed(reference, (error as Error)?.message || 'Error procesando upgrade Wompi');
+              await this.insertPaymentLog({
+                eventType: 'upgrade_failed',
+                reference,
+                transactionId: transaction.id,
+                amountCents: amountInCents,
+                brandId,
+                status: 'failed',
+                errorMessage: (error as Error)?.message || 'Error procesando upgrade Wompi',
+                payload: { fromPlan: 'BASIC', toPlan: effectivePlan, months },
+                ipAddress,
+              });
             }
             throw error;
           }
 
           if (activateLanding) {
             await supabaseAdmin.from('brands').update({ has_landing_page: true, landing_suspended_at: null }).eq('id', brandId);
+            await this.insertPaymentLog({
+              eventType: 'landing_activated_with_subscription',
+              reference,
+              transactionId: transaction.id,
+              brandId,
+              status: 'completed',
+              payload: { plan: effectivePlan },
+              ipAddress,
+            });
           }
         }
 
         const { data: updatedBrandForEmail } = await supabaseAdmin.from('brands').select('id, email, name, plan, subscription_end_date').eq('id', brandId).single();
         if (updatedBrandForEmail) {
+          await this.insertPaymentLog({
+            eventType: 'confirmation_email_triggered',
+            reference,
+            transactionId: transaction.id,
+            brandId,
+            status: 'completed',
+            payload: { email: updatedBrandForEmail.email, plan: updatedBrandForEmail.plan },
+            ipAddress,
+          });
           notificationService.sendRenewalConfirmation(updatedBrandForEmail as any).catch(err => console.error('[Wompi] Error confirmación email:', err));
+        } else {
+          await this.insertPaymentLog({
+            eventType: 'confirmation_email_skipped',
+            reference,
+            transactionId: transaction.id,
+            brandId,
+            status: 'ignored',
+            payload: { reason: 'brand_not_found_for_email' },
+            ipAddress,
+          });
         }
       }
       res.status(200).json({ received: true });

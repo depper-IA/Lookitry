@@ -110,14 +110,15 @@ export function DashboardRouteShell({
     brandData?.subscriptionStatus !== 'expiring_soon'
   );
 
-  if (trialExpired || brandData?.trialPaymentStatus === 'pending_payment') {
+  if (trialExpired || brandData?.trialPaymentStatus === 'pending_payment' ||
+      (brandData?.plan === 'TRIAL' && !brandData?.trialEndDate)) {
     return (
       <SuspensionModal
         brandName={brandData!.name}
         brandEmail={brandData!.email}
         plan={brandData!.plan}
         isTrialExpired={trialExpired && brandData?.trialPaymentStatus !== 'pending_payment'}
-        isTrialPending={brandData?.trialPaymentStatus === 'pending_payment'}
+        isTrialPending={brandData?.trialPaymentStatus === 'pending_payment' || (brandData?.plan === 'TRIAL' && !brandData?.trialEndDate)}
       />
     );
   }
