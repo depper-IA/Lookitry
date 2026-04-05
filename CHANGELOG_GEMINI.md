@@ -1,14 +1,40 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Sammy: transcripción de audios de Telegram con Groq
+
+### Cambios Realizados
+- Se añadió soporte para mensajes `voice` y `audio` de Telegram en `sammy`, con descarga del archivo desde Telegram Bot API.
+- Se implementó transcripción con Groq STT (`whisper-large-v3-turbo`) y reenvío automático de la transcripción a la sesión actual de OpenCode.
+- Se agregó `MAX_AUDIO_FILE_SIZE_MB` a la configuración para limitar el tamaño del audio aceptado.
+- Se actualizó la documentación de `sammy` para reflejar el soporte de audios por Telegram.
+
+### Archivos Modificados
+- `sammy/.env`
+- `sammy/.env.example`
+- `sammy/README.md`
+- `sammy/src/audio/groq.ts`
+- `sammy/src/bot/index.ts`
+- `sammy/src/config/index.ts`
+- `sammy/src/index.ts`
+- `sammy/src/types/index.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Permitir que Sammy reciba notas de voz y audios de Telegram, los convierta a texto con Groq y los use como instrucciones reales dentro de OpenCode.
+
+---
+
 ## [2026-04-05] - Fix flujo PayPal para usuarios autenticados
 
 ### Cambios Realizados
 - PayPal ahora redirige SIEMPRE a `/pago-exitoso` para todos los usuarios (autenticados y nuevos)
 - Antes: usuarios autenticados iban a `/dashboard/checkout` que no capturaba correctamente el token de PayPal
-- Ahora: todos van a `/pago-exitoso` que tiene la lógica de captura y redirección correcta (onboarding para nuevos usuarios, dashboard para existentes)
+- Fix adicional: la lógica de redirect en `pago-exitoso` usaba `isStandardVisitor` que incluía usuarios autenticados, mandándolos a onboarding en vez de dashboard
+- Ahora: usuarios con token van a `/dashboard`, usuarios nuevos van a `/onboarding-post-pago`
 
 ### Archivos Modificados
 - `backend/src/controllers/paypal.controller.ts`
+- `frontend/src/app/pago-exitoso/page.tsx`
 
 ---
 
