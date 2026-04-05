@@ -24,11 +24,25 @@ export default function GoogleSetupPage() {
     }
   };
 
+  const handleSuccess = async () => {
+    const trialRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/trial`, {
+      credentials: 'include',
+    });
+    const trialData = await trialRes.json();
+
+    if (trialData?.requiresTrialPayment) {
+      router.push('/trial-checkout');
+    } else {
+      router.push('/dashboard');
+    }
+  };
+
   return (
     <OnboardingForm
       title="Configura tu marca"
       subtitle="Tu cuenta fue creada con Google. Solo necesitamos el nombre de tu marca y la URL de tu probador."
       onSubmit={handleSubmit}
+      onSuccess={handleSuccess}
       loginLink="/login"
     />
   );
