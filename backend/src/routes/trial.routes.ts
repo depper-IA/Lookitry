@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { supabaseAdmin } from '../config/supabase';
 import { wompiService } from '../services/wompi.service';
 
