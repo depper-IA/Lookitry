@@ -1,5 +1,26 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Dashboard: Modal de conversion para trial vencido
+
+### Problema
+- Usuarios con trial vencido no tenian opcion clara de compra en dashboard
+- Necesidad de ofrecer upgrade a Basic o Pro de forma amigable
+
+### Solucion
+- **Dashboard page.tsx**: Modal de conversion automatico cuando trial_expired = true
+- Modal ofrece opciones "Comprar Pro", "Comprar Basic" y "Continuar al dashboard"
+- Implementado usando getSubscriptionDisplayState().isTrialExpired
+
+### Comportamiento
+- Si el usuario tiene trial vencido, al entrar al dashboard ve modal
+- Puede comprar directamente Pro o Basic
+- Opcionalmente puede cerrar modal y continuar al dashboard
+
+### Archivos modificados
+- `frontend/src/app/dashboard/page.tsx`
+
+---
+
 ## [2026-04-05] - Checkout: Ocultar TRIAL para usuarios con cuenta existente
 
 ### Problema
