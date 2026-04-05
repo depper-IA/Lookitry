@@ -1,5 +1,134 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Documentación Leads & CRM + Variables de Entorno
+
+### Cambios Realizados
+- Actualizado `REGLAS_IMPORTANTES.md`:
+  - Nueva sección 8.5: Sistema de Lead Generation & CRM
+- Actualizado `TECH_STACK.md`:
+  - Nueva sección 7.9: Sistema de Lead Generation & CRM (completo)
+  - Nuevas tablas 5.24-5.28: `leads`, `lead_searches`, `lead_outreach_log`, `social_api_configs`, `google_places_quota`
+  - Sección 7.5: Nuevos servicios `lead.service`, `lead-search.service`, `lead-generation.service`, `social-api-config.service`
+  - Sección 10.2: Añadidas variables `GOOGLE_PLACES_API_KEY` y `BREVO_API_KEY`
+
+### Archivos Modificados
+- `REGLAS_IMPORTANTES.md`
+- `TECH_STACK.md`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+- Documentación obligatoria tras implementar sistema de Leads & CRM
+
+---
+
+## [2026-04-05] - Sistema de Lead Generation + CRM
+
+### Cambios Realizados
+- Nuevo sistema de gestión de leads y CRM:
+  - `backend/src/services/lead.service.ts`: CRUD de leads, stats, outreach logging
+  - `backend/src/services/lead-search.service.ts`: Gestión de búsquedas guardadas
+  - `backend/src/services/lead-generation.service.ts`: Integración Google Places con rate limiting (500/día, 28k/mes)
+  - `backend/src/services/social-api-config.service.ts`: Gestión de credenciales Meta/TikTok API
+  - `backend/src/controllers/admin/lead.admin.controller.ts`: Endpoints REST para todo el sistema
+  - `backend/src/routes/admin.routes.ts`: Nuevas rutas `/api/admin/leads/*`, `/api/admin/lead-searches/*`, `/api/admin/social-api-configs/*`
+  - `supabase/migrations/20260405_leads_crm.sql`: Tablas `leads`, `lead_searches`, `lead_outreach_log`, `social_api_configs`, `google_places_quota`
+- Frontend:
+  - `frontend/src/app/admin/leads/page.tsx`: Panel de leads con filtros, status y acciones
+  - `frontend/src/app/admin/lead-searches/page.tsx`: Configuración de búsquedas en Google Places + quota dashboard
+  - `frontend/src/app/admin/social-api-config/page.tsx`: Panel de configuración de APIs sociales (Meta/TikTok)
+  - `frontend/src/app/admin/layout.tsx`: Nueva sección "Leads & CRM" en navegación
+
+### Alcance Geográfico
+- Colombia: Cali (visitas), Medellín, Bogotá (marketing)
+- USA: Ciudades hispanas (Miami, LA, NYC, Houston, Dallas, Chicago)
+- España: Madrid, Barcelona
+
+### Pendiente
+- Configurar `GOOGLE_PLACES_API_KEY` en producción para activar búsquedas
+- Aprobar Meta Business SDK y TikTok Marketing API para automatizar DMs
+
+### Archivos Modificados
+- `backend/src/services/lead.service.ts` (nuevo)
+- `backend/src/services/lead-search.service.ts` (nuevo)
+- `backend/src/services/lead-generation.service.ts` (nuevo)
+- `backend/src/services/social-api-config.service.ts` (nuevo)
+- `backend/src/controllers/admin/lead.admin.controller.ts` (nuevo)
+- `backend/src/routes/admin.routes.ts`
+- `supabase/migrations/20260405_leads_crm.sql` (nuevo)
+- `frontend/src/app/admin/leads/page.tsx` (nuevo)
+- `frontend/src/app/admin/lead-searches/page.tsx` (nuevo)
+- `frontend/src/app/admin/social-api-config/page.tsx` (nuevo)
+- `frontend/src/app/admin/layout.tsx`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+- Sistema para generar leads y hacer outreach sin depender de plataformas externas de scraping
+- Prepara infraestructura para automatizar Instagram/TikTok cuando se obtengan los permisos de las APIs
+
+---
+
+## [2026-04-05] - Alineación del retorno PayPal con onboarding post-pago
+
+### Cambios Realizados
+- `backend/src/controllers/paypal.controller.ts` ahora usa el mismo criterio que Wompi para checkout público: si el pago corresponde a un registro nuevo, PayPal retorna directo a `/onboarding-post-pago?ref=...&method=paypal` en lugar de pasar por `/pago-exitoso`.
+- `backend/src/controllers/paypal.controller.ts` dejó de crear `pending_registrations` para sesiones autenticadas solo por llevar `email` en query, evitando cruces entre checkout público y cuenta ya iniciada.
+- `backend/src/services/paypal.service.ts` añade `payment_source.paypal.experience_context` con `return_url` y `cancel_url`, para que PayPal use explícitamente el destino correcto del flujo.
+- `frontend/src/app/onboarding-post-pago/page.tsx` ahora captura el `token` de PayPal al aterrizar desde el checkout, espera la confirmación del pago y envía `method=paypal`/`orderId` al completar el registro.
+- `backend/src/__tests__/paypal.controller.test.ts` incluye cobertura para verificar que el checkout público de PayPal apunte a onboarding, igual que Wompi.
+
+### Archivos Modificados
+- `backend/src/controllers/paypal.controller.ts`
+- `backend/src/services/paypal.service.ts`
+- `frontend/src/app/onboarding-post-pago/page.tsx`
+- `backend/src/__tests__/paypal.controller.test.ts`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+- El flujo de PayPal seguía regresando al home o quedándose detenido porque su retorno público no estaba alineado con el patrón de Wompi. La corrección fuerza el mismo destino y la misma secuencia de activación para registros nuevos.
+
+---
+
+## [2026-04-05] - Sistema de Email Marketing con Brevo
+
+### Cambios Realizados
+- Nuevo sistema de campañas de email marketing via Brevo (reemplaza workflow n8n):
+  - `backend/src/services/brevo-campaign.service.ts`: Wrapper Brevo SMTP + API tracking
+  - `backend/src/services/email-campaign.service.ts`: Batching (50 emails/10 min), rate limit (300/día), scheduling
+  - `backend/src/controllers/admin/email-campaign.admin.controller.ts`: CRUD completo de campañas
+  - `backend/src/jobs/email-campaign.job.ts`: Job que procesa campaigns programadas cada 5 min
+  - `backend/src/routes/admin.routes.ts`: Nuevas rutas `/api/admin/email-campaigns/*`
+  - `supabase/migrations/20260405_email_campaigns.sql`: Tablas `email_campaigns` y `email_campaign_recipients`
+- Frontend:
+  - `frontend/src/app/admin/email-campaigns/page.tsx`: UI para crear, previsualizar, programar y monitorear campañas
+  - `frontend/src/app/admin/layout.tsx`: Añadida navegación a Email Campaigns
+- Documentación:
+  - `REGLAS_IMPORTANTES.md`: Nueva sección 8.4 sobre Email Marketing con Brevo
+  - `TECH_STACK.md`: Sección 7.8 sobre Sistema de Email Marketing
+  - `docs/GTM_STRATEGY.md`: Actualizado para reflejar nuevo sistema
+- Eliminado workflow obsoleto: `docs/n8n/workflows/beta_launch_email_campaign.json`
+
+### Archivos Modificados
+- `backend/src/services/brevo-campaign.service.ts` (nuevo)
+- `backend/src/services/email-campaign.service.ts` (nuevo)
+- `backend/src/controllers/admin/email-campaign.admin.controller.ts` (nuevo)
+- `backend/src/jobs/email-campaign.job.ts` (nuevo)
+- `backend/src/routes/admin.routes.ts`
+- `backend/src/scheduler.ts`
+- `supabase/migrations/20260405_email_campaigns.sql` (nuevo)
+- `frontend/src/app/admin/email-campaigns/page.tsx` (nuevo)
+- `frontend/src/app/admin/layout.tsx`
+- `REGLAS_IMPORTANTES.md`
+- `TECH_STACK.md`
+- `docs/GTM_STRATEGY.md`
+- `docs/n8n/workflows/beta_launch_email_campaign.json` (eliminado)
+
+### Motivo
+- Workflow de n8n para Beta Launch Email Campaign nunca fue importado a n8n
+- Sistema nuevo permite ejecutar campañas desde el panel admin sin depender de n8n
+- Rate limiting incorporado para no superar límite gratuito de Brevo (300/día)
+
+---
+
 ## [2026-04-05] - Corrección docs y fix bugs en sistema de referidos
 
 ### Cambios Realizados

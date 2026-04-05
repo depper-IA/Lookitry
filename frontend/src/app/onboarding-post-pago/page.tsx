@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,7 +22,9 @@ function OnboardingContent() {
 
   const plan = searchParams.get('plan') || 'PRO';
   const months = Number(searchParams.get('months') || 1);
-  const ref = searchParams.get('ref') || '';
+  const refFromQuery = searchParams.get('ref') || '';
+  const paymentMethod = searchParams.get('method') || '';
+  const paypalOrderId = searchParams.get('token') || '';
   const isTrial = searchParams.get('isTrial') === 'true';
 
   const [form, setForm] = useState({
@@ -36,6 +38,62 @@ function OnboardingContent() {
   const [success, setSuccess] = useState(false);
   const [slugSuggested, setSlugSuggested] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [resolvedRef, setResolvedRef] = useState(refFromQuery);
+  const [confirmingPayment, setConfirmingPayment] = useState(paymentMethod === 'paypal' && Boolean(paypalOrderId));
+  const [paymentChecked, setPaymentChecked] = useState(paymentMethod !== 'paypal' || !paypalOrderId);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const confirmPaypalPayment = async () => {
+      if (paymentMethod !== 'paypal' || !paypalOrderId) {
+        setPaymentChecked(true);
+        setConfirmingPayment(false);
+        return;
+      }
+
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+        const res = await fetch(`${apiUrl}/api/payments/paypal/capture`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: paypalOrderId,
+            reference: refFromQuery || undefined,
+          }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || data.error || 'No se pudo confirmar el pago con PayPal');
+        }
+
+        if (!cancelled) {
+          if (data?.reference) {
+            setResolvedRef(data.reference);
+          }
+          setError('');
+          setPaymentChecked(true);
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          setError(err?.message || 'No se pudo confirmar el pago con PayPal');
+          setPaymentChecked(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setConfirmingPayment(false);
+        }
+      }
+    };
+
+    confirmPaypalPayment();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [paymentMethod, paypalOrderId, refFromQuery]);
 
   const suggestSlug = () => {
     const base = form.name ? slugify(form.name) : 'mi-marca';
@@ -57,6 +115,11 @@ function OnboardingContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!paymentChecked || !resolvedRef) {
+      setError('Todavia no pudimos validar tu pago. Espera unos segundos o recarga la pagina.');
+      return;
+    }
 
     if (!form.name.trim()) {
       setError('El nombre de tu marca es requerido');
@@ -124,10 +187,12 @@ function OnboardingContent() {
           name: form.name.trim(),
           slug: form.slug.trim(),
           password: form.password,
-          reference: ref,
+          reference: resolvedRef,
           plan,
           months,
           isTrial,
+          method: paymentMethod === 'paypal' || resolvedRef.startsWith('PAYPAL-') ? 'paypal' : 'wompi',
+          orderId: paymentMethod === 'paypal' ? paypalOrderId : undefined,
         }),
       });
 
@@ -200,6 +265,15 @@ function OnboardingContent() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
+              {confirmingPayment && (
+                <div className="rounded-xl border border-[#FF5C3A]/20 bg-[#FF5C3A]/5 px-4 py-4 text-[#bbb] flex items-start gap-3">
+                  <Loader2 className="w-4 h-4 mt-0.5 text-[#FF5C3A] animate-spin" />
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-tight text-[#FF5C3A]">Confirmando pago PayPal</p>
+                    <p className="text-[12px] leading-relaxed mt-1">Estamos validando tu pago antes de crear la cuenta. No cierres esta ventana.</p>
+                  </div>
+                </div>
+              )}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1 leading-none">
                   <Store className="w-3 h-3 text-[#FF5C3A]" /> Nombre de tu marca
@@ -281,7 +355,7 @@ function OnboardingContent() {
 
               <button
                 type="submit"
-                disabled={loading || success}
+                disabled={loading || success || confirmingPayment || !paymentChecked}
                 className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[#FF5C3A] font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all active:scale-95 hover:bg-[#ff6c4d] disabled:opacity-50"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-[#FF5C3A] to-[#ff7a5f] opacity-100 transition-opacity" />

@@ -137,6 +137,7 @@ Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 50
 
 - **PROHIBIDO crear nuevos workflows** en n8n a menos que el usuario lo apruebe explícitamente
 - **SOLO usar workflows existentes** que contengan la etiqueta `SaaS`
+- **Email marketing NO se maneja en n8n** — ver sección 8.4
 
 ### Webhooks activos utilizados por el backend:
 
@@ -164,14 +165,64 @@ Para detalles técnicos exhaustivos, referirse siempre a `TECH_STACK.md`.
 - **Registro:** Turnstile -> DB -> Email SMTP.
 - **Pagos (Wompi):** Webhooks validan firma e inician `renewSubscription`.
 - **Upgrade:** Se aplica crédito prorrateado del plan anterior. El nuevo plan inicia inmediatamente.
-- **Referidos:** El reward vigente es `500` créditos extra solo para el referente y se acredita automáticamente tras el primer pago mensual elegible del referido.
+- **Referidos:** El reward vigente es `500` créditos para el referente y `100` créditos para el referido. Se acreditan automáticamente tras el primer pago mensual elegible del referido.
 
 ### 8.3 Infraestructura
 - **Docker:** Frontend, Backend, n8n y MinIO corren en contenedores aislados en el VPS (`31.220.18.39`).
 - **Almacenamiento:** Todas las imágenes (selfies, productos, resultados) residen en **MinIO**.
 
+### 8.4 Sistema de Email Marketing (Brevo)
+- **Proveedor:** Brevo SMTP (no nodemailer ni workflows de n8n)
+- **Límite gratuito:** 300 emails/día (no superar)
+- **Rate limiting:** 50 emails por batch con delay de 10 min entre batches
+- **Tablas DB:** `email_campaigns`, `email_campaign_recipients`
+- **Job:** `email-campaign.job.ts` procesa campaigns programadas cada 5 min
+- **Flujo:**
+  1. Admin crea campaña (nombre, asunto, template HTML con variables `{{firstName}}`, `{{brandName}}`)
+  2. Admin previsualiza con 3 recipients de ejemplo
+  3. Admin elige "Ejecutar ahora" o "Programar"
+  4. Sistema procesa en batches respetando rate limit
+- **Tracking:** Brevo API retorna opens/clicks → actualiza `email_campaign_recipients`
+
+### 8.5 Sistema de Lead Generation & CRM
+- **Fuente de leads:** Google Places API (tiendas de moda, accesorios, boutiques)
+- **Scope geográfico:** Colombia (Cali, Medellín, Bogotá), USA (ciudades hispanas), España (Madrid, Barcelona)
+- **Filtro:** Solo negocios con presencia online (website o redes sociales)
+- **Rate limiting Google Places:** 500 requests/día, 28k/mes (free tier)
+- **Tablas DB:** `leads`, `lead_searches`, `lead_outreach_log`, `social_api_configs`, `google_places_quota`
+- **Servicios:**
+  - `lead.service.ts`: CRUD leads, stats, outreach logging
+  - `lead-search.service.ts`: Gestión búsquedas guardadas
+  - `lead-generation.service.ts`: Google Places con rate limiting
+  - `social-api-config.service.ts`: Gestión credenciales Meta/TikTok
+- **Panel Admin:** `/admin/leads`, `/admin/lead-searches`, `/admin/social-api-config`
+- **Integraciones futuras (pendiente usuario):**
+  - Meta Business SDK (requiere aplicación a Meta Developers)
+  - TikTok Marketing API (requiere aplicación a TikTok Developers)
+
 ---
 
-##不走
+## 9. Razonamiento Sistemático
+
+Para problemas complejos, multi-etapa o con alcance inicialmente unclear, **cargar el skill `sequential-thinking`** para razonamiento paso a paso con capacidad de revisar y ajustar el enfoque.
+
+### 9.1 Graph de Memoria (memory_*)
+
+Al iniciar cada sesión:
+1. Si el proyecto tiene contexto previo en memoria, **consultar con `memory_search_nodes`** usando el nombre del proyecto
+2. Si hay decisiones de diseño, preferencias del usuario o contexto relevante, **recuperar con `memory_open_nodes`**
+
+Durante la sesión, guardar en memoria:
+- Decisiones arquitectónicas importantes
+- Preferencias del usuario sobre el proyecto
+- Contexto de deuda técnica o pendientes
+
+Usar `memory_search_nodes` antes de asumir o preguntar algo que ya esté grabado.
+
+### 9.2 Context7 (documentación de librerías)
+
+**Antes de escribir o revisar código que use una librería/framework externo**, llamar a `context7_resolve-library-id` seguido de `context7_query-docs` para obtener documentación fresca y ejemplos de uso.
+
+---
 
 **Última actualización:** Abril 2026

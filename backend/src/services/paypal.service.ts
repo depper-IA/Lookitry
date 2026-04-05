@@ -109,6 +109,17 @@ export class PaypalService {
       `${baseUrl}/v2/checkout/orders`,
       {
         intent: 'CAPTURE',
+        payment_source: {
+          paypal: {
+            experience_context: {
+              brand_name: 'Lookitry',
+              landing_page: 'BILLING',
+              user_action: 'PAY_NOW',
+              return_url: returnUrl || `${process.env.FRONTEND_URL}/pago-exitoso?method=paypal&ref=${reference}`,
+              cancel_url: cancelUrl || `${process.env.FRONTEND_URL}/checkout`
+            }
+          }
+        },
         purchase_units: [
           {
             reference_id: reference,

@@ -458,6 +458,94 @@ Este documento es la **fuente de verdad técnica** y arquitectura del sistema. D
 | `payments` | boolean DEFAULT false | |
 | `created_at`, `updated_at` | timestamptz | |
 
+### 5.24 `leads` (Lead Generation CRM)
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | uuid PK | |
+| `business_name` | text | Nombre del negocio |
+| `contact_name` | text | Contacto principal |
+| `email` | text | Email del lead |
+| `phone` | text | Teléfono |
+| `website` | text | Sitio web |
+| `facebook_url` | text | Página de Facebook |
+| `instagram_handle` | text | Instagram |
+| `tiktok_handle` | text | TikTok |
+| `address` | text | Dirección física |
+| `city` | text | Ciudad |
+| `country` | text | País (CO, US, ES) |
+| `latitude`, `longitude` | numeric | Coordenadas |
+| `place_id` | text | Google Place ID |
+| `rating` | numeric | Rating Google |
+| `reviews_count` | integer | Total reviews |
+| `status` | enum | NEW, CONTACTED, QUALIFIED, INTERESTED, CONVERTED, LOST |
+| `score` | integer DEFAULT 0 | Score de interés (0-100) |
+| `notes` | text | Notas internas |
+| `last_outreach_at` | timestamptz | Último outreach |
+| `search_id` | uuid FK → lead_searches | Nullable, cómo fue encontrado |
+| `source` | text | google_places, manual, import |
+| `created_at`, `updated_at` | timestamptz | |
+
+### 5.25 `lead_searches` (Búsquedas Guardadas)
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | uuid PK | |
+| `name` | text | Nombre de la búsqueda |
+| `query` | text | Término de búsqueda |
+| `city` | text | Ciudad |
+| `country` | text | País |
+| `radius_km` | integer DEFAULT 10 | Radio en km |
+| `min_rating` | numeric DEFAULT 0 | Rating mínimo |
+| `has_website` | boolean DEFAULT false | Solo con website |
+| `has_social` | boolean DEFAULT false | Solo con redes sociales |
+| `status` | enum | ACTIVE, PAUSED, COMPLETED |
+| `leads_found` | integer DEFAULT 0 | Contador |
+| `created_by` | uuid FK → admins | |
+| `created_at`, `updated_at` | timestamptz | |
+
+### 5.26 `lead_outreach_log` (Historial de Outreach)
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | uuid PK | |
+| `lead_id` | uuid FK → leads | |
+| `type` | enum | EMAIL, FACEBOOK_DM, INSTAGRAM_DM, TIKTOK_DM, CALL, NOTE |
+| `subject` | text | Asunto (para emails) |
+| `content` | text | Contenido del mensaje |
+| `status` | enum | PENDING, SENT, DELIVERED, OPENED, REPLIED, FAILED |
+| `sent_at` | timestamptz | |
+| `opened_at`, `replied_at` | timestamptz | |
+| `error_message` | text | |
+| `created_by` | uuid FK → admins | |
+| `created_at` | timestamptz | |
+
+### 5.27 `social_api_configs` (Credenciales Social Media)
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | uuid PK | |
+| `platform` | enum | META, TIKTOK |
+| `app_id` | text | App ID de la plataforma |
+| `app_secret` | text | App Secret |
+| `access_token` | text | Access token activo |
+| `access_token_expires_at` | timestamptz | |
+| `refresh_token` | text | |
+| `account_id` | text | ID de la cuenta de negocio |
+| `account_name` | text | Nombre de la cuenta |
+| `status` | enum | ACTIVE, EXPIRED, INVALID, PENDING |
+| `last_test_at` | timestamptz | |
+| `last_error` | text | |
+| `created_at`, `updated_at` | timestamptz | |
+
+### 5.28 `google_places_quota` (Rate Limiting)
+| Campo | Tipo | Notas |
+|-------|------|-------|
+| `id` | integer PK | Singleton (id=1) |
+| `daily_used` | integer DEFAULT 0 | Requests hoy |
+| `daily_limit` | integer DEFAULT 500 | Límite diario |
+| `monthly_used` | integer DEFAULT 0 | Requests este mes |
+| `monthly_limit` | integer DEFAULT 28000 | Límite mensual |
+| `last_reset_daily` | date | Último reset diario |
+| `last_reset_monthly` | date | Último reset mensual |
+| `updated_at` | timestamptz | |
+
 ---
 
 ## 6. Arquitectura n8n — El Motor de IA
@@ -539,6 +627,12 @@ Motor de reglas de prompt por categoría de producto con 15+ categorías:
 | `coupon.service` | Validación y redención de cupones |
 | `referral.service` | Conversión automática de referidos y acreditación de 500 créditos extra al referente |
 | `review.service` | Gestión de reviews |
+| `brevo-campaign.service` | Wrapper Brevo SMTP + API tracking |
+| `email-campaign.service` | Lógica de campañas: batching, rate limit, scheduling |
+| `lead.service` | CRUD leads, stats, outreach logging |
+| `lead-search.service` | Gestión búsquedas guardadas |
+| `lead-generation.service` | Google Places con rate limiting |
+| `social-api-config.service` | Gestión credenciales Meta/TikTok |
 
 ### 7.6 Subsistema de Auditoría (`auditor/`)
 - Payments audit
@@ -550,6 +644,43 @@ Motor de reglas de prompt por categoría de producto con 15+ categorías:
 ### 7.7 Sistema de Email
 - Templates HTML brandeados (622 líneas).
 - Verificación de email, recovery, notificaciones de pago, alertas de uso.
+
+### 7.8 Sistema de Email Marketing (Campañas Brevo)
+- **Tablas:** `email_campaigns`, `email_campaign_recipients`
+- **Arquitectura:**
+  - `brevo-campaign.service.ts`: Wrapper Brevo SMTP + API de tracking
+  - `email-campaign.service.ts`: Batching, rate limiting (50 emails/10 min), scheduling
+  - `email-campaign.job.ts`: Cron job cada 5 min para procesar campaigns programadas
+- **Admin UI:** `/admin/email-campaigns` para crear, previsualizar, programar y monitorear
+- **Variables de template:** `{{firstName}}`, `{{brandName}}`, `{{email}}`, `{{plan}}`
+- **Límite:** 300 emails/día (free tier Brevo)
+
+### 7.9 Sistema de Lead Generation & CRM
+- **Propósito:** Buscar potenciales clientes (tiendas de moda, accesorios, boutiques) y gestionar su ciclo de vida
+- **Fuente:** Google Places API
+- **Scope geográfico:** Colombia (Cali visitas, Medellín/Bogotá marketing), USA (ciudades hispanas), España (Madrid/Barcelona)
+- **Filtro:** Solo negocios con presencia online (website o redes sociales verificadas)
+- **Rate limiting:** 500 requests/día, 28k/mes (free tier Google Places)
+- **Tablas:**
+  - `leads`: Datos del lead (empresa, contacto, ubicación, status, score)
+  - `lead_searches`: Búsquedas guardadas con configuración de ubicación/categoría
+  - `lead_outreach_log`: Historial de outreach (emails, DMs, notas)
+  - `social_api_configs`: Credenciales Meta/TikTok (pendiente activación)
+  - `google_places_quota`: Tracking de uso de quota Google Places
+- **Servicios backend:**
+  - `lead.service.ts`: CRUD leads, stats, outreach logging
+  - `lead-search.service.ts`: Gestión búsquedas guardadas
+  - `lead-generation.service.ts`: Google Places con rate limiting
+  - `social-api-config.service.ts`: Gestión credenciales Meta/TikTok
+- **Admin UI:**
+  - `/admin/leads`: Panel de leads con filtros por status, país, score
+  - `/admin/lead-searches`: Búsquedas guardadas + dashboard de quota Google
+  - `/admin/social-api-config`: Configuración de APIs sociales (Meta/TikTok)
+- **Lead Statuses:** NEW, CONTACTED, QUALIFIED, INTERESTED, CONVERTED, LOST
+- **Integraciones pendientes (requiere usuario):**
+  - Meta Business SDK: Aplicar en https://developers.facebook.com
+  - TikTok Marketing API: Aplicar en https://developers.tiktok.com
+  - Ambas pueden tomar semanas en aprobación
 
 ---
 
@@ -644,6 +775,8 @@ LOOKITRY/
 | `WOMPI_PUBLIC_KEY`, `WOMPI_PRIVATE_KEY`, `WOMPI_EVENTS_SECRET`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_ENABLED` | Configuración Wompi |
 | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_SANDBOX`, `PAYPAL_WEBHOOK_ID` | PayPal sandbox |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth |
+| `GOOGLE_PLACES_API_KEY` | API key Google Places (Lead Generation) |
+| `BREVO_API_KEY` | API key Brevo SMTP |
 
 ---
 

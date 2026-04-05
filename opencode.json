@@ -54,6 +54,15 @@
       "environment": {
         "CONTEXT7_API_KEY": "***REMOVED-SECRET***"
       }
+    },
+    "memory": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@pepk/mcp-memory-sqlite@latest"
+      ],
+      "enabled": true
     }
   }
 }

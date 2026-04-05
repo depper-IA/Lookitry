@@ -38,6 +38,38 @@ import { getAdminReferrals, creditReferralBonus } from '../controllers/referral.
 import { getPaymentSettings, updatePaymentSettings } from '../controllers/paymentSettings.controller';
 import { getAdminNotifications, getNotificationPreferences, updateNotificationPreference } from '../controllers/notifications.controller';
 import { getTrialCampaign, createTrialCampaign, updateTrialCampaign } from '../controllers/trialCampaign.controller';
+import {
+  getEmailCampaigns,
+  getEmailCampaign,
+  createEmailCampaign,
+  previewEmailCampaign,
+  launchEmailCampaign,
+  scheduleEmailCampaign,
+  cancelEmailCampaign,
+  deleteEmailCampaign,
+  getEmailCampaignQuota,
+  verifyBrevoConnection,
+} from '../controllers/admin/email-campaign.admin.controller';
+import {
+  getLeads,
+  getLead,
+  createLead,
+  updateLead,
+  deleteLead,
+  getLeadStats,
+  getLeadsByCity,
+  addOutreachLog,
+  getLeadSearches,
+  createLeadSearch,
+  runLeadSearch,
+  deleteLeadSearch,
+  getGooglePlacesQuota,
+  getSocialApiConfigs,
+  upsertSocialApiConfig,
+  testSocialApiConfig,
+  deleteSocialApiConfig,
+  setSocialApiActive,
+} from '../controllers/admin/lead.admin.controller';
 
 const router = Router();
 
@@ -151,5 +183,41 @@ router.patch('/subscriptions/:id/reactivate', requirePermission('subscriptions')
 // Programa de Referidos
 router.get('/referrals', requirePermission('brands'), getAdminReferrals);
 router.post('/referrals/:referralId/credit', requirePermission('brands'), creditReferralBonus);
+
+// Email Campaigns (Brevo)
+router.get('/email-campaigns/quota', requirePermission('marketing'), getEmailCampaignQuota);
+router.get('/email-campaigns/brevo-status', requirePermission('marketing'), verifyBrevoConnection);
+router.get('/email-campaigns', requirePermission('marketing'), getEmailCampaigns);
+router.get('/email-campaigns/:id', requirePermission('marketing'), getEmailCampaign);
+router.post('/email-campaigns', requirePermission('marketing'), createEmailCampaign);
+router.post('/email-campaigns/:id/preview', requirePermission('marketing'), previewEmailCampaign);
+router.post('/email-campaigns/:id/launch', requirePermission('marketing'), launchEmailCampaign);
+router.post('/email-campaigns/:id/schedule', requirePermission('marketing'), scheduleEmailCampaign);
+router.post('/email-campaigns/:id/cancel', requirePermission('marketing'), cancelEmailCampaign);
+router.delete('/email-campaigns/:id', requirePermission('marketing'), deleteEmailCampaign);
+
+// Lead Generation & CRM
+router.get('/leads/stats', requirePermission('brands'), getLeadStats);
+router.get('/leads/by-city', requirePermission('brands'), getLeadsByCity);
+router.get('/leads', requirePermission('brands'), getLeads);
+router.get('/leads/:id', requirePermission('brands'), getLead);
+router.post('/leads', requirePermission('brands'), createLead);
+router.patch('/leads/:id', requirePermission('brands'), updateLead);
+router.delete('/leads/:id', requirePermission('brands'), deleteLead);
+router.post('/leads/:id/outreach', requirePermission('brands'), addOutreachLog);
+
+// Lead Searches
+router.get('/lead-searches', requirePermission('brands'), getLeadSearches);
+router.post('/lead-searches', requirePermission('brands'), createLeadSearch);
+router.post('/lead-searches/:id/run', requirePermission('brands'), runLeadSearch);
+router.delete('/lead-searches/:id', requirePermission('brands'), deleteLeadSearch);
+router.get('/lead-searches/quota', requirePermission('brands'), getGooglePlacesQuota);
+
+// Social API Configuration
+router.get('/social-api-configs', requirePermission('settings'), getSocialApiConfigs);
+router.post('/social-api-configs', requirePermission('settings'), upsertSocialApiConfig);
+router.post('/social-api-configs/:platform/test', requirePermission('settings'), testSocialApiConfig);
+router.patch('/social-api-configs/:platform/active', requirePermission('settings'), setSocialApiActive);
+router.delete('/social-api-configs/:platform', requirePermission('settings'), deleteSocialApiConfig);
 
 export default router;
