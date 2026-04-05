@@ -48,15 +48,16 @@ async function apiFetch<T>(
   const data = await res.json().catch(() => ({}));
 
   if (res.status === 401) {
-    // En rutas publicas, un visitante anonimo puede recibir 401 en /brands/me
-    // sin que eso implique una sesion rota. Solo invalidamos/redirigimos si
-    // realmente habia una sesion local previa.
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
     const hasLocalSession = !!authService.getBrand() || !!authService.getToken();
+    const isBrandNotFound = data?.message?.includes('Marca no encontrada');
 
-    if (!isAuthRoute(currentPath) && hasLocalSession && typeof window !== 'undefined') {
-      authService.clearSession();
-      window.location.href = '/';
+    if (!isAuthRoute(currentPath) && typeof window !== 'undefined') {
+      if (hasLocalSession || isBrandNotFound) {
+        authService.clearSession();
+        authService.logout().catch(() => {});
+        window.location.href = '/';
+      }
     }
   }
 
