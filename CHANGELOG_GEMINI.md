@@ -1,5 +1,28 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-04] - Skill seo-audit (marketing skills)
+
+### Cambio
+- Instalado skill `seo-audit` desde `github.com/coreyhaines31/marketingskills`.
+
+### Detalles
+- Ubicación: `.agents/skills/seo-audit`
+- Disponible para múltiples agentes (universal)
+
+---
+
+## [2026-04-04] - Skill supabase-postgres-best-practices (oficial Supabase)
+
+### Cambio
+- Reemplazado skill `db-security-specialist` por el oficial `supabase-postgres-best-practices` de Supabase Agent Skills.
+
+### Detalles
+- Skill instalado desde `github.com/supabase/agent-skills`
+- Ubicación: `.agents/skills/supabase-postgres-best-practices`
+- Skills previos en `.agent/skills/db-security-specialist/` eliminados
+
+---
+
 ## [2026-04-04] - Guard de trial: evitar que usuarios con trial activo o plan pago sigan en /trial-checkout
 
 ### Cambio

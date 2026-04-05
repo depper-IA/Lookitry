@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '../config/supabase';
 import { GOOGLE_CONFIG } from '../config/google';
 import { generateToken } from '../utils/jwt';
+import { recordTrialEvent } from '../utils/brandLifecycle';
 
 export interface GoogleTokenPayload {
   sub: string;
@@ -32,6 +33,8 @@ export async function verifyGoogleAccessToken(accessToken: string): Promise<Goog
   });
 
   if (!response.ok) {
+    const errorText = await response.text().catch(() => 'unknown');
+    console.error('[GoogleAuth] Error verifying access token:', response.status, response.statusText, errorText);
     throw new Error('GOOGLE_ACCESS_TOKEN_INVALID');
   }
 
@@ -83,6 +86,19 @@ export async function verifyGoogleToken(token: string): Promise<GoogleTokenPaylo
     given_name: data.given_name,
     family_name: data.family_name,
   };
+}
+
+async function getActiveCampaign() {
+  const now = new Date().toISOString();
+  const { data } = await supabaseAdmin
+    .from('trial_campaigns')
+    .select('id, trial_days, trial_generations_limit, price_cop, require_card_verification')
+    .eq('active', true)
+    .or(`ends_at.is.null,ends_at.gt.${now}`)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+  return data as { id: string; trial_days: number; trial_generations_limit: number; price_cop: number; require_card_verification: boolean } | null;
 }
 
 /**
@@ -146,6 +162,24 @@ export async function findOrCreateBrandFromGoogle(
     .filter(Boolean)
     .join(' ') || payload.name;
 
+  const campaign = await getActiveCampaign();
+  let trialEndDate: string | null = null;
+  let trialGenerationsLimit = 0;
+  let trialPaymentStatus: string | null = null;
+  let campaignTrialDays = 0;
+
+  if (campaign) {
+    const requiresPayment = (campaign.price_cop ?? 0) > 0 && campaign.require_card_verification !== false;
+    if (!requiresPayment) {
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + campaign.trial_days);
+      trialEndDate = endDate.toISOString();
+      trialGenerationsLimit = campaign.trial_generations_limit ?? 15;
+      trialPaymentStatus = 'active';
+      campaignTrialDays = campaign.trial_days;
+    }
+  }
+
   const { data: newBrand, error } = await supabaseAdmin
     .from('brands')
     .insert({
@@ -158,8 +192,11 @@ export async function findOrCreateBrandFromGoogle(
       auth_provider: 'google',
       email_verified: true,
       needs_onboarding: true,
-      plan: 'TRIAL',
-      subscription_status: 'trial',
+      plan: trialEndDate ? 'TRIAL' : 'BASIC',
+      subscription_status: trialEndDate ? 'trial' : 'active',
+      trial_end_date: trialEndDate,
+      trial_generations_limit: trialGenerationsLimit,
+      trial_payment_status: trialPaymentStatus,
       primary_color: '#000000',
       secondary_color: '#ffffff',
     })
@@ -169,6 +206,14 @@ export async function findOrCreateBrandFromGoogle(
   if (error) {
     console.error('[GoogleAuth] Error creando marca:', error);
     throw new Error('GOOGLE_BRAND_CREATE_FAILED');
+  }
+
+  if (trialEndDate) {
+    await recordTrialEvent(newBrand.id, 'trial_started', {
+      source: 'google_signup',
+      trialDays: campaignTrialDays,
+      trialGenerationsLimit,
+    }).catch(() => {});
   }
 
   const token = generateToken({ brandId: newBrand.id, email: newBrand.email });

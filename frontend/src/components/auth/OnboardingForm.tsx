@@ -20,6 +20,7 @@ export interface OnboardingFormProps {
   showContactName?: boolean;
   showPassword?: boolean;
   onSubmit: (data: { name: string; slug: string; contactName?: string; password?: string }) => Promise<void>;
+  onSuccess?: () => void;
   loginLink?: string;
 }
 
@@ -29,6 +30,7 @@ export default function OnboardingForm({
   showContactName = false,
   showPassword = false,
   onSubmit,
+  onSuccess,
   loginLink = '/login',
 }: OnboardingFormProps) {
   const router = useRouter();
@@ -106,7 +108,11 @@ export default function OnboardingForm({
 
       setSuccess(true);
       setTimeout(() => {
-        router.push('/dashboard');
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push('/dashboard');
+        }
       }, 1500);
     } catch (err: any) {
       setError(err.message || 'Error de conexión. Intenta de nuevo.');
