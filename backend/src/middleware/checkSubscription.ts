@@ -6,7 +6,7 @@ const subscriptionService = new SubscriptionService();
 
 /**
  * Middleware para verificar que la suscripción de una marca esté activa.
- * También permite acceso durante el período de prueba gratuito.
+ * También permite acceso durante el período de prueba (trial).
  *
  * Requirements: 11.4, 11.11, 11 (Opción C)
  */

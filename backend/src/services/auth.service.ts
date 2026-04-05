@@ -384,18 +384,6 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
     let trialEndDate: Date | null = null;
 
     if (campaign) {
-      // Verificar abuso de IP/fingerprint solo si es trial gratuito
-      const ip = data.ip || 'unknown';
-      const fingerprint = data.fingerprint || null;
-      
-      // Si el trial es de pago (price_cop > 0), el pago ya es validación suficiente
-      const isPaidTrial = (campaign as any).price_cop > 0;
-      const isAbuse = !isPaidTrial && await isTrialAbuse(ip, fingerprint);
-
-      if (isAbuse) {
-        throw new Error('TRIAL_ABUSE');
-      }
-
       trialEndDate = new Date();
       trialEndDate.setDate(trialEndDate.getDate() + campaign.trial_days);
     }
@@ -423,7 +411,7 @@ function validatePasswordComplexity(password: string): { isValid: boolean; messa
       throw new Error('Error al crear la marca: ' + error?.message);
     }
 
-    // Registrar IP/fingerprint para evitar abuso futuro (solo si hubo trial)
+    // Registrar trial para tracking
     if (campaign && trialEndDate) {
       const ip = data.ip || 'unknown';
       const fingerprint = data.fingerprint || null;

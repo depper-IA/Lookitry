@@ -1,7 +1,6 @@
 import { supabaseAdmin } from '../config/supabase';
 import { GOOGLE_CONFIG } from '../config/google';
 import { generateToken } from '../utils/jwt';
-import { recordTrialEvent } from '../utils/brandLifecycle';
 
 export interface GoogleTokenPayload {
   sub: string;
@@ -164,24 +163,6 @@ export async function findOrCreateBrandFromGoogle(
 
   const temporarySlug = `google-${payload.sub.substring(0, 8)}-${Date.now()}`;
 
-  const campaign = await getActiveCampaign();
-  let trialEndDate: string | null = null;
-  let trialGenerationsLimit = 0;
-  let trialPaymentStatus: string | null = null;
-  let campaignTrialDays = 0;
-
-  if (campaign) {
-    const requiresPayment = (campaign.price_cop ?? 0) > 0 && campaign.require_card_verification !== false;
-    if (!requiresPayment) {
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + campaign.trial_days);
-      trialEndDate = endDate.toISOString();
-      trialGenerationsLimit = campaign.trial_generations_limit ?? 15;
-      trialPaymentStatus = 'active';
-      campaignTrialDays = campaign.trial_days;
-    }
-  }
-
   const { data: newBrand, error } = await supabaseAdmin
     .from('brands')
     .insert({
@@ -194,11 +175,8 @@ export async function findOrCreateBrandFromGoogle(
       auth_provider: 'google',
       email_verified: true,
       needs_onboarding: true,
-      plan: trialEndDate ? 'TRIAL' : 'BASIC',
-      subscription_status: trialEndDate ? 'trial' : 'active',
-      trial_end_date: trialEndDate,
-      trial_generations_limit: trialGenerationsLimit,
-      trial_payment_status: trialPaymentStatus,
+      plan: 'BASIC',
+      subscription_status: 'active',
       primary_color: '#000000',
       secondary_color: '#ffffff',
     })
@@ -208,14 +186,6 @@ export async function findOrCreateBrandFromGoogle(
   if (error) {
     console.error('[GoogleAuth] Error creando marca:', error);
     throw new Error('GOOGLE_BRAND_CREATE_FAILED');
-  }
-
-  if (trialEndDate) {
-    await recordTrialEvent(newBrand.id, 'trial_started', {
-      source: 'google_signup',
-      trialDays: campaignTrialDays,
-      trialGenerationsLimit,
-    }).catch(() => {});
   }
 
   const token = generateToken({ brandId: newBrand.id, email: newBrand.email });

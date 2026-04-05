@@ -148,7 +148,6 @@ export const updateTrialCampaign = async (req: any, res: Response) => {
 /**
  * GET /api/trial/status
  * Consulta pública: ¿hay una campaña de trial activa ahora mismo?
- * Usado por el frontend para mostrar/ocultar el botón "Empezar gratis".
  */
 export const getTrialStatus = async (_req: Request, res: Response) => {
   try {

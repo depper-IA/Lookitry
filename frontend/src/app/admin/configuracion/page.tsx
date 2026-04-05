@@ -555,7 +555,7 @@ export default function SystemConfigPage() {
         ));
       }
       setTrialPaymentRequired(newVal);
-      flash(newVal ? 'Pago por prueba activado' : 'Trial gratis activado', 'ok');
+      flash(newVal ? 'Pago por prueba activado' : 'Verificación de tarjeta desactivada', 'ok');
       await loadCampaigns();
     } catch (err: any) { flash(err.message, 'err'); }
     finally { setSavingTrialPayment(false); }
