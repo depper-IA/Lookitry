@@ -1,5 +1,19 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Deploy: Lead Generation CRM + Email Campaigns + PayPal Fix
+
+### Deploy Realizado
+- Commit: `bb60a59` - "feat: Lead Generation CRM + Email Campaigns (Brevo) + PayPal fix"
+- Push a origin/main exitoso
+- Deploy al VPS completado (backend + frontend rebuild)
+- Migration `20260406_add_googlemaps_platform` aplicada a producción
+
+### Pendiente
+- Configurar `GOOGLE_PLACES_API_KEY` en producción (VPS .env) - ya está en local
+- Aplicar a Meta Business SDK y TikTok Marketing API cuando el usuario tenga tiempo
+
+---
+
 ## [2026-04-05] - Documentación Leads & CRM + Variables de Entorno
 
 ### Cambios Realizados
