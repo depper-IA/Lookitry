@@ -1,5 +1,67 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Fix flujo PayPal para usuarios autenticados
+
+### Cambios Realizados
+- PayPal ahora redirige SIEMPRE a `/pago-exitoso` para todos los usuarios (autenticados y nuevos)
+- Antes: usuarios autenticados iban a `/dashboard/checkout` que no capturaba correctamente el token de PayPal
+- Ahora: todos van a `/pago-exitoso` que tiene la lógica de captura y redirección correcta (onboarding para nuevos usuarios, dashboard para existentes)
+
+### Archivos Modificados
+- `backend/src/controllers/paypal.controller.ts`
+
+---
+
+## [2026-04-05] - Configuración completa de Sammy para Telegram local
+
+### Cambios Realizados
+- Se dejó `sammy` listo para uso local con Telegram usando un `.env` válido en formato dotenv y las credenciales proporcionadas para bot, whitelist y proveedores LLM.
+- Se corrigió el agent loop para manejar memoria por conversación, respuestas en español por defecto y reseteo de memoria por chat en lugar de limpiar toda la base.
+- Se ajustó la integración de tool-calling para Groq/OpenRouter al formato compatible tipo OpenAI (`tools`, `tool_choice`, `tool_calls`), evitando incompatibilidades en ejecución real.
+- Se actualizó `npm run dev` para compilar y arrancar el bot sin depender de `tsx watch`, que estaba bloqueando el inicio en este entorno.
+- Se documentó el flujo de uso con Telegram en el README de `sammy`.
+- Se conectó Sammy al repositorio principal mediante `PROJECT_ROOT`, un contexto base persistente en SQLite y nuevas herramientas para listar archivos, leer archivos, buscar código, consultar `git status` y recuperar el contexto del proyecto.
+- Se añadieron los comandos `/refresh_project` y `/project_context` para refrescar y consultar el contexto base del repo directamente desde Telegram.
+- Se reemplazó el motor principal de Sammy por un puente hacia OpenCode usando el SDK local ya presente en `.opencode`, con una sesión por chat de Telegram y reutilización de agentes, MCP y configuración existente del proyecto.
+- Se añadieron comandos de control de sesión OpenCode desde Telegram (`/agent`, `/new`, `/status`, `/diff`, `/permissions`, `/approve`, `/reject`, `/abort`) para trabajar el repo desde Telegram como interfaz remota.
+
+### Archivos Modificados
+- `sammy/.env`
+- `sammy/.env.example`
+- `sammy/package.json`
+- `sammy/README.md`
+- `sammy/src/agent/index.ts`
+- `sammy/src/index.ts`
+- `sammy/src/llm/index.ts`
+- `sammy/src/memory/sqlite.ts`
+- `sammy/src/opencode/client.ts`
+- `sammy/src/project/context.ts`
+- `sammy/src/types/index.ts`
+- `sammy/tsconfig.json`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Dejar a Sammy realmente operativo como bot de Telegram local, con configuración válida, arranque verificable y una base más robusta para memoria, herramientas y fallback entre proveedores LLM.
+
+---
+
+## [2026-04-05] - Agente Sammy para OpenCode
+
+### Cambios Realizados
+- Se reescribió `creador_agentes.md` como prompt fuente para construir y evolucionar a Sammy con foco en TypeScript, Telegram, SQLite, loop de agente y seguridad.
+- Se eliminaron credenciales reales del prompt y se reemplazaron por placeholders seguros para evitar exposición accidental de secretos en un agente reutilizable.
+- Se creó `.opencode/agents/sammy-builder.md` para que OpenCode detecte el agente directamente desde la carpeta estándar de agentes del proyecto.
+
+### Archivos Modificados
+- `creador_agentes.md`
+- `.opencode/agents/sammy-builder.md`
+- `CHANGELOG_GEMINI.md`
+
+### Motivo
+Hacer que la especificación de Sammy funcione realmente como agente de OpenCode, dejando una definición reutilizable, segura y lista para invocarse dentro del proyecto sin depender de configuración manual adicional.
+
+---
+
 ## [2026-04-05] - Fix: PayPal trial redirigia a onboarding en lugar de register
 
 ### Problema

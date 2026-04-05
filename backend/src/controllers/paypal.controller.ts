@@ -349,12 +349,8 @@ export class PaypalController {
     const brandId = (req as any).brand?.id || `visitor_${crypto.randomUUID()}`;
     const reference = `PAYPAL-${brandId}-M${selectedMonths}-P${planStr}${landing ? '-LANDING' : ''}-${Date.now()}`;
     const frontendUrl = process.env.FRONTEND_URL || 'https://lookitry.com';
-    const returnUrl = hasAuthenticatedBrand
-      ? `${frontendUrl}/dashboard/checkout?plan=${planStr}&months=${selectedMonths}&method=paypal&ref=${encodeURIComponent(reference)}`
-      : undefined;
-    const cancelUrl = hasAuthenticatedBrand
-      ? `${frontendUrl}/dashboard/checkout?plan=${planStr}`
-      : undefined;
+    const returnUrl = `${frontendUrl}/pago-exitoso?method=paypal&ref=${encodeURIComponent(reference)}`;
+    const cancelUrl = `${frontendUrl}/checkout`;
 
     if (email) {
       const { error: insertError } = await supabaseAdmin.from('pending_registrations').insert({
