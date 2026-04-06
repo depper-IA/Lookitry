@@ -626,6 +626,7 @@ Motor de reglas de prompt por categoría de producto con 15+ categorías:
 | `enterprise.service` | Sync de productos enterprise |
 | `coupon.service` | Validación y redención de cupones |
 | `referral.service` | Conversión automática de referidos y acreditación de 500 créditos extra al referente |
+| `addonCredits.service` | Compra de paquetes de créditos extra (ADDON-{brandId}-PKG-{packageId}-{timestamp}) |
 | `review.service` | Gestión de reviews |
 | `brevo-campaign.service` | Wrapper Brevo SMTP + API tracking |
 | `email-campaign.service` | Lógica de campañas: batching, rate limit, scheduling |

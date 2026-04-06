@@ -67,19 +67,13 @@ docker restart lookitry-backend
 
 ## 2. Registro de Cambios (Changelog)
 
-Cada vez que se realice cualquier cambio en el código, la IA DEBE documentarlo en `CHANGELOG_GEMINI.md` antes de terminar la tarea. Cada entrada debe incluir:
+Cada vez que se realice cualquier cambio en el código, la IA DEBE documentarlo en `CHANGELOG.md` antes de terminar la tarea. Cada entrada debe incluir:
 - Fecha
 - Descripción del cambio
 - Archivos modificados
 - Motivo o contexto del cambio
 
 **Sin actualizar el changelog, la tarea no está completa.**
-
----
-
-## 3. Pendientes
-
-Al iniciar cada tarea, la IA debe leer `pendientes_por_hacer.md` si existe. Si durante una tarea se deja una deuda técnica, seguimiento o limpieza pendiente, debe registrarse ahí.
 
 ---
 
@@ -97,7 +91,7 @@ Al iniciar cada tarea, la IA debe leer `pendientes_por_hacer.md` si existe. Si d
 
 ---
 
-## 5. 🛡️ Blindaje de Ingeniería
+## 5. Blindaje de Ingeniería
 
 Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 500):
 
@@ -223,6 +217,51 @@ Usar `memory_search_nodes` antes de asumir o preguntar algo que ya esté grabado
 ### 9.2 Context7 (documentación de librerías)
 
 **Antes de escribir o revisar código que use una librería/framework externo**, llamar a `context7_resolve-library-id` seguido de `context7_query-docs` para obtener documentación fresca y ejemplos de uso.
+
+---
+
+## 10. Sistema de Agentes IA
+
+### 10.1 Equipo de Agentes
+
+El orchestration corre via **Sammy** (Telegram + OpenCode). Los agentes especializados están en `.opencode/agents/`:
+
+| Agente | Archivo | Responsabilidad | MCPs | Modelo |
+|--------|---------|----------------|------|--------|
+| Sammy | `sammy.md` | Orquestador | memory | MiniMax → DeepSeek |
+| WebWizard | `webwizard.md` | Frontend, UI, widget | supabase, n8n | MiniMax → DeepSeek |
+| DevGuardian | `devguardian.md` | Code review, seguridad | supabase, context7 | MiniMax → DeepSeek |
+| DataAlchemist | `dataalchemist.md` | DB, n8n, RAG | supabase, n8n, context7 | MiniMax → DeepSeek |
+| GrowthPilot | `growthpilot.md` | Leads, CRM, email | supabase, hostinger | MiniMax → DeepSeek |
+| ArchitectAI | `architectai.md` | Docker, VPS, deploy | hostinger, supabase | MiniMax → DeepSeek |
+
+**Modelos gratuitos:**
+- `minimax-coding-plan/MiniMax-M2.7` — Principal
+- `deepseek/deepseek-coder-33b-instruct` — Fallback (coding, gratuito)
+- `groq/llama-3.3-70b-instruct` — Subagentes (tareas simples, gratuito)
+
+**Subagentes GROQ:** Para tareas simples, los agentes usan GROQ (`groq/llama-3.3-70b-instruct`) en lugar del modelo principal para ahorrar tokens.
+
+### 10.2 Criterios de Delegación
+
+| Si la tarea menciona... | Delegar a |
+|------------------------|-----------|
+| UI, diseño, widget, landing, checkout | WebWizard |
+| Bug, test, seguridad, PR, webhooks | DevGuardian |
+| DB, n8n, IA, RAG, embeddings | DataAlchemist |
+| Leads, CRM, email, marketing, referidos | GrowthPilot |
+| Docker, VPS, deploy, arquitectura | ArchitectAI |
+
+### 10.3 Skills Disponibles
+
+Usar `@brainstorming` antes de cualquier implementación. Ver `.claude/SKILL.md` para el índice completo.
+
+### 10.4 Reglas de Documentación
+
+Tras cada tarea completada, SIEMPRE:
+1. Actualizar `CHANGELOG.md` (fecha, descripción, archivos, motivo)
+2. Si hay deuda técnica, registrarla en `pendientes.md`
+3. Mantener `PRD.md`, `DESIGN.md`, `TECH_STACK.md` y `REGLAS_IMPORTANTES.md` actualizados
 
 ---
 

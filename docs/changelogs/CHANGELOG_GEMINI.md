@@ -1,3 +1,21 @@
+# Actualización Documentación Widget (2026-04-06)
+
+## Resumen
+Aclaración de la arquitectura del widget: **script (`widget.js`) es el método principal**, iframe (`/embed/[brandSlug]`) es **legacy** y solo para fallback/integraciones específicas.
+
+## Archivos Modificados
+- `PRD.md` — Actualizado descripción de Widget Embebido
+- `README.md` — Corregido método de integración a widget script
+- `docs/SHOPIFY_INTEGRATION.md` — Método 3 marcado como legacy
+- `docs/WIDGET_GUIDE.md` — **NUEVO** documento con guía técnica completa del widget
+
+## Detalle de Cambios
+- Widget script (`/widget.js`) es el método principal y recomendado
+- Embed iframe (`/embed/[brandSlug]`) es legacy: fallback cuando script falla + integraciones específicas de cliente
+- Plugin WooCommerce usa script primero, iframe como fallback
+
+---
+
 # Lookitry System Stability & Admin Stats Emergency Fix (2026-03-31)
 
 This entry documents the successful resolution of a critical Error 500 in the administrative statistics panel and the subsequent emergency recovery from file corruption ("mojibake") that occurred during automated code editing.

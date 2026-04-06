@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -138,7 +139,12 @@ export default function LeadSearchesPage() {
   }
 
   return (
-    <div className="p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="p-6"
+    >
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#0a0a0a]">Lead Searches</h1>
@@ -274,7 +280,7 @@ export default function LeadSearchesPage() {
       {showModal && (
         <SearchModal onClose={() => setShowModal(false)} onSave={fetchSearches} />
       )}
-    </div>
+    </motion.div>
   );
 }
 

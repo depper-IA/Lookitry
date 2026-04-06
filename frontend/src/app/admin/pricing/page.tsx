@@ -10,6 +10,7 @@ import {
   Settings,
   TrendingUp,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface PlanConfig {
   precio_mensual_cop: number;
@@ -558,7 +559,12 @@ export default function PricingAdminPage() {
   const lastUpdated = rows.length > 0 ? new Date(rows[0].updated_at).toLocaleString('es-CO') : 'Sin registro';
 
   return (
-    <div className="mx-auto max-w-screen-2xl px-4 pb-20 md:px-6">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="mx-auto max-w-screen-2xl px-4 pb-20 md:px-6"
+    >
       {/* Header Minimalista con Estadísticas */}
       <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b pb-8" style={{ borderColor: 'var(--border-color)' }}>
         <div className="space-y-2">
@@ -849,6 +855,6 @@ export default function PricingAdminPage() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

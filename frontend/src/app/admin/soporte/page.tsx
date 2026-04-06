@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Mail, MessageCircle, Send, Search, Filter, Clock, CheckCircle, XCircle, AlertTriangle, RefreshCw, User, Building2, FileText } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -134,7 +135,7 @@ export default function AdminSoportePage() {
   };
 
   return (
-    <div className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Soporte</h1>
@@ -350,6 +351,6 @@ export default function AdminSoportePage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

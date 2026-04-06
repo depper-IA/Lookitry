@@ -10,6 +10,7 @@ import {
   BlogPost,
   BlogCategory,
 } from '@/services/blog.service';
+import { motion } from 'framer-motion';
 
 const panelStyle = { backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' };
 const fieldStyle = { backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' };
@@ -112,7 +113,12 @@ export default function BlogEditorPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-32">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="max-w-6xl mx-auto space-y-8 pb-32"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
           <Link
@@ -383,6 +389,6 @@ export default function BlogEditorPage() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

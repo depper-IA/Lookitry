@@ -10,6 +10,7 @@ import {
   Users,
   Zap,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { api } from '@/services/api';
 
 interface ActiveTrialRow {
@@ -145,22 +146,36 @@ export default function AdminConversionPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-8"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
         <h1 className="text-2xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
           Embudo de conversión
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
           Trial como plan pago de entrada, más conversiones visibles a Basic, Pro y Enterprise.
         </p>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+        className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"
+      >
         <KpiCard label="Registros" value={stats.totalBrands} icon={<Users className="h-5 w-5" />} helper="Base total de marcas creadas" />
         <KpiCard label="Trials activos" value={stats.inTrial} icon={<Zap className="h-5 w-5" />} helper={`${stats.trialRate}% del total vigente`} accent />
         <KpiCard label="Trials pagados" value={stats.paidTrials} icon={<CreditCard className="h-5 w-5" />} helper={`Ingreso trial: ${formatCop(stats.trialRevenueCOP)}`} />
         <KpiCard label="Conversión" value={`${stats.conversionRate}%`} icon={<Percent className="h-5 w-5" />} helper="Marcas hoy en planes pagos distintos de TRIAL" />
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <section className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
@@ -323,6 +338,6 @@ export default function AdminConversionPage() {
           </div>
         )}
       </section>
-    </div>
+    </motion.div>
   );
 }

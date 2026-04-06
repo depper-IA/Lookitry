@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -17,7 +17,7 @@ export default function ConfigLayout({ children }: { children: React.ReactNode }
   const currentLabel = configNav.find(n => pathname.startsWith(n.href))?.label || 'Trial';
 
   return (
-    <div className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} className="space-y-6">
       {/* Breadcrumb + título */}
       <div className="flex items-center gap-3">
         <Link href="/admin/config/trial" className="text-sm hover:underline" style={{ color: 'var(--text-muted)' }}>Configuración</Link>
@@ -52,6 +52,6 @@ export default function ConfigLayout({ children }: { children: React.ReactNode }
           {children}
         </motion.div>
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

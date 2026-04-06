@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 
 type WooBrandStatus = 'active' | 'pending' | 'inactive';
 
@@ -177,7 +178,7 @@ export default function AdminWooCommercePage() {
   }, [selectedBrandId]);
 
   return (
-    <div className="space-y-8">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} className="space-y-8">
       <header className="flex flex-col gap-2">
         <h1 className="text-2xl font-jakarta font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
           WooCommerce activo
@@ -364,6 +365,6 @@ export default function AdminWooCommercePage() {
           </div>
         )}
       </section>
-    </div>
+    </motion.div>
   );
 }

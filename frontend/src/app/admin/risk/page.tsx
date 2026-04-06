@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, ArrowRight, Shield, TrendingDown, Clock, XCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
 
 interface RiskBrand {
@@ -51,7 +52,12 @@ export default function AdminRiskPage() {
     data.risk_brands.filter(b => b.risk_score < 25);
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       <div>
         <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Riesgo y Retención</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Marcas en riesgo de churn, trials estancados y señales de alerta temprana</p>
@@ -144,6 +150,6 @@ export default function AdminRiskPage() {
           ))
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { DollarSign, TrendingUp, BarChart3 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
 
 interface PlanEconomics {
@@ -58,7 +59,12 @@ export default function AdminUnitEconomicsPage() {
   if (!data) return null;
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       <div>
         <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Economía Unitaria</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Ingresos, costos IA y margen por plan y cohorte</p>
@@ -139,6 +145,6 @@ export default function AdminUnitEconomicsPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

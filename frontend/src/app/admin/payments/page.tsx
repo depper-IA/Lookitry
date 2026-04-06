@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Search, CreditCard, RefreshCw, CheckCircle, XCircle, Clock, Banknote, Wifi, ArrowUpDown, Download } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { formatCurrency } from '@/utils/currency';
 import { adminApi } from '@/services/adminApi';
 
@@ -212,8 +213,18 @@ export default function AdminPaymentsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="flex items-center justify-between"
+      >
         <div>
           <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-bold tracking-tight">Pagos</h1>
           <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">Historial completo de pagos registrados</p>
@@ -230,10 +241,15 @@ export default function AdminPaymentsPage() {
             <RefreshCw className="w-4 h-4" /> Actualizar
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Resumen por método */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+      >
         {Object.entries(byMethod).map(([method, data]) => {
           const cfg = METHOD_LABELS[method] ?? { label: method, icon: <Banknote className="w-3.5 h-3.5" /> };
           return (
@@ -252,10 +268,16 @@ export default function AdminPaymentsPage() {
           <p className="text-xl font-bold">{formatCurrency(totalRevenue)}</p>
           <p className="text-xs opacity-70 mt-0.5">{completedCount} pago{completedCount !== 1 ? 's' : ''}</p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Filtros */}
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border p-4 space-y-3">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.12 }}
+        style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+        className="rounded-[2rem] border p-4 space-y-3"
+      >
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <div className="relative md:col-span-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
@@ -304,10 +326,16 @@ export default function AdminPaymentsPage() {
             </button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Tabla */}
-      <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] border overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.16 }}
+        style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+        className="rounded-[2rem] border overflow-hidden"
+      >
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <div className="w-8 h-8 border-4 border-[#FF5C3A]/30 border-t-[#FF5C3A] rounded-full animate-spin" />
@@ -407,7 +435,7 @@ export default function AdminPaymentsPage() {
             )}
           </>
         )}
-      </div>
+      </motion.div>
 
       {/* Paginación */}
       {totalPages > 1 && (
@@ -429,6 +457,6 @@ export default function AdminPaymentsPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

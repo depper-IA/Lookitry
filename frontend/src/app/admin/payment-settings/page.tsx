@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -136,7 +137,7 @@ export default function PaymentSettingsPage() {
   ];
 
   return (
-    <div className="space-y-6 max-w-4xl w-full">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} className="space-y-6 max-w-4xl w-full">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
@@ -535,7 +536,7 @@ export default function PaymentSettingsPage() {
           <p className="text-sm text-red-500 mt-2">Ningún método de pago está activo. Los clientes no podrán pagar.</p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
