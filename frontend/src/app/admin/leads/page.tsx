@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+import { adminApi } from '@/services/adminApi';
 
 type LeadStatus = 'new' | 'qualified' | 'contacted' | 'interested' | 'not_interested' | 'client';
 
@@ -102,21 +101,15 @@ export default function LeadsPage() {
 
   const fetchLeads = useCallback(async () => {
     try {
-      const token = localStorage.getItem('admin_token');
-      let url = `${API_URL}/api/admin/leads?`;
+      let url = `/api/admin/leads?`;
       if (filterCountry) url += `country=${filterCountry}&`;
       if (filterStatus) url += `status=${filterStatus}&`;
 
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) throw new Error('Error cargando leads');
-      const data = await res.json();
+      const data = await adminApi.get<{ leads?: Lead[] }>(url);
       setLeads(data.leads || []);
 
-      const statsRes = await fetch(`${API_URL}/api/admin/leads/stats`, { headers: { Authorization: `Bearer ${token}` } });
-      if (statsRes.ok) {
-        const statsData = await statsRes.json();
-        setStats(statsData);
-      }
+      const statsData = await adminApi.get<Stats>('/api/admin/leads/stats');
+      setStats(statsData);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -131,12 +124,7 @@ export default function LeadsPage() {
   const handleStatusChange = async (leadId: string, newStatus: LeadStatus) => {
     setActionLoading(leadId);
     try {
-      const token = localStorage.getItem('admin_token');
-      await fetch(`${API_URL}/api/admin/leads/${leadId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ status: newStatus }),
-      });
+      await adminApi.patch(`/api/admin/leads/${leadId}`, { status: newStatus });
       fetchLeads();
     } catch (err: any) {
       setError(err.message);
@@ -149,11 +137,7 @@ export default function LeadsPage() {
     if (!confirm('¿Eliminar este lead?')) return;
     setActionLoading(leadId);
     try {
-      const token = localStorage.getItem('admin_token');
-      await fetch(`${API_URL}/api/admin/leads/${leadId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await adminApi.delete(`/api/admin/leads/${leadId}`);
       fetchLeads();
     } catch (err: any) {
       setError(err.message);
@@ -164,12 +148,7 @@ export default function LeadsPage() {
 
   const handleAddOutreach = async (leadId: string, type: string) => {
     try {
-      const token = localStorage.getItem('admin_token');
-      await fetch(`${API_URL}/api/admin/leads/${leadId}/outreach`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ outreach_type: type }),
-      });
+      await adminApi.post(`/api/admin/leads/${leadId}/outreach`, { outreach_type: type });
       fetchLeads();
     } catch (err: any) {
       setError(err.message);
@@ -383,16 +362,12 @@ function LeadModal({ lead, onClose, onSave }: { lead?: Lead; onClose: () => void
     if (!form.name.trim()) return;
     setSaving(true);
     try {
-      const token = localStorage.getItem('admin_token');
-      const url = lead
-        ? `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/admin/leads/${lead.id}`
-        : `${process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com'}/api/admin/leads`;
-      
-      await fetch(url, {
-        method: lead ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(form),
-      });
+      const url = lead ? `/api/admin/leads/${lead.id}` : `/api/admin/leads`;
+      if (lead) {
+        await adminApi.patch(url, form);
+      } else {
+        await adminApi.post(url, form);
+      }
       onSave();
       onClose();
     } catch {}
