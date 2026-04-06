@@ -50,7 +50,7 @@ const statusColors: Record<string, { bg: string; text: string; label: string }> 
   success: { bg: 'rgba(16,185,129,0.12)', text: '#10b981', label: 'Correcto' },
   partial: { bg: 'rgba(245,158,11,0.12)', text: '#f59e0b', label: 'Parcial' },
   failed: { bg: 'rgba(239,68,68,0.12)', text: '#ef4444', label: 'Con error' },
-  pending: { bg: 'rgba(59,130,246,0.12)', text: '#3b82f6', label: 'En proceso' },
+  pending: { bg: 'rgba(59,130,246,0.12)', text: 'var(--accent)', label: 'En proceso' },
 };
 
 const syncTypeMeta = {
@@ -373,7 +373,7 @@ export default function EnterpriseSyncPage() {
               <Link
                 href="/admin/enterprise/crear"
                 className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white transition-all hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
+                style={{ background: 'var(--accent)' }}
               >
                 <UserPlus className="h-4 w-4" />
                 Crear cliente Enterprise

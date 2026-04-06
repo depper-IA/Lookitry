@@ -1,5 +1,57 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-06] - Correcciones Panel Admin
+
+### Sidebar Simplificado
+- Reducido de 10 grupos/41 items a 5 grupos/~15 items
+- Grupos: COMANDO (Mission Control, Funnel, Agentes), CLIENTES (Marcas, Suscripciones, Pagos), ANALYTICS (Estadisticas, Leads, Revenue), MARKETING (Promociones, Trial), CONFIGURACION (General, Pagos, Enterprise)
+- Archivos: `frontend/src/app/admin/layout.tsx`
+
+### Ruta Health Admin
+- Agregada ruta `GET /api/admin/health` en `backend/src/routes/admin.routes.ts`
+- Ahora el panel admin puede acceder al health check extendido del sistema
+
+### Enterprise Page
+- Corregido color hardcoded `#3b82f6` -> `var(--accent)` para pending status
+- Corregido gradient hardcoded -> `var(--accent)` para boton "Crear cliente Enterprise"
+
+### Social API Config
+- Eliminados emojis (📸, 🎵) de plataformas
+- Reemplazados con iconos lucide-react (Instagram, Music)
+- Convertida propiedad `icon` a `IconComponent` para mejor compatibilidad
+- Corregidos colores hardcoded a CSS variables
+
+---
+
+## [2026-04-06] - FASE 3: Cola de Trabajos Redis para Generaciones
+
+### Sistema de Cola Persistente para Try-On
+
+**Archivos creados:**
+- `backend/src/services/generation-queue.service.ts` (nuevo) — Cola Redis con stats, retry, failed jobs
+- `backend/src/scripts/queue-worker.ts` (nuevo) — Worker que consume jobs de la cola
+- `backend/src/routes/queue.routes.ts` (nuevo) — Endpoints para monitorear cola
+
+**Archivos modificados:**
+- `backend/src/controllers/pruebalo.controller.ts` — Integración con cola de trabajos
+
+**Funcionalidades implementadas:**
+- Cola Redis `queue:tryon` para jobs de generación
+- Cola `queue:tryon:processing` para jobs activos
+- Cola `queue:tryon:failed` para jobs fallidos con retry automático (3 intentos)
+- Worker que consume jobs de la cola con concurrency configurable (3 jobs simultáneos)
+- Endpoints: GET /queue/stats, GET /queue/next, POST /queue/retry-failed
+- Polling en controller hasta que job complete (máx 90s)
+
+**Flujo:**
+1. Request llega → Controller encola job → Responde 202 "Procesando"
+2. Worker consume job de cola → Llama n8n → Actualiza BD
+3. Controller detecta SUCCESS → Retorna resultado al frontend
+
+**Beneficio principal:** Si n8n se cae, los jobs NO se pierden — esperan en Redis
+
+---
+
 ## [2026-04-06] - Auditoria y correccion de errores del admin
 
 ### Problemas corregidos

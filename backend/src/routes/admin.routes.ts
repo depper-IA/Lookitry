@@ -174,6 +174,12 @@ router.get('/economics', requirePermission('settings'), getEconomics);
 router.get('/audit-log', requirePermission('admins'), getAuditLog);
 router.get('/brands/:id/full', requirePermission('brands'), getBrandFull);
 
+// Health check para panel admin (extended info)
+router.get('/health', requirePermission('health'), async (_req: any, res: any) => {
+  const { getHealthStatus } = await import('../controllers/health.controller');
+  return getHealthStatus(_req, res);
+});
+
 // Gestión de Suscripciones
 router.get('/subscriptions', requirePermission('subscriptions'), getAllSubscriptions);
 router.post('/subscriptions/:id/payment', requirePermission('subscriptions'), registerSubscriptionPayment);
