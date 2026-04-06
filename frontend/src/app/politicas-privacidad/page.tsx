@@ -72,7 +72,7 @@ const SECTIONS = [
 
 export default function PoliticasPrivacidadPage() {
   return (
-    <>
+    <div className="overflow-x-clip">
       <LandingNav />
       <main className="min-h-screen bg-[#f5f2ee]">
         {/* Header */}
@@ -110,6 +110,6 @@ export default function PoliticasPrivacidadPage() {
         </div>
       </main>
       <LandingFooter />
-    </>
+    </div>
   );
 }

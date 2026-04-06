@@ -39,7 +39,7 @@ export default function LandingMiniLanding() {
             </div>
 
             <div className="flex flex-wrap gap-3 sm:gap-4">
-              <Link href="/checkout?plan=TRIAL" className="bg-[#FF5C3A] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20">
+              <Link href="/checkout?plan=LANDING" className="bg-[#FF5C3A] text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20">
                 Crear mi página ahora
               </Link>
               <Link href="/planes" className="bg-white dark:bg-[#0a0a0a] text-[#0a0a0a] dark:text-white px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-sm transition-all hover:bg-[#FF5C3A] dark:hover:bg-[#FF5C3A] dark:hover:text-white">

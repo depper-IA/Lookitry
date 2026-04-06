@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Check, Sparkles, ShieldCheck, CreditCard } from 'lucide-react';
 
 export type PlanKey = 'BASIC' | 'PRO' | 'LANDING' | 'TRIAL';
@@ -96,20 +95,14 @@ export default function CheckoutSummary({
   const borderAccent = `${accentColor}33`;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="sticky top-8"
+    <div
+      className="rounded-2xl border overflow-hidden shadow-2xl"
+      style={{
+        backgroundColor: bgCard,
+        borderColor: `rgba(255,255,255,0.06)`,
+        boxShadow: `0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03)`,
+      }}
     >
-      <div
-        className="rounded-2xl border overflow-hidden shadow-2xl"
-        style={{
-          backgroundColor: bgCard,
-          borderColor: `rgba(255,255,255,0.06)`,
-          boxShadow: `0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03)`,
-        }}
-      >
         <div className="p-6 border-b border-white/5">
           <div className="flex items-center gap-2 mb-5">
             <Sparkles className="w-4 h-4" style={{ color: accentColor }} />
@@ -274,18 +267,17 @@ export default function CheckoutSummary({
             </div>
           </div>
         </div>
-      </div>
 
-      <p className="text-center text-[10px] text-[#666] mt-4">
-        ¿Necesitas ayuda?{' '}
-        <a
-          href="mailto:info@lookitry.com"
-          className="hover:underline"
-          style={{ color: accentColor }}
-        >
-          info@lookitry.com
-        </a>
-      </p>
-    </motion.div>
+        <p className="text-center text-[10px] text-[#666] mt-4 px-6 pb-6">
+          ¿Necesitas ayuda?{' '}
+          <a
+            href="mailto:info@lookitry.com"
+            className="hover:underline"
+            style={{ color: accentColor }}
+          >
+            info@lookitry.com
+          </a>
+        </p>
+      </div>
   );
 }

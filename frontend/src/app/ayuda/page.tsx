@@ -131,7 +131,7 @@ export default function AyudaPage() {
   })).filter(cat => cat.articles.length > 0 || searchQuery === '');
 
   return (
-    <>
+    <div className="overflow-x-clip">
       <LandingNav />
       <main className="min-h-screen bg-[#030303]">
         {/* Hero Section */}
@@ -325,6 +325,6 @@ export default function AyudaPage() {
         </section>
       </main>
       <LandingFooter />
-    </>
+    </div>
   );
 }
