@@ -56,6 +56,7 @@ export class AdminService {
   createBrand(data: Parameters<BrandAdminService['createBrand']>[0]) { return this.brands.createBrand(data); }
   getTrialBrands() { return this.brands.getTrialBrands(); }
   getBrandFull(brandId: string) { return this.brands.getBrandFull(brandId); }
+  getBrandsForDropdown(options: { limit?: number; search?: string }) { return this.brands.getBrandsForDropdown(options); }
   activateBrandPlan(brandId: string, options: Parameters<PaymentAdminService['activateBrandPlan']>[1]) { return this.payments.activateBrandPlan(brandId, options); }
 
   // ── Stats ────────────────────────────────────────────────────

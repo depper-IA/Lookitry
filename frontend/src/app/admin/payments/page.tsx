@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Search, CreditCard, RefreshCw, CheckCircle, XCircle, Clock, Banknote, Wifi, ArrowUpDown, Download } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { Search, CreditCard, RefreshCw, CheckCircle, XCircle, Clock, Banknote, Wifi, ArrowUpDown, Download, X, AlertCircle, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency } from '@/utils/currency';
 import { adminApi } from '@/services/adminApi';
 import { EmbeddedPlaybook } from '@/components/admin/EmbeddedPlaybook';
@@ -30,6 +30,23 @@ interface Payment {
   created_at: string;
   billing_type?: string;
   archived?: boolean;
+  transaction_id?: string;
+  wompi_reference?: string;
+  type?: 'Payment' | 'Transaction';
+}
+
+interface SearchResult {
+  id: string;
+  transaction_id?: string;
+  wompi_reference?: string;
+  type: 'Payment' | 'Transaction';
+  brand_name: string;
+  brand_slug?: string;
+  amount: number;
+  amount_cop?: number;
+  status: 'completed' | 'pending' | 'failed' | 'refunded';
+  payment_date: string;
+  payment_method: string;
 }
 
 function normalizePayment(raw: any): Payment {
@@ -111,6 +128,14 @@ export default function AdminPaymentsPage() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
 
+  // Búsqueda por Transaction ID
+  const [transactionSearch, setTransactionSearch] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
+  const [searchError, setSearchError] = useState('');
+  const [searchHint, setSearchHint] = useState('');
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
@@ -157,6 +182,65 @@ export default function AdminPaymentsPage() {
 
   useEffect(() => { fetchPayments(); }, [fetchPayments]);
   useEffect(() => { setCurrentPage(1); }, [methodFilter, statusFilter, fromDate, toDate, search]);
+
+  // Debounced transaction search
+  const performTransactionSearch = useCallback(async (query: string) => {
+    if (!query || query.length < 3) {
+      if (query.length > 0 && query.length < 3) {
+        setSearchHint('Ingresa al menos 3 caracteres para buscar');
+      } else {
+        setSearchHint('');
+      }
+      setSearchResult(null);
+      setSearchError('');
+      return;
+    }
+
+    setSearchLoading(true);
+    setSearchError('');
+    setSearchHint('');
+    setSearchResult(null);
+
+    try {
+      const data = await adminApi.get<{ result?: SearchResult; error?: string }>(
+        `/api/admin/payments/search?q=${encodeURIComponent(query)}`
+      );
+
+      if (data.error) {
+        setSearchError(data.error);
+      } else if (data.result) {
+        setSearchResult(data.result);
+      } else {
+        setSearchResult(null);
+      }
+    } catch (e: any) {
+      setSearchError(e.message || 'Error al buscar. Intenta nuevamente.');
+    } finally {
+      setSearchLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = setTimeout(() => {
+      performTransactionSearch(transactionSearch);
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [transactionSearch, performTransactionSearch]);
+
+  const clearTransactionSearch = () => {
+    setTransactionSearch('');
+    setSearchResult(null);
+    setSearchError('');
+    setSearchHint('');
+  };
 
   const totalPages = Math.ceil(payments.length / itemsPerPage);
   const sorted = useMemo(() => [...payments].sort((a, b) => {
@@ -272,6 +356,178 @@ export default function AdminPaymentsPage() {
         </div>
       </motion.div>
 
+      {/* Transaction ID Search */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+        className="rounded-[2rem] border p-4"
+      >
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+          <input
+            type="text"
+            value={transactionSearch}
+            onChange={e => setTransactionSearch(e.target.value)}
+            placeholder="Buscar por ID de transacción, ID de pago o referencia Wompi..."
+            style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+            className="w-full pl-10 pr-10 py-3 min-h-[48px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+          />
+          {transactionSearch && (
+            <button
+              onClick={clearTransactionSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition-opacity"
+              aria-label="Limpiar búsqueda"
+            >
+              {searchLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" style={{ color: 'var(--text-muted)' }} />
+              ) : (
+                <X className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+              )}
+            </button>
+          )}
+        </div>
+
+        {/* Search Hint */}
+        <AnimatePresence>
+          {searchHint && (
+            <motion.p
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              style={{ color: 'var(--text-muted)' }}
+              className="text-xs mt-2 pl-1"
+            >
+              {searchHint}
+            </motion.p>
+          )}
+        </AnimatePresence>
+
+        {/* Search Error */}
+        <AnimatePresence>
+          {searchError && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-center gap-2 mt-2 text-red-500 text-xs"
+            >
+              <AlertCircle className="w-3.5 h-3.5" />
+              {searchError}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Search Result Highlight Card */}
+        <AnimatePresence>
+          {searchResult && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: -10, height: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ background: 'linear-gradient(135deg, rgba(255,92,58,0.08) 0%, rgba(255,92,58,0.04) 100%)', borderColor: 'var(--accent)' }}
+              className="mt-4 rounded-xl border p-4"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-6 h-6 rounded-full bg-[var(--accent)]/20 flex items-center justify-center">
+                  <Search className="w-3.5 h-3.5" style={{ color: 'var(--accent)' }} />
+                </div>
+                <span style={{ color: 'var(--accent)' }} className="text-sm font-semibold">Resultado encontrado</span>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs">ID</p>
+                    <p style={{ color: 'var(--text-primary)' }} className="font-mono text-xs font-semibold truncate">
+                      {searchResult.transaction_id || searchResult.id}
+                    </p>
+                  </div>
+                  <div>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs">Tipo</p>
+                    <p style={{ color: 'var(--text-primary)' }} className="font-semibold">{searchResult.type}</p>
+                  </div>
+                  <div>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs">Marca</p>
+                    <p style={{ color: 'var(--text-primary)' }} className="font-semibold truncate">{searchResult.brand_name}</p>
+                  </div>
+                  <div>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs">Monto</p>
+                    <p style={{ color: 'var(--text-primary)' }} className="font-semibold">
+                      {formatCurrency(searchResult.amount_cop ?? searchResult.amount)}
+                    </p>
+                  </div>
+                  <div>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs">Estado</p>
+                    <span
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold w-fit"
+                      style={STATUS_CONFIG[searchResult.status]?.style}
+                    >
+                      {STATUS_CONFIG[searchResult.status]?.icon}
+                      {STATUS_CONFIG[searchResult.status]?.label}
+                    </span>
+                  </div>
+                  <div>
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs">Fecha</p>
+                    <p style={{ color: 'var(--text-primary)' }} className="text-xs">
+                      {formatDate(searchResult.payment_date)}
+                    </p>
+                  </div>
+                </div>
+
+                {searchResult.wompi_reference && (
+                  <div className="pt-2 border-t border-white/10">
+                    <p style={{ color: 'var(--text-muted)' }} className="text-xs">Referencia Wompi</p>
+                    <p style={{ color: 'var(--text-primary)' }} className="font-mono text-xs">{searchResult.wompi_reference}</p>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-white/10">
+                  <a
+                    href="#payments-table"
+                    onClick={() => {
+                      const matchedPayment = payments.find(
+                        p => p.id === searchResult.id || p.id === searchResult.transaction_id
+                      );
+                      if (matchedPayment) {
+                        const pageIndex = payments.indexOf(matchedPayment);
+                        const page = Math.floor(pageIndex / itemsPerPage) + 1;
+                        setCurrentPage(page);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 text-xs font-medium hover:underline"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    Ver detalles en la tabla
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* No Results */}
+        <AnimatePresence>
+          {!searchLoading && !searchError && !searchHint && transactionSearch.length >= 3 && !searchResult && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="flex items-center gap-2 mt-3 text-sm"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <AlertCircle className="w-4 h-4" />
+              No se encontraron resultados para &ldquo;{transactionSearch}&rdquo;
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
       {/* Filtros */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -350,7 +606,7 @@ export default function AdminPaymentsPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            <div id="payments-table" className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)' }} className="border-b">

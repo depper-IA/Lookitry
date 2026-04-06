@@ -370,6 +370,29 @@ export class BrandAdminService {
       recent_generations: generations,
     };
   }
+
+  /**
+   * Obtener marcas para dropdowns (con soporte para limit y search)
+   */
+  async getBrandsForDropdown(options: { limit?: number; search?: string } = {}) {
+    const { limit = 1000, search } = options;
+
+    let query = supabaseAdmin
+      .from('brands')
+      .select('id, name, email, slug, plan, subscription_status')
+      .order('name', { ascending: true })
+      .limit(limit);
+
+    if (search && typeof search === 'string' && search.trim().length > 0) {
+      const searchTerm = search.trim();
+      query = query.or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,slug.ilike.%${searchTerm}%`);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw new Error('Error al obtener marcas: ' + error.message);
+    return data || [];
+  }
 }
 
 export const brandAdminService = new BrandAdminService();

@@ -348,3 +348,24 @@ export const getBrandFull = async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener ficha de marca' });
   }
 };
+
+/**
+ * GET /api/admin/brands/list
+ * Lista de marcas para dropdowns (id, name, email, slug)
+ */
+export const getBrandsList = async (req: any, res: Response) => {
+  try {
+    const { limit = '1000', search } = req.query;
+    const limitNum = Math.min(parseInt(limit as string) || 1000, 2000);
+
+    const brands = await adminService.getBrandsForDropdown({
+      limit: limitNum,
+      search: search as string | undefined
+    });
+
+    return res.status(200).json({ brands, count: brands.length });
+  } catch (error: any) {
+    console.error('Error in getBrandsList:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al obtener lista de marcas' });
+  }
+};

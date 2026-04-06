@@ -30,6 +30,19 @@ export interface Lead {
   dm_platform?: string;
   created_at: string;
   updated_at: string;
+  // Enrichment fields
+  is_fashion_relevant?: boolean | null;
+  enrichment_source?: string | null;
+  website_verified?: boolean;
+  business_type_confirmed?: string | null;
+  last_enriched_at?: string | null;
+  website_content?: string | null;
+  enrichment_score?: number;
+}
+
+// Extended interface for CRM import
+export interface CRMLead extends Partial<Lead> {
+  source_id: string;
 }
 
 export interface LeadSearch {

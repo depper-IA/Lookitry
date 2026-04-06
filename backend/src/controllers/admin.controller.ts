@@ -34,3 +34,9 @@ export * from './admin/woo.admin.controller';
 
 // 9. Operaciones del Sistema (System)
 export * from './admin/system.admin.controller';
+
+// 10. Historial de Generaciones (Generations)
+export * from './admin/generations.admin.controller';
+
+// 11. Tickets de Soporte (Tickets)
+export * from './admin/tickets.admin.controller';

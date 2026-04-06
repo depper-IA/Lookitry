@@ -13,13 +13,13 @@ import {
   deleteInactiveProduct, changeBrandPlan, activateBrandPlan, 
   toggleLandingPage, updateBrandNotes, updateModalConfig, 
   sendBrandResetEmail, getMiniLandingsAdmin, suspendMiniLanding, 
-  restoreMiniLanding, getBrandFull,
+  restoreMiniLanding, getBrandFull, getBrandsList,
   // Stats
   getGlobalStats, getConversionStats, getTopBrands, getAlerts, 
   getRiskData, getEconomics, getMissionControl,
   // Payments
   getPayments, getAllSubscriptions, registerSubscriptionPayment, 
-  suspendSubscription, reactivateSubscription,
+  suspendSubscription, reactivateSubscription, searchPayments,
   // Operational (Pricing, Audit)
   getAuditLog, getPricingConfig, updatePricingConfig,
   // Promotion
@@ -70,6 +70,22 @@ import {
   deleteSocialApiConfig,
   setSocialApiActive,
 } from '../controllers/admin/lead.admin.controller';
+import {
+  getGenerations,
+  getGenerationById,
+  retryGeneration,
+  getBrandGenerations,
+  getGenerationsStats,
+} from '../controllers/admin/generations.admin.controller';
+import {
+  getTickets,
+  getTicketById,
+  createTicket,
+  updateTicket,
+  deleteTicket,
+  bulkActionTickets,
+  getTicketsStats,
+} from '../controllers/admin/tickets.admin.controller';
 
 const router = Router();
 
@@ -106,6 +122,7 @@ router.patch('/brands/:id/landing-page', requirePermission('brands'), toggleLand
 router.patch('/brands/:id/notes', requirePermission('brands'), updateBrandNotes);
 router.patch('/brands/:id/modal-config', requirePermission('brands'), updateModalConfig);
 router.post('/brands/:id/send-reset-email', requirePermission('brands'), sendBrandResetEmail);
+router.get('/brands/list', requirePermission('brands'), getBrandsList);
 
 // Mini-landings — panel de control
 router.get('/mini-landings', requirePermission('brands'), getMiniLandingsAdmin);
@@ -186,6 +203,9 @@ router.post('/subscriptions/:id/payment', requirePermission('subscriptions'), re
 router.patch('/subscriptions/:id/suspend', requirePermission('subscriptions'), suspendSubscription);
 router.patch('/subscriptions/:id/reactivate', requirePermission('subscriptions'), reactivateSubscription);
 
+// Búsqueda de pagos
+router.get('/payments/search', requirePermission('subscriptions'), searchPayments);
+
 // Programa de Referidos
 router.get('/referrals', requirePermission('brands'), getAdminReferrals);
 router.post('/referrals/:referralId/credit', requirePermission('brands'), creditReferralBonus);
@@ -225,5 +245,21 @@ router.post('/social-api-configs', requirePermission('settings'), upsertSocialAp
 router.post('/social-api-configs/:platform/test', requirePermission('settings'), testSocialApiConfig);
 router.patch('/social-api-configs/:platform/active', requirePermission('settings'), setSocialApiActive);
 router.delete('/social-api-configs/:platform', requirePermission('settings'), deleteSocialApiConfig);
+
+// Historial de Generaciones (Try-On)
+router.get('/generations', requirePermission('brands'), getGenerations);
+router.get('/generations/:id', requirePermission('brands'), getGenerationById);
+router.patch('/generations/:id/retry', requirePermission('brands'), retryGeneration);
+router.get('/brands/:brandId/generations', requirePermission('brands'), getBrandGenerations);
+router.get('/generations/stats', requirePermission('brands'), getGenerationsStats);
+
+// Tickets de Soporte
+router.get('/tickets', requirePermission('brands'), getTickets);
+router.get('/tickets/:id', requirePermission('brands'), getTicketById);
+router.post('/tickets', requirePermission('brands'), createTicket);
+router.patch('/tickets/:id', requirePermission('brands'), updateTicket);
+router.delete('/tickets/:id', requirePermission('admins'), deleteTicket);
+router.post('/tickets/bulk-action', requirePermission('brands'), bulkActionTickets);
+router.get('/tickets/stats', requirePermission('brands'), getTicketsStats);
 
 export default router;

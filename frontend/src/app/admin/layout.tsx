@@ -70,6 +70,12 @@ function ShoppingIcon({ className, style }: { className?: string; style?: React.
 function FileIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return <svg className={className} style={style} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
 }
+function ImageIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return <svg className={className} style={style} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>;
+}
+function TicketIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  return <svg className={className} style={style} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>;
+}
 function StarIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return <svg className={className} style={style} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}><path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>;
 }
@@ -106,18 +112,35 @@ const adminNav = [
     ],
   },
   {
-    label: 'ANALYTICS',
+    label: 'CRM',
     items: [
-      { href: '/admin/analytics', label: 'Estadisticas', icon: AnalyticsIcon },
       { href: '/admin/leads', label: 'Leads', icon: UsersIcon },
-      { href: '/admin/revenue', label: 'Revenue', icon: RevenueIcon },
+      { href: '/admin/lead-searches', label: 'Lead Searches', icon: GlobeIcon },
     ],
   },
   {
     label: 'MARKETING',
     items: [
+      { href: '/admin/email-campaigns', label: 'Email Campaigns', icon: MailIcon },
       { href: '/admin/marketing/promotions', label: 'Promociones', icon: MegaphoneIcon },
       { href: '/admin/trial-campaigns', label: 'Trial', icon: TargetIcon },
+    ],
+  },
+  {
+    label: 'CONTENIDO',
+    items: [
+      { href: '/admin/reviews', label: 'Reviews', icon: StarIcon },
+      { href: '/admin/blog', label: 'Blog', icon: BookOpen },
+      { href: '/admin/feedback', label: 'Feedback', icon: BellIcon },
+    ],
+  },
+  {
+    label: 'ANALYTICS',
+    items: [
+      { href: '/admin/analytics', label: 'Estadisticas', icon: AnalyticsIcon },
+      { href: '/admin/revenue', label: 'Revenue', icon: RevenueIcon },
+      { href: '/admin/conversion', label: 'Conversión', icon: ConversionIcon },
+      { href: '/admin/risk', label: 'Riesgo', icon: RiskIcon },
     ],
   },
   {
@@ -125,7 +148,36 @@ const adminNav = [
     items: [
       { href: '/admin/configuracion', label: 'General', icon: SettingsIcon },
       { href: '/admin/payment-settings', label: 'Pagos', icon: PaymentsIcon },
+      { href: '/admin/pricing', label: 'Precios', icon: PricingIcon },
+      { href: '/admin/social-api-config', label: 'Social APIs', icon: GlobeIcon },
       { href: '/admin/enterprise', label: 'Enterprise', icon: EnterpriseIcon },
+    ],
+  },
+  {
+    label: 'SISTEMA',
+    items: [
+      { href: '/admin/health', label: 'Health', icon: BotIcon },
+      { href: '/admin/ia-costs', label: 'IA Costs', icon: Brain },
+      { href: '/admin/security', label: 'Seguridad', icon: Shield },
+      { href: '/admin/audit-log', label: 'Auditoría', icon: FileIcon },
+    ],
+  },
+  {
+    label: 'OPERATIVO',
+    items: [
+      { href: '/admin/playbooks', label: 'Playbooks', icon: PlaybookIcon },
+      { href: '/admin/referrals', label: 'Referidos', icon: Gift },
+      { href: '/admin/mini-landings', label: 'Mini-Landings', icon: GlobeIcon },
+      { href: '/admin/woocommerce', label: 'WooCommerce', icon: ShoppingIcon },
+      { href: '/admin/generations', label: 'Generaciones', icon: ImageIcon },
+    ],
+  },
+  {
+    label: 'EQUIPO',
+    items: [
+      { href: '/admin/admins', label: 'Admins', icon: AdminsIcon },
+      { href: '/admin/soporte', label: 'Soporte', icon: BellIcon },
+      { href: '/admin/tickets', label: 'Tickets', icon: TicketIcon },
     ],
   },
 ];
@@ -168,6 +220,8 @@ const pageTitleMap: Record<string, string> = {
   '/admin/profile': 'Mi Perfil',
   '/admin/soporte': 'Soporte',
   '/admin/feedback': 'Feedback',
+  '/admin/generations': 'Generaciones',
+  '/admin/tickets': 'Tickets',
   '/admin/config/trial': 'Trial Campaigns',
   '/admin/config/contact': 'Contacto y Precios',
   '/admin/config/launch': 'Launch',
