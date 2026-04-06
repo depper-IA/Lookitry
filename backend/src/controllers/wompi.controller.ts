@@ -123,6 +123,35 @@ export class WompiController {
       const reference: string = transaction.reference;
       const amountInCents: number = transaction.amount_in_cents;
 
+      // ── VALIDACIÓN DE MONTO CONTRA BD ──────────────────────────────────────────
+      // Verificar que el monto pagado coincida con el monto esperado (tolerancia 2%)
+      if (!addonCreditsService.isAddonReference(reference)) {
+        const { data: pendingRegistration } = await supabaseAdmin
+          .from('pending_registrations')
+          .select('amount, plan')
+          .eq('reference', reference)
+          .maybeSingle();
+
+        if (pendingRegistration?.amount) {
+          const expectedAmountCents = Number(pendingRegistration.amount) * 100;
+          const tolerance = Math.max(expectedAmountCents * 0.02, 50); // 2% o min 50 centavos
+          if (Math.abs(amountInCents - expectedAmountCents) > tolerance) {
+            console.error('[Wompi] Monto no coincide:', { expected: expectedAmountCents, received: amountInCents });
+            await this.insertPaymentLog({
+              eventType: 'payment_approved',
+              reference,
+              transactionId: transaction.id,
+              amountCents: amountInCents,
+              status: 'failed',
+              errorMessage: `Monto no coincide: esperado=${expectedAmountCents} recibido=${amountInCents}`,
+              ipAddress,
+            });
+            res.status(200).json({ received: true });
+            return;
+          }
+        }
+      }
+
       // Log transacción APPROVED recibida
       await this.insertPaymentLog({
         eventType: 'payment_approved',

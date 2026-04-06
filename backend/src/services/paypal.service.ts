@@ -300,8 +300,8 @@ export class PaypalService {
       '';
 
     if (!webhookId) {
-      if (strict) return false;
-      return true;
+      console.error('[PayPal] PAYPAL_WEBHOOK_ID no configurado — RECHAZANDO webhook');
+      return false;
     }
 
     const transmissionId = req.headers['paypal-transmission-id'];
@@ -311,8 +311,8 @@ export class PaypalService {
     const transmissionSig = req.headers['paypal-transmission-sig'];
 
     if (!transmissionId || !transmissionTime || !certUrl || !authAlgo || !transmissionSig) {
-      if (strict) return false;
-      return true;
+      console.error('[PayPal] Headers de verificación faltantes');
+      return false;
     }
 
     try {
@@ -336,8 +336,8 @@ export class PaypalService {
 
       return resp.data?.verification_status === 'SUCCESS';
     } catch (e) {
-      if (strict) return false;
-      return true;
+      console.error('[PayPal] Error en verificación de webhook:', e?.message || e);
+      return false;
     }
   }
 }
