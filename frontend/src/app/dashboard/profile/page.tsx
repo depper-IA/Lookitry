@@ -289,7 +289,10 @@ export default function ProfilePage() {
       });
       setSuccessMsg('Perfil actualizado con éxito');
       refreshBrand();
-      
+
+      // Marcar paso 1 de onboarding como completo si se guardó exitosamente
+      window.dispatchEvent(new CustomEvent('onboarding:step-complete', { detail: { step: 1 } }));
+
       // Ocultar mensaje de éxito después de 5 segundos
       setTimeout(() => {
         setSuccessMsg('');

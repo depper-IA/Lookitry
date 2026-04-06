@@ -111,6 +111,9 @@ export default function ProductsPage() {
       await loadProducts();
       setShowForm(false);
       setError(null);
+
+      // Marcar paso 3 de onboarding como completo al crear producto exitosamente
+      window.dispatchEvent(new CustomEvent('onboarding:step-complete', { detail: { step: 3 } }));
     } catch (err: any) {
       if (err.response?.status === 403) {
         setError('Límite Alcanzado: Evoluciona tu plan para añadir más productos.');
