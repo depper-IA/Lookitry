@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { TrendingUp, Users, UserCheck, CreditCard, Package, ArrowRight, AlertTriangle, Zap } from 'lucide-react';
 
 import { adminApi } from '@/services/adminApi';
 import { motion } from 'framer-motion';
+import { EmbeddedPlaybook } from '@/components/admin/EmbeddedPlaybook';
 
 interface FunnelData {
   total_brands: number;
@@ -34,6 +36,27 @@ export default function AdminFunnelPage() {
   const [data, setData] = useState<FunnelData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const router = useRouter();
+
+  const stageNavigation: Record<string, string> = {
+    'Registro': '/admin/brands',
+    'Verificación': '/admin/brands',
+    'Trial iniciado': '/admin/brands?plan=TRIAL',
+    'Trial activo': '/admin/brands?plan=TRIAL',
+    'Conversión a pago': '/admin/brands?plan=TRIAL',
+    'Plan Basic': '/admin/brands?plan=BASIC',
+    'Plan Pro': '/admin/brands?plan=PRO',
+    'Uso activo': '/admin/brands?plan=BASIC',
+    'Riesgo de churn': '/admin/risk',
+  };
+
+  const handleStageClick = (stageName: string) => {
+    const href = stageNavigation[stageName];
+    if (href) router.push(href);
+  };
+
+  const hasLowTrialConversion = data?.stages[4]?.pct_of_prev && data.stages[4].pct_of_prev < 50;
+  const hasStalledTrials = Boolean(data?.trial_active && data.trial_active > 0 && hasLowTrialConversion);
 
   useEffect(() => {
     Promise.all([
@@ -114,7 +137,11 @@ export default function AdminFunnelPage() {
 
         <div className="space-y-3">
           {data.stages.map((stage, i) => (
-            <div key={stage.name} className="flex items-center gap-4">
+            <div
+              key={stage.name}
+              onClick={() => handleStageClick(stage.name)}
+              className="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity rounded-lg p-1 -mx-1"
+            >
               <div className="w-36 text-right flex-shrink-0">
                 <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{stage.name}</span>
               </div>
@@ -245,6 +272,12 @@ export default function AdminFunnelPage() {
           </table>
         </div>
       </div>
+
+      <EmbeddedPlaybook
+        playbookId="trial-stalled"
+        showWhen={hasStalledTrials}
+        title="Playbook: Trial estancado"
+      />
     </motion.div>
   );
 }

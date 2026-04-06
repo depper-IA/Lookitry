@@ -5,7 +5,6 @@ import { Shield, Check, AlertTriangle, Lock, Key, Users } from 'lucide-react';
 import { useConfirm } from '@/components/admin/ConfirmDialog';
 import { adminApi } from '@/services/adminApi';
 import { motion } from 'framer-motion';
-import { motion } from 'framer-motion';
 
 interface PaymentSettings {
   bypass_ip_protection: boolean;
