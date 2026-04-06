@@ -54,8 +54,8 @@ export default function AdminDashboardPage() {
     // Cargar alertas críticas y actividad reciente
     Promise.all([
       adminApi.get('/admin/alerts').catch(() => ({})),
-      adminApi.get('/payments?limit=5').catch(() => ({ payments: [] })),
-      adminApi.get('/brands?limit=5&sort=created_at:desc').catch(() => ({ brands: [] })),
+      adminApi.get('/admin/revenue/payments?limit=5').catch(() => ({ payments: [] })),
+      adminApi.get('/admin/brands?limit=5&sort=created_at:desc').catch(() => ({ brands: [] })),
     ])
       .then(([alertsData, paymentsData, brandsData]) => {
         if (alertsData.expiring) setAlerts(prev => ({ ...prev, expiring: alertsData.expiring }));

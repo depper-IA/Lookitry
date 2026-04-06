@@ -8,11 +8,19 @@ import {
   CheckCircle2,
   Cpu,
   Monitor,
-  Palette,
   ShieldCheck,
   TrendingUp,
   XCircle,
   Zap,
+  Eye,
+  Sparkles,
+  BarChart3,
+  Shirt,
+  Watch,
+  Sparkle,
+  Footprints,
+  ImageIcon,
+  Gauge,
 } from 'lucide-react';
 import LandingNav from '@/components/landing/new-landing/LandingNav';
 import LandingFooter from '@/components/landing/new-landing/LandingFooter';
@@ -34,8 +42,75 @@ const SectionLabel = ({ text, dark = false }: { text: string; dark?: boolean }) 
   </div>
 );
 
+const benefitCards = [
+  {
+    title: 'Aumenta Conversiones',
+    desc: 'Cuando los shoppers pueden ver como les quedara una prenda o accesorio antes de comprar, toman decisiones con mas confianza.',
+    icon: <TrendingUp size={28} />,
+  },
+  {
+    title: 'Reduce Devoluciones',
+    desc: 'Elimina la incertidumbre de compra online. Clientes que pueden ver como les queda un producto tienen menos probabilidades de devolverlo.',
+    icon: <ShieldCheck size={28} />,
+  },
+  {
+    title: 'Potenciado por IA',
+    desc: 'Nuestra tecnologia de inteligencia artificial de vanguardia fusiona productos con fotos de clientes creando visualizaciones realistas en segundos.',
+    icon: <Sparkles size={28} />,
+  },
+];
+
+const perfectForItems = [
+  { icon: <Shirt size={24} />, title: 'Ropa y Fashion', desc: 'Permite a tus clientes visualizar como queda la ropa en ellos antes de comprar.' },
+  { icon: <Footprints size={24} />, title: 'Calzado', desc: 'Ayuda a tus clientes a ver como lucira un zapato otennis con su estilo personal.' },
+  { icon: <Watch size={24} />, title: 'Accesorios', desc: 'Ideal para bolsos, cinturones, cascos, gorras y demas accesorios.' },
+  { icon: <Sparkle size={24} />, title: 'Joyas y Complementos', desc: 'Perfecto para collares, pulseras, anillos, aretes y accesorios de lujo.' },
+];
+
+const featureCards = [
+  {
+    title: 'One-Click en Producto',
+    desc: 'El probador se activa desde la ficha de producto y respeta el flujo nativo de WooCommerce. Sin interrupciones para tu cliente.',
+    icon: <Zap size={24} />,
+  },
+  {
+    title: 'Sin Registro para el Cliente',
+    desc: 'El cliente final solo toca el boton, sube su foto y recibe el resultado. No necesita crear cuenta ni descargar nada.',
+    icon: <Cpu size={24} />,
+  },
+  {
+    title: 'Generacion con IA Precisa',
+    desc: 'La inteligencia artificial de Lookitry crea una imagen realista de la prenda sobre la persona, mostrando exactamente como lucira.',
+    icon: <ImageIcon size={24} />,
+  },
+  {
+    title: 'Dashboard Completo',
+    desc: 'Accede a todas las estadisticas de tu dashboard Lookitry: productos, generaciones, consumo, analytics y mas desde tu cuenta.',
+    icon: <BarChart3 size={24} />,
+  },
+  {
+    title: 'Integracion Directa',
+    desc: 'Conecta tu tienda WooCommerce con Lookitry para gestionar productos, configuraciones y monitorear el rendimiento.',
+    icon: <Gauge size={24} />,
+  },
+  {
+    title: 'Telemetria de Soporte',
+    desc: 'El plugin reporta errores y latencia para que el equipo de Lookitry pueda darte soporte tecnico efectivo.',
+    icon: <ShieldCheck size={24} />,
+  },
+];
+
+
+
+const technicalSpecs = [
+  { label: 'PHP Version', value: '7.4 o superior' },
+  { label: 'WordPress', value: '5.8 o superior' },
+  { label: 'WooCommerce', value: '9.0 o superior' },
+];
+
 export default function PluginWooCommercePage() {
   const [currency, setCurrency] = useState<'COP' | 'USD'>('COP');
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('currency') as 'COP' | 'USD' | null;
@@ -72,29 +147,6 @@ export default function PluginWooCommercePage() {
     },
   ];
 
-  const featureCards = [
-    {
-      title: 'One-Click en Producto',
-      desc: 'El probador se activa desde la ficha de producto y respeta el flujo nativo de WooCommerce.',
-      icon: <Zap size={24} />,
-    },
-    {
-      title: 'Sin Apps ni Cuentas',
-      desc: 'El comprador solo sube su foto y obtiene el resultado. No tiene que descargar nada ni crear usuario adicional.',
-      icon: <Cpu size={24} />,
-    },
-    {
-      title: 'Integracion Visual',
-      desc: 'Puedes ajustar texto y colores del boton para que la activacion del probador encaje con tu tienda.',
-      icon: <Palette size={24} />,
-    },
-    {
-      title: 'Operacion Controlada',
-      desc: 'La conexion con Lookitry valida plan, sincroniza productos y registra eventos clave del plugin para soporte y monitoreo.',
-      icon: <ShieldCheck size={24} />,
-    },
-  ];
-
   const faqs = [
     {
       q: '¿El cliente tiene que salir de mi tienda o crear una cuenta aparte?',
@@ -106,7 +158,7 @@ export default function PluginWooCommercePage() {
     },
     {
       q: '¿Esta incluido en el Plan Basico o Trial?',
-      a: 'No. El plugin requiere un plan PRO o ENTERPRISE porque depende de activacion operativa, sincronizacion y uso productivo del motor de try-on.',
+      a: 'No. El plugin requiere un plan PRO o ENTERPRISE porque depende de activacion operativa, sincronizacion y uso productivo del motor de IA de Lookitry.',
     },
     {
       q: '¿Ralentizara la velocidad de mi producto?',
@@ -115,22 +167,23 @@ export default function PluginWooCommercePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-dm-sans selection:bg-[#FF5C3A]/30 selection:text-[#FF5C3A] overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-dm-sans selection:bg-[#FF5C3A]/30 selection:text-white overflow-x-clip">
       <style dangerouslySetInnerHTML={{ __html: PREMIUM_FONTS }} />
 
       <LandingNav currency={currency} onCurrencyChange={handleCurrencyChange} />
 
       <main className="pt-32 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
+          {/* Hero Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mb-40 mt-12">
             <div className="relative z-10">
               <SectionLabel text="Plugin Oficial WooCommerce" />
               <h1 className="font-jakarta text-[48px] md:text-[64px] font-black leading-[1.1] tracking-tight mb-8">
-                Activa el probador virtual en tu ficha de producto y deja que tu cliente{' '}
+                Activa el probador Lookitry en tu ficha de producto y deja que tu cliente{' '}
                 <span className="text-[#FF5C3A]">pruebe antes de comprar.</span>
               </h1>
               <p className="text-lg text-white/60 mb-12 leading-relaxed max-w-xl font-dm-sans">
-                Lookitry se integra directamente con WooCommerce para mostrar un boton de prueba virtual dentro de cada
+                Lookitry se integra directamente con WooCommerce para mostrar un boton de visualizacion con IA dentro de cada
                 producto. El cliente sube su foto, abre un modal sin salir de tu tienda y ve el resultado en una
                 experiencia pensada para reducir friccion, dudas y devoluciones.
               </p>
@@ -160,12 +213,13 @@ export default function PluginWooCommercePage() {
                     <div className="absolute inset-x-8 top-1/2 -translate-y-1/2 space-y-4">
                       <div className="p-6 rounded-3xl bg-[#0a0a0a]/80 border border-white/10 backdrop-blur-xl translate-x-[-8%] group-hover:translate-x-0 transition-transform duration-700">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-[#7f54b3]/20 flex items-center justify-center">
+                          <div className="w-12 h-12 rounded-xl bg-[#7f54b3]/20 flex items-center justify-center p-1">
                             <Image
-                              src="https://woocommerce.com/wp-content/themes/woo/images/logo-woocommerce.svg"
-                              alt="Woo"
-                              width={24}
+                              src="/integrations/Woo_logo_color.svg"
+                              alt="WooCommerce"
+                              width={40}
                               height={24}
+                              className="object-contain"
                             />
                           </div>
                           <div>
@@ -196,6 +250,119 @@ export default function PluginWooCommercePage() {
             </div>
           </div>
 
+          {/* Perfect For Section */}
+          <div className="mb-40">
+            <div className="text-center mb-16">
+              <SectionLabel text="Casos de Uso" />
+              <h2 className="font-jakarta text-3xl md:text-5xl font-black mb-6">
+                Ideal para tu <span className="text-[#FF5C3A]">industria.</span>
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {perfectForItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 hover:bg-white/10 hover:border-[#FF5C3A]/20 transition-all group"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mb-6 group-hover:scale-110 transition-transform">
+                    {item.icon}
+                  </div>
+                  <h4 className="font-jakarta font-bold text-lg mb-3 text-white/90">{item.title}</h4>
+                  <p className="text-white/40 text-sm leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Try Before You Buy with AI */}
+          <div className="mb-40 bg-gradient-to-b from-[#FF5C3A]/5 to-transparent rounded-[4rem] p-12 md:p-20 border border-[#FF5C3A]/10">
+            <div className="text-center mb-16">
+              <SectionLabel text="Probador IA" />
+              <h2 className="font-jakarta text-3xl md:text-5xl font-black mb-6">
+                Prueba antes de comprar con <span className="text-[#FF5C3A]">Inteligencia Artificial</span>
+              </h2>
+              <p className="text-white/60 text-lg max-w-3xl mx-auto leading-relaxed">
+                Deja que tus clientes visualicen productos en su propio espacio o en ellos mismos. Sube una foto y ve como luce cualquier producto en la vida real antes de hacer una compra.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="p-10 rounded-[2.5rem] bg-white/5 border border-white/5 text-center hover:bg-white/10 transition-all">
+                <div className="w-16 h-16 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mx-auto mb-6">
+                  <Eye size={28} />
+                </div>
+                <h4 className="font-jakarta font-bold text-xl mb-4">Simple para clientes</h4>
+                <p className="text-white/40 text-sm leading-relaxed">
+                  Solo dale click al boton del probador Lookitry, sube una foto y ve resultados instantaneos. Sin apps que descargar ni cuentas que crear.
+                </p>
+              </div>
+              <div className="p-10 rounded-[2.5rem] bg-white/5 border border-white/5 text-center hover:bg-white/10 transition-all">
+                <div className="w-16 h-16 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mx-auto mb-6">
+                  <Monitor size={28} />
+                </div>
+                <h4 className="font-jakarta font-bold text-xl mb-4">Funciona en fichas de producto</h4>
+                <p className="text-white/40 text-sm leading-relaxed">
+                  Integrado perfectamente en tus paginas de producto WooCommerce con una interfaz modal elegante que combina con el diseno de tu tienda.
+                </p>
+              </div>
+              <div className="p-10 rounded-[2.5rem] bg-white/5 border border-white/5 text-center hover:bg-white/10 transition-all">
+                <div className="w-16 h-16 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mx-auto mb-6">
+                  <TrendingUp size={28} />
+                </div>
+                <h4 className="font-jakarta font-bold text-xl mb-4">Incrementa confianza y reduce devoluciones</h4>
+                <p className="text-white/40 text-sm leading-relaxed">
+                  Cuando los clientes pueden ver como les queda una prenda o accesorio antes de comprar, toman mejores decisiones y reducen las devoluciones.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Key Benefits */}
+          <div className="mb-40">
+            <div className="text-center mb-16">
+              <SectionLabel text="Beneficios Clave" />
+              <h2 className="font-jakarta text-3xl md:text-5xl font-black">
+                Lo que obtienes con <span className="text-[#FF5C3A]">Lookitry</span>
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {benefitCards.map((benefit, idx) => (
+                <div key={idx} className="p-10 rounded-[2.5rem] bg-gradient-to-b from-[#FF5C3A]/10 to-transparent border border-[#FF5C3A]/20 hover:border-[#FF5C3A]/40 transition-all">
+                  <div className="w-16 h-16 rounded-2xl bg-[#FF5C3A]/20 flex items-center justify-center text-[#FF5C3A] mb-8">
+                    {benefit.icon}
+                  </div>
+                  <h4 className="font-jakarta font-bold text-2xl mb-4 text-white/90">{benefit.title}</h4>
+                  <p className="text-white/50 text-sm leading-relaxed">{benefit.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Features Grid */}
+          <div className="mb-40">
+            <div className="text-center mb-16">
+              <SectionLabel text="Features" />
+              <h2 className="font-jakarta text-3xl md:text-5xl font-black mb-6">
+                Caracteristicas <span className="text-[#FF5C3A]">principales.</span>
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featureCards.map((feat, idx) => (
+                <div
+                  key={idx}
+                  className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 hover:bg-white/10 hover:border-[#FF5C3A]/20 transition-all flex flex-col h-full group"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mb-6 group-hover:scale-110 transition-transform">
+                    {feat.icon}
+                  </div>
+                  <h4 className="font-jakarta font-bold text-xl mb-4 text-white/90">{feat.title}</h4>
+                  <p className="text-white/40 text-sm leading-relaxed flex-1">{feat.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Problem/Solution */}
           <div className="mb-40" id="problem-solution">
             <div className="text-center mb-20 flex flex-col items-center">
               <SectionLabel text="Productividad E-commerce" />
@@ -218,7 +385,6 @@ export default function PluginWooCommercePage() {
               </div>
 
               <div className="p-10 md:p-14 rounded-[3.5rem] bg-[#FF5C3A] border border-[#FF5C3A]/20 flex flex-col relative overflow-hidden group shadow-2xl shadow-[#FF5C3A]/20">
-                {/* Noise overlay removed for premium clean look */}
                 <div className="relative z-10 flex flex-col h-full">
                   <h3 className="font-jakarta text-2xl font-bold mb-8 text-white">Lo que resuelve Lookitry en WooCommerce:</h3>
                   <div className="space-y-8 flex-1">
@@ -237,30 +403,7 @@ export default function PluginWooCommercePage() {
             </div>
           </div>
 
-          <div className="mb-40">
-            <div className="text-center mb-20 flex flex-col items-center">
-              <SectionLabel text="Lo que incluye" />
-              <h2 className="font-jakarta text-3xl md:text-5xl font-black mb-6">
-                Propuesta comparable, <span className="text-[#FF5C3A]">sin vender humo.</span>
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featureCards.map((feat, idx) => (
-                <div
-                  key={idx}
-                  className="p-8 rounded-[2.5rem] bg-white/5 border border-white/5 hover:bg-white/10 transition-all flex flex-col items-start h-full group hover:-translate-y-2 duration-500"
-                >
-                  <div className="w-14 h-14 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center text-[#FF5C3A] mb-8 group-hover:scale-110 transition-transform">
-                    {feat.icon}
-                  </div>
-                  <h4 className="font-jakarta font-bold text-xl mb-4 text-white/90">{feat.title}</h4>
-                  <p className="text-white/40 text-sm leading-relaxed">{feat.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
+          {/* Pricing */}
           <div className="bg-white rounded-[4rem] p-12 md:p-24 text-center mb-40 relative overflow-hidden group shadow-[0_50px_100px_rgba(255,255,255,0.05)] border border-white/10">
             <div className="absolute inset-0 bg-[#FF5C3A]/5 opacity-50 pointer-events-none" />
 
@@ -270,7 +413,7 @@ export default function PluginWooCommercePage() {
                 Convierte mejor sin agregar <br /> friccion al checkout.
               </h2>
               <p className="text-[#0a0a0a]/60 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-dm-sans leading-relaxed">
-                El plugin de WooCommerce esta disenado para tiendas que necesitan una experiencia de try-on integrada,
+                El plugin de WooCommerce esta disenado para tiendas que necesitan una experiencia de visualizacion integrada,
                 rapida y operable. Se incluye de forma exclusiva en nuestro <span className="font-bold text-[#FF5C3A]">Plan Pro</span>.
               </p>
 
@@ -312,7 +455,36 @@ export default function PluginWooCommercePage() {
             </div>
           </div>
 
-          <div className="max-w-4xl mx-auto mb-40">
+          {/* Technical Specs */}
+          <div className="mb-40 p-12 rounded-[3rem] bg-white/5 border border-white/10">
+            <div className="text-center mb-12">
+              <SectionLabel text="Especificaciones Tecnicas" />
+              <h2 className="font-jakarta text-2xl md:text-3xl font-black text-white/80">
+                Requisitos del sistema
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {technicalSpecs.map((spec, idx) => (
+                <div key={idx} className="text-center p-6 rounded-[1.5rem] bg-white/[0.02]">
+                  <div className="text-[#FF5C3A] text-xs font-bold uppercase tracking-widest mb-3">{spec.label}</div>
+                  <div className="text-white/90 text-lg font-bold">{spec.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Final CTA */}
+          <div className="text-center mb-20">
+            <div className="inline-flex flex-col items-center p-12 rounded-[3.5rem] bg-gradient-to-b from-[#FF5C3A]/10 to-transparent border border-[#FF5C3A]/20">
+              <h3 className="text-2xl font-bold font-jakarta mb-6">¿Listo para activar el probador en tu tienda?</h3>
+              <Link href="/checkout?plan=PRO" className="flex items-center gap-3 text-white font-black text-xl hover:text-[#FF5C3A] transition-colors border-b-2 border-[#FF5C3A] pb-2">
+                Empieza tu Plan Pro hoy mismo <ArrowRight size={24} />
+              </Link>
+            </div>
+          </div>
+
+          {/* FAQ */}
+          <div className="max-w-4xl mx-auto mb-20">
             <div className="text-center mb-16 flex flex-col items-center">
               <SectionLabel text="Preguntas del Plugin" />
               <h2 className="font-jakarta text-3xl md:text-5xl font-bold">
@@ -322,25 +494,26 @@ export default function PluginWooCommercePage() {
 
             <div className="grid gap-6">
               {faqs.map((faq, i) => (
-                <div key={i} className="p-10 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all group cursor-pointer">
+                <div
+                  key={i}
+                  className="p-10 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer"
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                >
                   <h3 className="font-jakarta font-bold text-xl mb-6 flex items-center justify-between text-white/90">
                     {faq.q}
-                    <ArrowRight size={20} className="text-[#FF5C3A] rotate-90 group-hover:rotate-0 transition-transform duration-500" />
+                    <ArrowRight
+                      size={20}
+                      className={`text-[#FF5C3A] transition-transform duration-500 ${openFaq === i ? 'rotate-90' : ''}`}
+                    />
                   </h3>
-                  <p className="text-white/40 leading-relaxed text-base group-hover:text-white/60 transition-colors">{faq.a}</p>
+                  {openFaq === i && (
+                    <p className="text-white/40 leading-relaxed text-base">{faq.a}</p>
+                  )}
                 </div>
               ))}
             </div>
-
-            <div className="mt-20 text-center">
-              <div className="inline-flex flex-col items-center p-12 rounded-[3.5rem] bg-gradient-to-b from-[#FF5C3A]/10 to-transparent border border-[#FF5C3A]/20">
-                <h3 className="text-2xl font-bold font-jakarta mb-6">¿Listo para activar el try-on en tu tienda?</h3>
-                <Link href="/checkout?plan=PRO" className="flex items-center gap-3 text-white font-black text-xl hover:text-[#FF5C3A] transition-colors border-b-2 border-[#FF5C3A] pb-2">
-                  Empieza tu Plan Pro hoy mismo <ArrowRight size={24} />
-                </Link>
-              </div>
-            </div>
           </div>
+
         </div>
       </main>
 
