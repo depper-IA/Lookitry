@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function BlogPage() {
   return (
-    <>
+    <div className="overflow-x-clip">
       <LandingNav />
       <main className="min-h-screen bg-[#0a0a0a] selection:bg-[#FF5C3A]/30">
         {/* Hero Section */}
@@ -34,6 +34,6 @@ export default function BlogPage() {
         <BlogList />
       </main>
       <LandingFooter />
-    </>
+    </div>
   );
 }

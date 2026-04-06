@@ -92,7 +92,7 @@ export default function EstadoPage() {
   }, []);
 
   return (
-    <>
+    <div className="overflow-x-clip">
       <LandingNav />
       <main className="min-h-screen bg-[#030303]">
         <section className="px-6 md:px-8 py-16 md:py-24 border-b border-[#1a1a1a]">
@@ -206,6 +206,6 @@ export default function EstadoPage() {
         </section>
       </main>
       <LandingFooter />
-    </>
+    </div>
   );
 }

@@ -88,7 +88,7 @@ const SALES_BLOCKS = [
 
 export default function CasosDeUsoPage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-dm-sans selection:bg-[#FF5C3A]/30 selection:text-[#FF5C3A] overflow-x-hidden">
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-dm-sans selection:bg-[#FF5C3A]/30 selection:text-[#FF5C3A] overflow-x-clip">
       <style dangerouslySetInnerHTML={{ __html: PREMIUM_FONTS }} />
       
       <LandingNav />

@@ -1,5 +1,52 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Correcciones página Plugin WooCommerce (v3)
+
+### Correcciones aplicadas
+- ELIMINADA sección "Ideas del probador por industria" completa (el widget no necesita prompts, viene configurado)
+- Features corregidas según alcance real del plugin:
+  - One-Click en Producto ✓
+  - Sin Registro para el Cliente ✓ (antes "Sin Apps ni Cuentas")
+  - Generacion con IA Precisa ✓ (nueva - feature principal)
+  - Dashboard Completo ✓ (nueva - refleja el dashboard real)
+  - Integracion Directa ✓ (nueva - describe la conexión WooCommerce)
+  - Telemetria de Soporte ✓ (nueva - describe el reporte de errores)
+- ELIMINADAS features falsas:
+  - Integración Visual (no existe)
+  - Sincronización Automatica (no es automática)
+- Corregido texto del beneficio de devoluciones para moda (antes decia "entorno real")
+- Iconos actualizados: añadidos ImageIcon y Gauge
+- Logo de WooCommerce en hero ahora usa archivo local (`/integrations/Woo_logo_color.svg`) en lugar de URL externa
+
+## [2026-04-05] - Correcciones página Plugin WooCommerce (v2)
+
+### Correcciones applied
+- ELIMINADO termino "Virtual Try-On" y "try-on" en todo el texto (prohibido - marca competencia)
+- Corregidas industrias: solo moda, ropa, calzado, accesorios (cascos, bolsos, protectores), joyas
+- ELIMINADO soporte multi-idioma (no ofrecido)
+- ELIMINADA sección "Advanced Scenarios" completa
+- ELIMINADAS industrias incorrectas: Furniture, Electronics, Sports, Beauty
+- Corregidos todos los textos para usar "probador Lookitry" en lugar de "virtual try-on"
+- Iconos actualizados: añadido Footprints para calzado
+
+## [2026-04-05] - Restructuración página Plugin WooCommerce (v1)
+
+### Archivos
+- `frontend/src/app/plugin-woocommerce/page.tsx` (completamente reescrito)
+
+## [2026-04-05] - Fix CTA botón landing → checkout con LANDING
+
+### Problema
+- Botón "Crear mi página ahora" en `LandingMiniLanding.tsx` redirigía a `/checkout?plan=TRIAL`
+- El usuario debía seleccionar manualmente LANDING para comprar el mini-landing
+
+### Solución
+- Cambiado href del botón de `/checkout?plan=TRIAL` a `/checkout?plan=LANDING`
+- Ahora el checkout se abre directamente con LANDING pre-seleccionado
+
+### Archivos
+- `frontend/src/components/landing/new-landing/LandingMiniLanding.tsx` (línea 42)
+
 ## [2026-04-05] - Fix error 422 PayPal checkout-url
 
 ### Problema

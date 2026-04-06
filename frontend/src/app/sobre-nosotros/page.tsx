@@ -94,7 +94,7 @@ export default function SobreNosotrosPage() {
   }, []);
 
   return (
-    <>
+    <div className="overflow-x-clip">
       <LandingNav />
       <main className="min-h-screen bg-[#0a0a0a]">
 
@@ -240,6 +240,6 @@ export default function SobreNosotrosPage() {
         </div>
       </main>
       <LandingFooter />
-    </>
+    </div>
   );
 }

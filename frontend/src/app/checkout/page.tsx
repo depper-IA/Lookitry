@@ -215,7 +215,8 @@ function CheckoutContent() {
     if (!draft) return;
 
     const draftPlan = String(draft.plan || '').toUpperCase();
-    if (['BASIC', 'PRO', 'LANDING', 'TRIAL'].includes(draftPlan)) {
+    const urlHasPlan = searchParams.has('plan');
+    if (!urlHasPlan && ['BASIC', 'PRO', 'LANDING', 'TRIAL'].includes(draftPlan)) {
       setSelectedPlan(draftPlan as PlanKey);
     }
     if (typeof draft.months === 'number' && [1, 3, 6, 12].includes(draft.months)) {

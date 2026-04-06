@@ -105,7 +105,7 @@ export default function TerminosClient() {
   const [openId, setOpenId] = useState<string | null>(null);
 
   return (
-    <>
+    <div className="overflow-x-clip">
       <LandingNav />
       <main className="min-h-screen bg-[#f5f2ee]">
 
@@ -169,6 +169,6 @@ export default function TerminosClient() {
         </div>
       </main>
       <LandingFooter />
-    </>
+    </div>
   );
 }

@@ -149,7 +149,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   };
 
   return (
-    <>
+    <div className="overflow-x-clip">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -347,7 +347,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         )}
       </article>
     </main>
-    <LandingFooter />
-    </>
+      <LandingFooter />
+    </div>
   );
 }
