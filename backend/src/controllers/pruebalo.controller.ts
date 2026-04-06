@@ -346,25 +346,46 @@ export class PruebaloController {
       // 7.5 Enriquecer con RAG (aprendizaje de errores anteriores) — timeout 4s, no bloquea
       const prompt = await promptRagService.enrichPrompt(finalPrompt, product.category ?? null);
 
-      const n8nResult = await n8nClient.callTryOnWebhook({
+      // 7.6 Encolar job para procesamiento async
+      await generationQueueService.enqueueJob({
         brand_id: brand.id,
         product_id: product.id,
         selfie_url: uploadResult.url,
         product_image_url: product.image_url,
         prompt,
+        generation_id: generation.id,
       });
 
-      if (!n8nResult.success || !n8nResult.imageUrl) {
-        throw new Error(n8nResult.error || 'Error desconocido en generación');
+      // 7.7 Polling hasta que la generación esté lista (máx 90s)
+      const maxPolls = 45;
+      let pollCount = 0;
+      let finalGeneration = generation;
+
+      while (pollCount < maxPolls) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const updated = await generationsService.getGenerationById(generation.id);
+        if (updated?.status === 'SUCCESS' && updated.result_image_url) {
+          finalGeneration = updated;
+          break;
+        }
+        if (updated?.status === 'FAILED') {
+          throw new Error(updated.error_message || 'Generación fallida');
+        }
+
+        pollCount++;
+      }
+
+      if (finalGeneration.status !== 'SUCCESS' || !finalGeneration.result_image_url) {
+        throw new Error('Timeout esperando resultado de generación');
       }
 
       const processingTime = Date.now() - startTime;
 
-
       // 8. Actualizar registro con resultado (SUCCESS/FAILED) — guardar prompt para trazabilidad RAG
-      await generationsService.updateGeneration(generation.id, {
+      await generationsService.updateGeneration(finalGeneration.id, {
         status: 'SUCCESS',
-        result_image_url: n8nResult.imageUrl,
+        result_image_url: finalGeneration.result_image_url,
         processing_time: processingTime,
         prompt_used: prompt,
       });
@@ -383,8 +404,8 @@ export class PruebaloController {
       await releaseSlot();
       return res.status(200).json({
         success: true,
-        generationId: generation.id,
-        imageUrl: n8nResult.imageUrl,
+        generationId: finalGeneration.id,
+        imageUrl: finalGeneration.result_image_url,
         processingTime,
         reused: false,
       });
