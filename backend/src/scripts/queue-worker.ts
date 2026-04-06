@@ -18,6 +18,11 @@ interface TryOnJob {
   retry_count?: number;
 }
 
+interface N8nWebhookResponse {
+  success?: boolean;
+  [key: string]: unknown;
+}
+
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || 'https://n8n.wilkiedevs.com/webhook/tryon';
 const N8N_API_KEY = process.env.N8N_BEARER_TOKEN || process.env.N8N_API_KEY || '';
 
@@ -45,7 +50,7 @@ async function processJob(job: TryOnJob): Promise<void> {
       throw new Error(`n8n responded with ${response.status}`);
     }
 
-    const result = await response.json();
+    const result = await response.json() as N8nWebhookResponse;
     console.log(`[Worker] Job ${job.generation_id} completed:`, result.success ? 'SUCCESS' : 'FAILED');
 
     await redis.lrem(PROCESSING_KEY, 1, JSON.stringify(job));

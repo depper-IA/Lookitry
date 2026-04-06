@@ -19,6 +19,7 @@ export interface GoogleAuthResult {
   isNewBrand: boolean;
   accountLinked: boolean;
   pendingRegistrationId?: string;
+  redirectTo?: string;
 }
 
 /**
