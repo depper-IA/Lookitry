@@ -5,6 +5,7 @@ import { generationConcurrencyService } from '../services/generation-concurrency
 import { N8nClient } from '../services/n8n.client';
 import { GenerationsService } from '../services/generations.service';
 import { UsageService } from '../services/usage.service';
+import { generationsLogService } from '../services/generations-log.service';
 
 const router = Router();
 const n8nClient = new N8nClient();
@@ -17,6 +18,16 @@ async function processNextJob(): Promise<void> {
 
   console.log(`[Queue Worker] Processing job ${job.generation_id}`);
 
+  // Crear log en admin_generations_log
+  const logId = await generationsLogService.logFromQueueJob({
+    generation_id: job.generation_id,
+    brand_id: job.brand_id,
+    product_id: job.product_id,
+    selfie_url: job.selfie_url,
+    product_image_url: job.product_image_url,
+    model_used: 'openrouter'
+  });
+
   const slot = await generationConcurrencyService.acquireSlot(job.brand_id, 'PRO');
 
   if (!slot.acquired) {
@@ -24,6 +35,8 @@ async function processNextJob(): Promise<void> {
     console.log(`[Queue Worker] Re-enqueued job ${job.generation_id} - no slots available`);
     return;
   }
+
+  const startTime = Date.now();
 
   try {
     const n8nResult = await n8nClient.callTryOnWebhook({
@@ -34,21 +47,33 @@ async function processNextJob(): Promise<void> {
       prompt: job.prompt,
     });
 
+    const processingTime = Date.now() - startTime;
+
     if (n8nResult.success && n8nResult.imageUrl) {
       await generationsService.updateGeneration(job.generation_id, {
         status: 'SUCCESS',
         result_image_url: n8nResult.imageUrl,
       });
+      // Actualizar log
+      if (logId) {
+        await generationsLogService.markCompleted(logId, n8nResult.imageUrl, processingTime);
+      }
     } else {
       throw new Error(n8nResult.error || 'Unknown n8n error');
     }
 
     await generationQueueService.markJobCompleted(job.generation_id);
   } catch (error: any) {
+    const processingTime = Date.now() - startTime;
     await generationsService.updateGeneration(job.generation_id, {
       status: 'FAILED',
       error_message: error.message,
     });
+
+    // Actualizar log
+    if (logId) {
+      await generationsLogService.markFailed(logId, error.message, processingTime);
+    }
 
     await generationQueueService.markJobFailed(job.generation_id, error.message);
 

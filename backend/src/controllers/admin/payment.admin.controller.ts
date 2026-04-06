@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AdminService } from '../../services/admin.service';
 import { SubscriptionService } from '../../services/subscription.service';
 import { emailService } from '../../services/email.service';
+import { supabaseAdmin } from '../../config/supabase';
 
 const adminService = new AdminService();
 const subscriptionService = new SubscriptionService();
@@ -252,5 +253,121 @@ export const reactivateSubscription = async (req: Request, res: Response) => {
     return res.status(200).json({ message: 'Suscripción reactivada exitosamente' });
   } catch (error: any) {
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al reactivar suscripción' });
+  }
+};
+
+/**
+ * GET /api/admin/payments/search
+ * Búsqueda por transaction_id, payment_id o Wompi reference
+ */
+export const searchPayments = async (req: any, res: Response) => {
+  try {
+    const { q, type = 'all' } = req.query;
+
+    if (!q || typeof q !== 'string' || q.trim().length === 0) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'q (query) es requerido' });
+    }
+
+    const searchTerm = q.trim();
+    const searchType = type === 'transaction' || type === 'payment' ? type : 'all';
+
+    let paymentData = null;
+    let transactionData = null;
+
+    // Buscar en subscription_payments (payments)
+    if (searchType === 'all' || searchType === 'payment') {
+      // Primero por UUID directo
+      let { data: paymentById } = await supabaseAdmin
+        .from('subscription_payments')
+        .select('*, brand:brands(id, name, email, slug, plan)')
+        .eq('id', searchTerm)
+        .maybeSingle();
+
+      if (!paymentById) {
+        // Buscar por reference
+        const { data: paymentByRef } = await supabaseAdmin
+          .from('subscription_payments')
+          .select('*, brand:brands(id, name, email, slug, plan)')
+          .eq('reference', searchTerm)
+          .maybeSingle();
+        paymentById = paymentByRef;
+      }
+
+      if (paymentById) {
+        paymentData = paymentById;
+      }
+    }
+
+    // Buscar en payment_logs (transactions)
+    if (searchType === 'all' || searchType === 'transaction') {
+      // Por transaction_id (uuid o string)
+      let { data: txByTxId } = await supabaseAdmin
+        .from('payment_logs')
+        .select('*, brand:brands(id, name, email, slug, plan)')
+        .eq('transaction_id', searchTerm)
+        .maybeSingle();
+
+      if (!txByTxId) {
+        // Por reference en payment_logs
+        const { data: txByRef } = await supabaseAdmin
+          .from('payment_logs')
+          .select('*, brand:brands(id, name, email, slug, plan)')
+          .eq('reference', searchTerm)
+          .maybeSingle();
+        txByTxId = txByRef;
+      }
+
+      if (txByTxId) {
+        transactionData = txByTxId;
+      }
+    }
+
+    // Construir respuesta
+    if (paymentData && transactionData) {
+      // Ambos encontrados - return payment por defecto si type=all
+      return res.json({
+        type: 'payment',
+        data: paymentData,
+        brand: paymentData.brand,
+        transaction: transactionData
+      });
+    }
+
+    if (paymentData) {
+      return res.json({
+        type: 'payment',
+        data: paymentData,
+        brand: paymentData.brand
+      });
+    }
+
+    if (transactionData) {
+      // Obtener subscription info si existe brand_id
+      let subscription = null;
+      if (transactionData.brand_id) {
+        const { data: subData } = await supabaseAdmin
+          .from('brands')
+          .select('id, name, email, slug, plan, subscription_status, subscription_end_date')
+          .eq('id', transactionData.brand_id)
+          .maybeSingle();
+        subscription = subData;
+      }
+
+      return res.json({
+        type: 'transaction',
+        data: transactionData,
+        brand: transactionData.brand,
+        subscription
+      });
+    }
+
+    // No encontrado
+    return res.status(404).json({
+      error: 'NOT_FOUND',
+      message: 'No se encontró ningún pago o transacción con ese identificador'
+    });
+  } catch (error: any) {
+    console.error('Error in searchPayments:', error);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: 'Error al buscar pagos' });
   }
 };

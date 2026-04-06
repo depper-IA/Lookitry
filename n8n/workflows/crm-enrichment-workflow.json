@@ -1,0 +1,162 @@
+{
+  "name": "CRM Enrichment Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtTime": 300
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "table": "leads",
+        "columns": "id,name,business_type,website,email,city",
+        "condition": {
+          "conditions": [
+            {
+              "columnName": "is_fashion_relevant",
+              "condition": "isEmpty"
+            },
+            {
+              "columnName": "website",
+              "condition": "isNotEmpty"
+            }
+          ],
+          "options": {
+            "caseSensitive": false
+          }
+        },
+        "limit": 50
+      },
+      "id": "get-pending-leads",
+      "name": "Get Pending Leads",
+      "type": "supabase",
+      "typeVersion": 1.1,
+      "position": [300, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-credentials",
+          "name": "Supabase Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Process each lead and classify\nconst leads = $input.all();\nconst results = [];\n\nconst FASHION_KEYWORDS = [\n  'ropa', 'boutique', 'moda', 'fashion', 'zapato', 'calzado', 'dress', 'clothes',\n  'apparel', 'accesorios', 'jewelry', 'joyeria', 'reloj', 'tienda ropa',\n  'sport', 'deportivo', 'lenceria', 'ropa intima', 'shoes', 'footwear', 'bag',\n  'bolso', 'optic', 'eyewear', 'perfume', 'cosmetico', 'beauty', 'cosmetic',\n  'skin', 'barber', 'barbershop', 'nail', 'manicure', 'pedicure', 'estetica',\n  'pijama', 'sweater', 'camisa', 'pantalon', 'jean', 'camiseta', 'morral',\n  'cartera', 'billetera', 'tenis', 'sandal', 'accessories', 'wear', 'outfit',\n  'style', 'trend', 'coleccion', 'temporada', 'clothing', 'shop', 'store'\n];\n\nconst NO_FASHION_KEYWORDS = [\n  'supermercado', 'bar', 'restaurant', 'cafe', 'dentista', 'constructor',\n  'gimnasio', 'gym', 'farmacia', 'hotel', 'inmueble', 'vehiculo', 'auto',\n  'mueble', 'cocina', 'electro', 'tecnologia', 'computador', 'lacteos',\n  'alimentos', 'banco', 'finca', 'agricola', 'veterinaria', 'mascota'\n];\n\nfor (const lead of leads) {\n  const { json } = lead;\n  const searchText = `${json.name || ''} ${json.business_type || ''}`.toLowerCase();\n  \n  let isFashion = null;\n  let reason = 'No keywords found';\n  let score = 25;\n  \n  // Check NO_FASHION first\n  for (const kw of NO_FASHION_KEYWORDS) {\n    if (searchText.includes(kw)) {\n      isFashion = false;\n      reason = `Rejected: ${kw}`;\n      score = 0;\n      break;\n    }\n  }\n  \n  // Check FASHION\n  if (isFashion === null) {\n    for (const kw of FASHION_KEYWORDS) {\n      if (searchText.includes(kw)) {\n        isFashion = true;\n        reason = `Accepted: ${kw}`;\n        score = 50;\n        break;\n      }\n    }\n  }\n  \n  results.push({\n    json: {\n      ...json,\n      is_fashion_relevant: isFashion,\n      enrichment_source: isFashion !== null ? 'keyword_classification' : 'pending_verification',\n      enrichment_score: score,\n      business_type_confirmed: isFashion === true ? json.business_type : null,\n      last_enriched_at: new Date().toISOString(),\n      internal_notes: `Clasificado: ${reason}`\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "classify-leads",
+      "name": "Classify Leads",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1.1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "table": "leads",
+        "idField": "id",
+        "updateFields": {
+          "is_fashion_relevant": "={{ $json.is_fashion_relevant }}",
+          "enrichment_source": "={{ $json.enrichment_source }}",
+          "enrichment_score": "={{ $json.enrichment_score }}",
+          "business_type_confirmed": "={{ $json.business_type_confirmed }}",
+          "last_enriched_at": "={{ $json.last_enriched_at }}",
+          "internal_notes": "={{ $json.internal_notes }}"
+        }
+      },
+      "id": "update-leads",
+      "name": "Update Leads in Supabase",
+      "type": "supabase",
+      "typeVersion": 1.1,
+      "position": [700, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-credentials",
+          "name": "Supabase Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "message": "={{ $json.total }} leads processed. Fashion: {{ $json.fashion }}, Non-fashion: {{ $json.notFashion }}, Pending: {{ $json.pending }}"
+      },
+      "id": "notification",
+      "name": "Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1.1,
+      "position": [900, 300],
+      "credentials": {
+        "slackApi": {
+          "id": "slack-credentials",
+          "name": "Slack Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Pending Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Pending Leads": {
+      "main": [
+        [
+          {
+            "node": "Classify Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Leads": {
+      "main": [
+        [
+          {
+            "node": "Update Leads in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Leads in Supabase": {
+      "main": [
+        [
+          {
+            "node": "Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["crm", "enrichment", "lookitry"],
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "templateId": "crm-enrichment-workflow"
+  }
+}

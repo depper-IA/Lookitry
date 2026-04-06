@@ -1,5 +1,100 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-06] - Auditoría Admin + Gap Críticos Resueltos
+
+### Auditoría Completa del Panel Admin
+- Generado reporte `ADMIN_AUDIT.md` con 100+ endpoints documentados
+- Identificados 6 gaps críticos que fueron resueltos
+- 16 rutas agregadas al sidebar (ahora 10 secciones, 33 rutas totales)
+
+### NUEVA PÁGINA: Historial de Try-Ons (`/admin/generations`)
+**Frontend:** `frontend/src/app/admin/generations/page.tsx`
+- Stats cards: total, pending, processing, completed, failed
+- Filtros: por marca, status, ID, rango de fechas
+- Tabla con 8 columnas: ID, Marca, Producto, Status, Modelo, Tiempo, Fecha, Acciones
+- Badges de status con colores
+- Modal detalle con thumbnails, metadata JSON, botón reintentar
+- Paginación con selector de items por página
+
+### NUEVA PÁGINA: Tickets de Soporte (`/admin/tickets`)
+**Frontend:** `frontend/src/app/admin/tickets/page.tsx`
+- Stats cards: abiertos, alta prioridad, resueltos semana
+- Filtros: status, prioridad, marca, asignado, búsqueda
+- Tabla con bulk actions: cambiar estado, asignar masivamente
+- Modal crear/editar con todos los campos
+- Side panel con detalle + acciones rápidas
+- Paginación
+
+### BÚSQUEDA POR ID DE TRANSACCIÓN
+**Frontend:** `frontend/src/app/admin/payments/page.tsx`
+- SearchBox con debounce 300ms en parte superior
+- Highlight card con resultado encontrado
+- Busca por: transaction_id, payment_id, referencia Wompi
+
+### BASE DE DATOS - Nuevas Tablas
+
+**`admin_generations_log`**
+```sql
+- id, brand_id, product_id, customer_id, selfie_url, result_url
+- status (pending/processing/completed/failed)
+- model_used, processing_time_ms, retry_count, original_generation_id
+- metadata JSONB, created_at, finished_at
+- Índices: brand_id, status, created_at, original_generation_id
+```
+
+**`admin_support_tickets`**
+```sql
+- id, brand_id, admin_id, subject, description
+- priority (low/medium/high/urgent), status (open/in_progress/resolved/closed)
+- category, assigned_to, resolution_notes
+- created_at, updated_at, resolved_at
+- Índices: brand_id, status, priority, assigned_to
+```
+
+### ENDPOINTS NUEVOS
+
+**Generaciones:**
+- `GET /api/admin/generations` - lista con filtros y paginación
+- `GET /api/admin/generations/:id` - detalle
+- `PATCH /api/admin/generations/:id/retry` - reintentar fallida
+- `GET /api/admin/brands/:brandId/generations` - por marca
+- `GET /api/admin/generations/stats` - stats aggregate
+
+**Tickets:**
+- `GET /api/admin/tickets` - lista con filtros
+- `GET /api/admin/tickets/:id` - detalle
+- `POST /api/admin/tickets` - crear
+- `PATCH /api/admin/tickets/:id` - actualizar
+- `DELETE /api/admin/tickets/:id` - eliminar (solo open)
+- `POST /api/admin/tickets/bulk-action` - acción masiva
+- `GET /api/admin/tickets/stats` - stats
+
+**Búsqueda:**
+- `GET /api/admin/payments/search?q=` - búsqueda por ID transacción
+
+**Utilidades:**
+- `GET /api/admin/brands/list` - lista para dropdowns
+
+### ARCHIVOS CREADOS
+- `backend/src/db/migrations/002_admin_generations_log_and_support_tickets.sql`
+- `backend/src/controllers/admin/generations.admin.controller.ts`
+- `backend/src/controllers/admin/tickets.admin.controller.ts`
+- `backend/src/services/generations-log.service.ts`
+- `frontend/src/app/admin/generations/page.tsx`
+- `frontend/src/app/admin/tickets/page.tsx`
+
+### ARCHIVOS MODIFICADOS
+- `frontend/src/app/admin/layout.tsx` - sidebar restaurado con 33 rutas
+- `backend/src/routes/admin.routes.ts` - 14 rutas nuevas
+- `backend/src/controllers/admin.controller.ts` - exports
+- `backend/src/controllers/admin/generations.admin.controller.ts`
+- `backend/src/controllers/admin/tickets.admin.controller.ts`
+- `backend/src/controllers/admin/payment.admin.controller.ts`
+- `backend/src/services/admin/brand.admin.service.ts`
+- `frontend/src/app/admin/payments/page.tsx` - búsqueda por ID
+
+---
+
 ## [2026-04-06] - Correcciones Panel Admin
 
 ### Sidebar Simplificado
