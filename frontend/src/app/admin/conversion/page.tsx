@@ -81,7 +81,7 @@ function KpiCard({
       }}
     >
       <div className="flex items-center justify-between">
-        <div className="rounded-2xl bg-[#FF5C3A]/10 p-3 text-[#FF5C3A]">{icon}</div>
+        <div className="rounded-2xl p-3" style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: 'var(--accent)' }}>{icon}</div>
       </div>
       <p className="mt-4 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: 'var(--text-muted)' }}>
         {label}
@@ -131,7 +131,7 @@ export default function AdminConversionPage() {
   if (loading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#FF5C3A]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2" style={{ borderColor: 'var(--accent)' }} />
       </div>
     );
   }
@@ -180,7 +180,7 @@ export default function AdminConversionPage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr_0.85fr]">
         <section className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-[#FF5C3A]/10 p-3 text-[#FF5C3A]">
+            <div className="rounded-2xl p-3" style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: 'var(--accent)' }}>
               <Target className="h-5 w-5" />
             </div>
             <div>
@@ -221,7 +221,7 @@ export default function AdminConversionPage() {
           <div className="mt-6 grid gap-3 md:grid-cols-4">
             <div className="rounded-[1.25rem] border p-4" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
               <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Trial {'->'} Basic</p>
-              <p className="mt-2 text-2xl font-bold text-[#FF5C3A]">{stats.trialToBasic}</p>
+              <p className="mt-2 text-2xl font-bold" style={{ color: 'var(--accent)' }}>{stats.trialToBasic}</p>
             </div>
             <div className="rounded-[1.25rem] border p-4" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-base)' }}>
               <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Trial {'->'} Pro</p>
@@ -240,7 +240,7 @@ export default function AdminConversionPage() {
 
         <section className="rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-[#FF5C3A]/10 p-3 text-[#FF5C3A]">
+            <div className="rounded-2xl p-3" style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: 'var(--accent)' }}>
               <RefreshCcw className="h-5 w-5" />
             </div>
             <div>
@@ -258,8 +258,8 @@ export default function AdminConversionPage() {
               const height = row.count > 0 ? Math.max(8, (row.count / maxMonthly) * 100) : 0;
               return (
                 <div key={row.month} className="group relative flex flex-1 flex-col items-center gap-3">
-                  <div className="flex h-full w-full items-end overflow-hidden rounded-t-2xl bg-[#FF5C3A]/10">
-                    <div className="w-full rounded-t-2xl bg-[#FF5C3A]" style={{ height: `${height}%` }} />
+                  <div className="flex h-full w-full items-end overflow-hidden rounded-t-2xl" style={{ backgroundColor: 'rgba(255,92,58,0.1)' }}>
+                    <div className="w-full rounded-t-2xl" style={{ height: `${height}%`, backgroundColor: 'var(--accent)' }} />
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
                     {formatMonth(row.month)}
@@ -318,7 +318,7 @@ export default function AdminConversionPage() {
                       <div style={{ color: 'var(--text-muted)' }}>{trial.email}</div>
                     </td>
                     <td className="py-4">
-                      <span className="rounded-full bg-[#FF5C3A]/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#FF5C3A]">
+                      <span className="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em]" style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: 'var(--accent)' }}>
                         {trial.subscription_status || 'active'}
                       </span>
                     </td>

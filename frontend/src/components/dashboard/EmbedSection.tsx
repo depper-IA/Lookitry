@@ -47,7 +47,7 @@ const PLATFORMS: Array<{ id: Platform; name: string; icon: React.ReactNode; desc
   {
     id: 'other',
     name: 'HTML custom',
-    icon: <Code2 className="w-5 h-5 md:w-6 md:h-6 text-[#FF5C3A]" />,
+    icon: <Code2 className="w-5 h-5 md:w-6 md:h-6 text-[var(--accent)]" />,
     desc: 'Webflow, Square o React',
   },
 ];
@@ -82,12 +82,12 @@ const PLATFORM_STEPS: Record<Platform, Array<{ title: string; detail: string }>>
 
 const Tooltip = ({ text }: { text: string }) => (
   <div className="group relative inline-block ml-1.5">
-    <div className="w-4 h-4 rounded-full bg-[var(--bg-input)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[#FF5C3A] cursor-help transition-all shadow-sm">
+    <div className="w-4 h-4 rounded-full bg-[var(--bg-input)] border border-[var(--border-color)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--accent)] cursor-help transition-all shadow-sm">
       <Info className="w-2.5 h-2.5" />
     </div>
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 shadow-2xl z-50 pointer-events-none border-b-4 border-b-[#FF5C3A]">
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-64 p-4 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 shadow-2xl z-50 pointer-events-none border-b-4 border-b-[var(--accent)]">
       <p className="text-[10px] leading-relaxed text-[var(--text-primary)] font-bold uppercase tracking-wider">{text}</p>
-      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[#FF5C3A]"></div>
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-[var(--accent)]"></div>
     </div>
   </div>
 );
@@ -141,8 +141,8 @@ export function EmbedSection() {
            <Code2 size={180} />
         </div>
         <div className="flex items-center gap-4 relative z-10 border-b border-[var(--border-color)] pb-6">
-           <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-              <Code2 className="w-5 h-5 md:w-6 md:h-6 text-[#FF5C3A]" />
+           <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-[var(--accent)]/10 flex items-center justify-center">
+              <Code2 className="w-5 h-5 md:w-6 md:h-6 text-[var(--accent)]" />
            </div>
            <div>
               <h3 className="text-lg md:text-xl font-bold text-[var(--text-primary)] tracking-tight">Inyección de código</h3>
@@ -155,10 +155,10 @@ export function EmbedSection() {
         </p>
 
         <div className="flex flex-wrap gap-3 md:gap-4 relative z-10">
-           <a href={embedUrl} target="_blank" rel="noopener noreferrer" className="w-full md:w-auto px-6 py-3 bg-[#FF5C3A] text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-[#FF5C3A]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+           <a href={embedUrl} target="_blank" rel="noopener noreferrer" className="w-full md:w-auto px-6 py-3 bg-[var(--accent)] text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-[var(--accent)]/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
              <ExternalLink size={14} /> Ver probador público
            </a>
-           <button onClick={() => setShowPreview(!showPreview)} className="px-6 py-3 bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-xl font-bold uppercase tracking-widest text-[10px] hover:border-[#FF5C3A]/40 transition-all flex items-center justify-center gap-2">
+           <button onClick={() => setShowPreview(!showPreview)} className="px-6 py-3 bg-[var(--bg-input)] text-[var(--text-primary)] border border-[var(--border-color)] rounded-xl font-bold uppercase tracking-widest text-[10px] hover:border-[var(--accent)]/40 transition-all flex items-center justify-center gap-2">
              {showPreview ? <><EyeOff size={14} /> Ocultar preview</> : <><Eye size={14} /> Vista previa</>}
            </button>
         </div>
@@ -190,14 +190,14 @@ export function EmbedSection() {
                <button 
                  key={p.id}
                  onClick={() => setPlatform(p.id)}
-                 className={`p-4 md:p-5 rounded-2xl border text-left transition-all relative overflow-hidden group/plat ${active ? 'border-[#FF5C3A] bg-[#FF5C3A]/5 shadow-lg' : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[#FF5C3A]/30'}`}
+                 className={`p-4 md:p-5 rounded-2xl border text-left transition-all relative overflow-hidden group/plat ${active ? 'border-[var(--accent)] bg-[var(--accent)]/5 shadow-lg' : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[var(--accent)]/30'}`}
                >
                  <div className={`mb-3 h-8 flex items-center justify-start transition-transform duration-500 ${active ? 'scale-110' : 'opacity-40 group-hover/plat:opacity-100'}`}>
                     {p.icon}
                  </div>
-                 <h4 className={`text-[11px] font-bold tracking-tight ${active ? 'text-[#FF5C3A]' : 'text-[var(--text-primary)]'}`}>{p.name}</h4>
+                 <h4 className={`text-[11px] font-bold tracking-tight ${active ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>{p.name}</h4>
                  <p className="text-[9px] font-semibold text-[var(--text-muted)] mt-1 opacity-50 uppercase tracking-tighter">{p.desc}</p>
-                 {active && <div className="absolute top-3 right-3 text-[#FF5C3A]"><CheckCircle2 size={16} strokeWidth={3} /></div>}
+                 {active && <div className="absolute top-3 right-3 text-[var(--accent)]"><CheckCircle2 size={16} strokeWidth={3} /></div>}
                </button>
              );
            })}
@@ -215,7 +215,7 @@ export function EmbedSection() {
                {PLATFORM_STEPS[platform].map((step, idx) => (
                  <div key={idx} className="relative space-y-2 group/step">
                     <div className="flex items-center gap-3">
-                       <span className="w-7 h-7 rounded-lg bg-[var(--text-primary)] text-[var(--bg-card)] flex items-center justify-center font-bold text-[10px] group-hover/step:bg-[#FF5C3A] transition-colors shrink-0">{idx + 1}</span>
+                       <span className="w-7 h-7 rounded-lg bg-[var(--text-primary)] text-[var(--bg-card)] flex items-center justify-center font-bold text-[10px] group-hover/step:bg-[var(--accent)] transition-colors shrink-0">{idx + 1}</span>
                        <h5 className="text-[10px] font-bold tracking-tight text-[var(--text-primary)]">{step.title}</h5>
                     </div>
                     <p className="text-[10px] font-medium text-[var(--text-muted)] tracking-tight leading-relaxed opacity-70">{step.detail}</p>
@@ -238,7 +238,7 @@ export function EmbedSection() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex-1 flex items-center justify-center gap-2.5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
+                className={`flex-1 flex items-center justify-center gap-2.5 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${activeTab === tab.id ? 'bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/20' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'}`}
               >
                 {tab.icon} {tab.label}
               </button>
@@ -249,22 +249,22 @@ export function EmbedSection() {
             <div className="absolute top-4 right-4 flex gap-2 opacity-100 md:opacity-0 group-hover/code:opacity-100 transition-opacity z-20">
                <button 
                  onClick={() => copy(activeTab === 'widget' ? widgetCode : iframeCode, activeTab)}
-                 className="px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-lg text-[9px] font-bold uppercase tracking-widest border border-white/10 hover:bg-[#FF5C3A] transition-all"
+                 className="px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-lg text-[9px] font-bold uppercase tracking-widest border border-white/10 hover:bg-[var(--accent)] transition-all"
                >
                  {copiedKey === activeTab ? <><Check size={12} strokeWidth={4} className="text-emerald-400" /> Copiado</> : <><Copy size={12} /> Copiar código</>}
                </button>
             </div>
             
             <div className="bg-[#0a0a0a] p-6 md:p-8 rounded-2xl border border-white/5 shadow-2xl overflow-hidden min-h-[160px] flex items-center relative">
-               <div className="absolute top-0 left-0 w-1 h-full bg-[#FF5C3A]/40" />
+               <div className="absolute top-0 left-0 w-1 h-full bg-[var(--accent)]/40" />
                <pre className="text-[10px] md:text-[11px] font-mono text-indigo-300/90 leading-relaxed font-semibold whitespace-pre-wrap break-all w-full pl-4 overflow-x-auto">
                   {activeTab === 'widget' ? widgetCode : iframeCode}
                </pre>
             </div>
             
             <div className="mt-6 flex items-start gap-4 p-4 md:p-5 bg-[var(--bg-input)] rounded-xl border border-[var(--border-color)] border-dashed">
-               <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-[#FF5C3A]/10 flex items-center justify-center shrink-0">
-                  <AlertCircle className="w-4 h-4 text-[#FF5C3A]" />
+               <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-[var(--accent)]/10 flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-4 h-4 text-[var(--accent)]" />
                </div>
                <p className="text-[10px] font-medium text-[var(--text-muted)] leading-relaxed italic opacity-70">
                  {activeTab === 'widget' 
@@ -276,17 +276,17 @@ export function EmbedSection() {
       </motion.section>
 
       {/* ── SUPPORT ── */}
-      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className={`${sectionStyle} bg-gradient-to-br from-[#FF5C3A]/5 to-indigo-500/5`}>
+      <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className={`${sectionStyle} bg-gradient-to-br from-[var(--accent)]/5 to-indigo-500/5`}>
          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
             <div className="space-y-4 text-center md:text-left">
-               <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-[var(--text-primary)] leading-none">¿Bloqueo en el <br /><span className="text-[#FF5C3A]">despliegue?</span></h3>
+               <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-[var(--text-primary)] leading-none">¿Bloqueo en el <br /><span className="text-[var(--accent)]">despliegue?</span></h3>
                <p className="text-[var(--text-secondary)] text-[10px] font-bold uppercase tracking-widest max-w-sm opacity-60">Nuestro equipo de arquitectura está listo para ayudarte con la integración directa sin costo adicional.</p>
             </div>
             <div className="flex gap-4">
                <a href={support.whatsapp} target="_blank" rel="noopener noreferrer" className="p-5 bg-emerald-500/10 text-emerald-500 rounded-2xl border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all shadow-xl shadow-emerald-500/5 group/wa">
                   <MessageCircle className="w-6 h-6 group-hover/wa:scale-110 transition-transform" />
                </a>
-               <a href={`mailto:${support.email}`} className="p-5 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-2xl border border-[#FF5C3A]/20 hover:bg-[#FF5C3A] hover:text-white transition-all shadow-xl shadow-[#FF5C3A]/5 group/mail">
+               <a href={`mailto:${support.email}`} className="p-5 bg-[var(--accent)]/10 text-[var(--accent)] rounded-2xl border border-[var(--accent)]/20 hover:bg-[var(--accent)] hover:text-white transition-all shadow-xl shadow-[var(--accent)]/5 group/mail">
                   <Mail className="w-6 h-6 group-hover/mail:scale-110 transition-transform" />
                </a>
             </div>

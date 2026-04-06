@@ -36,8 +36,12 @@ export default function GoogleCallbackPage() {
           return;
         }
 
-        if (data.needsOnboarding) {
-          router.push('/register/google-setup');
+        if (data.redirectTo) {
+          // Usuario nuevo con Google → ir al checkout funnel
+          router.push(data.redirectTo);
+        } else if (data.needsOnboarding) {
+          // Fallback: si no hay redirectTo, ir a checkout
+          router.push('/checkout');
         } else {
           router.push('/dashboard');
         }

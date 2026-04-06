@@ -185,8 +185,8 @@ return (
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest text-white transition-all shadow-lg shadow-[#FF5C3A]/20"
-          style={{ backgroundColor: '#FF5C3A' }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest transition-all"
+          style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
         >
           <IconPlus />
           Agregar Lead
@@ -203,7 +203,7 @@ return (
           <div
             key={status}
             className="rounded-2xl border p-4 cursor-pointer transition-colors"
-            style={{ backgroundColor: 'var(--bg-card)', borderColor: filterStatus === status ? '#FF5C3A' : 'var(--border-color)' }}
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: filterStatus === status ? 'var(--accent)' : 'var(--border-color)' }}
             onClick={() => setFilterStatus(filterStatus === status ? '' : status)}
           >
             <p className="text-2xl font-bold" style={{ color: STATUS_COLORS[status] }}>{stats[status]}</p>
@@ -221,7 +221,8 @@ return (
         <select
           value={filterCountry}
           onChange={(e) => setFilterCountry(e.target.value)}
-          className="px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+          className="px-3 py-2 border rounded-lg focus:outline-none"
+          style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)', backgroundColor: 'var(--bg-input)' }}
         >
           <option value="">Todos los países</option>
           <option value="Colombia">Colombia</option>
@@ -265,7 +266,7 @@ return (
           <button
             onClick={() => setShowAddModal(true)}
             className="mt-4 transition-colors hover:opacity-80"
-            style={{ color: '#FF5C3A' }}
+            style={{ color: 'var(--accent)' }}
           >
             Agregar el primero
           </button>
@@ -308,12 +309,12 @@ return (
                   <td className="px-4 py-3">
                     <div className="space-y-1">
                       {lead.email && (
-                        <a href={`mailto:${lead.email}`} className="flex items-center gap-1 text-sm text-[#666] hover:text-[#FF5C3A]">
+                        <a href={`mailto:${lead.email}`} className="flex items-center gap-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
                           <IconMail /> {lead.email}
                         </a>
                       )}
                       {lead.phone && (
-                        <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-sm text-[#666] hover:text-[#FF5C3A]">
+                        <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
                           <IconPhone /> {lead.phone}
                         </a>
                       )}
@@ -420,28 +421,30 @@ function LeadModal({ lead, onClose, onSave }: { lead?: Lead; onClose: () => void
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-[#e5e5e5]">
-          <h2 className="text-lg font-bold text-[#0a0a0a]">{lead ? 'Editar Lead' : 'Nuevo Lead'}</h2>
+      <div className="rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+        <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--border-color)' }}>
+          <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{lead ? 'Editar Lead' : 'Nuevo Lead'}</h2>
           <button onClick={onClose}><IconX /></button>
         </div>
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#666] mb-1">Nombre *</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Nombre *</label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#666] mb-1">País</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>País</label>
               <select
                 value={form.country}
                 onChange={(e) => setForm({ ...form, country: e.target.value })}
-                className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               >
                 <option value="Colombia">Colombia</option>
                 <option value="USA">USA</option>
@@ -449,75 +452,83 @@ function LeadModal({ lead, onClose, onSave }: { lead?: Lead; onClose: () => void
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#666] mb-1">Ciudad</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Ciudad</label>
               <input
                 type="text"
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
-                className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Email</label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Teléfono</label>
+              <input
+                type="tel"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-[#666] mb-1">Email</label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-[#666] mb-1">Teléfono</label>
-            <input
-              type="tel"
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
-            />
-          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#666] mb-1">Instagram</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Instagram</label>
               <input
                 type="text"
                 value={form.instagram}
                 onChange={(e) => setForm({ ...form, instagram: e.target.value })}
                 placeholder="@usuario"
-                className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#666] mb-1">Website</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Website</label>
               <input
                 type="url"
                 value={form.website}
                 onChange={(e) => setForm({ ...form, website: e.target.value })}
-                className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#666] mb-1">Notas</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Notas</label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={3}
-              className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
         </div>
-        <div className="flex justify-end gap-3 p-6 border-t border-[#e5e5e5]">
+        <div className="flex justify-end gap-3 p-6 border-t" style={{ borderColor: 'var(--border-color)' }}>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-[#666] hover:text-[#0a0a0a] transition-colors"
+            className="px-4 py-2 transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
           >
             Cancelar
           </button>
           <button
             onClick={handleSubmit}
             disabled={saving || !form.name.trim()}
-            className="px-4 py-2 bg-[#FF5C3A] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="px-4 py-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+            style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
           >
             {saving ? <IconSpinner /> : lead ? 'Guardar' : 'Crear'}
           </button>

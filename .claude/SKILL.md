@@ -23,6 +23,7 @@ description: Master index of the Lookitry AI agent skills and bundles ecosystem
 
 | Skill | Ubicación | Fuente |
 |-------|-----------|--------|
+| `@token-efficiency` | `.agents/skills/token-efficiency/` | Lookitry (opcional) |
 | `@brainstorming` | `.agents/skills/brainstorming/` | obra/superpowers |
 | `@verification-before-completion` | `.agents/skills/verification-before-completion/` | obra/superpowers |
 | `@subagent-driven-development` | `.agents/skills/subagent-driven-development/` | obra/superpowers |

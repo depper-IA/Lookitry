@@ -118,9 +118,9 @@ export default function AdminIACostsPage() {
           <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Uso acumulado</p>
           <p className="text-2xl font-bold font-jakarta mt-1" style={{ color: '#f59e0b' }}>${totalUsage.toFixed(2)}</p>
         </div>
-        <div className="rounded-[1.5rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '3px solid #FF5C3A' }}>
+        <div className="rounded-[1.5rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '3px solid var(--accent)' }}>
           <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Costo promedio/gen</p>
-          <p className="text-2xl font-bold font-jakarta mt-1" style={{ color: '#FF5C3A' }}>~$0.045</p>
+          <p className="text-2xl font-bold font-jakarta mt-1" style={{ color: 'var(--accent)' }}>~$0.045</p>
         </div>
       </div>
 
@@ -129,7 +129,7 @@ export default function AdminIACostsPage() {
           <div key={credits.provider} className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: '#FF5C3A' }}>{credits.provider === 'openrouter' ? 'OpenRouter' : 'Replicate'}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--accent)' }}>{credits.provider === 'openrouter' ? 'OpenRouter' : 'Replicate'}</p>
                 <h3 className="text-sm font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>Créditos y consumo</h3>
               </div>
               <button onClick={loadCredits} disabled={loadingCredits}
@@ -170,7 +170,7 @@ export default function AdminIACostsPage() {
             {credits.settings_url && (
               <a href={credits.settings_url} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors"
-                style={{ backgroundColor: '#FF5C3A', color: '#fff' }}>
+                style={{ backgroundColor: 'var(--accent)', color: '#fff' }}>
                 <ExternalLink className="w-3.5 h-3.5" /> Ir a billing
               </a>
             )}
@@ -180,7 +180,7 @@ export default function AdminIACostsPage() {
 
       <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <div className="flex items-center gap-2 mb-4">
-          <Brain className="w-5 h-5" style={{ color: '#FF5C3A' }} />
+          <Brain className="w-5 h-5" style={{ color: 'var(--accent)' }} />
           <h2 className="font-jakarta font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Prompts maestros de IA</h2>
         </div>
 
@@ -191,19 +191,19 @@ export default function AdminIACostsPage() {
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Master Prompt</label>
             <textarea value={aiPromptMaster} onChange={e => setAiPromptMaster(e.target.value)} rows={6}
-              className="w-full px-4 py-3 border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+              className="w-full px-4 py-3 border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
               style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>Prompt Negativo</label>
             <textarea value={aiPromptNegative} onChange={e => setAiPromptNegative(e.target.value)} rows={4}
-              className="w-full px-4 py-3 border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+              className="w-full px-4 py-3 border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
               style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
           </div>
           <div className="flex justify-end">
             <button onClick={handleSaveAI} disabled={savingAI}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60"
-              style={{ backgroundColor: '#FF5C3A', color: '#fff' }}>
+              style={{ backgroundColor: 'var(--accent)', color: '#fff' }}>
               {savingAI ? 'Guardando...' : 'Guardar prompts'}
             </button>
           </div>

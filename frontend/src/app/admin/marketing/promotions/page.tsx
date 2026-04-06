@@ -71,7 +71,7 @@ const TYPE_COLORS: Record<PromoType, string> = {
   modal_timer:   '#6366f1',
   coupon:        '#10b981',
   banner:        '#f59e0b',
-  plan_override: '#FF5C3A',
+  plan_override: 'var(--accent)',
   launch_offer:  '#ec4899',
 };
 
@@ -86,7 +86,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
     <button
       onClick={() => onChange(!checked)}
       className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors flex-shrink-0"
-      style={{ backgroundColor: checked ? '#FF5C3A' : 'var(--border-color)' }}
+      style={{ backgroundColor: checked ? 'var(--accent)' : 'var(--border-color)' }}
       role="switch"
       aria-checked={checked}
     >
@@ -102,7 +102,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 const inputCls = [
   'w-full rounded-lg px-3 py-2 text-[13px] focus:outline-none transition-colors',
-  'focus:ring-1 focus:ring-[#FF5C3A]',
+  'focus:ring-1 focus:ring-[var(--accent)]',
 ].join(' ');
 
 const inputStyle = {
@@ -217,7 +217,7 @@ function PromoForm({ initial, onSave, onCancel, saving }: {
       </div>
 
       <div className="flex gap-2 pt-2">
-        <button onClick={() => onSave(form)} disabled={saving || !form.name.trim()} className="flex items-center gap-2 px-4 py-2 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all disabled:opacity-50 shadow-lg shadow-[#FF5C3A]/20" style={{ backgroundColor: '#FF5C3A' }}>
+        <button onClick={() => onSave(form)} disabled={saving || !form.name.trim()} className="flex items-center gap-2 px-4 py-2 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all disabled:opacity-50 shadow-lg shadow-[var(--accent)]/20" style={{ backgroundColor: 'var(--accent)' }}>
           {saving && <IconSpinner />}Guardar
         </button>
         <button onClick={onCancel} className="px-4 py-2 rounded-lg text-[13px] transition-colors" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
@@ -290,9 +290,9 @@ function CouponForm({ initial, onSave, onCancel, saving }: {
               <button key={p} onClick={() => set('plan_ids', active ? form.plan_ids.filter(x => x !== p) : [...form.plan_ids, p])}
                 className="px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all"
                 style={{
-                  border: `1px solid ${active ? '#FF5C3A' : 'var(--border-color)'}`,
+                  border: `1px solid ${active ? 'var(--accent)' : 'var(--border-color)'}`,
                   backgroundColor: active ? 'rgba(255,92,58,0.1)' : 'var(--bg-hover)',
-                  color: active ? '#FF5C3A' : 'var(--text-secondary)',
+                  color: active ? 'var(--accent)' : 'var(--text-secondary)',
                 }}
               >{p}</button>
             );
@@ -304,7 +304,7 @@ function CouponForm({ initial, onSave, onCancel, saving }: {
         <span className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>Cupón activo</span>
       </div>
       <div className="flex gap-2 pt-1">
-        <button onClick={() => onSave(form)} disabled={saving || !form.code.trim()} className="flex items-center gap-2 px-4 py-2 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all disabled:opacity-50 shadow-lg shadow-[#FF5C3A]/20" style={{ backgroundColor: '#FF5C3A' }}>
+        <button onClick={() => onSave(form)} disabled={saving || !form.code.trim()} className="flex items-center gap-2 px-4 py-2 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all disabled:opacity-50 shadow-lg shadow-[var(--accent)]/20" style={{ backgroundColor: 'var(--accent)' }}>
           {saving && <IconSpinner />}Guardar cupón
         </button>
         <button onClick={onCancel} className="px-4 py-2 rounded-lg text-[13px] transition-colors" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }}
@@ -407,7 +407,7 @@ export default function PromotionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255,92,58,0.15)', color: '#FF5C3A' }}>
+          <div className="w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'rgba(255,92,58,0.15)', color: 'var(--accent)' }}>
             <IconMegaphone />
           </div>
           <div>
@@ -417,8 +417,8 @@ export default function PromotionsPage() {
         </div>
         <button
           onClick={() => { setShowPromoForm(true); setEditingPromo(null); setTab('promos'); }}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all hover:opacity-90 shadow-lg shadow-[#FF5C3A]/20 w-full sm:w-auto"
-          style={{ backgroundColor: '#FF5C3A' }}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all hover:opacity-90 shadow-lg shadow-[var(--accent)]/20 w-full sm:w-auto"
+          style={{ backgroundColor: 'var(--accent)' }}
         >
           <IconPlus />Nueva promoción
         </button>
@@ -438,7 +438,7 @@ export default function PromotionsPage() {
         {(['promos', 'coupons'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className="px-4 py-2 rounded-lg text-[13px] font-medium transition-all"
-            style={{ backgroundColor: tab === t ? '#FF5C3A' : 'transparent', color: tab === t ? '#fff' : 'var(--text-secondary)' }}
+            style={{ backgroundColor: tab === t ? 'var(--accent)' : 'transparent', color: tab === t ? '#fff' : 'var(--text-secondary)' }}
           >
             {t === 'promos' ? 'Promociones' : 'Cupones'}
           </button>

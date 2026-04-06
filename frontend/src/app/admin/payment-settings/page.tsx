@@ -103,7 +103,7 @@ export default function PaymentSettingsPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-10 h-10 border-4 border-[#FF5C3A]/30 border-t-[#FF5C3A] rounded-full animate-spin" />
+      <div className="w-10 h-10 border-4 border-[var(--accent)]/30 border-t-[var(--accent)] rounded-full animate-spin" />
     </div>
   );
 
@@ -154,10 +154,10 @@ export default function PaymentSettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-2.5 text-white rounded-2xl disabled:opacity-50 font-black uppercase tracking-widest transition-colors shadow-lg shadow-[#FF5C3A]/20"
-            style={{ backgroundColor: '#FF5C3A' }}
+            className="flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-2.5 text-white rounded-2xl disabled:opacity-50 font-black uppercase tracking-widest transition-colors shadow-lg shadow-[var(--accent)]/20"
+            style={{ backgroundColor: 'var(--accent)' }}
             onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e04e30')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FF5C3A')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'var(--accent)')}
           >
             {saving ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
@@ -180,9 +180,9 @@ export default function PaymentSettingsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              style={activeTab === tab.id ? { color: '#FF5C3A' } : { color: 'var(--text-muted)' }}
+              style={activeTab === tab.id ? { color: 'var(--accent)' } : { color: 'var(--text-muted)' }}
               className={`flex shrink-0 items-center gap-2 px-4 py-4 sm:px-6 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                activeTab === tab.id ? 'border-[#FF5C3A]' : 'border-transparent hover:opacity-80'
+                activeTab === tab.id ? 'border-[var(--accent)]' : 'border-transparent hover:opacity-80'
               }`}
             >
               {tab.icon}
@@ -222,7 +222,7 @@ export default function PaymentSettingsPage() {
                         onClick={() => set('wompi_test_mode', true)}
                         className="px-3 py-1.5 rounded-md text-xs font-medium transition-all"
                         style={settings.wompi_test_mode
-                          ? { background: '#FF5C3A', color: '#fff' }
+                          ? { background: 'var(--accent)', color: '#fff' }
                           : { color: 'var(--text-muted)' }}
                       >
                         Sandbox
@@ -242,12 +242,12 @@ export default function PaymentSettingsPage() {
                   {/* Bloque Sandbox */}
                   <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border-color)' }}>
                     <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--border-color)', background: settings.wompi_test_mode ? 'rgba(255,92,58,0.08)' : 'var(--bg-input)' }}>
-                      <span className={`w-2 h-2 rounded-full ${settings.wompi_test_mode ? 'bg-[#FF5C3A]' : 'bg-gray-400'}`} />
-                      <span className="text-sm font-medium" style={{ color: settings.wompi_test_mode ? '#FF5C3A' : 'var(--text-muted)' }}>
+                      <span className={`w-2 h-2 rounded-full ${settings.wompi_test_mode ? 'bg-[var(--accent)]' : 'bg-gray-400'}`} />
+                      <span className="text-sm font-medium" style={{ color: settings.wompi_test_mode ? 'var(--accent)' : 'var(--text-muted)' }}>
                         Llaves Sandbox (pruebas)
                       </span>
                       {settings.wompi_test_mode && (
-                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20">
+                        <span className="ml-auto text-xs px-2 py-0.5 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20">
                           Activo
                         </span>
                       )}
@@ -547,7 +547,7 @@ function Toggle({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean
     <button
       onClick={() => onChange(!enabled)}
       className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
-      style={{ backgroundColor: enabled ? '#FF5C3A' : 'var(--border-color)' }}
+      style={{ backgroundColor: enabled ? 'var(--accent)' : 'var(--border-color)' }}
     >
       <span
         className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${

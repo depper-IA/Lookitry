@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const configNav = [
   { href: '/admin/config/trial', label: 'Trial' },
   { href: '/admin/config/contact', label: 'Contacto y precios' },
-  { href: '/admin/config/launch', label: '🚀 Launch' },
+  { href: '/admin/config/launch', label: 'Launch' },
   { href: '/admin/config/health', label: 'Salud del sistema' },
 ];
 
@@ -33,7 +33,7 @@ export default function ConfigLayout({ children }: { children: React.ReactNode }
             href={tab.href}
             className="px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0"
             style={{
-              background: currentHref === tab.href ? '#FF5C3A' : 'transparent',
+              background: currentHref === tab.href ? 'var(--accent)' : 'transparent',
               color: currentHref === tab.href ? 'white' : 'var(--text-secondary)',
             }}
           >

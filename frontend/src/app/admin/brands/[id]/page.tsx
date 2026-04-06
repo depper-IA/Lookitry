@@ -71,7 +71,7 @@ export default function BrandDetailPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+      <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
     </div>
   );
 
@@ -106,7 +106,7 @@ export default function BrandDetailPage() {
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>{brand.name}</h1>
-            <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,92,58,0.15)', color: '#FF5C3A' }}>{brand.plan}</span>
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,92,58,0.15)', color: 'var(--accent)' }}>{brand.plan}</span>
             {brand.is_in_trial && (
               <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>
                 Trial ({brand.trial_days_remaining}d)
@@ -115,7 +115,7 @@ export default function BrandDetailPage() {
           </div>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{brand.email} · Slug: {brand.slug}</p>
         </div>
-        <Link href={`/admin/brands`} className="text-sm font-medium" style={{ color: '#FF5C3A' }}>
+        <Link href={`/admin/brands`} className="text-sm font-medium" style={{ color: 'var(--accent)' }}>
           Volver a marcas
         </Link>
       </div>
@@ -140,7 +140,7 @@ export default function BrandDetailPage() {
         {tabs.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === tab.id ? '' : ''}`}
-            style={activeTab === tab.id ? { borderColor: '#FF5C3A', color: '#FF5C3A' } : { borderColor: 'transparent', color: 'var(--text-muted)' }}>
+            style={activeTab === tab.id ? { borderColor: '#FF5C3A', color: 'var(--accent)' } : { borderColor: 'transparent', color: 'var(--text-muted)' }}>
             {tab.label}
           </button>
         ))}

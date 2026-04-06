@@ -337,7 +337,7 @@ export default function EnterpriseSyncPage() {
             <div className="max-w-3xl">
               <span
                 className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em]"
-                style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}
+                style={{ background: 'rgba(255,92,58,0.12)', color: 'var(--accent)' }}
               >
                 <Workflow className="h-3.5 w-3.5" />
                 Ingesta enterprise
@@ -365,7 +365,7 @@ export default function EnterpriseSyncPage() {
                 onClick={() => openForm()}
                 disabled={!moduleAvailable}
                 className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed"
-                style={{ background: '#FF5C3A', opacity: moduleAvailable ? 1 : 0.5 }}
+                style={{ background: 'var(--accent)', opacity: moduleAvailable ? 1 : 0.5 }}
               >
                 <Plus className="h-4 w-4" />
                 Nueva conexión
@@ -411,7 +411,7 @@ export default function EnterpriseSyncPage() {
 
       <section className="space-y-4">
         <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Información del cliente</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--accent)]">Información del cliente</p>
           <h2 className="mt-2 text-xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             Contexto operativo para cuentas enterprise
           </h2>
@@ -420,7 +420,7 @@ export default function EnterpriseSyncPage() {
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.6fr_1fr]">
         <ShellCard className="p-6">
           <div className="flex items-center gap-3">
-            <div className="rounded-2xl p-3" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>
+            <div className="rounded-2xl p-3" style={{ background: 'rgba(255,92,58,0.12)', color: 'var(--accent)' }}>
               <Database className="h-5 w-5" />
             </div>
             <div>
@@ -458,7 +458,7 @@ export default function EnterpriseSyncPage() {
                   className="rounded-[1.5rem] border p-5"
                   style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)' }}
                 >
-                  <div className="inline-flex rounded-2xl p-2.5" style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>
+                  <div className="inline-flex rounded-2xl p-2.5" style={{ background: 'rgba(255,92,58,0.12)', color: 'var(--accent)' }}>
                     <Icon className="h-4 w-4" />
                   </div>
                   <h3 className="mt-4 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
@@ -490,7 +490,7 @@ export default function EnterpriseSyncPage() {
                 className="flex gap-3 rounded-[1.5rem] border p-4"
                 style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)' }}
               >
-                <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: '#FF5C3A' }} />
+                <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0" style={{ color: 'var(--accent)' }} />
                 <p className="text-sm leading-6" style={{ color: 'var(--text-secondary)' }}>
                   {tip}
                 </p>
@@ -503,7 +503,7 @@ export default function EnterpriseSyncPage() {
 
       <section className="space-y-4">
         <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Calculadora de precios</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--accent)]">Calculadora de precios</p>
           <h2 className="mt-2 text-xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             Margen y propuesta comercial
           </h2>
@@ -513,7 +513,7 @@ export default function EnterpriseSyncPage() {
 
       <section className="space-y-4">
         <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Estado de cuenta</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--accent)]">Estado de cuenta</p>
           <h2 className="mt-2 text-xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             Resumen de conexiones enterprise
           </h2>
@@ -529,7 +529,7 @@ export default function EnterpriseSyncPage() {
 
       <section className="space-y-4">
         <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">Historial</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--accent)]">Historial</p>
           <h2 className="mt-2 text-xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             Conexiones, syncs y trazabilidad
           </h2>
@@ -562,7 +562,7 @@ export default function EnterpriseSyncPage() {
                   <select
                     value={form.brand_id}
                     onChange={(e) => setForm({ ...form, brand_id: e.target.value })}
-                    className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                    className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]"
                     style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                   >
                     <option value="">Seleccionar marca...</option>
@@ -580,7 +580,7 @@ export default function EnterpriseSyncPage() {
                 <select
                   value={form.sync_type}
                   onChange={(e) => setForm({ ...form, sync_type: e.target.value as 'csv' | 'api' | 'woocommerce' })}
-                  className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                  className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]"
                   style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 >
                   <option value="csv">CSV</option>
@@ -602,7 +602,7 @@ export default function EnterpriseSyncPage() {
                           ? 'https://cliente.com/wp-json/wc/v3/products'
                           : 'https://cliente.com/api/products'
                     }
-                    className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                    className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]"
                     style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </Field>
@@ -615,7 +615,7 @@ export default function EnterpriseSyncPage() {
                     value={form.api_key}
                     onChange={(e) => setForm({ ...form, api_key: e.target.value })}
                     placeholder="ck_xxx o token del cliente"
-                    className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                    className="min-h-[44px] w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]"
                     style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </Field>
@@ -628,7 +628,7 @@ export default function EnterpriseSyncPage() {
                     onChange={(e) => setForm({ ...form, notes: e.target.value })}
                     rows={3}
                     placeholder="Ej: catálogo de temporada, corre cada lunes, revisar imágenes verticales."
-                    className="w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                    className="w-full rounded-2xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]"
                     style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </Field>
@@ -649,7 +649,7 @@ export default function EnterpriseSyncPage() {
               </div>
               <button
                 onClick={() => setForm({ ...form, active: !form.active })}
-                className={`relative h-7 w-14 rounded-full transition-colors ${form.active ? 'bg-[#FF5C3A]' : 'bg-white/10'}`}
+                className={`relative h-7 w-14 rounded-full transition-colors ${form.active ? 'bg-[var(--accent)]' : 'bg-white/10'}`}
               >
                 <span
                   className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-transform ${form.active ? 'translate-x-8' : 'translate-x-1'}`}
@@ -669,7 +669,7 @@ export default function EnterpriseSyncPage() {
                 onClick={handleSave}
                 disabled={saving}
                 className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                style={{ background: '#FF5C3A' }}
+                style={{ background: 'var(--accent)' }}
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />}
                 {saving ? 'Guardando...' : 'Guardar conexión'}
@@ -690,7 +690,7 @@ export default function EnterpriseSyncPage() {
         <ShellCard className="p-10 text-center">
           <div
             className="mx-auto flex h-14 w-14 items-center justify-center rounded-[1.5rem]"
-            style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}
+            style={{ background: 'rgba(255,92,58,0.12)', color: 'var(--accent)' }}
           >
             <Workflow className="h-6 w-6" />
           </div>
@@ -717,7 +717,7 @@ export default function EnterpriseSyncPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span
                         className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold"
-                        style={{ background: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}
+                        style={{ background: 'rgba(255,92,58,0.12)', color: 'var(--accent)' }}
                       >
                         <StatusIcon className="h-3.5 w-3.5" />
                         {meta.label}
@@ -808,7 +808,7 @@ export default function EnterpriseSyncPage() {
                       onClick={() => handleTrigger(config.brand_id, brandName)}
                       disabled={!config.active || triggeringIds.has(config.brand_id)}
                       className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-                      style={{ background: '#FF5C3A' }}
+                      style={{ background: 'var(--accent)' }}
                     >
                       {triggeringIds.has(config.brand_id) ? (
                         <>
@@ -840,11 +840,11 @@ export default function EnterpriseSyncPage() {
                       </p>
                       <div className="mt-3 space-y-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                         <div className="flex items-start gap-2">
-                          <ArrowRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" style={{ color: '#FF5C3A' }} />
+                          <ArrowRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
                           <span>{config.active ? 'Automatización lista para correr.' : 'Configuración guardada pero en pausa.'}</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <ArrowRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" style={{ color: '#FF5C3A' }} />
+                          <ArrowRight className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
                           <span>
                             Si el estado queda en parcial o error, revisa fuente, credenciales y estructura del catálogo.
                           </span>

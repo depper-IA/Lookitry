@@ -68,7 +68,7 @@ export default function NewBlogPage() {
   if (loading) {
     return (
       <div className="min-h-[400px] flex flex-col items-center justify-center">
-        <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+        <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
         <div className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
           Cargando Editor
         </div>
@@ -87,10 +87,10 @@ export default function NewBlogPage() {
         <div className="flex items-center gap-5">
           <Link
             href="/admin/blog"
-            className="w-12 h-12 flex items-center justify-center rounded-2xl border transition-all group hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/10"
+            className="w-12 h-12 flex items-center justify-center rounded-2xl border transition-all group hover:border-[var(--accent)]/30 hover:bg-[var(--accent)]/10"
             style={panelStyle}
           >
-            <svg className="w-5 h-5 transition-colors group-hover:text-[#FF5C3A]" style={{ color: 'var(--text-secondary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+            <svg className="w-5 h-5 transition-colors group-hover:text-[var(--accent)]" style={{ color: 'var(--text-secondary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
           </Link>
           <div>
             <h1 className="font-jakarta font-extrabold text-3xl tracking-tight" style={{ color: 'var(--text-primary)' }}>
@@ -105,8 +105,8 @@ export default function NewBlogPage() {
           <button
             onClick={() => void handleCreate()}
             disabled={saving}
-            className="px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] text-white transition-all shadow-xl shadow-[#FF5C3A]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 min-w-[180px] flex items-center justify-center gap-3"
-            style={{ backgroundColor: '#FF5C3A' }}
+            className="px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] text-white transition-all shadow-xl shadow-[var(--accent)]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 min-w-[180px] flex items-center justify-center gap-3"
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             {saving ? (
               <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'white', borderTopColor: 'transparent' }} />
@@ -129,7 +129,7 @@ export default function NewBlogPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-8 space-y-8">
           <div className="rounded-[3rem] border p-10 space-y-8 shadow-2xl relative overflow-hidden" style={panelStyle}>
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FF5C3A] to-transparent opacity-30"></div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--accent)] to-transparent opacity-30"></div>
 
             <div className="space-y-3">
               <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--text-muted)' }}>
@@ -140,7 +140,7 @@ export default function NewBlogPage() {
                 name="title"
                 value={post.title}
                 onChange={handleChange}
-                className="w-full px-6 py-4 rounded-[1.5rem] border text-xl font-bold transition-all placeholder:opacity-50 outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                className="w-full px-6 py-4 rounded-[1.5rem] border text-xl font-bold transition-all placeholder:opacity-50 outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                 style={fieldStyle}
                 placeholder="Introduce el título..."
               />
@@ -154,7 +154,7 @@ export default function NewBlogPage() {
                 name="content"
                 value={post.content}
                 onChange={handleChange}
-                className="w-full h-[500px] px-8 py-8 rounded-[2rem] border text-[13px] font-mono overflow-y-auto transition-all leading-relaxed no-scrollbar outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                className="w-full h-[500px] px-8 py-8 rounded-[2rem] border text-[13px] font-mono overflow-y-auto transition-all leading-relaxed no-scrollbar outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                 style={fieldStyle}
                 placeholder="Pega el código HTML aquí..."
               />
@@ -165,7 +165,7 @@ export default function NewBlogPage() {
         <div className="lg:col-span-4 space-y-8">
           <div className="rounded-[2.5rem] border p-8 space-y-6 shadow-xl" style={panelStyle}>
             <h3 className="text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]"></div>
               Publicación
             </h3>
 
@@ -178,7 +178,7 @@ export default function NewBlogPage() {
                   name="status"
                   value={post.status}
                   onChange={handleChange}
-                  className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                   style={{ ...fieldStyle, color: post.status === 'published' ? '#10b981' : '#f59e0b' }}
                 >
                   <option value="draft" style={optionStyle}>Borrador</option>
@@ -194,7 +194,7 @@ export default function NewBlogPage() {
                   name="category_id"
                   value={post.category_id || ''}
                   onChange={handleChange}
-                  className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                   style={fieldStyle}
                 >
                   <option value="" style={optionStyle}>Sin categoría</option>
@@ -210,7 +210,7 @@ export default function NewBlogPage() {
 
           <div className="rounded-[2.5rem] border p-8 space-y-6 shadow-xl" style={panelStyle}>
             <h3 className="text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]"></div>
               Imagen Principal
             </h3>
             <div className="space-y-4">
@@ -219,7 +219,7 @@ export default function NewBlogPage() {
                 name="featured_image"
                 value={post.featured_image || ''}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border text-[10px] font-medium transition-all outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                className="w-full px-4 py-3 rounded-xl border text-[10px] font-medium transition-all outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                 style={fieldStyle}
                 placeholder="URL de la imagen (MinIO o externa)"
               />

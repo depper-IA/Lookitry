@@ -276,7 +276,7 @@ export default function AdminMiniLandingsPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+      <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
     </div>
   );
 
@@ -335,7 +335,7 @@ export default function AdminMiniLandingsPage() {
         {([
           { key: 'all',       label: 'Total',       color: 'var(--text-primary)' },
           { key: 'activa',    label: 'Activas',     color: '#22c55e' },
-          { key: 'suspendida',label: 'Suspendidas', color: '#FF5C3A' },
+          { key: 'suspendida',label: 'Suspendidas', color: 'var(--accent)' },
           { key: 'inactiva',  label: 'Inactivas',   color: '#6b7280' },
         ] as const).map(({ key, label, color }) => (
           <button
@@ -344,7 +344,7 @@ export default function AdminMiniLandingsPage() {
             className="p-4 rounded-[2rem] border text-left transition-all"
             style={{
               backgroundColor: filterEstado === key ? 'rgba(255,92,58,0.06)' : 'var(--bg-card)',
-              borderColor: filterEstado === key ? '#FF5C3A' : 'var(--border-color)',
+              borderColor: filterEstado === key ? 'var(--accent)' : 'var(--border-color)',
             }}
           >
             <p className="text-2xl font-bold" style={{ color }}>{counts[key]}</p>
@@ -376,9 +376,9 @@ export default function AdminMiniLandingsPage() {
                 onClick={() => setFilterPlan(value)}
                 className="flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors border"
                 style={{
-                  backgroundColor: filterPlan === value ? '#FF5C3A' : 'var(--bg-base)',
+                  backgroundColor: filterPlan === value ? 'var(--accent)' : 'var(--bg-base)',
                   color: filterPlan === value ? '#fff' : 'var(--text-secondary)',
-                  borderColor: filterPlan === value ? '#FF5C3A' : 'var(--border-color)',
+                  borderColor: filterPlan === value ? 'var(--accent)' : 'var(--border-color)',
                 }}
               >
                 {label}
@@ -405,7 +405,7 @@ export default function AdminMiniLandingsPage() {
               Anterior
             </button>
             <div className="flex gap-1 items-center px-2">
-              <span className="text-[10px] font-black text-[#FF5C3A]">{currentPage}</span>
+              <span className="text-[10px] font-black" style={{ color: 'var(--accent)' }}>{currentPage}</span>
               <span className="text-[10px] font-black opacity-20">/</span>
               <span className="text-[10px] font-black text-[var(--text-muted)]">{totalPages}</span>
             </div>
@@ -444,7 +444,7 @@ export default function AdminMiniLandingsPage() {
                     <div className="flex items-center gap-1">
                       {h.label}
                       {h.field && (
-                        <ArrowUpDown className="w-3 h-3" style={{ color: sortField === h.field ? '#FF5C3A' : 'var(--text-muted)' }} />
+                        <ArrowUpDown className="w-3 h-3" style={{ color: sortField === h.field ? 'var(--accent)' : 'var(--text-muted)' }} />
                       )}
                     </div>
                   </th>
@@ -463,7 +463,7 @@ export default function AdminMiniLandingsPage() {
                         href={`${FRONTEND_URL}/sitio/${brand.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm font-bold hover:underline decoration-[#FF5C3A]/40 underline-offset-4 transition-all"
+                        className="text-sm font-bold hover:underline decoration-[var(--accent)]/40 underline-offset-4 transition-all"
                         style={{ color: 'var(--text-primary)' }}
                       >
                         {brand.name}
@@ -480,7 +480,7 @@ export default function AdminMiniLandingsPage() {
                           brand.plan === 'TRIAL'
                             ? { backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }
                             : brand.plan === 'PRO'
-                            ? { backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }
+                            ? { backgroundColor: 'rgba(255,92,58,0.12)', color: 'var(--accent)' }
                             : { backgroundColor: 'var(--bg-base)', color: 'var(--text-secondary)', border: '1px solid var(--border-color)' }
                         }
                       >
@@ -500,8 +500,8 @@ export default function AdminMiniLandingsPage() {
                         </span>
                       )}
                       {estado === 'suspendida' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(255,92,58,0.12)', color: '#FF5C3A' }}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(255,92,58,0.12)', color: 'var(--accent)' }}>
+                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
                           Suspendida
                         </span>
                       )}
@@ -517,7 +517,7 @@ export default function AdminMiniLandingsPage() {
                     <td className="px-4 py-3.5 whitespace-nowrap">
                       {brand.subscription_status === 'active' && <span className="text-xs text-emerald-600 font-medium">Activa</span>}
                       {brand.subscription_status === 'expiring_soon' && <span className="text-xs text-amber-600 font-medium">Por vencer</span>}
-                      {brand.subscription_status === 'suspended' && <span className="text-xs font-medium" style={{ color: '#FF5C3A' }}>Suspendida</span>}
+                      {brand.subscription_status === 'suspended' && <span className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Suspendida</span>}
                       {brand.subscription_status === 'expired' && <span className="text-xs text-red-600 font-medium">Vencida</span>}
                       {!brand.subscription_status && <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>—</span>}
                     </td>
@@ -527,7 +527,7 @@ export default function AdminMiniLandingsPage() {
                       {brand.dias_para_eliminacion !== null ? (
                         <span
                           className="inline-flex items-center gap-1 text-xs font-semibold"
-                          style={{ color: brand.dias_para_eliminacion <= 15 ? '#ef4444' : brand.dias_para_eliminacion <= 30 ? '#FF5C3A' : '#f59e0b' }}
+                          style={{ color: brand.dias_para_eliminacion <= 15 ? '#ef4444' : brand.dias_para_eliminacion <= 30 ? 'var(--accent)' : '#f59e0b' }}
                         >
                           <IconWarning className="w-3.5 h-3.5" />
                           {brand.dias_para_eliminacion}d
@@ -651,9 +651,9 @@ export default function AdminMiniLandingsPage() {
                 <button key={p} onClick={() => setCurrentPage(p)}
                   className="px-3 py-1.5 rounded-lg border text-xs transition-colors"
                   style={{
-                    backgroundColor: currentPage === p ? '#FF5C3A' : 'var(--bg-base)',
+                    backgroundColor: currentPage === p ? 'var(--accent)' : 'var(--bg-base)',
                     color: currentPage === p ? '#fff' : 'var(--text-secondary)',
-                    borderColor: currentPage === p ? '#FF5C3A' : 'var(--border-color)',
+                    borderColor: currentPage === p ? 'var(--accent)' : 'var(--border-color)',
                   }}>
                   {p}
                 </button>
@@ -674,8 +674,8 @@ export default function AdminMiniLandingsPage() {
       {/* ── SECCIÓN: CONFIGURACIÓN MODAL PROMO GLOBAL (NUEVO) ── */}
       <div className="mt-16 pt-10 border-t border-[var(--border-color)]">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-[#FF5C3A]/10 flex items-center justify-center">
-            <IconGlobe className="w-6 h-6 text-[#FF5C3A]" />
+          <div className="w-12 h-12 rounded-2xl bg-[var(--accent)]/10 flex items-center justify-center">
+            <IconGlobe className="w-6 h-6" style={{ color: 'var(--accent)' }} />
           </div>
           <div>
             <h2 className="text-2xl font-jakarta font-bold text-[var(--text-primary)] tracking-tight">Configuración Modal Promo</h2>
@@ -693,7 +693,7 @@ export default function AdminMiniLandingsPage() {
                   type="text"
                   value={modalConfig.title}
                   onChange={e => setModalConfig({ ...modalConfig, title: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm font-bold outline-none focus:border-[#FF5C3A] transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm font-bold outline-none focus:border-[var(--accent)] transition-all"
                   placeholder="Ej: ¡Potencia tu marca hoy!"
                 />
               </div>
@@ -704,7 +704,7 @@ export default function AdminMiniLandingsPage() {
                   value={modalConfig.description}
                   onChange={e => setModalConfig({ ...modalConfig, description: e.target.value })}
                   rows={4}
-                  className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm outline-none focus:border-[#FF5C3A] transition-all resize-none leading-relaxed"
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm outline-none focus:border-[var(--accent)] transition-all resize-none leading-relaxed"
                   placeholder="Explica las ventajas de tener una mini-landing..."
                 />
               </div>
@@ -716,7 +716,7 @@ export default function AdminMiniLandingsPage() {
                     type="text"
                     value={modalConfig.imageUrl}
                     onChange={e => setModalConfig({ ...modalConfig, imageUrl: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm outline-none focus:border-[#FF5C3A] transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm outline-none focus:border-[var(--accent)] transition-all"
                     placeholder="https://ejemplo.com/imagen.jpg"
                   />
                 </div>
@@ -730,7 +730,7 @@ export default function AdminMiniLandingsPage() {
                       max={60}
                       value={modalConfig.previewMinutes}
                       onChange={e => setModalConfig({ ...modalConfig, previewMinutes: parseFloat(e.target.value) || 0 })}
-                      className="w-full pl-4 pr-12 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm font-mono font-bold outline-none focus:border-[#FF5C3A] transition-all"
+                      className="w-full pl-4 pr-12 py-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] text-sm font-mono font-bold outline-none focus:border-[var(--accent)] transition-all"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[var(--text-muted)] uppercase">min</span>
                   </div>
@@ -742,7 +742,7 @@ export default function AdminMiniLandingsPage() {
               <button
                 onClick={handleSaveModalConfig}
                 disabled={savingModal}
-                className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#FF5C3A] text-white text-xs font-black uppercase tracking-[0.2em] hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-[#FF5C3A]/20"
+                className="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[var(--accent)] text-white text-xs font-black uppercase tracking-[0.2em] hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-[var(--accent)]/20"
               >
                 {savingModal ? <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin border-white" /> : <IconRefresh className="w-5 h-5" />}
                 Guardar Configuración Global
@@ -754,14 +754,14 @@ export default function AdminMiniLandingsPage() {
           {/* Vista Previa Interactiva */}
           <div className="bg-[var(--bg-base)] p-10 rounded-[3rem] border border-dashed border-[var(--border-color)] flex flex-col items-center justify-center relative overflow-hidden group">
             <div className="absolute top-6 left-8 flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-[#FF5C3A] animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
               <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">Simulación en vivo</span>
             </div>
             
             {/* Modal Mockup */}
             <div className="w-full max-w-sm bg-[var(--bg-card)] rounded-[2.5rem] border border-[var(--border-color)] shadow-2xl p-8 space-y-6 transform transition-transform duration-500 group-hover:scale-[1.02]">
-              <div className="w-20 h-20 mx-auto rounded-[1.5rem] bg-[#FF5C3A]/10 flex items-center justify-center">
-                <IconGlobe className="w-10 h-10 text-[#FF5C3A]" />
+              <div className="w-20 h-20 mx-auto rounded-[1.5rem] bg-[var(--accent)]/10 flex items-center justify-center">
+                <IconGlobe className="w-10 h-10" style={{ color: 'var(--accent)' }} />
               </div>
               <div className="text-center space-y-3">
                 <h3 className="text-xl font-jakarta font-bold text-[var(--text-primary)] tracking-tight leading-tight">{modalConfig.title}</h3>
@@ -769,7 +769,7 @@ export default function AdminMiniLandingsPage() {
               </div>
               
               <div className="space-y-3 pt-2">
-                <div className="w-full py-3.5 rounded-xl bg-[#FF5C3A] text-white text-[10px] font-black uppercase tracking-[0.2em] text-center shadow-lg shadow-[#FF5C3A]/20">
+                <div className="w-full py-3.5 rounded-xl bg-[var(--accent)] text-white text-[10px] font-black uppercase tracking-[0.2em] text-center shadow-lg shadow-[var(--accent)]/20">
                   Activar mi página
                 </div>
                 <button className="w-full py-2 text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
@@ -779,14 +779,14 @@ export default function AdminMiniLandingsPage() {
 
               <div className="pt-4 border-t border-[var(--border-color)]">
                 <p className="text-[9px] text-center text-[var(--text-muted)] font-bold uppercase tracking-widest">
-                  Se activará tras <span className="text-[#FF5C3A]">{modalConfig.previewMinutes} minutos</span> de navegación
+                  Se activará tras <span style={{ color: 'var(--accent)' }}>{modalConfig.previewMinutes} minutos</span> de navegación
                 </p>
               </div>
             </div>
 
             {/* Decoración de fondo */}
-            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[#FF5C3A]/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -top-20 -left-20 w-64 h-64 bg-[#FF5C3A]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-[var(--accent)]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-20 -left-20 w-64 h-64 bg-[var(--accent)]/5 rounded-full blur-3xl pointer-events-none" />
           </div>
         </div>
       </div>

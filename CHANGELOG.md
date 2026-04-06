@@ -1,99 +1,600 @@
 # Changelog - Lookitry (AI Assisted)
 
-## [2026-04-06] - Fix errores build y completado pendientes admin
+## [2026-04-06] - Auditoria y correccion de errores del admin
 
-### Fix errores de build
+### Problemas corregidos
 
-- **`admin/security/page.tsx`**: Eliminado import duplicado de `motion` (framer-motion)
-- **`admin/dashboard/page.tsx`**: Reemplazado componente `BrutalBadge` inexistente por badge inline con estilos inline (colores según plan: PRO=violeta, TRIAL=índigo, BASIC=verde)
-- **`admin/funnel/page.tsx`**: Corregido tipo `boolean | 0 | undefined` en `hasStalledTrials` usando `Boolean()` cast
+**1. ELIMINACION DE EMOJIS**
+- Se eliminaron todos los emojis de las etiquetas de navegacion del sidebar admin
+- Archivos afectados:
+  - `frontend/src/app/admin/layout.tsx` (labels: COMANDO, CLIENTES, ANALYTICS, MARKETING, FINANZAS, CONFIGURACION, SISTEMA, PRODUCTO, HELP)
+  - `frontend/src/app/admin/config/layout.tsx` (label: Launch)
 
-### Completado pendientes auditoría admin dashboard
+**2. MODAL DE ACTIVACION DE MARCA - ELIMINADO**
+- Se elimino el modal y funcion de "Activar plan" para marcas
+- El boton en BrandTable ahora solo cambia entre BASIC y PRO
+- Archivos afectados:
+  - `frontend/src/app/admin/brands/page.tsx`
+  - `frontend/src/components/admin/brands/BrandTable.tsx`
 
-- **Funnel clickeable**: Cada etapa ahora navega a la página filtrada correspondiente (Trial → brands?plan=TRIAL, Pro → brands?plan=PRO, Riesgo → /admin/risk)
-- **Playbooks embebidos**: Nuevo componente `EmbeddedPlaybook` integrado en:
-  - `/admin/risk` → playbook churn-prevention (cuando high_risk > 0)
-  - `/admin/payments` → playbook payment-failed (cuando hay pagos fallidos)
-  - `/admin/funnel` → playbook trial-stalled (cuando conversión Trial <50%)
-  - `/admin/ia-costs` → playbook ia-costs-spike (cuando balance bajo)
+**3. LEAD SEARCHES - Autenticacion corregida**
+- Cambiado de `localStorage.getItem('admin_token')` a uso de `adminApi` (credentials: 'include')
+- Ahora es consistente con el resto del admin
+- Archivo afectado: `frontend/src/app/admin/lead-searches/page.tsx`
 
-### Archivos modificados
+**4. UNIT-ECONOMICS - Interfaz mejorada**
+- Agregado hero section con gradiente y borde accent (estilo subscriptions)
+- Stats cards ahora usan el mismo formato que otras paginas
+- Archivo afectado: `frontend/src/app/admin/unit-economics/page.tsx`
 
-- `frontend/src/app/admin/security/page.tsx`
-- `frontend/src/app/admin/dashboard/page.tsx`
-- `frontend/src/app/admin/funnel/page.tsx`
-- `frontend/src/components/admin/EmbeddedPlaybook.tsx` (nuevo)
-- `frontend/src/app/admin/risk/page.tsx`
-- `frontend/src/app/admin/payments/page.tsx`
-- `frontend/src/app/admin/ia-costs/page.tsx`
+**5. RUTA /admin/config/trial - Corregida**
+- Link del sidebar cambiado de `/admin/config/trial` (inexistente) a `/admin/trial-campaigns` (existente)
+- Archivo afectado: `frontend/src/app/admin/layout.tsx`
 
----
+**6. PRICING - Responsive corregido para laptops**
+- Cambiado breakpoint de `xl:` a `2xl:` para el layout del sidebar
+- Ahora en laptops (< 1536px) el contenido se muestra verticalmente
+- Archivo afectado: `frontend/src/app/admin/pricing/page.tsx`
 
-## [2026-04-06] - Visión con OpenRouter para análisis de imágenes
-
-### Nueva funcionalidad
-
-- Sammy ahora puede ver y analizar imágenes usando OpenRouter Vision
-- Modelo: `google/gemini-2.5-flash-image-preview` (costo mínimo ~$0.00000013/1K tokens)
-- Flujo: imagen → Gemini Vision (análisis) → OpenCode (corrección)
-- Prompt especializado en debugging para análisis de código/errores
-- Archivos: `sammy/src/audio/groq.ts` (nueva función `analyzeImageWithOpenRouter`), `sammy/src/index.ts`
-
----
-
-## [2026-04-06] - Fix soporte imágenes en Sammy
-
-### Bug fix
-
-- TypeScript error `file_mime_type` no existía en tipo `Audio`
-- Solucionado con type assertion `(ctx.message.audio as any).file_mime_type`
-- Build ahora compila correctamente
+### Verificacion
+- Build exitoso sin errores de TypeScript ni advertencias graves
 
 ---
 
-## [2026-04-06] - Streaming en Sammy
+## [2026-04-06] - Refactorizacion de color accent hardcoded a CSS variable
 
-### Sammy streaming de respuestas
+### Cambio de #FF5C3A hardcoded a var(--accent)
 
-- Sammy ahora muestra progreso en tiempo real via Telegram
-- Mensaje inicial "⏳ Procesando..." que se actualiza con cada parte
-- Muestra: iteración, herramientas usadas, respuesta parcial
-- Archivos modificados: `sammy/src/index.ts`, `sammy/src/opencode/client.ts`
-- README.md actualizado con documentación de streaming
+**Descripción:**
+Se reemplazaron todas las instancias hardcoded de `#FF5C3A` (color accent de Lookitry) por la variable CSS `var(--accent)` en el frontend del admin para mejorar la mantenibilidad y consistencia del tema.
+
+**Cambios realizados:**
+- Se agregó `--accent: var(--color-accent)` en `frontend/src/app/globals.css`
+- Se reemplazaron ~1000+ ocurrencias de `#FF5C3A` por `var(--accent)` en:
+  - `frontend/src/app/admin/**/*.tsx` (dashboard, security, payments, profile, brands, etc.)
+  - `frontend/src/components/admin/**/*.tsx` (AgentFilterBar, AgentStatsCards, BrandTable, etc.)
+  - `frontend/src/components/auth/RegisterForm.tsx, LoginForm.tsx`
+  - `frontend/src/components/dashboard/ReviewPromptModal.tsx, EmbedSection.tsx`
+  - `frontend/src/components/ui/HalfStarRating.tsx`
+  - Varios archivos más de páginas públicas y componentes
+
+**Nota:**
+Los colores de datos para gráficos (barras, líneas, badges de plan) NO fueron reemplazados ya que son valores específicos para visualización de datos y no del tema general.
+
+**Archivos modificados (~50 archivos):**
+- Todos los archivos en `frontend/src/app/admin/**/*.tsx`
+- Todos los archivos en `frontend/src/components/admin/**/*.tsx`
+- `frontend/src/components/auth/RegisterForm.tsx`
+- `frontend/src/components/auth/LoginForm.tsx`
+- `frontend/src/components/dashboard/ReviewPromptModal.tsx`
+- `frontend/src/components/dashboard/EmbedSection.tsx`
+- `frontend/src/components/ui/HalfStarRating.tsx`
+- `frontend/src/app/globals.css`
+
+**Verificación:**
+- Build de producción pasando exitosamente ✓
 
 ---
 
-## [2026-04-06] - Sistema de Agentes Integración Completa
+## [2026-04-06] - FASE 2: Rate Limiting de Generaciones por Plan
 
-### Agentes actualizados con MCPs, modelos y optimización de tokens
+### Control de Concurrencia para Generaciones Try-On
 
-| Agente | MCPs | Modelo Principal | Fallback | Subagentes |
-|--------|------|-------------------|----------|------------|
-| Sammy | memory | MiniMax | DeepSeek Coder | GROQ |
-| WebWizard | supabase, n8n | MiniMax | DeepSeek Coder | GROQ |
-| DevGuardian | supabase, context7 | MiniMax | DeepSeek Coder | GROQ |
-| DataAlchemist | supabase, n8n, context7 | MiniMax | DeepSeek Coder | GROQ |
-| GrowthPilot | supabase, hostinger-mcp | MiniMax | DeepSeek Coder | GROQ |
-| ArchitectAI | hostinger-mcp, supabase | MiniMax | DeepSeek Coder | GROQ |
+**Archivos creados:**
+- `backend/src/services/generation-concurrency.service.ts` (nuevo) — Sistema de slots/concurrency
 
-### Modelos gratuitos utilizados
+**Archivos modificados:**
+- `backend/src/middleware/errorHandler.ts` — Añadido `ConcurrencyLimitError` y manejo en error handler
+- `backend/src/controllers/pruebalo.controller.ts` — Integración con concurrency service en generateTryOn
 
-- **MiniMax** (principal): `minimax-coding-plan/MiniMax-M2.7`
-- **DeepSeek Coder** (fallback): `deepseek/deepseek-coder-33b-instruct`
-- **GROQ** (subagentes): `groq/llama-3.3-70b-instruct`
+**Funcionalidades implementadas:**
+- Slots de concurrencia por brand basados en su plan:
+  - BASIC: 2 generaciones simultáneas (30s timeout cola)
+  - PRO: 5 generaciones simultáneas (30s timeout cola)
+  - ENTERPRISE: 20 generaciones simultáneas (30s timeout cola)
+  - TRIAL: 1 generación simultánea (30s timeout cola)
+- Cola de espera con timeout configurable
+- Error 429 cuando se excede el límite con mensaje descriptivo
+- Release automático de slots al completar o fallar la generación
+- Redis como backend para tracking de slots activos
 
-### Archivos modificados
+** Beneficios:**
+- CONTROL: Un cliente no puede acaparar todos los recursos de IA
+- ESTABILIDAD: Cola ordenada con timeout de 30s
+- FAIRNESS: Cada plan tiene límites proporcionales a lo que paga
+- DEBUGGING: Información clara de por qué se rechazó una request
 
-- `AGENTS.md` — Tabla de agentes + protocolo comunicación + modelos
-- `REGLAS_IMPORTANTES.md` — Sección 10: Sistema de Agentes IA
-- `.claude/SKILL.md` — Índice de agentes especializados
-- `.opencode/agents/*.md` — Todos los agentes actualizados
+---
 
-### Limpieza realizada
+## [2026-04-06] - Auditoría Admin: Feedback + Dark/Light Mode
 
-- Eliminada carpeta `para agentes/` (migrado a .opencode/agents/)
-- Eliminado `creador_agentes.md`
-- Archivado CHANGELOG.md → `CHANGELOG_ARCHIVE_2026_Q1.md`
-- Creado nuevo CHANGELOG.md limpio
+### Nueva Funcionalidad
+
+**Archivo creado:**
+- `frontend/src/app/admin/feedback/page.tsx` — Nueva página para moderar feedback de generaciones
+
+**Funcionalidades implementadas:**
+- Lista de feedbacks con filtros (error_type, resolved, brand_id)
+- Stats: total feedbacks, resolved/unresolved, tasa de resolución
+- Filtros por tipo de error con colores diferenciados
+- Marcar como resuelto (PATCH /admin/feedback/:id/resolve)
+- Eliminar feedback (DELETE /admin/feedback/:id)
+- Modal de detalles del error
+- Diseño consistente con CSS variables
+
+### Correcciones Dark/Light Mode
+
+**Páginas corregidas (colores hardcoded → CSS variables):**
+
+1. **`frontend/src/app/admin/lead-searches/page.tsx`** — Corrections applied:
+   - `text-[#0a0a0a]` → `var(--text-primary)`
+   - `text-[#999]` → `var(--text-muted)`
+   - `bg-white`, `bg-[#e5e5e5]` → `var(--bg-card)`, `var(--border-color)`
+   - `bg-[#FF5C3A]` → `var(--accent)` (buttons)
+   - `hover:bg-[#f5f5f5]` → CSS variables con hover state
+   - Modal form inputs corregidos
+
+2. **`frontend/src/app/admin/email-campaigns/page.tsx`** — Corrections applied:
+   - Headers, tablas, inputs hardcoded → CSS variables
+   - Buttons `bg-[#FF5C3A]` → `var(--accent)`
+   - Error states con `rgba(239,68,68,0.1)` en lugar de `bg-red-50`
+   - Modal forms con `var(--bg-input)`, `var(--border-color)`
+
+3. **`frontend/src/app/admin/mini-landings/page.tsx`** — Corrections applied:
+   - `border-[#FF5C3A]` → `border-[var(--accent)]`
+   - `color: '#FF5C3A'` → `color: 'var(--accent)'`
+   - `bg-[#FF5C3A]` → `bg-[var(--accent)]`
+   - `shadow-[#FF5C3A]` → `shadow-[var(--accent)]`
+   - `decoration-[#FF5C3A]` → `decoration-[var(--accent)]`
+   - Spinner loader border-color
+
+**Páginas corregidas adicionalmente:**
+- `frontend/src/app/admin/trial-campaigns/page.tsx` — `hover:border-[#FF5C3A]/30` → `hover:border-[var(--accent)]/30`, botones, loader, hero gradient
+- `frontend/src/app/admin/brands/page.tsx` — Múltiples correcciones: iconos, botones, hover states, filter chips, hero section
+- `frontend/src/app/admin/health/page.tsx` — Spinner loader corregido
+- `frontend/src/app/admin/agents/page.tsx` — Botones hover, iconos, spinners, modal
+- `frontend/src/app/admin/layout.tsx` — Sidebar active state, logo accent, profile button
+- `frontend/src/app/admin/subscriptions/page.tsx` — Card hover, iconos, botones, filtros, hero section
+- `frontend/src/app/admin/admins/page.tsx` — Permission badges, action buttons, modals (Create/Edit), inputs
+
+**Páginas aún con hardcoded colors (pendientes):**
+- `/admin/revenue` — `text-[#FF5C3A]`, `bg-[#FF5C3A]`, focus rings
+- `/admin/conversion` — `text-[#FF5C3A]`, `text-[#22c55e]`, `text-[#6366f1]`
+- `/admin/enterprise` — `#FF5C3A` en múltiples secciones
+- `/admin/woocommerce` — `bg-[#FF5C3A]` en botón refresh
+- `/admin/reviews` — `text-white`, `hover:text-white`, `bg-[#FF5C3A]`
+- `/admin/blog`, `/admin/risk`, `/admin/unit-economics`, `/admin/funnel`
+- `/admin/playbooks`, `/admin/security`, `/admin/audit-log`, `/admin/notifications`
+- `/admin/ia-costs`, `/admin/pricing`, `/admin/social-api-config`
+- `/admin/soporte`
+
+### Componentes Verificados
+
+**Existentes y en uso:**
+- `frontend/src/components/admin/ConfirmDialog.tsx` — Confirmaciones con theming
+- `frontend/src/components/admin/AdminNotifications.tsx` — Notificaciones toast
+- `frontend/src/components/admin/EmbeddedPlaybook.tsx` — Playbooks embebidos
+- `frontend/src/components/admin/EnterpriseCalculator.tsx` — Calculadora enterprise
+
+**No existen (sugerencia crear si se necesitan):**
+- `AdminSpinner` — No existe, usar `animate-spin` con CSS variable
+- `AdminToast` — Revisar `AdminNotifications`
+- `StatCard` — No existe componente dedicado, implementar si se requiere reutilización
+
+---
+
+## [2026-04-06] - Página de Administración de Trial Campaigns
+
+### Nueva Funcionalidad
+
+**Archivo creado:**
+- `frontend/src/app/admin/trial-campaigns/page.tsx` — Nueva página de admin para gestionar campañas de trial
+
+**Funcionalidades implementadas:**
+- Stats cards: Campaña activa, total de campaigns, días de trial, precio
+- Lista de campaigns con grid view
+- Formulario para crear/editar campaign (nombre, días, generaciones, precio COP, fecha fin, verificación tarjeta)
+- Activar/desactivar campaigns (solo una activa a la vez)
+- Eliminar campaigns con confirmación
+- Toast notifications para success/error
+- Empty state cuando no hay campaigns
+- Diseño consistente con el resto del admin (colores CSS variables, lucide-react icons)
+
+---
+
+## [2026-04-06] - FASE 1: Límites de Memoria Docker + Node.js Flags
+
+### Estabilidad del Sistema - Límites de Recursos
+
+**Archivos modificados:**
+- `docker-compose.frontend.yml` — Añadido `deploy.resources.limits.memory: 1G`, reservation 512M, healthcheck
+- `docker-compose.backend.yml` — Añadido `deploy.resources.limits.memory: 1G`, reservation 512M, healthcheck, NODE_OPTIONS=--max-old-space-size=512
+- `frontend/Dockerfile` — Añadido `ENV NODE_OPTIONS=--max-old-space-size=768`
+- `backend/Dockerfile` — Añadido `ENV NODE_OPTIONS=--max-old-space-size=512`
+
+**Cambios implementados:**
+- Frontend: 1GB límite Docker, 768MB Node.js heap
+- Backend: 1GB límite Docker, 512MB Node.js heap
+- Health checks para restart automático si contenedor falla
+- Reservas de memoria para garantizar recursos mínimos
+
+** Beneficios:**
+- Sistema nunca morirá por RAM overflow
+- Comportamiento predecible bajo alta carga
+- Fallback graceful cuando se alcance límite
+
+---
+
+## [2026-04-06] - Blindaje de Protección para Operaciones de Base de Datos
+
+### Blindaje contra Operaciones Destructivas de IA
+
+**Documentación actualizada:**
+- `REGLAS_IMPORTANTES.md` (modificado) — Nueva sección 6.1 "Blindaje contra Operaciones Destructivas de IA"
+
+**Cambios implementados:**
+- Añadida regla obligatoria de confirmación explícita del usuario antes de ejecutar operaciones destructivas en DB
+- Operaciones cubiertas: DROP, DELETE, TRUNCATE, ALTER DROP, UPDATE masivo, migraciones, executions SQL
+- Excepciones solo en emergencia justificada con descripción de riesgo
+
+---
+
+## [2026-04-06] - Auditoría y Reorganización COMPLETA del Admin Panel
+
+### RESUMEN EJECUTIVO
+Reorganización completa del sidebar del admin panel, creando página de salud del sistema, y actualizando títulos de páginas.
+
+### Archivos Modificados
+
+**Layout Principal:**
+- `frontend/src/app/admin/layout.tsx` (reescrito completamente)
+  - Sidebar reorganizado en 9 grupos temáticos
+  - Nuevos iconos SVG para mejor consistencia visual
+  - Tema claro/oscuro funcionando correctamente
+  - Responsive sidebar (mobile drawer + desktop collapsible)
+
+**Nueva Página Creada:**
+- `frontend/src/app/admin/health/page.tsx` (nuevo)
+  - Dashboard de salud del sistema
+  - Muestra estado de servicios, base de datos, memoria
+  - Auto-refresh cada 30 segundos
+  - Indicadores de estado: healthy/degraded/down
+
+### Navegación REORGANIZADA (9 secciones):
+
+```
+🚀 COMANDO
+├── Mission Control (/admin/dashboard)
+├── Funnel SaaS (/admin/funnel)
+├── Riesgo (/admin/risk)
+├── Playbooks (/admin/playbooks)
+└── Agents Activity (/admin/agents)
+
+👥 CLIENTES
+├── Marcas (/admin/brands)
+├── Suscripciones (/admin/subscriptions)
+├── Historial Pagos (/admin/payments)
+├── Ingresos (/admin/revenue)
+└── Conversión (/admin/conversion)
+
+📊 ANALYTICS
+├── Estadísticas (/admin/analytics)
+├── Leads (/admin/leads)
+├── Lead Searches (/admin/lead-searches)
+└── Economía Unit. (/admin/unit-economics)
+
+🎨 MARKETING
+├── Email Campaigns (/admin/email-campaigns)
+├── Promociones (/admin/marketing/promotions)
+├── Trial Campaigns (/admin/config/trial)
+└── Precios (/admin/pricing)
+
+💳 FINANZAS
+└── Créditos IA (/admin/ia-costs)
+
+⚙️ CONFIGURACIÓN
+├── General (/admin/configuracion)
+├── Payments (/admin/payment-settings)
+├── Social APIs (/admin/social-api-config)
+└── Enterprise (/admin/enterprise)
+
+🛡️ SISTEMA
+├── Salud Sistema (/admin/health) [NUEVO]
+├── Admins (/admin/admins)
+├── Notificaciones (/admin/notifications)
+├── Audit Log (/admin/audit-log)
+└── Seguridad (/admin/security)
+
+📦 PRODUCTO
+├── Reviews (/admin/reviews)
+├── Mini-Landings (/admin/mini-landings)
+├── WooCommerce (/admin/woocommerce)
+├── Blog (/admin/blog)
+└── Referidos (/admin/referrals)
+
+❓ HELP
+├── Soporte (/admin/soporte)
+└── Feedback (/admin/feedback)
+```
+
+### Página de Health Creada
+
+`/admin/health` - Salud del Sistema:
+- Estado general del sistema (healthy/degraded/down)
+- Servicios activos con latencia
+- Conexiones de base de datos
+- Uso de memoria con barra visual
+- Auto-refresh cada 30s
+- Botón manual de actualizar
+
+### Cambios en CSS/Theme
+
+- Variables CSS funcionando correctamente en dark/light mode
+- Background, cards, headers adaptándose al tema
+- Sidebar usa variables CSS en lugar de colores hardcoded
+
+### Páginas Verificadas (existen y funcionan):
+- /admin/dashboard ✅
+- /admin/brands ✅
+- /admin/subscriptions ✅
+- /admin/payments ✅
+- /admin/revenue ✅
+- /admin/conversion ✅
+- /admin/leads ✅
+- /admin/lead-searches ✅
+- /admin/analytics ✅
+- /admin/funnel ✅
+- /admin/risk ✅
+- /admin/playbooks ✅
+- /admin/agents ✅
+- /admin/email-campaigns ✅
+- /admin/marketing/promotions ✅
+- /admin/pricing ✅
+- /admin/ia-costs ✅
+- /admin/configuracion → /admin/config/trial ✅
+- /admin/payment-settings ✅
+- /admin/social-api-config ✅
+- /admin/enterprise ✅
+- /admin/health ✅ (NUEVO)
+- /admin/admins ✅
+- /admin/notifications ✅
+- /admin/audit-log ✅
+- /admin/security ✅
+- /admin/reviews ✅
+- /admin/mini-landings ✅
+- /admin/woocommerce ✅
+- /admin/blog ✅
+- /admin/referrals ✅
+- /admin/soporte ✅
+
+### PÁGINAS QUE NO EXISTEN (referenciadas en sidebar pero sin página):
+- /admin/feedback - No existe página, solo se muestra badge count
+- /admin/coupons - No existe página
+
+---
+
+## [2026-04-06] - Sistema Heartbeat Agentes en Tiempo Real
+
+### CRÍTICO - Sistema agent_sessions para tracking en tiempo real
+
+**Backend:**
+- `backend/supabase/migrations/20250406_agent_heartbeat.sql` (nuevo)
+- `backend/src/services/agent-session.service.ts` (nuevo)
+- `backend/src/routes/agent.routes.ts` (modificado)
+
+**Frontend - Dashboard Agentes Activos:**
+- `frontend/src/components/admin/agents/ActiveAgentsPanel.tsx` (nuevo)
+- `frontend/src/app/admin/agents/page.tsx` (modificado)
+- `frontend/src/services/agentApi.ts` (modificado)
+
+**Features implementadas:**
+- Panel de agentes activos con polling cada 5s
+- Indicadores de estado: verde (working), amarillo (idle), rojo (error)
+- Badge "VIVO" / "SILENCIOSO" según heartbeat (30s timeout)
+- Tiempo desde último heartbeat
+- Tarea actual del agente
+- Count de agentes activos vs inactivos
+
+**Tabla:** `agent_sessions`
+- `agent_name` (UNIQUE) - nombre del agente
+- `current_task_id` - FK a agent_activities
+- `current_task_description` - descripción de tarea actual
+- `status` - 'idle' | 'working' | 'error'
+- `last_heartbeat_at` - timestamp del último heartbeat
+- `metadata` - JSONB para datos adicionales
+
+**Endpoints:**
+- `POST /api/agent/heartbeat` - Enviar heartbeat
+- `GET /api/agent/alive` - Ver agentes activos (TTL 2 min)
+- `GET /api/agent/session/:agentName` - Ver sesión específica
+
+**TTL:** 2 minutos - si un agente no envía heartbeat, se considera inactivo.
+
+**Motivo:** Necesidad de ver en tiempo real qué agente está activo y qué tarea ejecuta.
+
+---
+
+## [2026-04-06] - Fix CORS Backend
+
+### Problema
+El backend usaba `origin: '*'` (wildcard) para rutas públicas, causando error "Access-Control-Allow-Origin header must not be wildcard when credentials mode is include".
+
+**Archivos:** `backend/src/config/security.config.ts`
+
+### Solución
+El backend ahora valida contra lista de orígenes permitidos (localhost:3000, localhost:3001, lookitry.com/www/api).
+
+**Motivo:** El frontend hace fetch con `credentials: 'include'`, incompatible con wildcard CORS.
+
+---
+
+## [2026-04-06] - TemplateShowcase - Nuevo Template Mobile-First
+
+**Archivos:** 
+- `frontend/src/components/tryon/templates/TemplateShowcase.tsx` (nuevo)
+- `frontend/src/components/tryon/templates/TemplateMinimalTopBar.tsx` (eliminado)
+
+Creado template "Showcase" para mostrador virtual en bios de Instagram/TikTok:
+- Header 40px discreto
+- Scroll horizontal swipe para productos (snap-x)
+- CTA fixed bottom 56px en thumb-zone
+- Touch targets +48px
+- Mobile-first (320px)
+
+**Motivo:** Bare y MinimalTopBar eran idénticos. Necesidad de template diferenciado para móvil.
+
+---
+
+## [2026-04-06] - Templates Pro - Colores Dinámicos
+
+**Archivos:**
+- `frontend/src/components/tryon/templates/TemplateBoldProStudio.tsx`
+- `frontend/src/components/tryon/templates/TemplateModernSidebar.tsx`
+
+Corregidos colores hardcoded:
+- **BoldProStudio:** `bg-[#050505]` → `secondaryColor`, `color: '#0C0A09'` → `color: '#ffffff'`, textos usan `primaryColor` con opacidad
+- **ModernSidebar:** Función `isLightColor()` para contraste dinámico en sidebar
+
+**Motivo:** Colores hardcoded ignoraban configuración de marca.
+
+---
+
+## [2026-04-06] - Sistema de Tracking de Actividad de Agentes
+
+### CRÍTICO - Sistema agent_activities
+
+Nuevo sistema de tracking para monitorear actividad de agentes Lookitry.
+
+**Migration SQL:** `backend/supabase/migrations/20250406_agent_activities.sql`
+- Tabla `agent_activities` con campos: id, agent_name, task_type, task_description, status, duration_ms, error_message, metadata, created_at, finished_at
+- Índices optimizados para queries frecuentes
+- RLS Policies: admins pueden leer, service_role puede insertar/actualizar
+- **Migration aplicada manualmente via supabase_apply_migration**
+
+**Backend Service:** `backend/src/services/agent-activity.service.ts`
+- `logActivity()` - Registra inicio de actividad
+- `logActivityEnd()` - Actualiza con estado final
+- `getActivities()` - Consulta con filtros
+- `getStats()` / `getStatsByAgent()` - Estadísticas agregadas
+- `getTrendData()` - Datos para gráficos
+- `exportCsv()` - Exportación CSV
+
+**Backend Routes:** `backend/src/routes/agent.routes.ts`
+- `POST /api/agent/activity` - Iniciar actividad
+- `PUT /api/agent/activity/:id` - Finalizar actividad
+- `GET /api/agent/activities` - Listar con filtros
+- `GET /api/agent/stats` - Stats globales
+- `GET /api/agent/stats/:agentName` - Stats por agente
+- `GET /api/agent/trends/:agentName` - Tendencias
+- `GET /api/agent/distribution` - Distribución por tipo
+- `GET /api/agent/export` - Exportar CSV
+
+**Config Sammy (.env) actualizada:**
+- `SUPABASE_URL` - URL del proyecto Supabase
+- `SUPABASE_SERVICE_KEY` - Service role key para escribir en agent_activities
+- `SUPABASE_SYNC_INTERVAL_MS=30000` - Intervalo de sync (30s)
+- `API_BASE_URL=https://api.lookitry.com` - Backend API para sincronizar actividades
+
+---
+
+## [2026-04-06] - Sammy Enhancement (Telegram Bot)
+
+### CRÍTICO - Activity Logging + Spanish Commands
+
+Sammy (Telegram bot) mejorado con tracking de actividades y comandos en español.
+
+**Sammy Source:** `sammy/src/`
+
+**Archivos creados:**
+- `sammy/src/commands/agent-commands.ts` - Parser de comandos en español
+  - `parseSpanishAgentCommand()` - Reconoce patrones: "cómo va", "actividad de", "qué están haciendo", etc.
+  - `buildAgentResponse()` - Formatea respuestas
+  
+- `sammy/src/sync/supabase-sync.ts` - Sync a Supabase
+  - `AgentActivitySync` class con cola de actividades pendientes
+  - Sync periódico (30s default)
+  - `syncNow()` para shutdown graceful
+  - Graceful handling si Supabase no disponible
+
+**Archivos modificados:**
+- `sammy/src/memory/sqlite.ts` - Nueva tabla `agent_activities` local + métodos de logging
+- `sammy/src/index.ts` - Activity logging, Spanish command handler, nuevos comandos `/agents`, `/agentstats`, `/agentactivity`, `/agenterros`, sync en SIGINT
+- `sammy/src/config/index.ts` - Nuevas variables SUPABASE_*
+- `sammy/src/types/index.ts` - Nuevos campos en Config
+
+**Comandos en español disponibles:**
+- "cómo va [agente]?" → Stats en tiempo real
+- "actividad de [agente] hoy" → Timeline de actividad
+- "qué están haciendo los agentes?" → Overview todos
+- "muéstrame los errores de hoy" → Errors aggregate
+- "dame el report de ayer" → Daily summary
+- "crea un dashboard de agentes" → Delega a WebWizard
+
+**Comandos slash nuevos:**
+- `/agents` - Overview de todos los agentes
+- `/agentstats <nombre>` - Stats de agente específico
+- `/agentactivity <nombre>` - Actividad reciente
+- `/agenterros` - Errores recientes
+
+---
+
+## [2026-04-06] - Dashboard Agents Activity (/admin/agents)
+
+### CRÍTICO - Nuevo Dashboard de Monitoreo de Agentes
+
+Dashboard web para visualizar actividad de agentes en tiempo real.
+
+**URL:** `/admin/agents`
+
+**Archivos creados:**
+- `frontend/src/services/agentApi.ts` - API service con tipos para agent stats/activities/trends
+- `frontend/src/app/admin/agents/page.tsx` - Main page (~380 líneas)
+- `frontend/src/components/admin/agents/AgentStatsCards.tsx` - Cards de stats + grid de agentes
+- `frontend/src/components/admin/agents/AgentActivityTimeline.tsx` - Tabla timeline
+- `frontend/src/components/admin/agents/AgentTaskDistribution.tsx` - Bar chart distribución
+- `frontend/src/components/admin/agents/AgentTrendChart.tsx` - Gráfico tendencia 7 días
+- `frontend/src/components/admin/agents/AgentFilterBar.tsx` - Filtros + export CSV
+
+**Features:**
+- Overview tab con stats cards (total tasks, success rate, avg duration, errors)
+- Grid de agentes clickeables con modal de detalle
+- Activity timeline con auto-refresh cada 30s
+- Filtros: rango de fechas, agente, tipo tarea, status
+- Export CSV
+- Task distribution bar chart
+- Trend chart últimos 7 días
+- Mobile responsive
+
+**Archivos modificados:**
+- `frontend/src/app/admin/layout.tsx` - Link "Agents Activity" en sidebar
+
+---
+
+## [2026-04-06] - Login Usuario Rediseñado
+
+**Archivos:** `frontend/src/components/auth/LoginForm.tsx`
+
+Rediseñado login de usuario con misma estética que admin:
+- Google primero, manual después
+- Mismos colores, tipografías, bordes
+- Botón "Ver planes" lleva a /planes
+- Animaciones framer-motion
+
+**Motivo:** Mejora de UX y consistencia con admin.
+
+---
+
+## [2026-04-06] - Sistema Reviews con Media Estrella
+
+**Archivos:**
+- `frontend/src/components/ui/HalfStarRating.tsx` (nuevo)
+- `frontend/src/components/dashboard/ReviewPromptModal.tsx`
+
+Nuevo componente HalfStarRating permite puntuación con media estrella (4.5, 3.5, etc):
+- Click en mitad izquierda = 0.5
+- Click en mitad derecha = entero
+- Hover muestra preview
+
+**Motivo:** Permite reviews más precisas.
 
 ---

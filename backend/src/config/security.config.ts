@@ -23,11 +23,22 @@ export const helmetConfig = helmet({
   },
 });
 
-export const publicCorsConfig = cors({ 
-  origin: '*',
+export const publicCorsConfig = cors({
+  origin: (origin, callback) => {
+    // Permitir requests sin origin (como mobile apps o curl)
+    if (!origin) return callback(null, true);
+    
+    // Verificar si el origen está en la whitelist
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    console.warn(`[CORS] Origen no permitido en publicCorsConfig: ${origin}`);
+    callback(new Error(`CORS: origen no permitido: ${origin}`));
+  },
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key', 'x-store-domain'],
-  credentials: false
+  credentials: true
 });
 
 const corsOriginEnv = process.env.CORS_ORIGIN

@@ -125,6 +125,30 @@ Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 50
 - El backend usa JWT propio, NO Supabase Auth
 - El cliente `supabase` anon NUNCA tiene sesión activa — RLS bloquea todo
 
+### 6.1 Blindaje contra Operaciones Destructivas de IA
+
+**REGLA CRÍTICA:** Antes de ejecutar cualquier operación que modifique o elimine datos de la base de datos (DDL o DML destructivo), la IA DEBE:
+
+1. **Describir** la operación completa que va a realizar
+2. **Confirmar explícitamente** con el usuario antes de ejecutarla
+3. **Esperar** la confirmación explícita ("sí", "confirmar", "ejecuta", etc.)
+
+**Operaciones que requieren confirmación previa:**
+- `DROP TABLE`, `DROP INDEX`, `DROP COLUMN`
+- `DELETE` o `TRUNCATE` de cualquier tabla
+- `ALTER TABLE ... DROP` columnas o restricciones
+- `UPDATE` masivo (más de 10 registros)
+- `INSERT` con datos sensibles o de producción
+- Ejecución de migraciones de base de datos
+- Cualquier operación via Supabase MCP (`supabase_execute_sql`, `supabase_apply_migration`)
+
+**Operaciones NO destructivas que NO requieren confirmación:**
+- `SELECT` para consulta o análisis
+- `INSERT` de datos de prueba en entorno local
+- `UPDATE` de registros individuales con fines de debug (con descripción previa)
+
+**Excepciones:** Solo en emergencia justificada y con descripción del riesgo.
+
 ---
 
 ## 7. Reglas de n8n

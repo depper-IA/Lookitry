@@ -27,6 +27,17 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
     onGenerate,
   } = props;
 
+  // Auto-detect if primaryColor is light for contrast adjustment
+  const isLightColor = (hex: string) => {
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.substring(0, 2), 16);
+    const g = parseInt(clean.substring(2, 4), 16);
+    const b = parseInt(clean.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.6;
+  };
+  const sidebarTextColor = isLightColor(primaryColor) ? '#1a1a1a' : '#ffffff';
+
   if (step === 'generating') {
     return (
       <div className="flex flex-col" style={{ backgroundColor: secondaryColor }}>
@@ -47,8 +58,8 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
         <div className="px-4 py-5 border-b border-white/20">
           {config.brand.logo
             ? <img src={config.brand.logo} alt={config.brand.name} className="h-8 object-contain" onError={e => { e.currentTarget.style.display = 'none'; }} />
-            : <h1 className="font-bold text-white text-base">{config.brand.name}</h1>}
-          <p className="text-xs text-white/60 mt-0.5">Probador Virtual</p>
+            : <h1 className="font-bold text-base" style={{ color: sidebarTextColor }}>{config.brand.name}</h1>}
+          <p className="text-xs mt-0.5" style={{ color: sidebarTextColor, opacity: 0.6 }}>Probador Virtual</p>
         </div>
 
         <div className="px-3 py-4 space-y-1 border-b border-white/20">

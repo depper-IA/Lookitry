@@ -167,34 +167,35 @@ export default function GoogleSignInButton({
 
       if (onSuccess) {
         onSuccess(data);
-      } else if (data.needsOnboarding) {
-        // Guardar pendingRegistrationId para usarlo en el onboarding
+      } else if (data.redirectTo) {
+        // NUEVO: Usuario nuevo con Google va directo al checkout funnel
         if (data.pendingRegistrationId) {
           localStorage.setItem('pendingRegistrationId', data.pendingRegistrationId);
         }
-        // Pequeña pausa para asegurar que la cookie se ha propagado
         setTimeout(() => {
-          const ref = data.pendingRegistrationId ? `?ref=${data.pendingRegistrationId}` : '';
-          window.location.href = `/register/google-setup${ref}`;
+          window.location.href = data.redirectTo;
+        }, 100);
+      } else if (data.needsOnboarding) {
+        // Fallback: si no hay redirectTo, ir a checkout (no a google-setup)
+        if (data.pendingRegistrationId) {
+          localStorage.setItem('pendingRegistrationId', data.pendingRegistrationId);
+        }
+        setTimeout(() => {
+          window.location.href = '/checkout';
+        }, 100);
+      } else if (data.noAccount) {
+        // Usuario con Google pero sin cuenta activa → mostrar página de activación
+        setTimeout(() => {
+          window.location.href = '/activar-cuenta';
         }, 100);
       } else if (variant === 'admin') {
         setTimeout(() => {
           window.location.href = redirectTo || '/admin/dashboard';
         }, 100);
       } else {
+        // Usuario existente con cuenta → ir al dashboard (NUNCA a checkout)
         setTimeout(() => {
-          if (plan && ['TRIAL', 'BASIC', 'PRO', 'LANDING'].includes(plan.toUpperCase())) {
-            const params = new URLSearchParams();
-            params.set('plan', plan.toUpperCase());
-            if (plan.toUpperCase() !== 'TRIAL' && months && [3, 6, 12].includes(months)) {
-              params.set('months', String(months));
-            }
-            window.location.href = `/checkout?${params.toString()}`;
-          } else if (data.brand?.plan) {
-            window.location.href = `/checkout?plan=${data.brand.plan}`;
-          } else {
-            window.location.href = '/trial-checkout';
-          }
+          window.location.href = '/dashboard';
         }, 100);
       }
     } catch (err: any) {

@@ -2,8 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+import { adminApi } from '@/services/adminApi';
 
 interface LeadSearch {
   id: string;
@@ -20,6 +19,19 @@ interface LeadSearch {
 }
 
 interface QuotaStatus {
+  daily_used: number;
+  monthly_used: number;
+  daily_limit: number;
+  monthly_limit: number;
+  daily_remaining: number;
+  monthly_remaining: number;
+}
+
+interface SearchesResponse {
+  searches: LeadSearch[];
+}
+
+interface QuotaResponse {
   daily_used: number;
   monthly_used: number;
   daily_limit: number;
@@ -68,23 +80,17 @@ export default function LeadSearchesPage() {
 
   const fetchSearches = useCallback(async () => {
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch(`${API_URL}/api/admin/lead-searches`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error('Error cargando búsquedas');
-      const data = await res.json();
+      const data = await adminApi.get<SearchesResponse>('/admin/lead-searches');
       setSearches(data.searches || []);
 
-      const quotaRes = await fetch(`${API_URL}/api/admin/lead-searches/quota`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (quotaRes.ok) {
-        const quotaData = await quotaRes.json();
+      try {
+        const quotaData = await adminApi.get<QuotaResponse>('/admin/lead-searches/quota');
         setQuota(quotaData);
+      } catch {
+        // Quota endpoint may not exist, silently ignore
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Error cargando búsquedas');
     } finally {
       setLoading(false);
     }
@@ -97,31 +103,21 @@ export default function LeadSearchesPage() {
   const handleRun = async (id: string) => {
     setActionLoading(id);
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch(`${API_URL}/api/admin/lead-searches/${id}/run`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error ejecutando búsqueda');
-      alert(`Búsqueda completada: ${data.inserted} leads nuevos, ${data.duplicates} duplicados`);
+      const data = await adminApi.post<{ inserted: number; duplicates: number; message?: string }>(`/admin/lead-searches/${id}/run`);
+      alert(`Busqueda completada: ${data.inserted} leads nuevos, ${data.duplicates} duplicados`);
       fetchSearches();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Error ejecutando busqueda');
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar esta búsqueda?')) return;
+    if (!confirm('¿Eliminar esta busqueda?')) return;
     setActionLoading(id);
     try {
-      const token = localStorage.getItem('admin_token');
-      await fetch(`${API_URL}/api/admin/lead-searches/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await adminApi.delete(`/admin/lead-searches/${id}`);
       fetchSearches();
     } catch (err: any) {
       setError(err.message);
@@ -147,14 +143,15 @@ export default function LeadSearchesPage() {
     >
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#0a0a0a]">Lead Searches</h1>
-          <p className="text-sm text-[#999] mt-1">
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Lead Searches</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
             Búsquedas en Google Places
           </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#FF5C3A] text-white rounded-lg hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+          style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
         >
           <IconPlus />
           Nueva Búsqueda
@@ -163,91 +160,95 @@ export default function LeadSearchesPage() {
 
       {quota && (
         <div className="grid grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg border border-[#e5e5e5] p-4">
-            <p className="text-2xl font-bold text-[#FF5C3A]">{quota.daily_remaining}</p>
-            <p className="text-xs text-[#999]">Búsquedas hoy (límite: {quota.daily_limit})</p>
+          <div className="rounded-lg border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <p className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>{quota.daily_remaining}</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Búsquedas hoy (límite: {quota.daily_limit})</p>
           </div>
-          <div className="bg-white rounded-lg border border-[#e5e5e5] p-4">
-            <p className="text-2xl font-bold text-[#3b82f6]">{quota.monthly_remaining}</p>
-            <p className="text-xs text-[#999]">Este mes (límite: {quota.monthly_limit})</p>
+          <div className="rounded-lg border p-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <p className="text-2xl font-bold" style={{ color: '#3b82f6' }}>{quota.monthly_remaining}</p>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Este mes (límite: {quota.monthly_limit})</p>
           </div>
-          <div className="bg-white rounded-lg border border-[#e5e5e5] p-4 col-span-2">
-            <p className="text-sm text-[#999]">Google Places free tier: 28,000 búsquedas/mes</p>
-            <div className="w-full bg-[#e5e5e5] rounded-full h-2 mt-2">
+          <div className="rounded-lg border p-4 col-span-2" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Google Places free tier: 28,000 búsquedas/mes</p>
+            <div className="w-full rounded-full h-2 mt-2" style={{ backgroundColor: 'var(--border-color)' }}>
               <div
-                className="bg-[#FF5C3A] h-2 rounded-full"
-                style={{ width: `${(quota.monthly_used / quota.monthly_limit) * 100}%` }}
+                className="h-2 rounded-full"
+                style={{ width: `${(quota.monthly_used / quota.monthly_limit) * 100}%`, backgroundColor: 'var(--accent)' }}
               />
             </div>
-            <p className="text-xs text-[#999] mt-1">Usado: {quota.monthly_used}/{quota.monthly_limit}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Usado: {quota.monthly_used}/{quota.monthly_limit}</p>
           </div>
         </div>
       )}
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+        <div className="mb-4 p-4 rounded-lg border flex items-center gap-3" style={{ backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.2)', color: '#ef4444' }}>
           <IconWarning />
-          <span className="text-red-700">{error}</span>
+          <span style={{ color: '#ef4444' }}>{error}</span>
           <button onClick={() => setError(null)} className="ml-auto"><IconX /></button>
         </div>
       )}
 
       {searches.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-[#e5e5e5]">
+        <div className="text-center py-12 rounded-lg border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <IconSearch />
-          <p className="text-[#999] mt-2">No hay búsquedas configuradas</p>
+          <p className="mt-2" style={{ color: 'var(--text-muted)' }}>No hay búsquedas configuradas</p>
           <button
             onClick={() => setShowModal(true)}
-            className="mt-4 text-[#FF5C3A] hover:underline"
+            className="mt-4 hover:underline"
+            style={{ color: 'var(--accent)' }}
           >
             Crear la primera
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-[#e5e5e5] overflow-hidden">
+        <div className="rounded-lg border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <table className="w-full">
             <thead>
-              <tr className="bg-[#fafafa] border-b border-[#e5e5e5]">
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Nombre</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Ubicación</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Keywords</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Última corrida</th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-[#666]">Acciones</th>
+              <tr className="border-b" style={{ backgroundColor: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Nombre</th>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Ubicación</th>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Keywords</th>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Última corrida</th>
+                <th className="text-right px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {searches.map((search) => (
-                <tr key={search.id} className="border-b border-[#f0f0f0] last:border-0 hover:bg-[#fafafa]">
+                <tr key={search.id} className="border-b last:border-0 transition-colors" style={{ borderColor: 'var(--border-color)' }}
+                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
                   <td className="px-4 py-3">
-                    <p className="font-medium text-[#0a0a0a]">{search.name}</p>
-                    <p className="text-xs text-[#999]">
+                    <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{search.name}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                       {search.schedule_enabled ? 'Programada' : 'Manual'}
                     </p>
                   </td>
-                  <td className="px-4 py-3 text-sm text-[#666]">
+                  <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
                     {search.city || 'Todas'}, {search.country}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
                       {search.keywords.slice(0, 3).map((kw, i) => (
-                        <span key={i} className="px-2 py-0.5 bg-[#f5f5f5] rounded text-xs text-[#666]">
+                        <span key={i} className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-secondary)' }}>
                           {kw}
                         </span>
                       ))}
                       {search.keywords.length > 3 && (
-                        <span className="px-2 py-0.5 text-xs text-[#999]">
+                        <span className="px-2 py-0.5 text-xs" style={{ color: 'var(--text-muted)' }}>
                           +{search.keywords.length - 3}
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-[#666]">
+                  <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
                     <div className="flex items-center gap-1">
                       <IconClock />
                       {formatDate(search.last_run_at)}
                     </div>
                     {search.last_results_count > 0 && (
-                      <p className="text-xs text-[#10b981]">{search.last_results_count} leads</p>
+                      <p className="text-xs" style={{ color: '#10b981' }}>{search.last_results_count} leads</p>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -255,7 +256,10 @@ export default function LeadSearchesPage() {
                       <button
                         onClick={() => handleRun(search.id)}
                         disabled={actionLoading === search.id}
-                        className="p-2 text-[#10b981] hover:bg-[#f0fdf4] rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 rounded-lg transition-colors disabled:opacity-50"
+                        style={{ color: '#10b981' }}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(16,185,129,0.1)')}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                         title="Ejecutar búsqueda"
                       >
                         {actionLoading === search.id ? <IconSpinner /> : <IconPlay />}
@@ -263,7 +267,10 @@ export default function LeadSearchesPage() {
                       <button
                         onClick={() => handleDelete(search.id)}
                         disabled={actionLoading === search.id}
-                        className="p-2 text-[#999] hover:text-[#ef4444] hover:bg-[#fef2f2] rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 rounded-lg transition-colors disabled:opacity-50"
+                        style={{ color: 'var(--text-muted)' }}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)')}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                         title="Eliminar"
                       >
                         <IconTrash />
@@ -278,13 +285,13 @@ export default function LeadSearchesPage() {
       )}
 
       {showModal && (
-        <SearchModal onClose={() => setShowModal(false)} onSave={fetchSearches} />
+        <SearchModal onClose={() => setShowModal(false)} onSave={fetchSearches} setError={setError} />
       )}
     </motion.div>
   );
 }
 
-function SearchModal({ onClose, onSave }: { onClose: () => void; onSave: () => void }) {
+function SearchModal({ onClose, onSave, setError }: { onClose: () => void; onSave: () => void; setError: (msg: string) => void }) {
   const [form, setForm] = useState({
     name: '',
     country: 'Colombia',
@@ -295,56 +302,57 @@ function SearchModal({ onClose, onSave }: { onClose: () => void; onSave: () => v
     schedule_enabled: false,
   });
   const [saving, setSaving] = useState(false);
+  const [localError, setLocalError] = useState('');
 
   const handleSubmit = async () => {
     if (!form.name.trim() || !form.keywords.trim()) return;
     setSaving(true);
+    setLocalError('');
     try {
-      const token = localStorage.getItem('admin_token');
-      await fetch(`${API_URL}/api/admin/lead-searches`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          name: form.name,
-          country: form.country,
-          city: form.city || undefined,
-          keywords: form.keywords.split(',').map((k) => k.trim()).filter(Boolean),
-          max_results: parseInt(form.max_results) || 50,
-          search_radius_km: parseInt(form.search_radius_km) || 10,
-          schedule_enabled: form.schedule_enabled,
-        }),
+      await adminApi.post('/admin/lead-searches', {
+        name: form.name,
+        country: form.country,
+        city: form.city || undefined,
+        keywords: form.keywords.split(',').map((k) => k.trim()).filter(Boolean),
+        max_results: parseInt(form.max_results) || 50,
+        search_radius_km: parseInt(form.search_radius_km) || 10,
+        schedule_enabled: form.schedule_enabled,
       });
       onSave();
       onClose();
-    } catch {}
+    } catch (err: any) {
+      setLocalError(err.message || 'Error al crear busqueda');
+    }
     setSaving(false);
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-lg w-full">
-        <div className="flex items-center justify-between p-6 border-b border-[#e5e5e5]">
-          <h2 className="text-lg font-bold text-[#0a0a0a]">Nueva Búsqueda</h2>
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+      <div className="rounded-xl max-w-lg w-full border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+        <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--border-color)' }}>
+          <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Nueva Búsqueda</h2>
           <button onClick={onClose}><IconX /></button>
         </div>
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#666] mb-1">Nombre *</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Nombre *</label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="ej: Boutiques Cali"
-              className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#666] mb-1">País *</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>País *</label>
               <select
                 value={form.country}
                 onChange={(e) => setForm({ ...form, country: e.target.value })}
-                className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               >
                 <option value="Colombia">Colombia</option>
                 <option value="USA">USA</option>
@@ -352,58 +360,67 @@ function SearchModal({ onClose, onSave }: { onClose: () => void; onSave: () => v
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#666] mb-1">Ciudad</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Ciudad</label>
               <input
                 type="text"
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
                 placeholder="Opcional"
-                className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#666] mb-1">Keywords *</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Keywords *</label>
             <input
               type="text"
               value={form.keywords}
               onChange={(e) => setForm({ ...form, keywords: e.target.value })}
               placeholder="boutique, ropa moda, accesorios (separados por coma)"
-              className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+              style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#666] mb-1">Máx resultados</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Máx resultados</label>
               <input
                 type="number"
                 value={form.max_results}
                 onChange={(e) => setForm({ ...form, max_results: e.target.value })}
-                className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#666] mb-1">Radio (km)</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Radio (km)</label>
               <input
                 type="number"
                 value={form.search_radius_km}
                 onChange={(e) => setForm({ ...form, search_radius_km: e.target.value })}
-                className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
               />
             </div>
           </div>
+          {localError && (
+            <div className="text-sm text-red-500 mt-2">{localError}</div>
+          )}
         </div>
-        <div className="flex justify-end gap-3 p-6 border-t border-[#e5e5e5]">
+        <div className="flex justify-end gap-3 p-6 border-t" style={{ borderColor: 'var(--border-color)' }}>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-[#666] hover:text-[#0a0a0a] transition-colors"
+            className="px-4 py-2 transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
           >
             Cancelar
           </button>
           <button
             onClick={handleSubmit}
             disabled={saving || !form.name.trim() || !form.keywords.trim()}
-            className="px-4 py-2 bg-[#FF5C3A] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="px-4 py-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+            style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
           >
             {saving ? <IconSpinner /> : 'Crear'}
           </button>

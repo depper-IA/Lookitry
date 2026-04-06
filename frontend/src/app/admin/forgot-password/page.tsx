@@ -50,7 +50,7 @@ export default function AdminForgotPasswordPage() {
             boxShadow: '0 25px 60px rgba(0,0,0,0.15)',
           }}
         >
-          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[#FF5C3A]/5 blur-3xl pointer-events-none" />
+          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[var(--accent)]/5 blur-3xl pointer-events-none" />
 
           <div className="relative">
             {sent ? (
@@ -66,7 +66,7 @@ export default function AdminForgotPasswordPage() {
                   className="flex justify-center mb-5"
                 >
                   <div className="flex h-16 w-16 items-center justify-center rounded-2xl" style={{ backgroundColor: 'rgba(255,92,58,0.1)' }}>
-                    <svg className="w-8 h-8" fill="none" stroke="#FF5C3A" viewBox="0 0 24 24">
+                    <svg className="w-8 h-8" fill="none" stroke="var(--accent)" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </div>
@@ -75,7 +75,7 @@ export default function AdminForgotPasswordPage() {
                 <p className="text-[13px] mb-6" style={{ color: 'var(--text-muted)' }}>
                   Si el administrador existe, recibirá un enlace para crear una nueva contraseña. El enlace expira en 1 hora.
                 </p>
-                <Link href="/admin/login" className="text-[13px] transition-colors hover:text-[#FF5C3A]" style={{ color: '#FF5C3A' }}>
+                <Link href="/admin/login" className="text-[13px] transition-colors hover:text-[var(--accent)]" style={{ color: 'var(--accent)' }}>
                   Volver al login admin
                 </Link>
               </motion.div>
@@ -85,7 +85,7 @@ export default function AdminForgotPasswordPage() {
                   style={{
                     backgroundColor: 'rgba(255,92,58,0.08)',
                     borderColor: 'rgba(255,92,58,0.2)',
-                    color: '#FF5C3A',
+                    color: 'var(--accent)',
                   }}
                 >
                   Panel de administración
@@ -150,14 +150,14 @@ export default function AdminForgotPasswordPage() {
                     whileHover={{ scale: loading ? 1 : 1.01 }}
                     whileTap={{ scale: loading ? 1 : 0.98 }}
                     className="w-full py-3 rounded-xl text-[13px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ backgroundColor: '#FF5C3A', color: 'white' }}
+                    style={{ backgroundColor: 'var(--accent)', color: 'white' }}
                   >
                     {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
                   </motion.button>
                 </form>
 
                 <p className="text-center text-[13px] mt-6" style={{ color: 'var(--text-muted)' }}>
-                  <Link href="/admin/login" className="transition-colors hover:text-[#FF5C3A]" style={{ color: '#FF5C3A' }}>
+                  <Link href="/admin/login" className="transition-colors hover:text-[var(--accent)]" style={{ color: 'var(--accent)' }}>
                     Volver al login admin
                   </Link>
                 </p>

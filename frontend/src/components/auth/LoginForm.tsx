@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { authService } from '@/services/auth.service';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import GoogleSignInButton from './GoogleSignInButton';
 
 function EyeIcon() {
@@ -53,8 +54,8 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
     if (!validateForm()) return;
     setResendSuccess(null);
     setShowResendBtn(false);
-    try { 
-      await login(formData, redirectTo); 
+    try {
+      await login(formData, redirectTo);
     } catch (err: any) {
       const msg = err.message || '';
       if (msg.includes('verificar') || msg.includes('EMAIL_NOT_VERIFIED')) {
@@ -87,149 +88,207 @@ export default function LoginForm({ redirectTo = '/dashboard' }: { redirectTo?: 
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
-      <div className="w-full max-w-md">
-
+    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: '#0a0a0a' }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="w-full max-w-md"
+      >
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo.svg" alt="Lookitry" width={28} height={28} className="object-contain h-7 w-auto" priority />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="relative h-11 w-11 shrink-0">
+              <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
+              <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
+            </div>
             <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
-              Look<span className="text-[#FF5C3A]">itry</span>
+              Look<span style={{ color: 'var(--accent)' }}>itry</span>
             </span>
           </Link>
         </div>
 
-        <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8">
-          <h2 className="font-jakarta font-bold text-[22px] text-white mb-1 uppercase tracking-tight">
-            Iniciar sesión
-          </h2>
-          <p className="text-[13px] text-[#999] mb-7 font-medium">
-            Accede a tu dashboard de probador virtual profesional
-          </p>
+        {/* Card */}
+        <div
+          className="relative overflow-hidden rounded-[2rem] border p-8 md:p-10"
+          style={{
+            backgroundColor: 'var(--bg-card)',
+            borderColor: 'var(--border-color)',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.15)',
+          }}
+        >
+          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[var(--accent)]/5 blur-3xl pointer-events-none" />
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[13px] px-4 py-3 rounded-lg flex flex-col gap-2">
-                <p>{error}</p>
-                {showResendBtn && (
-                  <button
-                    type="button"
-                    onClick={handleResend}
-                    disabled={resending}
-                    className="text-left text-white/90 underline hover:text-white font-bold disabled:opacity-50 transition-colors"
-                  >
-                    {resending ? 'Enviando...' : 'Reenviar email de verificación'}
-                  </button>
+          <div className="relative">
+            <motion.h2
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="font-jakarta font-bold text-[22px] mb-1"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              Iniciar sesión
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-[13px] mb-7"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Accede a tu dashboard de probador virtual
+            </motion.p>
+
+            {/* Google Button PRIMERO */}
+            <GoogleSignInButton
+              mode="login"
+              onError={(msg) => setGoogleError(msg)}
+            />
+            {googleError && (
+              <p className="mt-2 text-xs text-red-400 text-center">{googleError}</p>
+            )}
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 my-5">
+              <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-color)' }} />
+              <span className="text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>o continúa con correo</span>
+              <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-color)' }} />
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="border px-4 py-3 rounded-xl text-[13px]"
+                  style={{
+                    backgroundColor: 'rgba(239,68,68,0.08)',
+                    borderColor: 'rgba(239,68,68,0.2)',
+                    color: '#ef4444',
+                  }}
+                >
+                  <p>{error}</p>
+                  {showResendBtn && (
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={resending}
+                      className="text-left underline hover:text-white font-bold disabled:opacity-50 transition-colors mt-1"
+                    >
+                      {resending ? 'Enviando...' : 'Reenviar email de verificación'}
+                    </button>
+                  )}
+                </motion.div>
+              )}
+
+              {resendSuccess && (
+                <div className="border px-4 py-3 rounded-xl text-[13px]"
+                  style={{
+                    backgroundColor: 'rgba(34,197,94,0.08)',
+                    borderColor: 'rgba(34,197,94,0.2)',
+                    color: '#22c55e',
+                  }}
+                >
+                  {resendSuccess}
+                </div>
+              )}
+
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="block text-[13px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="block w-full px-4 py-3 rounded-xl border text-[13px] outline-none transition-colors"
+                  style={{
+                    backgroundColor: 'var(--bg-input)',
+                    borderColor: validationErrors.email ? 'rgba(239,68,68,0.5)' : 'var(--border-color)',
+                    color: 'var(--text-primary)',
+                  }}
+                  placeholder="tu@tienda.com"
+                />
+                {validationErrors.email && (
+                  <p className="mt-1 text-[11px] text-red-500">{validationErrors.email}</p>
                 )}
               </div>
-            )}
 
-            {resendSuccess && (
-              <div className="bg-green-500/10 border border-green-500/30 text-green-500 text-[13px] px-4 py-3 rounded-lg font-medium">
-                {resendSuccess}
+              {/* Password */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="password" className="block text-[13px] font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    Contraseña
+                  </label>
+                  <Link href={`/auth/forgot-password${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[12px] transition-colors hover:text-[var(--accent)]" style={{ color: 'var(--text-muted)' }}>
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="block w-full px-4 py-3 pr-12 rounded-xl border text-[13px] outline-none transition-colors"
+                    style={{
+                      backgroundColor: 'var(--bg-input)',
+                      borderColor: validationErrors.password ? 'rgba(239,68,68,0.5)' : 'var(--border-color)',
+                      color: 'var(--text-primary)',
+                    }}
+                    placeholder="********"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-[var(--accent)]"
+                    style={{ color: 'var(--text-muted)' }}
+                    tabIndex={-1}
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  >
+                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                  </button>
+                </div>
+                {validationErrors.password && (
+                  <p className="mt-1 text-[11px] text-red-500">{validationErrors.password}</p>
+                )}
               </div>
-            )}
 
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-[11px] font-bold text-[#888] mb-1.5 uppercase tracking-widest">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className={`block w-full px-4 py-3 bg-[#0f0f0f] border ${
-                  validationErrors.email ? 'border-red-900/50' : 'border-[#2a2a2a]'
-                } rounded-lg text-white text-[14px] placeholder-[#666] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
-                placeholder="tu@tienda.com"
-                value={formData.email}
-                onChange={handleChange}
-              />
-              {validationErrors.email && (
-                <p className="mt-1 text-[11px] text-red-500">{validationErrors.email}</p>
-              )}
-            </div>
+              <motion.button
+                type="submit"
+                disabled={isLoading}
+                whileHover={{ scale: isLoading ? 1 : 1.01 }}
+                whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                style={{ backgroundColor: 'var(--accent)', color: 'white' }}
+              >
+                {isLoading && (
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                )}
+                {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+              </motion.button>
+            </form>
 
-            {/* Contraseña */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="password" className="block text-[11px] font-bold text-[#888] uppercase tracking-widest">
-                  Contraseña
-                </label>
-                <Link href={`/auth/forgot-password${redirectTo && redirectTo !== '/dashboard' ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[11px] text-[#999] hover:text-[#FF5C3A] transition-colors">
-                  ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
-              <div className="relative">
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  required
-                  className={`block w-full px-4 py-3 pr-10 bg-[#0f0f0f] border ${
-                    validationErrors.password ? 'border-red-900/50' : 'border-[#2a2a2a]'
-                  } rounded-lg text-white text-[14px] placeholder-[#666] focus:outline-none focus:border-[#FF5C3A] transition-colors`}
-                  placeholder="********"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#999] hover:text-[#FF5C3A] focus:outline-none focus-visible:text-[#FF5C3A] transition-colors"
-                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                >
-                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
-              </div>
-              {validationErrors.password && (
-                <p className="mt-1 text-[11px] text-red-500">{validationErrors.password}</p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-4 bg-[#FF5C3A] hover:bg-[#ff785c] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[14px] font-bold rounded-lg transition-all shadow-lg hover:shadow-[#FF5C3A]/20 mt-4 uppercase tracking-wider"
-            >
-              {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-[#141414] px-3 text-[#666]">o continúa con</span>
-            </div>
+            <p className="text-center text-[12px] mt-6" style={{ color: 'var(--text-muted)' }}>
+              ¿No tienes cuenta?{' '}
+              <Link href="/planes" className="text-[var(--accent)] hover:text-white transition-colors font-semibold">
+                Ver planes
+              </Link>
+            </p>
           </div>
-
-          {/* Google Sign-In */}
-          <GoogleSignInButton
-            mode="login"
-            onError={(msg) => setGoogleError(msg)}
-          />
-          {googleError && (
-            <p className="mt-2 text-[11px] text-red-500 text-center">{googleError}</p>
-          )}
-
-          <p className="text-center text-[13px] text-[#999] mt-8">
-            ¿No tienes cuenta?{' '}
-            <Link href={`/checkout?plan=TRIAL${redirectTo && redirectTo !== '/dashboard' ? `&redirect=${encodeURIComponent(redirectTo)}` : ''}`} className="text-[#FF5C3A] hover:text-white transition-colors font-bold">
-              Regístrate aquí
-            </Link>
-          </p>
         </div>
-
-      </div>
+      </motion.div>
     </div>
   );
 }

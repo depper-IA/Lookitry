@@ -192,9 +192,9 @@ export async function findOrCreateBrandFromGoogle(
     throw new Error('GOOGLE_PENDING_REG_FAILED');
   }
 
-  // Devolver pendingRegistrationId para que el frontend rediriga al onboarding
+  // Devolver pendingRegistrationId para que el frontend rediriga al checkout
   return {
-    token: null, // Sin token - el usuario debe completar onboarding primero
+    token: null, // Sin token - el usuario debe completar el checkout primero
     brand: {
       id: pendingReg.id,
       email: payload.email.toLowerCase(),
@@ -204,6 +204,7 @@ export async function findOrCreateBrandFromGoogle(
     isNewBrand: true,
     accountLinked: false,
     pendingRegistrationId: pendingReg.id,
+    redirectTo: '/checkout', // NUEVO: usuario nuevo va directo al funnel de pago
   };
 }
 

@@ -146,7 +146,7 @@ export default function EmailCampaignsPage() {
           <tr>
             <td style="background:#0a0a0a;padding:30px 40px;border-radius:16px 16px 0 0;text-align:center">
               <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:700">Lookitry</h1>
-              <p style="margin:8px 0 0;color:#FF5C3A;font-size:12px;font-weight:600;letter-spacing:0.1em">VIRTUAL TRY-ON</p>
+              <p style="margin:8px 0 0;color:var(--accent);font-size:12px;font-weight:600;letter-spacing:0.1em">VIRTUAL TRY-ON</p>
             </td>
           </tr>
           <tr>
@@ -155,7 +155,7 @@ export default function EmailCampaignsPage() {
               <p style="color:#333333;font-size:16px;line-height:1.6;margin:0 0 20px">Tenemos algo especial que contarte...</p>
               <p style="color:#333333;font-size:16px;line-height:1.6;margin:0 0 20px">Tu marca <strong>{{brandName}}</strong> es importante para nosotros.</p>
               <div style="background:#f9f9f9;padding:24px;border-radius:12px;margin:30px 0;text-align:center">
-                <p style="margin:0;color:#FF5C3A;font-size:20px;font-weight:700">LOOKITRY20</p>
+                <p style="margin:0;color:var(--accent);font-size:20px;font-weight:700">LOOKITRY20</p>
                 <p style="margin:8px 0 0;color:#666666;font-size:13px">20% de descuento en tu primer año</p>
               </div>
               <p style="color:#666666;font-size:13px;margin:20px 0 0">El equipo de Lookitry</p>
@@ -325,14 +325,15 @@ export default function EmailCampaignsPage() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#0a0a0a]">Email Campaigns</h1>
-          <p className="text-sm text-[#999] mt-1">
-            Cuota diaria: <span className="text-[#FF5C3A] font-semibold">{quota.remaining}/{quota.dailyLimit}</span> emails restantes
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Email Campaigns</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+            Cuota diaria: <span className="font-semibold" style={{ color: 'var(--accent)' }}>{quota.remaining}/{quota.dailyLimit}</span> emails restantes
           </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#FF5C3A] text-white rounded-lg hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+          style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
         >
           <IconPlus />
           Nueva Campaña
@@ -340,45 +341,49 @@ export default function EmailCampaignsPage() {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+        <div className="mb-4 p-4 rounded-lg border flex items-center gap-3" style={{ backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.2)', color: '#ef4444' }}>
           <IconWarning />
-          <span className="text-red-700">{error}</span>
+          <span style={{ color: '#ef4444' }}>{error}</span>
           <button onClick={() => setError(null)} className="ml-auto"><IconX /></button>
         </div>
       )}
 
       {campaigns.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-[#e5e5e5]">
+        <div className="text-center py-12 rounded-lg border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <IconMail />
-          <p className="text-[#999] mt-2">No hay campañas todavía</p>
+          <p className="mt-2" style={{ color: 'var(--text-muted)' }}>No hay campañas todavía</p>
           <button
             onClick={() => setShowModal(true)}
-            className="mt-4 text-[#FF5C3A] hover:underline"
+            className="mt-4 hover:underline"
+            style={{ color: 'var(--accent)' }}
           >
             Crear la primera campaña
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-[#e5e5e5] overflow-hidden">
+        <div className="rounded-lg border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
           <table className="w-full">
             <thead>
-              <tr className="bg-[#fafafa] border-b border-[#e5e5e5]">
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Nombre</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Asunto</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Estado</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Progreso</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Programada</th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-[#666]">Acciones</th>
+              <tr className="border-b" style={{ backgroundColor: 'var(--bg-hover)', borderColor: 'var(--border-color)' }}>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Nombre</th>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Asunto</th>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Estado</th>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Progreso</th>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Programada</th>
+                <th className="text-right px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {campaigns.map((campaign) => (
-                <tr key={campaign.id} className="border-b border-[#f0f0f0] last:border-0 hover:bg-[#fafafa]">
+                <tr key={campaign.id} className="border-b last:border-0 transition-colors" style={{ borderColor: 'var(--border-color)' }}
+                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
                   <td className="px-4 py-3">
-                    <p className="font-medium text-[#0a0a0a]">{campaign.name}</p>
-                    <p className="text-xs text-[#999]">{FILTER_LABELS[campaign.filter_type]}</p>
+                    <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{campaign.name}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{FILTER_LABELS[campaign.filter_type]}</p>
                   </td>
-                  <td className="px-4 py-3 text-sm text-[#666] max-w-[200px] truncate">{campaign.subject}</td>
+                  <td className="px-4 py-3 text-sm max-w-[200px] truncate" style={{ color: 'var(--text-secondary)' }}>{campaign.subject}</td>
                   <td className="px-4 py-3">
                     <span
                       className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
@@ -390,30 +395,33 @@ export default function EmailCampaignsPage() {
                   <td className="px-4 py-3">
                     {campaign.status === 'processing' ? (
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-2 bg-[#e5e5e5] rounded-full overflow-hidden max-w-[100px]">
+                        <div className="flex-1 h-2 rounded-full overflow-hidden max-w-[100px]" style={{ backgroundColor: 'var(--border-color)' }}>
                           <div
-                            className="h-full bg-[#FF5C3A] transition-all"
-                            style={{ width: `${campaign.stats.total > 0 ? (campaign.stats.sent / campaign.stats.total) * 100 : 0}%` }}
+                            className="h-full transition-all"
+                            style={{ width: `${campaign.stats.total > 0 ? (campaign.stats.sent / campaign.stats.total) * 100 : 0}%`, backgroundColor: 'var(--accent)' }}
                           />
                         </div>
-                        <span className="text-xs text-[#999]">
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                           {campaign.stats.sent}/{campaign.stats.total}
                         </span>
                       </div>
                     ) : (
-                      <div className="flex gap-4 text-xs text-[#999]">
-                        <span className="text-[#10b981]">{campaign.stats.sent} env</span>
-                        <span className="text-[#3b82f6]">{campaign.stats.opened} ab</span>
-                        <span className="text-[#8b5cf6]">{campaign.stats.clicked} cl</span>
+                      <div className="flex gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+                        <span style={{ color: '#10b981' }}>{campaign.stats.sent} env</span>
+                        <span style={{ color: '#3b82f6' }}>{campaign.stats.opened} ab</span>
+                        <span style={{ color: '#8b5cf6' }}>{campaign.stats.clicked} cl</span>
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-[#666]">{formatDate(campaign.scheduled_at)}</td>
+                  <td className="px-4 py-3 text-sm" style={{ color: 'var(--text-secondary)' }}>{formatDate(campaign.scheduled_at)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => handlePreview(campaign.id)}
-                        className="p-2 text-[#999] hover:text-[#0a0a0a] hover:bg-[#f5f5f5] rounded-lg transition-colors"
+                        className="p-2 rounded-lg transition-colors"
+                        style={{ color: 'var(--text-muted)' }}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                         title="Previsualizar"
                       >
                         <IconEye />
@@ -423,7 +431,10 @@ export default function EmailCampaignsPage() {
                           <button
                             onClick={() => handleLaunch(campaign.id)}
                             disabled={actionLoading === campaign.id}
-                            className="p-2 text-[#10b981] hover:bg-[#f0fdf4] rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 rounded-lg transition-colors disabled:opacity-50"
+                            style={{ color: '#10b981' }}
+                            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(16,185,129,0.1)')}
+                            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                             title="Enviar ahora"
                           >
                             {actionLoading === campaign.id ? <IconSpinner /> : <IconPlay />}
@@ -431,7 +442,10 @@ export default function EmailCampaignsPage() {
                           <button
                             onClick={() => handleSchedule(campaign.id)}
                             disabled={actionLoading === campaign.id}
-                            className="p-2 text-[#f59e0b] hover:bg-[#fffbeb] rounded-lg transition-colors disabled:opacity-50"
+                            className="p-2 rounded-lg transition-colors disabled:opacity-50"
+                            style={{ color: '#f59e0b' }}
+                            onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(245,158,11,0.1)')}
+                            onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                             title="Programar"
                           >
                             <IconClock />
@@ -442,7 +456,10 @@ export default function EmailCampaignsPage() {
                         <button
                           onClick={() => handleCancel(campaign.id)}
                           disabled={actionLoading === campaign.id}
-                          className="p-2 text-[#ef4444] hover:bg-[#fef2f2] rounded-lg transition-colors disabled:opacity-50"
+                          className="p-2 rounded-lg transition-colors disabled:opacity-50"
+                          style={{ color: '#ef4444' }}
+                          onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)')}
+                          onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                           title="Cancelar"
                         >
                           <IconX />
@@ -451,7 +468,10 @@ export default function EmailCampaignsPage() {
                       <button
                         onClick={() => handleDelete(campaign.id)}
                         disabled={actionLoading === campaign.id}
-                        className="p-2 text-[#999] hover:text-[#ef4444] hover:bg-[#fef2f2] rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 rounded-lg transition-colors disabled:opacity-50"
+                        style={{ color: 'var(--text-muted)' }}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)')}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                         title="Eliminar"
                       >
                         <IconTrash />
@@ -466,39 +486,42 @@ export default function EmailCampaignsPage() {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-[#e5e5e5]">
-              <h2 className="text-lg font-bold text-[#0a0a0a]">Nueva Campaña de Email</h2>
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--border-color)' }}>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Nueva Campaña de Email</h2>
               <button onClick={() => setShowModal(false)}><IconX /></button>
             </div>
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#666] mb-1">Nombre de la campaña *</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Nombre de la campaña *</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="ej: Lanzamiento Abril 2026"
-                  className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                  style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#666] mb-1">Asunto del email *</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Asunto del email *</label>
                 <input
                   type="text"
                   value={form.subject}
                   onChange={(e) => setForm({ ...form, subject: e.target.value })}
                   placeholder="ej: Lookitry: Gran noticia para ti"
-                  className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                  style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#666] mb-1">Destinatarios</label>
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Destinatarios</label>
                 <select
                   value={form.filterType}
                   onChange={(e) => setForm({ ...form, filterType: e.target.value as FilterType })}
-                  className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                  style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 >
                   <option value="all">Todas las marcas</option>
                   <option value="trial">Solo marcas en Trial</option>
@@ -508,48 +531,53 @@ export default function EmailCampaignsPage() {
               </div>
               {form.filterType === 'plan' && (
                 <div>
-                  <label className="block text-sm font-medium text-[#666] mb-1">Nombre del plan</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Nombre del plan</label>
                   <input
                     type="text"
                     value={form.filterPlan}
                     onChange={(e) => setForm({ ...form, filterPlan: e.target.value })}
                     placeholder="ej: BASIC, PRO, ENTERPRISE"
-                    className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                    style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </div>
               )}
               {form.filterType === 'all' && (
                 <div>
-                  <label className="block text-sm font-medium text-[#666] mb-1">Solo marcas creadas después de</label>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Solo marcas creadas después de</label>
                   <input
                     type="date"
                     value={form.filterCreatedAfter}
                     onChange={(e) => setForm({ ...form, filterCreatedAfter: e.target.value })}
-                    className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                    className="w-full px-3 py-2 border rounded-lg focus:outline-none"
+                    style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                   />
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-[#666] mb-1">Template HTML *</label>
-                <p className="text-xs text-[#999] mb-2">Variables disponibles: {'{{firstName}}'}, {'{{brandName}}'}, {'{{email}}'}, {'{{plan}}'}</p>
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Template HTML *</label>
+                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>Variables disponibles: {'{{firstName}}'}, {'{{brandName}}'}, {'{{email}}'}, {'{{plan}}'}</p>
                 <textarea
                   value={form.htmlTemplate}
                   onChange={(e) => setForm({ ...form, htmlTemplate: e.target.value })}
                   rows={15}
-                  className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A] font-mono text-sm"
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none font-mono text-sm"
+                  style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-3 p-6 border-t border-[#e5e5e5]">
+            <div className="flex justify-end gap-3 p-6 border-t" style={{ borderColor: 'var(--border-color)' }}>
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-[#666] hover:text-[#0a0a0a] transition-colors"
+                className="px-4 py-2 transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleCreate}
-                className="px-4 py-2 bg-[#FF5C3A] text-white rounded-lg hover:opacity-90 transition-opacity"
+                className="px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
               >
                 Crear Campaña
               </button>
@@ -559,10 +587,10 @@ export default function EmailCampaignsPage() {
       )}
 
       {showPreviewModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-[#e5e5e5]">
-              <h2 className="text-lg font-bold text-[#0a0a0a]">Previsualización</h2>
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--border-color)' }}>
+              <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Previsualización</h2>
               <button onClick={() => setShowPreviewModal(null)}><IconX /></button>
             </div>
             <div className="p-6">
@@ -572,16 +600,17 @@ export default function EmailCampaignsPage() {
                 <div className="space-y-6">
                   {previews.map((preview, idx) => (
                     <div key={idx}>
-                      <p className="text-sm text-[#999] mb-2">{preview.email}</p>
+                      <p className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>{preview.email}</p>
                       <div
-                        className="border border-[#e5e5e5] rounded-lg p-4 bg-[#fafafa]"
+                        className="border rounded-lg p-4"
+                        style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-base)' }}
                         dangerouslySetInnerHTML={{ __html: preview.html }}
                       />
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-center text-[#999]">No hay previews disponibles</p>
+                <p className="text-center" style={{ color: 'var(--text-muted)' }}>No hay previews disponibles</p>
               )}
             </div>
           </div>

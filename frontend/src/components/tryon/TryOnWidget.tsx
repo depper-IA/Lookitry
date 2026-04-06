@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { tryonService } from '@/services/tryon.service';
 import type { TryOnConfigResponse } from '@/types';
 import { TemplateBare } from './templates/TemplateBare';
-import { TemplateMinimalTopBar } from './templates/TemplateMinimalTopBar';
+import { TemplateShowcase } from './templates/TemplateShowcase';
 import { TemplateModernSidebar } from './templates/TemplateModernSidebar';
 import { TemplateBoldProStudio } from './templates/TemplateBoldProStudio';
 import type { Layout, Product, Step } from './templates/types';
@@ -20,12 +20,15 @@ interface TryOnWidgetProps {
 
 function templateToLayout(template?: string): Layout {
   switch (template) {
-    case 'modern': return 'sidebar';
-    case 'bold':   return 'centered';
-    case 'bare':   return 'bare';
+    case 'modern':   return 'sidebar';
+    case 'bold':     return 'centered';
+    case 'bare':     return 'bare';
+    case 'showcase':
     case 'minimal':
-    // ✅ Default: bare (template principal)
-    case undefined: return 'bare';
+    case 'top-bar':
+      return 'showcase';
+    case undefined:
+      return 'bare';
     default:
       console.warn(`[TryOnWidget] Template desconocido: "${template}". Usando bare.`);
       return 'bare';
@@ -301,8 +304,8 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
       return <TemplateModernSidebar {...templateProps} />;
     case 'centered':
       return <TemplateBoldProStudio {...templateProps} />;
-    case 'top-bar':
+    case 'showcase':
     default:
-      return <TemplateMinimalTopBar {...templateProps} />;
+      return <TemplateShowcase {...templateProps} />;
   }
 }

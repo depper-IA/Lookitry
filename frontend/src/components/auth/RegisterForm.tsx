@@ -308,6 +308,11 @@ export default function RegisterForm() {
         return;
       }
 
+      if (data.redirectTo) {
+        router.push(data.redirectTo);
+        return;
+      }
+
       localStorage.setItem('token', data.token);
       localStorage.setItem('brandToken', data.token);
       if (data.brand) {
@@ -331,7 +336,7 @@ export default function RegisterForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#050505] selection:bg-[#FF5C3A]/30">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#050505] selection:bg-[var(--accent)]/30">
       <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
         
         {/* Left: Form */}
@@ -340,13 +345,13 @@ export default function RegisterForm() {
             <Link href="/" className="flex items-center gap-3 group mb-4">
               <Image src="/logo.svg" alt="Lookitry" width={32} height={32} className="group-hover:rotate-12 transition-transform duration-500" priority />
               <span className="font-jakarta font-extrabold text-2xl text-white tracking-tighter">
-                Look<span className="text-[#FF5C3A]">itry</span>
+                Look<span className="text-[var(--accent)]">itry</span>
               </span>
             </Link>
           </div>
 
-          <div className="relative overflow-hidden rounded-3xl border border-[#FF5C3A]/12 bg-[#0a0a0a] p-8 md:p-10 shadow-2xl">
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#FF5C3A]/50 to-transparent" />
+          <div className="relative overflow-hidden rounded-3xl border border-[var(--accent)]/12 bg-[#0a0a0a] p-8 md:p-10 shadow-2xl">
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[var(--accent)]/50 to-transparent" />
             
             <div className="mb-8 text-center lg:text-left">
               <h1 className="text-3xl font-jakarta font-bold text-white tracking-tight mb-2">
@@ -383,7 +388,7 @@ export default function RegisterForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
-                    <Store className="w-3 h-3 text-[#FF5C3A]" /> Nombre de marca
+                    <Store className="w-3 h-3 text-[var(--accent)]" /> Nombre de marca
                   </label>
                   <input
                     name="name"
@@ -391,13 +396,13 @@ export default function RegisterForm() {
                     onChange={handleNameChange}
                     required
                     placeholder="Ej: Velvet Studio"
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[var(--accent)]"
                   />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
-                    <UserIcon className="w-3 h-3 text-[#FF5C3A]" /> Tu nombre
+                    <UserIcon className="w-3 h-3 text-[var(--accent)]" /> Tu nombre
                   </label>
                   <input
                     name="contact_name"
@@ -405,7 +410,7 @@ export default function RegisterForm() {
                     onChange={(e) => setForm(prev => ({ ...prev, contact_name: e.target.value }))}
                     required
                     placeholder="Tu nombre completo"
-                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                    className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[var(--accent)]"
                   />
                 </div>
               </div>
@@ -413,9 +418,9 @@ export default function RegisterForm() {
               {/* Slug */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
-                  <Globe className="w-3 h-3 text-[#FF5C3A]" /> URL de tu probador
+                  <Globe className="w-3 h-3 text-[var(--accent)]" /> URL de tu probador
                 </label>
-                <div className="flex items-center overflow-hidden rounded-xl border bg-[#050505] transition-all focus-within:border-[#FF5C3A]"
+                <div className="flex items-center overflow-hidden rounded-xl border bg-[#050505] transition-all focus-within:border-[var(--accent)]"
                   style={{ borderColor: slugError ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)' }}
                 >
                   <span className="select-none py-3 pl-3 text-xs font-medium text-[#666]">lookitry.com/sitio/</span>
@@ -454,7 +459,7 @@ export default function RegisterForm() {
               {/* Email */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
-                  <Mail className="w-3 h-3 text-[#FF5C3A]" /> Correo electrónico
+                  <Mail className="w-3 h-3 text-[var(--accent)]" /> Correo electrónico
                 </label>
                 <input
                   name="email"
@@ -463,7 +468,7 @@ export default function RegisterForm() {
                   onChange={(e) => setForm(prev => ({ ...prev, email: e.target.value }))}
                   required
                   placeholder="correo@tuempresa.com"
-                  className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                  className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[var(--accent)]"
                 />
               </div>
 
@@ -471,7 +476,7 @@ export default function RegisterForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-bold text-[#999] uppercase tracking-wider flex items-center gap-1.5 ml-1">
-                    <ShieldCheck className="w-3 h-3 text-[#FF5C3A]" /> Contraseña
+                    <ShieldCheck className="w-3 h-3 text-[var(--accent)]" /> Contraseña
                   </label>
                   <div className="relative">
                     <input
@@ -481,7 +486,7 @@ export default function RegisterForm() {
                       onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
                       required
                       placeholder="8+ caracteres"
-                      className="w-full rounded-xl border bg-[#050505] px-4 py-3 pr-10 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                      className="w-full rounded-xl border bg-[#050505] px-4 py-3 pr-10 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[var(--accent)]"
                       style={{ borderColor: form.password && !isPasswordValid ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)' }}
                     />
                     <button
@@ -506,7 +511,7 @@ export default function RegisterForm() {
                     onChange={(e) => setForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
                     required
                     placeholder="Repite tu contraseña"
-                    className="w-full rounded-xl border bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[#FF5C3A]"
+                    className="w-full rounded-xl border bg-[#050505] px-4 py-3 text-sm text-white placeholder-[#666] outline-none transition-all focus:border-[var(--accent)]"
                     style={{ borderColor: form.confirmPassword && !passwordsMatch ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)' }}
                   />
                 </div>
@@ -523,7 +528,7 @@ export default function RegisterForm() {
                   { test: form.confirmPassword && passwordsMatch, label: 'Contraseñas coinciden' },
                 ].map(({ test, label }) => (
                   <div key={label} className="flex items-center gap-2 text-[11px] text-[#bbb]">
-                    <span className={`inline-block h-1.5 w-1.5 rounded-full ${test ? 'bg-[#FF5C3A]' : 'bg-[#333]'}`} />
+                    <span className={`inline-block h-1.5 w-1.5 rounded-full ${test ? 'bg-[var(--accent)]' : 'bg-[#333]'}`} />
                     {label}
                   </div>
                 ))}
@@ -537,11 +542,11 @@ export default function RegisterForm() {
                     id="acceptTerms"
                     checked={acceptTerms}
                     onChange={(e) => setAcceptTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[var(--accent)] focus:ring-[var(--accent)] focus:ring-offset-0 cursor-pointer"
                   />
                   <label htmlFor="acceptTerms" className="text-xs text-[#999] leading-relaxed cursor-pointer">
                     Acepto los{' '}
-                    <Link href="/terminos" target="_blank" className="text-[#FF5C3A] hover:underline">Términos y Condiciones</Link>
+                    <Link href="/terminos" target="_blank" className="text-[var(--accent)] hover:underline">Términos y Condiciones</Link>
                     {' '}del servicio.
                   </label>
                 </div>
@@ -551,11 +556,11 @@ export default function RegisterForm() {
                     id="acceptDataAuth"
                     checked={acceptDataAuth}
                     onChange={(e) => setAcceptDataAuth(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[#FF5C3A] focus:ring-[#FF5C3A] focus:ring-offset-0 cursor-pointer"
+                    className="mt-1 w-4 h-4 rounded border-[#333] bg-[#050505] text-[var(--accent)] focus:ring-[var(--accent)] focus:ring-offset-0 cursor-pointer"
                   />
                   <label htmlFor="acceptDataAuth" className="text-xs text-[#999] leading-relaxed cursor-pointer">
                     Autorizo el tratamiento de mis datos de acuerdo a la{' '}
-                    <Link href="/politicas-privacidad" target="_blank" className="text-[#FF5C3A] hover:underline">Política de Privacidad</Link>.
+                    <Link href="/politicas-privacidad" target="_blank" className="text-[var(--accent)] hover:underline">Política de Privacidad</Link>.
                   </label>
                 </div>
               </div>
@@ -570,7 +575,7 @@ export default function RegisterForm() {
               <button
                 type="submit"
                 disabled={loading || slugChecking || slugAvailable === false}
-                className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[#FF5C3A] font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all active:scale-95 hover:bg-[#ff6c4d] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative h-14 w-full overflow-hidden rounded-2xl bg-[var(--accent)] font-bold text-white shadow-xl shadow-[var(--accent)]/20 transition-all active:scale-95 hover:bg-[#ff6c4d] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="relative flex items-center justify-center gap-3">
                   {loading ? (
@@ -592,7 +597,7 @@ export default function RegisterForm() {
 
             <p className="text-center text-xs text-[#999] mt-8">
               ¿Ya tienes cuenta?{' '}
-              <Link href="/login" className="text-[#FF5C3A] hover:text-[#ff7a5f] font-bold tracking-tight border-b border-transparent hover:border-[#FF5C3A] transition-all ml-1">
+              <Link href="/login" className="text-[var(--accent)] hover:text-[#ff7a5f] font-bold tracking-tight border-b border-transparent hover:border-[var(--accent)] transition-all ml-1">
                 Inicia sesión
               </Link>
             </p>
@@ -612,16 +617,16 @@ export default function RegisterForm() {
               <div className="sticky top-8">
                 <div className="hidden lg:block">
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="w-8 h-8 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center">
-                      <Sparkles className="w-4 h-4 text-[#FF5C3A]" />
+                    <div className="w-8 h-8 rounded-full bg-[var(--accent)]/10 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-[var(--accent)]" />
                     </div>
-                    <span className="text-xs text-[#FF5C3A] font-medium uppercase tracking-wider">
+                    <span className="text-xs text-[var(--accent)] font-medium uppercase tracking-wider">
                       Plan seleccionado
                     </span>
                   </div>
 
                   {/* Plan Card */}
-                  <div className="rounded-2xl border border-[#FF5C3A]/20 bg-[#0a0a0a] overflow-hidden shadow-xl">
+                  <div className="rounded-2xl border border-[var(--accent)]/20 bg-[#0a0a0a] overflow-hidden shadow-xl">
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div>
@@ -630,7 +635,7 @@ export default function RegisterForm() {
                               {suggestedPlan.name}
                             </span>
                             {planParam === 'PRO' && (
-                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#FF5C3A]/20 text-[#FF5C3A]">
+                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--accent)]/20 text-[var(--accent)]">
                                 Popular
                               </span>
                             )}
@@ -703,7 +708,7 @@ export default function RegisterForm() {
                       <ul className="space-y-2.5">
                         {suggestedPlan.features.map((feature) => (
                           <li key={feature} className="flex items-center gap-2 text-xs text-[#999]">
-                            <Check className="w-3.5 h-3.5 text-[#FF5C3A] flex-shrink-0" />
+                            <Check className="w-3.5 h-3.5 text-[var(--accent)] flex-shrink-0" />
                             {feature}
                           </li>
                         ))}
@@ -714,7 +719,7 @@ export default function RegisterForm() {
                     <div className="px-6 pb-6">
                       <div className="flex items-center justify-between text-[11px] text-[#666]">
                         <span>Después del registro</span>
-                        <div className="flex items-center gap-1 text-[#FF5C3A]">
+                        <div className="flex items-center gap-1 text-[var(--accent)]">
                           <span>Ir al pago</span>
                           <ArrowRight className="w-3 h-3" />
                         </div>
@@ -736,7 +741,7 @@ export default function RegisterForm() {
           <Link href="/" className="flex items-center gap-3 group">
             <Image src="/logo.svg" alt="Lookitry" width={32} height={32} className="group-hover:rotate-12 transition-transform duration-500" priority />
             <span className="font-jakarta font-extrabold text-2xl text-white tracking-tighter">
-              Look<span className="text-[#FF5C3A]">itry</span>
+              Look<span className="text-[var(--accent)]">itry</span>
             </span>
           </Link>
         </div>

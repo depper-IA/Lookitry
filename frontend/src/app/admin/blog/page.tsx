@@ -432,7 +432,7 @@ export default function AdminBlogPage() {
       <div className="flex flex-col items-center justify-center h-64">
         <div
           className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mb-4"
-          style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }}
+          style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }}
         />
         <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
           Cargando artículos...
@@ -541,7 +541,7 @@ export default function AdminBlogPage() {
         </div>
         <Link
           href="/admin/blog/new"
-          className="px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20 hover:scale-105 active:scale-95 transition-all outline-none border-none decoration-transparent"
+          className="px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/20 hover:scale-105 active:scale-95 transition-all outline-none border-none decoration-transparent"
         >
           Crear Artículo Manual
         </Link>
@@ -552,14 +552,14 @@ export default function AdminBlogPage() {
           className="lg:col-span-2 rounded-[2rem] border p-6 sm:p-8 flex flex-col lg:flex-row items-center lg:items-start gap-6 shadow-md transition-all hover:shadow-lg relative overflow-hidden"
           style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
         >
-          <div className="w-16 h-16 rounded-[1.5rem] bg-[#FF5C3A]/10 text-[#FF5C3A] flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-16 rounded-[1.5rem] bg-[var(--accent)]/10 text-[var(--accent)] flex items-center justify-center flex-shrink-0">
             <svg className="w-8 h-8 drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
           <div className="flex-1 text-center lg:text-left w-full">
             <h2 className="font-jakarta font-black uppercase tracking-tight text-xl mb-2" style={{ color: 'var(--text-primary)' }}>
-              Pulso Editorial <span className="text-[#FF5C3A]">IA</span>
+              Pulso Editorial <span className="text-[var(--accent)]">IA</span>
             </h2>
             <p className="text-[13px] leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium" style={{ color: 'var(--text-secondary)' }}>
               Configura el ritmo automático de publicación de Lookitry Editorial.
@@ -573,7 +573,7 @@ export default function AdminBlogPage() {
                     value={settings.frequency}
                     onChange={(e) => handleUpdateFrequency(e.target.value as 'daily' | 'weekly' | 'monthly')}
                     disabled={isSaving}
-                    className="bg-transparent text-[11px] font-black text-[#FF5C3A] uppercase tracking-widest outline-none cursor-pointer focus:ring-0 border-none p-0"
+                    className="bg-transparent text-[11px] font-black text-[var(--accent)] uppercase tracking-widest outline-none cursor-pointer focus:ring-0 border-none p-0"
                   >
                     <option value="daily">Diaria</option>
                     <option value="weekly">Semanal</option>
@@ -647,7 +647,7 @@ export default function AdminBlogPage() {
                   onChange={(e) => setCustomArticleModel(e.target.value)}
                   placeholder="Ej: openai/gpt-4.1 o meta-llama/llama-3.3-70b-instruct"
                   disabled={isSaving}
-                  className="flex-1 rounded-[1.2rem] border bg-black/5 border-black/10 dark:bg-white/5 dark:border-white/10 px-4 py-2.5 text-xs outline-none focus:border-[#FF5C3A]/50 transition-all font-medium"
+                  className="flex-1 rounded-[1.2rem] border bg-black/5 border-black/10 dark:bg-white/5 dark:border-white/10 px-4 py-2.5 text-xs outline-none focus:border-[var(--accent)]/50 transition-all font-medium"
                   style={{ color: 'var(--text-primary)' }}
                 />
                 <button
@@ -667,7 +667,7 @@ export default function AdminBlogPage() {
                   onChange={(e) => setCustomImageModel(e.target.value)}
                   placeholder="Ej: openai/dall-e-3 o nano banana"
                   disabled={isSaving}
-                  className="flex-1 rounded-[1.2rem] border bg-black/5 border-black/10 dark:bg-white/5 dark:border-white/10 px-4 py-2.5 text-xs outline-none focus:border-[#FF5C3A]/50 transition-all font-medium"
+                  className="flex-1 rounded-[1.2rem] border bg-black/5 border-black/10 dark:bg-white/5 dark:border-white/10 px-4 py-2.5 text-xs outline-none focus:border-[var(--accent)]/50 transition-all font-medium"
                   style={{ color: 'var(--text-primary)' }}
                 />
                 <button
@@ -712,7 +712,7 @@ export default function AdminBlogPage() {
               className={`w-full px-5 py-3.5 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest transition-all ${
                 (isTriggering || isMonitoringRun) 
                   ? 'bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/40 cursor-not-allowed shadow-none' 
-                  : 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20 hover:scale-[1.02] active:scale-[0.98]'
+                  : 'bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/20 hover:scale-[1.02] active:scale-[0.98]'
               }`}
             >
               {isTriggering ? 'Generando...' : isMonitoringRun ? 'Procesando...' : 'Forzar Artículo'}
@@ -747,7 +747,7 @@ export default function AdminBlogPage() {
               </div>
               <div className="flex justify-between items-center px-4 py-3 rounded-xl border bg-black/5 border-black/5 dark:bg-white/5 dark:border-white/5">
                 <span className="text-[11px] font-bold opacity-80 uppercase tracking-wider text-current">Total Publicaciones</span>
-                <span className="text-base font-black text-[#FF5C3A]">{posts.length}</span>
+                <span className="text-base font-black text-[var(--accent)]">{posts.length}</span>
               </div>
             </div>
           </div>
@@ -763,25 +763,25 @@ export default function AdminBlogPage() {
             <thead>
               <tr style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }} className="border-b">
                 <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>
-                  <button type="button" onClick={() => toggleSort('title')} className="inline-flex items-center gap-2 hover:text-[#FF5C3A] transition-colors">
+                  <button type="button" onClick={() => toggleSort('title')} className="inline-flex items-center gap-2 hover:text-[var(--accent)] transition-colors">
                     <span>Artículo</span>
                     <span>{sortIndicator('title')}</span>
                   </button>
                 </th>
                 <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>
-                  <button type="button" onClick={() => toggleSort('category')} className="inline-flex items-center gap-2 hover:text-[#FF5C3A] transition-colors">
+                  <button type="button" onClick={() => toggleSort('category')} className="inline-flex items-center gap-2 hover:text-[var(--accent)] transition-colors">
                     <span>Clasificación</span>
                     <span>{sortIndicator('category')}</span>
                   </button>
                 </th>
                 <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>
-                  <button type="button" onClick={() => toggleSort('status')} className="inline-flex items-center gap-2 hover:text-[#FF5C3A] transition-colors">
+                  <button type="button" onClick={() => toggleSort('status')} className="inline-flex items-center gap-2 hover:text-[var(--accent)] transition-colors">
                     <span>Visibilidad</span>
                     <span>{sortIndicator('status')}</span>
                   </button>
                 </th>
                 <th className="px-6 py-5 text-[9px] font-black uppercase tracking-[0.2em] opacity-60 transition-colors" style={{ color: 'var(--text-primary)' }}>
-                  <button type="button" onClick={() => toggleSort('created_at')} className="inline-flex items-center gap-2 hover:text-[#FF5C3A] transition-colors">
+                  <button type="button" onClick={() => toggleSort('created_at')} className="inline-flex items-center gap-2 hover:text-[var(--accent)] transition-colors">
                     <span>Registro</span>
                     <span>{sortIndicator('created_at')}</span>
                   </button>
@@ -802,7 +802,7 @@ export default function AdminBlogPage() {
                       <div className="min-w-0 pr-4">
                         <Link
                           href={`/admin/blog/${post.id}`}
-                          className="text-sm font-bold block truncate max-w-[200px] sm:max-w-xs transition-colors hover:text-[#FF5C3A]"
+                          className="text-sm font-bold block truncate max-w-[200px] sm:max-w-xs transition-colors hover:text-[var(--accent)]"
                           style={{ color: 'var(--text-primary)' }}
                         >
                           {post.title}
@@ -848,7 +848,7 @@ export default function AdminBlogPage() {
                       </Link>
                       <Link
                         href={`/admin/blog/${post.id}`}
-                        className="p-2.5 rounded-[0.85rem] bg-black/5 border-transparent text-zinc-500 hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/10 dark:bg-white/5 dark:text-zinc-400 dark:hover:bg-[#FF5C3A]/20 transition-all border dark:hover:border-[#FF5C3A]/30 shadow-sm"
+                        className="p-2.5 rounded-[0.85rem] bg-black/5 border-transparent text-zinc-500 hover:text-[var(--accent)] hover:bg-[var(--accent)]/10 dark:bg-white/5 dark:text-zinc-400 dark:hover:bg-[var(--accent)]/20 transition-all border dark:hover:border-[var(--accent)]/30 shadow-sm"
                         title="Editar Artículo"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -891,7 +891,7 @@ export default function AdminBlogPage() {
                     type="button"
                     onClick={() => setCurrentPage(page)}
                     className={`min-w-[40px] px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-colors ${
-                      page === safeCurrentPage ? 'bg-[#FF5C3A] text-white border-[#FF5C3A]' : ''
+                      page === safeCurrentPage ? 'bg-[var(--accent)] text-white border-[var(--accent)]' : ''
                     }`}
                     style={page === safeCurrentPage ? undefined : { color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
                   >
@@ -938,17 +938,17 @@ export default function AdminBlogPage() {
             className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-md transition-opacity"
           />
           <div className="relative w-full max-w-lg sm:max-w-xl overflow-hidden rounded-[2.5rem] border shadow-2xl transform transition-all" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-            <div className="absolute inset-0 bg-gradient-to-br from-[#FF5C3A]/5 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 to-transparent pointer-events-none" />
             
             <div className="relative p-6 sm:p-8">
               <div className="flex flex-col items-center text-center gap-4 mb-6">
-                <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 text-[#FF5C3A] shadow-inner">
+                <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] border border-[var(--accent)]/20 bg-[var(--accent)]/10 text-[var(--accent)] shadow-inner">
                   <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
                 <div className="space-y-1 sm:space-y-2">
-                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF5C3A]">
+                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--accent)]">
                     Lookitry Editorial
                   </div>
                   <h3 className="font-jakarta text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
@@ -987,7 +987,7 @@ export default function AdminBlogPage() {
                 <button
                   type="button"
                   onClick={handleConfirmAction}
-                  className="w-full sm:w-auto rounded-[1.2rem] bg-[#FF5C3A] px-6 py-3.5 text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-[#FF5C3A]/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full sm:w-auto rounded-[1.2rem] bg-[var(--accent)] px-6 py-3.5 text-[11px] font-black uppercase tracking-widest text-white shadow-lg shadow-[var(--accent)]/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   {confirmState.confirmLabel}
                 </button>

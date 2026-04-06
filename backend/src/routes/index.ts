@@ -21,6 +21,7 @@ import reviewsRoutes from './reviews.routes';
 import adminReviewsRoutes from './adminReviews.routes';
 import couponsRoutes from './coupons.routes';
 import enterpriseRoutes from './enterprise.routes';
+import agentRoutes from './agent.routes';
 
 const router = Router();
 
@@ -44,5 +45,6 @@ router.use('/reviews', reviewsRoutes);
 router.use('/admin/reviews', adminReviewsRoutes);
 router.use('/admin/coupons', couponsRoutes);
 router.use('/admin/enterprise', enterpriseRoutes);
+router.use('/agent', agentRoutes);
 
 export default router;

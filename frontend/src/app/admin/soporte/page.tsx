@@ -143,7 +143,7 @@ export default function AdminSoportePage() {
         </div>
         <button
           onClick={() => setShowEmailModal(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--accent)] text-white text-sm font-semibold hover:bg-[#e04e30] transition-colors"
         >
           <Mail className="w-4 h-4" />
           Enviar email
@@ -195,7 +195,7 @@ export default function AdminSoportePage() {
           <h2 className="font-jakarta font-bold text-sm mb-4" style={{ color: 'var(--text-primary)' }}>Tickets ({filteredTickets.length})</h2>
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+              <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
             </div>
           ) : filteredTickets.length === 0 ? (
             <p className="text-center py-8" style={{ color: 'var(--text-muted)' }}>No hay tickets</p>
@@ -205,7 +205,7 @@ export default function AdminSoportePage() {
                 <div
                   key={ticket.id}
                   onClick={() => setSelectedTicket(ticket)}
-                  className={`p-4 rounded-xl cursor-pointer transition-all ${selectedTicket?.id === ticket.id ? 'ring-2 ring-[#FF5C3A]' : 'hover:bg-[var(--bg-hover)]'}`}
+                  className={`p-4 rounded-xl cursor-pointer transition-all ${selectedTicket?.id === ticket.id ? 'ring-2 ring-[var(--accent)]' : 'hover:bg-[var(--bg-hover)]'}`}
                   style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-color)' }}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -264,7 +264,7 @@ export default function AdminSoportePage() {
                   <button
                     onClick={handleSendResponse}
                     disabled={sending || !responseText.trim()}
-                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold bg-[#FF5C3A] text-white disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold bg-[var(--accent)] text-white disabled:opacity-50"
                   >
                     {sending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     Enviar
@@ -343,7 +343,7 @@ export default function AdminSoportePage() {
               <button
                 onClick={handleSendEmail}
                 disabled={sendingEmail || !emailForm.brandId || !emailForm.subject || !emailForm.body}
-                className="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-[#FF5C3A] text-white disabled:opacity-50"
+                className="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--accent)] text-white disabled:opacity-50"
               >
                 {sendingEmail ? 'Enviando...' : 'Enviar'}
               </button>

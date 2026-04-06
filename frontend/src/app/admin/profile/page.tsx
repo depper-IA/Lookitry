@@ -109,7 +109,7 @@ export default function AdminProfilePage() {
               className="w-10 h-10 rounded-xl flex items-center justify-center"
               style={{ background: 'rgba(255,92,58,0.1)' }}
             >
-              <KeyRound className="w-5 h-5" style={{ color: '#FF5C3A' }} />
+              <KeyRound className="w-5 h-5" style={{ color: 'var(--accent)' }} />
             </div>
             <div>
               <h1 className="font-jakarta font-bold text-lg tracking-tight" style={{ color: 'var(--text-primary)' }}>
@@ -136,7 +136,7 @@ export default function AdminProfilePage() {
                 onChange={e => setForm(f => ({ ...f, currentPassword: e.target.value }))}
                 required
                 placeholder="Tu contraseña actual"
-                className="w-full px-3 py-2.5 pr-10 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A] transition-colors"
+                className="w-full px-3 py-2.5 pr-10 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40 focus:border-[var(--accent)] transition-colors"
                 style={inputStyle}
               />
               <button
@@ -163,7 +163,7 @@ export default function AdminProfilePage() {
                 onChange={e => setForm(f => ({ ...f, newPassword: e.target.value }))}
                 required
                 placeholder="8+ caracteres, mayúscula, minúscula, número y símbolo"
-                className="w-full px-3 py-2.5 pr-10 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A] transition-colors"
+                className="w-full px-3 py-2.5 pr-10 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40 focus:border-[var(--accent)] transition-colors"
                 style={inputStyle}
               />
               <button
@@ -216,7 +216,7 @@ export default function AdminProfilePage() {
                 onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
                 required
                 placeholder="Repite la nueva contraseña"
-                className="w-full px-3 py-2.5 pr-10 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A] transition-colors"
+                className="w-full px-3 py-2.5 pr-10 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40 focus:border-[var(--accent)] transition-colors"
                 style={{
                   ...inputStyle,
                   borderColor: form.confirmPassword && form.confirmPassword !== form.newPassword
@@ -258,7 +258,7 @@ export default function AdminProfilePage() {
             type="submit"
             disabled={loading}
             className="w-full py-2.5 min-h-[44px] rounded-xl text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-            style={{ background: '#FF5C3A' }}
+            style={{ background: 'var(--accent)' }}
             onMouseEnter={e => { if (!loading) e.currentTarget.style.opacity = '0.88'; }}
             onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
           >

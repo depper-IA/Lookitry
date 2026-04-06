@@ -20,6 +20,21 @@ function GoogleSetupContent() {
     }
   }, [searchParams]);
 
+  // Si no hay ref después de cargar, redirigir a checkout
+  // (Esta página solo debe ser accedida con un pendingRegistrationId válido)
+  useEffect(() => {
+    if (ref === null) {
+      // Solo redirigir si ya se cargó y no hay ref (no en el estado inicial)
+      const timer = setTimeout(() => {
+        const stored = localStorage.getItem('pendingRegistrationId');
+        if (!stored && ref === null) {
+          router.replace('/checkout');
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [ref, router]);
+
   const handleSubmit = async (data: { name: string; slug: string }) => {
     const body: { name: string; slug: string; ref?: string } = { name: data.name, slug: data.slug };
     if (ref) {
@@ -55,16 +70,9 @@ function GoogleSetupContent() {
   };
 
   const handleSuccess = async () => {
-    const trialRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/trial`, {
-      credentials: 'include',
-    });
-    const trialData = await trialRes.json();
-
-    if (trialData?.requiresTrialPayment) {
-      router.push('/trial-checkout');
-    } else {
-      router.push('/dashboard');
-    }
+    // IMPORTANTE: Después del setup de marca, SIEMPRE ir al checkout
+    // Ya no se verifica requiresTrialPayment aquí - el checkout funnel maneja eso
+    router.push('/checkout');
   };
 
   return (

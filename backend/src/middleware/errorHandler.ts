@@ -63,6 +63,15 @@ export class ExternalServiceError extends AppError {
   }
 }
 
+export class ConcurrencyLimitError extends AppError {
+  public queueTimeoutMs?: number;
+
+  constructor(message: string, queueTimeoutMs?: number) {
+    super(message, 429, 'CONCURRENCY_LIMIT_EXCEEDED');
+    this.queueTimeoutMs = queueTimeoutMs;
+  }
+}
+
 /**
  * Interfaz para respuestas de error estandarizadas
  */
@@ -152,6 +161,13 @@ export const errorHandler = (
     if (err instanceof LimitExceededError && err.usage) {
       errorResponse.details = {
         usage: err.usage,
+      };
+    }
+
+    if (err instanceof ConcurrencyLimitError && err.queueTimeoutMs) {
+      errorResponse.details = {
+        queueTimeoutMs: err.queueTimeoutMs,
+        retryAfter: Math.ceil(err.queueTimeoutMs / 1000),
       };
     }
   }
