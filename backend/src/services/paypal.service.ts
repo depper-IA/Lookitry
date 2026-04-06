@@ -336,7 +336,7 @@ export class PaypalService {
 
       return resp.data?.verification_status === 'SUCCESS';
     } catch (e) {
-      console.error('[PayPal] Error en verificación de webhook:', e?.message || e);
+      console.error('[PayPal] Error en verificación de webhook:', e instanceof Error ? e.message : String(e));
       return false;
     }
   }
