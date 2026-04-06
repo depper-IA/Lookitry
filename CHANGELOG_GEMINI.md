@@ -1,5 +1,37 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-05] - Refactoring completo Brands + Subscriptions page
+
+### brands/page.tsx (1291L → 841L, -450L)
+- Reemplazados 9x `alert()` por toast (UX no-bloqueante)
+- `Brand` interface expandida: `has_landing_page`, `internal_notes`, `modal_title`, `modal_description`, `modal_features`
+- `fetch` → `adminApi` (11 endpoints migrados, cookies automáticas)
+- Eliminados 3 imports muertos (`BrandDetailsModal`, `BrandFilters`, `BrandTable` — luego reintegrados)
+- Eliminada `API_URL` constante (adminApi gestiona base URL)
+- Limpiados todos los `as any` (TypeScript ahora protege el código)
+- `BrandFilters` reescrito para matchear UI real (pill-buttons con counts)
+- `BrandTable` reescrito (6 columnas, sort icons en headers, bulk bar, pagination)
+- `BrandDetailsModal` corregido (textarea onChange funcional, botón ConfigurarModal)
+- Componentes integrados en page: `BrandFilters`, `BrandTable`, `BrandDetailsModal`
+- Eliminada paginación inline duplicada (BrandTable tiene su propia)
+- Variables muertas removidas: `totalPages`, `startIndex`, `paginatedBrands`
+
+### subscriptions/page.tsx (841L → 503L, -338L)
+- `ConfirmModal`, `Toast`, `RenewModal`, `ChangePlanModal` extraídos a `SubscriptionModals.tsx`
+- `adminApi` local eliminado → usa `@/services/adminApi` compartido
+- `Subscription`, `FilterStatus`, `SortField` exportados desde `SubscriptionModals.tsx`
+- Importaciones actualizadas en page
+
+### componentes admin (nuevos/reescritos)
+- `components/admin/brands/BrandFilters.tsx` — pill buttons con counts vivos
+- `components/admin/brands/BrandTable.tsx` — 6 cols, sort icons, bulk actions
+- `components/admin/brands/BrandDetailsModal.tsx` — textarea funcional, ConfigurarModal
+- `components/admin/subscriptions/SubscriptionModals.tsx` — 4 modales + tipos
+
+### bugs corregidos
+- `config/contact/page.tsx:107` — `manual_whatsapp` → `manual_whatsapp: manualWhatsapp`
+- `config/trial/page.tsx:55` — `IconCreditCard` acepta prop `style`
+
 ## [2026-04-05] - Correcciones página Plugin WooCommerce (v3)
 
 ### Correcciones aplicadas

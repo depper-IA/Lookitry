@@ -3,13 +3,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Building2, TrendingUp, Bell, Settings2 } from 'lucide-react';
+import { LayoutDashboard, Building2, TrendingUp, Bell, Settings2, Shield, Users } from 'lucide-react';
 
 export function AdminBottomNav() {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
     if (href === '/admin/dashboard') return pathname === '/admin/dashboard';
+    if (href === '/admin/risk') return pathname.startsWith('/admin/risk');
+    if (href === '/admin/config') return pathname.startsWith('/admin/config');
     return pathname.startsWith(href);
   };
 
@@ -48,18 +50,18 @@ export function AdminBottomNav() {
             <Building2 size={20} />
             <span className="text-[9px] font-semibold uppercase tracking-wider">Marcas</span>
           </Link>
-          
+
           <Link
-            href="/admin/revenue"
-            aria-current={isActive('/admin/revenue') ? 'page' : undefined}
+            href="/admin/leads"
+            aria-current={isActive('/admin/leads') ? 'page' : undefined}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
-              isActive('/admin/revenue')
+              isActive('/admin/leads')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}
           >
-            <TrendingUp size={20} />
-            <span className="text-[9px] font-semibold uppercase tracking-wider">Ingresos</span>
+            <Users size={20} />
+            <span className="text-[9px] font-semibold uppercase tracking-wider">Leads</span>
           </Link>
           
           <Link
@@ -76,10 +78,10 @@ export function AdminBottomNav() {
           </Link>
           
           <Link
-            href="/admin/configuracion"
-            aria-current={isActive('/admin/configuracion') ? 'page' : undefined}
+            href="/admin/config/trial"
+            aria-current={isActive('/admin/config') ? 'page' : undefined}
             className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2 px-2 rounded-xl transition-all duration-200 ${
-              isActive('/admin/configuracion')
+              isActive('/admin/config')
                 ? 'bg-[#FF5C3A]/15 text-[#FF5C3A]'
                 : 'text-black/40 dark:text-white/40 hover:text-black/70 dark:hover:text-white/70 active:text-black/60 dark:active:text-white/60'
             }`}

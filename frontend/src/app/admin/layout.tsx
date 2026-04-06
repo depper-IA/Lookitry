@@ -9,7 +9,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { ConfirmProvider } from '@/components/admin/ConfirmDialog';
 import { AdminBottomNav } from '@/components/ui/AdminBottomNav';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Building2, CreditCard, TrendingUp, History, Settings2, Tag, PieChart, MousePointer2, Layout, Megaphone, Bell, Clock, ShieldCheck, User, Shield, DollarSign, Activity, Zap, Brain, BookOpen, GitBranch, Gift } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogOut, LayoutDashboard, Building2, CreditCard, TrendingUp, History, Settings2, Tag, PieChart, MousePointer2, Layout, Megaphone, Bell, Clock, ShieldCheck, User, Shield, DollarSign, Activity, Zap, Brain, BookOpen, GitBranch, Gift, Users, Target, Eye, Star, ShoppingBag, Coins, BarChart2, MousePointerClick, Rocket, Mail } from 'lucide-react';
 
 const adminNav = [
   {
@@ -27,51 +27,31 @@ const adminNav = [
       { href: '/admin/subscriptions', label: 'Suscripciones',    icon: SubsIcon },
       { href: '/admin/referrals',     label: 'Referidos',        icon: Gift },
       { href: '/admin/revenue',       label: 'Ingresos',         icon: RevenueIcon },
-      { href: '/admin/payments',      label: 'Historial Pagos',  icon: PaymentsIcon },
-      { href: '/admin/unit-economics',label: 'Economía',         icon: DollarSign },
-      { href: '/admin/funnel',        label: 'Funnel SaaS',      icon: GitBranch },
+      { href: '/admin/payments',     label: 'Historial Pagos',  icon: PaymentsIcon },
+      { href: '/admin/unit-economics',label: 'Economía',        icon: DollarSign },
     ],
   },
   {
-    label: 'Producto',
+    label: 'Producto y Leads',
     items: [
-      { href: '/admin/analytics',          label: 'Analytics',    icon: AnalyticsIcon },
-      { href: '/admin/conversion',         label: 'Conversión',   icon: ConversionIcon },
-      { href: '/admin/mini-landings',      label: 'Mini-Landings',icon: MiniLandingIcon },
-      { href: '/admin/reviews',            label: 'Reviews',      icon: ReviewsIcon },
-      { href: '/admin/woocommerce',        label: 'WooCommerce',  icon: WooIcon },
-      { href: '/admin/pricing',            label: 'Precios',      icon: PricingIcon },
-      { href: '/admin/payment-settings',   label: 'Medios Pago',  icon: PaySettingsIcon },
-      { href: '/admin/marketing/promotions',label: 'Promociones', icon: MegaphoneIcon },
-      { href: '/admin/email-campaigns', label: 'Email Campaigns', icon: EmailCampaignIcon },
+      { href: '/admin/analytics',          label: 'Analytics',       icon: AnalyticsIcon },
+      { href: '/admin/conversion',         label: 'Conversión',      icon: ConversionIcon },
+      { href: '/admin/leads',             label: 'Leads',           icon: UsersIcon },
+      { href: '/admin/lead-searches',     label: 'Lead Searches',   icon: TargetIcon },
+      { href: '/admin/pricing',           label: 'Precios',         icon: PricingIcon },
+      { href: '/admin/marketing/promotions', label: 'Promociones',   icon: MegaphoneIcon },
     ],
   },
   {
-    label: 'Leads & CRM',
+    label: 'Configuración',
     items: [
-      { href: '/admin/leads', label: 'Leads', icon: UsersIcon },
-      { href: '/admin/lead-searches', label: 'Lead Searches', icon: TargetIcon },
-      { href: '/admin/social-api-config', label: 'Social APIs', icon: SettingsIcon },
-    ],
-  },
-  {
-    label: 'Infraestructura',
-    items: [
-      { href: '/admin/health',   label: 'Confiabilidad', icon: Zap },
-      { href: '/admin/ia-costs', label: 'Costos e IA',   icon: Brain },
-      { href: '/admin/security', label: 'Seguridad',     icon: ShieldCheck },
-    ],
-  },
-  {
-    label: 'Gobierno',
-    items: [
-      { href: '/admin/audit-log',     label: 'Auditoría',       icon: Activity },
-      { href: '/admin/admins',        label: 'Administradores', icon: AdminsIcon },
-      { href: '/admin/notifications', label: 'Actividad',       icon: BellIcon },
-      { href: '/admin/soporte',       label: 'Soporte',         icon: BellIcon },
-      { href: '/admin/enterprise',    label: 'Enterprise Sync', icon: EnterpriseIcon },
-      { href: '/admin/configuracion?tab=launch', label: '🚀 Launch', icon: TrialIcon },
-      { href: '/admin/configuracion', label: 'Configuración',   icon: TrialIcon },
+      { href: '/admin/config/trial',   label: 'Trial',           icon: Clock },
+      { href: '/admin/config/contact',  label: 'Contacto',        icon: Mail },
+      { href: '/admin/config/health',  label: 'Salud sistema',   icon: Zap },
+      { href: '/admin/ia-costs',       label: 'Costos e IA',     icon: Brain },
+      { href: '/admin/admins',         label: 'Admins',         icon: AdminsIcon },
+      { href: '/admin/notifications',  label: 'Actividad',      icon: BellIcon },
+      { href: '/admin/enterprise',    label: 'Enterprise',      icon: EnterpriseIcon },
     ],
   },
 ];

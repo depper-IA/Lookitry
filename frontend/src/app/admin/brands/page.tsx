@@ -1,9 +1,14 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useConfirm } from '@/components/admin/ConfirmDialog';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { adminApi } from '@/services/adminApi';
+import { BrandDetailsModal } from '@/components/admin/brands/BrandDetailsModal';
+import { BrandFilters } from '@/components/admin/brands/BrandFilters';
+import { BrandTable } from '@/components/admin/brands/BrandTable';
 
-interface Brand {
+export interface Brand {
   id: string;
   email: string;
   name: string;
@@ -24,6 +29,12 @@ interface Brand {
     generationsCount: number;
     generationsThisMonth: number;
   };
+  // Additional properties previously accessed via `as any`
+  has_landing_page?: boolean;
+  internal_notes?: string;
+  modal_title?: string;
+  modal_description?: string;
+  modal_features?: string[];
 }
 
 interface Product {
@@ -38,7 +49,18 @@ interface Product {
 type FilterPlan = 'all' | 'TRIAL' | 'BASIC' | 'PRO' | 'LANDING';
 type FilterTrial = 'all' | 'trial' | 'active' | 'suspended';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+// ── Toast helper ──────────────────────────────────────────────────────────────
+
+function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
+  useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, [onClose]);
+  return (
+    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white ${type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`}>
+      {type === 'success' ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+      {message}
+    </div>
+  );
+}
+
 
 export default function AdminBrandsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -67,6 +89,10 @@ export default function AdminBrandsPage() {
   const [resetToast, setResetToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [savingNotes, setSavingNotes] = useState(false);
   const confirm = useConfirm();
+
+  // Toast
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const showToast = (message: string, type: 'success' | 'error') => setToast({ message, type });
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPlan, setFilterPlan] = useState<FilterPlan>('all');
@@ -152,11 +178,7 @@ export default function AdminBrandsPage() {
 
   const fetchBrands = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/brands`, {
-        credentials: 'include',
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al cargar marcas');
+      const data = await adminApi.get<{ brands: Brand[] }>('/admin/brands');
       setBrands(data.brands);
     } catch (err: any) {
       setError(err.message || 'Error al cargar marcas');
@@ -167,11 +189,7 @@ export default function AdminBrandsPage() {
 
   const fetchLandingPrice = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/payment-settings`, {
-        credentials: 'include',
-      });
-      if (!res.ok) return;
-      const data = await res.json();
+      const data = await adminApi.get<{ landing_price?: number }>('/admin/payment-settings');
       if (data.landing_price) setLandingPrice(data.landing_price);
     } catch { /* silencioso */ }
   };
@@ -181,11 +199,8 @@ export default function AdminBrandsPage() {
   const handleViewProducts = async (brand: Brand) => {
     setSelectedBrand(brand); setShowProductsModal(true); setLoadingProducts(true); setProducts([]);
     try {
-      const res = await fetch(`${API_URL}/api/admin/brands/${brand.id}/products`, {
-        credentials: 'include',
-      });
-      const data = await res.json();
-      setProducts(data.products);
+      const data = await adminApi.get<{ products: Product[] }>(`/admin/brands/${brand.id}/products`);
+      setProducts(data.products ?? []);
     } catch { /* silent */ } finally { setLoadingProducts(false); }
   };
 
@@ -200,16 +215,10 @@ export default function AdminBrandsPage() {
     if (!ok) return;
     setChangingPlan(brandId);
     try {
-      const res = await fetch(`${API_URL}/api/admin/brands/${brandId}/plan`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: newPlan }),
-      });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
+      await adminApi.patch(`/admin/brands/${brandId}/plan`, { plan: newPlan });
       await fetchBrands();
     } catch (err: any) {
-      alert(err.message || 'Error al cambiar plan');
+      showToast(err.message || 'Error al cambiar plan', 'error');
     } finally { setChangingPlan(null); }
   };
 
@@ -225,14 +234,10 @@ export default function AdminBrandsPage() {
     if (!ok) return;
     setDeletingProduct(productId);
     try {
-      const res = await fetch(`${API_URL}/api/admin/brands/${selectedBrand.id}/products/${productId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
+      await adminApi.delete(`/admin/brands/${selectedBrand.id}/products/${productId}`);
       setProducts(prev => prev.filter(p => p.id !== productId));
     } catch (err: any) {
-      alert(err.message || 'Error al eliminar producto');
+      showToast(err.message || 'Error al eliminar producto', 'error');
     } finally {
       setDeletingProduct(null);
     }
@@ -240,33 +245,26 @@ export default function AdminBrandsPage() {
 
   const handleCreateBrand = async () => {
     if (!createForm.name || !createForm.email || !createForm.slug || !createForm.password) {
-      alert('Nombre, email, slug y contraseña son requeridos');
+      showToast('Nombre, email, slug y contraseña son requeridos', 'error');
       return;
     }
     setCreating(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/brands`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: createForm.name,
-          email: createForm.email,
-          slug: createForm.slug,
-          password: createForm.password,
-          plan: createForm.plan,
-          trial_days: Number(createForm.trial_days) || 7,
-          phone: createForm.phone || undefined,
-          contact_name: createForm.contact_name || undefined,
-        }),
+      await adminApi.post('/admin/brands', {
+        name: createForm.name,
+        email: createForm.email,
+        slug: createForm.slug,
+        password: createForm.password,
+        plan: createForm.plan,
+        trial_days: Number(createForm.trial_days) || 7,
+        phone: createForm.phone || undefined,
+        contact_name: createForm.contact_name || undefined,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
       setShowCreateModal(false);
       setCreateForm({ name: '', email: '', slug: '', password: '', plan: 'TRIAL', trial_days: '7', phone: '', contact_name: '' });
       await fetchBrands();
     } catch (err: any) {
-      alert(err.message || 'Error al crear marca');
+      showToast(err.message || 'Error al crear marca', 'error');
     } finally {
       setCreating(false);
     }
@@ -279,22 +277,16 @@ export default function AdminBrandsPage() {
   };
 
   const handleToggleLandingPage = async (brand: Brand) => {
-    const newValue = !(brand as any).has_landing_page;
+    const newValue = !brand.has_landing_page;
     setTogglingLanding(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/brands/${brand.id}/landing-page`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ has_landing_page: newValue }),
-      });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
-      setBrands(prev => prev.map(b => b.id === brand.id ? { ...b, has_landing_page: newValue } as any : b));
+      await adminApi.patch(`/admin/brands/${brand.id}/landing-page`, { has_landing_page: newValue });
+      setBrands(prev => prev.map(b => b.id === brand.id ? { ...b, has_landing_page: newValue } : b));
       if (selectedBrand?.id === brand.id) {
-        setSelectedBrand(prev => prev ? { ...prev, has_landing_page: newValue } as any : prev);
+        setSelectedBrand(prev => prev ? { ...prev, has_landing_page: newValue } : prev);
       }
     } catch (err: any) {
-      alert(err.message || 'Error al actualizar mini-landing');
+      showToast(err.message || 'Error al actualizar mini-landing', 'error');
     } finally {
       setTogglingLanding(false);
     }
@@ -303,17 +295,11 @@ export default function AdminBrandsPage() {
   const handleSaveNotes = async (brand: Brand) => {
     setSavingNotes(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/brands/${brand.id}/notes`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ internal_notes: (brand as any).internal_notes || '' }),
-      });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
-      setBrands(prev => prev.map(b => b.id === brand.id ? { ...b, internal_notes: (brand as any).internal_notes } as any : b));
-      alert('Notas guardadas correctamente');
+      await adminApi.patch(`/admin/brands/${brand.id}/notes`, { internal_notes: brand.internal_notes || '' });
+      setBrands(prev => prev.map(b => b.id === brand.id ? { ...b, internal_notes: brand.internal_notes } : b));
+      showToast('Notas guardadas correctamente', 'success');
     } catch (err: any) {
-      alert(err.message || 'Error al guardar notas');
+      showToast(err.message || 'Error al guardar notas', 'error');
     } finally {
       setSavingNotes(false);
     }
@@ -321,12 +307,11 @@ export default function AdminBrandsPage() {
 
   const handleOpenModalConfig = (brand: Brand) => {
     setModalConfigBrand(brand);
-    const b = brand as any;
-    const feats = Array.isArray(b.modal_features) ? [...b.modal_features] : [];
+    const feats = Array.isArray(brand.modal_features) ? [...brand.modal_features] : [];
     while (feats.length < 3) feats.push('');
     setModalConfigForm({
-      modal_title: b.modal_title || '',
-      modal_description: b.modal_description || '',
+      modal_title: brand.modal_title || '',
+      modal_description: brand.modal_description || '',
       modal_features: feats,
     });
     setShowModalConfigModal(true);
@@ -336,22 +321,16 @@ export default function AdminBrandsPage() {
     if (!modalConfigBrand) return;
     setSavingModalConfig(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/brands/${modalConfigBrand.id}/modal-config`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          modal_title: modalConfigForm.modal_title || null,
-          modal_description: modalConfigForm.modal_description || null,
-          modal_features: modalConfigForm.modal_features.filter(f => f.trim()).length > 0
-            ? modalConfigForm.modal_features.filter(f => f.trim())
-            : null,
-        }),
+      await adminApi.patch(`/admin/brands/${modalConfigBrand.id}/modal-config`, {
+        modal_title: modalConfigForm.modal_title || null,
+        modal_description: modalConfigForm.modal_description || null,
+        modal_features: modalConfigForm.modal_features.filter(f => f.trim()).length > 0
+          ? modalConfigForm.modal_features.filter(f => f.trim())
+          : null,
       });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.message); }
       setShowModalConfigModal(false);
     } catch (err: any) {
-      alert(err.message || 'Error al guardar configuración del modal');
+      showToast(err.message || 'Error al guardar configuración del modal', 'error');
     } finally { setSavingModalConfig(false); }
   };
 
@@ -359,35 +338,23 @@ export default function AdminBrandsPage() {
     if (!selectedBrand) return;
     setActivating(true);
     try {
-      const res = await fetch(`${API_URL}/api/admin/brands/${selectedBrand.id}/activate-plan`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          plan: activateForm.plan,
-          amount: Number(activateForm.amount),
-          payment_method: activateForm.payment_method,
-          notes: activateForm.notes || 'Activación manual por administrador',
-        }),
+      await adminApi.patch(`/admin/brands/${selectedBrand.id}/activate-plan`, {
+        plan: activateForm.plan,
+        amount: Number(activateForm.amount),
+        payment_method: activateForm.payment_method,
+        notes: activateForm.notes || 'Activación manual por administrador',
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
       setShowActivateModal(false);
       await fetchBrands();
     } catch (err: any) {
-      alert(err.message || 'Error al activar plan');
+      showToast(err.message || 'Error al activar plan', 'error');
     } finally { setActivating(false); }
   };
 
   const handleSendResetEmail = async (brand: Brand) => {
     setSendingReset(brand.id);
     try {
-      const res = await fetch(`${API_URL}/api/admin/brands/${brand.id}/send-reset-email`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Error al enviar email');
+      await adminApi.post(`/admin/brands/${brand.id}/send-reset-email`);
       setResetToast({ message: `Email de recuperación enviado a ${brand.email}`, type: 'success' });
       setTimeout(() => setResetToast(null), 4000);
     } catch (err: any) {
@@ -444,19 +411,9 @@ export default function AdminBrandsPage() {
     await Promise.all(ids.map(async id => {
       try {
         if (action === 'delete') {
-          const res = await fetch(`${API_URL}/api/admin/brands/${id}`, {
-            method: 'DELETE',
-            credentials: 'include',
-          });
-          if (!res.ok) throw new Error();
+          await adminApi.delete(`/admin/brands/${id}`);
         } else {
-          const res = await fetch(`${API_URL}/api/admin/subscriptions/${id}/${action}`, {
-            method: 'PATCH',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({}),
-          });
-          if (!res.ok) throw new Error();
+          await adminApi.patch(`/admin/subscriptions/${id}/${action}`, {});
         }
         okCount++;
       } catch { failCount++; }
@@ -466,7 +423,12 @@ export default function AdminBrandsPage() {
     setConfirmBulk(null);
     setSelected(new Set());
     await fetchBrands();
-    if (failCount > 0) alert(`${okCount} exitosa${okCount !== 1 ? 's' : ''}, ${failCount} con error`);
+    showToast(
+      failCount === 0
+        ? `${okCount} marca${okCount !== 1 ? 's' : ''} ${action === 'suspend' ? 'suspendida' : action === 'reactivate' ? 'reactivada' : 'eliminada'}${okCount !== 1 ? 's' : ''}`
+        : `${okCount} exitosa${okCount !== 1 ? 's' : ''}, ${failCount} con error`,
+      failCount === 0 ? 'success' : 'error'
+    );
   };
 
   if (loading) return (
@@ -479,9 +441,6 @@ export default function AdminBrandsPage() {
   if (error) return <div className="px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}>{error}</div>;
 
   const trialCount = brands.filter(b => b.plan === 'TRIAL').length;
-  const totalPages = Math.ceil(filteredBrands.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedBrands = filteredBrands.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <div className="space-y-5">
@@ -512,412 +471,52 @@ export default function AdminBrandsPage() {
       </div>
 
       {/* Filtros */}
-      <div className="rounded-[2rem] border p-4 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="search" className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
-              Buscar por nombre, email o slug
-            </label>
-            <input id="search" type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Buscar..."
-              className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A]"
-              style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Filtrar por plan</label>
-            <div className="flex gap-2 flex-wrap">
-              {([
-                { value: 'all',     label: `Todos (${brands.length})` },
-                { value: 'TRIAL',   label: `TRIAL (${brands.filter(b => b.plan === 'TRIAL').length})` },
-                { value: 'BASIC',   label: `BASIC (${brands.filter(b => b.plan === 'BASIC').length})` },
-                { value: 'PRO',     label: `PRO (${brands.filter(b => b.plan === 'PRO').length})` },
-                { value: 'LANDING', label: `LANDING (${brands.filter(b => b.plan === 'LANDING').length})` },
-              ] as { value: FilterPlan; label: string }[]).map(({ value, label }) => (
-                <button key={value} onClick={() => setFilterPlan(value)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                  style={{
-                    backgroundColor: filterPlan === value ? '#FF5C3A' : 'var(--bg-base)',
-                    color: filterPlan === value ? '#fff' : 'var(--text-secondary)',
-                    border: `1px solid ${filterPlan === value ? '#FF5C3A' : 'var(--border-color)'}`,
-                  }}>
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div>
-          <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Filtrar por estado</label>
-          <div className="flex gap-2 flex-wrap">
-            {[
-              { value: 'all', label: 'Todos' },
-              { value: 'trial', label: `En prueba (${trialCount})` },
-              { value: 'active', label: `Activos (${brands.filter(b => b.subscription_status === 'active' || b.subscription_status === 'expiring_soon').length})` },
-              { value: 'suspended', label: `Suspendidos (${brands.filter(b => b.subscription_status === 'suspended' || b.subscription_status === 'expired').length})` },
-            ].map(opt => (
-              <button key={opt.value} onClick={() => setFilterTrial(opt.value as FilterTrial)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-                style={{
-                  backgroundColor: filterTrial === opt.value ? '#FF5C3A' : 'var(--bg-base)',
-                  color: filterTrial === opt.value ? '#fff' : 'var(--text-secondary)',
-                  border: `1px solid ${filterTrial === opt.value ? '#FF5C3A' : 'var(--border-color)'}`,
-                }}>
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <BrandFilters
+        brands={brands}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filterPlan={filterPlan}
+        onFilterPlanChange={setFilterPlan}
+        filterTrial={filterTrial}
+        onFilterTrialChange={setFilterTrial}
+        sortField={sortField}
+        onSortFieldChange={setSortField}
+        sortOrder={sortOrder}
+        onSortOrderChange={() => toggleSort(sortField)}
+        onShowCreate={() => setShowCreateModal(true)}
+      />
 
       {/* Tabla */}
-      <div className="rounded-[2rem] border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-
-        {/* Barra de acciones masivas */}
-        {selected.size > 0 && (
-          <div className="flex items-center gap-3 px-5 py-3 border-b" style={{ backgroundColor: 'rgba(255,92,58,0.06)', borderColor: 'var(--border-color)' }}>
-            <span className="text-sm font-medium" style={{ color: '#FF5C3A' }}>
-              {selected.size} seleccionada{selected.size > 1 ? 's' : ''}
-            </span>
-            <div className="flex items-center gap-2 ml-auto">
-              <button onClick={() => setConfirmBulk('reactivate')} disabled={bulkLoading}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                Reactivar
-              </button>
-              <button onClick={() => setConfirmBulk('suspend')} disabled={bulkLoading}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-semibold hover:bg-amber-700 disabled:opacity-50 transition-colors">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
-                Suspender
-              </button>
-              <button onClick={() => setConfirmBulk('delete')} disabled={bulkLoading}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                Eliminar
-              </button>
-              <button onClick={() => setSelected(new Set())}
-                className="px-3 py-1.5 rounded-lg border text-xs transition-colors"
-                style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
-                Cancelar
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="overflow-x-auto">
-        <table className="min-w-full">
-          <thead>
-            <tr style={{ backgroundColor: 'var(--bg-base)' }}>
-              <th className="px-4 py-3 w-10">
-                <input type="checkbox"
-                  checked={paginatedBrands.length > 0 && paginatedBrands.every(b => selected.has(b.id))}
-                  ref={el => { if (el) el.indeterminate = selected.size > 0 && !paginatedBrands.every(b => selected.has(b.id)); }}
-                  onChange={toggleSelectAll}
-                  className="w-4 h-4 rounded cursor-pointer" style={{ accentColor: '#FF5C3A' }} />
-              </th>
-              {[
-                { label: 'Marca', field: 'name' as const },
-                { label: 'Email', field: 'email' as const },
-                { label: 'Plan', field: 'plan' as const },
-                { label: 'Estado', field: 'status' as const },
-                { label: 'Productos', field: 'products' as const },
-                { label: 'Generaciones', field: 'generations' as const },
-                { label: 'Acciones', field: null },
-              ].map(h => (
-                <th key={h.label} 
-                  onClick={() => h.field && toggleSort(h.field)}
-                  className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide ${h.field ? 'cursor-pointer hover:bg-black/5' : ''}`} 
-                  style={{ color: 'var(--text-secondary)' }}
-                >
-                  <div className="flex items-center gap-1">
-                    {h.label}
-                    {h.field && (
-                      <svg className="w-3 h-3" style={{ color: sortField === h.field ? '#FF5C3A' : 'var(--text-muted)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                      </svg>
-                    )}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedBrands.map(brand => (
-              <tr key={brand.id} className="border-t transition-colors"
-                style={{
-                  borderColor: 'var(--border-color)',
-                  backgroundColor: selected.has(brand.id) ? 'rgba(255,92,58,0.05)' : 'transparent',
-                }}>
-                <td className="px-4 py-3.5">
-                  <input type="checkbox" checked={selected.has(brand.id)} onChange={() => toggleSelect(brand.id)}
-                    className="w-4 h-4 rounded cursor-pointer" style={{ accentColor: '#FF5C3A' }} />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{brand.name}</div>
-                  <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{brand.slug}</div>
-                </td>
-                <td className="px-4 py-3.5 whitespace-nowrap text-sm" style={{ color: 'var(--text-secondary)' }}>{brand.email}</td>
-                <td className="px-4 py-3.5 whitespace-nowrap">
-                  <span className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                    style={
-                      brand.plan === 'TRIAL'
-                        ? { backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }
-                        : brand.plan === 'PRO'
-                        ? { backgroundColor: 'rgba(168,85,247,0.12)', color: '#a855f7' }
-                        : brand.plan === 'LANDING'
-                        ? { backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6' }
-                        : { backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }
-                    }>
-                    {brand.plan}
-                  </span>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    {brand.plan === 'TRIAL'
-                      ? 'Gratuito'
-                      : brand.plan === 'PRO'
-                      ? '$250.000/mes'
-                      : brand.plan === 'BASIC'
-                      ? '$150.000/mes'
-                      : brand.plan === 'LANDING'
-                      ? (landingPrice ? `$${landingPrice.toLocaleString('es-CO')}` : '—')
-                      : '—'}
-                  </div>
-                </td>
-                <td className="px-4 py-3.5 whitespace-nowrap">
-                  {brand.plan === 'TRIAL' ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(99,102,241,0.12)', color: '#6366f1' }}>
-                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v10.5a3 3 0 006 0V3M6 3h12" /></svg>
-                      Prueba — {brand.trial_days_remaining ?? 0}d
-                    </span>
-                  ) : brand.subscription_status === 'active' ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }}>Activo</span>
-                  ) : brand.subscription_status === 'expiring_soon' ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}>Por vencer</span>
-                  ) : brand.subscription_status === 'suspended' ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>Suspendido</span>
-                  ) : brand.subscription_status === 'expired' ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(239,68,68,0.12)', color: '#ef4444' }}>Vencido</span>
-                  ) : (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-muted)' }}>Sin suscripción</span>
-                  )}
-                </td>
-                <td className="px-4 py-3.5 whitespace-nowrap text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{brand.stats.productsCount}</td>
-                <td className="px-4 py-3.5 whitespace-nowrap">
-                  <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{brand.stats.generationsCount}</div>
-                  <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{brand.stats.generationsThisMonth} este mes</div>
-                </td>
-                <td className="px-4 py-3.5 whitespace-nowrap">
-                  <div className="flex items-center justify-center gap-1">
-                    <button onClick={() => handleViewDetails(brand)} className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 transition-all duration-150" title="Ver detalles">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                    </button>
-                    <button onClick={() => handleViewProducts(brand)} className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 transition-all duration-150" title="Ver productos">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-                    </button>
-                    {brand.plan === 'TRIAL' ? (
-                      <button onClick={() => handleOpenActivate(brand)} className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 transition-all duration-150" title="Activar plan">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      </button>
-                    ) : (
-                      <button onClick={() => handleChangePlan(brand.id, brand.plan === 'BASIC' ? 'PRO' : 'BASIC')} disabled={changingPlan === brand.id}
-                        className="p-1.5 rounded-lg bg-[#FF5C3A]/10 text-[#FF5C3A] hover:bg-[#FF5C3A]/20 transition-all duration-150 disabled:opacity-50" title={`Cambiar a ${brand.plan === 'BASIC' ? 'PRO' : 'BASIC'}`}>
-                        {changingPlan === brand.id
-                          ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
-                          : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>}
-                      </button>
-                    )}
-                    <button onClick={() => handleOpenModalConfig(brand)} className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-all duration-150" title="Configurar Modal">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                    </button>
-                    <button
-                      onClick={() => handleSendResetEmail(brand)}
-                      disabled={sendingReset === brand.id}
-                      className="p-1.5 rounded-lg bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 transition-all duration-150 disabled:opacity-50"
-                      title="Enviar email de recuperación"
-                    >
-                      {sendingReset === brand.id
-                        ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#f59e0b', borderTopColor: 'transparent' }} />
-                        : <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                      }
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        </div>
-        {filteredBrands.length === 0 && (
-          <div className="text-center py-12">
-            <svg className="mx-auto h-10 w-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--text-muted)' }}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>No se encontraron marcas</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Intenta ajustar los filtros de búsqueda.</p>
-          </div>
-        )}
-      </div>
-
-      {/* Paginación */}
-      {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-xl border px-4 py-3"
-          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            Mostrando {startIndex + 1} a {Math.min(startIndex + itemsPerPage, filteredBrands.length)} de {filteredBrands.length}
-          </div>
-          <div className="flex gap-1.5">
-            <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1}
-              className="px-3 py-1.5 rounded-lg border text-xs disabled:opacity-40 transition-colors"
-              style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-base)' }}>Anterior</button>
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              const p = totalPages <= 5 ? i + 1 : currentPage <= 3 ? i + 1 : currentPage >= totalPages - 2 ? totalPages - 4 + i : currentPage - 2 + i;
-              return (
-                <button key={p} onClick={() => setCurrentPage(p)}
-                  className="px-3 py-1.5 rounded-lg border text-xs transition-colors"
-                  style={{
-                    backgroundColor: currentPage === p ? '#FF5C3A' : 'var(--bg-base)',
-                    color: currentPage === p ? '#fff' : 'var(--text-secondary)',
-                    borderColor: currentPage === p ? '#FF5C3A' : 'var(--border-color)',
-                  }}>{p}</button>
-              );
-            })}
-            <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages}
-              className="px-3 py-1.5 rounded-lg border text-xs disabled:opacity-40 transition-colors"
-              style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-base)' }}>Siguiente</button>
-          </div>
-        </div>
-      )}
+      <BrandTable
+        brands={filteredBrands}
+        selected={selected}
+        onToggleSelect={toggleSelect}
+        onToggleSelectAll={toggleSelectAll}
+        onSelectDetails={handleViewDetails}
+        onSelectProducts={handleViewProducts}
+        onSelectActivate={brand => brand.plan === 'TRIAL' ? handleOpenActivate(brand) : handleChangePlan(brand.id, brand.plan === 'BASIC' ? 'PRO' : 'BASIC')}
+        onSelectModalConfig={handleOpenModalConfig}
+        onSendReset={handleSendResetEmail}
+        sortField={sortField}
+        sortOrder={sortOrder}
+        onSortChange={setSortField}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+        landingPrice={landingPrice}
+      />
 
       {/* Modal Ver Detalles */}
       {showDetailsModal && selectedBrand && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
-          <div className="rounded-[2rem] p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <div className="flex justify-between items-start mb-5">
-              <h2 className="font-jakarta font-bold tracking-tight text-xl" style={{ color: 'var(--text-primary)' }}>Detalles de {selectedBrand.name}</h2>
-              <button onClick={() => setShowDetailsModal(false)} style={{ color: 'var(--text-secondary)' }}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                {[['Email', selectedBrand.email], ['Slug', selectedBrand.slug], ['Plan', selectedBrand.plan],
-                  ['Fecha de registro', new Date(selectedBrand.created_at).toLocaleDateString('es-ES')]].map(([label, value]) => (
-                  <div key={label}>
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{label}</p>
-                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{value}</p>
-                  </div>
-                ))}
-                {selectedBrand.plan === 'TRIAL' && (
-                  <div className="col-span-2">
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Estado de prueba</p>
-                    <p className="text-sm font-medium" style={{ color: '#3b82f6' }}>
-                      En período de prueba — {selectedBrand.trial_days_remaining} días restantes
-                      {selectedBrand.trial_end_date && ` (vence ${new Date(selectedBrand.trial_end_date).toLocaleDateString('es-ES')})`}
-                    </p>
-                  </div>
-                )}
-              </div>
-              <div className="border-t pt-4">
-                <h3 className="font-jakarta font-bold text-sm mb-3" style={{ color: 'var(--text-primary)' }}>Estadísticas</h3>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { label: 'Productos', value: selectedBrand.stats.productsCount, color: '#3b82f6' },
-                    { label: 'Generaciones', value: selectedBrand.stats.generationsCount, color: '#10b981' },
-                    { label: 'Este mes', value: selectedBrand.stats.generationsThisMonth, color: '#FF5C3A' },
-                  ].map(({ label, value, color }) => (
-                    <div key={label} className="rounded-xl p-3 text-center" style={{ backgroundColor: 'var(--bg-base)' }}>
-                      <p className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>{label}</p>
-                      <p className="text-xl font-bold font-jakarta" style={{ color }}>{value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Toggle mini-landing */}
-              <div className="border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Mini-landing activa</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                      {(selectedBrand as any).has_landing_page
-                        ? 'La página pública está activa y visible sin banners.'
-                        : 'La página muestra un banner de activación ($500.000 COP).'}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleToggleLandingPage(selectedBrand)}
-                    disabled={togglingLanding}
-                    className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 flex-shrink-0"
-                    style={{ backgroundColor: (selectedBrand as any).has_landing_page ? '#FF5C3A' : 'var(--border-color)' }}
-                    aria-label="Activar mini-landing"
-                  >
-                    <span
-                      className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
-                      style={{ transform: (selectedBrand as any).has_landing_page ? 'translateX(1.375rem)' : 'translateX(0.25rem)' }}
-                    />
-                  </button>
-                </div>
-              </div>
-
-              {/* Notas internas */}
-              <div className="border-t pt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Notas internas</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Solo visibles para el equipo</p>
-                  </div>
-                </div>
-                <textarea
-                  value={(selectedBrand as any).internal_notes || ''}
-                  onChange={(e) => setSelectedBrand({ ...selectedBrand, internal_notes: e.target.value } as any)}
-                  placeholder="Añadir notas sobre esta marca... (ej. Contacto en WhatsApp, preferencias, problemas resueltos)"
-                  className="w-full px-3 py-2 rounded-xl text-sm resize-none"
-                  style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
-                  rows={3}
-                />
-                <div className="flex justify-end mt-2">
-                  <button
-                    onClick={() => handleSaveNotes(selectedBrand)}
-                    disabled={savingNotes}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                    style={{ backgroundColor: '#FF5C3A', color: 'white' }}
-                  >
-                    {savingNotes ? 'Guardando...' : 'Guardar notas'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Preview del widget */}
-              <div className="border-t pt-4">
-                <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>Vista previa del widget</p>
-                <div className="rounded-xl overflow-hidden border" style={{ borderColor: 'var(--border-color)' }}>
-                  <iframe
-                    src={`https://lookitry.com/embed/${selectedBrand.slug}`}
-                    className="w-full h-80"
-                    title={`Preview widget de ${selectedBrand.name}`}
-                  />
-                </div>
-                <a
-                  href={`https://lookitry.com/embed/${selectedBrand.slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs mt-2 inline-flex items-center gap-1 hover:underline"
-                  style={{ color: '#FF5C3A' }}
-                >
-                  Abrir en nueva pestaña
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
-              </div>
-            </div>
-            <div className="mt-5 flex justify-end">
-              <button onClick={() => setShowDetailsModal(false)}
-                className="px-4 py-2 rounded-lg text-sm transition-colors"
-                style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
+        <BrandDetailsModal
+          brand={selectedBrand}
+          onClose={() => setShowDetailsModal(false)}
+          onToggleLanding={handleToggleLandingPage}
+          onSaveNotes={handleSaveNotes}
+          onOpenModalConfig={handleOpenModalConfig}
+          togglingLanding={togglingLanding}
+          savingNotes={savingNotes}
+        />
       )}
 
       {/* Modal Ver Productos */}
@@ -1283,6 +882,9 @@ export default function AdminBrandsPage() {
           {resetToast.message}
         </div>
       )}
+
+      {/* Toast */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }
