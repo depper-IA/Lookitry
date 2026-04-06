@@ -5,6 +5,7 @@ import { CreditCard, ExternalLink, RefreshCw, AlertTriangle, Brain } from 'lucid
 
 import { adminApi } from '@/services/adminApi';
 import { motion } from 'framer-motion';
+import { EmbeddedPlaybook } from '@/components/admin/EmbeddedPlaybook';
 
 interface ProviderCredits {
   provider: 'openrouter' | 'replicate';
@@ -101,6 +102,12 @@ export default function AdminIACostsPage() {
           <span className="text-sm text-amber-400">Uno o más proveedores tienen balance bajo. Considera recargar.</span>
         </div>
       )}
+
+      <EmbeddedPlaybook
+        playbookId="ia-costs-spike"
+        showWhen={hasAlert}
+        title="Playbook: Costo IA disparado"
+      />
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="rounded-[1.5rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '3px solid #10b981' }}>

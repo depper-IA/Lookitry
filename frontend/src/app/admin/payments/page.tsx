@@ -5,6 +5,7 @@ import { Search, CreditCard, RefreshCw, CheckCircle, XCircle, Clock, Banknote, W
 import { motion } from 'framer-motion';
 import { formatCurrency } from '@/utils/currency';
 import { adminApi } from '@/services/adminApi';
+import { EmbeddedPlaybook } from '@/components/admin/EmbeddedPlaybook';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -178,6 +179,7 @@ export default function AdminPaymentsPage() {
     return 0;
   }), [payments, sortField, sortOrder]);
   const paginated = sorted.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const failedPaymentsCount = useMemo(() => payments.filter(p => p.status === 'failed').length, [payments]);
 
   const exportToCSV = () => {
     const headers = ['Fecha', 'Marca', 'Email', 'Plan', 'Monto (COP)', 'Método', 'Estado'];
@@ -327,6 +329,12 @@ export default function AdminPaymentsPage() {
           )}
         </div>
       </motion.div>
+
+      <EmbeddedPlaybook
+        playbookId="payment-failed"
+        showWhen={failedPaymentsCount > 0}
+        title="Playbook: Pago fallido"
+      />
 
       {/* Tabla */}
       <motion.div

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { AlertTriangle, ArrowRight, Shield, TrendingDown, Clock, XCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
+import { EmbeddedPlaybook } from '@/components/admin/EmbeddedPlaybook';
 
 interface RiskBrand {
   id: string; name: string; email: string; plan: string;
@@ -76,6 +77,12 @@ export default function AdminRiskPage() {
           </div>
         ))}
       </div>
+
+      <EmbeddedPlaybook
+        playbookId="churn-prevention"
+        showWhen={data.summary.high_risk > 0}
+        title="Playbook: Prevención de churn"
+      />
 
       <div className="flex gap-2">
         {(['all', 'high', 'medium', 'low'] as const).map(f => (

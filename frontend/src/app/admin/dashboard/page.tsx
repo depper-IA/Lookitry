@@ -11,7 +11,6 @@ import {
   CheckCircle2, CircleDashed, Sparkles, Play, Pause
 } from 'lucide-react';
 import { adminApi } from '@/services/adminApi';
-import { BrutalBadge } from '@/components/ui/brutalist/BrutalBadge';
 
 interface GlobalStats {
   totalBrands: number;
@@ -572,9 +571,12 @@ function BrandCard({ brand }: { brand: Brand }) {
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{brand.email}</p>
           </div>
         </div>
-        <BrutalBadge variant={brand.plan === 'PRO' ? 'pro' : brand.plan === 'TRIAL' ? 'trial' : 'basic'} size="sm">
+        <span className="px-2 py-0.5 rounded-full text-xs font-semibold" style={{
+          backgroundColor: brand.plan === 'PRO' ? 'rgba(168,85,247,0.12)' : brand.plan === 'TRIAL' ? 'rgba(99,102,241,0.12)' : 'rgba(16,185,129,0.12)',
+          color: brand.plan === 'PRO' ? '#a855f7' : brand.plan === 'TRIAL' ? '#6366f1' : '#10b981'
+        }}>
           {brand.plan}
-        </BrutalBadge>
+        </span>
       </div>
 
       <div className="mb-4 flex items-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>

@@ -1,5 +1,46 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-06] - Fix errores build y completado pendientes admin
+
+### Fix errores de build
+
+- **`admin/security/page.tsx`**: Eliminado import duplicado de `motion` (framer-motion)
+- **`admin/dashboard/page.tsx`**: Reemplazado componente `BrutalBadge` inexistente por badge inline con estilos inline (colores según plan: PRO=violeta, TRIAL=índigo, BASIC=verde)
+- **`admin/funnel/page.tsx`**: Corregido tipo `boolean | 0 | undefined` en `hasStalledTrials` usando `Boolean()` cast
+
+### Completado pendientes auditoría admin dashboard
+
+- **Funnel clickeable**: Cada etapa ahora navega a la página filtrada correspondiente (Trial → brands?plan=TRIAL, Pro → brands?plan=PRO, Riesgo → /admin/risk)
+- **Playbooks embebidos**: Nuevo componente `EmbeddedPlaybook` integrado en:
+  - `/admin/risk` → playbook churn-prevention (cuando high_risk > 0)
+  - `/admin/payments` → playbook payment-failed (cuando hay pagos fallidos)
+  - `/admin/funnel` → playbook trial-stalled (cuando conversión Trial <50%)
+  - `/admin/ia-costs` → playbook ia-costs-spike (cuando balance bajo)
+
+### Archivos modificados
+
+- `frontend/src/app/admin/security/page.tsx`
+- `frontend/src/app/admin/dashboard/page.tsx`
+- `frontend/src/app/admin/funnel/page.tsx`
+- `frontend/src/components/admin/EmbeddedPlaybook.tsx` (nuevo)
+- `frontend/src/app/admin/risk/page.tsx`
+- `frontend/src/app/admin/payments/page.tsx`
+- `frontend/src/app/admin/ia-costs/page.tsx`
+
+---
+
+## [2026-04-06] - Visión con OpenRouter para análisis de imágenes
+
+### Nueva funcionalidad
+
+- Sammy ahora puede ver y analizar imágenes usando OpenRouter Vision
+- Modelo: `google/gemini-2.5-flash-image-preview` (costo mínimo ~$0.00000013/1K tokens)
+- Flujo: imagen → Gemini Vision (análisis) → OpenCode (corrección)
+- Prompt especializado en debugging para análisis de código/errores
+- Archivos: `sammy/src/audio/groq.ts` (nueva función `analyzeImageWithOpenRouter`), `sammy/src/index.ts`
+
+---
+
 ## [2026-04-06] - Fix soporte imágenes en Sammy
 
 ### Bug fix
