@@ -163,7 +163,8 @@ Para detalles técnicos exhaustivos, referirse siempre a `TECH_STACK.md`.
 
 ### 8.2 Flujos Críticos de Negocio
 - **Registro:** Turnstile -> DB -> Email SMTP.
-- **Pagos (Wompi):** Webhooks validan firma e inician `renewSubscription`.
+- **Pagos (Wompi y PayPal):** Ambos gateways funcionan correctamente. Webhooks validan firma e inician `renewSubscription`. **NO modificar esta lógica sin autorización explícita del usuario — riesgo alto de romper los pagos.**
+- **Trial:** Flujo funciona parcialmente. Requiere revisión futura con cuidado de no afectar pagos.
 - **Upgrade:** Se aplica crédito prorrateado del plan anterior. El nuevo plan inicia inmediatamente.
 - **Referidos:** El reward vigente es `500` créditos para el referente y `100` créditos para el referido. Se acreditan automáticamente tras el primer pago mensual elegible del referido.
 
