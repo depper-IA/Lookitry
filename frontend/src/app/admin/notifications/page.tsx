@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 type Severity = 'info' | 'warning' | 'error' | 'success';
 type Tab = 'notifications' | 'feedback';
@@ -246,7 +247,7 @@ export default function NotificationsPage() {
   const totalUnresolved = feedbacks.filter(f => !f.resolved).length;
 
   return (
-    <div className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Centro de actividad</h1>
@@ -661,6 +662,6 @@ export default function NotificationsPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

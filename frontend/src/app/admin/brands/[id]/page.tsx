@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Package, Activity, DollarSign, Shield, AlertTriangle, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 import { adminApi } from '@/services/adminApi';
 
@@ -97,7 +98,7 @@ export default function BrandDetailPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} className="space-y-6">
       <div className="flex items-center gap-4">
         <button onClick={() => router.back()} className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
           <ArrowLeft className="w-4 h-4" />
@@ -333,6 +334,6 @@ export default function BrandDetailPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

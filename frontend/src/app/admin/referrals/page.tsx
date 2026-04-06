@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Check, Gift, Loader2, RefreshCw, Users, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Referral {
   id: string;

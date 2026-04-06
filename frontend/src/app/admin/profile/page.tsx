@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, KeyRound, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -93,7 +94,7 @@ export default function AdminProfilePage() {
   };
 
   return (
-    <div className="max-w-lg mx-auto py-8 px-4">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} className="max-w-lg mx-auto py-8 px-4">
       <div
         className="rounded-2xl border overflow-hidden"
         style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
@@ -265,6 +266,6 @@ export default function AdminProfilePage() {
           </button>
         </form>
       </div>
-    </div>
+    </motion.div>
   );
 }

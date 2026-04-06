@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { CreditCard, ExternalLink, RefreshCw, AlertTriangle, Brain } from 'lucide-react';
 
 import { adminApi } from '@/services/adminApi';
+import { motion } from 'framer-motion';
 
 interface ProviderCredits {
   provider: 'openrouter' | 'replicate';
@@ -83,7 +84,12 @@ export default function AdminIACostsPage() {
   const hasAlert = openRouterCredits?.critical_balance_alert || openRouterCredits?.low_balance_alert || replicateCredits?.critical_balance_alert || replicateCredits?.low_balance_alert;
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       <div>
         <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Costos e IA</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Créditos de proveedores, costos por generación y prompts maestros</p>
@@ -196,6 +202,6 @@ export default function AdminIACostsPage() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

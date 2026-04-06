@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { ArrowUpDown } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://lookitry.com';
@@ -287,7 +288,12 @@ export default function AdminMiniLandingsPage() {
   );
 
   return (
-    <div className="space-y-5">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-5"
+    >
       {alertState && (
         <div className={`fixed top-6 right-6 z-[60] max-w-sm px-5 py-4 rounded-2xl border shadow-2xl flex items-start gap-3 animate-in fade-in slide-in-from-right-4 duration-300 ${
           alertState.type === 'success' 
@@ -794,7 +800,7 @@ export default function AdminMiniLandingsPage() {
           onCancel={() => setConfirmModal(null)}
         />
       )}
-    </div>
+    </motion.div>
   );
 }
 

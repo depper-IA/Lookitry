@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Activity, Search, Filter } from 'lucide-react';
 
 import { adminApi } from '@/services/adminApi';
+import { motion } from 'framer-motion';
 
 interface AuditEntry {
   id: string;
@@ -77,7 +78,12 @@ export default function AdminAuditLogPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       <div>
         <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Auditoría</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Historial de acciones administrativas — quién, qué, cuándo</p>
@@ -167,6 +173,6 @@ export default function AdminAuditLogPage() {
           </>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

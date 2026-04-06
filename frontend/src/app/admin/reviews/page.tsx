@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, Search, Star, Trash2, X, MessageSquare } from 'lucide-react';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import type { AdminReview } from '@/types';
+import { motion } from 'framer-motion';
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
 type RatingFilter = 'all' | '1' | '2' | '3' | '4' | '5';
@@ -200,7 +201,12 @@ export default function AdminReviewsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       <div>
         <h1 className="font-jakarta text-2xl font-bold tracking-tight text-[var(--text-primary)]">Moderación de Reviews</h1>
         <p className="mt-1 text-sm text-[var(--text-secondary)]">Gestiona publicaciones, destacadas y limpieza de reseñas del sistema.</p>
@@ -428,8 +434,8 @@ export default function AdminReviewsPage() {
             </div>
 
             <div className="mt-5 space-y-4">
-              <div className="rounded-2xl border border-white/5 bg-[var(--bg-base)] p-4 text-sm text-[var(--text-secondary)]">
-                “{moderateTarget.review.comment}”
+              <div className="rounded-2xl border border-white/5 bg-[var(--bg-base)] p-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                &ldquo;{moderateTarget.review.comment}&rdquo;
               </div>
               <div>
                 <label className="mb-2 block text-sm font-semibold text-[var(--text-primary)]">Nota interna opcional</label>
@@ -473,6 +479,6 @@ export default function AdminReviewsPage() {
       />
 
       {toast && <Toast toast={toast} onClose={() => setToast(null)} />}
-    </div>
+    </motion.div>
   );
 }

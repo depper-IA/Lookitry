@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AlertTriangle, RefreshCw, Ban, RotateCcw, ArrowUpDown } from 'lucide-react';
 import { formatCurrency, formatPlanPrice } from '@/utils/currency';
+import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
 import { ConfirmModal, Toast, RenewModal, ChangePlanModal, Subscription, FilterStatus, SortField } from '@/components/admin/subscriptions/SubscriptionModals';
 
@@ -250,11 +251,20 @@ export default function AdminSubscriptionsPage() {
   );
 
   return (
-    <div className="space-y-6">
-      <div>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
         <h1 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold tracking-tight text-2xl">Suscripciones</h1>
         <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">{subscriptions.length} suscripciones en total</p>
-      </div>
+      </motion.div>
 
       {/* Alerta por vencer */}
       {expiringSoon.length > 0 && (
@@ -498,6 +508,6 @@ export default function AdminSubscriptionsPage() {
 
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </div>
+    </motion.div>
   );
 }

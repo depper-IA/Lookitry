@@ -1,7 +1,8 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -56,7 +57,7 @@ export default function ConfigLaunchPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} className="max-w-4xl mx-auto space-y-6">
       <div>
         <div className="flex items-center gap-3">
           <Link href="/admin/config" className="text-sm" style={{ color: 'var(--text-muted)' }}>Configuración</Link>
@@ -114,6 +115,6 @@ export default function ConfigLaunchPage() {
           </button>
         </div>
       </Section>
-    </div>
+    </motion.div>
   );
 }

@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { Shield, Check, AlertTriangle, Lock, Key, Users } from 'lucide-react';
 import { useConfirm } from '@/components/admin/ConfirmDialog';
 import { adminApi } from '@/services/adminApi';
+import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface PaymentSettings {
   bypass_ip_protection: boolean;
@@ -164,7 +166,7 @@ export default function AdminSecurityPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: "easeOut" }} className="space-y-6">
       <div>
         <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Seguridad</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Protección IP, whitelist, mantenimiento y administradores</p>
@@ -296,6 +298,6 @@ export default function AdminSecurityPage() {
           Para crear, editar permisos o eliminar administradores, ve a <a href="/admin/admins" className="underline" style={{ color: '#FF5C3A' }}>Administradores</a>.
         </p>
       </Section>
-    </div>
+    </motion.div>
   );
 }

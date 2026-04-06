@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
 
 type LeadStatus = 'new' | 'qualified' | 'contacted' | 'interested' | 'not_interested' | 'client';
@@ -163,39 +164,60 @@ export default function LeadsPage() {
     );
   }
 
-  return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-5"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-2xl font-bold text-[#0a0a0a]">Leads</h1>
-          <p className="text-sm text-[#999] mt-1">
+          <h1 style={{ color: 'var(--text-primary)' }} className="text-2xl font-jakarta font-bold tracking-tight">Leads</h1>
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">
             Total: <span className="font-semibold">{stats.total}</span> leads
           </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[#FF5C3A] text-white rounded-lg hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest text-white transition-all shadow-lg shadow-[#FF5C3A]/20"
+          style={{ backgroundColor: '#FF5C3A' }}
         >
           <IconPlus />
           Agregar Lead
         </button>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-6 gap-4 mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+        className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4"
+      >
         {(['new', 'qualified', 'contacted', 'interested', 'not_interested', 'client'] as LeadStatus[]).map((status) => (
           <div
             key={status}
-            className="bg-white rounded-lg border border-[#e5e5e5] p-4 cursor-pointer hover:border-[#FF5C3A] transition-colors"
+            className="rounded-2xl border p-4 cursor-pointer transition-colors"
+            style={{ backgroundColor: 'var(--bg-card)', borderColor: filterStatus === status ? '#FF5C3A' : 'var(--border-color)' }}
             onClick={() => setFilterStatus(filterStatus === status ? '' : status)}
-            style={{ borderColor: filterStatus === status ? '#FF5C3A' : undefined }}
           >
             <p className="text-2xl font-bold" style={{ color: STATUS_COLORS[status] }}>{stats[status]}</p>
-            <p className="text-xs text-[#999] mt-1">{STATUS_LABELS[status]}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{STATUS_LABELS[status]}</p>
           </div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="flex gap-4 mb-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.12 }}
+        className="flex gap-4"
+      >
         <select
           value={filterCountry}
           onChange={(e) => setFilterCountry(e.target.value)}
@@ -209,51 +231,73 @@ export default function LeadsPage() {
         {filterStatus && (
           <button
             onClick={() => setFilterStatus('')}
-            className="px-3 py-2 text-sm text-[#999] hover:text-[#0a0a0a]"
+            className="px-3 py-2 text-sm transition-colors rounded-xl border"
+            style={{ borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}
           >
             Limpiar filtro ×
           </button>
         )}
-      </div>
+      </motion.div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="p-4 rounded-xl border flex items-center gap-3"
+          style={{ backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.2)', color: '#ef4444' }}
+        >
           <IconWarning />
-          <span className="text-red-700">{error}</span>
+          <span>{error}</span>
           <button onClick={() => setError(null)} className="ml-auto"><IconX /></button>
-        </div>
+        </motion.div>
       )}
 
       {leads.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-[#e5e5e5]">
-          <IconMail />
-          <p className="text-[#999] mt-2">No hay leads</p>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.16 }}
+          className="text-center py-12 rounded-2xl border"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+        >
+          <div style={{ color: 'var(--text-muted)' }}><IconMail /></div>
+          <p className="mt-2" style={{ color: 'var(--text-muted)' }}>No hay leads</p>
           <button
             onClick={() => setShowAddModal(true)}
-            className="mt-4 text-[#FF5C3A] hover:underline"
+            className="mt-4 transition-colors hover:opacity-80"
+            style={{ color: '#FF5C3A' }}
           >
             Agregar el primero
           </button>
-        </div>
+        </motion.div>
       ) : (
-        <div className="bg-white rounded-lg border border-[#e5e5e5] overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.16 }}
+          className="rounded-2xl border overflow-hidden"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
+        >
           <table className="w-full">
             <thead>
-              <tr className="bg-[#fafafa] border-b border-[#e5e5e5]">
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Nombre</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Ubicación</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Contacto</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Estado</th>
-                <th className="text-left px-4 py-3 text-sm font-medium text-[#666]">Fecha</th>
-                <th className="text-right px-4 py-3 text-sm font-medium text-[#666]">Acciones</th>
+              <tr className="border-b" style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)' }}>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Nombre</th>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Ubicación</th>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Contacto</th>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Estado</th>
+                <th className="text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Fecha</th>
+                <th className="text-right px-4 py-3 text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {leads.map((lead) => (
-                <tr key={lead.id} className="border-b border-[#f0f0f0] last:border-0 hover:bg-[#fafafa]">
+                <tr key={lead.id} className="border-b last:border-0 transition-colors" style={{ borderColor: 'var(--border-color)' }}
+                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
                   <td className="px-4 py-3">
-                    <p className="font-medium text-[#0a0a0a]">{lead.name}</p>
-                    <p className="text-xs text-[#999]">{lead.business_type || lead.source}</p>
+                    <p className="font-medium" style={{ color: 'var(--text-primary)' }}>{lead.name}</p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{lead.business_type || lead.source}</p>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1 text-sm text-[#666]">
@@ -330,7 +374,7 @@ export default function LeadsPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </motion.div>
       )}
 
       {showAddModal && (
@@ -340,7 +384,7 @@ export default function LeadsPage() {
       {editLead && (
         <LeadModal lead={editLead} onClose={() => setEditLead(null)} onSave={fetchLeads} />
       )}
-    </div>
+    </motion.div>
   );
 }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useConfirm } from '@/components/admin/ConfirmDialog';
 import { CheckCircle, XCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
 import { BrandDetailsModal } from '@/components/admin/brands/BrandDetailsModal';
 import { BrandFilters } from '@/components/admin/brands/BrandFilters';
@@ -442,9 +443,19 @@ export default function AdminBrandsPage() {
 
   const trialCount = brands.filter(b => b.plan === 'TRIAL').length;
 
-  return (
-    <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-5"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+      >
         <div>
           <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Gestión de marcas</h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
@@ -468,43 +479,55 @@ export default function AdminBrandsPage() {
           </svg>
           Nueva Marca
         </button>
-      </div>
+      </motion.div>
 
       {/* Filtros */}
-      <BrandFilters
-        brands={brands}
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        filterPlan={filterPlan}
-        onFilterPlanChange={setFilterPlan}
-        filterTrial={filterTrial}
-        onFilterTrialChange={setFilterTrial}
-        sortField={sortField}
-        onSortFieldChange={setSortField}
-        sortOrder={sortOrder}
-        onSortOrderChange={() => toggleSort(sortField)}
-        onShowCreate={() => setShowCreateModal(true)}
-      />
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+      >
+        <BrandFilters
+          brands={brands}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          filterPlan={filterPlan}
+          onFilterPlanChange={setFilterPlan}
+          filterTrial={filterTrial}
+          onFilterTrialChange={setFilterTrial}
+          sortField={sortField}
+          onSortFieldChange={setSortField}
+          sortOrder={sortOrder}
+          onSortOrderChange={() => toggleSort(sortField)}
+          onShowCreate={() => setShowCreateModal(true)}
+        />
+      </motion.div>
 
       {/* Tabla */}
-      <BrandTable
-        brands={filteredBrands}
-        selected={selected}
-        onToggleSelect={toggleSelect}
-        onToggleSelectAll={toggleSelectAll}
-        onSelectDetails={handleViewDetails}
-        onSelectProducts={handleViewProducts}
-        onSelectActivate={brand => brand.plan === 'TRIAL' ? handleOpenActivate(brand) : handleChangePlan(brand.id, brand.plan === 'BASIC' ? 'PRO' : 'BASIC')}
-        onSelectModalConfig={handleOpenModalConfig}
-        onSendReset={handleSendResetEmail}
-        sortField={sortField}
-        sortOrder={sortOrder}
-        onSortChange={setSortField}
-        currentPage={currentPage}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
-        landingPrice={landingPrice}
-      />
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.12 }}
+      >
+        <BrandTable
+          brands={filteredBrands}
+          selected={selected}
+          onToggleSelect={toggleSelect}
+          onToggleSelectAll={toggleSelectAll}
+          onSelectDetails={handleViewDetails}
+          onSelectProducts={handleViewProducts}
+          onSelectActivate={brand => brand.plan === 'TRIAL' ? handleOpenActivate(brand) : handleChangePlan(brand.id, brand.plan === 'BASIC' ? 'PRO' : 'BASIC')}
+          onSelectModalConfig={handleOpenModalConfig}
+          onSendReset={handleSendResetEmail}
+          sortField={sortField}
+          sortOrder={sortOrder}
+          onSortChange={setSortField}
+          currentPage={currentPage}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          landingPrice={landingPrice}
+        />
+      </motion.div>
 
       {/* Modal Ver Detalles */}
       {showDetailsModal && selectedBrand && (
@@ -885,6 +908,6 @@ export default function AdminBrandsPage() {
 
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </div>
+    </motion.div>
   );
 }

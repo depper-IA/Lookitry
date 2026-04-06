@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Trash2, Plus, Shield, ShieldOff, Mail, Loader2, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { adminApi } from '@/services/adminApi';
+import { motion } from 'framer-motion';
 
 type Permission =
   | 'brands' | 'subscriptions' | 'revenue'
@@ -158,7 +159,7 @@ export default function AdminsPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
@@ -319,7 +320,7 @@ export default function AdminsPage() {
       )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </div>
+    </motion.div>
   );
 }
 

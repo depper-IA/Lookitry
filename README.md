@@ -34,7 +34,7 @@ Esta documentación técnica se proporciona únicamente con fines informativos y
 
 Lookitry es una plataforma SaaS B2B diseñada para revolucionar la forma en que se compra ropa, accesorios y calzado en línea. Mediante el uso de Inteligencia Artificial (impulsada por OpenRouter a través de n8n), los clientes finales pueden subir una selfie y visualizar cómo les quedaría un producto específico.
 
-Nuestra solución se integra fácilmente a través de un **widget embebible** (iframe) o una **mini-landing page** personalizada, ideal para marcas en Colombia, México, Argentina, Chile y Perú.
+Nuestra solución se integra fácilmente a través de un **widget script** (`/widget.js`) o una **mini-landing page** personalizada, ideal para marcas en Colombia, México, Argentina, Chile y Perú. El método iframe (`/embed/[brandSlug]`) es legacy y solo para casos especiales donde el script no esté disponible.
 
 ---
 

@@ -18,6 +18,7 @@ import {
   Workflow,
   X,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import EnterpriseCalculator from '@/components/admin/EnterpriseCalculator';
 
 interface SyncConfig {
@@ -318,7 +319,12 @@ export default function EnterpriseSyncPage() {
   }, [configs]);
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       <ShellCard className="overflow-hidden">
         <div
           className="p-6 md:p-8"
@@ -853,6 +859,6 @@ export default function EnterpriseSyncPage() {
         </div>
       )}
       </section>
-    </div>
+    </motion.div>
   );
 }

@@ -1,28 +1,50 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Users, TrendingUp, UserCheck, BarChart2, Image as ImageIcon, Package, Globe, PauseCircle, MinusCircle, CreditCard, Building2, AlertTriangle, XCircle, Clock, ArrowRight, ExternalLink } from 'lucide-react';
-
-interface GlobalStats {
-  totalBrands: number; totalProducts: number; totalGenerations: number;
-  generationsThisMonth: number; successRate: number; brandsByPlan: { BASIC: number; PRO: number; TRIAL: number };
-  landingStats: { active: number; suspended: number; inactive: number };
-}
-interface ConversionStats {
-  totalBrands: number; inTrial: number; paidTrials: number; trialToBasic: number; trialToPro: number; trialToEnterprise: number; converted: number; conversionRate: number;
-  conversionsByMonth: { month: string; count: number }[];
-}
-
+import { useEffect, useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Users, Package, Image as ImageIcon, TrendingUp, CreditCard,
+  Globe, PauseCircle, MinusCircle, UserCheck, Building2,
+  ArrowRight, ExternalLink, BarChart2, AlertTriangle, XCircle,
+  Clock, ChevronRight, Activity, Zap, Target, Plus,
+  MoreHorizontal, Search, Filter, ArrowUpDown, Eye, Pencil, Trash2,
+  CheckCircle2, CircleDashed, Sparkles, Play, Pause
+} from 'lucide-react';
 import { adminApi } from '@/services/adminApi';
+import { BrutalBadge } from '@/components/ui/brutalist/BrutalBadge';
 
 interface GlobalStats {
-  totalBrands: number; totalProducts: number; totalGenerations: number;
-  generationsThisMonth: number; successRate: number; brandsByPlan: { BASIC: number; PRO: number; TRIAL: number };
+  totalBrands: number;
+  totalProducts: number;
+  totalGenerations: number;
+  generationsThisMonth: number;
+  successRate: number;
+  brandsByPlan: { BASIC: number; PRO: number; TRIAL: number };
   landingStats: { active: number; suspended: number; inactive: number };
 }
+
 interface ConversionStats {
-  totalBrands: number; inTrial: number; paidTrials: number; trialToBasic: number; trialToPro: number; trialToEnterprise: number; converted: number; conversionRate: number;
+  totalBrands: number;
+  inTrial: number;
+  paidTrials: number;
+  trialToBasic: number;
+  trialToPro: number;
+  trialToEnterprise: number;
+  converted: number;
+  conversionRate: number;
   conversionsByMonth: { month: string; count: number }[];
+}
+
+interface Brand {
+  id: string;
+  name: string;
+  email: string;
+  plan: string;
+  created_at: string;
+  has_landing_page: boolean;
+  active: boolean;
+  products_count?: number;
+  generations_count?: number;
 }
 
 function formatMonth(key: string) {
@@ -30,55 +52,67 @@ function formatMonth(key: string) {
   return new Date(Number(year), Number(month) - 1).toLocaleDateString('es-CO', { month: 'short', year: '2-digit' });
 }
 
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 export default function AdminDashboardPage() {
   const [global, setGlobal] = useState<GlobalStats | null>(null);
   const [conversion, setConversion] = useState<ConversionStats | null>(null);
+  const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
-  // alertas críticas
-  const [alerts, setAlerts] = useState<{ expiring: number; failed: number; critical: number }>({ expiring: 0, failed: 0, critical: 0 });
+  const [alerts, setAlerts] = useState({ expiring: 0, failed: 0, critical: 0 });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState<string>('all');
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
-  const [recentBrands, setRecentBrands] = useState<any[]>([]);
-  const [loadingActivity, setLoadingActivity] = useState(true);
 
   useEffect(() => {
     Promise.all([
       adminApi.get('/admin/stats'),
       adminApi.get('/admin/stats/conversion'),
+      adminApi.get('/admin/brands?limit=8&sort=created_at:desc'),
+      adminApi.get('/admin/revenue/payments?limit=5'),
     ])
-      .then(([g, c]) => { if (g.error) throw new Error(g.message); setGlobal(g); setConversion(c); })
+      .then(([stats, conv, brandsData, paymentsData]) => {
+        if (stats.error) throw new Error(stats.message);
+        setGlobal(stats);
+        setConversion(conv);
+        if (brandsData.brands) setBrands(brandsData.brands);
+        if (paymentsData.payments) setRecentPayments(paymentsData.payments);
+      })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-      
-    // Cargar alertas críticas y actividad reciente
-    Promise.all([
-      adminApi.get('/admin/alerts').catch(() => ({})),
-      adminApi.get('/admin/revenue/payments?limit=5').catch(() => ({ payments: [] })),
-      adminApi.get('/admin/brands?limit=5&sort=created_at:desc').catch(() => ({ brands: [] })),
-    ])
-      .then(([alertsData, paymentsData, brandsData]) => {
-        if (alertsData.expiring) setAlerts(prev => ({ ...prev, expiring: alertsData.expiring }));
-        if (alertsData.failed) setAlerts(prev => ({ ...prev, failed: alertsData.failed }));
-        if (alertsData.critical) setAlerts(prev => ({ ...prev, critical: alertsData.critical }));
-        setRecentPayments(paymentsData.payments || paymentsData || []);
-        setRecentBrands(brandsData.brands || brandsData || []);
-      })
-      .finally(() => setLoadingActivity(false));
+
+    adminApi.get('/admin/alerts').then(data => {
+      if (data.expiring) setAlerts(prev => ({ ...prev, expiring: data.expiring }));
+      if (data.failed) setAlerts(prev => ({ ...prev, failed: data.failed }));
+      if (data.critical) setAlerts(prev => ({ ...prev, critical: data.critical }));
+    }).catch(() => {});
   }, []);
 
+  const filteredBrands = brands.filter(brand => {
+    const matchesSearch = brand.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      brand.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesPlan = selectedPlan === 'all' || brand.plan === selectedPlan;
+    return matchesSearch && matchesPlan;
+  });
+
   if (loading) return (
-    <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+      <div className="h-12 w-12 rounded-full border-3 border-t-transparent animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+      <p className="animate-pulse text-xs font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+        Cargando Mission Control
+      </p>
     </div>
   );
 
   if (error) return (
-    <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444' }}>
-      <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-      </svg>
-      {error}
+    <div className="rounded-3xl border border-rose-500/20 bg-rose-500/5 p-6">
+      <div className="flex items-center gap-3">
+        <XCircle className="h-5 w-5 text-rose-500" />
+        <p className="text-sm font-medium text-rose-500">{error}</p>
+      </div>
     </div>
   );
 
@@ -89,229 +123,532 @@ export default function AdminDashboardPage() {
   const brandsByPlan = global?.brandsByPlan || { BASIC: 0, PRO: 0, TRIAL: 0 };
   const landingStats = global?.landingStats || { active: 0, suspended: 0, inactive: 0 };
 
-  const topCards = [
-    { label: 'Total marcas', value: global?.totalBrands || 0, icon: <Users className="w-4 h-4" />, accent: '#3b82f6' },
-    { label: 'Productos activos', value: global?.totalProducts || 0, icon: <Package className="w-4 h-4" />, accent: '#10b981' },
-    { label: 'Generaciones totales', value: global?.totalGenerations || 0, icon: <ImageIcon className="w-4 h-4" />, accent: '#8b5cf6' },
-    { label: 'Generaciones este mes', value: global?.generationsThisMonth || 0, icon: <BarChart2 className="w-4 h-4" />, accent: '#FF5C3A' },
-    { label: 'Trials activos', value: conversion?.inTrial || 0, icon: <BarChart2 className="w-4 h-4" />, accent: '#f59e0b' },
-    { label: 'Trials pagados', value: conversion?.paidTrials || 0, icon: <CreditCard className="w-4 h-4" />, accent: '#f97316' },
-    { label: 'Trial -> Basic', value: conversion?.trialToBasic || 0, icon: <TrendingUp className="w-4 h-4" />, accent: '#0ea5e9' },
-    { label: 'Trial -> Pro', value: conversion?.trialToPro || 0, icon: <TrendingUp className="w-4 h-4" />, accent: '#22c55e' },
-    { label: 'Trial -> Enterprise', value: conversion?.trialToEnterprise || 0, icon: <Building2 className="w-4 h-4" />, accent: '#6366f1' },
-    { label: 'Convertidas a pago', value: conversion?.converted || 0, icon: <UserCheck className="w-4 h-4" />, accent: '#14b8a6' },
-    { label: 'Tasa de conversión', value: `${conversion?.conversionRate || 0}%`, icon: <TrendingUp className="w-4 h-4" />, accent: '#6366f1' },
-    { label: 'Tasa de éxito IA', value: `${Math.round(global?.successRate || 0)}%`, icon: <TrendingUp className="w-4 h-4" />, accent: '#ec4899' },
-  ];
-
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Dashboard</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Métricas globales y seguimiento de conversiones</p>
-      </div>
-
-      {/* ALERTAS CRÍTICAS */}
-      {(alerts.expiring > 0 || alerts.failed > 0) && (
-        <div className="space-y-2">
-          {alerts.expiring > 0 && (
-            <a href="/admin/subscriptions?filter=expiring" className="flex items-center gap-3 p-4 rounded-xl transition-all hover:scale-[1.01]" style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)' }}>
-              <Clock className="w-5 h-5 text-amber-500" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-amber-500">{alerts.expiring} suscripción{alerts.expiring > 1 ? 'es' : ''} vence{alerts.expiring === 1 ? '' : 'n'} en los próximos 7 días</p>
-                <p className="text-xs text-amber-500/70">Requiere atención antes de que venzan</p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-amber-500" />
-            </a>
-          )}
-          {alerts.failed > 0 && (
-            <a href="/admin/payments?filter=failed" className="flex items-center gap-3 p-4 rounded-xl transition-all hover:scale-[1.01]" style={{ backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)' }}>
-              <XCircle className="w-5 h-5 text-red-500" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-red-500">{alerts.failed} pago{alerts.failed > 1 ? 's' : ''} fallido{alerts.failed > 1 ? '' : 's'}</p>
-                <p className="text-xs text-red-500/70">Revisar y contactar a los clientes afectados</p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-red-500" />
-            </a>
-          )}
+    <div className="mx-auto max-w-[1400px] space-y-8 px-4 pb-20 md:px-0">
+      {/* Hero Section - Account Status Style */}
+      <motion.section
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-[2.2rem] border border-[#FF5C3A]/20 bg-[linear-gradient(135deg,rgba(255,92,58,0.08),var(--bg-card)_28%,var(--bg-card)_100%)] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.1)] md:p-10"
+      >
+        <div className="absolute right-0 top-0 h-36 w-36 rounded-full bg-[#FF5C3A]/10 blur-3xl" />
+        
+        <div className="relative flex flex-wrap items-center gap-3 mb-6">
+          <span className="rounded-full border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">
+            Mission Control
+          </span>
+          <span className="rounded-full border border-[var(--border-color)] bg-[var(--bg-input)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em]" style={{ color: 'var(--text-primary)' }}>
+            {global.totalBrands} marcas activas
+          </span>
         </div>
-      )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {topCards.map(c => (
-          <div key={c.label} className="rounded-[1.5rem] p-5 transition-all duration-200" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: '3px solid #FF5C3A' }}>
-            <div className="flex items-start justify-between mb-3">
-              <p className="text-xs leading-snug pr-2" style={{ color: 'var(--text-secondary)' }}>{c.label}</p>
-              <div className="flex-shrink-0 mt-0.5" style={{ color: c.accent }}>{c.icon}</div>
+        <div className="grid gap-8 lg:grid-cols-2">
+          {/* Quick Stats */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <StatCard
+                icon={<Users className="h-5 w-5" />}
+                label="Total Marcas"
+                value={global.totalBrands}
+                accent="#3b82f6"
+              />
+              <StatCard
+                icon={<Package className="h-5 w-5" />}
+                label="Productos"
+                value={global.totalProducts}
+                accent="#10b981"
+              />
+              <StatCard
+                icon={<ImageIcon className="h-5 w-5" />}
+                label="Generaciones"
+                value={global.totalGenerations}
+                accent="#8b5cf6"
+              />
+              <StatCard
+                icon={<Activity className="h-5 w-5" />}
+                label="Éxito IA"
+                value={`${Math.round(global.successRate)}%`}
+                accent="#FF5C3A"
+              />
             </div>
-            <p className="text-2xl font-bold font-jakarta" style={{ color: 'var(--text-primary)' }}>{c.value}</p>
-          </div>
-        ))}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          <h2 className="font-jakarta font-bold text-sm mb-5" style={{ color: 'var(--text-primary)' }}>Distribución por plan</h2>
+            {/* Alerts */}
+            {(alerts.expiring > 0 || alerts.failed > 0) && (
+              <div className="space-y-2">
+                {alerts.expiring > 0 && (
+                  <AlertCard
+                    href="/admin/subscriptions?filter=expiring"
+                    icon={<Clock className="h-5 w-5" />}
+                    title={`${alerts.expiring} suscripción${alerts.expiring > 1 ? 'es' : ''} por vencer`}
+                    subtitle="Próximos 7 días"
+                    color="#f59e0b"
+                  />
+                )}
+                {alerts.failed > 0 && (
+                  <AlertCard
+                    href="/admin/payments?filter=failed"
+                    icon={<XCircle className="h-5 w-5" />}
+                    title={`${alerts.failed} pago${alerts.failed > 1 ? 's' : ''} fallido${alerts.failed > 1 ? 's' : ''}`}
+                    subtitle="Requieren atención"
+                    color="#ef4444"
+                  />
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Conversion Chart */}
+          <div className="rounded-[1.8rem] border border-[var(--border-color)] bg-[var(--bg-input)]/40 p-6 backdrop-blur-sm">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em]" style={{ color: 'var(--text-muted)' }}>
+                  Conversiones
+                </p>
+                <h3 className="mt-1 text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                  Trial → Plan pago
+                </h3>
+              </div>
+              <div className="text-right">
+                <p className="text-3xl font-black" style={{ color: '#FF5C3A' }}>{conversion.conversionRate}%</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>tasa conversión</p>
+              </div>
+            </div>
+
+            {conversionsByMonth.length === 0 || conversionsByMonth.every(m => m.count === 0) ? (
+              <div className="flex h-24 items-center justify-center">
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sin conversiones registradas</p>
+              </div>
+            ) : (
+              <div className="flex items-end gap-2 h-28">
+                {conversionsByMonth.map((m) => {
+                  const heightPct = (m.count / maxCount) * 100;
+                  return (
+                    <div key={m.month} className="flex-1 flex flex-col items-center gap-2">
+                      <div className="relative w-full rounded-t-lg overflow-hidden" style={{ height: '70px', backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)' }}>
+                        <div
+                          className="absolute bottom-0 left-0 right-0 rounded-t-lg transition-all duration-700"
+                          style={{
+                            height: `${heightPct}%`,
+                            backgroundColor: '#FF5C3A',
+                            opacity: heightPct > 0 ? 1 : 0,
+                          }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-bold uppercase" style={{ color: 'var(--text-muted)' }}>
+                        {formatMonth(m.month)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.section>
+
+      {/* Brands Section - Main Focus */}
+      <motion.section
+        initial={{ opacity: 0, y: 22 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+      >
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.24em]" style={{ color: 'var(--text-muted)' }}>
+              Gestión rápida
+            </p>
+            <h2 className="mt-1 text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              Marcas activas
+            </h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                placeholder="Buscar marca..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-11 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] pl-10 pr-4 text-sm outline-none transition-colors focus:border-[#FF5C3A]/50"
+                style={{ color: 'var(--text-primary)' }}
+              />
+            </div>
+            <select
+              value={selectedPlan}
+              onChange={(e) => setSelectedPlan(e.target.value)}
+              className="h-11 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 text-sm outline-none transition-colors focus:border-[#FF5C3A]/50"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              <option value="all">Todos los planes</option>
+              <option value="PRO">Pro</option>
+              <option value="TRIAL">Trial</option>
+              <option value="BASIC">Basic</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Brands Grid */}
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <AnimatePresence mode="popLayout">
+            {filteredBrands.slice(0, 9).map((brand) => (
+              <BrandCard key={brand.id} brand={brand} />
+            ))}
+          </AnimatePresence>
+          
+          {/* Add New Card */}
+          <motion.div
+            layout
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex min-h-[180px] cursor-pointer items-center justify-center rounded-[1.8rem] border-2 border-dashed border-[var(--border-color)] transition-all hover:border-[#FF5C3A]/50 hover:bg-[#FF5C3A]/5"
+          >
+            <a href="/admin/brands" className="flex flex-col items-center gap-3 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FF5C3A]/10">
+                <Plus className="h-6 w-6 text-[#FF5C3A]" />
+              </div>
+              <div>
+                <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Añadir marca</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Crear nueva cuenta</p>
+              </div>
+            </a>
+          </motion.div>
+        </div>
+
+        {filteredBrands.length > 9 && (
+          <div className="mt-6 text-center">
+            <a
+              href="/admin/brands"
+              className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-6 py-3 text-sm font-bold transition-all hover:border-[#FF5C3A]/30 hover:text-[#FF5C3A]"
+              style={{ color: 'var(--text-primary)' }}
+            >
+              Ver todas las {filteredBrands.length} marcas
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+        )}
+      </motion.section>
+
+      {/* Bottom Grid */}
+      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+        {/* Plan Distribution */}
+        <motion.section
+          initial={{ opacity: 0, y: 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+          className="rounded-[2rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-xl md:p-8"
+        >
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.24em]" style={{ color: 'var(--text-muted)' }}>
+                Distribución
+              </p>
+              <h3 className="mt-1 text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                Planes activos
+              </h3>
+            </div>
+          </div>
+
           <div className="space-y-4">
             {[
-              { label: 'Plan Basic', count: brandsByPlan.BASIC || 0, color: '#64748b' },
               { label: 'Plan Pro', count: brandsByPlan.PRO || 0, color: '#FF5C3A' },
-              { label: 'Plan Trial', count: brandsByPlan.TRIAL || 0, color: '#f59e0b' },
+              { label: 'Plan Trial', count: brandsByPlan.TRIAL || 0, color: '#6366f1' },
+              { label: 'Plan Basic', count: brandsByPlan.BASIC || 0, color: '#64748b' },
             ].map(p => {
-              const total = global?.totalBrands || 0;
+              const total = global.totalBrands;
               const pct = total > 0 ? Math.round((p.count / total) * 100) : 0;
               return (
-                <div key={p.label}>
-                  <div className="flex justify-between text-xs mb-2">
-                    <span style={{ color: 'var(--text-secondary)' }}>{p.label}</span>
-                    <span className="font-semibold tabular-nums" style={{ color: 'var(--text-primary)' }}>
-                      {p.count} <span style={{ color: 'var(--text-muted)' }}>({pct}%)</span>
-                    </span>
+                <div key={p.label} className="flex items-center gap-4">
+                  <div className="w-24 text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>{p.label}</div>
+                  <div className="flex-1 h-3 overflow-hidden rounded-full" style={{ backgroundColor: 'var(--bg-input)' }}>
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: p.color }}
+                    />
                   </div>
-                  <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-color)' }}>
-                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: p.color }} />
+                  <div className="w-16 text-right">
+                    <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{p.count}</span>
+                    <span className="ml-1 text-xs" style={{ color: 'var(--text-muted)' }}>({pct}%)</span>
                   </div>
                 </div>
               );
             })}
-            <div className="pt-4 mt-2" style={{ borderTop: '1px solid var(--border-color)' }}>
-              <div className="flex justify-between text-xs">
-                <span style={{ color: 'var(--text-secondary)' }}>Tasa de conversión</span>
-                <span className="font-bold tabular-nums" style={{ color: '#FF5C3A' }}>{conversion?.conversionRate || 0}%</span>
+          </div>
+
+          {/* Mini-landings */}
+          <div className="mt-8 grid grid-cols-3 gap-4">
+            <MiniStat icon={<Globe className="h-4 w-4" />} value={landingStats.active} label="Activas" color="#10b981" />
+            <MiniStat icon={<PauseCircle className="h-4 w-4" />} value={landingStats.suspended} label="Suspendidas" color="#f59e0b" />
+            <MiniStat icon={<MinusCircle className="h-4 w-4" />} value={landingStats.inactive} label="Inactivas" color="#64748b" />
+          </div>
+        </motion.section>
+
+        {/* Recent Activity */}
+        <motion.section
+          initial={{ opacity: 0, y: 22 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.16 }}
+          className="space-y-6"
+        >
+          <div className="rounded-[2rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-6 shadow-xl">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em]" style={{ color: 'var(--text-muted)' }}>
+                  Actividad reciente
+                </p>
+                <h3 className="mt-1 text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                  Últimos pagos
+                </h3>
               </div>
+              <a href="/admin/payments" className="text-xs font-bold uppercase tracking-wider text-[#FF5C3A] transition-all hover:opacity-80">
+                Ver todos <ExternalLink className="ml-1 inline h-3 w-3" />
+              </a>
+            </div>
+
+            <div className="space-y-3">
+              {recentPayments.length === 0 ? (
+                <p className="py-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>Sin pagos recientes</p>
+              ) : (
+                recentPayments.slice(0, 4).map((p: any) => (
+                  <div key={p.id} className="flex items-center justify-between rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] p-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{
+                          backgroundColor: p.status === 'completed' ? '#22c55e' : p.status === 'failed' ? '#ef4444' : '#f59e0b'
+                        }}
+                      />
+                      <div>
+                        <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                          {p.brands?.name || p.brandName || '—'}
+                        </p>
+                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                          {p.payment_method || p.paymentMethod || '—'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                        ${(p.amount_cop || p.amount || 0).toLocaleString('es-CO')}
+                      </p>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {formatDate(p.created_at || p.payment_date)}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
-        </div>
 
-        <div className="lg:col-span-2 rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          <h2 className="font-jakarta font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Conversiones por mes</h2>
-          <p className="text-xs mb-5 mt-0.5" style={{ color: 'var(--text-secondary)' }}>Cambios desde trial a planes superiores</p>
-          <div className="flex items-end gap-2 h-36">
-            {conversionsByMonth.map(m => {
-              const heightPct = (m.count / maxCount) * 100;
-              return (
-                <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
-                  <span className="text-xs font-semibold tabular-nums" style={{ color: 'var(--text-primary)', minHeight: '1rem' }}>
-                    {m.count > 0 ? m.count : ''}
-                  </span>
-                  <div className="w-full rounded-t relative" style={{ height: '100px', backgroundColor: 'var(--border-color)' }}>
-                    <div className="absolute bottom-0 left-0 right-0 rounded-t transition-all duration-700" style={{ height: `${heightPct}%`, backgroundColor: '#FF5C3A', opacity: heightPct > 0 ? 1 : 0 }} />
-                  </div>
-                  <span className="text-[10px] whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{formatMonth(m.month)}</span>
-                </div>
-              );
-            })}
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <QuickStat
+              icon={<TrendingUp className="h-5 w-5" />}
+              label="Trial → Pro"
+              value={conversion.trialToPro}
+              color="#22c55e"
+            />
+            <QuickStat
+              icon={<UserCheck className="h-5 w-5" />}
+              label="Convertidas"
+              value={conversion.converted}
+              color="#14b8a6"
+            />
+            <QuickStat
+              icon={<CreditCard className="h-5 w-5" />}
+              label="Trials activos"
+              value={conversion.inTrial}
+              color="#f59e0b"
+            />
+            <QuickStat
+              icon={<Target className="h-5 w-5" />}
+              label="Este mes"
+              value={global.generationsThisMonth}
+              color="#8b5cf6"
+            />
           </div>
-          {(conversionsByMonth.length === 0 || conversionsByMonth.every(m => m.count === 0)) && (
-            <p className="text-center text-xs mt-3" style={{ color: 'var(--text-muted)' }}>Sin conversiones en los últimos 6 meses</p>
-          )}
-        </div>
+        </motion.section>
       </div>
 
-      {landingStats && (
-        <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          <h2 className="font-jakarta font-bold tracking-tight text-sm mb-4" style={{ color: 'var(--text-primary)' }}>Mini-landings</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              { label: 'Activas', value: landingStats.active || 0, icon: <Globe className="w-4 h-4" />, accent: '#10b981' },
-              { label: 'Suspendidas', value: landingStats.suspended || 0, icon: <PauseCircle className="w-4 h-4" />, accent: '#f59e0b' },
-              { label: 'Sin activar', value: landingStats.inactive || 0, icon: <MinusCircle className="w-4 h-4" />, accent: '#64748b' },
-            ].map(c => (
-              <div key={c.label} className="rounded-lg p-4 flex items-center gap-3" style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-color)', borderLeft: `3px solid ${c.accent}` }}>
-                <div style={{ color: c.accent }}>{c.icon}</div>
-                <div>
-                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{c.label}</p>
-                  <p className="text-xl font-bold font-jakarta tabular-nums" style={{ color: 'var(--text-primary)' }}>{c.value}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="rounded-[2rem] overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-        <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--border-color)' }}>
-          <h2 className="font-jakarta font-bold tracking-tight text-sm" style={{ color: 'var(--text-primary)' }}>Detalle mensual de conversiones</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr style={{ backgroundColor: 'var(--bg-base)' }}>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Mes</th>
-                <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>Conversiones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[...conversionsByMonth].reverse().map((m) => (
-                <tr key={m.month} style={{ borderTop: '1px solid var(--border-color)' }}>
-                  <td className="px-5 py-3 capitalize" style={{ color: 'var(--text-secondary)' }}>{formatMonth(m.month)}</td>
-                  <td className="px-5 py-3 text-right font-semibold tabular-nums" style={{ color: (m.count || 0) > 0 ? '#FF5C3A' : 'var(--text-muted)' }}>{m.count || 0}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* ACTIVIDAD RECIENTE */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-jakarta font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Últimos pagos</h2>
-            <a href="/admin/payments" className="text-xs text-[#FF5C3A] hover:underline flex items-center gap-1">
-              Ver todos <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
-          <div className="space-y-3">
-            {recentPayments.length > 0 ? recentPayments.slice(0, 5).map((p: any) => (
-              <div key={p.id} className="flex items-center justify-between py-2" style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${p.status === 'completed' ? 'bg-emerald-500' : p.status === 'failed' ? 'bg-red-500' : 'bg-amber-500'}`} />
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{p.brands?.name || p.brandName || '—'}</p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{p.payment_method || p.paymentMethod || '—'}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>${(p.amount_cop || p.amount || 0).toLocaleString('es-CO')}</p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{new Date(p.created_at || p.payment_date).toLocaleDateString('es-CO')}</p>
-                </div>
-              </div>
-            )) : (
-              <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>Sin pagos recientes</p>
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-jakarta font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Últimas marcas</h2>
-            <a href="/admin/brands" className="text-xs text-[#FF5C3A] hover:underline flex items-center gap-1">
-              Ver todas <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
-          <div className="space-y-3">
-            {recentBrands.length > 0 ? recentBrands.slice(0, 5).map((b: any) => (
-              <a href={`/admin/brands/${b.id}`} key={b.id} className="flex items-center justify-between py-2 hover:bg-[var(--bg-hover)] rounded-lg px-2 -mx-2 transition-colors" style={{ borderBottom: '1px solid var(--border-color)' }}>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#FF5C3A]/10 flex items-center justify-center">
-                    <span className="text-xs font-bold text-[#FF5C3A]">{(b.name || 'M').charAt(0).toUpperCase()}</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{b.name}</p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{b.email}</p>
-                  </div>
-                </div>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${b.plan === 'PRO' ? 'bg-[#FF5C3A]/10 text-[#FF5C3A]' : b.plan === 'TRIAL' ? 'bg-indigo-500/10 text-indigo-500' : 'bg-gray-500/10 text-gray-400'}`}>
-                  {b.plan}
-                </span>
-              </a>
-            )) : (
-              <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>Sin marcas registradas</p>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Footer Actions */}
+      <motion.section
+        initial={{ opacity: 0, y: 22 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="grid gap-4 md:grid-cols-4"
+      >
+        <QuickActionCard
+          href="/admin/brands"
+          icon={<Users className="h-6 w-6" />}
+          title="Marcas"
+          description="Gestionar cuentas y configuraciones"
+        />
+        <QuickActionCard
+          href="/admin/subscriptions"
+          icon={<CreditCard className="h-6 w-6" />}
+          title="Suscripciones"
+          description="Planes y renovaciones"
+        />
+        <QuickActionCard
+          href="/admin/payments"
+          icon={<TrendingUp className="h-6 w-6" />}
+          title="Ingresos"
+          description="Historial de transacciones"
+        />
+        <QuickActionCard
+          href="/admin/analytics"
+          icon={<BarChart2 className="h-6 w-6" />}
+          title="Analytics"
+          description="Métricas y rendimiento"
+        />
+      </motion.section>
     </div>
+  );
+}
+
+function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string | number; accent: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-[1.6rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-5"
+    >
+      <div className="flex items-center justify-between">
+        <div style={{ color: accent }}>{icon}</div>
+      </div>
+      <p className="mt-3 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+        {label}
+      </p>
+      <p className="mt-1 text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
+        {value}
+      </p>
+    </motion.div>
+  );
+}
+
+function AlertCard({ href, icon, title, subtitle, color }: { href: string; icon: React.ReactNode; title: string; subtitle: string; color: string }) {
+  return (
+    <motion.a
+      href={href}
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="flex items-center gap-4 rounded-xl border p-4 transition-all hover:scale-[1.01]"
+      style={{ backgroundColor: `${color}10`, borderColor: `${color}30` }}
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: `${color}20`, color }}>
+        {icon}
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-bold" style={{ color }}>{title}</p>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{subtitle}</p>
+      </div>
+      <ChevronRight className="h-5 w-5" style={{ color }} />
+    </motion.a>
+  );
+}
+
+function BrandCard({ brand }: { brand: Brand }) {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className="group rounded-[1.8rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-all hover:border-[#FF5C3A]/30"
+    >
+      <div className="mb-4 flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-black"
+            style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}
+          >
+            {(brand.name || 'M').charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h4 className="font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>{brand.name}</h4>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{brand.email}</p>
+          </div>
+        </div>
+        <BrutalBadge variant={brand.plan === 'PRO' ? 'pro' : brand.plan === 'TRIAL' ? 'trial' : 'basic'} size="sm">
+          {brand.plan}
+        </BrutalBadge>
+      </div>
+
+      <div className="mb-4 flex items-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+        <span className="flex items-center gap-1">
+          <Package className="h-3.5 w-3.5" />
+          {brand.products_count || 0} productos
+        </span>
+        <span className="flex items-center gap-1">
+          <ImageIcon className="h-3.5 w-3.5" />
+          {brand.generations_count || 0} gen.
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <a
+          href={`/admin/brands/${brand.id}`}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] py-2.5 text-xs font-bold transition-all hover:border-[#FF5C3A]/30 hover:text-[#FF5C3A]"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          <Eye className="h-3.5 w-3.5" />
+          Ver
+        </a>
+        <a
+          href={`/admin/brands/${brand.id}?edit=true`}
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] transition-all hover:border-[#FF5C3A]/30"
+        >
+          <Pencil className="h-3.5 w-3.5" style={{ color: 'var(--text-muted)' }} />
+        </a>
+      </div>
+    </motion.div>
+  );
+}
+
+function MiniStat({ icon, value, label, color }: { icon: React.ReactNode; value: number; label: string; color: string }) {
+  return (
+    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] p-4 text-center">
+      <div className="flex justify-center mb-2" style={{ color }}>{icon}</div>
+      <p className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>{value}</p>
+      <p className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{label}</p>
+    </div>
+  );
+}
+
+function QuickStat({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number; color: string }) {
+  return (
+    <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] p-4">
+      <div className="flex items-center gap-2 mb-2" style={{ color }}>
+        {icon}
+        <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+          {label}
+        </span>
+      </div>
+      <p className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{value}</p>
+    </div>
+  );
+}
+
+function QuickActionCard({ href, icon, title, description }: { href: string; icon: React.ReactNode; title: string; description: string }) {
+  return (
+    <motion.a
+      href={href}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02 }}
+      className="flex items-center gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-all hover:border-[#FF5C3A]/30"
+    >
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FF5C3A]/10 text-[#FF5C3A]">
+        {icon}
+      </div>
+      <div>
+        <h4 className="font-bold" style={{ color: 'var(--text-primary)' }}>{title}</h4>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{description}</p>
+      </div>
+      <ArrowRight className="ml-auto h-5 w-5 shrink-0" style={{ color: 'var(--text-muted)' }} />
+    </motion.a>
   );
 }

@@ -10,6 +10,7 @@ import {
   Sparkles,
   Users,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
 
 interface GlobalStats {
@@ -139,22 +140,36 @@ export default function AdminAnalyticsPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-8"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+      >
         <h1 className="text-2xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
           Analítica global
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
           Volumen real de uso, rendimiento de generaciones y distribución operativa del ecosistema.
         </p>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+        className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"
+      >
         <StatCard title="Marcas" value={stats.totalBrands} icon={<Users className="h-5 w-5" />} description="Cuentas registradas en el sistema" />
         <StatCard title="Generaciones del mes" value={stats.generationsThisMonth} icon={<Sparkles className="h-5 w-5" />} description="Actividad acumulada del mes en curso" />
         <StatCard title="Tasa de éxito" value={`${stats.successRate.toFixed(1)}%`} icon={<CheckCircle2 className="h-5 w-5" />} description={`${stats.successfulGenerations.toLocaleString('es-CO')} generaciones exitosas`} />
         <StatCard title="Productos activos" value={stats.totalProducts} icon={<Package className="h-5 w-5" />} description="Catálogo activo disponible para generación" />
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.7fr_1fr]">
         <section
@@ -285,7 +300,7 @@ export default function AdminAnalyticsPage() {
             ))}
           </div>
         </section>
-      </div>
+        </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
         <div className="flex items-center gap-2">
@@ -294,6 +309,6 @@ export default function AdminAnalyticsPage() {
         </div>
         <span>Fuente: `/api/admin/stats`</span>
       </div>
-    </div>
+    </motion.div>
   );
 }

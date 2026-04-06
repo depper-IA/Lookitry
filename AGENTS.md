@@ -4,6 +4,80 @@
 
 ---
 
+## Sistema de Agentes y Skills
+
+Ver `.claude/SKILL.md` para el índice completo del ecosistema de agentes y skills.
+
+### Equipo de Agentes Lookitry
+
+El equipo de agentes opera bajo el orchestration de **Sammy** (via Telegram/OpenCode). Cada agente especializado tiene responsabilidades definidas:
+
+| Agente | Archivo | Responsabilidad | Modelo Principal | Fallback | Subagentes |
+|--------|---------|-----------------|------------------|---------|------------|
+| **Sammy** | `.opencode/agents/sammy.md` | Orquestador - recibe tareas y delega | MiniMax | DeepSeek Coder | GROQ |
+| **WebWizard** | `.opencode/agents/webwizard.md` | Frontend + UX, widget, landing | MiniMax | DeepSeek Coder | GROQ |
+| **DevGuardian** | `.opencode/agents/devguardian.md` | Calidad + Seguridad | MiniMax | DeepSeek Coder | GROQ |
+| **DataAlchemist** | `.opencode/agents/dataalchemist.md` | DB + IA + n8n | MiniMax | DeepSeek Coder | GROQ |
+| **GrowthPilot** | `.opencode/agents/growthpilot.md` | CRM + Marketing + Leads | MiniMax | DeepSeek Coder | GROQ |
+| **ArchitectAI** | `.opencode/agents/architectai.md` | Infra + DevOps | MiniMax | DeepSeek Coder | GROQ |
+
+**Modelos gratuitos:**
+- `minimax-coding-plan/MiniMax-M2.7` — Principal
+- `deepseek/deepseek-coder-33b-instruct` — Fallback (DeepSeek Coder)
+- `groq/llama-3.3-70b-instruct` — Subagentes (tareas simples, rápido)
+
+### Cómo Invocar Agentes
+
+```
+@Sammy [tarea] — Procesar tarea y delegar al agente correcto
+@WebWizard [tarea] — Frontend directo
+@DevGuardian [tarea] — Seguridad directo
+@DataAlchemist [tarea] — Datos/IA directo
+@GrowthPilot [tarea] — Marketing directo
+@ArchitectAI [tarea] — Infraestructura directo
+```
+
+### Protocolo de Comunicación
+
+Cuando un agente necesita que otro haga algo:
+
+```
+DELEGAR → [NombreAgente]
+TAREA: descripción clara de lo que se necesita
+CONTEXTO: datos relevantes (brandId, plan, ambiente, etc.)
+URGENCIA: crítico | normal | mejora futura
+DEPENDENCIA: si este agente debe esperar el resultado
+```
+
+### Bundles (Agentes Compuestos)
+
+| Bundle | Propsito | Archivo |
+|--------|---------|---------|
+| `@essentials` | **Default** — cualquier desarrollo | `.claude/agents/essentials.md` |
+| `@web-wizard` | Frontend y UI | `.claude/agents/web-wizard.md` |
+| `@security-engineer` | Seguridad | `.claude/agents/security-engineer.md` |
+
+### Skills Clave
+
+| Skill | Cuando Usar |
+|-------|-------------|
+| `@brainstorming` | Siempre antes de implementar |
+| `@verification-before-completion` | Antes de claim completion |
+| `@security-auditor` | Tasks de seguridad/auth |
+
+### Workflows
+
+- **Simple:** `@brainstorming` → codear → `@verification-before-completion`
+- **Multi-task:** `@brainstorming` → plan → `@subagent-driven-development`
+- **Seguridad:** `@security-engineer` bundle o invocar `@security-auditor` directamente
+
+### Documentación
+
+- [`.claude/WORKFLOW.md`](.claude/WORKFLOW.md) — Guía de flujos y verificación
+- [`.claude/bundles.md`](.claude/bundles.md) — Detalle de bundles
+
+---
+
 ## Reglas de Git y Deploy
 
 - **NO hacer commits, push ni deploy** sin autorización explícita del usuario
@@ -17,9 +91,10 @@
 
 ## Documentación Obligatoria
 
-- Tras cualquier cambio de código, documentar en `CHANGELOG_GEMINI.md` (fecha, descripción, archivos, motivo)
+- Tras cualquier cambio de código, documentar en `CHANGELOG.md` (fecha, descripción, archivos, motivo)
 - Al iniciar tarea, leer `pendientes_por_hacer.md` si existe
 - Si se deja deuda técnica, registrarla en `pendientes_por_hacer.md`
+- Archivar CHANGELOG.md cuando supere 500 líneas o 30 días → `CHANGELOG_ARCHIVE_YYYY_MM.md`
 
 ---
 
@@ -124,8 +199,10 @@ Antes de cualquier operación de terminal:
 
 ## Changelog
 
-Después de cada cambio, registrar en `CHANGELOG_GEMINI.md`:
+Después de cada cambio, registrar en `CHANGELOG.md`:
 - Fecha
 - Descripción del cambio
 - Archivos modificados
 - Motivo o contexto
+
+**Regla de archivo:** Si CHANGELOG.md supera 500 líneas o 30 días, renombrar a `CHANGELOG_ARCHIVE_YYYY_MM.md` y crear uno nuevo vacío.

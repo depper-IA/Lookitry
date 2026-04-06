@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { BookOpen, ArrowRight, AlertTriangle, CreditCard, Zap, Shield, Users, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Playbook {
   id: string;
@@ -131,7 +132,12 @@ export default function AdminPlaybooksPage() {
   const selected = playbooks.find(p => p.id === selectedId) || null;
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       <div>
         <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Playbooks Operativos</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Guías paso a paso para los casos operativos más frecuentes</p>
@@ -199,6 +205,6 @@ export default function AdminPlaybooksPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

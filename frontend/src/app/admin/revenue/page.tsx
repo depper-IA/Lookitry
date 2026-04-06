@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { formatCurrency } from '@/utils/currency';
+import { motion } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -720,11 +721,20 @@ export default function RevenuePage() {
 
   if (!stats) return null;
 
-  return (
-    <div className="space-y-6">
-
+return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="flex items-center justify-between flex-wrap gap-3"
+      >
         <div>
           <h1 className="text-2xl font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Ingresos y ROI</h1>
           <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>Estadísticas financieras, metas y proyecciones</p>
@@ -740,10 +750,15 @@ export default function RevenuePage() {
           </svg>
           Actualizar
         </button>
-      </div>
+      </motion.div>
 
       {/* Pestañas */}
-      <div className="overflow-x-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+        className="overflow-x-auto"
+      >
         <div className="flex gap-4 p-1.5 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] w-fit">
           {([
             ['ingresos', 'Ingresos'],
@@ -763,7 +778,7 @@ export default function RevenuePage() {
             </button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Contenido */}
       {tab === 'ingresos' && (
@@ -797,7 +812,28 @@ export default function RevenuePage() {
           onSaveTrm={() => handleSave('meta', { ...metaEdit, trm_referencia: trmEdit, trm_auto: trmAutoEdit } as unknown as Record<string, unknown>)}
         />
       )}
+      {tab === 'config' && (
+        <TabConfig
+          costs={costsEdit}
+          meta={metaEdit}
+          trm={trmEdit}
+          trmAuto={trmAutoEdit}
+          trmLive={trmLive}
+          saving={saving}
+          saved={saved}
+          onCostsChange={setCostsEdit}
+          onMetaChange={setMetaEdit}
+          onTrmChange={setTrmEdit}
+          onTrmAutoChange={v => {
+            setTrmAutoEdit(v);
+            setMetaEdit(prev => ({ ...prev, trm_auto: v }));
+          }}
+          onSaveCosts={() => handleSave('costs', costsEdit as unknown as Record<string, unknown>)}
+          onSaveMeta={() => handleSave('meta', { ...metaEdit, trm_referencia: trmEdit, trm_auto: trmAutoEdit } as unknown as Record<string, unknown>)}
+          onSaveTrm={() => handleSave('meta', { ...metaEdit, trm_referencia: trmEdit, trm_auto: trmAutoEdit } as unknown as Record<string, unknown>)}
+        />
+      )}
 
-    </div>
+    </motion.div>
   );
 }

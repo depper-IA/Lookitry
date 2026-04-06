@@ -76,7 +76,9 @@ Si necesitas ajustar el tamaño, añade este CSS en la sección:
 
 ---
 
-## Método 3: Botón Flotante
+## Método 3: Botón Flotante (Legacy)
+
+> **Nota:** Este método usa iframe como fallback. Para integraciones nuevas, se recomienda usar el **Método 1: Script Incrustado** que ofrece mejor rendimiento y adaptabilidad.
 
 Si prefieres un botón que abra el probador en un modal:
 
@@ -121,6 +123,8 @@ En `theme.liquid`, antes de `</body>`:
 ```
 
 Reemplaza `tu-marca` por tu slug real.
+
+**Este método iframe es legacy.** Si el script principal (`widget.js`) funciona en tu entorno, úsalo en su lugar para una mejor experiencia.
 
 ---
 

@@ -12,6 +12,7 @@ import {
   triggerBlogPulse,
   updateBlogSettings,
 } from '@/services/blog.service';
+import { motion } from 'framer-motion';
 
 const OPENROUTER_ARTICLE_MODELS = [
   { value: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
@@ -523,7 +524,12 @@ export default function AdminBlogPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="space-y-6"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-jakarta font-black uppercase italic tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>
@@ -990,6 +996,6 @@ export default function AdminBlogPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

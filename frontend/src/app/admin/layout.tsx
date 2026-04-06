@@ -161,15 +161,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Logo Area */}
       <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} px-6 h-[80px] flex-shrink-0 bg-[#0a0a0a]`}>
         <Link href="/admin/dashboard" className="flex items-center gap-3 group">
-          <div className="relative h-11 w-11 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 group-hover:border-[#FF5C3A]/50 transition-all duration-500 shadow-lg shrink-0 overflow-hidden">
-            <Image
-              src="/logo.svg"
-              alt="Lookitry"
-              width={28}
-              height={28}
-              className="object-contain"
-              priority
-            />
+          <div className="relative h-11 w-11 shrink-0">
+            <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" priority />
+            <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
           </div>
           {!isCollapsed && (
             <motion.div 

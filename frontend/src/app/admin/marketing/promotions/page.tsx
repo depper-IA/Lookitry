@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -396,7 +397,12 @@ export default function PromotionsPage() {
   // ── Render ──
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="max-w-5xl mx-auto space-y-6"
+    >
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -510,91 +516,6 @@ export default function PromotionsPage() {
           )}
         </div>
       )}
-
-      {/* ── TAB: Cupones ── */}
-      {tab === 'coupons' && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <button onClick={() => { setShowCouponForm(true); setEditingCoupon(null); }}
-              className="flex items-center gap-2 px-4 py-2 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white transition-all hover:opacity-90 shadow-lg shadow-[#FF5C3A]/20"
-              style={{ backgroundColor: '#10b981' }}
-            >
-              <IconPlus />Nuevo cupón
-            </button>
-          </div>
-
-          {showCouponForm && (
-            <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-              <p className="font-jakarta font-bold tracking-tight text-[15px] mb-4" style={{ color: 'var(--text-primary)' }}>
-                {editingCoupon ? 'Editar cupón' : 'Nuevo cupón'}
-              </p>
-              <CouponForm
-                initial={editingCoupon
-                  ? { code: editingCoupon.code, discount_type: editingCoupon.discount_type, discount_value: editingCoupon.discount_value, max_uses: editingCoupon.max_uses, expires_at: editingCoupon.expires_at, plan_ids: editingCoupon.plan_ids, active: editingCoupon.active }
-                  : EMPTY_COUPON}
-                onSave={handleSaveCoupon}
-                onCancel={() => { setShowCouponForm(false); setEditingCoupon(null); }}
-                saving={savingCoupon}
-              />
-            </div>
-          )}
-
-          {loading ? (
-            <div className="flex justify-center py-12" style={{ color: 'var(--text-muted)' }}><IconSpinner /></div>
-          ) : coupons.length === 0 ? (
-            <div className="text-center py-16 rounded-[2rem]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-              <p className="text-[13px]" style={{ color: 'var(--text-secondary)' }}>No hay cupones. Crea el primero.</p>
-            </div>
-          ) : (
-            <div className="rounded-[2rem] border overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-              <div className="overflow-x-auto overflow-y-hidden">
-                <table className="w-full text-[13px] min-w-[700px]">
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      {['Código', 'Descuento', 'Usos', 'Expira', 'Planes', 'Activo', ''].map(h => (
-                        <th key={h} className="text-left px-4 py-3 font-semibold text-[11px] uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {coupons.map(c => (
-                      <tr key={c.id} style={{ borderBottom: '1px solid var(--border-color)' }}
-                        className="transition-colors hover:bg-[var(--bg-hover)]"
-                      >
-                        <td className="px-4 py-3 font-mono font-bold" style={{ color: '#10b981' }}>{c.code}</td>
-                        <td className="px-4 py-3" style={{ color: 'var(--text-primary)' }}>
-                          {c.discount_type === 'pct' ? `${c.discount_value}%` : `$${c.discount_value.toLocaleString('es-CO')}`}
-                        </td>
-                        <td className="px-4 py-3" style={{ color: 'var(--text-secondary)' }}>
-                          {c.uses_count}{c.max_uses ? `/${c.max_uses}` : ''}
-                        </td>
-                        <td className="px-4 py-3 text-[12px]" style={{ color: 'var(--text-secondary)' }}>{formatDate(c.expires_at)}</td>
-                        <td className="px-4 py-3 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
-                          {c.plan_ids.length ? c.plan_ids.join(', ') : 'Todos'}
-                        </td>
-                        <td className="px-4 py-3">
-                           <Toggle checked={c.active} onChange={async () => {
-                            await fetch(`${API_URL}/api/admin/coupons/${c.id}`, { method: 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ active: !c.active }) });
-                            await loadCoupons();
-                          }} />
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => { setEditingCoupon(c); setShowCouponForm(true); }} className="p-1.5 rounded-lg transition-colors text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                            ><IconEdit /></button>
-                            <button onClick={() => handleDeleteCoupon(c.id)} className="p-1.5 rounded-lg transition-colors text-[var(--text-secondary)] hover:text-red-500"
-                            ><IconTrash /></button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+    </motion.div>
   );
 }

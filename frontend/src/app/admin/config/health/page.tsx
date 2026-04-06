@@ -1,8 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { CreditMetric, CreditProviderCard } from '@/components/admin/config/CreditComponents';
+import { motion } from 'framer-motion';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -122,7 +123,7 @@ export default function ConfigHealthPage() {
   }, [loadHealth, loadSystemStats, loadCredits]);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: 'easeOut' }} className="max-w-4xl mx-auto space-y-6">
       <div>
         <div className="flex items-center gap-3">
           <Link href="/admin/config" className="text-sm" style={{ color: 'var(--text-muted)' }}>Configuración</Link>
@@ -194,6 +195,6 @@ export default function ConfigHealthPage() {
           <CreditProviderCard provider={replicateCredits} loading={loadingCredits} onRefresh={loadCredits} fallbackProvider="replicate" />
         </div>
       </Section>
-    </div>
+    </motion.div>
   );
 }

@@ -75,7 +75,7 @@
 ### 3.2 Para Clientes Finales
 - Widget Público: `/pruebalo/[brandSlug]`.
 - Mini-Landing: `/sitio/[brandSlug]`.
-- Widget Embebido: `/embed/[brandSlug]` (iframe para plugins).
+- Widget Embebido: `/embed/[brandSlug]` (legacy — solo para integraciones específicas que el cliente requiera; método principal es `/widget.js`).
 - Marca directa: `/marca/[brandSlug]`.
 
 ### 3.3 Para Administradores

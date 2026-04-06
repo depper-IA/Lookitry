@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
 
@@ -34,74 +35,137 @@ export default function AdminForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-[#0a0a0a]">
-      <div className="w-full max-w-md">
-        <div className="bg-[#141414] border border-[#2a2a2a] rounded-xl p-7 md:p-8">
-          {sent ? (
-            <div className="text-center py-4">
-              <div className="flex justify-center mb-4 text-[#FF5C3A]">
-                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h1 className="font-jakarta font-bold text-[22px] text-white mb-2">Revisa tu correo</h1>
-              <p className="text-[13px] text-[#777] mb-6">
-                Si el administrador existe, recibirá un enlace para crear una nueva contraseña. El enlace expira en 1 hora.
-              </p>
-              <Link href="/admin/login" className="text-[13px] text-[#FF5C3A] hover:text-[#e84d2c] transition-colors">
-                Volver al login admin
-              </Link>
-            </div>
-          ) : (
-            <>
-              <div className="inline-flex items-center gap-1.5 bg-[#1a1a1a] border border-[#2a2a2a] text-[#555] text-[11px] font-medium tracking-widest uppercase px-2.5 py-1 rounded-full mb-5">
-                Panel de administración
-              </div>
-              <h1 className="font-jakarta font-bold text-[22px] text-white mb-1">Recuperar acceso admin</h1>
-              <p className="text-[13px] text-[#777] mb-7">
-                Enviaremos un enlace seguro para restablecer la contraseña del administrador.
-              </p>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor: '#0a0a0a' }}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="w-full max-w-md"
+      >
+        <div
+          className="relative overflow-hidden rounded-[2rem] border p-8 md:p-10"
+          style={{
+            backgroundColor: 'var(--bg-card)',
+            borderColor: 'var(--border-color)',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.15)',
+          }}
+        >
+          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[#FF5C3A]/5 blur-3xl pointer-events-none" />
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <div className="bg-[#1f0f0f] border border-[#5a1a1a] text-[#ff6b6b] text-[13px] px-4 py-3 rounded-lg">
-                    {error}
-                  </div>
-                )}
-
-                <div>
-                  <label htmlFor="email" className="block text-[13px] font-medium text-[#888] mb-1.5">
-                    Email del administrador
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="block w-full px-3 py-2.5 bg-[#0f0f0f] border border-[#2a2a2a] rounded-lg text-white text-[13px] placeholder-[#333] focus:outline-none focus:border-[#FF5C3A] transition-colors"
-                    placeholder="admin@lookitry.com"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 bg-[#FF5C3A] hover:bg-[#e84d2c] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-medium rounded-lg transition-colors"
+          <div className="relative">
+            {sent ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-4"
+              >
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                  className="flex justify-center mb-5"
                 >
-                  {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
-                </button>
-              </form>
-
-              <p className="text-center text-[13px] text-[#555] mt-6">
-                <Link href="/admin/login" className="text-[#FF5C3A] hover:text-[#e84d2c] transition-colors">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl" style={{ backgroundColor: 'rgba(255,92,58,0.1)' }}>
+                    <svg className="w-8 h-8" fill="none" stroke="#FF5C3A" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                </motion.div>
+                <h1 className="font-jakarta font-bold text-[22px] mb-2" style={{ color: 'var(--text-primary)' }}>Revisa tu correo</h1>
+                <p className="text-[13px] mb-6" style={{ color: 'var(--text-muted)' }}>
+                  Si el administrador existe, recibirá un enlace para crear una nueva contraseña. El enlace expira en 1 hora.
+                </p>
+                <Link href="/admin/login" className="text-[13px] transition-colors hover:text-[#FF5C3A]" style={{ color: '#FF5C3A' }}>
                   Volver al login admin
                 </Link>
-              </p>
-            </>
-          )}
+              </motion.div>
+            ) : (
+              <>
+                <div className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 mb-6 text-[10px] font-black uppercase tracking-[0.2em]"
+                  style={{
+                    backgroundColor: 'rgba(255,92,58,0.08)',
+                    borderColor: 'rgba(255,92,58,0.2)',
+                    color: '#FF5C3A',
+                  }}
+                >
+                  Panel de administración
+                </div>
+                <motion.h1
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="font-jakarta font-bold text-[22px] mb-1"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  Recuperar acceso admin
+                </motion.h1>
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-[13px] mb-7"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  Enviaremos un enlace seguro para restablecer la contraseña del administrador.
+                </motion.p>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="border px-4 py-3 rounded-xl text-[13px]"
+                      style={{
+                        backgroundColor: 'rgba(239,68,68,0.08)',
+                        borderColor: 'rgba(239,68,68,0.2)',
+                        color: '#ef4444',
+                      }}
+                    >
+                      {error}
+                    </motion.div>
+                  )}
+
+                  <div>
+                    <label htmlFor="email" className="block text-[13px] font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                      Email del administrador
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      className="block w-full px-4 py-3 rounded-xl border text-[13px] outline-none transition-colors"
+                      style={{
+                        backgroundColor: 'var(--bg-input)',
+                        borderColor: 'var(--border-color)',
+                        color: 'var(--text-primary)',
+                      }}
+                      placeholder="admin@lookitry.com"
+                    />
+                  </div>
+
+                  <motion.button
+                    type="submit"
+                    disabled={loading}
+                    whileHover={{ scale: loading ? 1 : 1.01 }}
+                    whileTap={{ scale: loading ? 1 : 0.98 }}
+                    className="w-full py-3 rounded-xl text-[13px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: '#FF5C3A', color: 'white' }}
+                  >
+                    {loading ? 'Enviando...' : 'Enviar enlace de recuperación'}
+                  </motion.button>
+                </form>
+
+                <p className="text-center text-[13px] mt-6" style={{ color: 'var(--text-muted)' }}>
+                  <Link href="/admin/login" className="transition-colors hover:text-[#FF5C3A]" style={{ color: '#FF5C3A' }}>
+                    Volver al login admin
+                  </Link>
+                </p>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
