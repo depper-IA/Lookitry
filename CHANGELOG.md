@@ -1,5 +1,15 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-06] - Fix soporte imágenes en Sammy
+
+### Bug fix
+
+- TypeScript error `file_mime_type` no existía en tipo `Audio`
+- Solucionado con type assertion `(ctx.message.audio as any).file_mime_type`
+- Build ahora compila correctamente
+
+---
+
 ## [2026-04-06] - Streaming en Sammy
 
 ### Sammy streaming de respuestas
