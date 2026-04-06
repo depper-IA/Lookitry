@@ -123,6 +123,9 @@ export function EmbedSection() {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedKey(key);
       setTimeout(() => setCopiedKey(null), 2500);
+
+      // Marcar paso 4 de onboarding como completo al copiar embed code
+      window.dispatchEvent(new CustomEvent('onboarding:step-complete', { detail: { step: 4 } }));
     });
   };
 
