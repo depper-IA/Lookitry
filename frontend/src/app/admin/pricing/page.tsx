@@ -112,8 +112,8 @@ function SectionShell({
         <div className="min-w-0">
           {eyebrow && (
             <div className="mb-4 flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-[#FF5C3A]" />
-              <span className="text-[11px] font-black uppercase tracking-[0.28em] text-[#FF5C3A]">
+              <div className="h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
+              <span className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--accent)]">
                 {eyebrow}
               </span>
             </div>
@@ -131,7 +131,7 @@ function SectionShell({
           )}
         </div>
         {icon && (
-          <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 text-[#FF5C3A] shadow-inner">
+          <div className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] border border-[var(--accent)]/20 bg-[var(--accent)]/10 text-[var(--accent)] shadow-inner">
             {icon}
           </div>
         )}
@@ -163,7 +163,7 @@ function InfoStat({
       </div>
       <div
         className="mt-2.5 text-xl font-black tracking-tight"
-        style={{ color: accent ? '#FF5C3A' : 'var(--text-primary)' }}
+        style={{ color: accent ? 'var(--accent)' : 'var(--text-primary)' }}
       >
         {value}
       </div>
@@ -185,7 +185,7 @@ function MiniStat({
       <span className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
         {label}
       </span>
-      <span className={`text-sm font-black tracking-tight ${accent ? 'text-[#FF5C3A]' : ''}`} style={{ color: accent ? '#FF5C3A' : 'var(--text-primary)' }}>
+      <span className={`text-sm font-black tracking-tight ${accent ? 'text-[var(--accent)]' : ''}`} style={{ color: accent ? 'var(--accent)' : 'var(--text-primary)' }}>
         {value}
       </span>
     </div>
@@ -217,7 +217,7 @@ function Field({
         {label}
       </label>
       <div
-        className="flex items-center gap-2 rounded-[1.15rem] border px-4 py-3 transition-all focus-within:ring-2 focus-within:ring-[#FF5C3A]/25"
+        className="flex items-center gap-2 rounded-[1.15rem] border px-4 py-3 transition-all focus-within:ring-2 focus-within:ring-[var(--accent)]/25"
         style={{
           background: 'var(--bg-base)',
           borderColor: disabled ? 'rgba(255,255,255,0.04)' : 'var(--border-color)',
@@ -250,7 +250,7 @@ function FeaturesList({ features, onChange }: { features: string[]; onChange: (f
         rows={6}
         value={features.join('\n')}
         onChange={e => onChange(e.target.value.split('\n'))}
-        className="w-full rounded-[1.35rem] border px-4 py-4 text-sm font-medium leading-relaxed outline-none transition-all focus:ring-2 focus:ring-[#FF5C3A]/25"
+        className="w-full rounded-[1.35rem] border px-4 py-4 text-sm font-medium leading-relaxed outline-none transition-all focus:ring-2 focus:ring-[var(--accent)]/25"
         style={{
           background: 'var(--bg-base)',
           borderColor: 'var(--border-color)',
@@ -286,7 +286,7 @@ function SaveBtn({
       disabled={isSaving}
       className="rounded-2xl px-5 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition-all shadow-lg"
       style={{
-        background: isSaved ? '#10b981' : '#FF5C3A',
+        background: isSaved ? '#10b981' : 'var(--accent)',
         boxShadow: isSaved ? '0 18px 40px rgba(16,185,129,0.18)' : '0 18px 40px rgba(255,92,58,0.22)',
         opacity: isSaving ? 0.72 : 1,
         cursor: isSaving ? 'not-allowed' : 'pointer',
@@ -319,16 +319,16 @@ function TabButton({
         background: active 
           ? 'linear-gradient(90deg, rgba(255,92,58,0.15) 0%, rgba(255,92,58,0.02) 100%)' 
           : 'var(--bg-card)',
-        color: active ? '#FF5C3A' : 'var(--text-secondary)',
+        color: active ? 'var(--accent)' : 'var(--text-secondary)',
         borderColor: active ? 'rgba(255,92,58,0.3)' : 'var(--border-color)',
         boxShadow: active ? '0 10px 30px -10px rgba(255,92,58,0.15)' : 'none',
       }}
     >
       <div className="flex items-center gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 ${active ? 'bg-[#FF5C3A] text-white' : 'bg-base border-border text-muted-foreground group-hover:bg-accent'}`}
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-all duration-300 ${active ? 'bg-[var(--accent)] text-white' : 'bg-base border-border text-muted-foreground group-hover:bg-accent'}`}
           style={{
-            borderColor: active ? '#FF5C3A' : 'var(--border-color)',
-            background: active ? '#FF5C3A' : 'var(--bg-base)',
+            borderColor: active ? 'var(--accent)' : 'var(--border-color)',
+            background: active ? 'var(--accent)' : 'var(--bg-base)',
           }}
         >
           <Icon className="h-5 w-5" />
@@ -338,7 +338,7 @@ function TabButton({
           <span className="text-[10px] font-bold opacity-60 uppercase tracking-widest">{active ? 'Seleccionado' : 'Configurar'}</span>
         </div>
       </div>
-      <div className={`h-2 w-2 rounded-full transition-all duration-500 ${active ? 'bg-[#FF5C3A] scale-125 shadow-[0_0_10px_#FF5C3A]' : 'bg-transparent scale-0'}`} />
+      <div className={`h-2 w-2 rounded-full transition-all duration-500 ${active ? 'bg-[var(--accent)] scale-125 shadow-[0_0_10px_var(--accent)]' : 'bg-transparent scale-0'}`} />
     </button>
   );
 }
@@ -539,7 +539,7 @@ export default function PricingAdminPage() {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#FF5C3A] border-t-transparent" />
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
           <p className="text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: 'var(--text-muted)' }}>
             Cargando pricing
           </p>
@@ -568,7 +568,7 @@ export default function PricingAdminPage() {
       {/* Header Minimalista con Estadísticas */}
       <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b pb-8" style={{ borderColor: 'var(--border-color)' }}>
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-[#FF5C3A]">
+          <div className="flex items-center gap-2 text-[var(--accent)]">
             <TrendingUp className="h-4 w-4" />
             <span className="text-[10px] font-black uppercase tracking-[0.25em]">Pricing Dashboard</span>
           </div>
@@ -587,7 +587,7 @@ export default function PricingAdminPage() {
           <div className="h-10 w-[1px] bg-border hidden md:block" />
           <button
             onClick={load}
-            className="group inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-[#FF5C3A] transition-all hover:bg-[#FF5C3A]/5 active:scale-95"
+            className="group inline-flex items-center gap-2 rounded-2xl px-5 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-[var(--accent)] transition-all hover:bg-[var(--accent)]/5 active:scale-95"
             style={{
               background: 'rgba(255,92,58,0.06)',
               border: '1px solid rgba(255,92,58,0.15)',
@@ -599,9 +599,9 @@ export default function PricingAdminPage() {
         </div>
       </div>
 
-      <div className="flex flex-col-reverse gap-10 xl:flex-row-reverse xl:items-start">
+      <div className="flex flex-col-reverse gap-10 2xl:flex-row-reverse 2xl:items-start">
         {/* Navegación Vertical a la Derecha */}
-        <div className="w-full shrink-0 space-y-6 xl:w-80">
+        <div className="w-full shrink-0 space-y-6 2xl:w-80">
           <div className="sticky top-10 space-y-6">
             <div className="space-y-2 px-1">
               <h3 className="text-[9px] font-black uppercase tracking-[0.3em]" style={{ color: 'var(--text-muted)' }}>
@@ -616,7 +616,7 @@ export default function PricingAdminPage() {
 
             {/* Hint Box */}
             <div className="rounded-3xl border p-6" style={{ background: 'rgba(255,92,58,0.03)', borderColor: 'rgba(255,92,58,0.1)' }}>
-              <TrendingUp className="mb-3 h-5 w-5 text-[#FF5C3A]" />
+              <TrendingUp className="mb-3 h-5 w-5 text-[var(--accent)]" />
               <p className="text-xs font-bold leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 Recuerda que los cambios en precios afectan directamente a la landing y el checkout público.
               </p>

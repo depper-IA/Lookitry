@@ -21,6 +21,17 @@ services:
       - "traefik.http.routers.vt-frontend.entrypoints=websecure"
       - "traefik.http.routers.vt-frontend.tls.certresolver=mytlschallenge"
       - "traefik.http.services.vt-frontend.loadbalancer.server.port=3000"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   proxy:

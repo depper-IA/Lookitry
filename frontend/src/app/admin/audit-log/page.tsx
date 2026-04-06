@@ -67,7 +67,7 @@ export default function AdminAuditLogPage() {
 
   if (loading && !data) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+      <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
     </div>
   );
 
@@ -97,7 +97,7 @@ export default function AdminAuditLogPage() {
             value={searchEmail}
             onChange={e => { setSearchEmail(e.target.value); setPage(0); }}
             placeholder="Buscar por email de admin..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
             style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
@@ -108,7 +108,7 @@ export default function AdminAuditLogPage() {
             value={searchAction}
             onChange={e => { setSearchAction(e.target.value); setPage(0); }}
             placeholder="Filtrar por acción..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/40"
             style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
           />
         </div>
@@ -141,7 +141,7 @@ export default function AdminAuditLogPage() {
                       <td className="px-5 py-3 font-mono text-xs whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{formatDate(entry.created_at)}</td>
                       <td className="px-5 py-3 font-medium" style={{ color: 'var(--text-primary)' }}>{entry.admin_email}</td>
                       <td className="px-5 py-3">
-                        <span className="text-xs font-medium px-2 py-1 rounded-lg" style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}>
+                        <span className="text-xs font-medium px-2 py-1 rounded-lg" style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: 'var(--accent)' }}>
                           {formatAction(entry.action)}
                         </span>
                       </td>

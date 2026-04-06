@@ -9,6 +9,7 @@ services:
       - /root/virtual-tryon/backend/.env.production
     environment:
       - ENTERPRISE_SYNC_TOKEN=lookitry_enterprise_sync_2026_03_27_WilkieSecure
+      - NODE_OPTIONS=--max-old-space-size=512
     networks:
       - proxy
     labels:
@@ -17,6 +18,17 @@ services:
       - "traefik.http.routers.vt-backend.entrypoints=websecure"
       - "traefik.http.routers.vt-backend.tls.certresolver=mytlschallenge"
       - "traefik.http.services.vt-backend.loadbalancer.server.port=3001"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   proxy:

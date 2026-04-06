@@ -9,6 +9,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
     config,
     brandSlug,
     primaryColor,
+    secondaryColor,
     buttonText,
     welcomeMessage,
     selfiePreview,
@@ -26,7 +27,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
   } = props;
 
   return (
-    <div className="font-sans min-h-screen bg-[#050505] text-white">
+    <div className="font-sans min-h-screen text-white" style={{ backgroundColor: secondaryColor || '#050505' }}>
       {/* Ambient background */}
       <div className="pointer-events-none fixed inset-0 opacity-100">
         <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full blur-3xl" style={{ background: `${primaryColor}25` }} />
@@ -194,7 +195,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
                     onClick={onGenerate}
                     disabled={!selectedProduct}
                     className="w-full py-3.5 md:py-4 rounded-2xl font-black uppercase tracking-widest text-[11px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ backgroundColor: primaryColor, color: '#0C0A09' }}
+                    style={{ backgroundColor: primaryColor, color: '#ffffff' }}
                   >
                     {selectedProduct
                       ? (generatedProducts.has(selectedProduct.id) ? 'Ver resultado' : buttonText)
@@ -211,8 +212,8 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
           {/* Right: Context card */}
           <div className="md:col-span-5">
             <div className="rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-xl p-5 md:p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
-              <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/50">Consejos PRO</p>
-              <ul className="mt-3 space-y-3 text-sm text-white/70">
+              <p className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: `${primaryColor}80` }}>Consejos PRO</p>
+              <ul className="mt-3 space-y-3 text-sm" style={{ color: `${primaryColor}bb` }}>
                 <li className="flex items-start gap-3">
                   <span className="mt-1 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
                   Foto frontal con buena luz mejora el resultado.
@@ -229,7 +230,7 @@ export function TemplateBoldProStudio(props: TryOnTemplateProps) {
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-black/40 p-4">
                 <p className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/50">Plan</p>
-                <p className="mt-1 text-sm font-black tracking-tight text-white">
+                <p className="mt-1 text-sm font-black tracking-tight" style={{ color: primaryColor }}>
                   {config.brand.plan || 'BASIC'}
                 </p>
                 <p className="mt-1 text-xs text-white/50">

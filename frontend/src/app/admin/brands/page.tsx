@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useConfirm } from '@/components/admin/ConfirmDialog';
-import { CheckCircle, XCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { CheckCircle, XCircle, Search, Plus, Users, Package, Image as ImageIcon, TrendingUp, Globe, PauseCircle, ChevronRight, ExternalLink, Eye, Pencil, Trash2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { adminApi } from '@/services/adminApi';
-import { BrandDetailsModal } from '@/components/admin/brands/BrandDetailsModal';
 import { BrandFilters } from '@/components/admin/brands/BrandFilters';
 import { BrandTable } from '@/components/admin/brands/BrandTable';
 
@@ -30,7 +29,6 @@ export interface Brand {
     generationsCount: number;
     generationsThisMonth: number;
   };
-  // Additional properties previously accessed via `as any`
   has_landing_page?: boolean;
   internal_notes?: string;
   modal_title?: string;
@@ -48,7 +46,7 @@ interface Product {
 }
 
 type FilterPlan = 'all' | 'TRIAL' | 'BASIC' | 'PRO' | 'LANDING';
-type FilterTrial = 'all' | 'trial' | 'active' | 'suspended';
+type FilterStatus = 'all' | 'active' | 'suspended';
 
 // ── Toast helper ──────────────────────────────────────────────────────────────
 
@@ -62,6 +60,271 @@ function Toast({ message, type, onClose }: { message: string; type: 'success' | 
   );
 }
 
+// ── Stat Card ─────────────────────────────────────────────────────────────────
+
+function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string | number; accent: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-[1.6rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-5"
+    >
+      <div className="flex items-center justify-between">
+        <div style={{ color: accent }}>{icon}</div>
+      </div>
+      <p className="mt-3 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+        {label}
+      </p>
+      <p className="mt-1 text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
+        {value}
+      </p>
+    </motion.div>
+  );
+}
+
+// ── Brand Card (para vista grid) ───────────────────────────────────────────────
+
+function BrandCard({ brand, onClick }: { brand: Brand; onClick: () => void }) {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      onClick={onClick}
+      className="group rounded-[1.8rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-all hover:border-[var(--accent)]/30 cursor-pointer"
+    >
+      <div className="mb-4 flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-black"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}
+          >
+            {(brand.name || 'M').charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h4 className="font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>{brand.name}</h4>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{brand.email}</p>
+          </div>
+        </div>
+        <span className="px-2 py-0.5 rounded-full text-xs font-semibold" style={{
+          backgroundColor: brand.plan === 'PRO' ? 'rgba(168,85,247,0.12)' : brand.plan === 'TRIAL' ? 'rgba(99,102,241,0.12)' : 'rgba(16,185,129,0.12)',
+          color: brand.plan === 'PRO' ? '#a855f7' : brand.plan === 'TRIAL' ? '#6366f1' : '#10b981'
+        }}>
+          {brand.plan}
+        </span>
+      </div>
+
+      <div className="mb-4 flex items-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+        <span className="flex items-center gap-1">
+          <Package className="h-3.5 w-3.5" />
+          {brand.stats.productsCount || 0} productos
+        </span>
+        <span className="flex items-center gap-1">
+          <ImageIcon className="h-3.5 w-3.5" />
+          {brand.stats.generationsCount || 0} gen.
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={(e) => { e.stopPropagation(); onClick(); }}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] py-2.5 text-xs font-bold transition-all hover:border-[var(--accent)]/30 hover:text-[var(--accent)]"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          <Eye className="h-3.5 w-3.5" />
+          Ver detalles
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+// ── Side Panel (reemplaza modal) ───────────────────────────────────────────────
+
+function BrandSidePanel({ brand, onClose, onToggleLanding, onSaveNotes, onOpenModalConfig, togglingLanding, savingNotes }: {
+  brand: Brand;
+  onClose: () => void;
+  onToggleLanding: (b: Brand) => void;
+  onSaveNotes: (b: Brand) => void;
+  onOpenModalConfig: (b: Brand) => void;
+  togglingLanding: boolean;
+  savingNotes: boolean;
+}) {
+  const [notes, setNotes] = useState(brand.internal_notes || '');
+
+  return (
+    <>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-black/40 z-40"
+      />
+
+      {/* Panel */}
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+        className="fixed right-0 top-0 bottom-0 w-full max-w-md z-50 overflow-y-auto"
+        style={{ backgroundColor: 'var(--bg-card)', borderLeft: '1px solid var(--border-color)' }}
+      >
+        <div className="p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div
+                className="flex h-12 w-12 items-center justify-center rounded-2xl text-xl font-black"
+                style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}
+              >
+                {(brand.name || 'M').charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h2 className="font-bold tracking-tight text-lg" style={{ color: 'var(--text-primary)' }}>{brand.name}</h2>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>/{brand.slug}</p>
+              </div>
+            </div>
+            <button onClick={onClose} style={{ color: 'var(--text-secondary)' }} className="p-2 hover:bg-[var(--bg-hover)] rounded-xl transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+
+          {/* Plan Badge */}
+          <div className="mb-6">
+            <span className="px-3 py-1 rounded-full text-sm font-semibold" style={{
+              backgroundColor: brand.plan === 'PRO' ? 'rgba(168,85,247,0.12)' : brand.plan === 'TRIAL' ? 'rgba(99,102,241,0.12)' : 'rgba(16,185,129,0.12)',
+              color: brand.plan === 'PRO' ? '#a855f7' : brand.plan === 'TRIAL' ? '#6366f1' : '#10b981'
+            }}>
+              {brand.plan}
+              {brand.plan === 'PRO' ? ' — $250.000/mes' : brand.plan === 'BASIC' ? ' — $150.000/mes' : ''}
+            </span>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <a href={`/admin/brands/${brand.id}`} className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] py-3 text-sm font-semibold transition-all hover:border-[var(--accent)]/30" style={{ color: 'var(--text-primary)' }}>
+              <Pencil className="h-4 w-4" />
+              Editar
+            </a>
+            <a href={`https://lookitry.com/embed/${brand.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] py-3 text-sm font-semibold transition-all hover:border-[var(--accent)]/30" style={{ color: 'var(--text-primary)' }}>
+              <ExternalLink className="h-4 w-4" />
+              Ver widget
+            </a>
+          </div>
+
+          {/* Info Grid */}
+          <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] p-4 mb-6 space-y-3">
+            <div className="flex justify-between">
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Email</span>
+              <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{brand.email}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Registro</span>
+              <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{new Date(brand.created_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Estado</span>
+              <span className="text-sm font-medium" style={{ 
+                color: brand.subscription_status === 'active' ? '#10b981' : 
+                       brand.subscription_status === 'expiring_soon' ? '#f59e0b' :
+                       brand.subscription_status === 'suspended' ? '#ef4444' : 'var(--text-muted)'
+              }}>
+                {brand.subscription_status === 'active' ? 'Activa' :
+                 brand.subscription_status === 'expiring_soon' ? 'Por vencer' :
+                 brand.subscription_status === 'suspended' ? 'Suspendida' : 'Sin suscripción'}
+              </span>
+            </div>
+            {brand.plan === 'TRIAL' && (
+              <div className="flex justify-between">
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Trial restante</span>
+                <span className="text-sm font-medium" style={{ color: '#6366f1' }}>{brand.trial_days_remaining ?? 0} días</span>
+              </div>
+            )}
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] p-3 text-center">
+              <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Productos</p>
+              <p className="text-xl font-bold" style={{ color: '#3b82f6' }}>{brand.stats.productsCount}</p>
+            </div>
+            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] p-3 text-center">
+              <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Generaciones</p>
+              <p className="text-xl font-bold" style={{ color: '#10b981' }}>{brand.stats.generationsCount}</p>
+            </div>
+            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] p-3 text-center">
+              <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>Este mes</p>
+              <p className="text-xl font-bold" style={{ color: 'var(--accent)' }}>{brand.stats.generationsThisMonth}</p>
+            </div>
+          </div>
+
+          {/* Mini-landing Toggle */}
+          <div className="rounded-xl border border-[var(--border-color)] p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4" style={{ color: brand.has_landing_page ? '#10b981' : 'var(--text-muted)' }} />
+                <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Mini-landing</span>
+              </div>
+              <button
+                onClick={() => onToggleLanding(brand)}
+                disabled={togglingLanding}
+                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50"
+                style={{ backgroundColor: brand.has_landing_page ? '#10b981' : 'var(--border-color)' }}
+              >
+                <span
+                  className="inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform"
+                  style={{ transform: brand.has_landing_page ? 'translateX(1.375rem)' : 'translateX(0.25rem)' }}
+                />
+              </button>
+            </div>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+              {brand.has_landing_page ? 'Página activa sin banners' : 'Muestra banner de activación'}
+            </p>
+          </div>
+
+          {/* Notes */}
+          <div className="rounded-xl border border-[var(--border-color)] p-4 mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Notas internas</span>
+              <button
+                onClick={() => onSaveNotes({ ...brand, internal_notes: notes })}
+                disabled={savingNotes}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                style={{ backgroundColor: 'var(--accent)', color: 'white' }}
+              >
+                {savingNotes ? 'Guardando...' : 'Guardar'}
+              </button>
+            </div>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="Añadir notas sobre esta marca..."
+              className="w-full px-3 py-2 rounded-xl text-sm resize-none"
+              style={{ backgroundColor: 'var(--bg-base)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
+              rows={3}
+            />
+          </div>
+
+          {/* Config Modal */}
+          <button
+            onClick={() => { onClose(); onOpenModalConfig(brand); }}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
+            style={{ backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b' }}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+            Configurar modal de activación
+          </button>
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function AdminBrandsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -69,9 +332,7 @@ export default function AdminBrandsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
-  const [showActivateModal, setShowActivateModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({ name: '', email: '', slug: '', password: '', plan: 'TRIAL', trial_days: '7', phone: '', contact_name: '' });
   const [creating, setCreating] = useState(false);
@@ -79,8 +340,6 @@ export default function AdminBrandsPage() {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [changingPlan, setChangingPlan] = useState<string | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<string | null>(null);
-  const [activating, setActivating] = useState(false);
-  const [activateForm, setActivateForm] = useState({ plan: 'BASIC', amount: '', payment_method: 'transferencia', notes: '' });
   const [togglingLanding, setTogglingLanding] = useState(false);
   const [showModalConfigModal, setShowModalConfigModal] = useState(false);
   const [modalConfigBrand, setModalConfigBrand] = useState<Brand | null>(null);
@@ -95,30 +354,25 @@ export default function AdminBrandsPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const showToast = (message: string, type: 'success' | 'error') => setToast({ message, type });
 
+  // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPlan, setFilterPlan] = useState<FilterPlan>('all');
-  const [filterTrial, setFilterTrial] = useState<FilterTrial>('all');
+  const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 12;
 
-  // Ordenamiento
-  const [sortField, setSortField] = useState<'name' | 'email' | 'plan' | 'status' | 'products' | 'generations'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-
-  // Selección masiva
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [bulkLoading, setBulkLoading] = useState(false);
-  const [confirmBulk, setConfirmBulk] = useState<'suspend' | 'reactivate' | 'delete' | null>(null);
-
-  // Precio dinámico del plan LANDING
+  // Stats
   const [landingPrice, setLandingPrice] = useState<number | null>(null);
+
+  // View mode
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
 
   useEffect(() => {
     fetchBrands();
     fetchLandingPrice();
   }, []);
-  useEffect(() => { applyFilters(); }, [brands, searchTerm, filterPlan, filterTrial, sortField, sortOrder]);
-  useEffect(() => { setCurrentPage(1); setSelected(new Set()); }, [searchTerm, filterPlan, filterTrial]);
+
+  useEffect(() => { applyFilters(); }, [brands, searchTerm, filterPlan, filterStatus]);
 
   const applyFilters = () => {
     let filtered = [...brands];
@@ -129,52 +383,11 @@ export default function AdminBrandsPage() {
         b.slug.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    if (filterPlan === 'TRIAL') filtered = filtered.filter(b => b.plan === 'TRIAL');
-    else if (filterPlan !== 'all') filtered = filtered.filter(b => b.plan === filterPlan);
-    if (filterTrial === 'trial') filtered = filtered.filter(b => b.plan === 'TRIAL');
-    else if (filterTrial === 'active') filtered = filtered.filter(b => b.subscription_status === 'active' || b.subscription_status === 'expiring_soon');
-    else if (filterTrial === 'suspended') filtered = filtered.filter(b => b.subscription_status === 'suspended' || b.subscription_status === 'expired');
-    
-    // Ordenamiento
-    filtered.sort((a, b) => {
-      let valA: any = '';
-      let valB: any = '';
-
-      if (sortField === 'name') {
-        valA = a.name.toLowerCase();
-        valB = b.name.toLowerCase();
-      } else if (sortField === 'email') {
-        valA = a.email.toLowerCase();
-        valB = b.email.toLowerCase();
-      } else if (sortField === 'plan') {
-        valA = a.plan;
-        valB = b.plan;
-      } else if (sortField === 'status') {
-        valA = a.subscription_status || '';
-        valB = b.subscription_status || '';
-      } else if (sortField === 'products') {
-        valA = a.stats.productsCount;
-        valB = b.stats.productsCount;
-      } else if (sortField === 'generations') {
-        valA = a.stats.generationsCount;
-        valB = b.stats.generationsCount;
-      }
-
-      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
-      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
+    if (filterPlan !== 'all') filtered = filtered.filter(b => b.plan === filterPlan);
+    if (filterStatus === 'active') filtered = filtered.filter(b => b.subscription_status === 'active' || b.subscription_status === 'expiring_soon');
+    if (filterStatus === 'suspended') filtered = filtered.filter(b => b.subscription_status === 'suspended' || b.subscription_status === 'expired');
 
     setFilteredBrands(filtered);
-  };
-
-  const toggleSort = (field: typeof sortField) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortOrder('asc');
-    }
   };
 
   const fetchBrands = async () => {
@@ -195,7 +408,7 @@ export default function AdminBrandsPage() {
     } catch { /* silencioso */ }
   };
 
-  const handleViewDetails = (brand: Brand) => { setSelectedBrand(brand); setShowDetailsModal(true); };
+  const handleViewDetails = (brand: Brand) => setSelectedBrand(brand);
 
   const handleViewProducts = async (brand: Brand) => {
     setSelectedBrand(brand); setShowProductsModal(true); setLoadingProducts(true); setProducts([]);
@@ -227,10 +440,10 @@ export default function AdminBrandsPage() {
     if (!selectedBrand) return;
     const ok = await confirm({
       title: 'Eliminar producto',
-      message: '¿Eliminar este producto permanentemente? Esta acción no se puede deshacer.',
+      message: '¿Eliminar este producto permanentemente?',
       confirmLabel: 'Eliminar',
       danger: true,
-      reason: 'Los productos eliminados no pueden recuperarse. Asegúrate de que el producto esté inactivo.',
+      reason: 'Los productos eliminados no pueden recuperarse.',
     });
     if (!ok) return;
     setDeletingProduct(productId);
@@ -239,9 +452,7 @@ export default function AdminBrandsPage() {
       setProducts(prev => prev.filter(p => p.id !== productId));
     } catch (err: any) {
       showToast(err.message || 'Error al eliminar producto', 'error');
-    } finally {
-      setDeletingProduct(null);
-    }
+    } finally { setDeletingProduct(null); }
   };
 
   const handleCreateBrand = async () => {
@@ -266,15 +477,7 @@ export default function AdminBrandsPage() {
       await fetchBrands();
     } catch (err: any) {
       showToast(err.message || 'Error al crear marca', 'error');
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleOpenActivate = (brand: Brand) => {
-    setSelectedBrand(brand);
-    setActivateForm({ plan: brand.plan || 'BASIC', amount: brand.plan === 'PRO' ? '250000' : '150000', payment_method: 'transferencia', notes: '' });
-    setShowActivateModal(true);
+    } finally { setCreating(false); }
   };
 
   const handleToggleLandingPage = async (brand: Brand) => {
@@ -288,9 +491,7 @@ export default function AdminBrandsPage() {
       }
     } catch (err: any) {
       showToast(err.message || 'Error al actualizar mini-landing', 'error');
-    } finally {
-      setTogglingLanding(false);
-    }
+    } finally { setTogglingLanding(false); }
   };
 
   const handleSaveNotes = async (brand: Brand) => {
@@ -298,23 +499,17 @@ export default function AdminBrandsPage() {
     try {
       await adminApi.patch(`/admin/brands/${brand.id}/notes`, { internal_notes: brand.internal_notes || '' });
       setBrands(prev => prev.map(b => b.id === brand.id ? { ...b, internal_notes: brand.internal_notes } : b));
-      showToast('Notas guardadas correctamente', 'success');
+      showToast('Notas guardadas', 'success');
     } catch (err: any) {
       showToast(err.message || 'Error al guardar notas', 'error');
-    } finally {
-      setSavingNotes(false);
-    }
+    } finally { setSavingNotes(false); }
   };
 
   const handleOpenModalConfig = (brand: Brand) => {
     setModalConfigBrand(brand);
     const feats = Array.isArray(brand.modal_features) ? [...brand.modal_features] : [];
     while (feats.length < 3) feats.push('');
-    setModalConfigForm({
-      modal_title: brand.modal_title || '',
-      modal_description: brand.modal_description || '',
-      modal_features: feats,
-    });
+    setModalConfigForm({ modal_title: brand.modal_title || '', modal_description: brand.modal_description || '', modal_features: feats });
     setShowModalConfigModal(true);
   };
 
@@ -325,230 +520,237 @@ export default function AdminBrandsPage() {
       await adminApi.patch(`/admin/brands/${modalConfigBrand.id}/modal-config`, {
         modal_title: modalConfigForm.modal_title || null,
         modal_description: modalConfigForm.modal_description || null,
-        modal_features: modalConfigForm.modal_features.filter(f => f.trim()).length > 0
-          ? modalConfigForm.modal_features.filter(f => f.trim())
-          : null,
+        modal_features: modalConfigForm.modal_features.filter(f => f.trim()).length > 0 ? modalConfigForm.modal_features.filter(f => f.trim()) : null,
       });
       setShowModalConfigModal(false);
     } catch (err: any) {
-      showToast(err.message || 'Error al guardar configuración del modal', 'error');
+      showToast(err.message || 'Error al guardar', 'error');
     } finally { setSavingModalConfig(false); }
-  };
-
-  const handleActivatePlan = async () => {
-    if (!selectedBrand) return;
-    setActivating(true);
-    try {
-      await adminApi.patch(`/admin/brands/${selectedBrand.id}/activate-plan`, {
-        plan: activateForm.plan,
-        amount: Number(activateForm.amount),
-        payment_method: activateForm.payment_method,
-        notes: activateForm.notes || 'Activación manual por administrador',
-      });
-      setShowActivateModal(false);
-      await fetchBrands();
-    } catch (err: any) {
-      showToast(err.message || 'Error al activar plan', 'error');
-    } finally { setActivating(false); }
   };
 
   const handleSendResetEmail = async (brand: Brand) => {
     setSendingReset(brand.id);
     try {
       await adminApi.post(`/admin/brands/${brand.id}/send-reset-email`);
-      setResetToast({ message: `Email de recuperación enviado a ${brand.email}`, type: 'success' });
+      setResetToast({ message: `Email enviado a ${brand.email}`, type: 'success' });
       setTimeout(() => setResetToast(null), 4000);
     } catch (err: any) {
-      setResetToast({ message: err.message || 'Error al enviar email', type: 'error' });
+      setResetToast({ message: err.message || 'Error', type: 'error' });
       setTimeout(() => setResetToast(null), 4000);
-    } finally {
-      setSendingReset(null);
-    }
-  };
-
-  // ── Selección masiva ──────────────────────────────────────────────────────
-  const toggleSelect = (id: string) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
-  const toggleSelectAll = () => {
-    const startIdx = (currentPage - 1) * itemsPerPage;
-    const pageIds = filteredBrands.slice(startIdx, startIdx + itemsPerPage).map(b => b.id);
-    if (selected.size === pageIds.length && pageIds.every(id => selected.has(id))) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(pageIds));
-    }
-  };
-
-  const handleBulkAction = async (action: 'suspend' | 'reactivate' | 'delete') => {
-    const actionLabels: Record<string, { title: string; message: string; danger: boolean }> = {
-      suspend: { title: 'Suspender marcas', message: `¿Suspender ${selected.size} marca(s)? Sus suscripciones quedarán inactivas.`, danger: false },
-      reactivate: { title: 'Reactivar marcas', message: `¿Reactivar ${selected.size} marca(s)? Sus suscripciones se restaurarán.`, danger: false },
-      delete: { title: 'Eliminar marcas', message: `¿Eliminar permanentemente ${selected.size} marca(s) y todos sus datos?`, danger: true },
-    };
-    const cfg = actionLabels[action];
-    const ok = await confirm({
-      title: cfg.title,
-      message: cfg.message,
-      confirmLabel: action === 'delete' ? 'Eliminar permanentemente' : action === 'suspend' ? 'Suspender' : 'Reactivar',
-      danger: cfg.danger,
-      reason: action === 'delete'
-        ? 'Esta acción elimina la marca, productos, generaciones y pagos. No se puede deshacer.'
-        : action === 'suspend'
-        ? 'Las marcas suspendidas perderán acceso hasta que se reactiven manualmente.'
-        : 'Las marcas reactivadas recuperarán su suscripción anterior.',
-    });
-    if (!ok) return;
-
-    setBulkLoading(true);
-    const ids = Array.from(selected);
-    let okCount = 0; let failCount = 0;
-
-    await Promise.all(ids.map(async id => {
-      try {
-        if (action === 'delete') {
-          await adminApi.delete(`/admin/brands/${id}`);
-        } else {
-          await adminApi.patch(`/admin/subscriptions/${id}/${action}`, {});
-        }
-        okCount++;
-      } catch { failCount++; }
-    }));
-
-    setBulkLoading(false);
-    setConfirmBulk(null);
-    setSelected(new Set());
-    await fetchBrands();
-    showToast(
-      failCount === 0
-        ? `${okCount} marca${okCount !== 1 ? 's' : ''} ${action === 'suspend' ? 'suspendida' : action === 'reactivate' ? 'reactivada' : 'eliminada'}${okCount !== 1 ? 's' : ''}`
-        : `${okCount} exitosa${okCount !== 1 ? 's' : ''}, ${failCount} con error`,
-      failCount === 0 ? 'success' : 'error'
-    );
+    } finally { setSendingReset(null); }
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center h-64">
-      <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
-      <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Cargando marcas...</div>
+    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
+      <div className="h-12 w-12 rounded-full border-3 border-t-transparent animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
+      <p className="animate-pulse text-xs font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Cargando marcas</p>
     </div>
   );
 
   if (error) return <div className="px-4 py-3 rounded-xl text-sm" style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#ef4444' }}>{error}</div>;
 
-  const trialCount = brands.filter(b => b.plan === 'TRIAL').length;
+  // Stats
+  const stats = {
+    total: brands.length,
+    trial: brands.filter(b => b.plan === 'TRIAL').length,
+    active: brands.filter(b => b.subscription_status === 'active' || b.subscription_status === 'expiring_soon').length,
+    suspended: brands.filter(b => b.subscription_status === 'suspended' || b.subscription_status === 'expired').length,
+  };
 
-return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="space-y-5"
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
+  const filterChips: { value: FilterPlan; label: string; count: number }[] = [
+    { value: 'all', label: 'Todos', count: brands.length },
+    { value: 'TRIAL', label: 'Trial', count: brands.filter(b => b.plan === 'TRIAL').length },
+    { value: 'BASIC', label: 'Basic', count: brands.filter(b => b.plan === 'BASIC').length },
+    { value: 'PRO', label: 'Pro', count: brands.filter(b => b.plan === 'PRO').length },
+    { value: 'LANDING', label: 'Landing', count: brands.filter(b => b.plan === 'LANDING').length },
+  ];
+
+  const statusChips: { value: FilterStatus; label: string; count: number }[] = [
+    { value: 'all', label: 'Todos', count: brands.length },
+    { value: 'active', label: 'Activas', count: brands.filter(b => b.subscription_status === 'active' || b.subscription_status === 'expiring_soon').length },
+    { value: 'suspended', label: 'Suspendidas', count: brands.filter(b => b.subscription_status === 'suspended' || b.subscription_status === 'expired').length },
+  ];
+
+  return (
+    <div className="mx-auto max-w-[1400px] space-y-6 px-4 pb-20">
+      {/* Hero Section */}
+      <motion.section
+        initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+        className="relative overflow-hidden rounded-[2rem] border p-6 shadow-[0_25px_60px_rgba(0,0,0,0.1)] md:p-8"
+        style={{ borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)', background: 'linear-gradient(135deg,color-mix(in_srgb,var(--accent)_8%,transparent),var(--bg-card)_28%,var(--bg-card)_100%)' }}
       >
-        <div>
-          <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Gestión de marcas</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-            Total: {brands.length} | Mostrando: {filteredBrands.length}
-            {trialCount > 0 && (
-              <span className="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}>
-                {trialCount} en período de prueba
-              </span>
-            )}
-          </p>
+        <div className="absolute right-0 top-0 h-36 w-36 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', filter: 'blur(60px)' }} />
+        <div className="relative">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <span className="rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em]" style={{ borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)', backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}>
+              Gestión
+            </span>
+            <span className="rounded-full border border-[var(--border-color)] bg-[var(--bg-input)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em]" style={{ color: 'var(--text-primary)' }}>
+              {brands.length} marcas
+            </span>
+          </div>
+          <h1 className="font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Marcas</h1>
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">{stats.active} activas · {stats.trial} en trial</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest text-white transition-all shadow-lg shadow-[#FF5C3A]/20 hover:scale-[1.01] active:scale-95 min-h-[40px]"
-          style={{ backgroundColor: '#FF5C3A' }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e04e2f')}
-          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#FF5C3A')}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Nueva Marca
-        </button>
-      </motion.div>
 
-      {/* Filtros */}
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+          <StatCard icon={<Users className="h-5 w-5" />} label="Total" value={stats.total} accent="#3b82f6" />
+          <StatCard icon={<Package className="h-5 w-5" />} label="Trial" value={stats.trial} accent="#6366f1" />
+          <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Activas" value={stats.active} accent="#10b981" />
+          <StatCard icon={<PauseCircle className="h-5 w-5" />} label="Suspendidas" value={stats.suspended} accent="#ef4444" />
+        </div>
+      </motion.section>
+
+      {/* Search & Filters */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.08 }}
+        className="rounded-[2rem] border p-5 space-y-4" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
       >
-        <BrandFilters
-          brands={brands}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          filterPlan={filterPlan}
-          onFilterPlanChange={setFilterPlan}
-          filterTrial={filterTrial}
-          onFilterTrialChange={setFilterTrial}
-          sortField={sortField}
-          onSortFieldChange={setSortField}
-          sortOrder={sortOrder}
-          onSortOrderChange={() => toggleSort(sortField)}
-          onShowCreate={() => setShowCreateModal(true)}
-        />
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Buscar por nombre, email o slug..."
+            className="w-full h-12 pl-10 pr-4 rounded-xl border text-sm outline-none transition-colors focus:border-[var(--accent)]/50"
+            style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+          />
+        </div>
+
+        {/* Filter Chips - Plan */}
+        <div className="flex flex-wrap gap-2">
+          {filterChips.map(chip => (
+            <button
+              key={chip.value}
+              onClick={() => setFilterPlan(chip.value)}
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border"
+              style={filterPlan === chip.value
+                ? { backgroundColor: 'var(--accent)', color: '#fff', borderColor: 'var(--accent)' }
+                : { backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }
+              }
+            >
+              {chip.label} ({chip.count})
+            </button>
+          ))}
+        </div>
+
+        {/* Filter Chips - Status */}
+        <div className="flex flex-wrap gap-2">
+          {statusChips.map(chip => (
+            <button
+              key={chip.value}
+              onClick={() => setFilterStatus(chip.value)}
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border"
+              style={filterStatus === chip.value
+                ? { backgroundColor: '#10b981', color: '#fff', borderColor: '#10b981' }
+                : { backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)', borderColor: 'var(--border-color)' }
+              }
+            >
+              {chip.label} ({chip.count})
+            </button>
+          ))}
+          <div className="flex-1" />
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white transition-all"
+            style={{ backgroundColor: 'var(--accent)' }}
+          >
+            <Plus className="h-4 w-4" />
+            Nueva marca
+          </button>
+        </div>
       </motion.div>
 
-      {/* Tabla */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.12 }}
-      >
-        <BrandTable
-          brands={filteredBrands}
-          selected={selected}
-          onToggleSelect={toggleSelect}
-          onToggleSelectAll={toggleSelectAll}
-          onSelectDetails={handleViewDetails}
-          onSelectProducts={handleViewProducts}
-          onSelectActivate={brand => brand.plan === 'TRIAL' ? handleOpenActivate(brand) : handleChangePlan(brand.id, brand.plan === 'BASIC' ? 'PRO' : 'BASIC')}
-          onSelectModalConfig={handleOpenModalConfig}
-          onSendReset={handleSendResetEmail}
-          sortField={sortField}
-          sortOrder={sortOrder}
-          onSortChange={setSortField}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-          landingPrice={landingPrice}
-        />
+      {/* Results Info */}
+      <div className="flex items-center justify-between">
+        <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+          Mostrando {filteredBrands.length} de {brands.length} marcas
+        </p>
+        <div className="flex gap-1">
+          <button
+            onClick={() => setViewMode('grid')}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+            style={viewMode === 'grid' ? { backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)' } : { color: 'var(--text-muted)' }}
+          >
+            Grid
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+            style={viewMode === 'table' ? { backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)' } : { color: 'var(--text-muted)' }}
+          >
+            Tabla
+          </button>
+        </div>
+      </div>
+
+      {/* Brands Grid/Table */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+        {viewMode === 'grid' ? (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <AnimatePresence mode="popLayout">
+              {filteredBrands.slice(0, 24).map(brand => (
+                <BrandCard key={brand.id} brand={brand} onClick={() => handleViewDetails(brand)} />
+              ))}
+            </AnimatePresence>
+            {filteredBrands.length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <Users className="mx-auto h-10 w-10 mb-3" style={{ color: 'var(--text-muted)' }} />
+                <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>No se encontraron marcas</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>Intenta ajustar los filtros</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <BrandTable
+            brands={filteredBrands}
+            selected={new Set()}
+            onToggleSelect={() => {}}
+            onToggleSelectAll={() => {}}
+            onSelectDetails={handleViewDetails}
+            onSelectProducts={handleViewProducts}
+            onSelectActivate={brand => handleChangePlan(brand.id, brand.plan === 'BASIC' ? 'PRO' : 'BASIC')}
+            onSelectModalConfig={handleOpenModalConfig}
+            onSendReset={handleSendResetEmail}
+            sortField="name"
+            sortOrder="asc"
+            onSortChange={() => {}}
+            currentPage={currentPage}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            landingPrice={landingPrice}
+          />
+        )}
       </motion.div>
 
-      {/* Modal Ver Detalles */}
-      {showDetailsModal && selectedBrand && (
-        <BrandDetailsModal
-          brand={selectedBrand}
-          onClose={() => setShowDetailsModal(false)}
-          onToggleLanding={handleToggleLandingPage}
-          onSaveNotes={handleSaveNotes}
-          onOpenModalConfig={handleOpenModalConfig}
-          togglingLanding={togglingLanding}
-          savingNotes={savingNotes}
-        />
-      )}
+      {/* Side Panel */}
+      <AnimatePresence>
+        {selectedBrand && (
+          <BrandSidePanel
+            brand={selectedBrand}
+            onClose={() => setSelectedBrand(null)}
+            onToggleLanding={handleToggleLandingPage}
+            onSaveNotes={handleSaveNotes}
+            onOpenModalConfig={handleOpenModalConfig}
+            togglingLanding={togglingLanding}
+            savingNotes={savingNotes}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Modal Ver Productos */}
       {showProductsModal && selectedBrand && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
-          <div className="rounded-[2rem] p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="rounded-[2rem] p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-5">
               <div>
-                <h2 className="font-jakarta font-bold tracking-tight text-xl" style={{ color: 'var(--text-primary)' }}>Productos de {selectedBrand.name}</h2>
+                <h2 className="font-bold tracking-tight text-xl" style={{ color: 'var(--text-primary)' }}>Productos de {selectedBrand.name}</h2>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Total: {products.length}</p>
               </div>
               <button onClick={() => setShowProductsModal(false)} style={{ color: 'var(--text-secondary)' }}>
@@ -557,7 +759,7 @@ return (
             </div>
             {loadingProducts ? (
               <div className="flex flex-col items-center justify-center py-12">
-                <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+                <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
                 <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Cargando productos...</div>
               </div>
             ) : products.length === 0 ? (
@@ -565,40 +767,28 @@ return (
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {products.map(product => (
-                  <div key={product.id} className="rounded-xl border p-4 transition-colors" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-base)' }}>
+                  <div key={product.id} className="rounded-xl border p-4" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-base)' }}>
                     {product.image_url && <img src={product.image_url} alt={product.name} className="w-full h-40 object-cover rounded-lg mb-3" />}
                     <h3 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{product.name}</h3>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{product.category}</p>
                     <div className="mt-2 flex items-center justify-between">
-                      <span className={`px-2 py-0.5 text-xs rounded-full font-medium`}
-                        style={product.is_active
-                          ? { backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }
-                          : { backgroundColor: 'var(--bg-hover)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }
-                        }>
+                      <span className="px-2 py-0.5 text-xs rounded-full font-medium"
+                        style={product.is_active ? { backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' } : { backgroundColor: 'var(--bg-hover)', color: 'var(--text-muted)', border: '1px solid var(--border-color)' }}>
                         {product.is_active ? 'Activo' : 'Inactivo'}
                       </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{new Date(product.created_at).toLocaleDateString('es-ES')}</span>
-                        {!product.is_active && (
-                          <button onClick={() => handleDeleteProduct(product.id)} disabled={deletingProduct === product.id}
-                            title="Eliminar producto inactivo" className="p-1 text-red-500 hover:bg-red-50 rounded transition-colors disabled:opacity-50">
-                            {deletingProduct === product.id ? (
-                              <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-red-500" />
-                            ) : (
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            )}
-                          </button>
-                        )}
-                      </div>
+                      {!product.is_active && (
+                        <button onClick={() => handleDeleteProduct(product.id)} disabled={deletingProduct === product.id}
+                          className="p-1 text-red-500 hover:bg-red-50 rounded disabled:opacity-50">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
             )}
             <div className="mt-6 flex justify-end">
-              <button onClick={() => setShowProductsModal(false)} className="px-4 py-2 rounded-lg text-sm transition-colors" style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>Cerrar</button>
+              <button onClick={() => setShowProductsModal(false)} className="px-4 py-2 rounded-lg text-sm" style={{ backgroundColor: 'var(--bg-hover)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>Cerrar</button>
             </div>
           </div>
         </div>
@@ -606,49 +796,46 @@ return (
 
       {/* Modal Crear Marca */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 transition-opacity duration-150 animate-in fade-in">
-          <div className="rounded-[2rem] p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="rounded-[2rem] p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-4">
-              <h2 className="font-jakarta font-bold tracking-tight text-xl" style={{ color: 'var(--text-primary)' }}>Nueva marca</h2>
+              <h2 className="font-bold tracking-tight text-xl" style={{ color: 'var(--text-primary)' }}>Nueva marca</h2>
               <button onClick={() => setShowCreateModal(false)} style={{ color: 'var(--text-secondary)' }}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-              Crea una marca manualmente. Se iniciará con un período de prueba activo.
-            </p>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Nombre <span className="text-red-500">*</span></label>
                   <input type="text" value={createForm.name} onChange={e => setCreateForm(f => ({ ...f, name: e.target.value }))} placeholder="Nombre de la marca"
-                    className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A]"
+                    className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                     style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Slug <span className="text-red-500">*</span></label>
                   <input type="text" value={createForm.slug} onChange={e => setCreateForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') }))} placeholder="mi-marca"
-                    className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A]"
+                    className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                     style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Email <span className="text-red-500">*</span></label>
                 <input type="email" value={createForm.email} onChange={e => setCreateForm(f => ({ ...f, email: e.target.value }))} placeholder="contacto@marca.com"
-                  className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A]"
+                  className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                   style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Contraseña inicial <span className="text-red-500">*</span></label>
-                <input type="text" value={createForm.password} onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))} placeholder="Contraseña que se le entregará al cliente"
-                  className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 focus:border-[#FF5C3A]"
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Contraseña <span className="text-red-500">*</span></label>
+                <input type="text" value={createForm.password} onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))} placeholder="Contraseña inicial"
+                  className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                   style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Plan</label>
                   <select value={createForm.plan} onChange={e => setCreateForm(f => ({ ...f, plan: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
+                    className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none"
                     style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}>
                     <option value="TRIAL">TRIAL — 7 días</option>
                     <option value="BASIC">BASIC — $150.000/mes</option>
@@ -656,9 +843,9 @@ return (
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Días de prueba</label>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Días trial</label>
                   <input type="number" min="1" max="90" value={createForm.trial_days} onChange={e => setCreateForm(f => ({ ...f, trial_days: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
+                    className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none"
                     style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
                 </div>
               </div>
@@ -666,25 +853,24 @@ return (
                 <div>
                   <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Teléfono</label>
                   <input type="text" value={createForm.phone} onChange={e => setCreateForm(f => ({ ...f, phone: e.target.value }))} placeholder="Opcional"
-                    className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
+                    className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none"
                     style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Nombre de contacto</label>
+                  <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Contacto</label>
                   <input type="text" value={createForm.contact_name} onChange={e => setCreateForm(f => ({ ...f, contact_name: e.target.value }))} placeholder="Opcional"
-                    className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none"
+                    className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none"
                     style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
                 </div>
               </div>
             </div>
             <div className="mt-5 flex justify-end gap-3">
-              <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 rounded-lg text-sm transition-colors"
-                style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>
+              <button onClick={() => setShowCreateModal(false)} className="px-4 py-2.5 rounded-xl text-sm" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>
                 Cancelar
               </button>
               <button onClick={handleCreateBrand} disabled={creating}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-white flex items-center gap-2 disabled:opacity-50 transition-colors"
-                style={{ backgroundColor: '#FF5C3A' }}>
+                className="px-4 py-2.5 rounded-xl text-sm font-bold text-white flex items-center gap-2 disabled:opacity-50"
+                style={{ backgroundColor: 'var(--accent)' }}>
                 {creating && <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />}
                 Crear Marca
               </button>
@@ -693,200 +879,57 @@ return (
         </div>
       )}
 
-      {/* Modal Activar Plan */}
-      {showActivateModal && selectedBrand && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
-          <div className="rounded-[2rem] p-6 max-w-md w-full transition-transform duration-200 animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="font-jakarta font-bold tracking-tight text-lg" style={{ color: 'var(--text-primary)' }}>Activar plan - {selectedBrand.name}</h2>
-              <button onClick={() => setShowActivateModal(false)} style={{ color: 'var(--text-secondary)' }}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            </div>
-            <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-              Esta marca está en período de prueba. Al activar el plan, se iniciará una suscripción activa de 30 días.
-            </p>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Plan</label>
-                <select value={activateForm.plan} onChange={e => setActivateForm(f => ({ ...f, plan: e.target.value, amount: e.target.value === 'PRO' ? '250000' : '150000' }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="BASIC">BASIC — $150.000 COP/mes</option>
-                  <option value="PRO">PRO — $250.000 COP/mes</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Monto recibido (COP)</label>
-                <input type="number" value={activateForm.amount} onChange={e => setActivateForm(f => ({ ...f, amount: e.target.value }))}
-                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                  className="w-full px-3 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
-              </div>
-              <div>
-                <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Método de pago</label>
-                <select value={activateForm.payment_method} onChange={e => setActivateForm(f => ({ ...f, payment_method: e.target.value }))}
-                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                  className="w-full px-3 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]">
-                  <option value="transferencia">Transferencia</option>
-                  <option value="efectivo">Efectivo</option>
-                  <option value="tarjeta">Tarjeta</option>
-                  <option value="otro">Otro</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ color: 'var(--text-secondary)' }} className="block text-sm font-medium mb-1">Notas (opcional)</label>
-                <input type="text" value={activateForm.notes} onChange={e => setActivateForm(f => ({ ...f, notes: e.target.value }))}
-                  placeholder="Referencia de pago, observaciones..."
-                  style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                  className="w-full px-3 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <button onClick={() => setShowActivateModal(false)}
-                style={{ background: 'var(--bg-hover)', color: 'var(--text-primary)', borderColor: 'var(--border-color)' }}
-                className="px-4 py-2 min-h-[44px] border rounded-xl text-sm hover:opacity-80 transition-opacity">
-                Cancelar
-              </button>
-              <button onClick={handleActivatePlan} disabled={activating}
-                className="px-4 py-2 min-h-[44px] bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-2 text-sm font-semibold transition-colors">
-                {activating && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
-                Activar Plan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal confirmación acción masiva */}
-      {confirmBulk && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 transition-opacity duration-150 animate-in fade-in">
-          <div style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }} className="rounded-[2rem] shadow-xl w-full max-w-sm p-6 space-y-4 border transition-transform duration-200 animate-in zoom-in-95">
-            <h3 style={{ color: 'var(--text-primary)' }} className="font-jakarta font-bold tracking-tight text-lg">
-              {confirmBulk === 'delete' && `Eliminar ${selected.size} marca${selected.size > 1 ? 's' : ''}`}
-              {confirmBulk === 'suspend' && `Suspender ${selected.size} marca${selected.size > 1 ? 's' : ''}`}
-              {confirmBulk === 'reactivate' && `Reactivar ${selected.size} marca${selected.size > 1 ? 's' : ''}`}
-            </h3>
-            <p style={{ color: 'var(--text-secondary)' }} className="text-sm">
-              {confirmBulk === 'delete' && 'Esta acción es irreversible. Se eliminarán las marcas y todos sus datos.'}
-              {confirmBulk === 'suspend' && 'Las marcas seleccionadas perderán acceso al dashboard y al probador público.'}
-              {confirmBulk === 'reactivate' && 'Las marcas seleccionadas recuperarán acceso completo al sistema.'}
-            </p>
-            {bulkLoading && (
-              <div style={{ color: 'var(--text-muted)' }} className="flex items-center gap-2 text-sm">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#FF5C3A]" />
-                Procesando...
-              </div>
-            )}
-            <div className="flex gap-3 justify-end pt-2">
-              <button
-                onClick={() => setConfirmBulk(null)}
-                disabled={bulkLoading}
-                style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}
-                className="px-4 py-2 min-h-[44px] rounded-xl border text-sm hover:opacity-80 transition-opacity disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => handleBulkAction(confirmBulk)}
-                disabled={bulkLoading}
-                className={`px-4 py-2 min-h-[44px] rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50 ${
-                  confirmBulk === 'delete' ? 'bg-red-600 hover:bg-red-700' :
-                  confirmBulk === 'suspend' ? 'bg-amber-600 hover:bg-amber-700' :
-                  'bg-[#FF5C3A] hover:bg-[#e04e30]'
-                }`}
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Modal Configurar Modal de Activación */}
+      {/* Modal Configurar Modal de Activacion */}
       {showModalConfigModal && modalConfigBrand && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 animate-in fade-in">
-          <div className="rounded-[2rem] p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="rounded-[2rem] p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h2 className="font-jakarta font-bold tracking-tight text-lg" style={{ color: 'var(--text-primary)' }}>Modal de activación</h2>
+                <h2 className="font-bold tracking-tight text-lg" style={{ color: 'var(--text-primary)' }}>Modal de activación</h2>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{modalConfigBrand.name}</p>
               </div>
               <button onClick={() => setShowModalConfigModal(false)} style={{ color: 'var(--text-secondary)' }}>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-              Este texto aparece en el modal que ven los visitantes cuando la mini-landing aún no está activa.
-            </p>
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Título del modal</label>
-                <input
-                  type="text"
-                  value={modalConfigForm.modal_title}
-                  onChange={e => setModalConfigForm(f => ({ ...f, modal_title: e.target.value }))}
-                  maxLength={80}
-                  placeholder="Ej: Activa tu probador virtual"
-                  className="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
-                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                />
+                <input type="text" value={modalConfigForm.modal_title} onChange={e => setModalConfigForm(f => ({ ...f, modal_title: e.target.value }))}
+                  maxLength={80} placeholder="Ej: Activa tu probador virtual"
+                  className="w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
               </div>
               <div>
                 <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Descripción</label>
-                <textarea
-                  value={modalConfigForm.modal_description}
-                  onChange={e => setModalConfigForm(f => ({ ...f, modal_description: e.target.value }))}
-                  rows={3}
-                  maxLength={300}
-                  placeholder="Ej: Permite que tus clientes se prueben la ropa virtualmente..."
-                  className="w-full px-3 py-2 rounded-lg border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
-                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                />
+                <textarea value={modalConfigForm.modal_description} onChange={e => setModalConfigForm(f => ({ ...f, modal_description: e.target.value }))}
+                  rows={3} maxLength={300} placeholder="Descripción..."
+                  className="w-full px-3 py-2.5 rounded-xl border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                  style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Beneficios (hasta 5)</label>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text-secondary)' }}>Beneficios</label>
                 <div className="space-y-2">
                   {modalConfigForm.modal_features.map((feat, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <span className="text-xs w-4 text-center flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
-                      <input
-                        type="text"
-                        value={feat}
-                        onChange={e => {
-                          const next = [...modalConfigForm.modal_features];
-                          next[i] = e.target.value;
-                          setModalConfigForm(f => ({ ...f, modal_features: next }));
-                        }}
-                        maxLength={80}
-                        placeholder={`Beneficio ${i + 1}`}
-                        className="flex-1 px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
-                        style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                      />
+                      <input type="text" value={feat} onChange={e => {
+                        const next = [...modalConfigForm.modal_features]; next[i] = e.target.value;
+                        setModalConfigForm(f => ({ ...f, modal_features: next }));
+                      }} maxLength={80} placeholder={`Beneficio ${i + 1}`}
+                        className="flex-1 px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                        style={{ backgroundColor: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
                     </div>
                   ))}
-                  {modalConfigForm.modal_features.length < 5 && (
-                    <button
-                      type="button"
-                      onClick={() => setModalConfigForm(f => ({ ...f, modal_features: [...f.modal_features, ''] }))}
-                      className="flex items-center gap-1.5 text-xs font-medium transition-opacity hover:opacity-70"
-                      style={{ color: '#FF5C3A' }}
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                      </svg>
-                      Agregar beneficio
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
             <div className="mt-5 flex justify-end gap-3">
-              <button onClick={() => setShowModalConfigModal(false)}
-                className="px-4 py-2 rounded-lg text-sm transition-colors"
-                style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>
+              <button onClick={() => setShowModalConfigModal(false)} className="px-4 py-2.5 rounded-xl text-sm" style={{ backgroundColor: 'var(--bg-base)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>
                 Cancelar
               </button>
               <button onClick={handleSaveModalConfig} disabled={savingModalConfig}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-2 disabled:opacity-50 transition-colors"
-                style={{ backgroundColor: '#FF5C3A' }}>
+                className="px-4 py-2.5 rounded-xl text-sm font-bold text-white flex items-center gap-2 disabled:opacity-50" style={{ backgroundColor: 'var(--accent)' }}>
                 {savingModalConfig && <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" />}
                 Guardar
               </button>
@@ -897,17 +940,14 @@ return (
 
       {/* Toast de reset email */}
       {resetToast && (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white transition-all ${resetToast.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`}>
-          {resetToast.type === 'success'
-            ? <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-            : <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-          }
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium text-white ${resetToast.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'}`}>
+          {resetToast.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
           {resetToast.message}
         </div>
       )}
 
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-    </motion.div>
+    </div>
   );
 }

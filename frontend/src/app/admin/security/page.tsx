@@ -25,7 +25,7 @@ interface AdminUser {
 function Toggle({ value, onChange, disabled }: { value: boolean; onChange: () => void; disabled?: boolean }) {
   return (
     <button type="button" onClick={onChange} disabled={disabled}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-60 flex-shrink-0 ${value ? 'bg-[#FF5C3A]' : 'bg-gray-500'}`}>
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-60 flex-shrink-0 ${value ? 'bg-[var(--accent)]' : 'bg-gray-500'}`}>
       <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${value ? 'translate-x-6' : 'translate-x-1'}`} />
     </button>
   );
@@ -35,7 +35,7 @@ function Section({ title, icon, children, danger }: { title: string; icon: React
   return (
     <div className="rounded-2xl border shadow-sm overflow-hidden" style={{ backgroundColor: 'var(--bg-card)', borderColor: danger ? 'rgba(239,68,68,0.3)' : 'var(--border-color)' }}>
       <div className="flex items-center gap-3 px-6 py-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: danger ? 'rgba(239,68,68,0.1)' : 'rgba(255,92,58,0.1)', color: danger ? '#ef4444' : '#FF5C3A' }}>
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: danger ? 'rgba(239,68,68,0.1)' : 'rgba(255,92,58,0.1)', color: danger ? '#ef4444' : 'var(--accent)' }}>
           {icon}
         </div>
         <h2 className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{title}</h2>
@@ -209,10 +209,10 @@ export default function AdminSecurityPage() {
               <div className="flex gap-2">
                 <input type="text" value={ipWhitelist} onChange={e => setIpWhitelist(e.target.value)}
                   placeholder="190.24.1.1, 181.55.2.3"
-                  className="flex-1 border rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                  className="flex-1 border rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                   style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
                 <button onClick={handleSaveWhitelist} disabled={savingWhitelist}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors">
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent)] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors">
                   {savingWhitelist ? <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-white" /> : <Check className="w-4 h-4" />}
                   Guardar
                 </button>
@@ -236,12 +236,12 @@ export default function AdminSecurityPage() {
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--text-secondary)' }}>Mensaje de mantenimiento</label>
               <textarea value={maintenanceMessage} onChange={e => setMaintenanceMessage(e.target.value)} rows={3}
-                className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]"
+                className="w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                 style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
                 placeholder="Explica qué está sucediendo a los usuarios..." />
               <div className="flex justify-end mt-2">
                 <button onClick={handleSaveMaintenanceMessage} disabled={savingMaintenance}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#FF5C3A] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors">
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--accent)] text-white text-sm font-semibold hover:bg-[#e04e30] disabled:opacity-60 transition-colors">
                   {savingMaintenance ? 'Guardando...' : 'Guardar mensaje'}
                 </button>
               </div>
@@ -252,7 +252,7 @@ export default function AdminSecurityPage() {
 
       <Section title="Administradores y permisos" icon={<Users className="w-4 h-4" />}>
         {loadingAdmins ? (
-          <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#FF5C3A' }} /></div>
+          <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--accent)' }} /></div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -269,7 +269,7 @@ export default function AdminSecurityPage() {
                     <td className="px-4 py-3 font-medium" style={{ color: 'var(--text-primary)' }}>{admin.name}</td>
                     <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--text-secondary)' }}>{admin.email}</td>
                     <td className="px-4 py-3">
-                      <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: admin.role === 'superadmin' ? 'rgba(255,92,58,0.15)' : 'rgba(107,114,128,0.15)', color: admin.role === 'superadmin' ? '#FF5C3A' : 'var(--text-secondary)' }}>
+                      <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: admin.role === 'superadmin' ? 'rgba(255,92,58,0.15)' : 'rgba(107,114,128,0.15)', color: admin.role === 'superadmin' ? 'var(--accent)' : 'var(--text-secondary)' }}>
                         {admin.role}
                       </span>
                     </td>
@@ -281,7 +281,7 @@ export default function AdminSecurityPage() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-xs" style={{ color: '#FF5C3A' }}>Acceso total</span>
+                        <span className="text-xs" style={{ color: 'var(--accent)' }}>Acceso total</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
@@ -294,7 +294,7 @@ export default function AdminSecurityPage() {
           </div>
         )}
         <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>
-          Para crear, editar permisos o eliminar administradores, ve a <a href="/admin/admins" className="underline" style={{ color: '#FF5C3A' }}>Administradores</a>.
+          Para crear, editar permisos o eliminar administradores, ve a <a href="/admin/admins" className="underline" style={{ color: 'var(--accent)' }}>Administradores</a>.
         </p>
       </Section>
     </motion.div>

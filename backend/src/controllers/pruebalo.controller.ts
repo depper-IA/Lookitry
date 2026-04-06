@@ -15,6 +15,8 @@ import { PromptRagService } from '../services/prompt-rag.service';
 import { UploadService } from '../services/upload.service';
 import { buildCategoryRulesBlock, getPromptRules } from '../config/prompt-rules';
 import { createAdminNotification } from '../utils/adminNotifications';
+import { generationConcurrencyService } from '../services/generation-concurrency.service';
+import { generationQueueService } from '../services/generation-queue.service';
 import {
   getBrandAllowedOrigins,
   getExpectedStoreHost,
@@ -27,6 +29,7 @@ import {
   NotFoundError,
   ValidationError,
   LimitExceededError,
+  ConcurrencyLimitError,
   ExternalServiceError,
   asyncHandler,
 } from '../middleware/errorHandler';
@@ -97,7 +100,7 @@ export class PruebaloController {
 
     // La lógica de previsualización se maneja en el frontend usando localStorage
     // Calcularlo por created_at bloqueaba al usuario si no la veía el mismo día de registro.
-    let isPreviewExpired = false;
+    const isPreviewExpired = false;
 
     // Obtener productos activos de la marca (Solo si no ha expirado o si ya pagó)
     const products = isPreviewExpired ? [] : await productsService.getProductsByBrand(brand.id);
@@ -242,6 +245,24 @@ export class PruebaloController {
       throw new ValidationError('El archivo no debe superar 5MB');
     }
 
+    // 3.1 Control de concurrencia: adquirir slot antes de procesar
+    const slot = await generationConcurrencyService.acquireSlot(brand.id, brand.plan);
+    if (!slot.acquired) {
+      const slotInfo = await generationConcurrencyService.getSlotInfo(brand.id, brand.plan);
+      throw new ConcurrencyLimitError(
+        `El probador está ocupado con ${slotInfo.active} generación(es). Intenta en ${Math.ceil(slot.waitTimeMs / 1000)}s.`,
+        slotInfo.queueTimeoutMs
+      );
+    }
+
+    let slotReleased = false;
+    const releaseSlot = async () => {
+      if (!slotReleased) {
+        slotReleased = true;
+        await generationConcurrencyService.releaseSlot(brand.id, slot.slotId).catch(() => {});
+      }
+    };
+
     const inputFingerprint = createHash('sha256')
       .update(imageFile.buffer)
       .digest('hex');
@@ -359,6 +380,7 @@ export class PruebaloController {
       }
 
       // 9. Retornar imageUrl al frontend
+      await releaseSlot();
       return res.status(200).json({
         success: true,
         generationId: generation.id,
@@ -368,6 +390,7 @@ export class PruebaloController {
       });
 
     } catch (n8nError: any) {
+      await releaseSlot();
       const processingTime = Date.now() - startTime;
       if (creditReservation?.source === 'extra') {
         await usageService.refundReservedExtraCredit(brand.id).catch((refundError) => {

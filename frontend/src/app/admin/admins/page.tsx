@@ -33,16 +33,8 @@ interface Admin {
 function PermissionBadge({ perm }: { perm: Permission }) {
   const info = ALL_PERMISSIONS.find(p => p.key === perm);
   return (
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      padding: '2px 8px',
-      borderRadius: '9999px',
-      fontSize: '11px',
-      fontWeight: 500,
-      background: 'rgba(255,92,58,0.1)',
-      color: '#FF5C3A',
-    }}>
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium"
+      style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}>
       {info?.label || perm}
     </span>
   );
@@ -55,15 +47,12 @@ function Toast({ message, type, onClose }: { message: string; type: 'success' | 
     return () => clearTimeout(t);
   }, [onClose]);
   return (
-    <div style={{
-      position: 'fixed', bottom: 24, right: 24, zIndex: 9999,
-      padding: '12px 20px', borderRadius: 12,
-      background: type === 'success' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-      border: `1px solid ${type === 'success' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
-      color: type === 'success' ? '#16a34a' : '#dc2626',
-      fontSize: 14, fontWeight: 500,
-      boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
-    }}>
+    <div className="fixed bottom-6 right-6 z-[9999] flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-medium"
+      style={{
+        backgroundColor: type === 'success' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+        border: `1px solid ${type === 'success' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+        color: type === 'success' ? '#16a34a' : '#dc2626',
+      }}>
       {message}
     </div>
   );
@@ -149,8 +138,8 @@ export default function AdminsPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyItems: 'center', height: 256, justifyContent: 'center' }}>
         <div style={{
           width: 40, height: 40, borderRadius: '50%',
-          border: '4px solid rgba(255,92,58,0.2)',
-          borderTopColor: '#FF5C3A',
+          border: '4px solid color-mix(in srgb, var(--accent) 20%, transparent)',
+          borderTopColor: 'var(--accent)',
           animation: 'spin 0.8s linear infinite',
         }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -175,7 +164,7 @@ export default function AdminsPage() {
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '10px 18px', minHeight: 44,
-            background: '#FF5C3A', color: '#fff',
+            background: 'var(--accent)', color: '#fff',
             fontSize: 14, fontWeight: 600,
             border: 'none', borderRadius: 12, cursor: 'pointer',
             transition: 'opacity 0.15s',
@@ -235,7 +224,7 @@ export default function AdminsPage() {
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: 4,
                       fontSize: 12, fontWeight: 600,
-                      color: '#FF5C3A', background: 'rgba(255,92,58,0.1)',
+                      color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 10%, transparent)',
                       padding: '2px 10px', borderRadius: 9999,
                     }}>
                       <Shield style={{ width: 12, height: 12 }} /> Superadmin
@@ -247,13 +236,13 @@ export default function AdminsPage() {
                 </td>
                 <td style={{ padding: '16px 24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'flex-end' }}>
-                    <ActionBtn title="Enviar credenciales" onClick={() => setSendCredentialsConfirm(a)} color="#FF5C3A">
+                    <ActionBtn title="Enviar credenciales" onClick={() => setSendCredentialsConfirm(a)} color="var(--accent)">
                       <Mail style={{ width: 15, height: 15 }} />
                     </ActionBtn>
-                    <ActionBtn title="Editar permisos" onClick={() => setEditingAdmin(a)} color="#FF5C3A">
+                    <ActionBtn title="Editar permisos" onClick={() => setEditingAdmin(a)} color="var(--accent)">
                       <Shield style={{ width: 15, height: 15 }} />
                     </ActionBtn>
-                    <ActionBtn title="Cambiar contraseña" onClick={() => setPasswordAdmin(a)} color="#FF5C3A">
+                    <ActionBtn title="Cambiar contraseña" onClick={() => setPasswordAdmin(a)} color="var(--accent)">
                       <KeyRound style={{ width: 15, height: 15 }} />
                     </ActionBtn>
                     <ActionBtn title="Eliminar" onClick={() => setDeleteConfirm(a.id)} color="#ef4444">
@@ -390,7 +379,7 @@ function ConfirmModal({ title, description, confirmLabel, confirmDanger, loading
               flex: 1, padding: '10px 0', minHeight: 44, borderRadius: 12,
               border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
               fontSize: 14, fontWeight: 600, color: '#fff',
-              background: confirmDanger ? '#ef4444' : '#FF5C3A',
+              background: confirmDanger ? '#ef4444' : 'var(--accent)',
               opacity: loading ? 0.6 : 1,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             }}
@@ -439,7 +428,7 @@ function ChangePasswordModal({ admin, onClose, onSave }: {
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', padding: 16 }}>
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 20, width: '100%', maxWidth: 520, padding: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}>
             <KeyRound style={{ width: 18, height: 18 }} />
           </div>
           <div>
@@ -459,8 +448,8 @@ function ChangePasswordModal({ admin, onClose, onSave }: {
                 value={form.newPassword}
                 onChange={(e) => setForm((f) => ({ ...f, newPassword: e.target.value }))}
                 placeholder="Mínimo 8 caracteres"
-                className="w-full rounded-xl border px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
-                style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full rounded-xl border px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2"
+                style={{ background: 'var(--bg-hover)', borderColor: 'var(--border-color)', color: 'var(--text-primary)', ['--tw-ring-color' as string]: 'color-mix(in srgb, var(--accent) 40%, transparent)' }}
               />
               <button type="button" onClick={() => setShow((s) => ({ ...s, next: !s.next }))} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}>
                 {show.next ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
@@ -476,8 +465,8 @@ function ChangePasswordModal({ admin, onClose, onSave }: {
                 value={form.confirmPassword}
                 onChange={(e) => setForm((f) => ({ ...f, confirmPassword: e.target.value }))}
                 placeholder="Repite la nueva contraseña"
-                className="w-full rounded-xl border px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]/40"
-                style={{ background: 'var(--bg-hover)', borderColor: form.confirmPassword && form.confirmPassword !== form.newPassword ? '#ef4444' : 'var(--border-color)', color: 'var(--text-primary)' }}
+                className="w-full rounded-xl border px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2"
+                style={{ background: 'var(--bg-hover)', borderColor: form.confirmPassword && form.confirmPassword !== form.newPassword ? '#ef4444' : 'var(--border-color)', color: 'var(--text-primary)', ['--tw-ring-color' as string]: 'color-mix(in srgb, var(--accent) 40%, transparent)' }}
               />
               <button type="button" onClick={() => setShow((s) => ({ ...s, confirm: !s.confirm }))} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}>
                 {show.confirm ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
@@ -485,7 +474,7 @@ function ChangePasswordModal({ admin, onClose, onSave }: {
             </div>
           </div>
 
-          <div style={{ background: 'rgba(255,92,58,0.08)', border: '1px solid rgba(255,92,58,0.18)', color: 'var(--text-secondary)', borderRadius: 12, padding: '10px 12px', fontSize: 12 }}>
+          <div style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 18%, transparent)', color: 'var(--text-secondary)', borderRadius: 12, padding: '10px 12px', fontSize: 12 }}>
             Este cambio actualiza la contraseña directamente desde el panel. El envío por correo queda solo para recuperación de acceso.
           </div>
 
@@ -500,7 +489,7 @@ function ChangePasswordModal({ admin, onClose, onSave }: {
           <button onClick={onClose} style={{ flex: 1, minHeight: 44, borderRadius: 12, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer' }}>
             Cancelar
           </button>
-          <button onClick={handleSubmit} disabled={loading} style={{ flex: 1, minHeight: 44, borderRadius: 12, border: 'none', background: '#FF5C3A', color: '#fff', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.65 : 1 }}>
+          <button onClick={handleSubmit} disabled={loading} style={{ flex: 1, minHeight: 44, borderRadius: 12, border: 'none', background: 'var(--accent)', color: '#fff', fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.65 : 1 }}>
             {loading ? 'Guardando...' : 'Guardar contraseña'}
           </button>
         </div>
@@ -554,7 +543,7 @@ function CreateAdminModal({ onClose, onCreated }: { onClose: () => void; onCreat
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', padding: 16 }}>
       <div style={{ background: 'var(--bg-card)', borderRadius: 20, boxShadow: '0 20px 60px rgba(0,0,0,0.3)', width: '100%', maxWidth: 520, overflow: 'hidden' }}>
         {/* Header */}
-        <div style={{ background: 'linear-gradient(135deg, #FF5C3A, #e04e30)', padding: '20px 24px' }}>
+        <div style={{ background: 'linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 85%, #000))', padding: '20px 24px' }}>
           <h2 style={{ fontSize: 17, fontWeight: 700, color: '#fff', margin: 0 }}>Nuevo administrador</h2>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.75)', margin: '4px 0 0 0' }}>Define sus datos y nivel de acceso</p>
         </div>
@@ -601,9 +590,9 @@ function CreateAdminModal({ onClose, onCreated }: { onClose: () => void; onCreat
                     flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                     padding: '8px 12px', minHeight: 44, borderRadius: 12, cursor: 'pointer',
                     fontSize: 13, fontWeight: 500, transition: 'all 0.15s',
-                    border: isSuperadmin === opt.value ? '2px solid #FF5C3A' : '2px solid var(--border-color)',
-                    background: isSuperadmin === opt.value ? 'rgba(255,92,58,0.08)' : 'transparent',
-                    color: isSuperadmin === opt.value ? '#FF5C3A' : 'var(--text-muted)',
+                    border: isSuperadmin === opt.value ? '2px solid var(--accent)' : '2px solid var(--border-color)',
+                    background: isSuperadmin === opt.value ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : 'transparent',
+                    color: isSuperadmin === opt.value ? 'var(--accent)' : 'var(--text-muted)',
                   }}
                 >
                   {opt.icon} {opt.label}
@@ -619,8 +608,8 @@ function CreateAdminModal({ onClose, onCreated }: { onClose: () => void; onCreat
                     style={{
                       display: 'flex', alignItems: 'flex-start', gap: 10,
                       padding: 10, borderRadius: 12, cursor: 'pointer',
-                      border: permissions.includes(p.key) ? '1px solid rgba(255,92,58,0.4)' : '1px solid var(--border-color)',
-                      background: permissions.includes(p.key) ? 'rgba(255,92,58,0.06)' : 'transparent',
+                      border: permissions.includes(p.key) ? '1px solid color-mix(in srgb, var(--accent) 40%, transparent)' : '1px solid var(--border-color)',
+                      background: permissions.includes(p.key) ? 'color-mix(in srgb, var(--accent) 6%, transparent)' : 'transparent',
                       transition: 'all 0.15s',
                     }}
                   >
@@ -628,7 +617,7 @@ function CreateAdminModal({ onClose, onCreated }: { onClose: () => void; onCreat
                       type="checkbox"
                       checked={permissions.includes(p.key)}
                       onChange={() => togglePerm(p.key)}
-                      style={{ marginTop: 2, accentColor: '#FF5C3A' }}
+                      style={{ marginTop: 2, accentColor: 'var(--accent)' }}
                     />
                     <div>
                       <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{p.label}</p>
@@ -656,7 +645,7 @@ function CreateAdminModal({ onClose, onCreated }: { onClose: () => void; onCreat
               disabled={loading}
               style={{
                 flex: 1, padding: '10px 0', minHeight: 44, borderRadius: 12,
-                border: 'none', background: '#FF5C3A', color: '#fff',
+                border: 'none', background: 'var(--accent)', color: '#fff',
                 fontSize: 14, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.6 : 1,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -710,9 +699,9 @@ function EditPermissionsModal({ admin, onClose, onSave }: {
                   flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                   padding: '8px 12px', minHeight: 44, borderRadius: 12, cursor: 'pointer',
                   fontSize: 13, fontWeight: 500, transition: 'all 0.15s',
-                  border: isSuperadmin === opt.value ? '2px solid #FF5C3A' : '2px solid var(--border-color)',
+                  border: isSuperadmin === opt.value ? '2px solid var(--accent)' : '2px solid var(--border-color)',
                   background: isSuperadmin === opt.value ? 'rgba(255,92,58,0.08)' : 'transparent',
-                  color: isSuperadmin === opt.value ? '#FF5C3A' : 'var(--text-muted)',
+                  color: isSuperadmin === opt.value ? 'var(--accent)' : 'var(--text-muted)',
                 }}
               >
                 {opt.icon} {opt.label}
@@ -737,7 +726,7 @@ function EditPermissionsModal({ admin, onClose, onSave }: {
                     type="checkbox"
                     checked={permissions.includes(p.key)}
                     onChange={() => togglePerm(p.key)}
-                    style={{ marginTop: 2, accentColor: '#FF5C3A' }}
+                    style={{ marginTop: 2, accentColor: 'var(--accent)' }}
                   />
                   <div>
                     <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{p.label}</p>
@@ -763,7 +752,7 @@ function EditPermissionsModal({ admin, onClose, onSave }: {
               onClick={() => onSave(isSuperadmin ? [] : permissions)}
               style={{
                 flex: 1, padding: '10px 0', minHeight: 44, borderRadius: 12,
-                border: 'none', background: '#FF5C3A', color: '#fff',
+                border: 'none', background: 'var(--accent)', color: '#fff',
                 fontSize: 14, fontWeight: 600, cursor: 'pointer',
               }}
             >

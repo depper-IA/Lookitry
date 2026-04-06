@@ -65,7 +65,7 @@ export default function AdminLoginPage() {
                 <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" priority />
               </div>
               <span className="font-jakarta font-extrabold text-xl text-white tracking-tight">
-                Look<span style={{ color: '#FF5C3A' }}>itry</span>
+                Look<span style={{ color: 'var(--accent)' }}>itry</span>
               </span>
           </Link>
         </div>
@@ -78,14 +78,14 @@ export default function AdminLoginPage() {
             boxShadow: '0 25px 60px rgba(0,0,0,0.15)',
           }}
         >
-          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[#FF5C3A]/5 blur-3xl pointer-events-none" />
+          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[var(--accent)]/5 blur-3xl pointer-events-none" />
 
           <div className="relative">
             <div className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 mb-6 text-[10px] font-black uppercase tracking-[0.2em]"
               style={{
                 backgroundColor: 'rgba(255,92,58,0.08)',
                 borderColor: 'rgba(255,92,58,0.2)',
-                color: '#FF5C3A',
+                color: 'var(--accent)',
               }}
             >
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,7 +170,7 @@ export default function AdminLoginPage() {
                   <label htmlFor="password" className="block text-[13px] font-medium" style={{ color: 'var(--text-secondary)' }}>
                     Contraseña
                   </label>
-                  <Link href="/admin/forgot-password" className="text-[12px] transition-colors hover:text-[#FF5C3A]" style={{ color: 'var(--text-muted)' }}>
+                  <Link href="/admin/forgot-password" className="text-[12px] transition-colors hover:text-[var(--accent)]" style={{ color: 'var(--text-muted)' }}>
                     Recuperar contraseña
                   </Link>
                 </div>
@@ -193,7 +193,7 @@ export default function AdminLoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-[#FF5C3A]"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-[var(--accent)]"
                     style={{ color: 'var(--text-muted)' }}
                     tabIndex={-1}
                     aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
@@ -218,7 +218,7 @@ export default function AdminLoginPage() {
                 whileHover={{ scale: loading ? 1 : 1.01 }}
                 whileTap={{ scale: loading ? 1 : 0.98 }}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
-                style={{ backgroundColor: '#FF5C3A', color: 'white' }}
+                style={{ backgroundColor: 'var(--accent)', color: 'white' }}
               >
                 {loading && (
                   <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -231,7 +231,7 @@ export default function AdminLoginPage() {
             </form>
 
             <p className="text-center text-[12px] mt-6" style={{ color: 'var(--text-muted)' }}>
-              <Link href="/" className="hover:text-[#FF5C3A] transition-colors">
+              <Link href="/" className="hover:text-[var(--accent)] transition-colors">
                 Volver al inicio
               </Link>
             </p>

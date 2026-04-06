@@ -74,7 +74,7 @@ function StatCard({
       style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
     >
       <div className="flex items-center justify-between">
-        <div className="rounded-2xl bg-[#FF5C3A]/10 p-3 text-[#FF5C3A]">{icon}</div>
+        <div className="rounded-2xl bg-[var(--accent)]/10 p-3 text-[var(--accent)]">{icon}</div>
       </div>
       <p className="mt-4 text-[11px] font-black uppercase tracking-[0.22em]" style={{ color: 'var(--text-muted)' }}>
         {title}
@@ -125,7 +125,7 @@ export default function AdminAnalyticsPage() {
   if (loading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#FF5C3A]" />
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[var(--accent)]" />
       </div>
     );
   }

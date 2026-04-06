@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Heart, Loader2, MessageSquare, Star, X } from 'lucide-react';
+import { Heart, Loader2, MessageSquare, X } from 'lucide-react';
 import { reviewsService } from '@/services/reviews.service';
+import { HalfStarRating } from '@/components/ui/HalfStarRating';
 import type { CreateReviewDto, MyReview } from '@/types';
 
 interface ReviewPromptModalProps {
@@ -19,16 +20,14 @@ export function ReviewPromptModal({
   onSubmitted,
 }: ReviewPromptModalProps) {
   const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const isModal = variant === 'modal';
-  const activeRating = hoverRating || rating;
   const trimmedLength = comment.trim().length;
-  const canSubmit = rating >= 1 && trimmedLength >= 10 && trimmedLength <= 500 && !loading;
+  const canSubmit = rating >= 0.5 && trimmedLength >= 10 && trimmedLength <= 500 && !loading;
 
   useEffect(() => {
     if (!success || !isModal || !onClose) return;
@@ -80,7 +79,7 @@ export function ReviewPromptModal({
 
         {success ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#FF5C3A]/10 text-[#FF5C3A]">
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--accent)]/10 text-[var(--accent)]">
               <Heart className="h-8 w-8" />
             </div>
             <h2 className="font-jakarta text-2xl font-bold tracking-tight text-[var(--text-primary)]">
@@ -93,7 +92,7 @@ export function ReviewPromptModal({
         ) : (
           <div className="space-y-6">
             <div className="flex flex-col items-center text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 text-[#FF5C3A]">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 text-[var(--accent)]">
                 <Heart className="h-8 w-8" />
               </div>
               <h2 className="font-jakarta text-2xl font-bold tracking-tight text-[var(--text-primary)]">
@@ -108,23 +107,8 @@ export function ReviewPromptModal({
               <p className="text-center text-[11px] font-black uppercase tracking-[0.25em] text-[var(--text-muted)]">
                 Tu calificación
               </p>
-              <div className="flex items-center justify-center gap-2">
-                {[1, 2, 3, 4, 5].map((value) => {
-                  const filled = value <= activeRating;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      onMouseEnter={() => setHoverRating(value)}
-                      onMouseLeave={() => setHoverRating(0)}
-                      onClick={() => setRating(value)}
-                      className="transition-transform hover:scale-110"
-                      aria-label={`${value} estrellas`}
-                    >
-                      <Star className={`h-8 w-8 ${filled ? 'fill-[#FF5C3A] text-[#FF5C3A]' : 'text-white/25'}`} />
-                    </button>
-                  );
-                })}
+              <div className="flex items-center justify-center">
+                <HalfStarRating value={rating} onChange={setRating} size={36} />
               </div>
             </div>
 
@@ -142,7 +126,7 @@ export function ReviewPromptModal({
                 onChange={(event) => setComment(event.target.value.slice(0, 500))}
                 rows={isModal ? 5 : 7}
                 placeholder="Ej: El try-on virtual me ayudó a reducir las devoluciones..."
-                className="w-full resize-none rounded-2xl border border-[var(--border-color)] bg-[var(--bg-base)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[#FF5C3A]/50 focus:ring-2 focus:ring-[#FF5C3A]/20"
+                className="w-full resize-none rounded-2xl border border-[var(--border-color)] bg-[var(--bg-base)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20"
               />
             </div>
 
@@ -157,7 +141,7 @@ export function ReviewPromptModal({
                 type="button"
                 onClick={handleSubmit}
                 disabled={!canSubmit}
-                className="inline-flex min-h-[46px] flex-1 items-center justify-center gap-2 rounded-2xl bg-[#FF5C3A] px-5 py-3 text-sm font-black uppercase tracking-[0.18em] text-white transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex min-h-[46px] flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-5 py-3 text-sm font-black uppercase tracking-[0.18em] text-white transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />}
                 Enviar mi opinión

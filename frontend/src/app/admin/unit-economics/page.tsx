@@ -63,29 +63,53 @@ export default function AdminUnitEconomicsPage() {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="space-y-6"
+      className="mx-auto max-w-[1400px] space-y-6 px-4 pb-20"
     >
-      <div>
-        <h1 className="font-jakarta font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Economía Unitaria</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Ingresos, costos IA y margen por plan y cohorte</p>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          { label: 'Ingreso total', value: formatCOP(data.summary.total_revenue), icon: <DollarSign className="w-4 h-4" />, color: '#10b981' },
-          { label: 'Costo IA estimado', value: formatCOP(data.summary.total_estimated_ia_cost), icon: <BarChart3 className="w-4 h-4" />, color: '#f59e0b' },
-          { label: 'Margen total', value: formatCOP(data.summary.total_margin), icon: <TrendingUp className="w-4 h-4" />, color: data.summary.total_margin >= 0 ? '#10b981' : '#ef4444' },
-          { label: 'Margen %', value: `${data.summary.total_margin_percent}%`, icon: <TrendingUp className="w-4 h-4" />, color: data.summary.total_margin_percent >= 50 ? '#10b981' : data.summary.total_margin_percent >= 0 ? '#f59e0b' : '#ef4444' },
-        ].map(c => (
-          <div key={c.label} className="rounded-[1.5rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeft: `3px solid ${c.color}` }}>
-            <div className="flex items-start justify-between mb-3">
-              <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{c.label}</p>
-              <div style={{ color: c.color }}>{c.icon}</div>
-            </div>
-            <p className="text-lg font-bold font-jakarta" style={{ color: c.color }}>{c.value}</p>
+      {/* Hero Section */}
+      <motion.section
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-[2rem] border p-6 shadow-[0_25px_60px_rgba(0,0,0,0.1)] md:p-8"
+        style={{ borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)', background: 'linear-gradient(135deg,color-mix(in_srgb,var(--accent)_8%,transparent),var(--bg-card)_28%,var(--bg-card)_100%)' }}
+      >
+        <div className="absolute right-0 top-0 h-36 w-36 rounded-full" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', filter: 'blur(60px)' }} />
+        <div className="relative">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <span className="rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em]" style={{ borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)', backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}>
+              Economia
+            </span>
+            <span className="rounded-full border border-[var(--border-color)] bg-[var(--bg-input)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em]" style={{ color: 'var(--text-primary)' }}>
+              {data.by_plan.length} planes
+            </span>
           </div>
-        ))}
-      </div>
+          <h1 className="font-bold tracking-tight text-2xl" style={{ color: 'var(--text-primary)' }}>Economia Unitaria</h1>
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm mt-1">
+            Ingresos, costos IA y margen por plan y cohorte
+          </p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+          {[
+            { label: 'Ingreso total', value: formatCOP(data.summary.total_revenue), icon: <DollarSign className="h-5 w-5" />, color: '#10b981' },
+            { label: 'Costo IA estimado', value: formatCOP(data.summary.total_estimated_ia_cost), icon: <BarChart3 className="h-5 w-5" />, color: '#f59e0b' },
+            { label: 'Margen total', value: formatCOP(data.summary.total_margin), icon: <TrendingUp className="h-5 w-5" />, color: data.summary.total_margin >= 0 ? '#10b981' : '#ef4444' },
+            { label: 'Margen %', value: `${data.summary.total_margin_percent}%`, icon: <TrendingUp className="h-5 w-5" />, color: data.summary.total_margin_percent >= 50 ? '#10b981' : data.summary.total_margin_percent >= 0 ? '#f59e0b' : '#ef4444' },
+          ].map(c => (
+            <div key={c.label} className="rounded-[1.6rem] border border-[var(--border-color)] bg-[var(--bg-input)] p-5">
+              <div className="flex items-center justify-between">
+                <div style={{ color: c.color }}>{c.icon}</div>
+              </div>
+              <p className="mt-3 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+                {c.label}
+              </p>
+              <p className="mt-1 text-2xl font-black tracking-tight" style={{ color: c.color }}>
+                {c.value}
+              </p>
+            </div>
+          ))}
+        </div>
+      </motion.section>
 
       <div className="rounded-[2rem] p-5" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
         <h2 className="font-jakarta font-bold text-sm mb-5" style={{ color: 'var(--text-primary)' }}>Por Plan</h2>

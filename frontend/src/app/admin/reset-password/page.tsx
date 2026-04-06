@@ -40,7 +40,7 @@ function PasswordField({
         <button
           type="button"
           onClick={() => setShow(current => !current)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-[#FF5C3A]"
+          className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors hover:text-[var(--accent)]"
           style={{ color: 'var(--text-muted)' }}
           tabIndex={-1}
           aria-label={show ? 'Ocultar contraseña' : 'Mostrar contraseña'}
@@ -147,7 +147,7 @@ function AdminResetPasswordForm() {
             boxShadow: '0 25px 60px rgba(0,0,0,0.15)',
           }}
         >
-          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[#FF5C3A]/5 blur-3xl pointer-events-none" />
+          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[var(--accent)]/5 blur-3xl pointer-events-none" />
 
           <div className="relative">
             {success ? (
@@ -179,7 +179,7 @@ function AdminResetPasswordForm() {
                   style={{
                     backgroundColor: 'rgba(255,92,58,0.08)',
                     borderColor: 'rgba(255,92,58,0.2)',
-                    color: '#FF5C3A',
+                    color: 'var(--accent)',
                   }}
                 >
                   Panel de administración
@@ -227,14 +227,14 @@ function AdminResetPasswordForm() {
                     whileHover={{ scale: loading || !token ? 1 : 1.01 }}
                     whileTap={{ scale: loading || !token ? 1 : 0.98 }}
                     className="w-full py-3 rounded-xl text-[13px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ backgroundColor: '#FF5C3A', color: 'white' }}
+                    style={{ backgroundColor: 'var(--accent)', color: 'white' }}
                   >
                     {loading ? 'Guardando...' : 'Guardar nueva contraseña'}
                   </motion.button>
                 </form>
 
                 <p className="text-center text-[13px] mt-6" style={{ color: 'var(--text-muted)' }}>
-                  <Link href="/admin/login" className="transition-colors hover:text-[#FF5C3A]" style={{ color: '#FF5C3A' }}>
+                  <Link href="/admin/login" className="transition-colors hover:text-[var(--accent)]" style={{ color: 'var(--accent)' }}>
                     Volver al login admin
                   </Link>
                 </p>

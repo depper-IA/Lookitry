@@ -35,7 +35,7 @@ export default function AdminRiskPage() {
 
   if (loading) return (
     <div className="flex items-center justify-center h-64">
-      <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+      <div className="w-8 h-8 rounded-full border-2 animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
     </div>
   );
 
@@ -87,7 +87,7 @@ export default function AdminRiskPage() {
       <div className="flex gap-2">
         {(['all', 'high', 'medium', 'low'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${filter === f ? 'bg-[#FF5C3A] text-white' : ''}`}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${filter === f ? 'bg-[var(--accent)] text-white' : ''}`}
             style={filter !== f ? { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' } : {}}>
             {f === 'all' ? 'Todos' : f === 'high' ? 'Alto' : f === 'medium' ? 'Medio' : 'Bajo'}
           </button>
@@ -108,7 +108,7 @@ export default function AdminRiskPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <Link href={`/admin/brands/${brand.id}`} className="text-base font-semibold hover:underline" style={{ color: 'var(--text-primary)' }}>{brand.name}</Link>
-                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,92,58,0.15)', color: '#FF5C3A' }}>{brand.plan}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(255,92,58,0.15)', color: 'var(--accent)' }}>{brand.plan}</span>
                   </div>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{brand.email}</p>
                 </div>
@@ -149,7 +149,7 @@ export default function AdminRiskPage() {
               </div>
 
               <div className="flex justify-end mt-3">
-                <Link href={`/admin/brands/${brand.id}`} className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg hover:opacity-80 transition-opacity" style={{ color: '#FF5C3A' }}>
+                <Link href={`/admin/brands/${brand.id}`} className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg hover:opacity-80 transition-opacity" style={{ color: 'var(--accent)' }}>
                   Ver ficha completa <ArrowRight className="w-3 h-3" />
                 </Link>
               </div>

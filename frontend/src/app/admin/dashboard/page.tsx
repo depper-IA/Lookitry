@@ -99,7 +99,7 @@ export default function AdminDashboardPage() {
 
   if (loading) return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
-      <div className="h-12 w-12 rounded-full border-3 border-t-transparent animate-spin" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+      <div className="h-12 w-12 rounded-full border-3 border-t-transparent animate-spin" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
       <p className="animate-pulse text-xs font-medium uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
         Cargando Mission Control
       </p>
@@ -128,12 +128,12 @@ export default function AdminDashboardPage() {
       <motion.section
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-[2.2rem] border border-[#FF5C3A]/20 bg-[linear-gradient(135deg,rgba(255,92,58,0.08),var(--bg-card)_28%,var(--bg-card)_100%)] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.1)] md:p-10"
+        className="relative overflow-hidden rounded-[2.2rem] border border-[var(--accent)]/20 bg-[linear-gradient(135deg,rgba(255,92,58,0.08),var(--bg-card)_28%,var(--bg-card)_100%)] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.1)] md:p-10"
       >
-        <div className="absolute right-0 top-0 h-36 w-36 rounded-full bg-[#FF5C3A]/10 blur-3xl" />
+        <div className="absolute right-0 top-0 h-36 w-36 rounded-full bg-[var(--accent)]/10 blur-3xl" />
         
         <div className="relative flex flex-wrap items-center gap-3 mb-6">
-          <span className="rounded-full border border-[#FF5C3A]/20 bg-[#FF5C3A]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-[#FF5C3A]">
+          <span className="rounded-full border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-[var(--accent)]">
             Mission Control
           </span>
           <span className="rounded-full border border-[var(--border-color)] bg-[var(--bg-input)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em]" style={{ color: 'var(--text-primary)' }}>
@@ -167,7 +167,7 @@ export default function AdminDashboardPage() {
                 icon={<Activity className="h-5 w-5" />}
                 label="Éxito IA"
                 value={`${Math.round(global.successRate)}%`}
-                accent="#FF5C3A"
+                accent="var(--accent)"
               />
             </div>
 
@@ -208,7 +208,7 @@ export default function AdminDashboardPage() {
                 </h3>
               </div>
               <div className="text-right">
-                <p className="text-3xl font-black" style={{ color: '#FF5C3A' }}>{conversion.conversionRate}%</p>
+                <p className="text-3xl font-black" style={{ color: 'var(--accent)' }}>{conversion.conversionRate}%</p>
                 <p className="text-xs" style={{ color: 'var(--text-muted)' }}>tasa conversión</p>
               </div>
             </div>
@@ -228,7 +228,7 @@ export default function AdminDashboardPage() {
                           className="absolute bottom-0 left-0 right-0 rounded-t-lg transition-all duration-700"
                           style={{
                             height: `${heightPct}%`,
-                            backgroundColor: '#FF5C3A',
+                            backgroundColor: 'var(--accent)',
                             opacity: heightPct > 0 ? 1 : 0,
                           }}
                         />
@@ -268,14 +268,14 @@ export default function AdminDashboardPage() {
                 placeholder="Buscar marca..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-11 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] pl-10 pr-4 text-sm outline-none transition-colors focus:border-[#FF5C3A]/50"
+                className="h-11 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] pl-10 pr-4 text-sm outline-none transition-colors focus:border-[var(--accent)]/50"
                 style={{ color: 'var(--text-primary)' }}
               />
             </div>
             <select
               value={selectedPlan}
               onChange={(e) => setSelectedPlan(e.target.value)}
-              className="h-11 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 text-sm outline-none transition-colors focus:border-[#FF5C3A]/50"
+              className="h-11 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 text-sm outline-none transition-colors focus:border-[var(--accent)]/50"
               style={{ color: 'var(--text-primary)' }}
             >
               <option value="all">Todos los planes</option>
@@ -299,11 +299,11 @@ export default function AdminDashboardPage() {
             layout
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex min-h-[180px] cursor-pointer items-center justify-center rounded-[1.8rem] border-2 border-dashed border-[var(--border-color)] transition-all hover:border-[#FF5C3A]/50 hover:bg-[#FF5C3A]/5"
+            className="flex min-h-[180px] cursor-pointer items-center justify-center rounded-[1.8rem] border-2 border-dashed border-[var(--border-color)] transition-all hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5"
           >
             <a href="/admin/brands" className="flex flex-col items-center gap-3 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FF5C3A]/10">
-                <Plus className="h-6 w-6 text-[#FF5C3A]" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent)]/10">
+                <Plus className="h-6 w-6 text-[var(--accent)]" />
               </div>
               <div>
                 <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Añadir marca</p>
@@ -317,7 +317,7 @@ export default function AdminDashboardPage() {
           <div className="mt-6 text-center">
             <a
               href="/admin/brands"
-              className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-6 py-3 text-sm font-bold transition-all hover:border-[#FF5C3A]/30 hover:text-[#FF5C3A]"
+              className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-6 py-3 text-sm font-bold transition-all hover:border-[var(--accent)]/30 hover:text-[var(--accent)]"
               style={{ color: 'var(--text-primary)' }}
             >
               Ver todas las {filteredBrands.length} marcas
@@ -349,7 +349,7 @@ export default function AdminDashboardPage() {
 
           <div className="space-y-4">
             {[
-              { label: 'Plan Pro', count: brandsByPlan.PRO || 0, color: '#FF5C3A' },
+              { label: 'Plan Pro', count: brandsByPlan.PRO || 0, color: 'var(--accent)' },
               { label: 'Plan Trial', count: brandsByPlan.TRIAL || 0, color: '#6366f1' },
               { label: 'Plan Basic', count: brandsByPlan.BASIC || 0, color: '#64748b' },
             ].map(p => {
@@ -401,7 +401,7 @@ export default function AdminDashboardPage() {
                   Últimos pagos
                 </h3>
               </div>
-              <a href="/admin/payments" className="text-xs font-bold uppercase tracking-wider text-[#FF5C3A] transition-all hover:opacity-80">
+              <a href="/admin/payments" className="text-xs font-bold uppercase tracking-wider text-[var(--accent)] transition-all hover:opacity-80">
                 Ver todos <ExternalLink className="ml-1 inline h-3 w-3" />
               </a>
             </div>
@@ -556,13 +556,13 @@ function BrandCard({ brand }: { brand: Brand }) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="group rounded-[1.8rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-all hover:border-[#FF5C3A]/30"
+      className="group rounded-[1.8rem] border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-all hover:border-[var(--accent)]/30"
     >
       <div className="mb-4 flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div
             className="flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-black"
-            style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}
+            style={{ backgroundColor: 'rgba(255,92,58,0.1)', color: 'var(--accent)' }}
           >
             {(brand.name || 'M').charAt(0).toUpperCase()}
           </div>
@@ -593,7 +593,7 @@ function BrandCard({ brand }: { brand: Brand }) {
       <div className="flex items-center gap-2">
         <a
           href={`/admin/brands/${brand.id}`}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] py-2.5 text-xs font-bold transition-all hover:border-[#FF5C3A]/30 hover:text-[#FF5C3A]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] py-2.5 text-xs font-bold transition-all hover:border-[var(--accent)]/30 hover:text-[var(--accent)]"
           style={{ color: 'var(--text-primary)' }}
         >
           <Eye className="h-3.5 w-3.5" />
@@ -601,7 +601,7 @@ function BrandCard({ brand }: { brand: Brand }) {
         </a>
         <a
           href={`/admin/brands/${brand.id}?edit=true`}
-          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] transition-all hover:border-[#FF5C3A]/30"
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border-color)] bg-[var(--bg-input)] transition-all hover:border-[var(--accent)]/30"
         >
           <Pencil className="h-3.5 w-3.5" style={{ color: 'var(--text-muted)' }} />
         </a>
@@ -641,9 +641,9 @@ function QuickActionCard({ href, icon, title, description }: { href: string; ico
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.02 }}
-      className="flex items-center gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-all hover:border-[#FF5C3A]/30"
+      className="flex items-center gap-4 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 transition-all hover:border-[var(--accent)]/30"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FF5C3A]/10 text-[#FF5C3A]">
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--accent)]/10 text-[var(--accent)]">
         {icon}
       </div>
       <div>

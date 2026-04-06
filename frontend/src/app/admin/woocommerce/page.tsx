@@ -208,7 +208,8 @@ export default function AdminWooCommercePage() {
           />
           <button
             onClick={fetchBrands}
-            className="rounded-xl bg-[#FF5C3A] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white"
+            className="rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-[0.18em]"
+            style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
           >
             Refrescar
           </button>

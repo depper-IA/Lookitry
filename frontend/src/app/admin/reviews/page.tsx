@@ -220,7 +220,7 @@ export default function AdminReviewsPage() {
               value={searchDraft}
               onChange={(event) => setSearchDraft(event.target.value)}
               placeholder="Buscar por marca o comentario"
-              className="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-base)] py-3 pl-11 pr-4 text-sm text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[#FF5C3A]/50 focus:ring-2 focus:ring-[#FF5C3A]/20"
+              className="w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-base)] py-3 pl-11 pr-4 text-sm text-[var(--text-primary)] outline-none transition-colors placeholder:text-[var(--text-muted)] focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20"
             />
           </form>
 
@@ -292,14 +292,14 @@ export default function AdminReviewsPage() {
               {loading ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-16 text-center text-[var(--text-secondary)]">
-                    <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#FF5C3A]/20 border-t-[#FF5C3A]" />
+                    <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[var(--accent)]/20 border-t-[var(--accent)]" />
                   </td>
                 </tr>
               ) : reviews.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-16">
                     <div className="flex flex-col items-center justify-center text-center">
-                      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-[#FF5C3A]">
+                      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-white/5 text-[var(--accent)]">
                         <MessageSquare className="h-7 w-7" />
                       </div>
                       <p className="text-base font-semibold text-[var(--text-primary)]">No hay reviews que coincidan con los filtros.</p>
@@ -316,7 +316,7 @@ export default function AdminReviewsPage() {
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-1">
                         {Array.from({ length: 5 }).map((__, index) => (
-                          <Star key={`${review.id}-star-${index}`} className={`h-4 w-4 ${index < review.rating ? 'fill-[#FF5C3A] text-[#FF5C3A]' : 'text-white/15'}`} />
+                          <Star key={`${review.id}-star-${index}`} className={`h-4 w-4 ${index < review.rating ? 'fill-[var(--accent)] text-[var(--accent)]' : 'text-white/15'}`} />
                         ))}
                       </div>
                     </td>
@@ -402,7 +402,7 @@ export default function AdminReviewsPage() {
               key={pageNumber}
               type="button"
               onClick={() => updateParams({ page: String(pageNumber) })}
-              className={`rounded-xl px-3 py-2 text-sm transition-colors ${pageNumber === page ? 'bg-[#FF5C3A] text-white' : 'border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-white'}`}
+              className={`rounded-xl px-3 py-2 text-sm transition-colors ${pageNumber === page ? 'bg-[var(--accent)] text-white' : 'border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-white'}`}
             >
               {pageNumber}
             </button>
@@ -443,7 +443,7 @@ export default function AdminReviewsPage() {
                   value={adminNote}
                   onChange={(event) => setAdminNote(event.target.value)}
                   rows={4}
-                  className="w-full resize-none rounded-2xl border border-[var(--border-color)] bg-[var(--bg-base)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[#FF5C3A]/50 focus:ring-2 focus:ring-[#FF5C3A]/20"
+                  className="w-full resize-none rounded-2xl border border-[var(--border-color)] bg-[var(--bg-base)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]/50 focus:ring-2 focus:ring-[var(--accent)]/20"
                   placeholder="Añade contexto interno para el equipo admin"
                 />
               </div>

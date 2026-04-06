@@ -90,7 +90,7 @@ export default function BlogEditorPage() {
   if (loading) {
     return (
       <div className="min-h-[400px] flex flex-col items-center justify-center">
-        <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: '#FF5C3A', borderTopColor: 'transparent' }} />
+        <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
         <div className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
           Iniciando Editor
         </div>
@@ -105,7 +105,7 @@ export default function BlogEditorPage() {
           <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
         </div>
         <p className="text-sm font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{error}</p>
-        <Link href="/admin/blog" className="text-[11px] font-black uppercase tracking-widest text-[#FF5C3A] hover:underline">
+        <Link href="/admin/blog" className="text-[11px] font-black uppercase tracking-widest text-[var(--accent)] hover:underline">
           Volver al listado
         </Link>
       </div>
@@ -123,10 +123,10 @@ export default function BlogEditorPage() {
         <div className="flex items-center gap-5">
           <Link
             href="/admin/blog"
-            className="w-12 h-12 flex items-center justify-center rounded-2xl border transition-all group hover:border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/10"
+            className="w-12 h-12 flex items-center justify-center rounded-2xl border transition-all group hover:border-[var(--accent)]/30 hover:bg-[var(--accent)]/10"
             style={panelStyle}
           >
-            <svg className="w-5 h-5 transition-colors group-hover:text-[#FF5C3A]" style={{ color: 'var(--text-secondary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
+            <svg className="w-5 h-5 transition-colors group-hover:text-[var(--accent)]" style={{ color: 'var(--text-secondary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
           </Link>
           <div>
             <h1 className="font-jakarta font-extrabold text-3xl tracking-tight" style={{ color: 'var(--text-primary)' }}>
@@ -148,8 +148,8 @@ export default function BlogEditorPage() {
           <button
             onClick={() => void handleSave()}
             disabled={saving}
-            className="px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] text-white transition-all shadow-xl shadow-[#FF5C3A]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 min-w-[180px] flex items-center justify-center gap-3"
-            style={{ backgroundColor: '#FF5C3A' }}
+            className="px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.15em] text-white transition-all shadow-xl shadow-[var(--accent)]/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 min-w-[180px] flex items-center justify-center gap-3"
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             {saving ? (
               <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'white', borderTopColor: 'transparent' }} />
@@ -183,8 +183,8 @@ export default function BlogEditorPage() {
                   onClick={() => setActiveTab(tab.id as 'edit' | 'preview')}
                   className={`px-6 py-2.5 rounded-[1rem] text-[10px] font-black uppercase tracking-widest transition-all ${
                     isActive
-                      ? 'bg-[#FF5C3A] text-white shadow-lg shadow-[#FF5C3A]/20'
-                      : 'hover:text-[#FF5C3A] hover:bg-[#FF5C3A]/8'
+                      ? 'bg-[var(--accent)] text-white shadow-lg shadow-[var(--accent)]/20'
+                      : 'hover:text-[var(--accent)] hover:bg-[var(--accent)]/8'
                   }`}
                   style={isActive ? undefined : { color: 'var(--text-secondary)' }}
                 >
@@ -196,7 +196,7 @@ export default function BlogEditorPage() {
 
           {activeTab === 'edit' ? (
             <div className="rounded-[3rem] border p-10 space-y-8 shadow-2xl relative overflow-hidden" style={panelStyle}>
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FF5C3A] to-transparent opacity-30"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--accent)] to-transparent opacity-30"></div>
 
               <div className="space-y-3">
                 <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--text-muted)' }}>
@@ -207,7 +207,7 @@ export default function BlogEditorPage() {
                   name="title"
                   value={post?.title || ''}
                   onChange={handleChange}
-                  className="w-full px-6 py-4 rounded-[1.5rem] border text-xl font-bold transition-all placeholder:opacity-50 outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  className="w-full px-6 py-4 rounded-[1.5rem] border text-xl font-bold transition-all placeholder:opacity-50 outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                   style={fieldStyle}
                   placeholder="Introduzca el título..."
                 />
@@ -217,7 +217,7 @@ export default function BlogEditorPage() {
                 <label className="text-[10px] font-black uppercase tracking-[0.25em] ml-1" style={{ color: 'var(--text-muted)' }}>
                   Slug Personalizado
                 </label>
-                <div className="flex items-center gap-3 px-6 py-4 rounded-[1.5rem] border transition-all focus-within:ring-2 focus-within:ring-[#FF5C3A]/20 focus-within:border-[#FF5C3A]/40" style={fieldStyle}>
+                <div className="flex items-center gap-3 px-6 py-4 rounded-[1.5rem] border transition-all focus-within:ring-2 focus-within:ring-[var(--accent)]/20 focus-within:border-[var(--accent)]/40" style={fieldStyle}>
                   <span className="text-xs font-bold select-none opacity-60" style={{ color: 'var(--text-secondary)' }}>
                     lookitry.com/blog/
                   </span>
@@ -245,7 +245,7 @@ export default function BlogEditorPage() {
                   name="content"
                   value={post?.content || ''}
                   onChange={handleChange}
-                  className="w-full h-[700px] px-8 py-8 rounded-[2rem] border text-[13px] font-mono overflow-y-auto transition-all leading-relaxed no-scrollbar outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  className="w-full h-[700px] px-8 py-8 rounded-[2rem] border text-[13px] font-mono overflow-y-auto transition-all leading-relaxed no-scrollbar outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                   style={fieldStyle}
                   placeholder="Pega el código HTML del artículo generado..."
                 />
@@ -273,7 +273,7 @@ export default function BlogEditorPage() {
         <div className="lg:col-span-4 space-y-8">
           <div className="rounded-[2.5rem] border p-8 space-y-6 shadow-xl" style={panelStyle}>
             <h3 className="text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]"></div>
               Publicación
             </h3>
 
@@ -286,7 +286,7 @@ export default function BlogEditorPage() {
                   name="status"
                   value={post?.status || 'draft'}
                   onChange={handleChange}
-                  className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                   style={{ ...fieldStyle, color: post?.status === 'published' ? '#10b981' : '#f59e0b' }}
                 >
                   <option value="draft" style={optionStyle}>Borrador</option>
@@ -302,7 +302,7 @@ export default function BlogEditorPage() {
                   name="category_id"
                   value={post?.category_id || ''}
                   onChange={handleChange}
-                  className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  className="w-full px-5 py-4 rounded-2xl border text-xs font-bold appearance-none cursor-pointer transition-all outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                   style={fieldStyle}
                 >
                   <option value="" style={optionStyle}>Sin Categoría</option>
@@ -318,7 +318,7 @@ export default function BlogEditorPage() {
 
           <div className="rounded-[2.5rem] border p-8 space-y-6 shadow-xl" style={panelStyle}>
             <h3 className="text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]"></div>
               Multimedia
             </h3>
 
@@ -341,7 +341,7 @@ export default function BlogEditorPage() {
                   name="featured_image"
                   value={post?.featured_image || ''}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-xl border text-[10px] font-medium transition-all outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  className="w-full px-4 py-3 rounded-xl border text-[10px] font-medium transition-all outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                   style={fieldStyle}
                   placeholder="https://minio..."
                 />
@@ -351,7 +351,7 @@ export default function BlogEditorPage() {
 
           <div className="rounded-[2.5rem] border p-8 space-y-6 shadow-xl" style={panelStyle}>
             <h3 className="text-[10px] font-black uppercase tracking-[0.25em] flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-              <div className="w-1.5 h-1.5 rounded-full bg-[#FF5C3A]"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]"></div>
               Optimización SEO
             </h3>
 
@@ -365,7 +365,7 @@ export default function BlogEditorPage() {
                   value={post?.meta_description || ''}
                   onChange={handleChange}
                   rows={4}
-                  className="w-full px-5 py-4 rounded-2xl border text-xs transition-all leading-relaxed resize-none no-scrollbar outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  className="w-full px-5 py-4 rounded-2xl border text-xs transition-all leading-relaxed resize-none no-scrollbar outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                   style={fieldStyle}
                   placeholder="Descripción para resultados de búsqueda..."
                 />
@@ -380,7 +380,7 @@ export default function BlogEditorPage() {
                   value={post?.excerpt || ''}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-5 py-4 rounded-2xl border text-xs transition-all leading-relaxed resize-none no-scrollbar outline-none focus:ring-2 focus:ring-[#FF5C3A]/20 focus:border-[#FF5C3A]/40"
+                  className="w-full px-5 py-4 rounded-2xl border text-xs transition-all leading-relaxed resize-none no-scrollbar outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)]/40"
                   style={fieldStyle}
                   placeholder="Resumen corto para el listado..."
                 />

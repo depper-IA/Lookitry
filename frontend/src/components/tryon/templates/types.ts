@@ -1,7 +1,7 @@
 import type { TryOnConfigResponse } from '@/types';
 
 export type Step = 'upload' | 'select' | 'generating' | 'result';
-export type Layout = 'top-bar' | 'sidebar' | 'centered' | 'bare';
+export type Layout = 'top-bar' | 'sidebar' | 'centered' | 'bare' | 'showcase';
 
 export interface Product {
   id: string;

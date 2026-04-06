@@ -265,7 +265,7 @@ export default function AdminPaymentsPage() {
             </div>
           );
         })}
-        <div className="bg-[#FF5C3A] rounded-2xl px-5 py-4 text-white">
+        <div className="bg-[var(--accent)] rounded-2xl px-5 py-4 text-white">
           <p className="text-xs font-medium uppercase tracking-wide opacity-80 mb-2">Total completados</p>
           <p className="text-xl font-bold">{formatCurrency(totalRevenue)}</p>
           <p className="text-xs opacity-70 mt-0.5">{completedCount} pago{completedCount !== 1 ? 's' : ''}</p>
@@ -286,11 +286,11 @@ export default function AdminPaymentsPage() {
             <input type="text" value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Buscar por marca, email o slug..."
               style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-              className="w-full pl-9 pr-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
+              className="w-full pl-9 pr-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
           </div>
           <select value={methodFilter} onChange={e => setMethodFilter(e.target.value)}
             style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-            className="px-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]">
+            className="px-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]">
             <option value="all">Todos los métodos</option>
             <option value="wompi">Wompi</option>
             <option value="transferencia">Transferencia</option>
@@ -300,7 +300,7 @@ export default function AdminPaymentsPage() {
           </select>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
             style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-            className="px-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]">
+            className="px-3 py-2 min-h-[44px] border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]">
             <option value="all">Todos los estados</option>
             <option value="completed">Completado</option>
             <option value="pending">Pendiente</option>
@@ -313,17 +313,17 @@ export default function AdminPaymentsPage() {
             <label style={{ color: 'var(--text-muted)' }} className="text-xs whitespace-nowrap">Desde</label>
             <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
               style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-              className="px-3 py-1.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
+              className="px-3 py-1.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
           </div>
           <div className="flex items-center gap-2">
             <label style={{ color: 'var(--text-muted)' }} className="text-xs whitespace-nowrap">Hasta</label>
             <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
               style={{ background: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-              className="px-3 py-1.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C3A]" />
+              className="px-3 py-1.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]" />
           </div>
           {(fromDate || toDate || search || methodFilter !== 'all' || statusFilter !== 'all') && (
             <button onClick={() => { setSearch(''); setMethodFilter('all'); setStatusFilter('all'); setFromDate(''); setToDate(''); }}
-              className="text-xs text-[#FF5C3A] hover:underline">
+              className="text-xs text-[var(--accent)] hover:underline">
               Limpiar filtros
             </button>
           )}
@@ -346,7 +346,7 @@ export default function AdminPaymentsPage() {
       >
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-4 border-[#FF5C3A]/30 border-t-[#FF5C3A] rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-[var(--accent)]/30 border-t-[var(--accent)] rounded-full animate-spin" />
           </div>
         ) : (
           <>
@@ -372,7 +372,7 @@ export default function AdminPaymentsPage() {
                         <div className="flex items-center gap-1">
                           {h.label}
                           {h.field && (
-                            <ArrowUpDown className="w-3 h-3" style={{ color: sortField === h.field ? '#FF5C3A' : 'var(--text-muted)' }} />
+                            <ArrowUpDown className="w-3 h-3" style={{ color: sortField === h.field ? 'var(--accent)' : 'var(--text-muted)' }} />
                           )}
                         </div>
                       </th>

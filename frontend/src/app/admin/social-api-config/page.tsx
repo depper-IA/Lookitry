@@ -240,7 +240,7 @@ export default function SocialApiConfigPage() {
                   href={platform.docsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-[#FF5C3A] hover:underline mt-1"
+                  className="flex items-center gap-1 text-xs text-[var(--accent)] hover:underline mt-1"
                 >
                   Ver documentación <IconExternalLink />
                 </a>
@@ -258,7 +258,7 @@ export default function SocialApiConfigPage() {
                         value={formValues[`${platform.id}_${field.key}`] || ''}
                         onChange={(e) => setFormValues({ ...formValues, [`${platform.id}_${field.key}`]: e.target.value })}
                         placeholder="••••••••••••"
-                        className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[#FF5C3A]"
+                        className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-[#0a0a0a] focus:outline-none focus:border-[var(--accent)]"
                       />
                     </div>
                   ))}
@@ -266,7 +266,7 @@ export default function SocialApiConfigPage() {
                     <button
                       onClick={() => handleSave(platform.id)}
                       disabled={saving === platform.id}
-                      className="px-4 py-2 bg-[#FF5C3A] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+                      className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
                     >
                       {saving === platform.id ? <IconSpinner /> : 'Guardar'}
                     </button>
@@ -322,7 +322,7 @@ export default function SocialApiConfigPage() {
           <div>
             <p className="font-medium text-[#0a0a0a]">Instagram / Meta:</p>
             <ol className="list-decimal list-inside ml-4 mt-1 space-y-1">
-              <li>Crea una app en <a href="https://developers.facebook.com" className="text-[#FF5C3A] hover:underline" target="_blank" rel="noopener noreferrer">Facebook Developers</a></li>
+              <li>Crea una app en <a href="https://developers.facebook.com" className="text-[var(--accent)] hover:underline" target="_blank" rel="noopener noreferrer">Facebook Developers</a></li>
               <li>Agrega el producto &quot;Instagram Graph API&quot;</li>
               <li>Configura Instagram Business account</li>
               <li>Genera un Long-Lived Access Token</li>
@@ -331,7 +331,7 @@ export default function SocialApiConfigPage() {
           <div>
             <p className="font-medium text-[#0a0a0a]">TikTok:</p>
             <ol className="list-decimal list-inside ml-4 mt-1 space-y-1">
-              <li>Aplica en <a href="https://developers.tiktok.com" className="text-[#FF5C3A] hover:underline" target="_blank" rel="noopener noreferrer">TikTok Developers</a></li>
+              <li>Aplica en <a href="https://developers.tiktok.com" className="text-[var(--accent)] hover:underline" target="_blank" rel="noopener noreferrer">TikTok Developers</a></li>
               <li>Espera aprobación (puede tomar semanas)</li>
               <li>Obtén tu Access Token desde el portal</li>
             </ol>

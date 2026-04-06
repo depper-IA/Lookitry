@@ -106,8 +106,8 @@ function Field({
         <input
           type={type} value={value} disabled={disabled}
           onChange={e => onChange(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg text-sm border outline-none focus:ring-2 focus:ring-[#FF5C3A]/40 transition-opacity"
-          style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)', opacity: disabled ? 0.45 : 1 }}
+          className="w-full px-3 py-2 rounded-lg text-sm border outline-none focus:ring-2 transition-opacity"
+          style={{ background: 'var(--bg-base)', borderColor: 'var(--border-color)', color: 'var(--text-primary)', opacity: disabled ? 0.45 : 1, ['--tw-ring-color' as string]: 'color-mix(in srgb, var(--accent) 40%, transparent)' }}
         />
         {suffix && <span className="text-sm flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{suffix}</span>}
       </div>
@@ -217,7 +217,7 @@ function TabConfig({
           <button
             onClick={onSaveCosts} disabled={saving === 'costs'}
             className="px-4 py-2 rounded-2xl text-sm font-black uppercase tracking-widest transition-all"
-            style={{ background: saved === 'costs' ? '#10b981' : '#FF5C3A', color: '#fff', opacity: saving === 'costs' ? 0.7 : 1 }}
+            style={{ background: saved === 'costs' ? '#10b981' : 'var(--accent)', color: '#fff', opacity: saving === 'costs' ? 0.7 : 1 }}
           >
             {saving === 'costs' ? 'Guardando...' : saved === 'costs' ? 'Guardado' : 'Guardar costos'}
           </button>
@@ -250,7 +250,7 @@ function TabConfig({
           <button
             onClick={onSaveMeta} disabled={saving === 'meta_financiera'}
             className="px-4 py-2 rounded-2xl text-sm font-black uppercase tracking-widest transition-all"
-            style={{ background: saved === 'meta_financiera' ? '#10b981' : '#FF5C3A', color: '#fff', opacity: saving === 'meta_financiera' ? 0.7 : 1 }}
+            style={{ background: saved === 'meta_financiera' ? '#10b981' : 'var(--accent)', color: '#fff', opacity: saving === 'meta_financiera' ? 0.7 : 1 }}
           >
             {saving === 'meta_financiera' ? 'Guardando...' : saved === 'meta_financiera' ? 'Guardado' : 'Guardar metas'}
           </button>
@@ -269,13 +269,13 @@ function TabConfig({
           <div>
             <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>TRM automática (Superfinanciera)</p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
-              Valor actual: <strong style={{ color: '#FF5C3A' }}>{trmLive.toLocaleString('es-CO')}</strong>
+              Valor actual:               <strong style={{ color: 'var(--accent)' }}>{trmLive.toLocaleString('es-CO')}</strong>
             </p>
           </div>
           <button
             onClick={() => onTrmAutoChange(!trmAuto)}
             className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
-            style={{ background: trmAuto ? '#FF5C3A' : 'var(--border-color)' }}
+            style={{ background: trmAuto ? 'var(--accent)' : 'var(--border-color)' }}
           >
             <span
               className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
@@ -294,7 +294,7 @@ function TabConfig({
           <button
             onClick={onSaveTrm} disabled={saving === 'trm'}
             className="px-4 py-2 rounded-2xl text-sm font-black uppercase tracking-widest transition-all"
-            style={{ background: saved === 'trm' ? '#10b981' : '#FF5C3A', color: '#fff', opacity: saving === 'trm' ? 0.7 : 1 }}
+            style={{ background: saved === 'trm' ? '#10b981' : 'var(--accent)', color: '#fff', opacity: saving === 'trm' ? 0.7 : 1 }}
           >
             {saving === 'trm' ? 'Guardando...' : saved === 'trm' ? 'Guardado' : 'Guardar TRM'}
           </button>
@@ -320,7 +320,7 @@ function TabIngresos({ stats, basicPrecio, proPrecio, landingPrecio }: {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Mes actual" value={formatCurrency(stats.currentMonth.total)} sub={`${stats.currentMonth.paymentsCount} pagos`} />
-        <KpiCard label="Proyección próximo mes" value={formatCurrency(stats.projection.total)} sub={`${stats.projection.activeSubscriptions} suscripciones activas`} color="#FF5C3A" />
+        <KpiCard label="Proyección próximo mes" value={formatCurrency(stats.projection.total)} sub={`${stats.projection.activeSubscriptions} suscripciones activas`} color="var(--accent)" />
         <KpiCard label="Landings activas" value={String(stats.projection.activeLandings)} sub="Total de landings publicadas" color="#10b981" />
         <KpiCard label="Total histórico" value={formatCurrency(historico)} sub={`${stats.planBreakdown.basic.paymentsCount + stats.planBreakdown.pro.paymentsCount + stats.planBreakdown.landing.paymentsCount} pagos totales`} />
       </div>
@@ -350,7 +350,7 @@ function TabIngresos({ stats, basicPrecio, proPrecio, landingPrecio }: {
                   { label: 'Número de pagos', value: String(data.paymentsCount), color: 'var(--text-primary)' },
                   { label: 'Promedio por pago', value: formatCurrency(data.averagePayment), color: 'var(--text-primary)' },
                   { label: 'Mes actual', value: formatCurrency(planKey === 'basic' ? stats.currentMonth.basic : planKey === 'pro' ? stats.currentMonth.pro : stats.currentMonth.landing), color: '#10b981' },
-                  ...(planKey !== 'landing' ? [{ label: 'Proyección próx. mes', value: formatCurrency(planKey === 'basic' ? stats.projection.basic : stats.projection.pro), color: '#FF5C3A' }] : []),
+                  ...(planKey !== 'landing' ? [                  { label: 'Proyección próx. mes', value: formatCurrency(planKey === 'basic' ? stats.projection.basic : stats.projection.pro), color: 'var(--accent)' }] : []),
                 ].map(row => (
                   <div key={row.label} className="flex justify-between items-center">
                     <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{row.label}:</span>
@@ -503,8 +503,8 @@ function TabROI({
           <h3 className="text-base font-jakarta font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Desglose de gastos y punto de equilibrio</h3>
           <button
             onClick={onGoToConfig}
-            className="text-xs font-medium px-3 py-1 rounded-lg border border-[#FF5C3A]/30 hover:bg-[#FF5C3A]/5 transition-colors"
-            style={{ color: '#FF5C3A' }}
+            className="text-xs font-medium px-3 py-1 rounded-lg border transition-colors"
+            style={{ color: 'var(--accent)', borderColor: 'color-mix(in srgb, var(--accent) 30%, transparent)' }}
           >
             Ajustar costos →
           </button>
@@ -705,7 +705,7 @@ export default function RevenuePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#FF5C3A]" />
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: 'var(--accent)' }} />
       </div>
     );
   }
@@ -742,7 +742,7 @@ return (
         <button
           onClick={load}
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors"
-          style={{ background: 'rgba(255,92,58,0.1)', color: '#FF5C3A' }}
+          style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', color: 'var(--accent)' }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -770,9 +770,10 @@ return (
               onClick={() => setTab(key)}
               className={`px-4 py-2 rounded-xl text-[13px] transition-all whitespace-nowrap ${
                 tab === key
-                  ? 'bg-[#FF5C3A] text-white shadow-lg font-black uppercase tracking-widest'
+                  ? 'text-white shadow-lg font-black uppercase tracking-widest'
                   : 'text-gray-500 hover:text-gray-300 font-medium'
               }`}
+              style={tab === key ? { backgroundColor: 'var(--accent)' } : {}}
             >
               {label}
             </button>
@@ -789,27 +790,6 @@ return (
           stats={stats} costs={costs} meta={meta} trm={trm}
           basicPrecio={basicPrecio} proPrecio={proPrecio}
           onGoToConfig={() => setTab('config')}
-        />
-      )}
-      {tab === 'config' && (
-        <TabConfig
-          costs={costsEdit}
-          meta={metaEdit}
-          trm={trmEdit}
-          trmAuto={trmAutoEdit}
-          trmLive={trmLive}
-          saving={saving}
-          saved={saved}
-          onCostsChange={setCostsEdit}
-          onMetaChange={setMetaEdit}
-          onTrmChange={setTrmEdit}
-          onTrmAutoChange={v => {
-            setTrmAutoEdit(v);
-            setMetaEdit(prev => ({ ...prev, trm_auto: v }));
-          }}
-          onSaveCosts={() => handleSave('costs', costsEdit as unknown as Record<string, unknown>)}
-          onSaveMeta={() => handleSave('meta', { ...metaEdit, trm_referencia: trmEdit, trm_auto: trmAutoEdit } as unknown as Record<string, unknown>)}
-          onSaveTrm={() => handleSave('meta', { ...metaEdit, trm_referencia: trmEdit, trm_auto: trmAutoEdit } as unknown as Record<string, unknown>)}
         />
       )}
       {tab === 'config' && (

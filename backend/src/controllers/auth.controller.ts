@@ -41,9 +41,10 @@ export class AuthController {
           const { verifyToken } = await import('../utils/jwt');
           const payload = verifyToken(token);
           if (payload.brandId) {
-            return res.status(400).json({
-              error: 'ALREADY_AUTHENTICATED',
-              message: 'Ya tienes una sesión activa. Usa el dashboard para gestionar tu cuenta.',
+            return res.status(200).json({
+              needsOnboarding: false,
+              redirectTo: '/dashboard',
+              message: 'Ya tienes una sesión activa. Redirigiendo...',
             });
           }
         } catch {}
@@ -443,9 +444,10 @@ export class AuthController {
           const { verifyToken } = await import('../utils/jwt');
           const payload = verifyToken(token);
           if (payload.brandId) {
-            return res.status(400).json({
-              error: 'ALREADY_AUTHENTICATED',
-              message: 'Ya tienes una sesión activa. Usa el dashboard para gestionar tu cuenta.',
+            return res.status(200).json({
+              needsOnboarding: false,
+              redirectTo: '/dashboard',
+              message: 'Ya tienes una sesión activa. Redirigiendo...',
             });
           }
         } catch {}
@@ -484,6 +486,7 @@ export class AuthController {
         isNewBrand: result.isNewBrand,
         accountLinked: result.accountLinked,
         pendingRegistrationId: result.pendingRegistrationId || null,
+        redirectTo: result.redirectTo || null,
       });
   } catch (error: any) {
     const errMsg = error?.message || 'UNKNOWN_ERROR';

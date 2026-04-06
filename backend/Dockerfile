@@ -13,6 +13,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV NODE_OPTIONS=--max-old-space-size=512
 
 COPY package*.json ./
 RUN npm install --omit=dev
