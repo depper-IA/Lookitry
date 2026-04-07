@@ -95,15 +95,25 @@ export default function LeadsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [filterCountry, setFilterCountry] = useState('');
+  const [filterCity, setFilterCity] = useState('');
+  const [filterBusinessType, setFilterBusinessType] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [filterOptions, setFilterOptions] = useState<{
+    cities: string[];
+    countries: string[];
+    businessTypes: string[];
+    statuses: string[];
+  }>({ cities: [], countries: [], businessTypes: [], statuses: [] });
   const [editLead, setEditLead] = useState<Lead | null>(null);
 
   const fetchLeads = useCallback(async () => {
     try {
       let url = `/api/admin/leads?`;
       if (filterCountry) url += `country=${filterCountry}&`;
+      if (filterCity) url += `city=${filterCity}&`;
+      if (filterBusinessType) url += `business_type=${filterBusinessType}&`;
       if (filterStatus) url += `status=${filterStatus}&`;
 
       const data = await adminApi.get<{ leads?: Lead[] }>(url);
@@ -116,11 +126,21 @@ export default function LeadsPage() {
     } finally {
       setLoading(false);
     }
-  }, [filterCountry, filterStatus]);
+  }, [filterCountry, filterCity, filterBusinessType, filterStatus]);
+
+  const fetchFilters = useCallback(async () => {
+    try {
+      const data = await adminApi.get('/admin/leads/filters');
+      setFilterOptions(data);
+    } catch (err: any) {
+      console.error('Error loading filters', err);
+    }
+  }, []);
 
   useEffect(() => {
     fetchLeads();
-  }, [fetchLeads]);
+    fetchFilters();
+  }, [fetchLeads, fetchFilters]);
 
   const handleStatusChange = async (leadId: string, newStatus: LeadStatus) => {
     setActionLoading(leadId);
@@ -225,17 +245,38 @@ return (
           style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)', backgroundColor: 'var(--bg-input)' }}
         >
           <option value="">Todos los países</option>
-          <option value="Colombia">Colombia</option>
-          <option value="USA">USA</option>
-          <option value="España">España</option>
+          {filterOptions.countries.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        {filterStatus && (
+        <select
+          value={filterCity}
+          onChange={(e) => setFilterCity(e.target.value)}
+          className="px-3 py-2 border rounded-lg focus:outline-none"
+          style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)', backgroundColor: 'var(--bg-input)' }}
+        >
+          <option value="">Todas las ciudades</option>
+          {filterOptions.cities.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select
+          value={filterBusinessType}
+          onChange={(e) => setFilterBusinessType(e.target.value)}
+          className="px-3 py-2 border rounded-lg focus:outline-none"
+          style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)', backgroundColor: 'var(--bg-input)' }}
+        >
+          <option value="">Todos los negocios</option>
+          {filterOptions.businessTypes.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        {(filterStatus || filterCountry || filterCity || filterBusinessType) && (
           <button
-            onClick={() => setFilterStatus('')}
-            className="px-3 py-2 text-sm transition-colors rounded-xl border"
+            onClick={() => {
+              setFilterStatus('');
+              setFilterCountry('');
+              setFilterCity('');
+              setFilterBusinessType('');
+            }}
+            className="px-3 py-2 text-sm transition-colors rounded-xl border flex items-center gap-1"
             style={{ borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}
           >
-            Limpiar filtro ×
+            Limpiar filtros <IconX />
           </button>
         )}
       </motion.div>

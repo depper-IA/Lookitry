@@ -114,6 +114,7 @@ Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 50
 ### 5.5 Seguridad de Integraciones
 - **Zero API Key Exposure**: NUNCA inyectar API Keys estáticas en el frontend, plugins de WordPress o widgets públicos
 - **Session Tokens Efímeros**: Usar JWT con expiración de 1 hora, solicitados desde el backend mediante `/session-token`
+- **Frontend Admin Auth**: Usar SIEMPRE `adminApi.ts` para peticiones autenticadas. PROHIBIDO extraer `admin_token` de `localStorage` (está en cookies HTTP-Only). Las peticiones manuales con `fetch` deben incluir `credentials: 'include'`.
 
 ---
 

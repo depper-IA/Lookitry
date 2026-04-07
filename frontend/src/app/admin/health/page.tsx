@@ -106,11 +106,18 @@ export default function AdminHealthPage() {
   const fetchHealth = async () => {
     try {
       const data = await adminApi.get('/admin/health');
-      if (data.error) throw new Error(data.message || 'Error cargando estado');
       setHealth(data);
       setLastRefresh(new Date());
       setError('');
     } catch (err: any) {
+      // Si el status es 503, el backend nos devolvió la info de salud pero con una alerta de "down"
+      // En este caso, queremos mostrar la página con los datos parciales en lugar de un error genérico.
+      if (err.status === 503 && err.data?.services) {
+        setHealth(err.data);
+        setLastRefresh(new Date());
+        setError('');
+        return;
+      }
       setError(err.message || 'Error al conectar con el servidor');
     } finally {
       setLoading(false);

@@ -1,5 +1,8 @@
-import express from 'express';
 import dotenv from 'dotenv';
+// Cargar variables de entorno IMMEDIATELY before other imports
+dotenv.config();
+
+import express from 'express';
 import cookieParser from 'cookie-parser';
 import { requestLogger } from './middleware/requestLogger';
 
@@ -28,8 +31,8 @@ import { systemService } from './services/system.service';
 import { addonCreditsService } from './services/addonCredits.service';
 import { startSchedulers } from './scheduler';
 
-// Cargar variables de entorno
-dotenv.config();
+// n8n Description Webhook
+// dotenv.config() ya fue llamado al inicio
 
 addonCreditsService.ensureDefaultPackages().catch((err) => {
   console.error('[AddonCredits] Error inicializando paquetes por defecto:', err);

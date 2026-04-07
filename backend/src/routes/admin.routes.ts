@@ -43,6 +43,8 @@ import {
   getEmailCampaign,
   createEmailCampaign,
   previewEmailCampaign,
+  sendTestEmail,
+  sendAdHocTestEmail,
   launchEmailCampaign,
   scheduleEmailCampaign,
   cancelEmailCampaign,
@@ -69,6 +71,7 @@ import {
   testSocialApiConfig,
   deleteSocialApiConfig,
   setSocialApiActive,
+  getLeadFilterOptions,
 } from '../controllers/admin/lead.admin.controller';
 import {
   getGenerations,
@@ -217,12 +220,15 @@ router.get('/email-campaigns', requirePermission('marketing'), getEmailCampaigns
 router.get('/email-campaigns/:id', requirePermission('marketing'), getEmailCampaign);
 router.post('/email-campaigns', requirePermission('marketing'), createEmailCampaign);
 router.post('/email-campaigns/:id/preview', requirePermission('marketing'), previewEmailCampaign);
+router.post('/email-campaigns/test-ad-hoc', requirePermission('marketing'), sendAdHocTestEmail);
+router.post('/email-campaigns/:id/test', requirePermission('marketing'), sendTestEmail);
 router.post('/email-campaigns/:id/launch', requirePermission('marketing'), launchEmailCampaign);
 router.post('/email-campaigns/:id/schedule', requirePermission('marketing'), scheduleEmailCampaign);
 router.post('/email-campaigns/:id/cancel', requirePermission('marketing'), cancelEmailCampaign);
 router.delete('/email-campaigns/:id', requirePermission('marketing'), deleteEmailCampaign);
 
 // Lead Generation & CRM
+router.get('/leads/filters', requirePermission('brands'), getLeadFilterOptions);
 router.get('/leads/stats', requirePermission('brands'), getLeadStats);
 router.get('/leads/by-city', requirePermission('brands'), getLeadsByCity);
 router.get('/leads', requirePermission('brands'), getLeads);

@@ -2,9 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, Music, ExternalLink, AlertTriangle, X, Check, Loader2, Image } from 'lucide-react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
+import { Instagram, Music, ExternalLink, AlertTriangle, X, Check, Loader2 } from 'lucide-react';
+import { adminApi } from '@/services/adminApi';
 
 interface SocialApiConfig {
   id: string;
@@ -65,20 +64,14 @@ export default function SocialApiConfigPage() {
 
   const fetchConfigs = useCallback(async () => {
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch(`${API_URL}/api/admin/social-api-configs`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error('Error cargando configuraciones');
-      const data = await res.json();
-
+      const data = await adminApi.get('/admin/social-api-configs');
       const configsMap: Record<string, SocialApiConfig> = {};
       for (const config of data.configs || []) {
         configsMap[config.platform] = config;
       }
       setConfigs(configsMap);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Error cargando configuraciones');
     } finally {
       setLoading(false);
     }
@@ -99,17 +92,12 @@ export default function SocialApiConfigPage() {
         config[field.key] = formValues[`${platformId}_${field.key}`] || '';
       }
 
-      const token = localStorage.getItem('admin_token');
-      await fetch(`${API_URL}/api/admin/social-api-configs`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ platform: platformId, config }),
-      });
+      await adminApi.post('/admin/social-api-configs', { platform: platformId, config });
 
       setEditPlatform(null);
       fetchConfigs();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Error guardando configuracion');
     }
     setSaving(null);
   };
@@ -117,44 +105,30 @@ export default function SocialApiConfigPage() {
   const handleTest = async (platformId: string) => {
     setTesting(platformId);
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch(`${API_URL}/api/admin/social-api-configs/${platformId}/test`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const result = await res.json();
+      const result = await adminApi.post(`/admin/social-api-configs/${platformId}/test`);
       setTestResult({ ...testResult, [platformId]: result });
     } catch (err: any) {
-      setTestResult({ ...testResult, [platformId]: { success: false, message: err.message } });
+      setTestResult({ ...testResult, [platformId]: { success: false, message: err.message || 'Error en el test' } });
     }
     setTesting(null);
   };
 
   const handleToggleActive = async (platformId: string, active: boolean) => {
     try {
-      const token = localStorage.getItem('admin_token');
-      await fetch(`${API_URL}/api/admin/social-api-configs/${platformId}/active`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ active }),
-      });
+      await adminApi.patch(`/admin/social-api-configs/${platformId}/active`, { active });
       fetchConfigs();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Error cambiando estado');
     }
   };
 
   const handleDelete = async (platformId: string) => {
     if (!confirm('¿Eliminar esta configuración?')) return;
     try {
-      const token = localStorage.getItem('admin_token');
-      await fetch(`${API_URL}/api/admin/social-api-configs/${platformId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await adminApi.delete(`/admin/social-api-configs/${platformId}`);
       fetchConfigs();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Error eliminando configuracion');
     }
   };
 

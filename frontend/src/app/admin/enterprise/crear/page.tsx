@@ -4,6 +4,8 @@ import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+import { adminApi } from '@/services/adminApi';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface FormData {
   // Cliente
@@ -124,42 +126,22 @@ export default function CreateEnterpriseClientPage() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        router.push('/admin/login');
-        return;
-      }
-
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      const res = await fetch(`${apiUrl}/api/admin/enterprise/create-client`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          email: form.email.trim().toLowerCase(),
-          password: form.password,
-          slug: form.slug.trim(),
-          contact_name: form.contact_name.trim() || undefined,
-          phone: form.phone.trim() || undefined,
-          monthly_amount: monthlyAmount,
-          setup_amount: setupAmount,
-          source_plan: form.source_plan,
-          months_paid: contractMonths,
-          payment_method: form.payment_method,
-          notes: form.notes.trim() || undefined,
-          generations_limit: Number(form.generations_limit),
-          products_limit: Number(form.products_limit),
-        }),
+      const data = await adminApi.post('/admin/enterprise/create-client', {
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+        slug: form.slug.trim(),
+        contact_name: form.contact_name.trim() || undefined,
+        phone: form.phone.trim() || undefined,
+        monthly_amount: monthlyAmount,
+        setup_amount: setupAmount,
+        source_plan: form.source_plan,
+        months_paid: contractMonths,
+        payment_method: form.payment_method,
+        notes: form.notes.trim() || undefined,
+        generations_limit: Number(form.generations_limit),
+        products_limit: Number(form.products_limit),
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || data.error || 'Error al crear el cliente');
-      }
 
       setSuccess(data);
     } catch (err: any) {
