@@ -1,5 +1,124 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "model": "minimax/MiniMax-M2.7",
+  "small_model": "groq/llama-3.3-70b-instruct",
+  "provider": {
+    "minimax": {
+      "options": {
+        "apiKey": "{file:.env.opencode}",
+        "timeout": 300000
+      }
+    },
+    "deepseek": {
+      "options": {
+        "timeout": 300000
+      }
+    },
+    "groq": {
+      "options": {
+        "apiKey": "{file:.env.opencode}",
+        "timeout": 120000
+      }
+    }
+  },
+  "agent": {
+    "sammy": {
+      "description": "Orquestador principal del equipo de agentes Lookitry",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "Sammy es el orquestador. Recibe tareas y delega al agente correcto (WebWizard, DevGuardian, DataAlchemist, GrowthPilot, ArchitectAI).",
+      "tools": {
+        "read_file": true,
+        "grep_search": true,
+        "list_dir": true,
+        "bash": true,
+        "edit": false,
+        "write": false
+      }
+    },
+    "webwizard": {
+      "description": "Agente de Frontend y UX",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "WebWizard maneja todo lo visual: UI, componentes, widget, landing, checkout, dashboard.",
+      "tools": {
+        "read_file": true,
+        "edit_file": true,
+        "write_file": true,
+        "grep_search": true,
+        "list_dir": true,
+        "bash": true
+      }
+    },
+    "devguardian": {
+      "description": "Agente de Calidad y Seguridad",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "DevGuardian revisa seguridad, código de pagos, auth, webhooks, y datos sensibles.",
+      "tools": {
+        "read_file": true,
+        "edit_file": true,
+        "write_file": true,
+        "grep_search": true,
+        "list_dir": true,
+        "bash": true
+      }
+    },
+    "dataalchemist": {
+      "description": "Agente de Base de Datos, IA y n8n",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "DataAlchemist maneja schemas, queries, embeddings, flujos n8n, y try-on con IA.",
+      "tools": {
+        "read_file": true,
+        "edit_file": true,
+        "write_file": true,
+        "grep_search": true,
+        "list_dir": true,
+        "bash": true
+      }
+    },
+    "growthpilot": {
+      "description": "Agente de CRM, Marketing y Leads",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "GrowthPilot maneja campañas, leads, prospecting, referidos, y email marketing.",
+      "tools": {
+        "read_file": true,
+        "edit_file": true,
+        "write_file": true,
+        "grep_search": true,
+        "list_dir": true,
+        "bash": true
+      }
+    },
+    "architectai": {
+      "description": "Agente de Infraestructura y DevOps",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "ArchitectAI maneja Docker, VPS, deploy, Traefik, arquitectura y escalabilidad.",
+      "tools": {
+        "read_file": true,
+        "edit_file": true,
+        "write_file": true,
+        "grep_search": true,
+        "list_dir": true,
+        "bash": true
+      }
+    },
+    "docs-writter": {
+      "description": "Agente de Documentación - mantiene PRD, TECH_STACK, y reglas actualizadas",
+      "model": "minimax/MiniMax-M2.7",
+      "prompt": "DocsWriter mantiene documentación crítica: PRD.md, TECH_STACK.md, AGENTS.md, CHANGELOG.md. Actualiza después de cada cambio significativo.",
+      "tools": {
+        "read_file": true,
+        "edit_file": true,
+        "write_file": true,
+        "grep_search": true,
+        "list_dir": true,
+        "bash": true
+      }
+    }
+  },
+  "instructions": [
+    "AGENTS.md",
+    "REGLAS_IMPORTANTES.md",
+    "TECH_STACK.md"
+  ],
   "mcp": {
     "TestSprite": {
       "type": "local",

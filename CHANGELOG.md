@@ -1,5 +1,26 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-07] - OpenCode Config Fix + Skills Update
+
+### OpenCode Configuration Fix
+- **Problema:** Error "Anthropic API key is missing" al activar agente Sammy
+- **Solución:** 
+  - Actualizado `opencode.json` para usar modelo MiniMax-M2.7 (minimax) en todos los agentes
+  - Configurado correctamente el provider para MiniMax (sin Anthropic fallback)
+  - Verificado que todos los agentes usen `minimax/MiniMax-M2.7`
+
+### Skills Update (Destinados a OpenCode, no Claude)
+- **Cambios realizados:**
+  - `.agents/skills/claude-code-expert/SKILL.md` — Reescrito para OpenCode, eliminado refs a Anthropic/Claude Code
+  - `.agents/skills/mcp-builder/SKILL.md` — Actualizado header para OpenCode
+  - `.agents/skills/frontend-design/SKILL.md` — Actualizado header para OpenCode
+  - `.agents/skills/seo-audit/SKILL.md` — Actualizado header para OpenCode
+  - `.agents/skills/ui-ux-pro-max/SKILL.md` — Actualizado header para OpenCode
+  - `.agents/skills/web-design-guidelines/SKILL.md` — Actualizado header para OpenCode
+  - `.agents/skills/find-skills/SKILL.md` — Actualizado header para OpenCode
+  - `.claude/SKILL.md` — Actualizada fuente de todos los skills a Lookitry/OpenCode
+  - `skills-lock.json` — Actualizado sources a locales para skills propios
+
 ## [2026-04-06] - FIX CRÍTICO: Caída de Frontend (Modo Mantenimiento)
  
 ### Healthcheck Incompatible de Next.js en Alpine Resuelto

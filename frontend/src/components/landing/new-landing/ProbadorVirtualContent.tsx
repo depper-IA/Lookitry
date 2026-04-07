@@ -74,7 +74,7 @@ export default function ProbadorVirtualContent() {
               },
               {
                 title: '2. Escoge la Prenda',
-                desc: 'Navega por el catalogo de la marca y elige el outfit que quieres probar.',
+                desc: 'Navega por el catálogo de la marca y elige el outfit que quieres probar.',
                 icon: <ShoppingBag size={32} className="text-[#FF5C3A]" />,
               },
               {
@@ -104,7 +104,7 @@ export default function ProbadorVirtualContent() {
                   'Confianza inmediata en el talle y estilo.',
                   'Aumento del 30% en la tasa de conversion.',
                   'Experiencia de compra ludica y viralizable.',
-                  'Integracion nativa con tu catalogo actual.',
+                  'Integración nativa con tu catálogo actual.',
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-4 font-bold text-[#0a0a0a]/80">
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FF5C3A]">

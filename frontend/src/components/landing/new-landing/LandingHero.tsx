@@ -42,12 +42,12 @@ export default function LandingHero() {
         <div className="text-center lg:text-left">
           <SectionTag text="Revolucion Visual con IA" />
           <h1 className="mb-6 font-jakarta text-3xl font-black leading-[1.1] tracking-[-0.03em] sm:mb-8 sm:text-[44px] sm:tracking-[-0.04em] md:text-[56px] lg:text-[64px]">
-            <span className="block text-[#0a0a0a] dark:text-white">Vende mas con el</span>
+            <span className="block text-[#0a0a0a] dark:text-white">Vende más con el</span>
             <span className="block text-[#FF5C3A]">Probador Virtual</span>
             <span className="block text-[#0a0a0a] dark:text-white">N.1 de Latinoamerica.</span>
           </h1>
           <p className="mx-auto mb-8 max-w-xl font-dm-sans text-base font-light leading-[1.6] text-[#666] dark:text-white/80 sm:mb-12 sm:text-lg lg:mx-0">
-            Tu tienda online, <span className="font-bold text-[#FF5C3A]">sin pagar un disenador.</span> Permite que tus clientes se prueben tu catalogo en segundos con IA.
+            Tu tienda online, <span className="font-bold text-[#FF5C3A]">sin pagar un diseñador.</span> Permite que tus clientes se prueben tu catálogo en segundos con IA.
           </p>
 
           <div className="flex flex-wrap justify-center gap-3 sm:gap-5 lg:justify-start">
@@ -55,14 +55,14 @@ export default function LandingHero() {
               href="/checkout?plan=TRIAL"
               className="group flex items-center gap-2 rounded-xl bg-[#FF5C3A] px-6 py-4 text-sm font-bold text-white shadow-xl shadow-[#FF5C3A]/20 transition-all hover:scale-105 hover:bg-[#ff7b5e] sm:gap-3 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base"
             >
-              Obten Acceso Premium
+              Obtén Acceso Premium
               <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Link>
             <Link
               href="#como-funciona"
               className="flex items-center gap-2 rounded-xl border border-black/10 bg-black/5 px-6 py-4 text-sm font-bold text-[#0a0a0a] transition-all hover:bg-black/10 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 sm:rounded-2xl sm:px-10 sm:py-5 sm:text-base"
             >
-              Ver como funciona
+              Ver cómo funciona
             </Link>
           </div>
 
@@ -71,7 +71,7 @@ export default function LandingHero() {
               <ShieldCheck size={14} className="shrink-0 text-[#FF5C3A]" aria-hidden="true" /> 100% Seguro
             </div>
             <div className="flex items-center gap-2 transition-colors hover:text-[#FF5C3A] sm:gap-2.5">
-              <Clock size={14} className="shrink-0 text-[#FF5C3A]" aria-hidden="true" /> Activacion 10min
+              <Clock size={14} className="shrink-0 text-[#FF5C3A]" aria-hidden="true" /> Activación 10min
             </div>
             <div className="flex items-center gap-2 transition-colors hover:text-[#FF5C3A] sm:gap-2.5">
               <Sparkles size={14} className="shrink-0 text-[#FF5C3A]" aria-hidden="true" /> IA Generativa

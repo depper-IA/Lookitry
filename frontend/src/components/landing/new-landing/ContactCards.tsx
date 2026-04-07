@@ -32,7 +32,7 @@ export function ContactCards() {
         <p className="text-[11px] uppercase tracking-[0.1em] text-[#FF5C3A] font-semibold">Canal oficial</p>
         <p className="text-white text-lg font-semibold mt-1">Email corporativo</p>
         <p className="text-[#bbb] text-sm mt-2">{contact.email}</p>
-        <p className="text-[#666] text-xs mt-3">Respuesta tipica: menos de 24h habiles.</p>
+        <p className="text-[#666] text-xs mt-3">Respuesta típica: menos de 24h hábiles.</p>
       </a>
       <a
         href={contact.whatsappUrl}
@@ -40,10 +40,10 @@ export function ContactCards() {
         rel="noopener noreferrer"
         className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 hover:border-[#FF5C3A]/40 transition-colors"
       >
-        <p className="text-[11px] uppercase tracking-[0.1em] text-[#FF5C3A] font-semibold">Canal rapido</p>
+        <p className="text-[11px] uppercase tracking-[0.1em] text-[#FF5C3A] font-semibold">Canal rápido</p>
         <p className="text-white text-lg font-semibold mt-1">WhatsApp de soporte</p>
         <p className="text-[#bbb] text-sm mt-2">{contact.whatsappDisplay}</p>
-        <p className="text-[#666] text-xs mt-3">Ideal para onboarding e integracion inicial.</p>
+        <p className="text-[#666] text-xs mt-3">Ideal para onboarding e integración inicial.</p>
       </a>
       <div className="rounded-3xl border border-[#2a2a2a] bg-[#111] p-6 md:col-span-2">
         <p className="text-white text-lg font-semibold">Horario y cobertura</p>
@@ -53,12 +53,12 @@ export function ContactCards() {
             <p className="text-[#bbb] text-sm mt-1">Lunes a viernes, 9:00 a.m. - 6:00 p.m.</p>
           </div>
           <div>
-            <p className="text-[#FF5C3A] text-xs uppercase tracking-wider">Implementacion</p>
-            <p className="text-[#bbb] text-sm mt-1">Activacion guiada para Shopify, WooCommerce y HTML.</p>
+            <p className="text-[#FF5C3A] text-xs uppercase tracking-wider">Implementación</p>
+            <p className="text-[#bbb] text-sm mt-1">Activación guiada para Shopify, WooCommerce y HTML.</p>
           </div>
           <div>
-            <p className="text-[#FF5C3A] text-xs uppercase tracking-wider">Soporte tecnico</p>
-            <p className="text-[#bbb] text-sm mt-1">Acompanamiento en integracion y configuracion del widget.</p>
+            <p className="text-[#FF5C3A] text-xs uppercase tracking-wider">Soporte técnico</p>
+            <p className="text-[#bbb] text-sm mt-1">Acompañamiento en integración y configuración del widget.</p>
           </div>
         </div>
       </div>
