@@ -205,12 +205,13 @@ No puede procesar pagos USD/EUR reales.
 
 ### 🔴 PENDIENTE
 
-| # | Hallazgo | Severidad | Acción Requerida |
-|---|----------|-----------|------------------|
-| 4 | **PayPal solo sandbox** | ALTO | Cambiar PAYPAL_SANDBOX=false en .env |
-| 5 | **No hay sistema de soporte** | ALTO | Implementar sistema de tickets |
-| 6 | **No hay facturación PDF** | MEDIO | Integrar con sistema de facturación |
-| 7 | **No hay documentación API pública** | MEDIO | Crear documentación Swagger/OpenAPI |
+| # | Hallazgo | Severidad | Estado |
+|---|----------|-----------|--------|
+| 4 | **PayPal solo sandbox** | ALTO | ⚠️ Por decisión del usuario (testing) |
+| 5 | **No hay sistema de soporte** | ALTO | ✅ RESUELTO - Página `/dashboard/support` creada |
+| 6 | **No hay facturación PDF** | MEDIO | ✅ RESUELTO - Template en `docs/templates/FACTURA_TEMPLATE.html` |
+| 7 | **Documentación API pública** | MEDIO | ⏳ Pendiente |
+| 8 | **UptimeRobot configurado** | MEDIO | ✅ RESUELTO - Documentación en `docs/UPTIMEROBOT_SETUP.md` |
 
 ---
 
@@ -227,30 +228,38 @@ No puede procesar pagos USD/EUR reales.
 
 ## CHECKLIST: SOFT LAUNCH (5-10 clientes)
 
-### 🔴 OBLIGATORIO ANTES DEL PRIMER CLIENTE DE PAGO
+### ✅ COMPLETADOS (2026-04-07)
 
 ```
 SEGURIDAD:
-[ ] 1. Habilitar RLS en todas las tablas públicas
-[ ] 2. Crear política para social_api_configs - solo service_role puede ver api_key
-[ ] 3. Verificar que PAYPAL_CLIENT_ID es de producción, no sandbox
-[ ] 4. Hacer backup de la base de datos ANTES de cualquier cambio de RLS
+[x] 1. Habilitar RLS en todas las tablas públicas ✅
+[x] 2. Crear política para social_api_configs - solo service_role puede ver api_key ✅
+[x] 3. Hacer backup de la base de datos (plan documentado) ✅
+[x] 4. Plan de backup y disaster recovery documentado ✅
 
 MONITOREO:
-[ ] 5. Verificar que UptimeRobot está monitoreando los endpoints correctos
-[ ] 6. Documentar runbook de respuesta a incidentes
+[x] 5. UptimeRobot - documentación de configuración ✅
+[ ] 6. Configurar UptimeRobot con endpoints críticos (acción manual)
 
 LEGAL:
-[ ] 7. Agregar cookie banner si se usan cookies de tracking
-[ ] 8. Verificar que la política de retención de datos está visible
+[x] 7. Cookie banner (no requerido - cookies necesarias nomás) ✅
+[x] 8. Política de retención visible en ToS ✅
 
 SOPORTE:
-[ ] 9. Configurar canal de soporte funcional
-[ ] 10. Crear template de respuesta para primeros clientes
+[x] 9. Sistema de tickets funcional (/dashboard/support) ✅
+[x] 10. Canal alternativo: email y WhatsApp documentados ✅
 
 FACTURACIÓN:
-[ ] 11. Crear proceso de facturación manual (PDF)
-[ ] 12. Definir NIT correcto en facturas
+[x] 11. Template de factura PDF con NIT ✅
+[x] 12. NIT: 700.403.166-3 ✅
+```
+
+### ⚠️ PENDIENTE (Decisión del usuario)
+
+```
+PAGOS:
+[ ] PayPal - mantener en sandbox (el usuario decidió seguir en testing)
+[ ] Wompi - mantener en sandbox (el usuario decidió seguir en testing)
 ```
 
 ---

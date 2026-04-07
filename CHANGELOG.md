@@ -1,5 +1,49 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-07] - Soft Launch Readiness - 3 Features Completadas
+
+### 1. Sistema de Tickets para Clientes ✅
+**Nueva página:** `frontend/src/app/dashboard/support/page.tsx`
+- Clientes pueden crear tickets de soporte desde su dashboard
+- Ver estado de tickets (abiertos, en progreso, resueltos)
+- Stats cards con conteo de tickets
+- Modal de creación con categorías: Soporte Técnico, Facturación, Bug, etc.
+- Incluye enlaces directos a email y WhatsApp
+
+**Sidebar actualizado:** `frontend/src/components/dashboard/DashboardLayout.tsx`
+- Nueva ruta "Soporte" agregada al menú
+- Icono SupportIcon añadido
+
+### 2. Template de Factura PDF ✅
+**Archivo:** `docs/templates/FACTURA_TEMPLATE.html`
+- Template profesional HTML listo para imprimir/convertir a PDF
+- Incluye:
+  - Logo Lookitry y datos de Wilkie Devs
+  - NIT: 700.403.166-3 (persona natural)
+  - Tabla de items con precios en COP
+  - Cálculo de IVA (19%)
+  - Información de pago (transferencia, Wompi, PayPal)
+  - Disclaimer sobre resultados de IA
+- Compatible con conversión a PDF via navegador o herramientas como wkhtmltopdf
+
+### 3. Documentación UptimeRobot ✅
+**Archivo:** `docs/UPTIMEROBOT_SETUP.md`
+- Lista completa de endpoints críticos a monitorear:
+  - api.lookitry.com/health
+  - lookitry.com
+  - n8n.wilkiedevs.com/health
+  - minio.wilkiedevs.com/minio/health/live
+  - Supabase
+- Configuración de status page pública
+- Configuración de alertas (email, WhatsApp, Slack)
+- Runbook de respuesta a incidentes
+- Checklist de verificación
+
+### 4. Fix RLS Tables (completado ayer) ✅
+- Migration aplicada: enable_rls_critical_tables
+- 9 tablas protegidas con RLS
+- api_key de social_api_configs solo visible para service_role
+
 ## [2026-04-06] - Sistema de Verificación Social (Instagram + TikTok)
 
 ### Nueva Funcionalidad: Social Verification System
