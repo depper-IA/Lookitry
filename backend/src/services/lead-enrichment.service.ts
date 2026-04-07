@@ -5,6 +5,7 @@
  * - Import leads from Excel CRM
  * - Batch classification/enrichment
  * - Website verification
+ * - Social media verification (Instagram, TikTok)
  * - Integration with Supabase leads table
  */
 
@@ -13,6 +14,17 @@ import { leadService, type Lead } from './lead.service';
 import * as XLSX from 'xlsx';
 import * as fs from 'fs';
 import * as path from 'path';
+import https from 'https';
+import http from 'http';
+import {
+  type SocialVerification,
+  type WebsiteVerification,
+  type InstagramVerification,
+  type TikTokVerification,
+  SOCIAL_PATTERNS,
+  FASHION_KEYWORDS_SOCIAL,
+  SOCIAL_SCORE_WEIGHTS,
+} from '../types/social-verification';
 
 interface CRMLead {
   ID: number;
@@ -390,6 +402,412 @@ export class LeadEnrichmentService {
     }
     
     return (data || []).length;
+  }
+
+  // =====================
+  // SOCIAL VERIFICATION METHODS
+  // =====================
+
+  /**
+   * Verify social media presence for a lead (website, Instagram, TikTok)
+   */
+  async verifySocialHandles(leadId: string): Promise<SocialVerification> {
+    const lead = await leadService.getLeadById(leadId);
+    
+    if (!lead) {
+      throw new Error(`Lead not found: ${leadId}`);
+    }
+
+    // Initialize verification objects
+    const websiteVerification = await this.verifyWebsiteFashion(lead.website || '');
+    const instagramVerification = await this.extractInstagramHandle(lead);
+    const tiktokVerification = await this.extractTikTokHandle(lead);
+
+    // Calculate overall social fashion score
+    let overallScore = 0;
+    if (websiteVerification.isFashion) {
+      overallScore += SOCIAL_SCORE_WEIGHTS.websiteFashion * 100;
+    }
+    if (instagramVerification.handleFound) {
+      overallScore += SOCIAL_SCORE_WEIGHTS.socialHandleFound * 100;
+    }
+    if (instagramVerification.urlVerified) {
+      overallScore += SOCIAL_SCORE_WEIGHTS.socialUrlVerified * 50;
+    }
+    if (tiktokVerification.handleFound) {
+      overallScore += SOCIAL_SCORE_WEIGHTS.socialHandleFound * 100;
+    }
+    if (tiktokVerification.urlVerified) {
+      overallScore += SOCIAL_SCORE_WEIGHTS.socialUrlVerified * 50;
+    }
+
+    // Determine verification status
+    let status: 'verified' | 'partial' | 'unverified' = 'unverified';
+    if (instagramVerification.handleFound && tiktokVerification.handleFound && websiteVerification.verified) {
+      status = 'verified';
+    } else if (instagramVerification.handleFound || tiktokVerification.handleFound) {
+      status = 'partial';
+    }
+
+    const verification: SocialVerification = {
+      leadId,
+      website: websiteVerification,
+      instagram: instagramVerification,
+      tiktok: tiktokVerification,
+      socialVerificationStatus: status,
+      overallFashionScore: Math.min(100, overallScore),
+      verifiedAt: new Date().toISOString(),
+      enrichmentSource: 'website_extraction',
+    };
+
+    // Update lead with social verification data
+    await this.updateLeadSocialData(leadId, verification);
+
+    return verification;
+  }
+
+  /**
+   * Verify website content and classify as fashion/not-fashion
+   */
+  private async verifyWebsiteFashion(websiteUrl: string): Promise<WebsiteVerification> {
+    if (!websiteUrl) {
+      return {
+        verified: false,
+        isFashion: false,
+        checkedAt: new Date().toISOString(),
+      };
+    }
+
+    try {
+      const content = await this.fetchWebsiteContent(websiteUrl);
+      if (!content) {
+        return {
+          verified: false,
+          isFashion: false,
+          checkedAt: new Date().toISOString(),
+        };
+      }
+
+      const contentLower = content.toLowerCase();
+      const keywordsFound: string[] = [];
+      
+      for (const keyword of FASHION_KEYWORDS_SOCIAL) {
+        if (contentLower.includes(keyword)) {
+          keywordsFound.push(keyword);
+        }
+      }
+
+      const isFashion = keywordsFound.length >= 2;
+
+      return {
+        verified: true,
+        isFashion,
+        contentPreview: content.substring(0, 500),
+        keywordsFound,
+        checkedAt: new Date().toISOString(),
+      };
+    } catch (error) {
+      return {
+        verified: false,
+        isFashion: false,
+        checkedAt: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * Extract Instagram handle from lead's website or existing data
+   */
+  private async extractInstagramHandle(lead: Lead): Promise<InstagramVerification> {
+    let handleFound: string | null = null;
+    let urlVerified = false;
+
+    // First check if lead already has Instagram stored
+    if (lead.instagram) {
+      handleFound = lead.instagram.startsWith('@') ? lead.instagram : `@${lead.instagram}`;
+    }
+
+    // Try to extract from website
+    if (lead.website && !handleFound) {
+      try {
+        const content = await this.fetchWebsiteContent(lead.website);
+        if (content) {
+          // Search for Instagram URLs
+          for (const pattern of SOCIAL_PATTERNS.instagram.urlPatterns) {
+            const matches = content.match(pattern);
+            if (matches && matches.length > 0) {
+              const username = matches[0].replace(/https?:\/\/(www\.)?instagram\.com\//gi, '').replace(/\/.*$/, '');
+              if (username && SOCIAL_PATTERNS.instagram.validateHandle(username)) {
+                handleFound = username.startsWith('@') ? username : `@${username}`;
+                break;
+              }
+            }
+          }
+
+          // If no URL found, search for @mentions
+          if (!handleFound) {
+            const mentions = content.match(SOCIAL_PATTERNS.instagram.handlePattern);
+            if (mentions && mentions.length > 0) {
+              const cleanHandle = mentions[0].replace('@', '');
+              if (SOCIAL_PATTERNS.instagram.validateHandle(cleanHandle)) {
+                handleFound = `@${cleanHandle}`;
+              }
+            }
+          }
+        }
+      } catch {
+        // Continue without Instagram extraction
+      }
+    }
+
+    // Verify URL if we found a handle
+    if (handleFound) {
+      const cleanHandle = handleFound.replace('@', '');
+      urlVerified = await this.verifySocialUrl(`https://www.instagram.com/${cleanHandle}/`);
+    }
+
+    return {
+      handleFound,
+      urlVerified,
+      formatValid: handleFound ? SOCIAL_PATTERNS.instagram.validateHandle(handleFound.replace('@', '')) : false,
+      handleSource: lead.instagram ? 'excel' : handleFound ? 'website' : null,
+    };
+  }
+
+  /**
+   * Extract TikTok handle from lead's website or existing data
+   */
+  private async extractTikTokHandle(lead: Lead): Promise<TikTokVerification> {
+    let handleFound: string | null = null;
+    let urlVerified = false;
+
+    // First check if lead already has TikTok stored
+    if (lead.tiktok) {
+      handleFound = lead.tiktok.startsWith('@') ? lead.tiktok : `@${lead.tiktok}`;
+    }
+
+    // Try to extract from website
+    if (lead.website && !handleFound) {
+      try {
+        const content = await this.fetchWebsiteContent(lead.website);
+        if (content) {
+          // Search for TikTok URLs
+          for (const pattern of SOCIAL_PATTERNS.tiktok.urlPatterns) {
+            const matches = content.match(pattern);
+            if (matches && matches.length > 0) {
+              const username = matches[0].replace(/https?:\/\/(www\.|vm\.)?tiktok\.com\//gi, '').replace(/\/.*$/, '');
+              if (username && SOCIAL_PATTERNS.tiktok.validateHandle(username)) {
+                handleFound = username.startsWith('@') ? username : `@${username}`;
+                break;
+              }
+            }
+          }
+
+          // If no URL found, search for @mentions
+          if (!handleFound) {
+            const mentions = content.match(SOCIAL_PATTERNS.tiktok.handlePattern);
+            if (mentions && mentions.length > 0) {
+              const cleanHandle = mentions[0].replace('@', '');
+              if (SOCIAL_PATTERNS.tiktok.validateHandle(cleanHandle)) {
+                handleFound = `@${cleanHandle}`;
+              }
+            }
+          }
+        }
+      } catch {
+        // Continue without TikTok extraction
+      }
+    }
+
+    // Verify URL if we found a handle
+    if (handleFound) {
+      const cleanHandle = handleFound.replace('@', '');
+      urlVerified = await this.verifySocialUrl(`https://www.tiktok.com/@${cleanHandle}`);
+    }
+
+    return {
+      handleFound,
+      urlVerified,
+      formatValid: handleFound ? SOCIAL_PATTERNS.tiktok.validateHandle(handleFound.replace('@', '')) : false,
+      handleSource: lead.tiktok ? 'excel' : handleFound ? 'website' : null,
+    };
+  }
+
+  /**
+   * Fetch website content for analysis
+   */
+  private fetchWebsiteContent(url: string): Promise<string | null> {
+    return new Promise((resolve) => {
+      if (!url || !url.startsWith('http')) {
+        resolve(null);
+        return;
+      }
+
+      try {
+        const urlObj = new URL(url);
+        const protocol = urlObj.protocol === 'https:' ? https : require('http');
+        
+        const req = protocol.get(url, { timeout: 10000 }, (res) => {
+          // Handle redirects
+          if (res.statusCode === 301 || res.statusCode === 302) {
+            const redirectUrl = res.headers.location;
+            if (redirectUrl) {
+              this.fetchWebsiteContent(redirectUrl).then(resolve);
+              return;
+            }
+          }
+
+          if (res.statusCode !== 200) {
+            resolve(null);
+            return;
+          }
+
+          let data = '';
+          res.on('data', (chunk) => data += chunk);
+          res.on('end', () => {
+            // Strip HTML tags for text analysis
+            const textContent = data
+              .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+              .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+              .replace(/<[^>]+>/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim();
+            resolve(textContent.substring(0, 10000)); // Limit content size
+          });
+        });
+
+        req.on('error', () => resolve(null));
+        req.on('timeout', () => {
+          req.destroy();
+          resolve(null);
+        });
+      } catch {
+        resolve(null);
+      }
+    });
+  }
+
+  /**
+   * Verify a social media URL exists (HTTP HEAD check)
+   */
+  private verifySocialUrl(url: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      try {
+        const urlObj = new URL(url);
+        const protocol = urlObj.protocol === 'https:' ? https : require('http');
+
+        const req = protocol.request({
+          hostname: urlObj.hostname,
+          path: urlObj.pathname,
+          method: 'HEAD',
+          timeout: 5000,
+        }, (res) => {
+          resolve(res.statusCode === 200 || res.statusCode === 301 || res.statusCode === 302);
+        });
+
+        req.on('error', () => resolve(false));
+        req.on('timeout', () => {
+          req.destroy();
+          resolve(false);
+        });
+
+        req.end();
+      } catch {
+        resolve(false);
+      }
+    });
+  }
+
+  /**
+   * Update lead with social verification data
+   */
+  private async updateLeadSocialData(leadId: string, verification: SocialVerification): Promise<void> {
+    const cleanInstagramHandle = verification.instagram.handleFound?.replace('@', '') || null;
+    const cleanTikTokHandle = verification.tiktok.handleFound?.replace('@', '') || null;
+
+    await supabaseAdmin
+      .from('leads')
+      .update({
+        instagram: cleanInstagramHandle,
+        tiktok: cleanTikTokHandle,
+        social_verification_status: verification.socialVerificationStatus,
+        social_verification_score: verification.overallFashionScore,
+        website_verified: verification.website.verified,
+        is_fashion_relevant: verification.website.isFashion || verification.overallFashionScore >= 50,
+        last_enriched_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', leadId);
+  }
+
+  /**
+   * Batch verify social handles for multiple leads
+   */
+  async batchVerifySocialHandles(leadIds: string[]): Promise<{ processed: number; successful: number; failed: number }> {
+    let processed = 0;
+    let successful = 0;
+    let failed = 0;
+
+    for (const leadId of leadIds) {
+      try {
+        await this.verifySocialHandles(leadId);
+        successful++;
+      } catch (error) {
+        failed++;
+        console.error(`[SocialVerification] Failed for lead ${leadId}:`, error);
+      }
+      processed++;
+
+      // Rate limiting to avoid overwhelming servers
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    return { processed, successful, failed };
+  }
+
+  /**
+   * Enrich all leads with social verification
+   */
+  async enrichAllPendingSocialVerification(batchSize: number = 50): Promise<{
+    processed: number; 
+    results: Array<{ leadId: string; success: boolean; score: number }>
+  }> {
+    const { data: leads, error } = await supabaseAdmin
+      .from('leads')
+      .select('id, website, instagram, tiktok')
+      .or(`social_verification_status.is.null,social_verification_status.eq.unverified`)
+      .limit(batchSize);
+
+    if (error) {
+      throw new Error(`Failed to fetch leads: ${error.message}`);
+    }
+
+    const results: Array<{ leadId: string; success: boolean; score: number }> = [];
+
+    for (const lead of leads || []) {
+      try {
+        const verification = await this.verifySocialHandles(lead.id);
+        results.push({
+          leadId: lead.id,
+          success: true,
+          score: verification.overallFashionScore,
+        });
+      } catch {
+        results.push({
+          leadId: lead.id,
+          success: false,
+          score: 0,
+        });
+      }
+
+      // Rate limiting
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    return {
+      processed: (leads || []).length,
+      results,
+    };
   }
 }
 

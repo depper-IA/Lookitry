@@ -2,6 +2,7 @@ import https from 'https';
 import { supabaseAdmin } from '../config/supabase';
 import { leadService } from './lead.service';
 import { leadSearchService } from './lead-search.service';
+import { leadEnrichmentService } from './lead-enrichment.service';
 
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY || '';
 const MAX_DAILY_QUERIES = 500;
@@ -34,6 +35,14 @@ export interface QuotaStatus {
   monthly_limit: number;
   daily_remaining: number;
   monthly_remaining: number;
+}
+
+export interface ProspectingResult {
+  found: number;
+  inserted: number;
+  duplicates: number;
+  skippedNoSocial: number;
+  enriched: number;
 }
 
 export class LeadGenerationService {
@@ -259,6 +268,212 @@ export class LeadGenerationService {
     if (!interval) return true;
 
     return now.getTime() - lastRun.getTime() >= interval;
+  }
+
+  // =====================
+  // PROSPECTING WITH SOCIAL VERIFICATION
+  // =====================
+
+  /**
+   * Run search with social verification - only creates leads that have social presence
+   */
+  async runSearchWithSocialVerification(searchId: string): Promise<ProspectingResult> {
+    const search = await leadSearchService.getSearchById(searchId);
+    if (!search) throw new Error('Search not found');
+
+    const result: ProspectingResult = {
+      found: 0,
+      inserted: 0,
+      duplicates: 0,
+      skippedNoSocial: 0,
+      enriched: 0,
+    };
+
+    for (const keyword of search.keywords) {
+      const query = this.buildQuery(keyword, search.country, search.city);
+      const places = await this.searchPlaces(
+        query,
+        undefined,
+        search.search_radius_km * 1000
+      );
+
+      result.found += places.length;
+
+      // Process each place
+      for (const place of places.slice(0, search.max_results)) {
+        // Check if this place has website (required for social verification)
+        if (!place.website) {
+          result.skippedNoSocial++;
+          continue;
+        }
+
+        // Create the lead first
+        const leadData = {
+          name: place.name,
+          business_type: place.types?.[0] || 'store',
+          address: place.formatted_address,
+          phone: place.formatted_phone_number,
+          website: place.website,
+          source: 'google_places',
+          source_id: place.place_id,
+          search_id: search.id,
+          country: search.country,
+          city: search.city,
+          latitude: place.geometry?.location?.lat,
+          longitude: place.geometry?.location?.lng,
+          status: 'new',
+        };
+
+        try {
+          const createResult = await leadService.createLeadsBatch([leadData]);
+          
+          if (createResult.inserted > 0) {
+            result.inserted++;
+            
+            // Find the lead we just created
+            const { data: newLead } = await supabaseAdmin
+              .from('leads')
+              .select('id')
+              .eq('source_id', place.place_id)
+              .single();
+
+            if (newLead) {
+              // Run social verification on this lead
+              try {
+                await leadEnrichmentService.verifySocialHandles(newLead.id);
+                result.enriched++;
+              } catch (enrichError) {
+                console.error(`[LeadGen] Social verification failed for ${newLead.id}:`, enrichError);
+              }
+
+              // Small delay to avoid rate limiting
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          } else {
+            result.duplicates++;
+          }
+        } catch (error) {
+          console.error(`[LeadGen] Failed to create lead for ${place.name}:`, error);
+        }
+      }
+    }
+
+    await leadSearchService.markSearchRun(searchId, result.inserted);
+
+    return result;
+  }
+
+  /**
+   * Search places and immediately enrich with social verification
+   * Returns leads that have website AND social presence indicators
+   */
+  async searchAndEnrichPlaces(
+    query: string,
+    location?: { lat: number; lng: number },
+    radius?: number,
+    requireSocialPresence: boolean = true
+  ): Promise<GooglePlaceResult[]> {
+    const places = await this.searchPlaces(query, location, radius);
+    
+    if (!requireSocialPresence) {
+      return places;
+    }
+
+    // Filter places that have website AND potential social presence
+    const enrichedPlaces: GooglePlaceResult[] = [];
+
+    for (const place of places) {
+      if (!place.website) continue;
+
+      try {
+        // Quick check if website exists and has content
+        const hasContent = await this.quickWebsiteCheck(place.website);
+        if (hasContent) {
+          enrichedPlaces.push(place);
+        }
+      } catch {
+        // Skip this place if website check fails
+      }
+
+      // Rate limit
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    return enrichedPlaces;
+  }
+
+  /**
+   * Quick check if website is accessible and has content
+   */
+  private quickWebsiteCheck(url: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      try {
+        const urlObj = new URL(url);
+        const protocol = urlObj.protocol === 'https:' ? https : http;
+
+        const req = protocol.request({
+          hostname: urlObj.hostname,
+          path: urlObj.pathname || '/',
+          method: 'HEAD',
+          timeout: 5000,
+        }, (res: http.IncomingMessage) => {
+          resolve(res.statusCode === 200);
+        });
+
+        req.on('error', () => resolve(false));
+        req.on('timeout', () => {
+          req.destroy();
+          resolve(false);
+        });
+
+        req.end();
+      } catch {
+        resolve(false);
+      }
+    });
+  }
+
+  /**
+   * Batch process leads for social verification
+   */
+  async batchEnrichLeadsWithSocial(limit: number = 100): Promise<{
+    processed: number;
+    enriched: number;
+    failed: number;
+  }> {
+    // Get leads that have website but no social verification
+    const { data: leads } = await supabaseAdmin
+      .from('leads')
+      .select('id, website')
+      .eq('source', 'google_places')
+      .is('social_verification_status', null)
+      .not('website', 'is', null)
+      .limit(limit);
+
+    if (!leads || leads.length === 0) {
+      return { processed: 0, enriched: 0, failed: 0 };
+    }
+
+    let enriched = 0;
+    let failed = 0;
+
+    for (const lead of leads) {
+      try {
+        await leadEnrichmentService.verifySocialHandles(lead.id);
+        enriched++;
+      } catch {
+        failed++;
+      }
+
+      // Rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    return {
+      processed: leads.length,
+      enriched,
+      failed,
+    };
   }
 
   private httpGet(url: string): Promise<string> {

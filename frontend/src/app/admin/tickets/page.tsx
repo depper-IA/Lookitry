@@ -876,7 +876,7 @@ function TicketModal({ ticket, brands, admins, onSave, onClose, isLoading }: Tic
               </label>
               <select
                 value={form.priority}
-                onChange={(e) => setForm({ ...form, priority: e.target.value })}
+                onChange={(e) => setForm({ ...form, priority: e.target.value as TicketPriority })}
                 className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none"
               >
                 <option value="low">Baja</option>
@@ -892,7 +892,7 @@ function TicketModal({ ticket, brands, admins, onSave, onClose, isLoading }: Tic
               </label>
               <select
                 value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                onChange={(e) => setForm({ ...form, category: e.target.value as TicketCategory })}
                 className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none"
               >
                 <option value="technical">Soporte Técnico</option>
@@ -909,7 +909,7 @@ function TicketModal({ ticket, brands, admins, onSave, onClose, isLoading }: Tic
               </label>
               <select
                 value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
+                onChange={(e) => setForm({ ...form, status: e.target.value as TicketStatus })}
                 className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-base)] px-3 py-2.5 text-sm text-[var(--text-primary)] outline-none"
               >
                 <option value="open">Abierto</option>
