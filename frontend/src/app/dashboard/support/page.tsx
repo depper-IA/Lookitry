@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { 
   Ticket, Plus, X, ChevronLeft, ChevronRight, 
   Clock, CheckCircle2, AlertTriangle, MessageSquare,
-  Loader2, Send, Filter
+  Loader2, Send, Filter, Mail, Globe
 } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
@@ -92,9 +92,10 @@ export default function SupportPage() {
       params.set('limit', String(limit));
       if (filterStatus) params.set('status', filterStatus);
 
-      const data = await api.get<{ tickets: Ticket[]; total: number; stats?: TicketStats }>(
+      const response = await api.get<{ tickets: Ticket[]; total: number; stats?: TicketStats }>(
         `/api/admin/tickets?${params.toString()}`
       );
+      const data = response.data;
       setTickets(data.tickets || []);
       setTotal(data.total || 0);
       if (data.stats) setStats(data.stats);
@@ -219,6 +220,16 @@ export default function SupportPage() {
           >
             <MessageSquare className="h-4 w-4" />
             WhatsApp
+          </a>
+          <a 
+            href="https://stats.uptimerobot.com/CTEnSD7d1j" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-[var(--accent)]"
+            style={{ color: 'var(--accent)' }}
+          >
+            <Globe className="h-4 w-4" />
+            Estado del servicio
           </a>
         </div>
       </div>
