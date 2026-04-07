@@ -293,6 +293,38 @@ export class LeadService {
 
     return cityCounts;
   }
+
+  async getLeadFilterOptions(): Promise<{
+    cities: string[];
+    countries: string[];
+    businessTypes: string[];
+    statuses: string[];
+  }> {
+    const { data, error } = await supabaseAdmin
+      .from('leads')
+      .select('city, country, business_type, status');
+
+    if (error) throw error;
+
+    const cities = new Set<string>();
+    const countries = new Set<string>();
+    const businessTypes = new Set<string>();
+    const statuses = new Set<string>();
+
+    (data || []).forEach((lead: any) => {
+      if (lead.city) cities.add(lead.city);
+      if (lead.country) countries.add(lead.country);
+      if (lead.business_type) businessTypes.add(lead.business_type);
+      if (lead.status) statuses.add(lead.status);
+    });
+
+    return {
+      cities: Array.from(cities).sort(),
+      countries: Array.from(countries).sort(),
+      businessTypes: Array.from(businessTypes).sort(),
+      statuses: Array.from(statuses).sort(),
+    };
+  }
 }
 
 export const leadService = new LeadService();

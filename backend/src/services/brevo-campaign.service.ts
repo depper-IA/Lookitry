@@ -30,12 +30,39 @@ export class BrevoCampaignService {
 
   constructor() {
     this.apiKey = process.env.BREVO_API_KEY || '';
-    this.senderEmail = process.env.SMTP_FROM || 'info@lookitry.com';
-    this.senderName = process.env.SMTP_FROM_NAME || 'Lookitry';
+    const fromStr = process.env.SMTP_FROM || process.env.SMTP_USER || 'info@lookitry.com';
+    const parsed = this.parseSender(fromStr);
+    this.senderEmail = parsed.email;
+    this.senderName = process.env.SMTP_FROM_NAME || parsed.name || 'Lookitry';
+  }
+
+  private parseSender(senderStr: string): { name?: string; email: string } {
+    const match = senderStr.match(/^(.*)<(.*)>$/);
+    if (match) {
+      return {
+        name: match[1].trim(),
+        email: match[2].trim()
+      };
+    }
+    return { email: senderStr.trim() };
+  }
+
+  async verifyConnection(): Promise<boolean> {
+    try {
+      await this.makeRequest('/smtp/statistics/reports', 'GET');
+      return true;
+    } catch (error) {
+      console.error('[Brevo] Connection verification failed:', error);
+      return false;
+    }
   }
 
   private async makeRequest(path: string, method: string, body?: object): Promise<any> {
     return new Promise((resolve, reject) => {
+      if (!this.apiKey) {
+        return reject(new Error('BREVO_API_KEY no configurada'));
+      }
+
       const options = {
         hostname: 'api.brevo.com',
         port: 443,
@@ -51,11 +78,21 @@ export class BrevoCampaignService {
         let data = '';
         res.on('data', (chunk) => (data += chunk));
         res.on('end', () => {
+          let parsed: any;
           try {
-            resolve(JSON.parse(data));
+            parsed = JSON.parse(data);
           } catch {
-            resolve(data);
+            parsed = data;
           }
+
+          if (res.statusCode && (res.statusCode < 200 || res.statusCode >= 300)) {
+            const error: any = new Error(parsed?.message || `Brevo Error ${res.statusCode}`);
+            error.statusCode = res.statusCode;
+            error.response = parsed;
+            console.error(`[Brevo] API Error (${res.statusCode}):`, JSON.stringify(parsed, null, 2));
+            return reject(error);
+          }
+          resolve(parsed);
         });
       });
 
@@ -69,10 +106,6 @@ export class BrevoCampaignService {
   }
 
   async sendEmail(options: BrevoEmailOptions): Promise<BrevoSendResult> {
-    if (!this.apiKey) {
-      throw new Error('BREVO_API_KEY no configurada');
-    }
-
     const payload = {
       sender: {
         name: options.fromName || this.senderName,
@@ -164,25 +197,6 @@ export class BrevoCampaignService {
       blocked: 'blocked',
     };
     return statusMap[status?.toLowerCase()] || 'sent';
-  }
-
-  async verifyConnection(): Promise<boolean> {
-    if (!this.apiKey) {
-      return false;
-    }
-
-    try {
-      await this.makeRequest('/smtp/email', 'POST', {
-        sender: { name: 'Test', email: this.senderEmail },
-        to: [{ email: this.senderEmail }],
-        subject: 'Test Connection',
-        htmlContent: '<p>Test</p>',
-      });
-      return true;
-    } catch (error) {
-      console.error('[Brevo] Connection verification failed:', error);
-      return false;
-    }
   }
 }
 

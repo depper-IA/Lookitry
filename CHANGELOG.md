@@ -7,6 +7,52 @@
 - **Causa:** El healthcheck añadido en el commit previo (`curl -f http://localhost:3000`) fallaba constantemente porque la imagen oficial `alpine` de Next.js no tiene `curl` instalado. Adicionalmente, tampoco contaba con un `wget` funcional para interactuar internamente de forma correcta. Como consecuencia, Docker marcaba el contenedor como `unhealthy`, causando que Traefik descartara este enrutador y cediera el tráfico al contenedor de fallback `lookitry-error-pages`.
 - **Solución:** Se ha removido forzosamente el bloque `healthcheck` de `docker-compose.frontend.yml`. Traefik enrutará confiando en que el contenedor está ejecutándose en memoria. El backend retiene su propia validación. El contenedor ha sido reiniciado a la normalidad en el VPS.
  
+## [2026-04-06] - Segmentación Avanzada de Leads y CRM Upgrade
+
+### 1. Sistema de Filtrado Dinámico de Leads (CRM)
+- **Backend:** 
+  - Se modificó la tabla `email_campaigns` integrando filtros para `city`, `country`, `business_type`, y `status`.
+  - Se creó el nuevo endpoint `GET /api/admin/leads/filters` para extraer dinámicamente opciones únicas de la BD.
+  - Implementación de transición automática de estado en `EmailCampaignService.processNextBatch` (los prospectos pasan a estado `contacted` al enviar email correctamente).
+  - Controlador `getLeads` ampliado para aceptar filtrado por `business_type`.
+- **Frontend Admin (`/admin/leads`):**
+  - Selectores `(select)` de País, Ciudad y Negocio pasaron de estar "harcodeados" a consumir la información agrupada generada desde `/api/admin/leads/filters`.
+  - Indicadores visuales y tarjetas adaptados al estado real del usuario.
+
+### 2. Marketing (Dashboard)
+- **Modal de Nueva Campaña (`/admin/email-campaigns`):**
+  - Implementación visual de la grilla de segmentación dinámica en el modal de destinatarios (filtrando por ciudad, país, estatus, tipo negocio) que envía la petición parametrizada al backend.
+  - Eliminación de referencias textuales y promesas de tipo **"Free Trial"** como directriz obligatoria orientada al 100% hacia modelo Paid B2B, modificándose a "Descubrir Lookitry".
+
+## [2026-04-07] - Email Testing Center + Health Page Fixes ✅
+### 1. Centro de Pruebas de Marketing (Email Testing Center)
+- **Backend:** Nueva funcionalidad `sendAdHocTest` que permite probar templates con datos de prueba sin crear campañas.
+- **Ruta:** `POST /api/admin/email-campaigns/test-ad-hoc` protegida con permiso `marketing`.
+- **Frontend Admin:**
+  - Implementado "Centro de Pruebas Rápido" colapsable en `/admin/email-campaigns`.
+  - Agregado botón "Probar Template" dentro del modal de creación de campañas.
+  - Soporte para envío instantáneo a cualquier dirección de correo.
+- **UX:** Diseño premium con el color accent `#FF5C3A`, transiciones suaves y validaciones de campo.
+
+### 2. Estabilidad de Health Check (Admin Health)
+- **Backend:** 
+  - Corregida lógica de `checkSupabase` (uso de `Promise.resolve` para evitar errores de tipo `PromiseLike`).
+  - Mejorada verificación de `n8n`: ahora usa `axios.get` con `validateStatus` para ser más resiliente a respuestas 4xx/5xx de webhooks.
+- **Frontend Dashboard:** 
+  - Corregido error que bloqueaba la página con un cuadro rojo cuando un servicio estaba caído (status 503).
+  - Ahora la página muestra los datos parciales de los servicios activos incluso si el estado general es "down".
+
+## [2026-04-07] - FIX: Error cargando campañas en Dashboard Admin
+
+### Refactorización de Autenticación en Email Campaigns ✅
+- **Problema:** El dashboard de campañas de email (`/admin/email-campaigns`) fallaba con "Error cargando campañas" en el VPS.
+- **Causa:** El frontend utilizaba `fetch` manual con `Authorization: Bearer ${token}` extrayendo el token de `localStorage`. Sin embargo, el flujo de login de Lookitry utiliza **Cookies HTTP-Only** (`admin_token`) por seguridad, y no almacena el token en `localStorage`. Al no enviar las cookies (`credentials: 'include'`) y enviar un token `null`, la API rechazaba las peticiones.
+- **Solución:**
+  - Se refactorizó `frontend/src/app/admin/email-campaigns/page.tsx` para usar el servicio centralizado `adminApi`.
+  - `adminApi` maneja automáticamente `credentials: 'include'`, asegurando que las cookies de sesión se envíen en cada petición.
+  - Se eliminaron todas las referencias a `localStorage.getItem('admin_token')` en esta página.
+- **Seguridad:** Se actualizó `backend/src/services/email-campaign.service.ts` para usar `maybeSingle()` en lugar de `single()` al insertar registros, siguiendo las reglas de programación defensiva del proyecto (Regla 5.3).
+
 ## [2026-04-07] - Soft Launch Readiness - 3 Features Completadas
 
 ### 1. Sistema de Tickets para Clientes ✅

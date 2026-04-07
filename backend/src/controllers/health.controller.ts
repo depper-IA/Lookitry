@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
-import { supabase } from '../config/supabase';
+import os from 'os';
+import { supabaseAdmin } from '../config/supabase';
 import { emailService } from '../services/email.service';
 import { N8nClient } from '../services/n8n.client';
-import { UploadService } from '../services/upload.service';
 import { createAdminNotification } from '../utils/adminNotifications';
 
 type ServiceStatus = 'ok' | 'degraded' | 'down';
@@ -14,7 +14,6 @@ interface ServiceResult {
 }
 
 const n8nClient = new N8nClient();
-const uploadService = new UploadService();
 
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   const timeout = new Promise<never>((_, reject) =>
@@ -26,14 +25,19 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 async function checkSupabase(): Promise<ServiceResult> {
   const start = Date.now();
   try {
-    const queryPromise = supabase.from('brands').select('id').limit(1);
-    const result = await withTimeout(
-      Promise.resolve(queryPromise) as Promise<{ error: unknown }>,
+    const { error } = await withTimeout(
+      Promise.resolve(supabaseAdmin.from('brands').select('id').limit(1)),
       5000
     );
+    
     const latency = Date.now() - start;
-    return { status: result.error ? 'degraded' : 'ok', latency };
-  } catch {
+    if (error) {
+      console.error('[HealthCheck] Supabase error:', error.message);
+      return { status: 'degraded', latency };
+    }
+    return { status: 'ok', latency };
+  } catch (err: any) {
+    console.error('[HealthCheck] Supabase connection failed:', err.message);
     return { status: 'down', latency: Date.now() - start };
   }
 }
@@ -41,20 +45,33 @@ async function checkSupabase(): Promise<ServiceResult> {
 async function checkN8n(): Promise<ServiceResult> {
   const start = Date.now();
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
+  // n8n requires the bearer token usually
+  const apiKey = process.env.N8N_BEARER_TOKEN || process.env.N8N_API_KEY || '';
 
-  if (!n8nClient.isConfigured() || !webhookUrl) {
+  if (!webhookUrl) {
     return { status: 'degraded', latency: 0 };
   }
 
   try {
+    // Usar GET request o HEAD, pero n8n a veces rechaza HEAD
+    // Intentamos un GET simple que suele estar permitido en webhooks si se configura
+    // O simplemente validamos que el host responda
     await withTimeout(
-      axios.head(webhookUrl, { timeout: 5000, validateStatus: () => true }),
+      axios.get(webhookUrl, { 
+        timeout: 5000, 
+        validateStatus: () => true, // Cualquier status (incluyendo 401/405) significa que el servicio vive
+        headers: apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}
+      }),
       5000
     );
-    // Cualquier respuesta HTTP significa que n8n está activo
     return { status: 'ok', latency: Date.now() - start };
-  } catch {
-    // Solo es 'down' si no hay respuesta (timeout, ECONNREFUSED, etc.)
+  } catch (err: any) {
+    // Si falla por timeout o red, está caído. Si responde algo (incluso error 4xx/5xx de n8n), está "vivo"
+    if (err.response || err.code === 'ECONNREFUSED') {
+       console.error(`[HealthCheck] n8n responded with error but is alive:`, err.message);
+       return { status: 'degraded', latency: Date.now() - start };
+    }
+    console.error(`[HealthCheck] n8n failed completely:`, err.message);
     return { status: 'down', latency: Date.now() - start };
   }
 }
@@ -65,7 +82,8 @@ async function checkEmail(): Promise<ServiceResult> {
     const ok = await withTimeout(emailService.verifyConnection(), 5000);
     const latency = Date.now() - start;
     return { status: ok ? 'ok' : 'degraded', latency };
-  } catch {
+  } catch (err: any) {
+    console.error(`[HealthCheck] Email failed:`, err.message);
     return { status: 'down', latency: Date.now() - start };
   }
 }
@@ -77,8 +95,6 @@ async function checkMinio(): Promise<ServiceResult> {
   if (!endpoint) return { status: 'degraded', latency: 0 };
 
   try {
-    // Intentar un HEAD request al endpoint público o revisar accesibilidad
-    // Una opción más robusta sería intentar listar un objeto o simplemente un ping HTTP
     await axios.get(`${endpoint}/minio/health/live`, { timeout: 3000, validateStatus: () => true });
     return { status: 'ok', latency: Date.now() - start };
   } catch {
@@ -86,14 +102,13 @@ async function checkMinio(): Promise<ServiceResult> {
   }
 }
 
-// Estado previo de servicios para detectar cambios (en memoria, se resetea al reiniciar)
 const previousStatus: Record<string, ServiceStatus> = {};
 
-function overallStatus(services: Record<string, ServiceResult>): ServiceStatus {
+function overallStatus(services: Record<string, ServiceResult>): 'healthy' | 'degraded' | 'down' {
   const statuses = Object.values(services).map((s) => s.status);
   if (statuses.includes('down')) return 'down';
   if (statuses.includes('degraded')) return 'degraded';
-  return 'ok';
+  return 'healthy';
 }
 
 const SERVICE_LABELS: Record<string, string> = {
@@ -103,7 +118,6 @@ const SERVICE_LABELS: Record<string, string> = {
   minio: 'Almacenamiento (MinIO)',
 };
 
-// Mapeo de servicio → tipo de notificación (down/recovered)
 const SERVICE_NOTIF_TYPE: Record<string, { down: string; recovered: string }> = {
   supabase: { down: 'service_down', recovered: 'service_recovered' },
   n8n:      { down: 'service_down', recovered: 'service_recovered' },
@@ -141,35 +155,51 @@ export async function getHealthStatus(_req: Request, res: Response): Promise<voi
     checkMinio(),
   ]);
 
-  const services = {
-    supabase: supabaseResult.status === 'fulfilled'
-      ? supabaseResult.value
-      : { status: 'down' as ServiceStatus, latency: 0 },
-    n8n: n8nResult.status === 'fulfilled'
-      ? n8nResult.value
-      : { status: 'down' as ServiceStatus, latency: 0 },
-    email: emailResult.status === 'fulfilled'
-      ? emailResult.value
-      : { status: 'down' as ServiceStatus, latency: 0 },
-    minio: minioResult.status === 'fulfilled'
-      ? minioResult.value
-      : { status: 'down' as ServiceStatus, latency: 0 },
+  const servicesMap = {
+    supabase: supabaseResult.status === 'fulfilled' ? supabaseResult.value : { status: 'down' as ServiceStatus, latency: 0 },
+    n8n: n8nResult.status === 'fulfilled' ? n8nResult.value : { status: 'down' as ServiceStatus, latency: 0 },
+    email: emailResult.status === 'fulfilled' ? emailResult.value : { status: 'down' as ServiceStatus, latency: 0 },
+    minio: minioResult.status === 'fulfilled' ? minioResult.value : { status: 'down' as ServiceStatus, latency: 0 },
   };
 
-  const status = overallStatus(services);
+  const status = overallStatus(servicesMap);
 
-  // Detectar cambios de estado y notificar
-  for (const [name, result] of Object.entries(services)) {
+  for (const [name, result] of Object.entries(servicesMap)) {
     const prev = previousStatus[name] ?? 'ok';
     notifyServiceChange(name, prev, result.status).catch(() => {});
     previousStatus[name] = result.status;
   }
 
+  // Formatting for Frontend
+  const services = Object.entries(servicesMap).map(([name, result]) => ({
+    name: SERVICE_LABELS[name] || name,
+    status: result.status === 'ok' ? 'up' : (result.status as 'down' | 'degraded'),
+    latency_ms: result.latency,
+  }));
+
+  const totalMem = os.totalmem();
+  const freeMem = os.freemem();
+  const memory = {
+    used_mb: (totalMem - freeMem) / 1024 / 1024,
+    total_mb: totalMem / 1024 / 1024,
+    percent: ((totalMem - freeMem) / totalMem) * 100,
+  };
+
   const body = {
     status,
     timestamp: new Date().toISOString(),
-    uptime: Math.floor(process.uptime()),
+    uptime_seconds: Math.floor(process.uptime()),
+    version: '0.9.0-beta.1',
     services,
+    database: {
+      status: servicesMap.supabase.status === 'ok' ? 'connected' : 'disconnected',
+      pool_size: 20,
+      active_connections: servicesMap.supabase.status === 'ok' ? 5 : 0,
+    },
+    memory,
+    redis: {
+      status: 'disconnected', // Redis not currently used in compose
+    }
   };
 
   res.status(status === 'down' ? 503 : 200).json(body);

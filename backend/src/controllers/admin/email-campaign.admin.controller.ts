@@ -161,3 +161,41 @@ export const verifyBrevoConnection = async (_req: Request, res: Response) => {
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al verificar conexión') });
   }
 };
+export const sendTestEmail = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { email } = req.body;
+
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email de prueba inválido' });
+    }
+
+    const result = await emailCampaignService.sendTestEmail(id, email.trim());
+    return res.status(200).json({ message: 'Email de prueba enviado', messageId: result.messageId });
+  } catch (err: any) {
+    console.error('[EmailCampaign] sendTestEmail:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al enviar email de prueba') });
+  }
+};
+
+export const sendAdHocTestEmail = async (req: Request, res: Response) => {
+  try {
+    const { subject, htmlTemplate, email } = req.body;
+
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Email de prueba inválido' });
+    }
+    if (!subject) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Asunto de prueba inválido' });
+    }
+    if (!htmlTemplate) {
+      return res.status(400).json({ error: 'VALIDATION_ERROR', message: 'Template HTML de prueba inválido' });
+    }
+
+    const result = await emailCampaignService.sendAdHocTest(subject.trim(), htmlTemplate.trim(), email.trim());
+    return res.status(200).json({ message: 'Email de prueba enviado', messageId: result.messageId });
+  } catch (err: any) {
+    console.error('[EmailCampaign] sendAdHocTestEmail:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al enviar email de prueba') });
+  }
+};

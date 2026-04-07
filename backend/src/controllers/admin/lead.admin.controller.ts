@@ -7,12 +7,13 @@ import { socialApiConfigService } from '../../services/social-api-config.service
 
 export const getLeads = async (req: any, res: Response) => {
   try {
-    const { country, city, status, source, search_id, page = '1' } = req.query;
+    const { country, city, business_type, status, source, search_id, page = '1' } = req.query;
     const pageNum = parseInt(page as string) || 1;
 
     const filters: any = {};
     if (country) filters.country = country;
     if (city) filters.city = city;
+    if (business_type) filters.business_type = business_type;
     if (status) filters.status = status;
     if (source) filters.source = source;
     if (search_id) filters.search_id = search_id;
@@ -94,6 +95,16 @@ export const getLeadsByCity = async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error('[Leads] getLeadsByCity:', err);
     return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al obtener leads por ciudad') });
+  }
+};
+
+export const getLeadFilterOptions = async (_req: Request, res: Response) => {
+  try {
+    const options = await leadService.getLeadFilterOptions();
+    return res.json(options);
+  } catch (err: any) {
+    console.error('[Leads] getLeadFilterOptions:', err);
+    return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(err, 'Error al obtener opciones de filtro') });
   }
 };
 

@@ -8,6 +8,7 @@ import { AdminNotifications } from '@/components/admin/AdminNotifications';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { ConfirmProvider } from '@/components/admin/ConfirmDialog';
 import { AdminBottomNav } from '@/components/ui/AdminBottomNav';
+import { adminApi } from '@/services/adminApi';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, LogOut, Shield, BookOpen, Gift, DollarSign, Zap, Brain, Settings } from 'lucide-react';
 
@@ -259,17 +260,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     if (pathname !== '/admin/login') {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-
-      fetch(`${apiBase}/api/admin/verify`, { credentials: 'include' })
-        .then(r => {
-          if (r.status === 401) {
-            localStorage.removeItem('adminUser');
-            router.push('/admin/login');
-            return null;
-          }
-          return r.ok ? r.json() : null;
-        })
+      adminApi.get('/admin/verify')
         .then(profileData => {
           if (!profileData) {
             if (userParsed) setAdminUser(userParsed);
@@ -280,8 +271,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           setLoading(false);
 
           Promise.all([
-            fetch(`${apiBase}/api/admin/feedback/count-unresolved`, { credentials: 'include' }).then(r => r.ok ? r.json() : null),
-            fetch(`${apiBase}/api/admin/notifications`, { credentials: 'include' }).then(r => r.ok ? r.json() : null),
+            adminApi.get('/admin/feedback/count-unresolved').catch(() => null),
+            adminApi.get('/admin/notifications').catch(() => null),
           ]).then(([fbData, notifData]) => {
             if (fbData?.count) setFeedbackCount(fbData.count);
             if (notifData?.notifications) {
@@ -306,8 +297,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = async () => {
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
-      await fetch(`${apiBase}/api/admin/auth/logout`, { method: 'POST', credentials: 'include' });
+      await adminApi.post('/admin/auth/logout');
     } catch (e) { console.error('Error logging out:', e); }
     localStorage.removeItem('adminUser');
     router.push('/');

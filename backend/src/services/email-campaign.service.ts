@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../config/supabase';
 import { brevoCampaignService, BrevoSendResult } from './brevo-campaign.service';
+import { leadService } from './lead.service';
 
 const BATCH_SIZE = 50;
 const BATCH_DELAY_MS = 10 * 60 * 1000;
@@ -13,9 +14,13 @@ export interface EmailCampaign {
   html_template: string;
   status: 'draft' | 'scheduled' | 'processing' | 'completed' | 'cancelled';
   scheduled_at: string | null;
-  filter_type: 'all' | 'trial' | 'paid' | 'plan';
+  filter_type: 'all' | 'trial' | 'paid' | 'plan' | 'leads';
   filter_plan?: string;
   filter_created_after?: string;
+  filter_city?: string;
+  filter_country?: string;
+  filter_business_type?: string;
+  filter_status?: string;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -74,7 +79,7 @@ export class EmailCampaignService {
     name: string;
     subject: string;
     htmlTemplate: string;
-    filterType?: 'all' | 'trial' | 'paid' | 'plan';
+    filterType?: 'all' | 'trial' | 'paid' | 'plan' | 'leads';
     filterPlan?: string;
     filterCreatedAfter?: string;
     createdBy: string;
@@ -92,7 +97,7 @@ export class EmailCampaignService {
         created_by: params.createdBy,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return this.mapCampaignRow(data);
@@ -198,7 +203,7 @@ export class EmailCampaignService {
 
     const { data: recipients } = await supabaseAdmin
       .from('email_campaign_recipients')
-      .select('id, email, brand_id')
+      .select('id, email, brand_id, lead_id')
       .eq('campaign_id', campaignId)
       .eq('status', 'pending')
       .order('id', { ascending: true })
@@ -245,6 +250,10 @@ export class EmailCampaignService {
           })
           .eq('id', recipient.id);
 
+        if (recipient.lead_id) {
+          await leadService.updateLeadFromOutreach(recipient.lead_id, 'email');
+        }
+
         processed++;
         await this.incrementDailyCount(1);
       } catch (error: any) {
@@ -286,10 +295,66 @@ export class EmailCampaignService {
     if (!campaign) throw new Error('Campaña no encontrada');
 
     const recipients = await this.buildRecipientList(campaign, sampleSize);
+
+    // If no recipients found (e.g. empty database), create a dummy one for preview
+    if (recipients.length === 0) {
+      recipients.push({
+        brand_id: 'dummy',
+        email: 'test@example.com',
+        contact_name: 'Usuario de Prueba',
+        name: 'Mi Marca Demo',
+        plan: 'PRO',
+      });
+    }
+
     return recipients.map((r) => ({
       email: r.email,
       html: this.interpolateTemplate(campaign.html_template, r),
     }));
+  }
+
+  async sendTestEmail(campaignId: string, testEmail: string): Promise<BrevoSendResult> {
+    const campaign = await this.getCampaignById(campaignId);
+    if (!campaign) throw new Error('Campaña no encontrada');
+
+    // Reuse buildRecipientList logic to get a sample brand for data
+    const recipients = await this.buildRecipientList(campaign, 1);
+    const sampleRecipient = recipients.length > 0 ? recipients[0] : {
+      brand_id: 'test-id',
+      email: testEmail,
+      contact_name: 'Admin Test',
+      name: 'Lookitry Demo',
+      plan: 'PRO'
+    };
+
+    const html = this.interpolateTemplate(campaign.html_template, {
+      ...sampleRecipient,
+      email: testEmail // Ensure the email is the test one
+    });
+
+    return await brevoCampaignService.sendEmail({
+      to: testEmail,
+      subject: `[TEST] ${campaign.subject}`,
+      html,
+    });
+  }
+
+  async sendAdHocTest(subject: string, htmlTemplate: string, testEmail: string): Promise<BrevoSendResult> {
+    const sampleRecipient = {
+      brand_id: 'test-ad-hoc',
+      email: testEmail,
+      contact_name: 'Usuario de Prueba',
+      name: 'Marca Demo',
+      plan: 'PRO'
+    };
+
+    const html = this.interpolateTemplate(htmlTemplate, sampleRecipient);
+
+    return await brevoCampaignService.sendEmail({
+      to: testEmail,
+      subject: `[QUICK TEST] ${subject}`,
+      html,
+    });
   }
 
   async cancelCampaign(campaignId: string): Promise<void> {
@@ -321,7 +386,35 @@ export class EmailCampaignService {
   private async buildRecipientList(
     campaign: EmailCampaign,
     limit?: number
-  ): Promise<Array<{ brand_id: string; email: string; contact_name?: string; name?: string; plan?: string }>> {
+  ): Promise<Array<{ brand_id?: string; lead_id?: string; email: string; contact_name?: string; name?: string; plan?: string }>> {
+
+    if (campaign.filter_type === 'leads') {
+      let leadQuery = supabaseAdmin
+        .from('leads')
+        .select('id, email, name, city, country, business_type, status')
+        .not('email', 'is', null);
+
+      if (campaign.filter_city) leadQuery = leadQuery.eq('city', campaign.filter_city);
+      if (campaign.filter_country) leadQuery = leadQuery.eq('country', campaign.filter_country);
+      if (campaign.filter_business_type) leadQuery = leadQuery.eq('business_type', campaign.filter_business_type);
+      if (campaign.filter_status) leadQuery = leadQuery.eq('status', campaign.filter_status);
+      if (campaign.filter_created_after) leadQuery = leadQuery.gte('created_at', campaign.filter_created_after);
+
+      if (limit) leadQuery = leadQuery.limit(limit);
+
+      const { data, error } = await leadQuery;
+      if (error) throw error;
+      return (data || []).map((row: any) => ({
+        lead_id: row.id,
+        email: row.email,
+        contact_name: row.name,
+        name: row.name,
+        city: row.city,
+        country: row.country,
+        business_type: row.business_type,
+      }));
+    }
+
     let query = supabaseAdmin
       .from('brands')
       .select('id, email, contact_name, name, plan')
@@ -355,10 +448,11 @@ export class EmailCampaignService {
     }));
   }
 
-  private async queueRecipients(campaignId: string, recipients: Array<{ brand_id: string; email: string }>): Promise<void> {
+  private async queueRecipients(campaignId: string, recipients: Array<{ brand_id?: string; lead_id?: string; email: string }>): Promise<void> {
     const inserts = recipients.map((r) => ({
       campaign_id: campaignId,
-      brand_id: r.brand_id,
+      brand_id: r.brand_id || null,
+      lead_id: r.lead_id || null,
       email: r.email,
       status: 'pending' as const,
     }));
@@ -368,7 +462,7 @@ export class EmailCampaignService {
 
   private interpolateTemplate(
     template: string,
-    recipient: { email: string; contact_name?: string; name?: string; plan?: string }
+    recipient: { email: string; contact_name?: string; name?: string; plan?: string; city?: string; country?: string; business_type?: string }
   ): string {
     const firstName = recipient.contact_name?.split(' ')[0] || recipient.name?.split(' ')[0] || 'Equipo';
     const brandName = recipient.name || 'Lookitry';
@@ -377,7 +471,10 @@ export class EmailCampaignService {
       .replace(/\{\{firstName\}\}/g, firstName)
       .replace(/\{\{brandName\}\}/g, brandName)
       .replace(/\{\{email\}\}/g, recipient.email)
-      .replace(/\{\{plan\}\}/g, recipient.plan || 'TRIAL');
+      .replace(/\{\{city\}\}/g, recipient.city || '')
+      .replace(/\{\{country\}\}/g, recipient.country || '')
+      .replace(/\{\{businessType\}\}/g, recipient.business_type || '')
+      .replace(/\{\{plan\}\}/g, recipient.plan || 'PRO');
   }
 
   private delay(ms: number): Promise<void> {
@@ -395,6 +492,10 @@ export class EmailCampaignService {
       filter_type: row.filter_type,
       filter_plan: row.filter_plan,
       filter_created_after: row.filter_created_after,
+      filter_city: row.filter_city,
+      filter_country: row.filter_country,
+      filter_business_type: row.filter_business_type,
+      filter_status: row.filter_status,
       created_by: row.created_by,
       created_at: row.created_at,
       updated_at: row.updated_at,
