@@ -16,6 +16,7 @@ Tiempos aproximados:
 Dependencias requeridas:
   pip install paramiko python-dotenv
 """
+
 import os
 import subprocess
 import sys
@@ -42,7 +43,11 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GITHUB_REPO = os.getenv("GITHUB_REPO", "https://github.com/depper-IA/Lookitry.git")
 REPO = "/root/virtual-tryon"
 
-REPO_URL = GITHUB_REPO.replace("https://", f"https://{GITHUB_TOKEN}@") if GITHUB_TOKEN else GITHUB_REPO
+REPO_URL = (
+    GITHUB_REPO.replace("https://", f"https://{GITHUB_TOKEN}@")
+    if GITHUB_TOKEN
+    else GITHUB_REPO
+)
 
 if not PASS:
     print("Error: La variable VPS_PASS no esta definida en backend/.env.")
@@ -128,7 +133,9 @@ remote_sha = remote_sha.strip()
 
 changed_files = ""
 if current_sha != remote_sha:
-    changed_files, _, _ = run(ssh, f"cd {REPO} && git diff --name-only HEAD..origin/main")
+    changed_files, _, _ = run(
+        ssh, f"cd {REPO} && git diff --name-only HEAD..origin/main"
+    )
     run(ssh, f"cd {REPO} && git reset --hard origin/main && git clean -fd")
 else:
     print("\nSin commits nuevos en origin/main.")
@@ -138,8 +145,14 @@ frontend_changed = False
 
 if not only_back and not only_front:
     if current_sha != remote_sha:
-        backend_changed = contains_path(changed_files, "backend/") or "docker-compose.backend.yml" in changed_files
-        frontend_changed = contains_path(changed_files, "frontend/") or "docker-compose.frontend.yml" in changed_files
+        backend_changed = (
+            contains_path(changed_files, "backend/")
+            or "docker-compose.backend.yml" in changed_files
+        )
+        frontend_changed = (
+            contains_path(changed_files, "frontend/")
+            or "docker-compose.frontend.yml" in changed_files
+        )
         if contains_path(changed_files, "lookitry-woocommerce/"):
             print(
                 "\n[INFO] Cambios del plugin WooCommerce detectados. "
@@ -193,6 +206,9 @@ if do_frontend:
 run(ssh, "docker ps --format 'table {{.Names}}\\t{{.Status}}'")
 
 wait_for_health(ssh)
+
+print("\n=== Limpiando pantalla de mantenimiento ===")
+run(ssh, f"cd {REPO} && docker compose -f docker-compose.errors.yml down")
 
 ssh.close()
 print("\nDeploy completado.")
