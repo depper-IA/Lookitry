@@ -136,8 +136,6 @@ async function saveLead(place: GooglePlaceResult, city: string, country: string)
       city,
       latitude: place.geometry?.location?.lat,
       longitude: place.geometry?.location?.lng,
-      rating: place.rating,
-      reviews_count: place.user_ratings_total,
       status: 'new',
       is_fashion_relevant: null,
     })
