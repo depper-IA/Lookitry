@@ -184,30 +184,35 @@ export class LeadEnrichmentService {
             lead.NOTAS
           );
           
-          return {
+          const leadData: Record<string, unknown> = {
             name: lead.NOMBRE_CONTACTO || lead.NOMBRE_MARCA || lead.NOMBRE_EMPRESA,
             business_type: lead.NICHO || 'unknown',
-            email: lead.EMAIL || null,
-            phone: lead.TELEFONO || null,
-            website: lead.SITIO_WEB || null,
-            instagram: null,
-            tiktok: null,
-            address: lead.DIRECCION || null,
-            city: lead.CIUDAD || null,
-            country: detectCountry(lead.CIUDAD),
             source: 'crm_import',
             source_id: `crm_${lead.ID}`,
             status: 'new',
-            notes: lead.NOTAS || null,
-            internal_notes: `Clasificado: ${classification.reason}`,
-            // Enrichment fields
-            is_fashion_relevant: classification.isFashion,
-            enrichment_source: classification.isFashion !== null ? 'keyword_classification' : 'pending_verification',
-            website_verified: false,
-            business_type_confirmed: classification.isFashion === true ? lead.NICHO : null,
-            last_enriched_at: new Date().toISOString(),
-            enrichment_score: classification.isFashion === true ? 50 : classification.isFashion === false ? 0 : 25,
+            country: detectCountry(lead.CIUDAD),
           };
+
+          // Optional fields - only add if they have values
+          if (lead.EMAIL) leadData.email = lead.EMAIL;
+          if (lead.TELEFONO) leadData.phone = lead.TELEFONO;
+          if (lead.SITIO_WEB) leadData.website = lead.SITIO_WEB;
+          if (lead.DIRECCION) leadData.address = lead.DIRECCION;
+          if (lead.CIUDAD) leadData.city = lead.CIUDAD;
+          if (lead.NOTAS) leadData.notes = lead.NOTAS;
+
+          // Enrichment fields
+          leadData.internal_notes = `Clasificado: ${classification.reason}`;
+          leadData.is_fashion_relevant = classification.isFashion;
+          leadData.enrichment_source = classification.isFashion !== null ? 'keyword_classification' : 'pending_verification';
+          leadData.website_verified = false;
+          if (classification.isFashion === true && lead.NICHO) {
+            leadData.business_type_confirmed = lead.NICHO;
+          }
+          leadData.last_enriched_at = new Date().toISOString();
+          leadData.enrichment_score = classification.isFashion === true ? 50 : classification.isFashion === false ? 0 : 25;
+
+          return leadData as Partial<Lead>;
         }).filter(lead => lead.is_fashion_relevant !== false); // Exclude rejected
         
         try {
@@ -647,7 +652,7 @@ export class LeadEnrichmentService {
         const urlObj = new URL(url);
         const protocol = urlObj.protocol === 'https:' ? https : require('http');
         
-        const req = protocol.get(url, { timeout: 10000 }, (res) => {
+        const req = protocol.get(url, { timeout: 10000 }, (res: http.IncomingMessage) => {
           // Handle redirects
           if (res.statusCode === 301 || res.statusCode === 302) {
             const redirectUrl = res.headers.location;
@@ -701,7 +706,7 @@ export class LeadEnrichmentService {
           path: urlObj.pathname,
           method: 'HEAD',
           timeout: 5000,
-        }, (res) => {
+        }, (res: http.IncomingMessage) => {
           resolve(res.statusCode === 200 || res.statusCode === 301 || res.statusCode === 302);
         });
 

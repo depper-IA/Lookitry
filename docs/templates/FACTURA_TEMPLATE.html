@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Factura - Lookitry</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #333;
+      background: #fff;
+    }
+    
+    .invoice-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px;
+    }
+    
+    /* Header */
+    .header {
+      display: table;
+      width: 100%;
+      margin-bottom: 40px;
+    }
+    
+    .header-left {
+      display: table-cell;
+      width: 60%;
+      vertical-align: top;
+    }
+    
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      color: #FF5C3A;
+      margin-bottom: 8px;
+    }
+    
+    .company-name {
+      font-size: 14px;
+      font-weight: bold;
+      color: #111;
+    }
+    
+    .company-details {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+      line-height: 1.6;
+    }
+    
+    .header-right {
+      display: table-cell;
+      width: 40%;
+      text-align: right;
+      vertical-align: top;
+    }
+    
+    .invoice-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #111;
+      margin-bottom: 8px;
+    }
+    
+    .invoice-number {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    
+    .invoice-date {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    /* Info Grid */
+    .info-grid {
+      display: table;
+      width: 100%;
+      margin-bottom: 30px;
+    }
+    
+    .info-cell {
+      display: table-cell;
+      width: 50%;
+      padding-right: 20px;
+      vertical-align: top;
+    }
+    
+    .info-cell:last-child {
+      padding-right: 0;
+      text-align: right;
+    }
+    
+    .info-label {
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #999;
+      margin-bottom: 8px;
+    }
+    
+    .info-value {
+      font-size: 12px;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    .info-value strong {
+      display: block;
+      font-size: 13px;
+      color: #111;
+    }
+    
+    /* Billing Info */
+    .billing-info {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+    
+    .billing-grid {
+      display: table;
+      width: 100%;
+    }
+    
+    .billing-cell {
+      display: table-cell;
+      width: 50%;
+      vertical-align: top;
+    }
+    
+    /* Table */
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    
+    .items-table thead th {
+      background: #111;
+      color: #fff;
+      padding: 12px 15px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .items-table thead th:last-child {
+      text-align: right;
+    }
+    
+    .items-table tbody td {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .items-table tbody td:last-child {
+      text-align: right;
+      font-weight: bold;
+    }
+    
+    .items-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .item-desc {
+      color: #666;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    
+    /* Totals */
+    .totals {
+      width: 300px;
+      margin-left: auto;
+      margin-bottom: 30px;
+    }
+    
+    .totals-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .totals-row:last-child {
+      border-bottom: none;
+    }
+    
+    .totals-row.total {
+      padding-top: 12px;
+      border-top: 2px solid #111;
+      font-size: 16px;
+      font-weight: bold;
+      color: #111;
+    }
+    
+    .totals-label {
+      color: #666;
+    }
+    
+    .totals-value {
+      color: #333;
+    }
+    
+    .totals-row.total .totals-label,
+    .totals-row.total .totals-value {
+      color: #111;
+    }
+    
+    /* Payment Info */
+    .payment-info {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+    }
+    
+    .payment-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #111;
+      margin-bottom: 12px;
+    }
+    
+    .payment-details {
+      font-size: 11px;
+      color: #666;
+      line-height: 1.8;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding-top: 30px;
+      border-top: 1px solid #eee;
+    }
+    
+    .footer-text {
+      font-size: 10px;
+      color: #999;
+      line-height: 1.8;
+    }
+    
+    .footer-brand {
+      font-size: 11px;
+      font-weight: bold;
+      color: #FF5C3A;
+      margin-bottom: 4px;
+    }
+    
+    /* Currency */
+    .currency {
+      font-size: 10px;
+      color: #999;
+      margin-top: 4px;
+    }
+    
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      
+      .invoice-container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <div class="logo">Lookitry</div>
+        <div class="company-name">WILKIE DEVS</div>
+        <div class="company-details">
+          Samuel Wilkie<br>
+          NIT: 700.403.166-3 (Persona Natural)<br>
+          info@lookitry.com<br>
+          WhatsApp: +57 310 543 6281<br>
+          https://lookitry.com<br>
+          Lunes a Viernes, 9:00 AM - 6:00 PM (Colombia)
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="invoice-title">FACTURA</div>
+        <div class="invoice-number">No. <strong>LT-2026-0001</strong></div>
+        <div class="invoice-date">Fecha: 06 de Abril de 2026</div>
+        <div class="invoice-date">Vence: 06 de Abril de 2026</div>
+      </div>
+    </div>
+    
+    <!-- Billing Info -->
+    <div class="billing-info">
+      <div class="billing-grid">
+        <div class="billing-cell">
+          <div class="info-label">Facturar a</div>
+          <div class="info-value">
+            <strong>[NOMBRE DE LA EMPRESA]</strong>
+            [Nombre del contacto]<br>
+            [Dirección]<br>
+            [Ciudad, Departamento]<br>
+            [Teléfono]<br>
+            [Email]<br>
+            NIT: [XXX.XXX.XXX-X]
+          </div>
+        </div>
+        <div class="billing-cell">
+          <div class="info-label">Método de pago</div>
+          <div class="info-value" style="text-align: right;">
+            <strong>Wompi / PayPal</strong><br>
+            Referencia: [REFERENCE_ID]<br>
+            Estado: Pagado
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Items -->
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>Descripción</th>
+          <th style="width: 100px;">Cantidad</th>
+          <th style="width: 120px;">Precio Unit.</th>
+          <th style="width: 120px;">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <strong>Suscripción Plan PRO - Mensual</strong>
+            <div class="item-desc">Acceso completo a la plataforma de probador virtual con IA para marcas de moda. Incluye: generaciones ilimitadas, mini-landing personalizado, analytics avanzado, soporte prioritario.</div>
+          </td>
+          <td>1</td>
+          <td>$299.000 COP</td>
+          <td>$299.000 COP</td>
+        </tr>
+        <!-- Agregar más items según sea necesario -->
+      </tbody>
+    </table>
+    
+    <!-- Totals -->
+    <div class="totals">
+      <div class="totals-row">
+        <span class="totals-label">Subtotal</span>
+        <span class="totals-value">$299.000 COP</span>
+      </div>
+      <div class="totals-row">
+        <span class="totals-label">Impuestos (19% IVA)</span>
+        <span class="totals-value">$56.810 COP</span>
+      </div>
+      <div class="totals-row">
+        <span class="totals-label">Descuentos</span>
+        <span class="totals-value">$0 COP</span>
+      </div>
+      <div class="totals-row total">
+        <span class="totals-label">TOTAL A PAGAR</span>
+        <span class="totals-value">$355.810 COP</span>
+      </div>
+    </div>
+    
+    <!-- Payment Info -->
+    <div class="payment-info">
+      <div class="payment-title">Información de Pago</div>
+      <div class="payment-details">
+        <strong>Transferencia bancaria:</strong><br>
+        Banco: [NOMBRE DEL BANCO]<br>
+        Tipo de cuenta: Corriente<br>
+        Número de cuenta: [XXXX-XXXX-XXXX]<br>
+        Titular: Samuel Wilkie<br>
+        NIT: 700.403.166-3<br><br>
+        
+        <strong>Pago en línea:</strong><br>
+        Wompi: https://checkout.wompi.co/long-reference<br>
+        PayPal: https://paypal.me/lookitry
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-brand">LOOKITRY</div>
+      <div class="footer-text">
+        Plataforma de probador virtual con inteligencia artificial.<br>
+        Operado por Samuel Wilkie (NIT 700.403.166-3) - Wilkie Devs<br>
+        <br>
+        Esta factura se emite en cumplimiento del artículo 616-2 del Estatuto Tributario.<br>
+        Resaltamos que la plataforma genera resultados aproximados por IA, no constitute representación exacta de la realidad.<br>
+        <br>
+        ¿Preguntas? Escribe a info@lookitry.com o WhatsApp: +57 310 543 6281
+      </div>
+    </div>
+  </div>
+</body>
+</html>
