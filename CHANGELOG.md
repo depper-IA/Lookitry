@@ -26,18 +26,18 @@
   - Disclaimer sobre resultados de IA
 - Compatible con conversión a PDF via navegador o herramientas como wkhtmltopdf
 
-### 3. Documentación UptimeRobot ✅
-**Archivo:** `docs/UPTIMEROBOT_SETUP.md`
-- Lista completa de endpoints críticos a monitorear:
-  - api.lookitry.com/health
-  - lookitry.com
-  - n8n.wilkiedevs.com/health
-  - minio.wilkiedevs.com/minio/health/live
-  - Supabase
-- Configuración de status page pública
-- Configuración de alertas (email, WhatsApp, Slack)
-- Runbook de respuesta a incidentes
-- Checklist de verificación
+### 3. UptimeRobot Configurado ✅
+**API Key guardada:** `backend/.env` → `UPTIMEROBOT_API_KEY`
+**Monitores creados (7):**
+- lookitry.com/ (existente)
+- API Lookitry Health
+- Widget Try-On
+- n8n Workflows
+- MinIO Storage
+- Database Supabase
+- Admin Dashboard
+**Status Page:** https://stats.uptimerobot.com/CTEnSD7d1j
+**Link agregado a:** `/dashboard/support`
 
 ### 4. Fix RLS Tables (completado ayer) ✅
 - Migration aplicada: enable_rls_critical_tables
