@@ -1,5 +1,82 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-06] - Sistema de Verificación Social (Instagram + TikTok)
+
+### Nueva Funcionalidad: Social Verification System
+
+**Investigación Completada:**
+- Documentado en `docs/research/social-verification-api-research.md`
+- Instagram/TikTok APIs NO permiten prospecting público sin auth
+- Solución: Extracción de handles desde website + HTTP verification
+
+**Archivos Creados:**
+- `backend/src/types/social-verification.ts` - Interfaces y patrones
+- Nuevo método `verifySocialHandles()` en lead-enrichment.service.ts
+- Nuevo método `runSearchWithSocialVerification()` en lead-generation.service.ts
+
+**Base de Datos:**
+- Columnas agregadas: `social_verification_status`, `social_verification_score`
+- Índices creados para queries eficientes
+
+**Funcionalidades:**
+1. Extracción de handles Instagram/TikTok desde website
+2. Verificación de URLs sociales con HTTP HEAD
+3. Clasificación fashion basada en keywords de website
+4. Scoring 0-100 basado en presencia social
+5. Batch enrichment para leads existentes
+
+**Limitaciones Conocidas:**
+- NO se pueden verificar seguidores/seguidos sin APIs de terceros
+- Para enrichment real: considerar Apollo.io en Fase 2
+
+## [2026-04-07] - Auditoría Commercial Readiness - RESUELTO
+
+### Auditoría Completa de Lanzamiento Comercial
+- Generado reporte `COMMERCIAL_READINESS_AUDIT.md`
+- **VEREDICTO: PARCIALMENTE RESUELTO**
+
+### 🔴 Bloqueadores Críticos (RESUELTOS ✅)
+1. **RLS no habilitado en 9 tablas** - ✅ RESUELTO
+   - Migration `enable_rls_critical_tables` aplicada
+   - Tablas protegidas: leads, social_api_configs, lead_searches, lead_outreach_log, google_places_quota, email_campaigns, email_campaign_recipients, admin_generations_log, admin_support_tickets
+2. **Sin plan de backup/disaster recovery** - ✅ RESUELTO
+   - Documento `docs/BACKUP_DISASTER_RECOVERY.md` creado
+   - Scripts en `scripts/backup/` listos para subir al VPS
+
+### ⚠️ Pendiente (Acción Manual Requerida)
+- **PayPal:** `backend/.env` línea 68 tiene `PAYPAL_SANDBOX=true`
+  - Cambiar a `PAYPAL_SANDBOX=false`
+  - Usar credenciales de PRODUCCIÓN (no sandbox)
+
+### ✅ Acciones Completadas
+- RLS habilitado en las 9 tablas sin protección
+- Políticas creadas: service_role full access, auth read, anon insert para tickets
+- API key de social_api_configs solo legible por service_role
+- Documento DR completo con RTO/RPO definidos
+- Scripts de backup automatizado creados
+- Widget Try-On funcionando
+
+### Próximas Acciones (Inmediatas)
+1. Habilitar RLS en `leads` y `social_api_configs`
+2. Proteger columna `api_key` en social_api_configs (solo service_role)
+3. Verificar/cambiar PayPal a credenciales de producción
+4. Crear backup de Supabase y documentar plan DR
+
+### 📊 Scores por Categoría
+| Categoría | Score |
+|-----------|-------|
+| Legal/Compliance | 90/100 ✅ |
+| UX/UI | 85/100 ✅ |
+| Funcionalidades | 75/100 ⚠️ |
+| Pagos | 70/100 ⚠️ |
+| Escalabilidad | 60/100 ⚠️ |
+| Monitoreo/Backups | 55/100 ⚠️ |
+| Seguridad | 40/100 🔴 |
+
+### Timeline Estimado
+- Soft launch viable: 2-3 días de trabajo (resolver bloqueadores)
+- Full launch: 1-2 meses de trabajo adicional
+
 ## [2026-04-06] - Auditoría Admin + Gap Críticos Resueltos
 
 ### Auditoría Completa del Panel Admin
