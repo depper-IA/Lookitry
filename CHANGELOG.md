@@ -1,5 +1,12 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-06] - FIX CRÍTICO: Caída de Frontend (Modo Mantenimiento)
+ 
+### Healthcheck Incompatible de Next.js en Alpine Resuelto
+- **Problema:** El sitio `lookitry.com` mostraba pantalla de mantenimiento porque Traefik no ruteaba tráfico hacia el contenedor de frontend.
+- **Causa:** El healthcheck añadido en el commit previo (`curl -f http://localhost:3000`) fallaba constantemente porque la imagen oficial `alpine` de Next.js no tiene `curl` instalado. Adicionalmente, tampoco contaba con un `wget` funcional para interactuar internamente de forma correcta. Como consecuencia, Docker marcaba el contenedor como `unhealthy`, causando que Traefik descartara este enrutador y cediera el tráfico al contenedor de fallback `lookitry-error-pages`.
+- **Solución:** Se ha removido forzosamente el bloque `healthcheck` de `docker-compose.frontend.yml`. Traefik enrutará confiando en que el contenedor está ejecutándose en memoria. El backend retiene su propia validación. El contenedor ha sido reiniciado a la normalidad en el VPS.
+ 
 ## [2026-04-07] - Soft Launch Readiness - 3 Features Completadas
 
 ### 1. Sistema de Tickets para Clientes ✅
