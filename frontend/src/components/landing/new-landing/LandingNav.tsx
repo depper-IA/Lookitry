@@ -84,7 +84,7 @@ export default function LandingNav({
   const productLinks = [
     {
       title: 'MINI-LANDING PRO',
-      desc: 'Tu tienda online pro sin codigo.',
+      desc: 'Tu tienda online pro sin código.',
       href: '/mini-landing',
       icon: <Layout size={16} className="text-[#FF5C3A]" />,
       bgColor: 'bg-[#FF5C3A]/10'
@@ -242,7 +242,7 @@ export default function LandingNav({
                     >
                       <LogOut size={16} className="text-black/30 transition-colors group-hover:text-red-500 dark:text-white/30" />
                       <span className="text-[12px] font-bold text-black/80 transition-colors group-hover:text-red-500 dark:text-white/80">
-                        Cerrar Sesion
+                        Cerrar Sesión
                       </span>
                     </button>
                   </div>
@@ -268,7 +268,7 @@ export default function LandingNav({
             <button
               className="p-2 text-[#0a0a0a]/80 transition-colors hover:text-[#0a0a0a] lg:hidden dark:text-white/80 dark:hover:text-white"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? 'Cerrar menu' : 'Abrir menu'}
+              aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}

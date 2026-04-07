@@ -8,7 +8,7 @@ export default function LandingStats() {
     { val: '+50', label: 'Marcas activas', icon: <Store className="text-[#FF5C3A]" aria-hidden="true" /> },
     { val: '400k', label: 'IA Generations', icon: <Zap className="text-[#FF5C3A]" aria-hidden="true" /> },
     { val: '24/7', label: 'Soporte VIP', icon: <MessageCircle className="text-[#FF5C3A]" aria-hidden="true" /> },
-    { val: '4.9', label: 'Satisfaction score', icon: <Check className="text-[#FF5C3A]" aria-hidden="true" /> },
+    { val: '4.9', label: 'Puntuación de satisfacción', icon: <Check className="text-[#FF5C3A]" aria-hidden="true" /> },
   ];
 
   return (

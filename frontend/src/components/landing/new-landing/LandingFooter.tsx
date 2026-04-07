@@ -52,9 +52,9 @@ export default function LandingFooter() {
     {
       title: 'Legal',
       links: [
-        { name: 'Terminos de Servicio', href: '/terminos' },
-        { name: 'Politicas de Privacidad', href: '/politicas-privacidad' },
-        { name: 'Politica de Uso', href: '/politica-de-uso' },
+        { name: 'Términos de Servicio', href: '/terminos' },
+        { name: 'Políticas de Privacidad', href: '/politicas-privacidad' },
+        { name: 'Política de Uso', href: '/politica-de-uso' },
         { name: 'Cookies', href: '/cookies' },
         { name: 'Aviso Legal', href: '/aviso-legal' },
       ],
@@ -230,7 +230,7 @@ export default function LandingFooter() {
               </span>
             </Link>
             <p className="mb-6 max-w-xs text-sm font-light leading-relaxed text-black/70 dark:text-white/70 sm:mb-8 sm:text-base">
-              Empoderamos al retail con Inteligencia Artificial. La primera solucion de visualizacion personalizada lider en Colombia y Latinoamerica.
+              Empoderamos al retail con Inteligencia Artificial. La primera solución de visualización personalizada líder en Colombia y Latinoamérica.
             </p>
             <div className="mb-6 sm:mb-8 md:mb-10">
               <Link
