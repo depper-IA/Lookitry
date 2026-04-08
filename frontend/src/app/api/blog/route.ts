@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const categoryId = request.nextUrl.searchParams.get('category_id');
     const page = parseInt(request.nextUrl.searchParams.get('page') || '1', 10);
-    const limit = parseInt(request.nextUrl.searchParams.get('limit') || '10', 10);
+    const limit = parseInt(request.nextUrl.searchParams.get('limit') || '5', 10);
     const offset = (page - 1) * limit;
 
     const url =
