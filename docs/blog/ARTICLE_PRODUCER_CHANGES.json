@@ -1,0 +1,53 @@
+{
+  "name": "Lookitry Blog Article Producer v3 - ARTICLE CONTENT",
+  "description": "Article Producer que usa /article-content en lugar de publicar directamente",
+  "changes": [
+    {
+      "node": "Preparar JSON Lookitry",
+      "action": "MODIFY",
+      "description": "Cambiar para enviar a /api/blog/article-content en lugar de /api/blog/webhook",
+      "newUrl": "https://api.lookitry.com/api/blog/article-content",
+      "newBody": {
+        "topic_id": "{{ $json.topic_id }}",
+        "title": "{{ $json.title }}",
+        "html_content": "{{ $json.content }}",
+        "excerpt": "{{ $json.excerpt }}",
+        "meta_description": "{{ $json.meta_description }}",
+        "tags": "{{ $json.tags }}",
+        "category_slug": "{{ $json.category_slug }}"
+      }
+    },
+    {
+      "node": "Llamar Image Generator",
+      "action": "MODIFY",
+      "description": "Mantener igual - llama al Image Generator"
+    },
+    {
+      "node": "Wait",
+      "action": "REMOVE",
+      "description": "Ya NO es necesario esperar - el Image Generator se encarga de todo"
+    },
+    {
+      "node": "Preparar JSON Lookitry (Post-Wait)",
+      "action": "REMOVE",
+      "description": "Ya NO se necesita - el assembly lo hace el backend"
+    }
+  ],
+  "newFlow": [
+    "Loop Temas Pendientes:",
+    "  a. Jina Lector de Noticias",
+    "  b. Preparar Contexto Editorial",
+    "  c. Redactor IA",
+    "  d. Parsear Artículo",
+    "  e. Preparar JSON para Article Content  ← NUEVO",
+    "  f. POST /api/blog/article-content  ← GUARDA HTML",
+    "  g. Llamar Image Generator  ← DISPARA GENERACIÓN DE IMÁGENES",
+    "  h. Verificar respuesta OK",
+    "  i. PATCH topic = published"
+  ],
+  "endpoints": {
+    "articleContent": "POST https://api.lookitry.com/api/blog/article-content",
+    "imageGenerator": "https://n8n.wilkiedevs.com/webhook/lookitry-blog-images-v6"
+  },
+  "note": "El Article Producer YA NO espera por imágenes ni arma el artículo. Solo genera el HTML y lo guarda. El Image Generator, al terminar, llama a /assemble-article para que el backend ensamble y publique."
+}

@@ -341,6 +341,7 @@ export const blogController = {
   /**
    * Subida de imágenes para el blog (vía n8n)
    * POST /api/blog/upload
+   * Body (multipart): file, filename, topic_id, image_type (hero|body1|body2)
    */
   async uploadBlogImage(req: Request, res: Response) {
     try {
@@ -350,6 +351,9 @@ export const blogController = {
       if (!expectedSecret || secret !== expectedSecret) {
         return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Fallo de autenticación en la subida de medios' });
       }
+
+      const topicId = req.body.topic_id as string | undefined;
+      const imageType = req.body.image_type as string | undefined;
 
       const isMultipart = req.is('multipart/form-data');
 
@@ -368,6 +372,39 @@ export const blogController = {
           folder: 'web',
           assetType,
         });
+
+        // Si viene topic_id, actualizar blog_topic_images
+        if (topicId && imageType) {
+          const url = result.url as string;
+          const updateField: Record<string, string> = {
+            imagen_hero_url: url,
+            updated_at: new Date().toISOString(),
+          };
+          
+          if (imageType === 'hero') updateField.imagen_hero_url = url;
+          else if (imageType === 'body1') updateField.imagen_body1_url = url;
+          else if (imageType === 'body2') updateField.imagen_body2_url = url;
+          updateField.status = 'completed';
+
+          // Upsert: INSERT si no existe, UPDATE si existe
+          const { data: existing } = await supabaseAdmin
+            .from('blog_topic_images')
+            .select('id')
+            .eq('topic_id', topicId)
+            .maybeSingle();
+
+          if (existing) {
+            await supabaseAdmin
+              .from('blog_topic_images')
+              .update(updateField)
+              .eq('topic_id', topicId);
+          } else {
+            await supabaseAdmin
+              .from('blog_topic_images')
+              .insert({ topic_id: topicId, ...updateField });
+          }
+          console.log(`[Blog Upload] Imagen ${imageType} guardada en blog_topic_images para topic ${topicId}: ${url}`);
+        }
         
         return res.status(200).json(result);
       }
@@ -389,6 +426,251 @@ export const blogController = {
     } catch (error: any) {
       console.error('[Blog Upload] Error:', error);
       return res.status(500).json({ error: 'INTERNAL_ERROR', message: sanitizeError(error, 'Error al subir imagen') });
+    }
+  },
+
+  /**
+   * Recibe contenido HTML del artículo (sin imágenes) y lo guarda como draft.
+   * POST /api/blog/article-content
+   * 
+   * Flujo:
+   * 1. Article Producer genera HTML del artículo
+   * 2. Llama este endpoint con title, html_content, topic_id, etc.
+   * 3. Backend guarda como draft_article_content
+   * 4. Image Generator sube imágenes (que se guardan en blog_topic_images)
+   * 5. Image Generator llama /api/blog/assemble-article para publicar
+   */
+  async articleContent(req: Request, res: Response) {
+    try {
+      const secret = String(req.headers['x-blog-secret'] || '');
+      const expectedSecret = await resolveExpectedBlogSecret();
+
+      if (!expectedSecret || secret !== expectedSecret) {
+        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Fallo de autenticación' });
+      }
+
+      const { topic_id, title, html_content, excerpt, meta_description, tags, category_slug } = req.body;
+
+      if (!topic_id || !html_content) {
+        return res.status(400).json({ error: 'BAD_REQUEST', message: 'topic_id y html_content son requeridos' });
+      }
+
+      // Guardar contenido en blog_draft_articles
+      const { data, error } = await supabaseAdmin
+        .from('blog_draft_articles')
+        .upsert({
+          topic_id: topic_id,
+          title: title || null,
+          html_content: html_content,
+          excerpt: excerpt || null,
+          meta_description: meta_description || null,
+          tags: normalizeTags(tags),
+          category_slug: category_slug || 'ia',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      console.log(`[Blog] Draft guardado para topic ${topic_id}`);
+
+      return res.status(200).json({ 
+        success: true, 
+        topic_id,
+        message: 'Contenido HTML guardado como draft',
+        draft_id: data?.id 
+      });
+    } catch (error: any) {
+      console.error('[BlogController] articleContent error:', error);
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error al guardar contenido') });
+    }
+  },
+
+  /**
+   * Ensambla y publica el artículo final con imágenes.
+   * POST /api/blog/assemble-article
+   * 
+   * Flujo:
+   * 1. Image Generator terminó de subir todas las imágenes
+   * 2. Image Generator llama este endpoint con topic_id
+   * 3. Backend obtiene draft + imágenes de blog_topic_images
+   * 4. Backend inserta imágenes en el HTML en lugares apropiados
+   * 5. Backend crea el artículo final en tabla blogs y lo publica
+   */
+  async assembleArticle(req: Request, res: Response) {
+    try {
+      const secret = String(req.headers['x-blog-secret'] || '');
+      const expectedSecret = await resolveExpectedBlogSecret();
+
+      if (!expectedSecret || secret !== expectedSecret) {
+        return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Fallo de autenticación' });
+      }
+
+      const { topic_id } = req.body;
+
+      if (!topic_id) {
+        return res.status(400).json({ error: 'BAD_REQUEST', message: 'topic_id es requerido' });
+      }
+
+      // 1. Obtener draft article
+      const { data: draft, error: draftError } = await supabaseAdmin
+        .from('blog_draft_articles')
+        .select('*')
+        .eq('topic_id', topic_id)
+        .single();
+
+      if (draftError || !draft) {
+        return res.status(404).json({ error: 'NOT_FOUND', message: 'Draft no encontrado para este topic_id' });
+      }
+
+      // 2. Obtener imágenes de blog_topic_images
+      const { data: images, error: imagesError } = await supabaseAdmin
+        .from('blog_topic_images')
+        .select('imagen_hero_url, imagen_body1_url, imagen_body2_url, status')
+        .eq('topic_id', topic_id)
+        .single();
+
+      if (imagesError || !images) {
+        return res.status(404).json({ error: 'NOT_FOUND', message: 'Imágenes no encontradas para este topic_id' });
+      }
+
+      // 3. Verificar que todas las imágenes estén listas
+      if (images.status !== 'completed') {
+        return res.status(400).json({ 
+          error: 'IMAGES_NOT_READY', 
+          message: `Imágenes aún no están listas (status: ${images.status})`,
+          status: images.status
+        });
+      }
+
+      // 4. Ensamblar HTML con imágenes
+      let finalHtml = draft.html_content || '';
+
+      // Insertar imagen hero al inicio del artículo (después del primer párrafo o al inicio)
+      if (images.imagen_hero_url) {
+        const heroImage = `<figure class="blog-hero-image">
+          <img src="${images.imagen_hero_url}" alt="${draft.title || 'Imagen del artículo'}" loading="lazy" />
+        </figure>`;
+        
+        // Insertar después del intro/lead si existe, o al inicio
+        if (finalHtml.includes('data-blog-intro="lead"')) {
+          finalHtml = finalHtml.replace(
+            'data-blog-intro="lead"',
+            `data-blog-intro="lead"${heroImage}`
+          );
+        } else {
+          finalHtml = heroImage + finalHtml;
+        }
+      }
+
+      // Insertar imagen body1 en la primera sección h2
+      if (images.imagen_body1_url) {
+        const body1Image = `<figure class="blog-body-image blog-body-image-1">
+          <img src="${images.imagen_body1_url}" alt="${draft.title || 'Imagen'}" loading="lazy" />
+        </figure>`;
+        
+        // Insertar después del primer h2
+        const firstH2Match = finalHtml.match(/<h2[^>]*>/);
+        if (firstH2Match) {
+          const insertPos = firstH2Match.index + firstH2Match[0].length;
+          finalHtml = finalHtml.slice(0, insertPos) + body1Image + finalHtml.slice(insertPos);
+        }
+      }
+
+      // Insertar imagen body2 en la última sección
+      if (images.imagen_body2_url) {
+        const body2Image = `<figure class="blog-body-image blog-body-image-2">
+          <img src="${images.imagen_body2_url}" alt="${draft.title || 'Imagen'}" loading="lazy" />
+        </figure>`;
+        
+        // Insertar antes del último h2 o al final del contenido
+        const lastH2Index = finalHtml.lastIndexOf('<h2');
+        if (lastH2Index > 0) {
+          const beforeLastH2 = finalHtml.slice(0, lastH2Index);
+          const fromLastH2 = finalHtml.slice(lastH2Index);
+          finalHtml = beforeLastH2 + body2Image + fromLastH2;
+        } else {
+          finalHtml = finalHtml + body2Image;
+        }
+      }
+
+      // 5. Obtener categoría
+      let categoryId = null;
+      const targetSlug = draft.category_slug || 'ia';
+      const { data: cat } = await supabaseAdmin
+        .from('blog_categories')
+        .select('id')
+        .eq('slug', targetSlug)
+        .single();
+      if (cat) categoryId = cat.id;
+
+      // 6. Crear slug único
+      const slug = await buildUniqueBlogSlug(draft.title || `article-${topic_id}`);
+
+      // 7. Verificar duplicado por topic_id
+      const { data: existingPost } = await supabaseAdmin
+        .from('blogs')
+        .select('id')
+        .eq('topic_id', topic_id)
+        .single();
+
+      if (existingPost) {
+        return res.status(409).json({ 
+          error: 'ALREADY_PUBLISHED', 
+          message: 'Este topic_id ya fue publicado' 
+        });
+      }
+
+      // 8. Insertar artículo final
+      const { data: publishedPost, error: publishError } = await supabaseAdmin
+        .from('blogs')
+        .insert({
+          title: draft.title,
+          content: finalHtml,
+          excerpt: draft.excerpt,
+          meta_description: draft.meta_description || draft.excerpt,
+          featured_image: images.imagen_hero_url,
+          category_id: categoryId,
+          tags: draft.tags,
+          status: 'published',
+          slug,
+          topic_id: topic_id,
+          published_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (publishError) throw publishError;
+
+      // 9. Marcar topic como published
+      await supabaseAdmin
+        .from('blog_topics')
+        .update({ status: 'published', updated_at: new Date().toISOString() })
+        .eq('id', topic_id);
+
+      // 10. Limpiar draft
+      await supabaseAdmin
+        .from('blog_draft_articles')
+        .delete()
+        .eq('topic_id', topic_id);
+
+      console.log(`[Blog] Artículo publicado para topic ${topic_id}: ${slug}`);
+
+      return res.status(201).json({ 
+        success: true,
+        message: 'Artículo ensamblado y publicado exitosamente',
+        post: publishedPost,
+        images_used: {
+          hero: images.imagen_hero_url,
+          body1: images.imagen_body1_url,
+          body2: images.imagen_body2_url
+        }
+      });
+    } catch (error: any) {
+      console.error('[BlogController] assembleArticle error:', error);
+      return res.status(500).json({ error: 'SERVER_ERROR', message: sanitizeError(error, 'Error al ensamblar artículo') });
     }
   }
 };
