@@ -1,5 +1,43 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-08] - JSON-to-HTML Generation (Blog v2)
+
+### Arquitectura Corregida
+- **Backend ahora genera HTML completo** desde JSON estructurado
+- El Article Producer de n8n genera JSON (NO HTML)
+- Image Generator usa Replicate (NO OpenRouter - cumple regla 5.6)
+- Frontend solo renderiza HTML, no procesa
+
+### Nuevas Columnas en blog_draft_articles
+- `sections` (jsonb) - Array de secciones con paragraphs, callouts, image_position
+- `faqs` (jsonb) - Array de preguntas y respuestas
+- `cta_context` (jsonb) - Tipo de CTA (trial/features/pricing/lead_magnet)
+- `image_prompts` (jsonb) - Prompts para generar imágenes
+
+### Nueva Función generateArticleHTML()
+- Genera HTML limpio desde JSON estructurado
+- Inserta imágenes en posiciones correctas según `image_position`
+- Renderiza callouts (stat/tip/warning) con estilos apropiados
+- Renderiza FAQ accordion
+- Renderiza CTA final dinámico según `cta_context.type`
+
+### CTA Dinámicos
+- Templates configurables en `blog_settings.cta_templates`
+- Tipos: trial, features, pricing, lead_magnet
+
+### Migraciones SQL Aplicadas
+- `20260408_add_structured_json_to_blog_draft_articles.sql`
+- `20260408_add_cta_templates_to_blog_settings.sql`
+
+### Workflows n8n Actualizados
+- Article Producer: VMAu93Zx4k5qgzdm (genera JSON estructurado)
+- Image Generator: l4Mb3wMfHUnsbEXH (usa Replicate, NO OpenRouter)
+
+### Pendientes
+- [ ] Tablas blog_draft_articles y blog_topic_images no versionadas en schema
+- [ ] API key de Replicate hardcodeada en workflows
+- [ ] Por verificar Article Producer en producción
+
 ## [2026-04-08] - Fixes Críticos de Templates y Panel
 
 ### TemplateBoldProStudio.tsx

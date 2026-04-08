@@ -1,32 +1,31 @@
 # Arquitectura de Blog Automation — Split en 2 Workflows
 
-## Estado: ✅ IMPLEMENTADO Y VERIFICADO (Abril 2026)
+## Estado: ✅ IMPLEMENTADO (Abril 2026) — REQUIERE VERIFICACIÓN
 
 Arquitectura de 3 pasos coordinada por el backend:
 
-1. **Article Producer** → genera HTML → `/api/blog/article-content`
-2. **Image Generator** → genera imágenes → `/api/blog/upload`
-3. **Backend** → ensambla HTML + imágenes → publica
+1. **Article Producer** → genera JSON estructurado → `/api/blog/article-content`
+2. **Image Generator** → genera imágenes con Replicate → `/api/blog/upload`
+3. **Backend** → genera HTML limpio → publica
+
+### CAMBIOS vs VERSIÓN ANTERIOR
+
+| Aspecto | Anterior | Actual |
+|---------|----------|---------|
+| Article Producer output | HTML | JSON estructurado |
+| Backend genera HTML | No | Sí (generateArticleHTML) |
+| Imágenes | OpenRouter | Replicate FLUX |
+| Frontend procesa HTML | Sí | No (solo renderiza) |
 
 ---
 
 ## Verificación de Endpoints (2026-04-08)
 
-| Endpoint | Método | Estado | Prueba |
-|---------|--------|--------|--------|
-| `/api/blog/article-content` | POST | ✅ Verificado | Guardó draft con topic_id real |
-| `/api/blog/assemble-article` | POST | ✅ Verificado | Publicó artículo con imágenes |
-| `/api/blog/upload` | POST | ✅ Verificado | Guarda URLs en blog_topic_images |
-
-### Prueba Real Realizada
-
-```
-Topic ID: 6ec4ae32-743d-41ef-a43a-2d2a26c3bb8c
-Artículo: "El secreto de las boutiques en Cali"
-Slug generado: el-secreto-de-las-boutiques-en-cali
-Featured image: https://minio.wilkiedevs.com/blog/hero.png
-Status: published
-```
+| Endpoint | Método | Estado | Notas |
+|---------|--------|--------|-------|
+| `/api/blog/article-content` | POST | ✅ Implementado | Recibe JSON, guarda en blog_draft_articles |
+| `/api/blog/assemble-article` | POST | ✅ Implementado | Genera HTML y publica |
+| `/api/blog/upload` | POST | ✅ Implementado | Guarda URLs en blog_topic_images |
 
 ---
 
@@ -58,10 +57,11 @@ Status: published
 │  1. RSS Google Noticias Colombia                                       │
 │  2. AI Trend Hunter (genera 3 temas)                                 │
 │  3. Deduplicar vs topics existentes                                   │
-│  4. Loop Temas Pendientes:                                            │
+│ 4. Loop Temas Pendientes:                                            │
 │     a. Jina Lector de Noticias (investigación)                         │
-│     b. Redactor IA (genera HTML del artículo)                          │
-│     c. POST /api/blog/article-content  ← GUARDA HTML                 │
+│     b. Redactor IA (genera JSON estructurado)                         │
+│        { sections[], faqs[], cta_context, image_prompts[] }           │
+│     c. POST /api/blog/article-content  ← GUARDA JSON                  │
 │     d. Llama Image Generator (webhook)                                 │
 │     e. Espera respuesta OK de Image Generator                         │
 │     f. PATCH topic = published                                        │
@@ -74,8 +74,9 @@ Status: published
 │                       Webhook: /webhook/lookitry-blog-images-v6     │
 │                                                                      │
 │  1. Webhook recibe topic_id, title, category_slug                   │
-│  2. Loop 3 imágenes (hero, body1, body2):                            │
+│ 2. Loop 3-5 imágenes (hero, body_1, body_2, etc):                  │
 │     a. Replicate FLUX (genera imagen ~3 min)                         │
+│        ⚠️ NO usa OpenRouter (cumple regla 5.6)                       │
 │     b. Descargar PNG                                                 │
 │     c. Renombrar (hero.png, body1.png, body2.png)                   │
 │     d. POST /api/blog/upload (topic_id + image_type)                  │
@@ -125,11 +126,20 @@ CREATE TABLE blog_draft_articles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   topic_id UUID NOT NULL UNIQUE,
   title TEXT,
-  html_content TEXT NOT NULL,
+  slug TEXT,
   excerpt TEXT,
   meta_description TEXT,
   tags TEXT[] DEFAULT '{}',
   category_slug TEXT DEFAULT 'ia',
+  reading_time_minutes INTEGER DEFAULT 5,
+  -- NUEVOS CAMPOS JSON (取代 html_content)
+  sections JSONB DEFAULT '[]',        -- Array de secciones
+  faqs JSONB DEFAULT '[]',           -- Array de FAQs
+  cta_context JSONB DEFAULT '{}',     -- { type: 'trial'|'features'|'pricing'|'lead_magnet' }
+  image_prompts JSONB DEFAULT '[]',  -- Array de prompts para imágenes
+  toc_items JSONB DEFAULT '[]',      -- Para Table of Contents
+  -- LEGACY (para compatibilidad)
+  html_content TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -203,11 +213,83 @@ Response: {
 
 ## Reglas Importantes
 
-1. **OpenRouter PROHIBIDO para imágenes** — usar siempre Replicate
+1. **OpenRouter PROHIBIDO para imágenes** — usar siempre Replicate (regla 5.6)
 2. **Backend orquesta el assembly** — no n8n
-3. **n8n solo genera contenido** — HTML e imágenes
-4. **Backend aplica SEO y estructura** — asegura calidad
+3. **n8n solo genera JSON estructurado** — NO HTML
+4. **Backend genera HTML limpio** — generateArticleHTML()
 5. **topic_id debe ser UUID válido** — no usar strings de prueba
+
+---
+
+## JSON Estructurado (Article Producer → Backend)
+
+### Formato que Article Producer envía a /article-content:
+
+```json
+{
+  "topic_id": "uuid",
+  "title": "Título del artículo",
+  "slug": "slug-del-articulo",
+  "meta_description": "Meta description 145-160 caracteres",
+  "excerpt": "Resumen de 80-120 palabras",
+  "tags": ["tag1", "tag2", "tag3"],
+  "category_slug": "ia",
+  "reading_time_minutes": 7,
+  "sections": [
+    {
+      "id": "introduccion",
+      "title": "Introducción",
+      "paragraphs": ["Párrafo 1", "Párrafo 2", "Párrafo 3"],
+      "callout": null
+    },
+    {
+      "id": "seccion-1",
+      "title": "Sección 1",
+      "paragraphs": ["p1", "p2"],
+      "callout": { "type": "stat", "text": "Dato clave" },
+      "image_position": 1
+    }
+  ],
+  "faqs": [
+    { "question": "¿Pregunta 1?", "answer": "Respuesta 1" }
+  ],
+  "cta_context": { "type": "trial" },
+  "image_prompts": [
+    { "position": "hero", "prompt": "Descripción imagen hero" },
+    { "position": "body_1", "prompt": "...", "after_section": "seccion-1" }
+  ]
+}
+```
+
+### HTML generado por generateArticleHTML():
+
+```html
+<article class="blog-article">
+  <header class="blog-header">
+    <div class="blog-hero"><img src="hero_url" /></div>
+    <h1>Title</h1>
+    <p class="blog-excerpt">Excerpt</p>
+  </header>
+  <div class="blog-layout">
+    <nav class="blog-toc">TOC</nav>
+    <div class="blog-content">
+      <section id="section-id">
+        <h2>Section Title</h2>
+        <p>Paragraph...</p>
+        <div data-blog-callout="stat">Dato clave</div>
+        <p>More paragraphs...</p>
+        <figure class="blog-body-image"><img ... /></figure>
+      </section>
+      <div data-blog-faq="accordion">
+        <details><summary>Question</summary><div>Answer</div></details>
+      </div>
+      <div data-blog-cta="trial">
+        <h3>CTA Title</h3><a href="...">Button</a>
+      </div>
+    </div>
+  </div>
+</article>
+```
 
 ---
 
@@ -240,3 +322,7 @@ Response: {
 | 2026-04-08 | Nuevo endpoint /article-content para recibir HTML |
 | 2026-04-08 | Nuevo endpoint /assemble-article para publicar |
 | 2026-04-08 | ✅ Verificación: Artículo "El secreto de las boutiques en Cali" publicado |
+| 2026-04-08 | **NUEVO**: Article Producer genera JSON, Backend genera HTML limpio |
+| 2026-04-08 | **NUEVO**: generateArticleHTML() reemplaza procesamiento frontend |
+| 2026-04-08 | **NUEVO**: Columnas JSON en blog_draft_articles (sections, faqs, cta_context, image_prompts) |
+| 2026-04-08 | **NUEVO**: CTA templates configurables en blog_settings |
