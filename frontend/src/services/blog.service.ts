@@ -25,6 +25,20 @@ export interface BlogPost {
   category?: BlogCategory;
 }
 
+export interface BlogPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface BlogPostsResponse {
+  posts: BlogPost[];
+  pagination: BlogPagination;
+}
+
 export interface BlogSettings {
   id: number;
   frequency: 'daily' | 'weekly' | 'monthly';
@@ -118,20 +132,24 @@ export async function fetchBlogCategories(): Promise<BlogCategory[]> {
   }
 }
 
-export async function fetchBlogPosts(categoryId?: string): Promise<BlogPost[]> {
+export async function fetchBlogPosts(categoryId?: string, page = 1, limit = 10): Promise<{ posts: BlogPost[]; pagination: BlogPagination }> {
   try {
-    const path = categoryId ? `/blog?category_id=${encodeURIComponent(categoryId)}` : '/blog';
-    const result = await frontendFetch<{ ok: boolean; data: BlogPost[] }>(path);
-    return Array.isArray(result.data) ? result.data : [];
+    let path = `/blog?page=${page}&limit=${limit}`;
+    if (categoryId) path += `&category_id=${encodeURIComponent(categoryId)}`;
+    const result = await frontendFetch<{ ok: boolean; data: BlogPost[]; pagination: BlogPagination }>(path);
+    return {
+      posts: Array.isArray(result.data) ? result.data : [],
+      pagination: result.pagination,
+    };
   } catch (error) {
     console.error('Error fetching blog posts:', error);
-    return [];
+    return { posts: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0, hasNextPage: false, hasPrevPage: false } };
   }
 }
 
 export async function fetchRecentBlogPosts(limit = 3, excludeSlug?: string): Promise<BlogPost[]> {
-  const posts = await fetchBlogPosts();
-  return posts
+  const result = await fetchBlogPosts(undefined, 1, limit * 3); // Fetch more to filter
+  return result.posts
     .filter((post) => post.status === 'published' && (!excludeSlug || post.slug !== excludeSlug))
     .sort((a, b) => {
       const dateA = new Date(a.published_at || a.created_at).getTime();
