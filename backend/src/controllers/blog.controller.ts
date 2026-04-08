@@ -545,26 +545,44 @@ export const blogController = {
       }
 
       // 4. Ensamblar HTML con imágenes
+      // NOTA: La imagen hero se maneja en page.tsx via featured_image
+      // Aquí solo insertamos body1 y body2 dentro del contenido
+
       let finalHtml = draft.html_content || '';
 
-      // Insertar imagen hero: buscar el cierre del div de intro y insertar DESPUÉS
-      if (images.imagen_hero_url) {
-        const heroImage = `<figure class="blog-hero-image">
-          <img src="${images.imagen_hero_url}" alt="${draft.title || 'Imagen del artículo'}" loading="lazy" />
+      // Insertar imagen body1: después del primer h2 (después del texto del h2, antes del primer párrafo)
+      if (images.imagen_body1_url) {
+        const body1Image = `<figure class="blog-image blog-image-1 my-8">
+          <img src="${images.imagen_body1_url}" alt="${draft.title || 'Imagen'}" loading="lazy" class="rounded-2xl shadow-xl border border-white/10 w-full" />
         </figure>`;
         
-        // Buscar el cierre del div de intro (después del opening div con data-blog-intro="lead")
-        const introCloseMatch = finalHtml.match(/<div data-blog-intro="lead"[^>]*>([\s\S]*?)<\/div>/);
-        if (introCloseMatch) {
-          // Insertar la imagen AL FINAL del contenido del intro, antes del </div>
-          const introContent = introCloseMatch[1];
-          const introFullMatch = introCloseMatch[0];
-          const updatedIntro = introFullMatch.replace(introContent, introContent + '\n' + heroImage);
-          finalHtml = finalHtml.replace(introFullMatch, updatedIntro);
-        } else {
-          // Si no hay intro, insertar al inicio
-          finalHtml = heroImage + finalHtml;
+        // Buscar el primer h2 con su contenido
+        const firstH2WithContent = finalHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/);
+        if (firstH2WithContent) {
+          const h2Content = firstH2WithContent[1];
+          const h2Full = firstH2WithContent[0];
+          const updatedH2 = h2Full.replace(h2Content, h2Content + '\n' + body1Image);
+          finalHtml = finalHtml.replace(h2Full, updatedH2);
         }
+      }
+
+      // Insertar imagen body2: antes del penúltimo h2
+      if (images.imagen_body2_url) {
+        const body2Image = `<figure class="blog-image blog-image-2 my-8">
+          <img src="${images.imagen_body2_url}" alt="${draft.title || 'Imagen'}" loading="lazy" class="rounded-2xl shadow-xl border border-white/10 w-full" />
+        </figure>`;
+        
+        const allH2Matches = [...finalHtml.matchAll(/<h2[^>]*>/g)];
+        if (allH2Matches.length >= 2) {
+          const secondToLastH2Index = allH2Matches[allH2Matches.length - 2].index;
+          finalHtml = finalHtml.slice(0, secondToLastH2Index) + body2Image + finalHtml.slice(secondToLastH2Index);
+        } else if (allH2Matches.length === 1) {
+          const h2Index = allH2Matches[0].index + allH2Matches[0][0].length;
+          finalHtml = finalHtml.slice(0, h2Index) + body2Image + finalHtml.slice(h2Index);
+        } else {
+          finalHtml = finalHtml + body2Image;
+        }
+      }
       }
 
       // Insertar imagen body1: después del primer h2 (después del texto del h2, antes del primer párrafo)
