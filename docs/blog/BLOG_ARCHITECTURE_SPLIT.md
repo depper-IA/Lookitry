@@ -1,11 +1,32 @@
 # Arquitectura de Blog Automation — Split en 2 Workflows
 
-## Estado Actual (Abril 2026)
+## Estado: ✅ IMPLEMENTADO Y VERIFICADO (Abril 2026)
 
 Arquitectura de 3 pasos coordinada por el backend:
+
 1. **Article Producer** → genera HTML → `/api/blog/article-content`
 2. **Image Generator** → genera imágenes → `/api/blog/upload`
 3. **Backend** → ensambla HTML + imágenes → publica
+
+---
+
+## Verificación de Endpoints (2026-04-08)
+
+| Endpoint | Método | Estado | Prueba |
+|---------|--------|--------|--------|
+| `/api/blog/article-content` | POST | ✅ Verificado | Guardó draft con topic_id real |
+| `/api/blog/assemble-article` | POST | ✅ Verificado | Publicó artículo con imágenes |
+| `/api/blog/upload` | POST | ✅ Verificado | Guarda URLs en blog_topic_images |
+
+### Prueba Real Realizada
+
+```
+Topic ID: 6ec4ae32-743d-41ef-a43a-2d2a26c3bb8c
+Artículo: "El secreto de las boutiques en Cali"
+Slug generado: el-secreto-de-las-boutiques-en-cali
+Featured image: https://minio.wilkiedevs.com/blog/hero.png
+Status: published
+```
 
 ---
 
@@ -59,7 +80,7 @@ Arquitectura de 3 pasos coordinada por el backend:
 │     c. Renombrar (hero.png, body1.png, body2.png)                   │
 │     d. POST /api/blog/upload (topic_id + image_type)                  │
 │        → Backend guarda URL en blog_topic_images                     │
-│  3. POST /api/blog/assemble-article (topic_id)  ← ENSAMBLAJES      │
+│  3. POST /api/blog/assemble-article (topic_id)  ← ENSAMBLAJE       │
 └─────────────────────────────────────────────────────────────────────┘
                                      │
                                      ▼
@@ -82,7 +103,7 @@ Arquitectura de 3 pasos coordinada por el backend:
 
 ## Base de Datos
 
-### Tabla: blog_topic_images (existente)
+### Tabla: blog_topic_images
 
 ```sql
 CREATE TABLE blog_topic_images (
@@ -97,7 +118,7 @@ CREATE TABLE blog_topic_images (
 );
 ```
 
-### Tabla: blog_draft_articles (NUEVA)
+### Tabla: blog_draft_articles
 
 ```sql
 CREATE TABLE blog_draft_articles (
@@ -137,7 +158,8 @@ CREATE TABLE blog_settings (
 
 ## Endpoints del Backend
 
-### `/api/blog/article-content`
+### POST /api/blog/article-content
+
 Recibe HTML del artículo sin imágenes.
 
 ```json
@@ -155,7 +177,8 @@ Body: {
 Response: { "success": true, "topic_id": "...", "draft_id": "..." }
 ```
 
-### `/api/blog/assemble-article`
+### POST /api/blog/assemble-article
+
 Ensambla HTML + imágenes y publica.
 
 ```json
@@ -184,6 +207,7 @@ Response: {
 2. **Backend orquesta el assembly** — no n8n
 3. **n8n solo genera contenido** — HTML e imágenes
 4. **Backend aplica SEO y estructura** — asegura calidad
+5. **topic_id debe ser UUID válido** — no usar strings de prueba
 
 ---
 
@@ -197,6 +221,16 @@ Response: {
 
 ---
 
+## Archivos de Configuración
+
+| Archivo | Descripción |
+|---------|-------------|
+| `docs/blog/IMAGE_GENERATOR_WORKFLOW_V7.json` | Workflow Image Generator corregido |
+| `docs/blog/ARTICLE_PRODUCER_CHANGES.json` | Cambios para Article Producer |
+| `docs/blog/BLOG_VISUAL_IMPROVEMENT_SPEC.md` | Specs visuales del HTML |
+
+---
+
 ## Historico
 
 | Fecha | Cambio |
@@ -205,3 +239,4 @@ Response: {
 | 2026-04-08 | Backend ahora orquesta assembly de artículos |
 | 2026-04-08 | Nuevo endpoint /article-content para recibir HTML |
 | 2026-04-08 | Nuevo endpoint /assemble-article para publicar |
+| 2026-04-08 | ✅ Verificación: Artículo "El secreto de las boutiques en Cali" publicado |
