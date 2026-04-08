@@ -1,0 +1,213 @@
+{
+  "name": "Lookitry Blog Images v7 - CON ASSEMBLY",
+  "description": "Image Generator que termina disparando el assembly en el backend",
+  "nodes": [
+    {
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [1552, 2448],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lookitry-blog-images-v7",
+        "options": {}
+      }
+    },
+    {
+      "id": "input",
+      "name": "Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1760, 2448],
+      "parameters": {
+        "jsCode": "const input = $input.first()?.json?.body || $input.first()?.json || {};\nconst topic_id = String(input.topic_id || '');\nconst title = input.title || 'Fashion Article';\nconst category = input.category_slug || 'moda-y-estilo';\n\nconst contexts = {\n  'ecommerce': 'Colombian ecommerce fashion',\n  'ia': 'AI technology',\n  'moda-y-estilo': 'Colombian fashion style',\n  'negocios-y-saas': 'business SaaS'\n};\n\nconst ctx = contexts[category] || contexts['moda-y-estilo'];\n\nreturn [\n  {\n    json: {\n      tipo: 'hero',\n      prompt: 'Professional fashion photo: ' + title + '. ' + ctx + '. Studio lighting, editorial.',\n      topic_id: topic_id,\n      title: title\n    }\n  },\n  {\n    json: {\n      tipo: 'body1',\n      prompt: 'Lifestyle fashion photo: ' + title + '. ' + ctx + '. Boutique, natural light.',\n      topic_id: topic_id,\n      title: title\n    }\n  },\n  {\n    json: {\n      tipo: 'body2',\n      prompt: 'Fashion detail photo: ' + title + '. ' + ctx + '. Close-up, texture.',\n      topic_id: topic_id,\n      title: title\n    }\n  }\n];"
+      }
+    },
+    {
+      "id": "loop",
+      "name": "Loop Imágenes",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1952, 2448],
+      "parameters": {
+        "options": {}
+      }
+    },
+    {
+      "id": "replicate",
+      "name": "Replicate FLUX",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1712, 2704],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "Bearer ***REMOVED-SECRET***"},
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Prefer", "value": "wait=10"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ ({\n  input: {\n    prompt: $json.prompt,\n    aspect_ratio: \"16:9\",\n    output_format: \"png\",\n    output_quality: 90,\n    num_inference_steps: 4,\n    go_fast: true,\n    megapixels: \"1\"\n  }\n}) }}",
+        "options": {"timeout": 120000},
+        "retryOnFail": true,
+        "waitBetweenTries": 5000
+      }
+    },
+    {
+      "id": "extract-url",
+      "name": "Replicate Extraer URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1952, 2704],
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst currentItem = $('Loop Imágenes').item.json;\nconst token = '***REMOVED-SECRET***';\n\nasync function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }\n\nasync function getPrediction(url) {\n  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } });\n  if (!res.ok) throw new Error(`Replicate lookup failed (${res.status}): ${await res.text()}`);\n  return await res.json();\n}\n\nasync function resolvePrediction(pred) {\n  let cur = pred;\n  for (let i = 0; i < 30; i++) {\n    if (cur?.error) throw new Error(`Replicate error en ${currentItem.tipo}: ${cur.error}`);\n    if (cur?.status === 'failed' || cur?.status === 'canceled') throw new Error(`Replicate ${cur.status}. ID: ${cur.id}`);\n    if (cur?.status === 'succeeded' && cur?.output) {\n      const imageUrl = Array.isArray(cur.output) ? cur.output[0] : cur.output;\n      await sleep(12000);\n      return [{ json: { ...currentItem, imageUrl, predictionId: cur.id } }];\n    }\n    const pollUrl = cur?.urls?.get;\n    if (!pollUrl) throw new Error(`Sin output ni poll URL. Status: ${cur?.status || 'unknown'}`);\n    await sleep(4000);\n    cur = await getPrediction(pollUrl);\n  }\n  throw new Error(`Replicate timeout para ${currentItem.tipo}`);\n}\n\nreturn await resolvePrediction(response);"
+      }
+    },
+    {
+      "id": "download",
+      "name": "Descargar PNG Replicate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2144, 2704],
+      "parameters": {
+        "url": "={{ $json.imageUrl }}",
+        "options": {
+          "response": {"response": {"responseFormat": "file"}}
+        }
+      }
+    },
+    {
+      "id": "rename",
+      "name": "Renombrar PNG",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2336, 2704],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst tipo = item.json.tipo || 'imagen';\nif (item.binary?.data) {\n  item.binary.data.fileName = `${tipo}.png`;\n  item.binary.data.mimeType = 'image/png';\n}\nreturn { json: { ...item.json, tipo }, binary: item.binary };"
+      }
+    },
+    {
+      "id": "upload",
+      "name": "Uploader Imagen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2528, 2704],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/blog/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "x-blog-secret", "value": "Travis2305**_blog_n8n"}
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {"parameterType": "formBinaryData", "name": "file", "inputDataFieldName": "data"},
+            {"name": "filename", "value": "={{ $('Renombrar PNG').item.binary.data.fileName }}"},
+            {"name": "topic_id", "value": "={{ $('Loop Imágenes').item.json.topic_id }}"},
+            {"name": "image_type", "value": "={{ $('Loop Imágenes').item.json.tipo }}"}
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "done",
+      "name": "Check Done",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [2720, 2448],
+      "parameters": {
+        "options": {"reset": true}
+      }
+    },
+    {
+      "id": "assemble",
+      "name": "Trigger Assembly",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2896, 2448],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.lookitry.com/api/blog/assemble-article",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "x-blog-secret", "value": "Travis2305**_blog_n8n"},
+            {"name": "Content-Type", "value": "application/json"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  topic_id: $('Input').first().json.topic_id\n} }}",
+        "options": {"timeout": 60000}
+      }
+    },
+    {
+      "id": "responder",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [3072, 2432],
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": "={\n  \"success\": true,\n  \"topic_id\": \"{{ $('Input').first().json.topic_id }}\",\n  \"message\": \"Imágenes generadas y artículo publicado\"\n}"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{"node": "Input", "type": "main", "index": 0}]]
+    },
+    "Input": {
+      "main": [[{"node": "Loop Imágenes", "type": "main", "index": 0}]]
+    },
+    "Loop Imágenes": {
+      "main": [
+        [{"node": "Check Done", "type": "main", "index": 0}],
+        [{"node": "Replicate FLUX", "type": "main", "index": 0}]
+      ]
+    },
+    "Replicate FLUX": {
+      "main": [[{"node": "Replicate Extraer URL", "type": "main", "index": 0}]]
+    },
+    "Replicate Extraer URL": {
+      "main": [[{"node": "Descargar PNG Replicate", "type": "main", "index": 0}]]
+    },
+    "Descargar PNG Replicate": {
+      "main": [[{"node": "Renombrar PNG", "type": "main", "index": 0}]]
+    },
+    "Renombrar PNG": {
+      "main": [[{"node": "Uploader Imagen", "type": "main", "index": 0}]]
+    },
+    "Uploader Imagen": {
+      "main": [[{"node": "Loop Imágenes", "type": "main", "index": 0}]]
+    },
+    "Check Done": {
+      "main": [
+        [{"node": "Trigger Assembly", "type": "main", "index": 0}]
+      ]
+    },
+    "Trigger Assembly": {
+      "main": [[{"node": "Responder", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "PNri7NdZYkZhpPnm"
+  }
+}

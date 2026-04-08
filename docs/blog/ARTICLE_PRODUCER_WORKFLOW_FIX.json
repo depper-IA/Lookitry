@@ -1,0 +1,57 @@
+{
+  "name": "Lookitry Blog Article Producer v3 - GET URLs from DB",
+  "description": "AGREGAR estos nodos después del 'Wait' en el workflow existente",
+  "nodesToAdd": [
+    {
+      "id": "get-image-urls",
+      "name": "Get Image URLs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [4000, 64],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://vkdooutklowctuudjnkl.supabase.co/rest/v1/blog_topic_images?topic_id=eq.{{ $('Loop Temas Pendientes').item.json.topic_id }}&select=imagen_hero_url,imagen_body1_url,imagen_body2_url",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "***REMOVED-SECRET***"},
+            {"name": "Authorization", "value": "Bearer ***REMOVED-SECRET***"},
+            {"name": "Content-Type", "value": "application/json"}
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "extract-urls",
+      "name": "Extract Image URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [4176, 64],
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst urls = Array.isArray(data) ? data[0] : data;\n\nreturn [{ json: {\n  imagen_hero_url: urls?.imagen_hero_url || '',\n  imagen_body1_url: urls?.imagen_body1_url || '',\n  imagen_body2_url: urls?.imagen_body2_url || ''\n} }];"
+      }
+    }
+  ],
+  "connectionsToAdd": {
+    "Wait": {
+      "main": [[{"node": "Get Image URLs", "type": "main", "index": 0}]]
+    },
+    "Get Image URLs": {
+      "main": [[{"node": "Extract Image URLs", "type": "main", "index": 0}]]
+    },
+    "Extract Image URLs": {
+      "main": [[{"node": "Preparar JSON Lookitry", "type": "main", "index": 0}]]
+    }
+  },
+  "nodesToModify": {
+    "Preparar JSON Lookitry": {
+      "description": "MODIFICAR este nodo para usar las URLs de Extract Image URLs",
+      "changes": {
+        "featured_image": "$json.imagen_hero_url",
+        "imagen_body1_url": "$json.imagen_body1_url",
+        "imagen_body2_url": "$json.imagen_body2_url"
+      }
+    }
+  }
+}

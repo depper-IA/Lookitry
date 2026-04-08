@@ -1,5 +1,208 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-08] - Panel de Diseño Unificado
+
+### Cambios en SettingsForm.tsx
+- Unificados tabs `general`, `appearance`, `pro` en un solo tab `design`
+- Nueva sección "Diseño del Widget" con:
+  - Vista previa del widget (preview visual)
+  - Logo de la marca (upload)
+  - Nombre y Slug (2 columnas)
+  - Color pickers con input de texto
+  - Grid de templates con TemplatePreviewCard
+  - Textos personalizables (botón y mensaje bienvenida)
+- Tabs reducidos a solo `design` e `integración`
+- Mantenida funcionalidad existente: handleLogoUpload, handleSubmit, isPro
+
+## [2026-04-08] - Blog Assembly Architecture
+
+### Nuevos Endpoints Blog
+
+#### POST /api/blog/article-content
+- Recibe HTML del artículo (sin imágenes) desde Article Producer
+- Guarda en tabla `blog_draft_articles`
+- Body: topic_id, title, html_content, excerpt, meta_description, tags, category_slug
+
+#### POST /api/blog/assemble-article
+- Recibe topic_id después de que Image Generator termina
+- Obtiene draft HTML de blog_draft_articles
+- Obtiene URLs de imágenes de blog_topic_images
+- Inserta imágenes en HTML (hero al inicio, body1 tras primer h2, body2 antes último h2)
+- Crea artículo final en tabla `blogs` y lo publica
+
+### Nueva Tabla: blog_draft_articles
+- Almacena HTML del artículo antes de imágenes
+- Campos: topic_id, title, html_content, excerpt, meta_description, tags, category_slug
+
+### Flujo Corregido
+1. Article Producer genera HTML → POST /api/blog/article-content
+2. Image Generator crea imágenes → POST /api/blog/upload (topic_id + image_type)
+3. Image Generator termina → POST /api/blog/assemble-article
+4. Backend ensambla HTML + imágenes → publica
+
+### Archivos Modificados
+- `backend/src/controllers/blog.controller.ts` - nuevos endpoints
+- `backend/src/routes/blog.routes.ts` - nuevas rutas
+- `docs/blog/BLOG_ARCHITECTURE_SPLIT.md` - documentación actualizada
+- `docs/blog/IMAGE_GENERATOR_WORKFLOW_V7.json` - workflow JSON
+- `docs/blog/ARTICLE_PRODUCER_CHANGES.json` - cambios Article Producer
+
+---
+
+## [2026-04-08] - Rediseño Visual Templates PRO
+
+### Templates PRO - Mejoras Aplicadas
+
+#### TemplateModern (Sidebar)
+- **Header**: Logo h-10 + nombre con `primaryColor` + `welcomeMessage` debajo
+- **Sidebar**: Sin texto "Probador Virtual" - solo branding + progreso visual
+- **Bordes adaptativos**: `borderColor: ${primaryColor}30`
+
+#### TemplateBold (Premium Dark)
+- **Header glass**: Logo h-10, mensaje bienvenida visible, sin "Pro Studio"
+- **Hero dinámico**: `welcomeMessage` como título si existe
+- **Progreso animado**: Barra con `primaryColor`
+- **Sin panel "PRO"**: Ya no molesta usuarios que compraron
+
+#### TemplateShowcase (Bios)
+- **Header full**: Background sólido `primaryColor`
+- **Logo visible**: h-8, texto blanco fallback
+- **Scroll indicators**: Flechas circulares blancas
+- **CTA fixed**: Botón con `primaryColor` sólido
+
+### Fixes Visuales Previos
+- Spinner carga centrado (`min-h-screen` + flex centering)
+- Slug excluido del payload si no es PRO
+- Líneas grises → `${primaryColor}XX`
+- Import React al inicio en Showcase
+
+---
+
+## [2026-04-08] - Correcciones Urgentes en Templates Bold y Showcase
+
+### TemplateBoldProStudio
+- **ELIMINADO** panel derecho "Consejos PRO" y "Plan PRO" - Ya买了PRO，不需要提醒
+- Simplificado grid a single column (md:col-span-12)
+
+### TemplateShowcase
+- **MEJORADO** MicroHeader ahora usa `primaryColor` para el texto cuando no hay logo
+- **MEJORADO** `welcomeMessage` se muestra de forma prominente en paso de upload (antes del uploader)
+- **MEJORADO** SelfiePreviewBar usa `primaryColor` para el texto y hover states
+- **MEJORADO** Indicadores de scroll: ahora son flechas circulares blancas con shadow (más visibles que gradientes)
+- **MEJORADO** Botón "Cambiar" en SelfiePreviewBar usa primaryColor dinámico
+
+### Archivos Modificados
+- `frontend/src/components/tryon/templates/TemplateBoldProStudio.tsx`
+- `frontend/src/components/tryon/templates/TemplateShowcase.tsx`
+
+---
+
+## [2026-04-08] - Fix Error "Slug requiere Plan Pro" en Trial
+
+### Problema
+- Usuarios con plan TRIAL recibían error "La personalización del slug requiere Plan Pro" al guardar cualquier configuración del dashboard
+- El campo slug estaba incluido en el formData aunque estaba deshabilitado visualmente
+
+### Solución
+- Modificado `handleSubmit` en `SettingsForm.tsx` para excluir `slug` del payload cuando `!isPro`
+- El backend ahora solo recibe el campo slug si el usuario es PRO (y realmente lo está cambiando)
+
+### Cambio en SettingsForm.tsx
+```typescript
+const handleSubmit = async (e?: React.FormEvent) => {
+  e?.preventDefault();
+  setIsSubmitting(true);
+  try {
+    // No enviar slug si no es PRO (el backend lo rechaza)
+    const dataToSubmit = isPro ? formData : { ...formData, slug: undefined };
+    await onSubmit(dataToSubmit);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+```
+
+### Fix Adicional: TemplatePreviewCard
+- Agregado `minimal` al Record `TEMPLATE_PREVIEWS` (faltaba en el tipo WidgetTemplate)
+- Corregido `isDisabled={Boolean(tpl.proOnly) && !isPro}` para evitar undefined
+
+---
+
+## [2026-04-08] - Upgrade Visual Menú Templates Widget
+
+### Mejoras Implementadas
+
+#### 1. TemplatePreviewCard: Nuevo componente visual
+- **CREADO**: `frontend/src/components/dashboard/TemplatePreviewCard.tsx`
+- **FUNCIONALIDAD**: Grid de 4 tarjetas con miniaturas SVG inline representando cada template
+- **PREVIEWS SVG**:
+  - **Bare**: Wireframe simple con dispositivo centrado + contenido central
+  - **Modern**: Sidebar izquierda con 3 pasos de progreso + área de contenido
+  - **Bold**: Fondo oscuro con gradiente, grid layout 2x2, panel lateral
+  - **Showcase**: Header compacto, scroll horizontal de productos, CTA fijo en bottom
+
+#### 2. Estados de Interacción
+- **Default**: Borde gris claro (`--border-color`)
+- **Hover**: Elevación con sombra (`shadow-lg shadow-[#FF5C3A]/10`), borde naranja sutil
+- **Selected**: Borde naranja sólido (`#FF5C3A`), fondo naranja sutil (`bg-[#FF5C3A]/5`)
+- **Disabled (no PRO)**: Opacidad 50%, cursor `not-allowed`, overlay con tooltip
+
+#### 3. Tooltips para no-PRO
+- Hover sobre tarjeta PRO deshabilitada muestra overlay:
+  - "Disponible en plan PRO"
+  - "Mejora tu plan para desbloquear"
+
+#### 4. Animaciones
+- Transición suave 300ms ease-out
+- Hover scale sutil (1.02), active scale (0.98)
+- Preview SVG con transición de opacidad al hover
+
+### Archivos Modificados
+- `frontend/src/components/dashboard/TemplatePreviewCard.tsx` (nuevo)
+- `frontend/src/components/dashboard/SettingsForm.tsx` (actualizado para usar TemplatePreviewCard)
+
+---
+
+## [2026-04-08] - Auditoría Templates Widget PRO
+
+### Problemas Detectados y Corregidos
+
+#### 1. TemplateModern: Sidebar ocupaba demasiado espacio en móvil
+- **PROBLEMA**: `max-h-[50vh]` en sidebar hacía que ocupara 50% de la pantalla vertical en mobile
+- **IMPACTO**: En bios de Instagram/TikTok (tamaño limitado), el contenido principal quedaba muy apretado
+- **SOLUCIÓN**: Cambiado a `max-h-[35vh]` para sidebar compacto en móvil
+
+#### 2. TemplateShowcase: Import de React mal ubicado
+- **PROBLEMA**: Import de React estaba al FINAL del archivo (línea 309)
+- **SOLUCIÓN**: Movido al inicio del archivo con los demás imports
+
+#### 3. Menú de Edición: Sin preview visual de templates
+- **PROBLEMA**: Solo había un `<select>` con nombres, sin preview ni descripciones
+- **SOLUCIÓN**: Reemplazado por grid de 4 tarjetas visuales:
+  - Cada tarjeta: icono (lucide-react), nombre, descripción, badge PRO
+  - Borde highlighting en selección activa
+  - Templates PRO deshabilitados para planes no-PRO
+  - Iconos: Layout (Bare), Sidebar (Modern), Layers (Bold), Zap (Showcase)
+
+#### 4. Tipo WidgetTemplate actualizado
+- **AGREGADO**: `'showcase'` al tipo union
+- **MANTENIDO**: `'minimal'` por compatibilidad con BD existente (mapea a showcase)
+
+### Descripción de Templates (Ahora visible en Settings)
+
+| Template | Descripción |
+|---------|-------------|
+| **Bare** | Template básico con flujo directo |
+| **Modern** | Navegación lateral con barra de progreso — Ideal para catálogos extensos |
+| **Bold** | Experiencia premium con diseño oscuro y consejos de uso |
+| **Showcase** | Optimizado para bios — Scroll horizontal con CTA fijo |
+
+### Archivos Modificados
+- `frontend/src/components/tryon/templates/TemplateModernSidebar.tsx`
+- `frontend/src/components/tryon/templates/TemplateShowcase.tsx`
+- `frontend/src/components/dashboard/SettingsForm.tsx`
+- `frontend/src/types/index.ts`
+
 ## [2026-04-08] - Auditoría y fixes pre-lanzamiento Mini-Landings (Open Release)
 
 ### Auditoría completa por agentes
@@ -62,6 +265,20 @@
 
 ### Archivos Modificados
 - `frontend/src/middleware.ts` - Actualizada directiva `script-src` en CSP dinámico
+
+## [2026-04-08] - Verificación Post-Fix CSP para Widget Try-On
+
+### Verificación en Producción
+- **PRUEBA**: Test automatizado con Playwright en marca `wilkie-devs` (productos activos)
+- **RESULTADO**: Widget carga exitosamente, texto "Cargando el probador..." desaparece en <30s
+- **CSP**: No se detectaron errores de Content Security Policy en consola
+- **INTERACTIVIDAD**: Elementos del widget detectados (input file, productos visibles)
+- **ERRORES**: Solo un error 500 en carga de imagen de producto (no relacionado con CSP)
+- **CONCLUSIÓN**: El fix de CSP funciona correctamente, el widget Try-On opera sin bloqueos
+
+### Archivos de Verificación
+- `frontend/tests/csp-check.spec.ts` - Test de validación CSP
+- `frontend/tests/widget.spec.ts` - Test existente actualizado (kevida)
 
 ## [2026-04-08] - Restauración Paso "Primeras Pruebas Recibidas" + Banner Dismissible
 

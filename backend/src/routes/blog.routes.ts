@@ -6,11 +6,19 @@ import { multerMemory } from '../controllers/upload.controller';
 
 const router = Router();
 
-/** PUBLIC / n8n// Webhook de n8n para crear posts **/
+/** PUBLIC / n8n // Webhook de n8n para crear posts **/
 router.post('/webhook', (req, res) => blogController.webhookCreatePost(req, res));
 
 // Webhook de n8n para subir imágenes
 router.post('/upload', multerMemory.single('file'), (req, res) => blogController.uploadBlogImage(req, res));
+
+// NUEVO: Recibir contenido HTML del artículo (sin imágenes)
+router.post('/article-content', (req, res) => blogController.articleContent(req, res));
+
+// NUEVO: Ensamblar y publicar artículo con imágenes
+router.post('/assemble-article', (req, res) => blogController.assembleArticle(req, res));
+
+// Webhook de n8n para reportar status de ejecución
 router.post('/execution-status', (req, res) => blogSettingsController.reportExecutionStatus(req, res));
 
 // Rutas de administración (requieren JWT de admin)
