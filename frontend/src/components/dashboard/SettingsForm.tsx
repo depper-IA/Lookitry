@@ -124,10 +124,10 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
   const inputClass = 'w-full rounded-2xl border border-[var(--border-color)] bg-[var(--bg-input)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none focus:border-[#FF5C3A]';
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 items-start">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-4 items-start">
       {/* Sidebar - Visualizador Real */}
-      <div className="lg:col-span-1 lg:sticky lg:top-6 space-y-6">
-        <div className="flex gap-2 overflow-x-auto rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] p-2 lg:flex-col">
+      <div className="xl:col-span-1 xl:sticky xl:top-6 space-y-6">
+        <div className="flex gap-2 overflow-x-auto rounded-3xl border border-[var(--border-color)] bg-[var(--bg-card)] p-2 xl:flex-col">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -145,7 +145,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
           ))}
         </div>
 
-        <div className="hidden lg:block">
+        <div className="hidden xl:block">
           <label className="mb-3 block text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] text-center">
             Vista Previa Real
           </label>
@@ -183,12 +183,12 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
         </div>
       </div>
 
-      <div className="lg:col-span-3">
+      <div className="xl:col-span-3">
         {activeTab === 'design' && (
           <section className={cardClass}>
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-2xl font-bold text-[var(--text-primary)]">Diseño del Widget</h3>
-              <div className="lg:hidden text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-full">
+              <div className="xl:hidden text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-[#FF5C3A]/10 text-[#FF5C3A] rounded-full">
                 Vista previa real activa
               </div>
             </div>
@@ -209,7 +209,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Nombre de la marca</label>
                 <input name="name" value={formData.name || ''} onChange={handleChange} className={inputClass} />
@@ -227,7 +227,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Color principal (Acción)</label>
                 <div className="flex items-center gap-3">
@@ -250,7 +250,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
             
             <div className="mb-8">
               <label className="mb-4 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Seleccionar Plantilla</label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {TEMPLATES.filter((tpl) => isPro || !tpl.proOnly).map((tpl) => (
                   <TemplatePreviewCard
                     key={tpl.id}
@@ -268,7 +268,7 @@ export function SettingsForm({ brand, onSubmit }: SettingsFormProps) {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
               <div>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-[var(--text-muted)]">Texto del botón central</label>
                 <input name="buttonText" value={formData.buttonText || ''} onChange={handleChange} className={inputClass} placeholder="Probarme esto" />
