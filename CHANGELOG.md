@@ -1,5 +1,68 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-08] - Auditoría y fixes pre-lanzamiento Mini-Landings (Open Release)
+
+### Auditoría completa por agentes
+- **DevGuardian**: Seguridad aprobada (8.5/10), sin vulnerabilidades críticas
+- **DataAlchemist**: Issues DB resueltos (índice + columna missing)
+- **WebWizard**: Accesibilidad corregida (aria-labels, focus states)
+- **ArchitectAI**: Dockerfile Sharp corregido (vips deps)
+
+### Fase 1: Base de Datos
+- **ÍNDICE NUEVO**: `idx_brands_has_landing_page_active` en `brands(has_landing_page)` WHERE `has_landing_page = true`
+  - Propósito: Optimizar queries de mini-landings activas
+- **COLUMNA NUEVA**: `brands.custom_domain` (text)
+  - Propósito: Permitir dominios personalizados para CORS
+- **ÍNDICE NUEVO**: `brands_custom_domain_key` (unique) para `custom_domain`
+
+### Fase 2: Accesibilidad (TemplateClassic, TemplateEditorial, TemplateModerno)
+- **ARIA-LABELS**: Agregados a todos los social links en los 3 templates
+  - `"Síguenos en ${platform}"` en header y footer
+- **ARIA-LABELS**: Mobile menu button en TemplateClassic con `aria-expanded`
+- **FOCUS STATES**: Agregados `focus-visible:ring-2 focus-visible:ring-[#FF5C3A]` a elementos interactivos
+
+### Fase 3: Dockerfile (Sharp/vips)
+- **DEPS builder**: Agregado `apk add --no-cache vips-dev`
+- **DEPS runner**: Agregado `apk add --no-cache vips`
+- **PROPÓSITO**: Fix error "sharp is required to be installed in standalone mode"
+
+### Fase 4: Optional Chaining
+- **TemplateClassic.tsx:333**: `products[0]?.id` → `products?.[0]?.id`
+- **MiniLanding.tsx:35**: `result.brand.preview_timer_seconds` → `result?.brand?.preview_timer_seconds`
+
+### Archivos Modificados
+- `backend/` (migraciones SQL via Supabase MCP)
+- `frontend/src/components/mini-landing/TemplateClassic.tsx`
+- `frontend/src/components/mini-landing/TemplateEditorial.tsx`
+- `frontend/src/components/mini-landing/TemplateModerno.tsx`
+- `frontend/src/components/mini-landing/MiniLanding.tsx`
+- `frontend/src/components/mini-landing/shared.tsx`
+- `frontend/Dockerfile`
+
+## [2026-04-08] - Fix CSP para widget Try-On en producción
+
+### Corrección de Seguridad
+- **PROBLEMA**: Content Security Policy del frontend bloqueaba scripts inline necesarios para la hidratación de React en rutas `/pruebalo/`
+- **SÍNTOMA**: Widget Try-On se quedaba eternamente en "Cargando el probador..." en producción
+- **CAUSA**: Las rutas `/pruebalo/:slug` estaban excluidas de la CSP en `next.config.js`, heredando una CSP restrictiva sin `'unsafe-inline'`
+- **SOLUCIÓN**: Añadido header `Content-Security-Policy` a rutas `/(embed|marca|pruebalo)/:slug*` con directiva `script-src` que incluye `'unsafe-inline'`
+- **IMPACTO**: Widget Try-On ahora puede ejecutar JavaScript correctamente y cargar productos de la marca
+
+### Archivos Modificados
+- `frontend/next.config.js` - Añadido header CSP a rutas de pruebalo/embed/marca
+
+## [2026-04-08] - Fix CSP en middleware para widget Try-On
+
+### Corrección de Seguridad
+- **PROBLEMA**: Middleware del frontend sobrescribía la CSP con una versión restrictiva sin `'unsafe-inline'` para rutas `/pruebalo/` y `/embed/`
+- **SÍNTOMA**: Widget Try-On seguía atascado en "Cargando el probador..." a pesar del fix anterior
+- **CAUSA**: El archivo `frontend/src/middleware.ts` definía una CSP base sin `'unsafe-inline'` en `script-src`
+- **SOLUCIÓN**: Actualizada la CSP en el middleware para incluir `'unsafe-inline'` y condicionalmente `'unsafe-eval'` en desarrollo
+- **IMPACTO**: Widget Try-On ahora puede hidratar React correctamente y cargar completamente
+
+### Archivos Modificados
+- `frontend/src/middleware.ts` - Actualizada directiva `script-src` en CSP dinámico
+
 ## [2026-04-08] - Restauración Paso "Primeras Pruebas Recibidas" + Banner Dismissible
 
 ### Cambios en Dashboard Onboarding

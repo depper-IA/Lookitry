@@ -58,8 +58,8 @@ function ProbadorNav({ brand }: { brand: BrandData }) {
       {entries.length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-1 shrink-0 max-w-[140px] sm:max-w-none justify-end">
           {entries.map(([platform, url]) => (
-            <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
-              className="w-7 h-7 rounded-lg border flex items-center justify-center transition-all hover:scale-110 shrink-0"
+            <a key={platform} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Síguenos en ${platform}`}
+              className="w-7 h-7 rounded-lg border flex items-center justify-center transition-all hover:scale-110 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2"
               style={{ borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>
               {socialIcons[platform.toLowerCase()] ?? null}
             </a>
@@ -159,7 +159,7 @@ function ProbadorInfo({ brand }: { brand: BrandData }) {
   const DAYS_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   let scheduleEntries: [string, string][] = [];
   try {
-    const rawSchedule = brand.schedule;
+    const rawSchedule = brand.schedule ?? {};
     if (rawSchedule && typeof rawSchedule === 'object') {
       scheduleEntries = DAYS_ORDER
         .filter(day => rawSchedule[day] || rawSchedule[day.toLowerCase()])
@@ -205,7 +205,7 @@ function ProbadorInfo({ brand }: { brand: BrandData }) {
 export function TemplateModerno({ brandSlug, brand, products, footerUrl, isPreview = false }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string; isPreview?: boolean }) {
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
   const secondary = brand.social_links?._landing_secondary || primary;
-  const [selectedId, setSelectedId] = useState<string | null>(products?.[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(products && products.length > 0 ? products[0].id : null);
 
   const scrollToTryOn = () => {
     const el = document.getElementById('probador-tryon');
