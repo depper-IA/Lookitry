@@ -228,25 +228,10 @@ function ShareButtons({ title, url }: { title: string; url: string }) {
 // ============================================================================
 
 function ArticleContent({ html }: { html: string }) {
-  const processedHtml = React.useMemo(() => {
-    // Only add IDs to H2s that don't have them (for TOC)
-    // The HTML already has the correct markup with data-* attributes
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const h2s = doc.querySelectorAll('h2');
-    h2s.forEach((h2) => {
-      if (!h2.id) {
-        const tocTitle = h2.getAttribute('data-toc-title');
-        if (tocTitle) {
-          h2.id = slugify(tocTitle);
-        }
-      }
-    });
-    return doc.body.innerHTML;
-  }, [html]);
-
+  // Backend generates clean HTML with proper classes and data-attributes
   return (
     <div 
-      className="prose prose-invert prose-lg max-w-none
+      className="blog-content prose prose-invert prose-lg max-w-none
         prose-headings:text-white prose-headings:font-bold
         prose-p:text-gray-300 prose-p:leading-relaxed
         prose-a:text-[#FF5C3A] prose-a:no-underline hover:prose-a:underline
@@ -255,7 +240,7 @@ function ArticleContent({ html }: { html: string }) {
         prose-img:rounded-xl prose-img:shadow-2xl prose-img:border prose-img:border-white/10
         prose-hr:border-white/10
         prose-li:text-gray-300"
-      dangerouslySetInnerHTML={{ __html: processedHtml }}
+      dangerouslySetInnerHTML={{ __html: html }}
     />
   );
 }
@@ -325,77 +310,161 @@ export default function BlogArticle({
 
   return (
     <>
-      {/* Custom styles for data-* selectors */}
+      {/* Custom styles for blog article elements */}
       <style jsx global>{`
-        [data-blog-intro="lead"] {
-          font-size: 1.25rem !important;
-          line-height: 1.625 !important;
-          color: #d1d5db !important;
-          border-left: 4px solid #FF5C3A !important;
-          padding-left: 1rem !important;
-          margin: 1.5rem 0 !important;
+        /* Callout blocks */
+        [data-blog-callout] {
+          border-radius: 12px;
+          padding: 16px 20px;
+          margin: 24px 0;
+          font-weight: 500;
         }
-        
-        [data-blog-block="impact"] {
-          border-radius: 0.75rem !important;
-          padding: 1rem !important;
-          margin: 1.5rem 0 !important;
+        [data-blog-callout="stat"] {
+          background: rgba(255, 92, 58, 0.1);
+          border: 1px solid rgba(255, 92, 58, 0.3);
+          color: #FF5C3A;
         }
-        
-        [data-blog-block="impact"][data-type="stat"] {
-          background-color: rgba(255, 92, 58, 0.1) !important;
-          border: 1px solid rgba(255, 92, 58, 0.3) !important;
+        [data-blog-callout="tip"] {
+          background: rgba(34, 197, 94, 0.1);
+          border: 1px solid rgba(34, 197, 94, 0.3);
+          color: #22c55e;
         }
-        
-        [data-blog-block="impact"][data-type="tip"] {
-          background-color: rgba(34, 197, 94, 0.1) !important;
-          border: 1px solid rgba(34, 197, 94, 0.3) !important;
+        [data-blog-callout="warning"] {
+          background: rgba(234, 179, 8, 0.1);
+          border: 1px solid rgba(234, 179, 8, 0.3);
+          color: #eab308;
         }
-        
-        [data-blog-block="impact"][data-type="warning"] {
-          background-color: rgba(245, 158, 11, 0.1) !important;
-          border: 1px solid rgba(245, 158, 11, 0.3) !important;
+
+        /* FAQ Accordion */
+        [data-blog-faq="accordion"] {
+          margin: 32px 0;
         }
-        
         [data-blog-faq="accordion"] details {
-          background-color: #1a1a1a !important;
-          border-radius: 0.5rem !important;
-          margin-bottom: 0.75rem !important;
+          background: #1a1a1a;
+          border-radius: 12px;
+          margin-bottom: 12px;
+          overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.05);
         }
-        
         [data-blog-faq="accordion"] summary {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: space-between !important;
-          padding: 1rem !important;
-          font-weight: 600 !important;
-          color: white !important;
-          cursor: pointer !important;
+          padding: 16px 20px;
+          cursor: pointer;
+          font-weight: 600;
+          color: white;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          list-style: none;
         }
-        
-        [data-blog-faq="accordion"] summary:hover {
-          color: #FF5C3A !important;
+        [data-blog-faq="accordion"] summary::-webkit-details-marker { display: none; }
+        [data-blog-faq="accordion"] summary::after {
+          content: '+';
+          font-size: 20px;
+          font-weight: 300;
+          color: #999;
+          transition: transform 0.2s;
         }
-        
-        [data-blog-faq="accordion"] summary + div {
-          padding: 1rem !important;
-          padding-top: 0 !important;
-          color: #9ca3af !important;
+        [data-blog-faq="accordion"] details[open] summary::after {
+          content: '−';
         }
-        
-        [data-blog-cta="final"] {
-          background: linear-gradient(to right, rgba(255, 92, 58, 0.2), transparent) !important;
-          border: 1px solid rgba(255, 92, 58, 0.5) !important;
-          border-radius: 1rem !important;
-          padding: 2rem !important;
-          margin: 3rem 0 !important;
-          text-align: center !important;
+        [data-blog-faq="accordion"] div {
+          padding: 0 20px 16px 20px;
+          color: #999;
+          line-height: 1.6;
         }
-        
+
+        /* CTA Final */
+        [data-blog-cta] {
+          background: linear-gradient(135deg, rgba(255, 92, 58, 0.15) 0%, rgba(255, 92, 58, 0.05) 100%);
+          border: 1px solid rgba(255, 92, 58, 0.4);
+          border-radius: 16px;
+          padding: 32px;
+          margin: 40px 0;
+          text-align: center;
+        }
+        [data-blog-cta] h3 {
+          font-size: 24px;
+          font-weight: 700;
+          color: white;
+          margin: 0 0 12px 0;
+        }
+        [data-blog-cta] p {
+          color: #999;
+          margin: 0 0 24px 0;
+        }
+        [data-blog-cta] a {
+          display: inline-block;
+          background: #FF5C3A;
+          color: white;
+          font-weight: 700;
+          padding: 14px 32px;
+          border-radius: 10px;
+          text-decoration: none;
+          transition: background 0.2s;
+        }
+        [data-blog-cta] a:hover {
+          background: #e04a2c;
+        }
+
+        /* Body images */
         .blog-body-image {
-          margin: 2rem 0 !important;
-          border-radius: 0.75rem !important;
-          overflow: hidden !important;
+          margin: 32px 0;
+          border-radius: 12px;
+          overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.1);
+        }
+        .blog-body-image img {
+          width: 100%;
+          height: auto;
+          display: block;
+        }
+
+        /* Hero image */
+        .blog-hero {
+          width: 100%;
+          aspect-ratio: 21/9;
+          overflow: hidden;
+          border-radius: 16px;
+          margin-bottom: 32px;
+        }
+        .blog-hero img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        /* Table of Contents (sidebar) */
+        .blog-toc {
+          position: sticky;
+          top: 100px;
+          padding: 20px;
+          background: #141414;
+          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.05);
+        }
+        .blog-toc h4 {
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: #666;
+          margin: 0 0 16px 0;
+        }
+        .blog-toc ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+        .blog-toc li {
+          margin-bottom: 8px;
+        }
+        .blog-toc a {
+          color: #999;
+          text-decoration: none;
+          font-size: 14px;
+          transition: color 0.2s;
+        }
+        .blog-toc a:hover {
+          color: #FF5C3A;
         }
       `}</style>
 
