@@ -37,6 +37,8 @@ export interface TryOnTemplateProps {
   onReset: () => void;
   onSelfieUpload: (file: File, preview: string) => void;
   onProductSelect: (p: Product) => void;
+  onProceedToUpload?: () => void;
   onGenerate: () => void;
 }
+
 
