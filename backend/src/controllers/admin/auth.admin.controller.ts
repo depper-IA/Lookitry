@@ -67,7 +67,7 @@ export const adminLogin = async (req: any, res: Response) => {
     const cookieOptions: any = {
       httpOnly: true,
       secure: IS_PROD,
-      sameSite: IS_PROD ? 'strict' : 'lax',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
       path: '/',
     };
@@ -215,7 +215,7 @@ export const adminLogout = async (_req: any, res: Response) => {
     const cookieOptions: any = {
       httpOnly: true,
       secure: IS_PROD,
-      sameSite: IS_PROD ? 'strict' : 'lax',
+      sameSite: 'lax',
       expires: new Date(0),
       path: '/',
     };
@@ -308,7 +308,7 @@ export const adminGoogleLogin = async (req: any, res: Response) => {
     const cookieOptions: any = {
       httpOnly: true,
       secure: IS_PROD,
-      sameSite: IS_PROD ? 'strict' : 'lax',
+      sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/',
     };

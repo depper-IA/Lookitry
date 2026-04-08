@@ -1,5 +1,22 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-07] - Fix bug logout/session - Google login bloqueado
+
+### Corrección de Seguridad y UX
+- **auth.controller.ts**: Eliminado bloqueo de sesión activa en Google Login (líneas 440-454) para permitir cambio de cuenta
+- **Cookie sameSite**: Cambiado de `strict` a `lax` en todos los endpoints de autenticación para compatibilidad con logout cross-origin
+  - auth.controller.ts (setCookieToken)
+  - auth.routes.ts (logout, refresh-session)
+  - admin/auth.admin.controller.ts (adminLogin, adminLogout, adminGoogleLogin)
+- **Google Sign-In Prompt**: Agregado `prompt: 'select_account'` en frontend GoogleSignInButton.tsx para forzar selector de cuenta
+- **Motivo**: Usuarios con sesión activa no podían cambiar de cuenta Google ni cerrar sesión correctamente
+
+### Archivos Modificados
+- `backend/src/controllers/auth.controller.ts`
+- `backend/src/routes/auth.routes.ts`
+- `backend/src/controllers/admin/auth.admin.controller.ts`
+- `frontend/src/components/auth/GoogleSignInButton.tsx`
+
 ## [2026-04-08] - Custom n8n MCP Server + DataAlchemist Update
 
 ### Nueva Funcionalidad
