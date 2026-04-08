@@ -132,7 +132,7 @@ export async function fetchBlogCategories(): Promise<BlogCategory[]> {
   }
 }
 
-export async function fetchBlogPosts(categoryId?: string, page = 1, limit = 10): Promise<{ posts: BlogPost[]; pagination: BlogPagination }> {
+export async function fetchBlogPosts(categoryId?: string, page = 1, limit = 5): Promise<{ posts: BlogPost[]; pagination: BlogPagination }> {
   try {
     let path = `/blog?page=${page}&limit=${limit}`;
     if (categoryId) path += `&category_id=${encodeURIComponent(categoryId)}`;
