@@ -1,5 +1,31 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-08] - Fixes Críticos de Templates y Panel
+
+### TemplateBoldProStudio.tsx
+- Layout mobile-first: sin max-w-4xl ni grid-cols-12 que rompían mobile
+- Header compacto en mobile (h-8 en lugar de h-10)
+- Padding y gaps reducidos en mobile
+- Gradientes de fondo condicionales (solo en fondos oscuros)
+- Colores adaptativos: texto primario, texto secundario, borders según luminosidad del fondo
+
+### SettingsForm.tsx
+- Preview ahora usa TemplatePreviewCard real en lugar de placeholder con círculo dashed
+- Cast de tipo explícito para widgetTemplate → WidgetTemplate
+
+### TemplateShowcase.tsx
+- Corregido text-gray-400 → text-gray-500 en SelfiePreviewBar y ProductShowcase
+- Mejor contraste en textos secundarios
+
+### TemplateModernSidebar.tsx
+- Padding responsive en área principal (p-4 md:p-6)
+- Textos secundarios cambiados a text-gray-500
+- Botón Reiniciar con hover states correctos
+
+### shared.tsx
+- FriendlyProductSelector: text-gray-400 → text-gray-500
+- SelfieThumb: text-gray-400 → text-gray-500
+
 ## [2026-04-08] - Panel de Diseño Unificado
 
 ### Cambios en SettingsForm.tsx
@@ -46,6 +72,12 @@
 - `docs/blog/BLOG_ARCHITECTURE_SPLIT.md` - documentación actualizada
 - `docs/blog/IMAGE_GENERATOR_WORKFLOW_V7.json` - workflow JSON
 - `docs/blog/ARTICLE_PRODUCER_CHANGES.json` - cambios Article Producer
+
+### Campo toc_items en blogs
+- Se agregó columna `toc_items` (jsonb) a la tabla `blogs` para almacenar tabla de contenidos generada por IA
+- Se actualizó `assembleArticle` para incluir `toc_items` del draft en el insert final
+- Migración aplicada: `ALTER TABLE blogs ADD COLUMN IF NOT EXISTS toc_items jsonb;`
+- Archivo modificado: `backend/src/controllers/blog.controller.ts`
 
 ---
 
@@ -1356,3 +1388,17 @@ Nuevo componente HalfStarRating permite puntuación con media estrella (4.5, 3.5
 **Motivo:** Permite reviews más precisas.
 
 ---
+
+## [2026-04-08] - Campo toc_items para Blog Draft Articles
+
+### Modificación en endpoint articleContent
+
+- Agregado campo `toc_items` a la destructuración de req.body en `blog.controller.ts`
+- Agregado campo `toc_items: toc_items || null` en upsert de `blog_draft_articles`
+- Creada columna `toc_items` de tipo JSONB en tabla `blog_draft_articles` mediante migración Supabase (`ALTER TABLE blog_draft_articles ADD COLUMN IF NOT EXISTS toc_items jsonb;`)
+
+### Archivos modificados
+- `backend/src/controllers/blog.controller.ts` - función articleContent (líneas 451, 468)
+
+### Motivo
+- Permitir almacenar items de tabla de contenidos generados por Article Producer para uso futuro en renderizado de artículos
