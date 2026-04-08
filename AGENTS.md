@@ -12,19 +12,36 @@ Ver `.claude/SKILL.md` para el índice completo del ecosistema de agentes y skil
 
 El equipo de agentes opera bajo el orchestration de **Sammy** (via Telegram/OpenCode). Cada agente especializado tiene responsabilidades definidas:
 
-| Agente | Archivo | Responsabilidad | Modelo Principal | Fallback | Subagentes |
-|--------|---------|-----------------|------------------|---------|------------|
-| **Sammy** | `.opencode/agents/sammy.md` | Orquestador - recibe tareas y delega | MiniMax | DeepSeek Coder | GROQ |
-| **WebWizard** | `.opencode/agents/webwizard.md` | Frontend + UX, widget, landing | MiniMax | DeepSeek Coder | GROQ |
-| **DevGuardian** | `.opencode/agents/devguardian.md` | Calidad + Seguridad | MiniMax | DeepSeek Coder | GROQ |
-| **DataAlchemist** | `.opencode/agents/dataalchemist.md` | DB + IA + n8n | MiniMax | DeepSeek Coder | GROQ |
-| **GrowthPilot** | `.opencode/agents/growthpilot.md` | CRM + Marketing + Leads | MiniMax | DeepSeek Coder | GROQ |
-| **ArchitectAI** | `.opencode/agents/architectai.md` | Infra + DevOps | MiniMax | DeepSeek Coder | GROQ |
+> **IMPORTANTE - Regla de APIs de IA:**
+> - **GROQ**: Se conecta por API oficial directa (`api.groq.com`), NO via OpenRouter
+> - **OpenRouter**: Exclusivo para GENERACIÓN DE IMÁGENES del WIDGET (Try-On). PROHIBIDO usar sus créditos para otras tareas sin consentimiento explícito del usuario
 
-**Modelos gratuitos:**
-- `minimax-coding-plan/MiniMax-M2.7` — Principal
-- `deepseek/deepseek-coder-33b-instruct` — Fallback (DeepSeek Coder)
-- `groq/llama-3.3-70b-instruct` — Subagentes (tareas simples, rápido)
+| Agente | Archivo | Responsabilidad | Modelo Asignado | Permisos |
+|--------|---------|----------------|-----------------|----------|
+| **Sammy** | `.opencode/agents/sammy.md` | Orquestador — recibe tareas y delega, NO codea | `groq/llama-3.3-70b-versatile` | read, bash |
+| **WebWizard** | `.opencode/agents/webwizard.md` | Frontend + UX, widget, landing, checkout | `minimax/minimax-m2.7` | read, edit, write, bash |
+| **DevGuardian** | `.opencode/agents/devguardian.md` | Debugging + Seguridad + Calidad | `deepseek/deepseek-reasoner` | read, edit, bash |
+| **DataAlchemist** | `.opencode/agents/dataalchemist.md` | DB + IA + n8n | `minimax/minimax-m2.7` | read, edit, write, bash |
+| **GrowthPilot** | `.opencode/agents/growthpilot.md` | CRM + Marketing + Leads | `groq/llama-3.3-70b-versatile` | read, edit, write, bash |
+| **ArchitectAI** | `.opencode/agents/architectai.md` | Infra + DevOps + Arquitectura | `deepseek/deepseek-reasoner` | read, edit, write, bash |
+| **DocsWriter** | `.opencode/agents/docs-writter.md` | Documentación — PRD, TECH_STACK, CHANGELOG | `groq/llama-3.3-70b-versatile` | read, edit, write |
+
+**Estrategia de Modelos:**
+
+| Modelo | Costo | Cuándo usar |
+|--------|-------|-------------|
+| `groq/llama-3.3-70b-versatile` | Gratis | Orquestación, routing, docs, marketing — velocidad > profundidad |
+| `minimax/minimax-m2.7` | Token Plan | Frontend complejo multi-archivo, DB/IA — mejor consistencia entre archivos |
+| `deepseek/deepseek-reasoner` | Muy bajo | Debugging, seguridad, infra — razonamiento paso a paso antes de actuar |
+
+**Modelos globales (`opencode.json`):**
+- `model`: `minimax/minimax-m2.7` — usado cuando no hay agente específico activo
+- `small_model`: `groq/llama-3.3-70b-versatile` — tareas rápidas y simples
+
+**Principio de asignación:**
+- **Velocidad > Profundidad** → Groq (Sammy, GrowthPilot, DocsWriter)
+- **Consistencia multi-archivo** → MiniMax (WebWizard, DataAlchemist)
+- **Razonamiento profundo antes de actuar** → DeepSeek Reasoner (DevGuardian, ArchitectAI)
 
 ### Cómo Invocar Agentes
 
@@ -64,6 +81,24 @@ DEPENDENCIA: si este agente debe esperar el resultado
 | `@brainstorming` | Siempre antes de implementar |
 | `@verification-before-completion` | Antes de claim completion |
 | `@security-auditor` | Tasks de seguridad/auth |
+
+### Pre-commit Hook
+
+**Configurado con Husky** en `.husky/pre-commit`:
+
+```bash
+# Verifica antes de cada commit:
+1. Frontend lint (next lint)
+2. Backend lint (eslint)
+3. Frontend build (next build)
+4. Backend build (tsc)
+```
+
+**Para activar:**
+```bash
+npm install
+npm run prepare  # npm pkg set scripts.prepare=husky install
+```
 
 ### Workflows
 

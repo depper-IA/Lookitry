@@ -1,5 +1,24 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-08] - Custom n8n MCP Server + DataAlchemist Update
+
+### Nueva Funcionalidad
+- **Custom n8n MCP Server**: Creado servidor MCP personalizado en `.opencode/mcp-servers/n8n-mcp-server/` que permite acceso completo a la API REST de n8n.wilkiedevs.com
+  - 13 tools disponibles: listar, obtener, crear, actualizar, eliminar workflows, activar/desactivar, probar, ver ejecuciones, agregar nodos, gestión de tags
+  - Usa header `X-N8N-API-KEY` para autenticación
+  - Construido con MCP TypeScript SDK
+
+### Actualización de Agentes
+- **dataalchemist.md**: Actualizado para reflejar nuevas capacidades del MCP n8n
+  - Tabla de herramientas MCP n8n
+  - Ejemplos de uso de las nuevas tools
+  - Workflow del blog agregado a la tabla (ID: fZxYlA62msyJM8Nx)
+  - Reglas actualizadas sobre creación de workflows
+
+### Configuración
+- `opencode.json`: Reemplazado `n8n-mcp@latest` por custom MCP server local en `dist/index.js`
+- `.opencode/mcp-servers/n8n-mcp-server/`: Nuevo directorio con package.json, tsconfig.json, README.md
+
 ## [2026-04-08] - Blog Editorial Magazine + Paginación
 
 ### Nuevas Funcionalidades

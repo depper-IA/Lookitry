@@ -16,6 +16,11 @@
       "sourceType": "local",
       "computedHash": "local-skill"
     },
+    "code-reviewer": {
+      "source": "lookitry/.agents/skills/code-reviewer",
+      "sourceType": "local",
+      "computedHash": "local-skill"
+    },
     "excalidraw-diagram": {
       "source": "coleam00/excalidraw-diagram-skill",
       "sourceType": "github",
@@ -36,10 +41,20 @@
       "sourceType": "local",
       "computedHash": "local-skill"
     },
+    "security-auditor": {
+      "source": "lookitry/.opencode/agents/security-auditor",
+      "sourceType": "local",
+      "computedHash": "local-skill"
+    },
     "seo-audit": {
       "source": "lookitry/.agents/skills/seo-audit",
       "sourceType": "local",
       "computedHash": "local-skill"
+    },
+    "skill-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "57f470f512f45bdac598e302bc72fd62bf2b649fc7fad032efe97720149cde4d"
     },
     "subagent-driven-development": {
       "source": "obra/superpowers",
@@ -73,16 +88,6 @@
     },
     "web-design-guidelines": {
       "source": "lookitry/.agents/skills/web-design-guidelines",
-      "sourceType": "local",
-      "computedHash": "local-skill"
-    },
-    "code-reviewer": {
-      "source": "lookitry/.agents/skills/code-reviewer",
-      "sourceType": "local",
-      "computedHash": "local-skill"
-    },
-    "security-auditor": {
-      "source": "lookitry/.opencode/agents/security-auditor",
       "sourceType": "local",
       "computedHash": "local-skill"
     }

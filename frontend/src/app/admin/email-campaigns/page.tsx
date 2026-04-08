@@ -158,6 +158,8 @@ export default function EmailCampaignsPage() {
   const [showTestingCenter, setShowTestingCenter] = useState(false);
   const [testAdHoc, setTestAdHoc] = useState({ subject: 'Prueba de Diseño - Lookitry', html: '', email: 'soporte@lookitry.com' });
   const [testLoading, setTestLoading] = useState(false);
+  const [showEditTemplateModal, setShowEditTemplateModal] = useState(false);
+  const [editTemplateHtml, setEditTemplateHtml] = useState('');
 
   // UI States
   const [toast, setToast] = useState<{ show: boolean; message: string; type: ToastType }>({
@@ -181,102 +183,147 @@ export default function EmailCampaignsPage() {
 
   function getDefaultTemplate() {
     return `<!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LOOKITRY - Revolucionando tu Tienda</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>Acceso Anticipado - Lookitry</title>
+    
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
+
+        html, body {
+            margin: 0 auto !important;
+            padding: 0 !important;
+            height: 100% !important;
+            width: 100% !important;
+            background-color: #1c1c1e !important;
+        }
+        * {
+            -ms-text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+        div[style*="margin: 16px 0"] { margin: 0 !important; }
+        table, td { mso-table-lspace: 0pt !important; mso-table-rspace: 0pt !important; }
+        table { border-spacing: 0 !important; border-collapse: collapse !important; table-layout: fixed !important; margin: 0 auto !important; }
+        img { -ms-interpolation-mode:bicubic; }
+        a { text-decoration: none; }
+        .body-text { font-family: 'DM Sans', Arial, sans-serif; color: #A0A0A5; }
+        .heading-text { font-family: 'Plus Jakarta Sans', Arial, sans-serif; }
+        @media screen and (max-width: 600px) {
+            .email-container { width: 100% !important; margin: auto !important; }
+            .stack-column { display: block !important; width: 100% !important; max-width: 100% !important; direction: ltr !important; }
+            .stack-column-center { text-align: center !important; }
+            .mobile-padding { padding-left: 20px !important; padding-right: 20px !important; }
+            .stats-table td { padding: 20px 5px !important; }
+            .stats-divider { border-right: none !important; border-bottom: 1px solid #333336 !important; }
+        }
+    </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #050505; color: #ffffff;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #050505; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-        <!-- Contenedor Principal -->
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-          
-          <!-- Header con Logo -->
-          <tr>
-            <td style="padding: 40px 40px 20px 40px; text-align: center;">
-              <div style="font-size: 32px; font-weight: 800; letter-spacing: -1.5px; color: #ffffff; font-family: Arial, sans-serif;">
-                Look<span style="color: #FF5C3A;">itry</span>
-              </div>
-              <div style="color: #666; font-size: 11px; margin-top: 8px; text-transform: uppercase; letter-spacing: 3px; font-weight: 600;">Virtual Try-On Experience</div>
-            </td>
-          </tr>
-
-          <!-- Hero / Contenido Principal -->
-          <tr>
-            <td style="padding: 20px 40px 40px 40px;">
-              <h1 style="font-size: 34px; font-weight: 800; line-height: 1.1; margin-top: 0; color: #ffffff; letter-spacing: -0.5px;">
-                ¡Hola {{firstName}}! <span style="color: #FF5C3A;">Prepárate</span> para el futuro.
-              </h1>
-              <p style="color: #999999; font-size: 17px; line-height: 1.6; margin-bottom: 35px;">
-                Imagina que tus clientes puedan probarse toda tu colección en segundos, directamente desde tu tienda. <strong>Lookitry</strong> convierte la duda en una compra inmediata.
-              </p>
-              
-              <!-- Tarjeta de Beneficios -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 40px; background-color: #141414; border-radius: 16px; border: 1px solid #222;">
-                <tr>
-                  <td style="padding: 24px; text-align: center;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      <tr>
-                        <td width="33%" style="text-align: center; border-right: 1px solid #222;">
-                          <div style="font-size: 24px; margin-bottom: 8px;">🚀</div>
-                          <div style="color: #ffffff; font-size: 12px; font-weight: 800; text-transform: uppercase;">Ventas +30%</div>
-                        </td>
-                        <td width="33%" style="text-align: center; border-right: 1px solid #222;">
-                          <div style="font-size: 24px; margin-bottom: 8px;">📉</div>
-                          <div style="color: #ffffff; font-size: 12px; font-weight: 800; text-transform: uppercase;">Devolución -20%</div>
-                        </td>
-                        <td width="33%" style="text-align: center;">
-                          <div style="font-size: 24px; margin-bottom: 8px;">✨</div>
-                          <div style="color: #ffffff; font-size: 12px; font-weight: 800; text-transform: uppercase;">Engagement</div>
-                        </td>
-                      </tr>
+<body width="100%" style="margin: 0; padding: 0 !important; mso-line-height-rule: exactly; background-color: #1c1c1e;">
+    <center style="width: 100%; background-color: #1c1c1e; padding: 40px 0;">
+        <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto;" class="email-container">
+            <tr>
+                <td class="mobile-padding" style="padding: 0 40px 40px 40px;">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                            <td valign="middle" style="text-align: left;">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td valign="middle" style="padding-right: 12px;">
+                                            <img src="https://lookitry.com/logo.svg" alt="Lookitry Logo" height="32" style="display: block; border: 0;" />
+                                        </td>
+                                        <td valign="middle">
+                                            <div class="heading-text" style="font-size: 28px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px; line-height: 1;">Look<span style="color: #FF5C3A;">itry</span></div>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="body-text" style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: #f6f6f6; margin-top: 4px;">El mejor Probador virtual &middot; LATAM</div>
+                            </td>
+                            <td valign="middle" style="text-align: right;">
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right"><tr><td class="heading-text" style="border: 1px solid #4a251e; border-radius: 1px; padding: 8px 16px; background-color: rgba(255, 92, 58, 0.05);"><span style="font-size: 10px; font-weight: 700; color: #FF5C3A; text-transform: uppercase; letter-spacing: 1px;">Acceso Anticipado</span></td></tr></table>
+                            </td>
+                        </tr>
                     </table>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="color: #999999; font-size: 16px; line-height: 1.6; margin-bottom: 35px; text-align: center;">
-                Estamos invitando a un grupo selecto de marcas a probar nuestra tecnología antes que nadie. ¿Te gustaría que <strong>{{brandName}}</strong> lidere esta revolución?
-              </p>
-
-              <!-- Botón de Acción (Call to Action) -->
-              <div style="text-align: center;">
-                <a href="https://lookitry.com" style="display: inline-block; background-color: #FF5C3A; color: #ffffff; padding: 20px 50px; text-decoration: none; border-radius: 14px; font-weight: 800; font-size: 18px; box-shadow: 0 8px 25px rgba(255, 92, 58, 0.35);">
-                  DESCUBRIR LOOKITRY
-                </a>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Divisor Sutil -->
-          <tr>
-             <td style="padding: 0 40px;">
-               <div style="height: 1px; background: linear-gradient(90deg, transparent, #222, transparent);"></div>
-             </td>
-          </tr>
-
-          <!-- Footer con Unsubscribe -->
-          <tr>
-            <td style="padding: 40px; text-align: center;">
-              <p style="color: #444444; font-size: 12px; line-height: 1.5; margin: 0;">
-                Este correo fue enviado desde <strong>Lookitry</strong>.<br>
-                Tecnología de punta para marcas que no conocen límites.<br>
-                Medellín, Colombia.
-              </p>
-              <div style="margin-top: 25px;">
-                <a href="#" style="color: #666; text-decoration: none; font-size: 11px; margin: 0 10px;">Darse de baja</a>
-                <span style="color: #333;">|</span>
-                <a href="#" style="color: #666; text-decoration: none; font-size: 11px; margin: 0 10px;">Privacidad</a>
-              </div>
-            </td>
-          </tr>
+                </td>
+            </tr>
+            <tr>
+                <td class="mobile-padding" style="padding: 0 40px 30px 40px;">
+                    <div class="heading-text" style="font-size: 11px; font-weight: 700; color: #FF5C3A; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;">Para {{FIRSTNAME}} y {{BRANDNAME}}</div>
+                    <h1 class="heading-text" style="margin: 0; font-size: 38px; font-weight: 800; color: #FFFFFF; line-height: 1.15; letter-spacing: -1px;">Tus clientes dudan.<br><span style="color: #FF5C3A;">Lookitry</span> convierte<br>esa duda en venta.</h1>
+                    <p class="body-text" style="font-size: 16px; line-height: 1.6; color: #A0A0A5; margin-top: 24px; margin-bottom: 0;">El 72% de los compradores online abandona el carrito por no saber c&oacute;mo le quedar&aacute; una prenda. Con nuestra tecnolog&iacute;a de probador virtual con IA, ese problema deja de existir en tu tienda.</p>
+                </td>
+            </tr>
+            <tr>
+                <td class="mobile-padding" style="padding: 10px 40px 30px 40px;">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #252528; border-radius: 16px;" class="stats-table">
+                        <tr>
+                            <td class="stack-column stats-divider" width="33.33%" align="center" style="padding: 30px 10px; border-right: 1px solid #333336;"><div class="heading-text" style="font-size: 32px; font-weight: 800; color: #FFFFFF;">+30%</div><div class="heading-text" style="font-size: 10px; font-weight: 700; color: #88888c; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 8px;">Conversi&oacute;n</div><div class="body-text" style="font-size: 11px; color: #FF5C3A; margin-top: 4px;">&uarr; en ventas</div></td>
+                            <td class="stack-column stats-divider" width="33.33%" align="center" style="padding: 30px 10px; border-right: 1px solid #333336;"><div class="heading-text" style="font-size: 32px; font-weight: 800; color: #FFFFFF;">-20%</div><div class="heading-text" style="font-size: 10px; font-weight: 700; color: #88888c; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 8px;">Devoluciones</div><div class="body-text" style="font-size: 11px; color: #FF5C3A; margin-top: 4px;">&darr; costos log&iacute;sticos</div></td>
+                            <td class="stack-column" width="33.33%" align="center" style="padding: 30px 10px;"><div class="heading-text" style="font-size: 32px; font-weight: 800; color: #FFFFFF;">3&times;</div><div class="heading-text" style="font-size: 10px; font-weight: 700; color: #88888c; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px;">Tiempo en tienda</div><div class="body-text" style="font-size: 11px; color: #FF5C3A; margin-top: 4px;">&uarr; engagement</div></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td class="mobile-padding" style="padding: 10px 40px 30px 40px;">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #252528; border-radius: 12px; overflow: hidden;">
+                        <tr>
+                            <td width="4" style="background-color: #FF5C3A;"></td>
+                            <td style="padding: 24px 30px;">
+                                <p class="body-text" style="font-size: 15px; line-height: 1.6; color: #E5E5EA; font-style: italic; margin: 0 0 16px 0;">"Desde que activamos el probador virtual, nuestros clientes pasan el doble de tiempo en la tienda y el carrito promedio creci&oacute; un 38%."</p>
+                                <p class="body-text" style="font-size: 12px; font-weight: 500; color: #FF5C3A; margin: 0;">&mdash; Marca piloto, Cali &middot; Temporada 2026</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td class="mobile-padding" style="padding: 10px 40px 30px 40px;">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                            <td width="48" valign="top" style="padding-bottom: 24px;"><div style="background-color: #252528; width: 48px; height: 48px; border-radius: 12px; text-align: center;"><img src="https://api.iconify.design/lucide:shirt.svg?color=%23FF5C3A" width="24" height="24" alt="Shirt" style="display: inline-block; margin-top: 12px; border: 0;" /></div></td>
+                            <td valign="top" style="padding-left: 20px; padding-bottom: 24px;"><h3 class="heading-text" style="margin: 0 0 6px 0; font-size: 16px; font-weight: 700; color: #FFFFFF;">Prueba virtual en segundos</h3><p class="body-text" style="margin: 0; font-size: 14px; line-height: 1.5; color: #88888c;">Tus clientes suben una foto y se ven con tu ropa puesta. Sin esperar. Sin probadores f&iacute;sicos.</p></td>
+                        </tr>
+                        <tr>
+                            <td width="48" valign="top" style="padding-bottom: 24px;"><div style="background-color: #252528; width: 48px; height: 48px; border-radius: 12px; text-align: center;"><img src="https://api.iconify.design/lucide:zap.svg?color=%23FF5C3A" width="24" height="24" alt="Lightning" style="display: inline-block; margin-top: 12px; border: 0;" /></div></td>
+                            <td valign="top" style="padding-left: 20px; padding-bottom: 24px;"><h3 class="heading-text" style="margin: 0 0 6px 0; font-size: 16px; font-weight: 700; color: #FFFFFF;">Integraci&oacute;n en menos de 24h</h3><p class="body-text" style="margin: 0; font-size: 14px; line-height: 1.5; color: #88888c;">Compatible con Shopify, WooCommerce y tiendas a medida. Sin cambiar tu stack actual.</p></td>
+                        </tr>
+                        <tr>
+                            <td width="48" valign="top" style="padding-bottom: 24px;"><div style="background-color: #252528; width: 48px; height: 48px; border-radius: 12px; text-align: center;"><img src="https://api.iconify.design/lucide:bar-chart-2.svg?color=%23FF5C3A" width="24" height="24" alt="Data" style="display: inline-block; margin-top: 12px; border: 0;" /></div></td>
+                            <td valign="top" style="padding-left: 20px; padding-bottom: 24px;"><h3 class="heading-text" style="margin: 0 0 6px 0; font-size: 16px; font-weight: 700; color: #FFFFFF;">Datos que puedes usar</h3><p class="body-text" style="margin: 0; font-size: 14px; line-height: 1.5; color: #88888c;">Descubre qu&eacute; prendas generan m&aacute;s pruebas y cu&aacute;les se abandonan. Inteligencia de negocio real.</p></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td class="mobile-padding" align="center" style="padding: 10px 40px 40px 40px;">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr><td align="center"><a href="https://lookitry.com/checkout?plan=TRIAL" class="heading-text" style="display: block; width: 100%; background-color: #FF5C3A; color: #FFFFFF; text-align: center; font-size: 18px; font-weight: 700; text-decoration: none; padding: 20px 0; border-radius: 12px;">Quiero el acceso anticipado &rarr;</a></td></tr>
+                        <tr><td align="center" style="padding-top: 16px;"><p class="body-text" style="margin: 0; font-size: 12px; color: #666666;">Sin compromiso. Plazas limitadas para marcas seleccionadas.</p></td></tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td class="mobile-padding" align="center" style="padding: 20px 40px 40px 40px; border-top: 1px solid #2A2A2D;">
+                    <p class="body-text" style="margin: 0 0 12px 0; font-size: 11px; line-height: 1.6; color: #555555;">Este correo fue enviado a <a href="mailto:{{email}}" style="color: #666666; text-decoration: none;">{{email}}</a> porque {{brandName}} fue seleccionada para nuestro programa de acceso anticipado.<br><strong>Lookitry</strong> &middot; Medell&iacute;n, Colombia &middot; <a href="https://lookitry.com" style="color: #666666; text-decoration: none;">lookitry.com</a></p>
+                    <p class="body-text" style="margin: 0; font-size: 11px; color: #555555;"><a href="{{unsubscribe_url}}" style="color: #666666; text-decoration: none;">Darme de baja</a> &nbsp;|&nbsp; <a href="https://lookitry.com/politicas-privacidad" style="color: #666666; text-decoration: none;">Pol&iacute;tica de privacidad</a> &nbsp;|&nbsp; <a href="{{webversion_url}}" style="color: #666666; text-decoration: none;">Ver en navegador</a></p>
+                </td>
+            </tr>
         </table>
-      </td>
-    </tr>
-  </table>
+    </center>
 </body>
 </html>`;
   }
@@ -822,27 +869,35 @@ export default function EmailCampaignsPage() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Template HTML *</label>
-                <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>Variables disponibles: {'{{firstName}}'}, {'{{brandName}}'}, {'{{email}}'}, {'{{plan}}'}</p>
-                <textarea
-                  value={form.htmlTemplate}
-                  onChange={(e) => setForm({ ...form, htmlTemplate: e.target.value })}
-                  rows={15}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none font-mono text-sm"
-                  style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                />
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <label className="block text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Vista previa del Template</label>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Variables: {'{{FIRSTNAME}}'}, {'{{BRANDNAME}}'}, {'{{email}}'}, {'{{plan}}'}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditTemplateHtml(form.htmlTemplate);
+                      setShowEditTemplateModal(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 border rounded-lg text-xs font-medium transition-colors hover:opacity-90"
+                    style={{ borderColor: 'var(--border-color)', color: 'var(--text-primary)', backgroundColor: 'var(--bg-input)' }}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    Editar Template
+                  </button>
+                </div>
+                <div className="relative rounded-lg overflow-hidden border" style={{ borderColor: 'var(--border-color)', height: '420px', backgroundColor: '#1c1c1e' }}>
+                  <iframe
+                    srcDoc={form.htmlTemplate}
+                    title="Vista previa del template"
+                    className="w-full h-full"
+                    style={{ transform: 'scale(0.75)', transformOrigin: 'top left', width: '133.33%', height: '133.33%', border: 'none' }}
+                  />
+                </div>
               </div>
             </div>
             <div className="flex justify-end gap-3 p-6 border-t" style={{ borderColor: 'var(--border-color)' }}>
-              <button
-                onClick={handleTestInModal}
-                disabled={testLoading}
-                className="px-4 py-2 border rounded-lg hover:bg-opacity-10 transition-colors flex items-center gap-2 text-sm"
-                style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
-              >
-                {testLoading ? <IconSpinner /> : <IconMail />}
-                Probar Template
-              </button>
               <button
                 onClick={() => setShowModal(false)}
                 className="px-4 py-2 transition-colors text-sm"
@@ -888,6 +943,74 @@ export default function EmailCampaignsPage() {
               ) : (
                 <p className="text-center" style={{ color: 'var(--text-muted)' }}>No hay previews disponibles</p>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Editor de Template HTML */}
+      {showEditTemplateModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-[70] p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
+          <div className="rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col border" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: 'var(--border-color)' }}>
+              <div>
+                <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Editor de Template HTML</h2>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>Edita el HTML del email. Los cambios se aplican al guardar.</p>
+              </div>
+              <button onClick={() => setShowEditTemplateModal(false)} className="p-2 rounded-full hover:bg-black/10 transition-colors"><IconX /></button>
+            </div>
+            <div className="flex flex-1 gap-0 overflow-hidden">
+              {/* Editor */}
+              <div className="flex-1 flex flex-col border-r" style={{ borderColor: 'var(--border-color)' }}>
+                <div className="px-4 py-2 border-b flex items-center gap-2" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-hover)' }}>
+                  <span className="text-xs font-mono font-bold" style={{ color: 'var(--text-muted)' }}>HTML</span>
+                  <div className="flex gap-1 ml-auto">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 opacity-70" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 opacity-70" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500 opacity-70" />
+                  </div>
+                </div>
+                <textarea
+                  value={editTemplateHtml}
+                  onChange={(e) => setEditTemplateHtml(e.target.value)}
+                  className="flex-1 p-4 font-mono text-xs focus:outline-none resize-none"
+                  style={{ backgroundColor: '#0d0d0d', color: '#e5e5e5', minHeight: '400px' }}
+                  spellCheck={false}
+                />
+              </div>
+              {/* Preview */}
+              <div className="flex-1 flex flex-col">
+                <div className="px-4 py-2 border-b flex items-center gap-2" style={{ borderColor: 'var(--border-color)', backgroundColor: 'var(--bg-hover)' }}>
+                  <span className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>Vista Previa</span>
+                </div>
+                <div className="flex-1 overflow-hidden bg-[#1c1c1e]">
+                  <iframe
+                    srcDoc={editTemplateHtml}
+                    title="Preview del editor"
+                    className="w-full h-full"
+                    style={{ border: 'none', minHeight: '400px' }}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 p-4 border-t" style={{ borderColor: 'var(--border-color)' }}>
+              <button
+                onClick={() => setShowEditTemplateModal(false)}
+                className="px-4 py-2 text-sm transition-colors"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  setForm(prev => ({ ...prev, htmlTemplate: editTemplateHtml }));
+                  setShowEditTemplateModal(false);
+                }}
+                className="px-6 py-2 rounded-lg text-sm font-bold hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
+              >
+                Guardar Cambios
+              </button>
             </div>
           </div>
         </div>

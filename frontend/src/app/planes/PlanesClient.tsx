@@ -144,9 +144,9 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
 
       <LandingNav currency={currency} onCurrencyChange={handleManualCurrencyChange} />
 
-      <main className="pt-32 pb-20">
+      <main className="pt-20 pb-20">
         {/* Hero Section */}
-        <section className="theme-bg-base pt-14 pb-16 px-6 md:px-8 text-center mt-12">
+        <section className="theme-bg-base pt-6 pb-12 px-6 md:px-8 text-center">
           <div className="max-w-2xl mx-auto">
             {/* Urgency Badge */}
             <div className="inline-flex items-center gap-2 bg-[#FF5C3A]/10 border border-[#FF5C3A]/30 text-[#FF5C3A] text-[11px] font-bold tracking-widest uppercase px-4 py-2 rounded-full mb-6">
@@ -166,8 +166,8 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
         </section>
 
         {/* Social Proof */}
-        <section className="px-6 md:px-8 pb-8">
-          <div className="max-w-2xl mx-auto flex flex-col items-center gap-4">
+        <section className="px-6 md:px-8 pb-6">
+          <div className="max-w-2xl mx-auto flex flex-col items-center gap-3">
             <div className="flex items-center gap-2">
               {[1,2,3,4,5].map(i => (
                 <IconStar key={i} />
@@ -185,7 +185,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
         </section>
 
         {/* Duration Selector */}
-        <section className="pt-6 pb-2 px-6 md:px-8">
+        <section className="pt-4 pb-2 px-6 md:px-8">
           <div className="flex justify-center">
             <div className="inline-flex theme-bg-card theme-border border rounded-2xl p-1.5 gap-1">
               {DURATIONS.map(d => (
@@ -202,8 +202,8 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                   {d.pct > 0 && (
                     <span className={`absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
                     selectedMonths === d.months
-                      ? 'bg-white text-[#FF5C3A]'
-                      : 'bg-[#FF5C3A]/20 text-[#FF5C3A] border border-[#FF5C3A]/30'
+                      ? 'bg-[#FF5C3A] text-white'
+                      : 'bg-[#FF5C3A]/10 text-[#FF5C3A] border border-[#FF5C3A]/20'
                   }`}>
                       -{d.pct}%
                     </span>
@@ -220,7 +220,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
         </section>
 
         {/* Pricing Cards */}
-        <section className="py-12 px-6 md:px-8">
+        <section className="py-8 px-6 md:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 xl:gap-8 items-stretch">
               
@@ -260,7 +260,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
 
                 <a
                   href={`/checkout?plan=BASIC&months=${selectedMonths}`}
-                  className="block w-full text-center py-4 bg-white/5 hover:bg-white/10 theme-border border theme-text text-sm font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-95 mb-8"
+                  className="block w-full text-center py-4 theme-bg-card hover:theme-bg-hover border theme-border theme-text text-sm font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-95 mb-8"
                 >
                   {basic.boton_texto_sin_trial ?? 'Contratar ahora'}
                 </a>
@@ -276,7 +276,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                   ))}
                   {(basic.features_excluidas ?? []).map(f => (
                     <li key={f} className="flex items-start gap-3 text-[14px]">
-                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-white/5 mt-0.5">
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 theme-bg-card mt-0.5">
                         <IconX />
                       </span>
                       <span className="theme-text-muted/50 line-through">{f}</span>
@@ -286,7 +286,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
               </div>
 
               {/* PRO CARD - HIGHLIGHTED */}
-              <div className="bg-gradient-to-b from-[#1a1515] to-[#141414] border-2 border-[#FF5C3A] rounded-[2rem] p-8 md:p-10 relative shadow-2xl shadow-[#FF5C3A]/10 flex flex-col min-h-[580px] transition-all duration-500">
+              <div className="theme-bg-card border-2 border-[#FF5C3A] rounded-[2rem] p-8 md:p-10 relative shadow-2xl shadow-[#FF5C3A]/10 flex flex-col min-h-[580px] transition-all duration-500">
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#FF5C3A] theme-text text-[11px] font-black tracking-widest uppercase px-6 py-2 rounded-full shadow-lg">
                   Más popular
                 </div>
@@ -413,24 +413,24 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
             <h2 className="font-jakarta font-bold text-2xl md:text-3xl theme-text text-center mb-8">
               Comparativa completa
             </h2>
-            <div className="theme-bg-card border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="theme-bg-card theme-border border rounded-2xl overflow-hidden shadow-2xl">
               <table className="w-full text-[13px] font-dm-sans">
                 <thead>
-                  <tr className="border-b border-white/5">
+                  <tr className="border-b theme-border">
                     <th className="text-left px-5 py-4 font-bold theme-text-muted uppercase tracking-widest text-[9px] w-1/2">Característica</th>
                     <th className="text-center px-4 py-4 font-bold theme-text-muted uppercase tracking-widest text-[9px] w-1/6">Básico</th>
                     <th className="text-center px-4 py-4 font-bold text-[#FF5C3A] uppercase tracking-widest text-[9px] w-1/6">Pro</th>
                     <th className="text-center px-4 py-4 font-bold theme-text uppercase tracking-widest text-[9px] w-1/6">Enterprise</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
-                  <tr className="hover:bg-white/[0.02] transition-colors">
+                <tbody className="divide-y theme-border">
+                  <tr className="hover:theme-bg-hover transition-colors">
                     <td className="px-5 py-4 theme-text/80 font-medium">Productos en el probador</td>
                     <td className="px-4 py-4 text-center"><span className="font-bold theme-text-muted">{basic.productos_max}</span></td>
                     <td className="px-4 py-4 text-center"><span className="font-bold text-[#FF5C3A]">{pro.productos_max}</span></td>
                     <td className="px-4 py-4 text-center"><span className="font-bold theme-text">{enterprise.productos_max}+</span></td>
                   </tr>
-                  <tr className="hover:bg-white/[0.02] transition-colors">
+                  <tr className="hover:theme-bg-hover transition-colors">
                     <td className="px-5 py-4 theme-text/80 font-medium">Generaciones por mes</td>
                     <td className="px-4 py-4 text-center"><span className="font-bold theme-text-muted">{basic.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
                     <td className="px-4 py-4 text-center"><span className="font-bold text-[#FF5C3A]">{pro.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
@@ -452,7 +452,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                     const inEnterprise = inPro || enterprise.features.includes(feature);
 
                     return (
-                      <tr key={feature} className="hover:bg-white/[0.02] transition-colors">
+                      <tr key={feature} className="hover:theme-bg-hover transition-colors">
                         <td className="px-5 py-3.5 theme-text-muted/90">{feature}</td>
                         <td className="px-4 py-3.5 text-center">
                           {basic.features.includes(feature) 
@@ -503,7 +503,7 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
               </a>
               <a
                 href={`/checkout?plan=BASIC&months=${selectedMonths}`}
-                className="inline-flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 theme-text px-10 py-5 rounded-2xl font-bold text-sm theme-border border transition-all"
+                className="inline-flex items-center justify-center gap-3 theme-bg-card hover:theme-bg-hover theme-text px-10 py-5 rounded-2xl font-bold text-sm theme-border border transition-all"
               >
                 Empezar con Básico
               </a>
