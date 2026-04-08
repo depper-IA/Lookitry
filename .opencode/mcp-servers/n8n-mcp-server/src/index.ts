@@ -116,6 +116,29 @@ const NodeOperationSchema = z.object({
   nodeData: z.record(z.any()).optional().describe("Node data for add/update operations"),
 });
 
+const UpdateNodeSchema = z.object({
+  workflowId: z.string().describe("The unique ID of the workflow"),
+  nodeId: z.string().describe("The unique ID of the node to update"),
+  updates: z.record(z.any()).describe("Partial node updates (parameters, name, type, etc.)"),
+});
+
+const DeleteNodeSchema = z.object({
+  workflowId: z.string().describe("The unique ID of the workflow"),
+  nodeId: z.string().describe("The unique ID of the node to delete"),
+});
+
+const UpdateNodePositionSchema = z.object({
+  workflowId: z.string().describe("The unique ID of the workflow"),
+  nodeId: z.string().describe("The unique ID of the node to move"),
+  position: z.object({ x: z.number(), y: z.number() }).describe("New position on canvas"),
+});
+
+const UpdateConnectionsSchema = z.object({
+  workflowId: z.string().describe("The unique ID of the workflow"),
+  nodeName: z.string().describe("Name of the source node"),
+  connections: z.record(z.any()).describe("Connection data for the node's main output"),
+});
+
 const TagSchema = z.object({
   name: z.string().min(1).max(100).describe("Name of the tag"),
 });
@@ -358,6 +381,119 @@ server.registerTool(
       nodes.push(newNode);
       await makeApiRequest(`workflows/${workflowId}`, "PUT", { nodes });
       return { content: [{ type: "text", text: `✅ Node added to workflow ${workflowId}` }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: handleApiError(error) }] };
+    }
+  },
+);
+
+server.registerTool(
+  "n8n_update_node",
+  {
+    title: "Update a Specific Node in n8n Workflow",
+    description: `Update a specific node's parameters or properties without replacing the entire workflow.
+    
+Only modifies the node with the specified nodeId. Other nodes remain unchanged.`,
+    inputSchema: UpdateNodeSchema,
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+  },
+  async ({ workflowId, nodeId, updates }) => {
+    try {
+      const wf = await makeApiRequest<{ nodes: Array<Record<string, unknown>> }>(`workflows/${workflowId}`);
+      const nodes = wf.nodes || [];
+      const nodeIndex = nodes.findIndex((n) => n.id === nodeId);
+      if (nodeIndex === -1) {
+        return { content: [{ type: "text", text: `Error: Node ${nodeId} not found in workflow ${workflowId}` }] };
+      }
+      nodes[nodeIndex] = { ...nodes[nodeIndex], ...updates };
+      await makeApiRequest(`workflows/${workflowId}`, "PUT", { nodes });
+      return { content: [{ type: "text", text: `✅ Node ${nodeId} updated in workflow ${workflowId}` }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: handleApiError(error) }] };
+    }
+  },
+);
+
+server.registerTool(
+  "n8n_delete_node",
+  {
+    title: "Delete a Node from n8n Workflow",
+    description: `Delete a specific node from the workflow by its ID.
+    
+Also removes all connections to/from this node.`,
+    inputSchema: DeleteNodeSchema,
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true },
+  },
+  async ({ workflowId, nodeId }) => {
+    try {
+      const wf = await makeApiRequest<{ nodes: Array<Record<string, unknown>>; connections: Record<string, unknown> }>(`workflows/${workflowId}`);
+      const nodes = wf.nodes || [];
+      const connections = wf.connections || {};
+      const nodeIndex = nodes.findIndex((n) => n.id === nodeId);
+      if (nodeIndex === -1) {
+        return { content: [{ type: "text", text: `Error: Node ${nodeId} not found in workflow ${workflowId}` }] };
+      }
+      const nodeName = nodes[nodeIndex].name as string;
+      nodes.splice(nodeIndex, 1);
+      if (connections[nodeName]) {
+        delete connections[nodeName];
+      }
+      Object.keys(connections).forEach((key) => {
+        const conn = connections[key] as Record<string, Array<Array<{ node: string }>>>;
+        if (conn.main) {
+          conn.main = conn.main.filter((arr) => arr.some((c) => c.node !== nodeName));
+        }
+      });
+      await makeApiRequest(`workflows/${workflowId}`, "PUT", { nodes, connections });
+      return { content: [{ type: "text", text: `✅ Node ${nodeId} (${nodeName}) deleted from workflow ${workflowId}` }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: handleApiError(error) }] };
+    }
+  },
+);
+
+server.registerTool(
+  "n8n_update_node_position",
+  {
+    title: "Update Node Position in n8n Workflow",
+    description: `Move a node to a new position on the canvas.`,
+    inputSchema: UpdateNodePositionSchema,
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+  },
+  async ({ workflowId, nodeId, position }) => {
+    try {
+      const wf = await makeApiRequest<{ nodes: Array<Record<string, unknown>> }>(`workflows/${workflowId}`);
+      const nodes = wf.nodes || [];
+      const nodeIndex = nodes.findIndex((n) => n.id === nodeId);
+      if (nodeIndex === -1) {
+        return { content: [{ type: "text", text: `Error: Node ${nodeId} not found in workflow ${workflowId}` }] };
+      }
+      nodes[nodeIndex] = { ...nodes[nodeIndex], position };
+      await makeApiRequest(`workflows/${workflowId}`, "PUT", { nodes });
+      return { content: [{ type: "text", text: `✅ Node ${nodeId} moved to (${position.x}, ${position.y}) in workflow ${workflowId}` }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: handleApiError(error) }] };
+    }
+  },
+);
+
+server.registerTool(
+  "n8n_update_node_connections",
+  {
+    title: "Update Node Connections in n8n Workflow",
+    description: `Update the connections from a specific node to other nodes.
+    
+This replaces ALL outgoing connections from the node's main output.`,
+    inputSchema: UpdateConnectionsSchema,
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+  },
+  async ({ workflowId, nodeName, connections }) => {
+    try {
+      const wf = await makeApiRequest<{ nodes: Array<Record<string, unknown>>; connections: Record<string, unknown> }>(`workflows/${workflowId}`);
+      const workflowConnections = wf.connections || {};
+      workflowConnections[nodeName] = connections;
+      await makeApiRequest(`workflows/${workflowId}`, "PUT", { nodes: wf.nodes, connections: workflowConnections });
+      return { content: [{ type: "text", text: `✅ Connections updated for node ${nodeName} in workflow ${workflowId}` }] };
     } catch (error) {
       return { content: [{ type: "text", text: handleApiError(error) }] };
     }

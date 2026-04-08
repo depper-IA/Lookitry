@@ -172,7 +172,7 @@ export interface UpdateBrandConfigDto {
 }
 
 // Widget templates
-export type WidgetTemplate = 'minimal' | 'modern' | 'bold' | 'bare';
+export type WidgetTemplate = 'minimal' | 'modern' | 'bold' | 'bare' | 'showcase';
 
 export interface TemplateConfig {
   id: WidgetTemplate;

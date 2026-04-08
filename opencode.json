@@ -202,7 +202,7 @@
       "command": [
         "npx",
         "-y",
-        "@modelcontextprotocol/server-sequentialthinking"
+        "@modelcontextprotocol/server-sequential-thinking"
       ],
       "enabled": true
     }

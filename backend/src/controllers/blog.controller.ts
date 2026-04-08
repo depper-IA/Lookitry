@@ -448,7 +448,7 @@ export const blogController = {
         return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Fallo de autenticación' });
       }
 
-      const { topic_id, title, html_content, excerpt, meta_description, tags, category_slug } = req.body;
+      const { topic_id, title, html_content, excerpt, meta_description, tags, category_slug, toc_items } = req.body;
 
       if (!topic_id || !html_content) {
         return res.status(400).json({ error: 'BAD_REQUEST', message: 'topic_id y html_content son requeridos' });
@@ -465,6 +465,7 @@ export const blogController = {
           meta_description: meta_description || null,
           tags: normalizeTags(tags),
           category_slug: category_slug || 'ia',
+          toc_items: toc_items || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -544,83 +545,40 @@ export const blogController = {
         });
       }
 
-      // 4. Ensamblar HTML con imágenes
+      // 4. Ensamblar HTML con imágenes usando placeholders
       // NOTA: La imagen hero se maneja en page.tsx via featured_image
-      // Aquí solo insertamos body1 y body2 dentro del contenido
+      // Aquí solo insertamos body1 y body2 dentro del contenido usando placeholders
+      // El draft HTML debe contener [[BODY_IMAGE_1]] y [[BODY_IMAGE_2]] donde se desean las imágenes
 
       let finalHtml = draft.html_content || '';
+      console.log(`[Blog] Ensamblando artículo para topic ${topic_id}, longitud HTML: ${finalHtml.length}`);
 
-      // Insertar imagen body1: después del primer h2 (después del texto del h2, antes del primer párrafo)
-      if (images.imagen_body1_url) {
-        const body1Image = `<figure class="blog-image blog-image-1 my-8">
-          <img src="${images.imagen_body1_url}" alt="${draft.title || 'Imagen'}" loading="lazy" class="rounded-2xl shadow-xl border border-white/10 w-full" />
-        </figure>`;
-        
-        // Buscar el primer h2 con su contenido
-        const firstH2WithContent = finalHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/);
-        if (firstH2WithContent) {
-          const h2Content = firstH2WithContent[1];
-          const h2Full = firstH2WithContent[0];
-          const updatedH2 = h2Full.replace(h2Content, h2Content + '\n' + body1Image);
-          finalHtml = finalHtml.replace(h2Full, updatedH2);
-        }
-      }
+      // Preparar HTML de imágenes (si existen)
+      const body1Html = images.imagen_body1_url
+        ? `<figure class="blog-body-image">
+            <img src="${images.imagen_body1_url}" alt="${draft.title || 'Imagen'}" loading="lazy" />
+          </figure>`
+        : '';
 
-      // Insertar imagen body2: antes del penúltimo h2
-      if (images.imagen_body2_url) {
-        const body2Image = `<figure class="blog-image blog-image-2 my-8">
-          <img src="${images.imagen_body2_url}" alt="${draft.title || 'Imagen'}" loading="lazy" class="rounded-2xl shadow-xl border border-white/10 w-full" />
-        </figure>`;
-        
-        const allH2Matches = [...finalHtml.matchAll(/<h2[^>]*>/g)];
-        if (allH2Matches.length >= 2) {
-          const secondToLastH2Index = allH2Matches[allH2Matches.length - 2].index;
-          finalHtml = finalHtml.slice(0, secondToLastH2Index) + body2Image + finalHtml.slice(secondToLastH2Index);
-        } else if (allH2Matches.length === 1) {
-          const h2Index = allH2Matches[0].index + allH2Matches[0][0].length;
-          finalHtml = finalHtml.slice(0, h2Index) + body2Image + finalHtml.slice(h2Index);
-        } else {
-          finalHtml = finalHtml + body2Image;
-        }
-      }
-      }
+      const body2Html = images.imagen_body2_url
+        ? `<figure class="blog-body-image">
+            <img src="${images.imagen_body2_url}" alt="${draft.title || 'Imagen'}" loading="lazy" />
+          </figure>`
+        : '';
 
-      // Insertar imagen body1: después del primer h2 (después del texto del h2, antes del primer párrafo)
-      if (images.imagen_body1_url) {
-        const body1Image = `<figure class="blog-body-image blog-body-image-1">
-          <img src="${images.imagen_body1_url}" alt="${draft.title || 'Imagen'}" loading="lazy" />
-        </figure>`;
-        
-        // Buscar el primer h2 con su contenido hasta el siguiente h2 o cierre de sección
-        const firstH2WithContent = finalHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/);
-        if (firstH2WithContent) {
-          const h2Content = firstH2WithContent[1]; // contenido entre <h2> y </h2>
-          const h2Full = firstH2WithContent[0];
-          // Insertar imagen body1 al final del contenido del h2 (después del texto del título)
-          const updatedH2 = h2Full.replace(h2Content, h2Content + '\n' + body1Image);
-          finalHtml = finalHtml.replace(h2Full, updatedH2);
-        }
-      }
+      console.log(`[Blog] Imagen body1 disponible: ${!!images.imagen_body1_url}, body2: ${!!images.imagen_body2_url}`);
 
-      // Insertar imagen body2: antes del último h2
-      if (images.imagen_body2_url) {
-        const body2Image = `<figure class="blog-body-image blog-body-image-2">
-          <img src="${images.imagen_body2_url}" alt="${draft.title || 'Imagen'}" loading="lazy" />
-        </figure>`;
-        
-        // Encontrar todos los h2 y tomar el penúltimo para insertar antes
-        const allH2Matches = [...finalHtml.matchAll(/<h2[^>]*>/g)];
-        if (allH2Matches.length >= 2) {
-          // Insertar antes del penúltimo h2 (que sería la anteúltima sección)
-          const secondToLastH2Index = allH2Matches[allH2Matches.length - 2].index;
-          finalHtml = finalHtml.slice(0, secondToLastH2Index) + body2Image + finalHtml.slice(secondToLastH2Index);
-        } else if (allH2Matches.length === 1) {
-          // Solo un h2, insertar después de ese h2
-          const h2Index = allH2Matches[0].index + allH2Matches[0][0].length;
-          finalHtml = finalHtml.slice(0, h2Index) + body2Image + finalHtml.slice(h2Index);
-        } else {
-          finalHtml = finalHtml + body2Image;
-        }
+      // Reemplazar placeholders (si existen en el HTML)
+      const originalHtml = finalHtml;
+      finalHtml = finalHtml
+        .replace('[[BODY_IMAGE_1]]', body1Html)
+        .replace('[[BODY_IMAGE_2]]', body2Html);
+
+      // Log si se reemplazaron placeholders
+      if (originalHtml.includes('[[BODY_IMAGE_1]]') || originalHtml.includes('[[BODY_IMAGE_2]]')) {
+        console.log('[Blog] Placeholders reemplazados en el HTML');
+      } else {
+        console.log('[Blog] No se encontraron placeholders en el HTML; las imágenes no se insertarán.');
       }
 
       // 5. Obtener categoría
@@ -660,11 +618,12 @@ export const blogController = {
           meta_description: draft.meta_description || draft.excerpt,
           featured_image: images.imagen_hero_url,
           category_id: categoryId,
-          tags: draft.tags,
-          status: 'published',
-          slug,
-          topic_id: topic_id,
-          published_at: new Date().toISOString(),
+           tags: draft.tags,
+           toc_items: draft.toc_items,
+           status: 'published',
+           slug,
+           topic_id: topic_id,
+           published_at: new Date().toISOString(),
         })
         .select()
         .single();
