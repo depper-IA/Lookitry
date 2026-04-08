@@ -19,6 +19,7 @@ ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=$NEXT_PUBLIC_TURNSTILE_SITE_KEY
 ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
 COPY package*.json ./
+RUN apk add --no-cache vips-dev
 RUN npm install
 COPY . .
 RUN npx next build
@@ -27,7 +28,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=768
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl vips
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public

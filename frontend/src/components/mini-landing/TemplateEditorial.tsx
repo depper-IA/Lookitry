@@ -47,7 +47,7 @@ function EditorialHeader({ brand, entries, socialIcons }: { brand: BrandData; en
       {entries.length > 0 && (
         <div className="flex items-center gap-1 md:gap-2 shrink-0">
           {entries.slice(0, 4).map(([platform, url]) => (
-            <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm" style={{ backgroundColor: primary + '10', color: primary }}>
+            <a key={platform} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Síguenos en ${platform}`} className="w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2" style={{ backgroundColor: primary + '10', color: primary }}>
               {socialIcons[platform.toLowerCase()] ?? null}
             </a>
           ))}
@@ -107,7 +107,7 @@ function EditorialInfo({ brand }: { brand: BrandData }) {
   const DAYS_ORDER = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
   let scheduleEntries: [string, string][] = [];
   try {
-    const raw = brand.schedule;
+    const raw = brand.schedule ?? {};
     if (raw && typeof raw === 'object') {
       scheduleEntries = DAYS_ORDER.filter(d => raw[d] || raw[d.toLowerCase()]).map(d => [d, (raw[d] || raw[d.toLowerCase()]) as string]);
     }
@@ -285,7 +285,7 @@ export function TemplateEditorial({ brandSlug, brand, products, footerUrl, isPre
           {entries && entries.length > 0 && (
             <div className="flex flex-wrap items-center justify-center gap-4">
               {entries.map(([platform, url]) => (
-                <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all hover:bg-white hover:text-black hover:scale-110 active:scale-95 shadow-xl">
+                <a key={platform} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Síguenos en ${platform}`} className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center transition-all hover:bg-white hover:text-black hover:scale-110 active:scale-95 shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2">
                   {socialIcons[platform.toLowerCase()] ?? null}
                 </a>
               ))}

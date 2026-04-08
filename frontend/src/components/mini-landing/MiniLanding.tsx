@@ -32,7 +32,7 @@ export function MiniLanding({ brandSlug, initialData, footerUrl }: MiniLandingPr
 
       // Lógica de timer para previsualización
       if (!result.brand.has_landing_page) {
-        const timerDuration = result.brand.preview_timer_seconds || 60;
+        const timerDuration = result?.brand?.preview_timer_seconds || 60;
         const savedEnd = localStorage.getItem(`landing_preview_end_${brandSlug}`);
         const now = Date.now();
         

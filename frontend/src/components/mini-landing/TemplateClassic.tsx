@@ -100,7 +100,13 @@ function ClassicHeader({ brand, primaryColor, onScrollDown }: { brand: BrandData
           >
             Probar Ahora
           </button>
-          <button onClick={() => setMobileMenuOpen(v => !v)} className="md:hidden p-2" style={{ color: headerMutedColor }}>
+          <button 
+            onClick={() => setMobileMenuOpen(v => !v)} 
+            className="md:hidden p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2 rounded-lg"
+            style={{ color: headerMutedColor }}
+            aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+            aria-expanded={mobileMenuOpen}
+          >
             {mobileMenuOpen ? <XMarkIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
           </button>
         </div>
@@ -240,7 +246,7 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
   const DAYS_ORDER = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
   let scheduleEntries: [string, string][] = [];
   try {
-    const raw = brand.schedule;
+    const raw = brand.schedule ?? {};
     if (raw && typeof raw === 'object') {
       scheduleEntries = DAYS_ORDER.filter(d => raw[d] || raw[d.toLowerCase()]).map(d => [d, (raw[d] || raw[d.toLowerCase()]) as string]);
     }
@@ -267,7 +273,7 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
             <p className="text-sm text-gray-500 leading-relaxed font-medium italic max-w-sm text-left">&quot;{brand.brand_description || 'Moda y tecnologia unidas para ofrecerte la mejor experiencia de compra virtual.'}&quot;</p>
             <div className="flex gap-3 justify-start">
               {getVisibleSocialEntries(brand.social_links).map(([p, url]) => (
-                <a key={p} href={url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all">
+                <a key={p} href={url} target="_blank" rel="noopener noreferrer" aria-label={`Síguenos en ${p}`} className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5C3A] focus-visible:ring-offset-2">
                   {socialIcons[p.toLowerCase()] || p.slice(0, 1)}
                 </a>
               ))}
@@ -324,7 +330,7 @@ function ClassicFooter({ brand, primaryColor, footerUrl }: { brand: BrandData; p
 export function TemplateClassic({ brandSlug, brand, products, footerUrl, isPreview = false }: { brandSlug: string; brand: BrandData; products: ProductData[]; footerUrl?: string; isPreview?: boolean }) {
   const primary = brand.social_links?._landing_primary || brand.primary_color || '#111111';
   const secondary = brand.social_links?._landing_secondary || primary;
-  const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id || null);
+  const [selectedId, setSelectedId] = useState<string | null>(products?.[0]?.id || null);
 
   const handleProductClick = (id: string) => {
     setSelectedId(id);

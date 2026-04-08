@@ -129,10 +129,16 @@ export function CoverImage({ src, alt, className, style }: { src?: string | null
   );
 }
 
-export function ProductImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+export function ProductImage({ src, alt, className, sizes }: { src: string; alt: string; className?: string; sizes?: string }) {
   return (
-    <div className={`relative ${className}`}>
-      <Image src={src} alt={alt} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+    <div className={`relative overflow-hidden ${className || ''}`}>
+      <Image 
+        src={src} 
+        alt={alt} 
+        fill 
+        className="object-cover" 
+        sizes={sizes || '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'}
+      />
     </div>
   );
 }
