@@ -107,14 +107,14 @@ export default function TerminosClient() {
   return (
     <div className="overflow-x-clip">
       <LandingNav />
-      <main className="min-h-screen bg-[#f5f2ee]">
+      <main className="min-h-screen theme-bg-base">
 
         {/* Header */}
-        <div className="bg-[#0a0a0a] px-6 md:px-8 py-14 md:py-20 border-b border-[#1a1a1a]">
+        <div className="dark:bg-[#0a0a0a] px-6 md:px-8 py-14 md:py-20 border-b theme-border">
           <div className="max-w-3xl mx-auto">
             <Breadcrumbs items={[{ label: 'Términos y Condiciones' }]} light className="mb-8" />
             <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Legal</p>
-            <h1 className="font-syne font-extrabold text-3xl md:text-4xl text-white tracking-tight">
+            <h1 className="font-jakarta font-extrabold text-3xl md:text-4xl text-white tracking-tight">
               Términos y Condiciones
             </h1>
           </div>
@@ -122,16 +122,16 @@ export default function TerminosClient() {
 
         <div className="px-6 md:px-8 py-12 md:py-16">
           <div className="max-w-3xl mx-auto">
-            <div className="bg-white border border-[#e8e4df] rounded-2xl overflow-hidden divide-y divide-[#e8e4df]">
+            <div className="theme-bg-card border theme-border rounded-2xl overflow-hidden divide-y theme-border">
               {ARTICLES.map((art) => {
                 const isOpen = openId === art.id;
                 return (
                   <div key={art.id} className="transition-colors">
                     <button
                       onClick={() => setOpenId(isOpen ? null : art.id)}
-                      className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[#faf9f7] transition-colors group"
+                      className="w-full flex items-center justify-between px-6 py-5 text-left hover:theme-bg-hover transition-colors group"
                     >
-                      <span className={`font-syne font-bold text-sm ${isOpen ? 'text-[#FF5C3A]' : 'text-[#0a0a0a] group-hover:text-[#FF5C3A]'}`}>
+                      <span className={`font-jakarta font-bold text-sm ${isOpen ? 'text-[#FF5C3A]' : 'theme-text group-hover:text-[#FF5C3A]'}`}>
                         {art.title}
                       </span>
                       <IconChevron open={isOpen} />
@@ -139,7 +139,7 @@ export default function TerminosClient() {
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'}`}
                     >
-                      <div className="px-6 pb-6 pt-1 text-[13px] text-[#555] leading-relaxed whitespace-pre-line">
+                      <div className="px-6 pb-6 pt-1 text-[13px] theme-text-muted leading-relaxed whitespace-pre-line">
                         {art.content}
                       </div>
                     </div>
@@ -149,19 +149,19 @@ export default function TerminosClient() {
             </div>
 
             <div className="mt-8 text-center">
-              <p className="text-[12px] text-[#888] mb-4">
+              <p className="text-[12px] theme-text-muted mb-4">
                 ¿Tienes dudas sobre nuestros términos?
               </p>
               <Link
                 href="/sobre-nosotros"
-                className="inline-flex items-center gap-2 bg-[#0a0a0a] text-white text-[12px] font-medium px-5 py-2.5 rounded-lg hover:bg-[#1a1a1a] transition-colors"
+                className="inline-flex items-center gap-2 bg-[#FF5C3A] text-white text-[12px] font-medium px-5 py-2.5 rounded-lg hover:bg-[#e64d2e] transition-colors"
               >
                 Conoce más sobre nosotros
               </Link>
             </div>
 
-            <div className="mt-12 pt-8 border-t border-[#e8e4df] text-center">
-              <p className="text-[11px] text-[#aaa]">
+            <div className="mt-12 pt-8 border-t theme-border text-center">
+              <p className="text-[11px] theme-text-muted">
                 Ultima actualizacion: 4 de abril de 2026 · Lookitry / Samuel Wilkie · NIT 700.403.166-3 · Marca Wilkie Devs
               </p>
             </div>

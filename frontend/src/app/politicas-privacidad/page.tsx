@@ -74,15 +74,15 @@ export default function PoliticasPrivacidadPage() {
   return (
     <div className="overflow-x-clip">
       <LandingNav />
-      <main className="min-h-screen bg-[#f5f2ee]">
+      <main className="min-h-screen theme-bg-base">
         {/* Header */}
-        <div className="bg-[#0a0a0a] px-6 md:px-8 py-14 md:py-20">
+        <div className="dark:bg-[#0a0a0a] px-6 md:px-8 py-14 md:py-20">
           <div className="max-w-3xl mx-auto">
             <p className="text-[11px] font-medium tracking-[.1em] uppercase text-[#FF5C3A] mb-3">Legal</p>
-            <h1 className="font-syne font-extrabold text-3xl md:text-4xl text-white tracking-tight mb-4">
+            <h1 className="font-jakarta font-extrabold text-3xl md:text-4xl text-white tracking-tight mb-4">
               Política de Privacidad
             </h1>
-            <p className="text-[#666] text-sm">
+            <p className="text-sm theme-text-muted">
               Última actualización: marzo 2026 · Ley 1581 de 2012 — Colombia
             </p>
           </div>
@@ -92,9 +92,9 @@ export default function PoliticasPrivacidadPage() {
         <div className="px-6 md:px-8 py-12 md:py-16">
           <div className="max-w-3xl mx-auto space-y-8">
             {SECTIONS.map((s) => (
-              <section key={s.title} className="bg-white border border-[#e8e4df] rounded-2xl p-6 md:p-8">
-                <h2 className="font-syne font-bold text-base text-[#0a0a0a] mb-3">{s.title}</h2>
-                <div className="text-[14px] text-[#555] leading-relaxed whitespace-pre-line">{s.content}</div>
+              <section key={s.title} className="theme-bg-card border theme-border rounded-2xl p-6 md:p-8">
+                <h2 className="font-jakarta font-bold text-base theme-text mb-3">{s.title}</h2>
+                <div className="text-[14px] theme-text-muted leading-relaxed whitespace-pre-line">{s.content}</div>
               </section>
             ))}
 
