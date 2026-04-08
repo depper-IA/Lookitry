@@ -1,12 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { downloadImage } from '@/utils/download';
 import { getProxiedImageUrl } from '@/utils/imageProxy';
 
 // ── Marca de agua dinámica (Visual Overlay) ──────────────────────────────────
-// Ya no es necesaria porque el backend la quema físicamente, 
-// pero la mantenemos vacía para no romper el layout si se usaba en absoluto.
 function Watermark({ plan }: { plan?: string }) {
   return null;
 }
@@ -21,6 +18,8 @@ function ResultImage({
   compact = false,
   brandPlan,
   fit = 'cover',
+  cardBg,
+  cardBorder,
 }: {
   imageUrl: string;
   productName: string;
@@ -30,6 +29,8 @@ function ResultImage({
   compact?: boolean;
   brandPlan?: string;
   fit?: 'cover' | 'contain';
+  cardBg?: string;
+  cardBorder?: string;
 }) {
   const [loaded, setLoaded] = useState(false);
 
@@ -37,11 +38,15 @@ function ResultImage({
 
   return (
     <div
-      className={`relative group cursor-pointer rounded-2xl overflow-hidden ${compact ? '' : 'mb-5 shadow-md border border-gray-100'} ${aspectRatio ?? ''}`}
+      className={`relative group cursor-pointer rounded-2xl overflow-hidden ${compact ? '' : 'mb-5 shadow-md border'} ${aspectRatio ?? ''}`}
       onClick={onOpen}
+      style={{ borderColor: compact ? 'transparent' : (cardBorder || '#f3f4f6') }}
     >
       {!loaded && (
-        <div className={`w-full ${aspectRatio ?? 'aspect-[3/4]'} bg-gray-100 animate-pulse flex flex-col items-center justify-center gap-3`}>
+        <div 
+          className={`w-full ${aspectRatio ?? 'aspect-[3/4]'} animate-pulse flex flex-col items-center justify-center gap-3`}
+          style={{ backgroundColor: cardBg || '#f3f4f6' }}
+        >
           <div className="w-10 h-10 rounded-full border-4 border-gray-200 border-t-transparent animate-spin" style={{ borderTopColor: primaryColor }} />
           {!compact && <p className="text-xs text-gray-400 font-medium">Cargando imagen...</p>}
         </div>
@@ -89,6 +94,10 @@ interface ResultDisplayProps {
   brandName?: string;
   brandPlan?: string;
   pluginView?: boolean;
+  textColor?: string;
+  mutedColor?: string;
+  cardBg?: string;
+  cardBorder?: string;
 }
 
 export function ResultDisplay({
@@ -102,10 +111,13 @@ export function ResultDisplay({
   brandName,
   brandPlan,
   pluginView = false,
+  textColor = '#1a1a1a',
+  mutedColor = '#666666',
+  cardBg,
+  cardBorder,
 }: ResultDisplayProps) {
   const [lightboxOpen, setLightboxOpen]   = useState(false);
   const [downloading, setDownloading]     = useState(false);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
   const [sharing, setSharing]             = useState(false);
   const [shareError, setShareError]       = useState<string | null>(null);
 
@@ -117,7 +129,6 @@ export function ResultDisplay({
   const [feedbackSent, setFeedbackSent]       = useState(false);
 
   const handleDownload = () => {
-    // El servidor ahora envía cabeceras de descarga (Content-Disposition) automáticas
     const downloadUrl = getProxiedImageUrl(imageUrl, brandPlan, true);
     window.location.href = downloadUrl;
   };
@@ -213,7 +224,6 @@ export function ResultDisplay({
       }
     } catch (err) {
       console.error('Error enviando feedback:', err);
-      // Fix #5: sin alert() — si falla el envío cerramos el modal y el usuario puede reintentar
       handleFeedbackClose();
     } finally {
       setFeedbackSending(false);
@@ -225,19 +235,6 @@ export function ResultDisplay({
     setFeedbackType('');
     setFeedbackDesc('');
     setFeedbackSent(false);
-  };
-
-  const shareText = `Mira cómo me queda este ${productName} de ${brandName ?? ''}. Generado por Lookitry AI.`;
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-
-  const handleShareWhatsApp = () => {
-    const text = encodeURIComponent(`${shareText}\n${shareUrl}`);
-    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener');
-  };
-
-  const handleShareFacebook = () => {
-    const url = encodeURIComponent(shareUrl);
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'noopener');
   };
 
   const pluginQuery =
@@ -253,19 +250,25 @@ export function ResultDisplay({
       <>
         <div className="mx-auto w-full max-w-6xl">
           <div className="mb-4 flex flex-col items-center text-center md:mb-5">
-            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50">
+            <div 
+              className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border shadow-sm"
+              style={{ backgroundColor: cardBg || '#f0fdf4', borderColor: cardBorder || 'transparent' }}
+            >
               <svg className="h-7 w-7 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-xl font-black uppercase italic tracking-tight text-gray-900 md:text-2xl">Resultado final</h2>
-            <p className="mt-1 text-xs font-medium uppercase tracking-widest text-gray-400 md:text-sm">
-              Visualizacion con <span className="font-bold text-gray-700">{productName}</span>
+            <h2 className="text-xl font-black uppercase italic tracking-tight md:text-2xl" style={{ color: textColor }}>Resultado final</h2>
+            <p className="mt-1 text-xs font-medium uppercase tracking-widest md:text-sm" style={{ color: mutedColor }}>
+              Visualizacion con <span className="font-bold underline" style={{ color: textColor }}>{productName}</span>
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-            <div className="rounded-[28px] border border-gray-100 bg-white p-3 shadow-sm md:p-4">
+            <div 
+              className="rounded-[28px] border p-3 shadow-sm md:p-4"
+              style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6' }}
+            >
               <ResultImage
                 imageUrl={imageUrl}
                 productName={productName}
@@ -274,13 +277,18 @@ export function ResultDisplay({
                 aspectRatio="aspect-[4/3]"
                 fit="contain"
                 brandPlan={brandPlan}
+                cardBg={cardBg}
+                cardBorder={cardBorder}
               />
             </div>
 
-            <div className="flex flex-col gap-4 rounded-[28px] border border-gray-100 bg-[#faf8f5] p-5 lg:sticky lg:top-4">
+            <div 
+              className="flex flex-col gap-4 rounded-[28px] border p-5 lg:sticky lg:top-4"
+              style={{ backgroundColor: cardBg || '#faf8f5', borderColor: cardBorder || '#f3f4f6' }}
+            >
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-400">Acciones</p>
-                <p className="mt-2 text-sm text-gray-500">Mostramos solo la imagen final dentro del plugin para una vista limpia, completa y enfocada en conversión.</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: mutedColor }}>Acciones</p>
+                <p className="mt-2 text-sm" style={{ color: mutedColor }}>Mostramos solo la imagen final dentro del plugin para una vista limpia, completa y enfocada en conversión.</p>
               </div>
 
               {addToCartUrl && (
@@ -288,7 +296,8 @@ export function ResultDisplay({
                   href={addToCartUrl}
                   target="_top"
                   rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white py-3.5 text-xs font-black uppercase tracking-widest text-gray-800 transition-all hover:bg-gray-50 active:scale-95 md:text-sm"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border py-3.5 text-xs font-black uppercase tracking-widest transition-all hover:bg-gray-50 active:scale-95 md:text-sm shadow-sm"
+                  style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#e5e7eb', color: textColor }}
                 >
                   Enviar al carrito
                 </a>
@@ -299,7 +308,8 @@ export function ResultDisplay({
                   href={cartUrl}
                   target="_top"
                   rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white py-3.5 text-xs font-black uppercase tracking-widest text-gray-800 transition-all hover:bg-gray-50 active:scale-95 md:text-sm"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl border py-3.5 text-xs font-black uppercase tracking-widest transition-all hover:bg-gray-50 active:scale-95 md:text-sm shadow-sm"
+                  style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#e5e7eb', color: textColor }}
                 >
                   Comprar ahora
                 </a>
@@ -321,15 +331,18 @@ export function ResultDisplay({
                 <p className="text-center text-[10px] font-bold uppercase text-orange-500">{shareError}</p>
               )}
 
-              <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-4 py-3 text-xs leading-relaxed text-gray-500">
+              <div 
+                className="rounded-2xl border border-dashed px-4 py-3 text-xs leading-relaxed"
+                style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#e5e7eb', color: mutedColor }}
+              >
                 {productUrl ? (
-                  <a href={productUrl} target="_top" rel="noopener noreferrer" className="font-semibold text-[#FF5C3A] underline underline-offset-2">
+                  <a href={productUrl} target="_top" rel="noopener noreferrer" className="font-semibold underline underline-offset-2" style={{ color: primaryColor }}>
                     Volver al producto
                   </a>
                 ) : (
                   <span>Toca la imagen para verla completa.</span>
                 )}{' '}
-                El plugin oculta comparaciones y acciones secundarias para priorizar el resultado final.
+                El plugin prioritiza el resultado final para aumentar la conversión.
               </div>
             </div>
           </div>
@@ -353,13 +366,16 @@ export function ResultDisplay({
     <>
       <div className="max-w-md mx-auto">
         <div className="text-center mb-4 md:mb-5">
-          <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-2 md:mb-3">
+          <div 
+            className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center mx-auto mb-2 md:mb-3 border shadow-sm"
+            style={{ backgroundColor: cardBg || '#f0fdf4', borderColor: cardBorder || 'transparent' }}
+          >
             <svg className="w-6 h-6 md:w-7 md:h-7 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-lg md:text-xl font-black text-gray-900 uppercase italic tracking-tight">¡Te ves genial!</h2>
-          <p className="text-xs md:text-sm text-gray-400 mt-0.5 font-medium uppercase tracking-widest">Resultado con <span className="font-bold text-gray-700">{productName}</span></p>
+          <h2 className="text-lg md:text-xl font-black uppercase italic tracking-tight" style={{ color: textColor }}>¡Te ves genial!</h2>
+          <p className="text-xs md:text-sm mt-0.5 font-medium uppercase tracking-widest" style={{ color: mutedColor }}>Resultado con <span className="font-bold underline" style={{ color: textColor }}>{productName}</span></p>
         </div>
 
         <div className="mb-4">
@@ -369,17 +385,27 @@ export function ResultDisplay({
             primaryColor={primaryColor}
             onOpen={() => setLightboxOpen(true)}
             brandPlan={brandPlan}
+            cardBg={cardBg}
+            cardBorder={cardBorder}
           />
         </div>
 
         {selfiePreview && (
           <div className="grid grid-cols-2 gap-2 md:gap-3 mb-4">
             <div className="relative">
-              <img src={selfiePreview} alt="Tu foto" className="w-full aspect-[3/4] object-cover rounded-xl md:rounded-2xl shadow-sm border border-gray-100" />
+              <img 
+                src={selfiePreview} 
+                alt="Tu foto" 
+                className="w-full aspect-[3/4] object-cover rounded-xl md:rounded-2xl shadow-sm border" 
+                style={{ borderColor: cardBorder || '#f3f4f6' }}
+              />
               <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-md text-white text-[8px] md:text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-widest">Antes</div>
             </div>
             <div className="relative group cursor-pointer" onClick={() => setLightboxOpen(true)}>
-              <div className="rounded-xl md:rounded-2xl overflow-hidden shadow-sm border border-gray-100 h-full">
+              <div 
+                className="rounded-xl md:rounded-2xl overflow-hidden shadow-sm border h-full"
+                style={{ borderColor: cardBorder || '#f3f4f6' }}
+              >
                 <ResultImage
                   imageUrl={imageUrl}
                   productName={productName}
@@ -388,6 +414,8 @@ export function ResultDisplay({
                   aspectRatio="aspect-[3/4]"
                   compact
                   brandPlan={brandPlan}
+                  cardBg={cardBg}
+                  cardBorder={cardBorder}
                 />
               </div>
               <div className="absolute bottom-2 left-2 text-white text-[8px] md:text-[10px] px-2 py-0.5 rounded-full pointer-events-none uppercase font-black tracking-widest" style={{ backgroundColor: `${primaryColor}cc` }}>Después</div>
@@ -402,42 +430,28 @@ export function ResultDisplay({
             className="w-full py-3 md:py-3.5 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest text-white shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
             style={{ backgroundColor: primaryColor }}
           >
-            {downloading ? '...' : (
-              <>
-                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Descargar imagen
-              </>
-            )}
+            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Descargar imagen
           </button>
-          
-          {downloadError && (
-            <p className="text-[10px] text-red-500 text-center font-bold uppercase">{downloadError}</p>
-          )}
 
           <button
             onClick={handleShare}
             disabled={sharing}
-            className="md:hidden w-full py-3 rounded-2xl font-black text-xs uppercase tracking-widest border-2 border-gray-100 text-gray-600 bg-white hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            className="md:hidden w-full py-3 rounded-2xl font-black text-xs uppercase tracking-widest border-2 transition-all flex items-center justify-center gap-2 disabled:opacity-60 shadow-sm"
+            style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6', color: textColor }}
           >
-            {sharing ? '...' : (
-              <>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-                Compartir
-              </>
-            )}
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            Compartir
           </button>
-
-          {shareError && (
-            <p className="text-[10px] text-orange-500 text-center font-bold uppercase">{shareError}</p>
-          )}
 
           <button
             onClick={onReset}
-            className="w-full py-3 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest text-gray-400 bg-gray-50 border border-gray-100 hover:bg-gray-100 active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-2xl font-black text-xs md:text-sm uppercase tracking-widest transition-all flex items-center justify-center gap-2 border shadow-sm"
+            style={{ backgroundColor: cardBg || '#f9fafb', borderColor: cardBorder || '#f3f4f6', color: mutedColor }}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
             Probar otro
@@ -446,7 +460,8 @@ export function ResultDisplay({
            {generationId && brandSlug && (
              <button
                onClick={() => setFeedbackOpen(true)}
-               className={`w-full py-2 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${feedbackSent ? 'text-green-600 bg-green-50' : 'text-gray-300 hover:text-gray-500'}`}
+               className={`w-full py-2 rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 ${feedbackSent ? 'text-green-600' : ''}`}
+               style={!feedbackSent ? { color: mutedColor } : {}}
              >
                {feedbackSent ? (
                  <>
@@ -459,7 +474,7 @@ export function ResultDisplay({
              </button>
            )}
            
-           <div className="text-center text-[9px] md:text-[10px] text-gray-500 mt-4 font-medium italic">
+           <div className="text-center text-[9px] md:text-[10px] mt-4 font-medium italic" style={{ color: mutedColor }}>
              Esta imagen se guardó para evitar repetir esta prueba con la misma selfie.
            </div>
         </div>
@@ -467,43 +482,80 @@ export function ResultDisplay({
 
       {feedbackOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={handleFeedbackClose}>
-          <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div 
+            className="rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden border" 
+            onClick={e => e.stopPropagation()}
+            style={{ backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6' }}
+          >
             {!feedbackSent ? (
               <>
-                <h3 className="font-bold text-xl text-gray-900 mb-2">¿Algo no salió bien?</h3>
-                <p className="text-sm text-gray-500 mb-5">Cuéntanos qué falló para que nuestra IA aprenda a hacerlo mejor.</p>
+                <h3 className="font-bold text-xl mb-2" style={{ color: textColor }}>¿Algo no salió bien?</h3>
+                <p className="text-sm mb-5" style={{ color: mutedColor }}>Cuéntanos qué falló para que nuestra IA aprenda a hacerlo mejor.</p>
                 <div className="grid grid-cols-2 gap-2 mb-4">
                   {ERROR_TYPES.map(et => (
-                    <button key={et.value} onClick={() => setFeedbackType(et.value)} className={`p-3 rounded-2xl border text-sm font-medium transition-all ${feedbackType === et.value ? 'bg-orange-50 border-orange-300 text-orange-700 ring-2 ring-orange-100' : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100 text-left'}`}>
+                    <button 
+                      key={et.value} 
+                      onClick={() => setFeedbackType(et.value)} 
+                      className={`p-3 rounded-2xl border text-sm font-medium transition-all text-left ${feedbackType === et.value ? 'ring-2 ring-orange-100 shadow-sm' : ''}`}
+                      style={feedbackType === et.value 
+                        ? { backgroundColor: `${primaryColor}15`, borderColor: primaryColor, color: textColor } 
+                        : { backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6', color: mutedColor }
+                      }
+                    >
                       {et.label}
                     </button>
                   ))}
-                  <button onClick={() => setFeedbackType(OTHER_VALUE)} className={`col-span-2 p-3 rounded-2xl border text-sm font-medium transition-all ${feedbackType === OTHER_VALUE ? 'bg-orange-50 border-orange-300 text-orange-700 ring-2 ring-orange-100' : 'bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100 text-left'}`}>
+                  <button 
+                    onClick={() => setFeedbackType(OTHER_VALUE)} 
+                    className={`col-span-2 p-3 rounded-2xl border text-sm font-medium transition-all text-left ${feedbackType === OTHER_VALUE ? 'ring-2 ring-orange-100 shadow-sm' : ''}`}
+                    style={feedbackType === OTHER_VALUE 
+                      ? { backgroundColor: `${primaryColor}15`, borderColor: primaryColor, color: textColor } 
+                      : { backgroundColor: cardBg || '#ffffff', borderColor: cardBorder || '#f3f4f6', color: mutedColor }
+                    }
+                  >
                     Otro detalle
                   </button>
                 </div>
                 {feedbackType === OTHER_VALUE && (
-                  <textarea value={feedbackDesc} onChange={e => setFeedbackDesc(e.target.value)} placeholder="Dinos qué viste mal..." className="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 mb-4 h-28 text-sm outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-300 transition-all" />
+                  <textarea 
+                    value={feedbackDesc} 
+                    onChange={e => setFeedbackDesc(e.target.value)} 
+                    placeholder="Dinos qué viste mal..." 
+                    className="w-full p-4 rounded-2xl mb-4 h-28 text-sm outline-none transition-all border"
+                    style={{ backgroundColor: cardBg || '#f9fafb', borderColor: cardBorder || '#e5e7eb', color: textColor }}
+                  />
                 )}
                 <div className="flex flex-col gap-2">
-                  <button onClick={handleFeedbackSubmit} disabled={feedbackSending || (!feedbackType) || (feedbackType === OTHER_VALUE && !feedbackDesc.trim())} className="w-full py-4 bg-gray-900 text-white rounded-2xl font-bold shadow-lg shadow-gray-200 disabled:opacity-50 active:scale-95 transition-all">
+                  <button 
+                    onClick={handleFeedbackSubmit} 
+                    disabled={feedbackSending || (!feedbackType) || (feedbackType === OTHER_VALUE && !feedbackDesc.trim())} 
+                    className="w-full py-4 text-white rounded-2xl font-bold shadow-lg disabled:opacity-50 active:scale-95 transition-all"
+                    style={{ backgroundColor: primaryColor }}
+                  >
                     {feedbackSending ? 'Enviando reporte...' : 'Enviar reporte'}
                   </button>
-                  <button onClick={handleFeedbackClose} className="w-full py-3 text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors">
+                  <button onClick={handleFeedbackClose} className="w-full py-3 text-sm font-medium transition-colors" style={{ color: mutedColor }}>
                     Cancelar
                   </button>
                 </div>
               </>
             ) : (
               <div className="py-8 text-center animate-in fade-in zoom-in duration-300">
-                <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4 border-2 border-green-100">
-                  <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <div 
+                  className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-2"
+                  style={{ backgroundColor: `${primaryColor}10`, borderColor: primaryColor }}
+                >
+                  <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} style={{ color: primaryColor }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h3 className="font-bold text-xl text-gray-900 mb-2">¡Reporte enviado!</h3>
-                <p className="text-sm text-gray-500 px-4">Gracias por ayudarnos a mejorar Lookitry AI. Analizaremos tu caso de inmediato.</p>
-                <button onClick={handleFeedbackClose} className="mt-8 w-full py-4 bg-green-500 text-white rounded-2xl font-bold shadow-lg shadow-green-100 active:scale-95 transition-all">
+                <h3 className="font-bold text-xl mb-2" style={{ color: textColor }}>¡Reporte enviado!</h3>
+                <p className="text-sm px-4" style={{ color: mutedColor }}>Gracias por ayudarnos a mejorar Lookitry AI. Analizaremos tu caso de inmediato.</p>
+                <button 
+                  onClick={handleFeedbackClose} 
+                  className="mt-8 w-full py-4 text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-all"
+                  style={{ backgroundColor: primaryColor }}
+                >
                   Entendido
                 </button>
               </div>

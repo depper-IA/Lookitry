@@ -74,7 +74,7 @@ export function FriendlyProductSelector({
     <div>
       <div className="mb-3 md:mb-4 text-center">
         <p className="text-sm md:text-base font-black text-gray-900 uppercase italic tracking-tight">¿Qué quieres probarte?</p>
-        <p className="text-[10px] md:text-sm text-gray-400 font-medium uppercase tracking-widest mt-0.5">Toca el producto que más te guste</p>
+        <p className="text-[10px] md:text-sm text-gray-500 font-medium uppercase tracking-widest mt-0.5">Toca el producto que más te guste</p>
       </div>
       <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 md:gap-3">
         {products.map(p => {
@@ -163,7 +163,7 @@ export function SelfieThumb({ preview, onReset }: { preview: string | null; onRe
       <img src={preview} alt="Tu foto" className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl object-cover flex-shrink-0" />
       <div className="flex-1">
         <p className="text-[11px] md:text-sm font-black text-gray-900 uppercase italic leading-none">Foto lista</p>
-        <p className="text-[9px] md:text-xs text-gray-400 mt-0.5 font-medium uppercase tracking-widest leading-none">Elige un producto</p>
+        <p className="text-[9px] md:text-xs text-gray-500 mt-0.5 font-medium uppercase tracking-widest leading-none">Elige un producto</p>
       </div>
       <button onClick={onReset} className="text-[9px] md:text-xs font-black uppercase text-gray-400 hover:text-[#FF5C3A] transition-colors px-2 py-1 rounded-lg hover:bg-[#FF5C3A]/5">
         Cambiar

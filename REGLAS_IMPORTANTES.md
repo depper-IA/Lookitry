@@ -89,6 +89,32 @@ Cada vez que se realice cualquier cambio en el código, la IA DEBE documentarlo 
 - Logo: siempre SVG + texto `Look<span className="text-[#FF5C3A]">itry</span>`
 - Accesibilidad: botones de mostrar/ocultar contraseña deben ser focusables y llevar `aria-label`
 
+### 4.1 Regla Anti-Residuos (Código Limpio)
+
+**AL crear nuevos componentes que reemplazan antiguos, O al modificar componentes con código obsoleto:**
+
+1. **Verificar uso antes de borrar:** Buscar en todo el codebase si el archivo/función旧的 código sigue siendo importado en algún lugar
+2. **Si un componente es reemplazado:**
+   - Eliminar el archivo antiguo completamente
+   - Actualizar todos los imports que lo referencien
+3. **Si una función/código es obsolete:**
+   - Eliminar el código muerto completamente
+   - NO dejar comentarios de código commented-out sin propósito
+4. **Al modificar componentes:**
+   - Sobreescribir el archivo con la versión nueva
+   - NO mantener ambas versiones
+   - NO crear archivos "backup" o "~"
+
+**Verificación obligatoria antes de finalizar tarea:**
+- Buscar imports huérfanos: `grep -r "from.*antiguo"` o similar
+- Verificar que el build pasa
+- Si hay errores de "cannot find module", rastrear y limpiar
+
+**Excepciones:** Solo mantener código antiguo si:
+- El usuario explícitamente lo solicita
+- Es necesario para rollback temporal
+- Son comentarios de documentación (JSDoc)
+
 ---
 
 ## 5. Blindaje de Ingeniería
