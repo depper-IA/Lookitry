@@ -6,7 +6,7 @@ import { BlogCard } from './BlogCard';
 import { fetchBlogCategories, fetchBlogPosts, BlogCategory, BlogPost, BlogPagination } from '@/services/blog.service';
 import { Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const POSTS_PER_PAGE = 10;
+const POSTS_PER_PAGE = 5;
 
 export const BlogList: React.FC = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
