@@ -67,6 +67,7 @@ export const blogSettingsController = {
         openrouter_article_model: data?.openrouter_article_model || 'google/gemini-2.5-flash',
         openrouter_image_model: data?.openrouter_image_model || 'openai/dall-e-3',
         image_generation_provider: data?.image_generation_provider || 'replicate',
+        image_generator_webhook: data?.image_generator_webhook || null,
         webhook_secret: undefined,
         has_webhook_secret: Boolean(data?.webhook_secret),
         webhook_auth_mode: inferBlogWebhookAuthMode(data?.webhook_secret),
@@ -88,7 +89,7 @@ export const blogSettingsController = {
    */
   async updateSettings(req: Request, res: Response) {
     try {
-      const { frequency, is_enabled, webhook_url, webhook_secret, openrouter_article_model, openrouter_image_model, image_generation_provider } = req.body;
+      const { frequency, is_enabled, webhook_url, webhook_secret, openrouter_article_model, openrouter_image_model, image_generation_provider, image_generator_webhook } = req.body;
 
       // Calcular próxima ejecución si cambia la frecuencia o se activa
       let next_run = undefined;
@@ -111,6 +112,7 @@ export const blogSettingsController = {
       if (openrouter_article_model !== undefined) updates.openrouter_article_model = openrouter_article_model;
       if (openrouter_image_model !== undefined) updates.openrouter_image_model = openrouter_image_model;
       if (image_generation_provider !== undefined) updates.image_generation_provider = image_generation_provider;
+      if (image_generator_webhook !== undefined) updates.image_generator_webhook = image_generator_webhook;
       if (next_run) updates.next_run = next_run;
 
       const { data, error } = await supabaseAdmin

@@ -7,47 +7,12 @@ import { BlogShareRail } from '@/components/blog/BlogShareRail';
 import { fetchBlogPostBySlug, fetchRecentBlogPosts, getBlogFeaturedImage, getBlogShareImage, getBlogTeaser } from '@/services/blog.service';
 import { Calendar, Tag, ChevronLeft, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
-import SanitizedHtml from '@/components/blog/SanitizedHtml';
+import BlogArticle from '@/components/blog/BlogArticle';
 
 interface BlogPostPageProps {
   params: {
     slug: string;
   };
-}
-
-function sanitizeBlogHtml(content: string, featuredImage?: string | null) {
-  let html = content || '';
-
-  // 1. Manejar imágenes rotas (src vacío o solo espacios)
-  // Buscamos etiquetas img que tengan src="" o src=" "
-  const emptyImgRegex = /<img[^>]+src=["']\s*["'][^>]*>/gi;
-  
-  if (featuredImage) {
-    // Si tenemos imagen destacada, la usamos como fallback para la PRIMERA imagen rota
-    let hasReplaced = false;
-    html = html.replace(emptyImgRegex, (match) => {
-      if (!hasReplaced) {
-        hasReplaced = true;
-        // Reemplazar el src vacío por la imagen destacada
-        return match.replace(/src=["']\s*["']/i, `src="${featuredImage}"`);
-      }
-      // Para el resto de imágenes rotas, las eliminamos para no repetir la misma foto
-      return '';
-    });
-  } else {
-    // Si no hay imagen destacada, eliminamos todas las imágenes rotas
-    html = html.replace(emptyImgRegex, '');
-  }
-
-  // 2. Limpiar figuras que quedaron vacías después de quitar la imagen
-  html = html.replace(/<figure>\s*<\/figure>/gi, '');
-  
-  // 3. Caso especial: figura con figcaption pero sin imagen (limpieza extra)
-  html = html.replace(/<figure>\s*(?:<img[^>]+src=["']\s*["'][^>]*>)?\s*<figcaption>(.*?)<\/figcaption>\s*<\/figure>/gi, (match, caption) => {
-    return `<figure className="bg-white/5 p-4 rounded-xl border border-white/5 my-8 italic text-center text-[#6d625c]">${caption}</figure>`;
-  });
-
-  return html;
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
@@ -92,7 +57,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const recentPosts = await fetchRecentBlogPosts(3, post.slug);
   const heroImage = getBlogFeaturedImage(post);
   const socialImage = getBlogShareImage(post);
-  const articleHtml = sanitizeBlogHtml(post.content, heroImage);
   const shareUrl = `https://lookitry.com/blog/${params.slug}`;
 
   const formatDate = (dateStr: string) => {
@@ -102,24 +66,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       day: 'numeric',
     });
   };
-  const articleProseClass = `
-    prose max-w-none px-6 py-8 md:px-10 md:py-12
-    text-[17px] leading-8 text-[#2b2623]
-    prose-headings:font-plus-jakarta prose-headings:tracking-tight
-    prose-h1:text-[#101010] prose-h2:text-[#FF5C3A] prose-h3:text-[#101010] prose-h4:text-[#101010]
-    prose-p:text-[#2f2a27] prose-p:leading-8
-    prose-li:text-[#2f2a27]
-    prose-strong:text-[#101010]
-    prose-a:text-[#FF5C3A] prose-a:font-semibold prose-a:no-underline hover:prose-a:underline
-    prose-img:rounded-[1.25rem] prose-img:shadow-lg
-    [&_figure]:my-10 [&_figure]:overflow-hidden
-    [&_figcaption]:mt-3 [&_figcaption]:text-sm [&_figcaption]:leading-6 [&_figcaption]:text-[#6d625c]
-    [&_[data-blog-intro='lead']]:mb-10 [&_[data-blog-intro='lead']]:rounded-[1.75rem] [&_[data-blog-intro='lead']]:border [&_[data-blog-intro='lead']]:border-[#FF5C3A]/20 [&_[data-blog-intro='lead']]:bg-[linear-gradient(135deg,rgba(255,92,58,0.12),rgba(255,255,255,0.88))] [&_[data-blog-intro='lead']]:px-6 [&_[data-blog-intro='lead']]:py-6 [&_[data-blog-intro='lead']]:text-[1.08rem] [&_[data-blog-intro='lead']]:font-medium [&_[data-blog-intro='lead']]:leading-8 [&_[data-blog-intro='lead']]:text-[#1b1715]
-    [&_[data-blog-block='impact']]:my-8 [&_[data-blog-block='impact']]:rounded-[1.5rem] [&_[data-blog-block='impact']]:border [&_[data-blog-block='impact']]:border-[#101010]/10 [&_[data-blog-block='impact']]:bg-white/80 [&_[data-blog-block='impact']]:px-6 [&_[data-blog-block='impact']]:py-6 [&_[data-blog-block='impact']]:shadow-[0_18px_40px_rgba(0,0,0,0.06)] [&_[data-blog-block='impact']_h3]:mt-0 [&_[data-blog-block='impact']_h3]:mb-3 [&_[data-blog-block='impact']_h3]:text-[#101010] [&_[data-blog-block='impact']_ul]:my-0 [&_[data-blog-block='impact']_li]:marker:text-[#FF5C3A] [&_[data-blog-block='impact']_a]:text-[#FF5C3A] [&_[data-blog-block='impact']_a]:font-semibold
-    [&_[data-blog-cta='final']]:mt-10 [&_[data-blog-cta='final']]:rounded-[1.75rem] [&_[data-blog-cta='final']]:bg-[#101010] [&_[data-blog-cta='final']]:px-6 [&_[data-blog-cta='final']]:py-6 [&_[data-blog-cta='final']]:text-white [&_[data-blog-cta='final']_p]:m-0 [&_[data-blog-cta='final']_a]:inline-flex [&_[data-blog-cta='final']_a]:items-center [&_[data-blog-cta='final']_a]:justify-center [&_[data-blog-cta='final']_a]:rounded-full [&_[data-blog-cta='final']_a]:bg-[#FF5C3A] [&_[data-blog-cta='final']_a]:px-5 [&_[data-blog-cta='final']_a]:py-3 [&_[data-blog-cta='final']_a]:font-bold [&_[data-blog-cta='final']_a]:text-white
-    [&_div[style*='background:_#FFF5F2']]:!bg-white [&_div[style*='background:_#FFF5F2']]:!border-[#FF5C3A]
-    [&_h4]:!text-[#FF5C3A]
-  `.replace(/\s+/g, ' ').trim();
+
+  const parseTocItems = (toc?: string | Array<{title: string; id: string}>): Array<{title: string; id: string}> => {
+    if (!toc) return [];
+    if (Array.isArray(toc)) return toc;
+    try {
+      return JSON.parse(toc);
+    } catch {
+      return [];
+    }
+  };
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -207,10 +163,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
             )}
 
-            {/* Contenido (HTML renderizado con sanitización XSS) */}
-            <section className="rounded-[2rem] border border-white/10 bg-[#f6f0ee] text-[#1f1f1f] shadow-[0_30px_80px_rgba(0,0,0,0.24)] overflow-hidden">
-              <SanitizedHtml html={articleHtml} className={articleProseClass} />
-            </section>
+            {/* Contenido (renderizado con BlogArticle para componentes ricos) */}
+            <BlogArticle 
+              title={post.title}
+              content={post.content}
+              featuredImage={heroImage ?? undefined}
+              excerpt={post.excerpt}
+              author="Lookitry Editorial"
+              publishedAt={post.published_at || post.created_at}
+              category={post.category?.name}
+              tags={post.tags}
+              readingTime={post.reading_time}
+              tocItems={parseTocItems(post.toc_items)}
+            />
 
             <section className="mt-10 rounded-[2rem] border border-white/10 bg-[#111111] p-8 md:p-10 shadow-[0_24px_70px_rgba(0,0,0,0.22)]">
               <div className="flex flex-col gap-6 md:flex-row md:items-start">
@@ -234,25 +199,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               </div>
             </section>
 
-            {/* CTA Section */}
-            <div className="mt-10 p-8 md:p-12 rounded-3xl bg-gradient-to-br from-[#141414] to-[#0a0a0a] border border-[#FF5C3A]/20 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Quieres potenciar tu marca con LOOKITRY?</h2>
-              <p className="text-[#999] mb-8 max-w-xl mx-auto">Activa una experiencia de compra mas clara, moderna y confiable para tus clientes con LOOKITRY.</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/trial-checkout"
-                  className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white font-bold py-3 px-8 rounded-full transition-all"
-                >
-                  Comenzar prueba ahora
-                </Link>
-                <Link
-                  href="/planes"
-                  className="border border-[#FF5C3A]/25 bg-[#1a1a1a] text-[#FF5C3A] hover:bg-[#221613] font-bold py-3 px-8 rounded-full transition-all"
-                >
-                  Ver planes
-                </Link>
-              </div>
-            </div>
+
           </div>
           <aside className="mx-auto w-full max-w-[320px] xl:mx-0 xl:w-[280px] xl:pt-8">
             <div className="xl:sticky xl:top-24 space-y-6">

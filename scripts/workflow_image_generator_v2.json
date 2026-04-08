@@ -1,0 +1,82 @@
+{
+  "name": "Lookitry Blog Images v2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lookitry-blog-images-v2",
+        "options": {}
+      },
+      "id": "661fb385-27c2-4db4-afa5-413eedc95fd6",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "lookitry-blog-images-v2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = $input.first()?.json || {};\nconst input = payload.body || payload;\nconst topic_id = String(input.topic_id || '');\nconst title = input.title || '';\nconst keywords = input.keywords || '';\nconst category = input.category_slug || 'moda';\nconst research = input.research_context || '';\n\nconst debugLogs = [];\nfunction logAction(msg) {\n  debugLogs.push(msg);\n}\nlogAction('Inicio ejecucion para: ' + title);\n\nconst categoryContext = {\n  'ecommerce': 'online shopping, ecommerce platform, digital retail',\n  'ia': 'artificial intelligence, AI technology, machine learning',\n  'moda-y-estilo': 'fashion, clothing style, outfit trends, boutique fashion',\n  'negocios-y-saas': 'business strategy, SaaS software, entrepreneurship'\n};\n\nconst context = categoryContext[category] || categoryContext['moda-y-estilo'];\nconst researchSummary = research.substring(0, 500);\n\nconst prompts = [\n  {\n    prompt: 'Professional fashion photography featuring ' + title + '. ' + context + '. Colombian ecommerce retail setting. Warm studio lighting with natural accents. Editorial style for online fashion store. 16:9 aspect ratio, commercial photography quality.',\n    tipo: 'hero',\n    aspect_ratio: '16:9'\n  },\n  {\n    prompt: 'Lifestyle editorial photography showing ' + title + ' in a real Colombian boutique environment. ' + researchSummary.substring(0, 200) + '. Natural lighting, candid retail moment, authentic fashion experience. 16:9 aspect ratio.',\n    tipo: 'body1',\n    aspect_ratio: '16:9'\n  },\n  {\n    prompt: 'Detail-oriented fashion photography focusing on ' + title + '. Close-up of garment texture, fabric quality, and design details. ' + context + '. Colombian fashion retail aesthetic. Professional product photography, minimal background. 16:9 aspect ratio.',\n    tipo: 'body2',\n    aspect_ratio: '16:9'\n  }\n];\n\nconst replicateToken = '***REMOVED-SECRET***';\nconst blogSecret = 'Travis2305**_blog_n8n';\nconst uploadUrl = 'https://api.lookitry.com/api/blog/upload';\n\n// Hack para hacer sleep sin usar setTimeout (que a veces se cuelga en n8n)\nasync function sleepFallback(seconds) {\n  try {\n    logAction('SleepFallback (' + seconds + 's) usando httpbin...');\n    await this.helpers.request({\n      method: 'GET',\n      url: 'https://httpbin.org/delay/' + seconds,\n      timeout: (seconds + 5) * 1000\n    });\n  } catch (e) {\n    logAction('Sleep fallback errored: ' + e.message);\n  }\n}\n\nasync function startReplicateTask(promptText, aspectRatio) {\n  try {\n    logAction('Enviando request a Replicate (sincrono)...');\n    const result = await this.helpers.request({\n      method: 'POST',\n      url: 'https://api.replicate.com/v1/models/black-forest-labs/flux-schnell/predictions',\n      headers: {\n        'Authorization': 'Bearer ' + replicateToken,\n        'Content-Type': 'application/json',\n        'Prefer': 'wait=60'\n      },\n      body: {\n        input: {\n          prompt: promptText,\n          aspect_ratio: aspectRatio || '16:9',\n          output_format: 'png',\n          output_quality: 90,\n          num_inference_steps: 4,\n          go_fast: true,\n          megapixels: \"1\"\n        }\n      },\n      json: true\n    });\n    logAction('Respuesta START Replicate ok: ID=' + result.id + ', status=' + result.status);\n    return result;\n  } catch (err) {\n    logAction('Error en startReplicateTask: ' + err.message);\n    throw err;\n  }\n}\n\nasync function pollReplicate(pollUrl) {\n  return await this.helpers.request({\n    method: 'GET',\n    url: pollUrl,\n    headers: { Authorization: 'Bearer ' + replicateToken },\n    json: true\n  });\n}\n\nasync function resolveImageUrl(pred, tipo) {\n  if (!pred || !pred.id) {\n    logAction(tipo + ': No prediction ID en respuesta');\n    return '';\n  }\n  if (pred.status === 'succeeded' && pred.output) {\n    logAction(tipo + ': Terminado directo en la primera peticion!');\n    return String(Array.isArray(pred.output) ? pred.output[0] : pred.output);\n  }\n  if (pred.status === 'failed' || pred.status === 'canceled') {\n    logAction(tipo + ': Fallo en replicate status=' + pred.status);\n    return '';\n  }\n  \n  const pollUrl = pred.urls && pred.urls.get;\n  if (!pollUrl) {\n    logAction(tipo + ': Falta URL de polling');\n    return '';\n  }\n  \n  logAction(tipo + ': Iniciando polling en ' + pollUrl);\n  for (let i = 0; i < 5; i++) {\n    await sleepFallback(5);\n    const cur = await pollReplicate(pollUrl);\n    if (cur.status === 'succeeded' && cur.output) {\n      logAction(tipo + ': Polling Succeeded despues de intentos ' + (i+1));\n      return String(Array.isArray(cur.output) ? cur.output[0] : cur.output);\n    }\n    if (cur.error || cur.status === 'failed' || cur.status === 'canceled') {\n      logAction(tipo + ': Polling failed con status ' + cur.status);\n      return '';\n    }\n  }\n  logAction(tipo + ': Polling timeout alcanzado');\n  return '';\n}\n\nasync function downloadAndUpload(imageUrl, filename, tipo) {\n  logAction(tipo + ': Descargando de Replicate URL: ' + imageUrl);\n  let bufferResponse;\n  try {\n    bufferResponse = await this.helpers.request({\n      method: 'GET',\n      url: imageUrl,\n      encoding: null,\n      responseType: 'arraybuffer'\n    });\n  } catch (err) {\n    throw new Error('Download fallo: ' + err.message);\n  }\n  \n  const buffer = Buffer.from(bufferResponse);\n  if (!buffer || buffer.length === 0) {\n    throw new Error('Buffer descargado esta vacio');\n  }\n  logAction(tipo + ': Descarga exitosa (' + buffer.length + ' bytes)');\n\n  logAction(tipo + ': Subiendo a MinIO...');\n  const boundary = '----n8nboundary' + Date.now();\n  const CRLF = '\\r\\n';\n  \n  const bodyParts = [];\n  bodyParts.push(\n    '--' + boundary + CRLF +\n    'Content-Disposition: form-data; name=\"file\"; filename=\"' + filename + '\"' + CRLF +\n    'Content-Type: image/png' + CRLF + CRLF\n  );\n  bodyParts.push(buffer);\n  bodyParts.push(CRLF);\n  bodyParts.push(\n    '--' + boundary + CRLF +\n    'Content-Disposition: form-data; name=\"asset_type\"' + CRLF + CRLF +\n    'blog-inline' + CRLF\n  );\n  bodyParts.push(\n    '--' + boundary + CRLF +\n    'Content-Disposition: form-data; name=\"filename\"' + CRLF + CRLF +\n    filename + CRLF\n  );\n  bodyParts.push('--' + boundary + '--' + CRLF);\n  \n  const body = Buffer.concat(bodyParts.map(p => Buffer.isBuffer(p) ? p : Buffer.from(p)));\n\n  const upResStr = await this.helpers.request({\n    method: 'POST',\n    url: uploadUrl,\n    headers: {\n      'x-blog-secret': blogSecret,\n      'Content-Type': 'multipart/form-data; boundary=' + boundary,\n      'Content-Length': String(body.length)\n    },\n    body: body,\n    encoding: 'utf8'\n  });\n\n  logAction(tipo + ': Respuesta upload completada.');\n  \n  let upJson;\n  try { upJson = (typeof upResStr === 'string') ? JSON.parse(upResStr) : upResStr; } catch(e) { upJson = {}; }\n  if (upJson && upJson.error) {\n    throw new Error('Upload error json: ' + JSON.stringify(upJson));\n  }\n  return {\n    url: String(upJson.url || upJson.imageUrl || ''),\n    path: String(upJson.path || upJson.key || '')\n  };\n}\n\nlet byType = {};\nlet totalOk = 0;\n\ntry {\n  for (let i = 0; i < prompts.length; i++) {\n    const p = prompts[i];\n    const filename = topic_id + '-' + p.tipo + '-' + Date.now() + '.png';\n    let url = '';\n    let path = '';\n    try {\n      logAction('>>> Procesando ' + p.tipo + ' <<<');\n      const pred = await startReplicateTask(p.prompt, p.aspect_ratio);\n      const imageUrl = await resolveImageUrl(pred, p.tipo);\n      if (imageUrl) {\n        const uploaded = await downloadAndUpload(imageUrl, filename, p.tipo);\n        url = uploaded.url;\n        path = uploaded.path;\n        totalOk++;\n        logAction(p.tipo + ' COMLETADO EXITOSAMENTE');\n      } else {\n        logAction(p.tipo + ' FALLO: No se obtuvo resolucion de imageUrl');\n      }\n    } catch (err) {\n      logAction('EXCEPCION en ' + p.tipo + ': ' + String(err));\n    }\n    \n    byType[p.tipo] = { url, path };\n    \n    if (i < prompts.length - 1) {\n      await sleepFallback(12);\n    }\n  }\n} catch (megaErr) {\n  logAction('ERROR GIGANTE FATAL EN BUCLE: ' + String(megaErr));\n}\n\nreturn [{\n  json: {\n    topic_id: topic_id,\n    title: title,\n    imagenes_ok: totalOk,\n    imagen_hero_url:  byType.hero  ? byType.hero.url   : '',\n    imagen_hero_id:   byType.hero  ? byType.hero.path  : null,\n    imagen_body1_url: byType.body1 ? byType.body1.url  : '',\n    imagen_body1_id:  byType.body1 ? byType.body1.path : null,\n    imagen_body2_url: byType.body2 ? byType.body2.url  : '',\n    imagen_body2_id:  byType.body2 ? byType.body2.path : null,\n    _debugLogs: debugLogs\n  }\n}];\n"
+      },
+      "id": "eecfa777-6ef1-4b19-bfba-cb7e090623a8",
+      "name": "Generar y Subir Imagenes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "d80b72a4-b03a-4428-98e3-080801824151",
+      "name": "Responder al Article Producer",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        700,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Generar y Subir Imagenes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar y Subir Imagenes": {
+      "main": [
+        [
+          {
+            "node": "Responder al Article Producer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f781682d-45df-4277-bc0c-b261298491c3",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "f51E4h7x9OzvVjA8"
+}

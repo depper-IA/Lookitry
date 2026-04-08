@@ -23,6 +23,8 @@ export interface BlogPost {
   updated_at?: string;
   topic_id?: string;
   category?: BlogCategory;
+  toc_items?: Array<{ title: string; id: string }>;
+  reading_time?: string;
 }
 
 export interface BlogPagination {
