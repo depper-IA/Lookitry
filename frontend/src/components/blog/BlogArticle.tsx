@@ -520,7 +520,7 @@ export default function BlogArticle({ post, relatedPosts = [] }: BlogArticleProp
           <div className="flex flex-wrap items-center gap-6 text-[#999] text-sm mb-8 border-b border-white/5 pb-8">
             <div className="flex items-center gap-2">
               <Calendar size={16} className="text-[#FF5C3A]" />
-              <span>{formatDate(post.published_at || post.created_at)}</span>
+              <span>{formatDate(post.published_at || post.created_at || '')}</span>
             </div>
             
             {post.reading_time && (
