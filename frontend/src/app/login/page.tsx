@@ -1,5 +1,6 @@
 import LoginForm from '@/components/auth/LoginForm';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { PublicTopbar } from '@/components/layout/PublicTopbar';
 
 export default function LoginPage({
   searchParams,
@@ -13,6 +14,7 @@ export default function LoginPage({
 
   return (
     <AuthGuard redirectTo="/dashboard">
+      <PublicTopbar />
       <LoginForm redirectTo={redirectTo} />
     </AuthGuard>
   );

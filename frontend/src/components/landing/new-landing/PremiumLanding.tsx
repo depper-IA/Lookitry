@@ -16,6 +16,8 @@ import { PromoModal } from './PromoModal';
 import { ReviewsSlider } from './ReviewsSlider';
 import ActiveCouponsBanner from './ActiveCouponsBanner';
 import { PromoBannerProvider } from '@/context/PromoBannerContext';
+import { PublicTopbar } from '@/components/layout/PublicTopbar';
+import { WhatsAppFloatingButton } from '@/components/ui/WhatsAppFloatingButton';
 
 import { PricingConfig } from '@/lib/pricing';
 import { PublicReview } from '@/types';
@@ -38,9 +40,10 @@ export default function PremiumLanding({
   return (
     <PromoBannerProvider>
       <div className="min-h-screen bg-white dark:bg-black text-[#0a0a0a] dark:text-white selection:bg-[#FF5C3A]/30 selection:text-white font-dm-sans overflow-x-clip">
+        <PublicTopbar />
         <PromoBanner />
-        <LandingNav />
         <main className="relative">
+          <LandingNav />
           <LandingHero />
           <LandingStats />
           <LandingSteps />
@@ -54,6 +57,7 @@ export default function PremiumLanding({
         </main>
         <LandingFooter />
         <PromoModal />
+        <WhatsAppFloatingButton />
       </div>
     </PromoBannerProvider>
   );
