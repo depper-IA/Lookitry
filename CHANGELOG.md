@@ -1,5 +1,22 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-08] - Blog Editorial Magazine + Paginación
+
+### Nuevas Funcionalidades
+- **Blog Editorial Magazine**: Hero section rediseñado con tipografía display grande y animaciones framer-motion
+- **Artículo Destacado**: Primer artículo publicado se muestra en formato 2 columnas con imagen prominente y badge "Artículo destacado"
+- **Paginación**: Implementados controles de paginación (10 artículos/página) con números de página, botones Anterior/Siguiente, y info "Página X de Y"
+- **Filtros por Categoría**: Pills visuales con nombre + contador de artículos por categoría
+- **Animaciones Staggered**: Grid de artículos con entrada animada al scroll usando framer-motion
+
+### Archivos Modificados
+- `frontend/src/app/api/blog/route.ts` - Soporte paginación con offset
+- `frontend/src/services/blog.service.ts` - Interfaces pagination y fetch actualizado
+- `frontend/src/components/blog/BlogCard.tsx` - Variante 'featured'
+- `frontend/src/components/blog/BlogList.tsx` - Featured + grid + paginación
+- `frontend/src/app/blog/page.tsx` - Metadata en server component
+- `frontend/src/components/blog/BlogHero.tsx` - NUEVO componente hero animado
+
 ## [2026-04-08] - Fix Blog API Routes
 
 ### Bug Fix
