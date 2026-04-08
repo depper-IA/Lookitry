@@ -1,5 +1,55 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-08] - Fix Blog API Routes
+
+### Bug Fix
+- `blog.service.ts`: Las funciones `fetchBlogCategories()`, `fetchBlogPosts()`, y `fetchBlogPostBySlug()` ahora usan `frontendFetch` que apunta al frontend Next.js (`NEXT_PUBLIC_APP_URL`) en lugar del cliente API que apuntaba al backend Express (`NEXT_PUBLIC_API_URL`)
+- Los artículos del blog no cargaban porque las peticiones iban a `api.lookitry.com/api/blog` (backend Express, sin esas rutas) en lugar de `lookitry.com/api/blog` (frontend Next.js, con los API routes correctos)
+- Las funciones admin (`adminFetchPosts`, etc.) siguen usando `adminApi` que correctamente apunta al backend Express
+
+## [2026-04-07] - Mejoras Página de Planes
+
+### Legibilidad
+- Precios originales (tachados) más visibles con badges de descuento %
+- Features excluidas con opacidad reducida y tachado
+- Mejor contraste de textos en dark mode
+
+### Marketing
+- Añadido social proof: estrellas, "500+ tiendas en Colombia", ciudades
+- Urgency badge: "Precios exclusivos por tiempo limitado"
+- Ahorro destacado en COP al seleccionar duración
+- Trust badges: "Pagos seguros con Wompi"
+
+### UI/UX
+- Cards sin altura mínima fija (más compactas)
+- Badges de descuento más visibles
+- Card Pro destacada con gradiente sutil y borde accent
+- CTA final más impactante con "vender más"
+
+### SEO
+- Metadata actualizada con precios dinámicos
+- Schema.org BreadcrumbList
+
+## [2026-04-07] - Mega Menu Redesign
+
+### Nuevo Diseño: "Clean Cards with Animated Accent"
+
+**Problema:** El mega menu anterior era visualmente aburrido y sin imágenes, con iconos genéricos en cajas de color que no pegaban con la marca Lookitry.
+
+**Solución:**
+- Removidos iconos en cajas de color (Layout, Zap, Terminal, etc.)
+- Removida columna 3 con gradiente e imagen
+- Implementada línea lateral accent `#FF5C3A` que aparece desde arriba en hover
+- Cards limpias solo con texto (título + descripción)
+- Animación stagger en entrada (50ms delay entre items)
+- CTA simple con flecha que se mueve en hover
+- Headers "PRODUCTOS" y "EMPRESA" con línea inferior sutil
+
+**Archivos modificados:**
+- `frontend/src/components/landing/new-landing/LandingNav.tsx`
+
+**Especificación:** `docs/superpowers/specs/2026-04-07-megamenu-design.md`
+
 ## [2026-04-07] - OpenCode Config Fix + Skills Update
 
 ### OpenCode Configuration Fix
