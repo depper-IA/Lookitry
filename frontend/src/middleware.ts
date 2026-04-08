@@ -152,7 +152,29 @@ export async function middleware(request: NextRequest) {
     // Limpiar siempre X-Frame-Options para que nuestro CSP no tenga conflictos
     response.headers.delete('X-Frame-Options');
 
-    const baseCsp = "default-src 'self'; script-src 'self' https://challenges.cloudflare.com https://checkout.wompi.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob: 'self'; connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co https://checkout.wompi.co; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://*.wordpress.com https://*.wixsite.com https://*.shopify.com; media-src 'self';";
+    const isProd = process.env.NODE_ENV === 'production';
+    const scriptSrc = [
+      "'self'",
+      "'unsafe-inline'",
+      ...(isProd ? [] : ["'unsafe-eval'"]),
+      "https://challenges.cloudflare.com",
+      "https://checkout.wompi.co",
+      "https://accounts.google.com",
+      "https://www.google.com",
+      "https://apis.google.com",
+      "https://www.googletagmanager.com"
+    ].join(' ');
+    
+    const baseCsp = [
+      "default-src 'self'",
+      `script-src ${scriptSrc}`,
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "img-src * data: blob: 'self'",
+      "connect-src 'self' https://api.lookitry.com https://vkdooutklowctuudjnkl.supabase.co https://checkout.wompi.co https://accounts.google.com https://www.googleapis.com https://www.google.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "frame-src 'self' https://challenges.cloudflare.com https://js.wompi.co https://checkout.wompi.co https://accounts.google.com https://www.google.com https://*.wordpress.com https://*.wixsite.com https://*.shopify.com",
+      "media-src 'self'"
+    ].join('; ');
 
     const frameAncestors = ["'self'", ...allowedOrigins, ...requestDerivedOrigins]
       .filter((origin, index, array) => array.indexOf(origin) === index)
