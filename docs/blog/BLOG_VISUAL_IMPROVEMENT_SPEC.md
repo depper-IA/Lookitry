@@ -164,15 +164,17 @@ El campo "content" del JSON debe ser HTML limpio con data-attributes.
 - [x] Definir data-attributes correctos
 - [x] Nueva arquitectura: HTML sin imágenes (se insertan después)
 
-### Fase 2: Actualizar Workflow n8n 🔄
-- [ ] Copiar prompt v4 al nodo Redactor IA en Article Producer
-- [ ] Remover campos de URLs de imágenes del input del Redactor
+### Fase 2: Actualizar Workflow n8n ✅
+- [x] Copiar prompt v4 al nodo Redactor IA en Article Producer
+- [x] Remover campos de URLs de imágenes del input del Redactor
 - [ ] Test: generar artículo de prueba y verificar HTML con data-attributes
 
-### Fase 3: Integrar BlogArticle.tsx 🔄
-- [ ] Reemplazar `<SanitizedHtml>` por `<BlogArticle post={post} />` en page.tsx
-- [ ] Verificar que los estilos se aplican correctamente
-- [ ] Test: abrir artículo en blog y verificar TOC, callouts, FAQ, CTA
+### Fase 3: Integrar BlogArticle.tsx ✅
+- [x] `page.tsx` ya usa `<BlogArticle post={post} />` (línea 157)
+- [x] `BlogArticle.tsx` tiene estilos CSS para data-attributes (líneas 464-480)
+- [x] `ArticleContent` procesa H2 con data-toc-title para TOC
+- [x] `ArticleContent` procesa FAQ accordions
+- [ ] Test: Generar artículo con workflow actualizado y verificar estilos
 
 ### Fase 4: Verificación end-to-end 🔄
 - [ ] Disparar webhook completo y verificar artículo con estilos
