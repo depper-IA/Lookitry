@@ -18,7 +18,7 @@ async function resolveExpectedBlogSecret(): Promise<string> {
     .from('blog_settings')
     .select('webhook_secret')
     .eq('id', 1)
-    .single();
+    .maybeSingle();
 
   return data?.webhook_secret || process.env.BLOG_WEBHOOK_SECRET || '';
 }
@@ -77,6 +77,212 @@ function normalizeTags(raw: unknown): string[] {
   return [];
 }
 
+// ============================================================
+// Tipos para JSON estructurado desde n8n
+// ============================================================
+
+interface Section {
+  id: string;
+  title: string;
+  paragraphs: string[];
+  callout: { type: 'stat' | 'tip' | 'warning'; text: string } | null;
+  image_position?: number;
+}
+
+interface Faq {
+  question: string;
+  answer: string;
+}
+
+interface ImagePrompt {
+  position: string;
+  prompt: string;
+  after_section?: string;
+}
+
+interface CtaContext {
+  type: 'trial' | 'features' | 'pricing' | 'lead_magnet';
+}
+
+interface CtaTemplate {
+  title: string;
+  button_text: string;
+  button_url: string;
+}
+
+interface BlogDraftArticle {
+  id: string;
+  topic_id: string;
+  title: string | null;
+  html_content: string | null;
+  excerpt: string | null;
+  meta_description: string | null;
+  tags: string[];
+  category_slug: string | null;
+  toc_items: unknown | null;
+  sections: Section[];
+  faqs: Faq[];
+  cta_context: CtaContext;
+  image_prompts: ImagePrompt[];
+  reading_time_minutes?: number;
+  slug?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface BlogTopicImages {
+  imagen_hero_url: string | null;
+  imagen_body1_url: string | null;
+  imagen_body2_url: string | null;
+  status: string;
+}
+
+// ============================================================
+// generateArticleHTML - Genera HTML completo desde JSON estructurado
+// ============================================================
+
+function generateArticleHTML(
+  draft: BlogDraftArticle,
+  images: BlogTopicImages,
+  ctaTemplates: Record<string, CtaTemplate>
+): string {
+  const { title, excerpt, meta_description, tags, sections, faqs, cta_context, image_prompts, reading_time_minutes } = draft;
+
+  //Construir Table of Contents desde sections
+  let tocHtml = '';
+  if (sections && sections.length > 0) {
+    tocHtml = '<nav class="blog-toc" aria-label="Tabla de contenidos"><ul>';
+    for (const section of sections) {
+      const slugId = section.id.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+      tocHtml += `<li><a href="#${slugId}">${section.title}</a></li>`;
+    }
+    tocHtml += '</ul></nav>';
+  }
+
+  //Hero image (del primer image_prompt con position=hero)
+  let heroImageHtml = '';
+  const heroPrompt = image_prompts?.find((p) => p.position === 'hero');
+  if (images.imagen_hero_url) {
+    heroImageHtml = `<div class="blog-hero">
+      <img src="${images.imagen_hero_url}" alt="${title || 'Artículo'}" />
+    </div>`;
+  }
+
+  //Generar sections HTML
+  let sectionsHtml = '';
+  if (sections && sections.length > 0) {
+    for (const section of sections) {
+      const slugId = section.id.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+      sectionsHtml += `<section id="${slugId}">`;
+      sectionsHtml += `<h2>${section.title}</h2>`;
+
+      //Párrafos
+      if (section.paragraphs && section.paragraphs.length > 0) {
+        for (const para of section.paragraphs) {
+          sectionsHtml += `<p>${para}</p>`;
+        }
+      }
+
+      //Callout block
+      if (section.callout) {
+        const calloutClass =
+          section.callout.type === 'stat'
+            ? 'blog-callout blog-callout-stat'
+            : section.callout.type === 'tip'
+            ? 'blog-callout blog-callout-tip'
+            : 'blog-callout blog-callout-warning';
+        sectionsHtml += `<div class="${calloutClass}" data-blog-callout="${section.callout.type}">${section.callout.text}</div>`;
+      }
+
+      //Body image según image_position (1 = después de esta sección)
+      if (section.image_position === 1 && images.imagen_body1_url) {
+        sectionsHtml += `<figure class="blog-body-image">
+          <img src="${images.imagen_body1_url}" alt="${title || 'Imagen'}" loading="lazy" />
+        </figure>`;
+      } else if (section.image_position === 2 && images.imagen_body2_url) {
+        sectionsHtml += `<figure class="blog-body-image">
+          <img src="${images.imagen_body2_url}" alt="${title || 'Imagen'}" loading="lazy" />
+        </figure>`;
+      }
+
+      sectionsHtml += '</section>';
+    }
+  }
+
+  //FAQ Accordion
+  let faqHtml = '';
+  if (faqs && faqs.length > 0) {
+    faqHtml = '<div class="blog-faqs" data-blog-faq="accordion">';
+    for (const faq of faqs) {
+      faqHtml += `<details>
+        <summary>${faq.question}</summary>
+        <div class="faq-answer">${faq.answer}</div>
+      </details>`;
+    }
+    faqHtml += '</div>';
+  }
+
+  //CTA Final dinámico según cta_context.type
+  let ctaHtml = '';
+  if (cta_context && cta_context.type) {
+    const ctaTemplate = ctaTemplates[cta_context.type] || ctaTemplates.trial;
+    ctaHtml = `<div class="blog-cta" data-blog-cta="${cta_context.type}">
+      <h3>${ctaTemplate.title}</h3>
+      <a href="${ctaTemplate.button_url}" class="blog-cta-button">${ctaTemplate.button_text}</a>
+    </div>`;
+  }
+
+  //Meta tags
+  const tagsHtml = tags && tags.length > 0 ? tags.map((t) => `<span class="blog-tag">${t}</span>`).join('') : '';
+  const readingTime = reading_time_minutes ? `<span class="blog-reading-time">${reading_time_minutes} min de lectura</span>` : '';
+
+  //Armar HTML completo
+  const articleHtml = `<article class="blog-article">
+  <header class="blog-header">
+    ${heroImageHtml}
+    <h1>${title || ''}</h1>
+    ${excerpt ? `<p class="blog-excerpt">${excerpt}</p>` : ''}
+    <div class="blog-meta">${tagsHtml}${readingTime}</div>
+  </header>
+
+  <div class="blog-layout">
+    ${tocHtml}
+    <div class="blog-content">
+      ${sectionsHtml}
+      ${faqHtml}
+      ${ctaHtml}
+    </div>
+  </div>
+</article>`;
+
+  console.log(`[Blog] HTML generado para topic ${draft.topic_id}, longitud: ${articleHtml.length}`);
+  return articleHtml;
+}
+
+// ============================================================
+// Helper para obtener CTA templates desde blog_settings
+// ============================================================
+
+async function getCtaTemplates(): Promise<Record<string, CtaTemplate>> {
+  const { data } = await supabaseAdmin
+    .from('blog_settings')
+    .select('cta_templates')
+    .eq('id', 1)
+    .maybeSingle();
+
+  if (data?.cta_templates) {
+    return data.cta_templates as Record<string, CtaTemplate>;
+  }
+
+  //Defaults
+  return {
+    trial: { title: '¿Listo para probar Lookitry?', button_text: 'Comenzar trial', button_url: '/trial' },
+    features: { title: '¿Quieres más conversiones?', button_text: 'Ver demo', button_url: '/demo' },
+    pricing: { title: 'Elige tu plan', button_text: 'Ver precios', button_url: '/planes' },
+    lead_magnet: { title: 'Descarga la guía', button_text: 'Descargar', button_url: '/guia-descarga' },
+  };
+}
+
 export const blogController = {
   /**
    * n8n Webhook: Crea un post de blog directamente.
@@ -86,7 +292,7 @@ export const blogController = {
     try {
       const secret = String(req.headers['x-blog-secret'] || '');
       const expectedSecret = await resolveExpectedBlogSecret();
-      
+
       if (!expectedSecret || secret !== expectedSecret) {
         return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Fallo de autenticación en el acceso al blog' });
       }
@@ -118,13 +324,13 @@ export const blogController = {
         normalizeCategorySlug(category_name) ||
         'ia';
       const normalizedTags = normalizeTags(tags);
-      
+
       const { data: cat } = await supabaseAdmin
         .from('blog_categories')
         .select('id')
         .eq('slug', targetSlug)
-        .single();
-      
+        .maybeSingle();
+
       if (cat) {
         categoryId = cat.id;
       } else if (targetSlug && targetSlug !== 'ia') {
@@ -132,16 +338,16 @@ export const blogController = {
         const { data: newCat } = await supabaseAdmin.from('blog_categories').insert({
           name: generatedName,
           slug: targetSlug
-        }).select('id').single();
+        }).select('id').maybeSingle();
 
         if (newCat) {
           categoryId = newCat.id;
         }
       }
-      
+
       if (!categoryId) {
         // Fallback al primero disponible
-        const { data: firstCat } = await supabaseAdmin.from('blog_categories').select('id').limit(1).single();
+        const { data: firstCat } = await supabaseAdmin.from('blog_categories').select('id').limit(1).maybeSingle();
         if (firstCat) categoryId = firstCat.id;
       }
 
@@ -150,12 +356,12 @@ export const blogController = {
         .from('blogs')
         .select('id')
         .eq('title', title)
-        .single();
-      
+        .maybeSingle();
+
       if (existingPost) {
-        return res.status(409).json({ 
-          error: 'CONFLICT', 
-          message: 'Ya existe un artículo con ese título exacto.' 
+        return res.status(409).json({
+          error: 'CONFLICT',
+          message: 'Ya existe un artículo con ese título exacto.'
         });
       }
 
@@ -166,12 +372,12 @@ export const blogController = {
           .from('blogs')
           .select('id')
           .eq('topic_id', topicId)
-          .single();
-        
+          .maybeSingle();
+
         if (existingTopicPost) {
-          return res.status(409).json({ 
-            error: 'CONFLICT', 
-            message: 'Este tema ya ha sido convertido en un artículo.' 
+          return res.status(409).json({
+            error: 'CONFLICT',
+            message: 'Este tema ya ha sido convertido en un artículo.'
           });
         }
       }
@@ -194,7 +400,7 @@ export const blogController = {
           published_at: (status === 'published' || !status) ? new Date().toISOString() : null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -236,7 +442,7 @@ export const blogController = {
         .from('blogs')
         .select('*, category:blog_categories(*)')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       if (!data) return res.status(404).json({ error: 'NOT_FOUND', message: 'Post no encontrado' });
@@ -255,7 +461,7 @@ export const blogController = {
 
       // Si cambia el status a published y no tenía fecha, ponerla
       if (updates.status === 'published') {
-        const { data: current } = await supabaseAdmin.from('blogs').select('published_at').eq('id', id).single();
+        const { data: current } = await supabaseAdmin.from('blogs').select('published_at').eq('id', id).maybeSingle();
         if (!current?.published_at) {
           updates.published_at = new Date().toISOString();
         }
@@ -269,7 +475,7 @@ export const blogController = {
         })
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return res.json({ message: 'Post actualizado', post: data });
@@ -316,7 +522,7 @@ export const blogController = {
           published_at: status === 'published' ? new Date().toISOString() : null,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
@@ -364,7 +570,7 @@ export const blogController = {
         }
         const filename = (req.body.filename as string) || file.originalname || 'blog-image.webp';
         const assetType = resolveBlogAssetType(req.body.asset_type || req.body.assetType);
-        
+
         const result = await uploadService.uploadImageBuffer({
           buffer: file.buffer,
           filename,
@@ -379,7 +585,7 @@ export const blogController = {
           const updateField: Record<string, string> = {
             updated_at: new Date().toISOString(),
           };
-          
+
           if (imageType === 'hero') updateField.imagen_hero_url = url;
           else if (imageType === 'body1') updateField.imagen_body1_url = url;
           else if (imageType === 'body2') updateField.imagen_body2_url = url;
@@ -404,7 +610,7 @@ export const blogController = {
           }
           console.log(`[Blog Upload] Imagen ${imageType} guardada en blog_topic_images para topic ${topicId}: ${url}`);
         }
-        
+
         return res.status(200).json(result);
       }
 
@@ -429,14 +635,14 @@ export const blogController = {
   },
 
   /**
-   * Recibe contenido HTML del artículo (sin imágenes) y lo guarda como draft.
+   * Recibe contenido estructurado desde n8n y lo guarda como draft.
    * POST /api/blog/article-content
-   * 
+   *
    * Flujo:
-   * 1. Article Producer genera HTML del artículo
-   * 2. Llama este endpoint con title, html_content, topic_id, etc.
-   * 3. Backend guarda como draft_article_content
-   * 4. Image Generator sube imágenes (que se guardan en blog_topic_images)
+   * 1. Article Producer genera JSON estructurado (sections, faqs, etc.)
+   * 2. Llama este endpoint con title, topic_id, sections, faqs, etc.
+   * 3. Backend guarda todos los campos estructurados
+   * 4. Image Generator sube imágenes
    * 5. Image Generator llama /api/blog/assemble-article para publicar
    */
   async articleContent(req: Request, res: Response) {
@@ -448,39 +654,67 @@ export const blogController = {
         return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Fallo de autenticación' });
       }
 
-      const { topic_id, title, html_content, excerpt, meta_description, tags, category_slug, toc_items } = req.body;
+      //JSON estructurado desde n8n
+      const {
+        topic_id,
+        title,
+        slug,
+        meta_description,
+        excerpt,
+        tags,
+        category_slug,
+        reading_time_minutes,
+        sections,
+        faqs,
+        cta_context,
+        image_prompts,
+        //Legacy: html_content sigue siendo soportado por compatibilidad
+        html_content,
+      } = req.body;
 
-      if (!topic_id || !html_content) {
-        return res.status(400).json({ error: 'BAD_REQUEST', message: 'topic_id y html_content son requeridos' });
+      if (!topic_id) {
+        return res.status(400).json({ error: 'BAD_REQUEST', message: 'topic_id es requerido' });
       }
 
-      // Guardar contenido en blog_draft_articles
+      if (!title) {
+        return res.status(400).json({ error: 'BAD_REQUEST', message: 'title es requerido' });
+      }
+
+      console.log(`[Blog] articleContent recibido para topic ${topic_id}: title="${title}", sections=${sections?.length || 0}, faqs=${faqs?.length || 0}`);
+
+      //Guardar contenido estructurado en blog_draft_articles
       const { data, error } = await supabaseAdmin
         .from('blog_draft_articles')
         .upsert({
           topic_id: topic_id,
-          title: title || null,
-          html_content: html_content,
+          title: title,
+          slug: slug || null,
+          html_content: html_content || null, //legacy
           excerpt: excerpt || null,
           meta_description: meta_description || null,
           tags: normalizeTags(tags),
           category_slug: category_slug || 'ia',
-          toc_items: toc_items || null,
+          reading_time_minutes: reading_time_minutes || null,
+          toc_items: sections ? sections.map((s: Section) => ({ id: s.id, title: s.title })) : null,
+          sections: sections || [],
+          faqs: faqs || [],
+          cta_context: cta_context || { type: 'trial' },
+          image_prompts: image_prompts || [],
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 
-      console.log(`[Blog] Draft guardado para topic ${topic_id}`);
+      console.log(`[Blog] Draft guardado para topic ${topic_id}, draft_id=${data?.id}`);
 
-      return res.status(200).json({ 
-        success: true, 
+      return res.status(200).json({
+        success: true,
         topic_id,
-        message: 'Contenido HTML guardado como draft',
-        draft_id: data?.id 
+        message: 'Contenido estructurado guardado como draft',
+        draft_id: data?.id
       });
     } catch (error: any) {
       console.error('[BlogController] articleContent error:', error);
@@ -491,13 +725,13 @@ export const blogController = {
   /**
    * Ensambla y publica el artículo final con imágenes.
    * POST /api/blog/assemble-article
-   * 
+   *
    * Flujo:
    * 1. Image Generator terminó de subir todas las imágenes
    * 2. Image Generator llama este endpoint con topic_id
    * 3. Backend obtiene draft + imágenes de blog_topic_images
-   * 4. Backend inserta imágenes en el HTML en lugares apropiados
-   * 5. Backend crea el artículo final en tabla blogs y lo publica
+   * 4. Backend genera HTML desde JSON estructurado usando generateArticleHTML()
+   * 5. Backend inserta el artículo final en tabla blogs y lo publica
    */
   async assembleArticle(req: Request, res: Response) {
     try {
@@ -514,129 +748,105 @@ export const blogController = {
         return res.status(400).json({ error: 'BAD_REQUEST', message: 'topic_id es requerido' });
       }
 
-      // 1. Obtener draft article
+      //1. Obtener draft article (con campos estructurados)
       const { data: draft, error: draftError } = await supabaseAdmin
         .from('blog_draft_articles')
         .select('*')
         .eq('topic_id', topic_id)
-        .single();
+        .maybeSingle();
 
       if (draftError || !draft) {
         return res.status(404).json({ error: 'NOT_FOUND', message: 'Draft no encontrado para este topic_id' });
       }
 
-      // 2. Obtener imágenes de blog_topic_images
+      //2. Obtener imágenes de blog_topic_images
       const { data: images, error: imagesError } = await supabaseAdmin
         .from('blog_topic_images')
         .select('imagen_hero_url, imagen_body1_url, imagen_body2_url, status')
         .eq('topic_id', topic_id)
-        .single();
+        .maybeSingle();
 
       if (imagesError || !images) {
         return res.status(404).json({ error: 'NOT_FOUND', message: 'Imágenes no encontradas para este topic_id' });
       }
 
-      // 3. Verificar que todas las imágenes estén listas
+      //3. Verificar que todas las imágenes estén listas
       if (images.status !== 'completed') {
-        return res.status(400).json({ 
-          error: 'IMAGES_NOT_READY', 
+        return res.status(400).json({
+          error: 'IMAGES_NOT_READY',
           message: `Imágenes aún no están listas (status: ${images.status})`,
           status: images.status
         });
       }
 
-      // 4. Ensamblar HTML con imágenes usando placeholders
-      // NOTA: La imagen hero se maneja en page.tsx via featured_image
-      // Aquí solo insertamos body1 y body2 dentro del contenido usando placeholders
-      // El draft HTML debe contener [[BODY_IMAGE_1]] y [[BODY_IMAGE_2]] donde se desean las imágenes
+      console.log(`[Blog] Ensamblando artículo para topic ${topic_id}`);
 
-      let finalHtml = draft.html_content || '';
-      console.log(`[Blog] Ensamblando artículo para topic ${topic_id}, longitud HTML: ${finalHtml.length}`);
+      //4. Obtener CTA templates
+      const ctaTemplates = await getCtaTemplates();
 
-      // Preparar HTML de imágenes (si existen)
-      const body1Html = images.imagen_body1_url
-        ? `<figure class="blog-body-image">
-            <img src="${images.imagen_body1_url}" alt="${draft.title || 'Imagen'}" loading="lazy" />
-          </figure>`
-        : '';
+      //5. Generar HTML completo desde JSON estructurado
+      const finalHtml = generateArticleHTML(
+        draft as BlogDraftArticle,
+        images as BlogTopicImages,
+        ctaTemplates
+      );
 
-      const body2Html = images.imagen_body2_url
-        ? `<figure class="blog-body-image">
-            <img src="${images.imagen_body2_url}" alt="${draft.title || 'Imagen'}" loading="lazy" />
-          </figure>`
-        : '';
-
-      console.log(`[Blog] Imagen body1 disponible: ${!!images.imagen_body1_url}, body2: ${!!images.imagen_body2_url}`);
-
-      // Reemplazar placeholders (si existen en el HTML)
-      const originalHtml = finalHtml;
-      finalHtml = finalHtml
-        .replace('[[BODY_IMAGE_1]]', body1Html)
-        .replace('[[BODY_IMAGE_2]]', body2Html);
-
-      // Log si se reemplazaron placeholders
-      if (originalHtml.includes('[[BODY_IMAGE_1]]') || originalHtml.includes('[[BODY_IMAGE_2]]')) {
-        console.log('[Blog] Placeholders reemplazados en el HTML');
-      } else {
-        console.log('[Blog] No se encontraron placeholders en el HTML; las imágenes no se insertarán.');
-      }
-
-      // 5. Obtener categoría
+      //6. Obtener categoría
       let categoryId = null;
-      const targetSlug = draft.category_slug || 'ia';
+      const targetSlug = (draft as BlogDraftArticle).category_slug || 'ia';
       const { data: cat } = await supabaseAdmin
         .from('blog_categories')
         .select('id')
         .eq('slug', targetSlug)
-        .single();
+        .maybeSingle();
       if (cat) categoryId = cat.id;
 
-      // 6. Crear slug único
-      const slug = await buildUniqueBlogSlug(draft.title || `article-${topic_id}`);
+      //7. Crear slug único
+      const slug = await buildUniqueBlogSlug((draft as BlogDraftArticle).title || `article-${topic_id}`);
 
-      // 7. Verificar duplicado por topic_id
+      //8. Verificar duplicado por topic_id
       const { data: existingPost } = await supabaseAdmin
         .from('blogs')
         .select('id')
         .eq('topic_id', topic_id)
-        .single();
+        .maybeSingle();
 
       if (existingPost) {
-        return res.status(409).json({ 
-          error: 'ALREADY_PUBLISHED', 
-          message: 'Este topic_id ya fue publicado' 
+        return res.status(409).json({
+          error: 'ALREADY_PUBLISHED',
+          message: 'Este topic_id ya fue publicado'
         });
       }
 
-      // 8. Insertar artículo final
+      //9. Insertar artículo final
       const { data: publishedPost, error: publishError } = await supabaseAdmin
         .from('blogs')
         .insert({
-          title: draft.title,
+          title: (draft as BlogDraftArticle).title,
           content: finalHtml,
-          excerpt: draft.excerpt,
-          meta_description: draft.meta_description || draft.excerpt,
+          excerpt: (draft as BlogDraftArticle).excerpt,
+          meta_description: (draft as BlogDraftArticle).meta_description || (draft as BlogDraftArticle).excerpt,
           featured_image: images.imagen_hero_url,
           category_id: categoryId,
-           tags: draft.tags,
-           toc_items: draft.toc_items,
-           status: 'published',
-           slug,
-           topic_id: topic_id,
-           published_at: new Date().toISOString(),
+          tags: (draft as BlogDraftArticle).tags,
+          toc_items: (draft as BlogDraftArticle).toc_items,
+          status: 'published',
+          slug,
+          topic_id: topic_id,
+          published_at: new Date().toISOString(),
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (publishError) throw publishError;
 
-      // 9. Marcar topic como published
+      //10. Marcar topic como published
       await supabaseAdmin
         .from('blog_topics')
         .update({ status: 'published', updated_at: new Date().toISOString() })
         .eq('id', topic_id);
 
-      // 10. Limpiar draft
+      //11. Limpiar draft
       await supabaseAdmin
         .from('blog_draft_articles')
         .delete()
@@ -644,7 +854,7 @@ export const blogController = {
 
       console.log(`[Blog] Artículo publicado para topic ${topic_id}: ${slug}`);
 
-      return res.status(201).json({ 
+      return res.status(201).json({
         success: true,
         message: 'Artículo ensamblado y publicado exitosamente',
         post: publishedPost,
