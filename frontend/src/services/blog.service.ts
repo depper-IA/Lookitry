@@ -94,10 +94,24 @@ export function getBlogTeaser(
   return `${teaser.slice(0, 162).trim()}...`;
 }
 
+// URL base para el frontend (Next.js API routes)
+const FRONTEND_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://lookitry.com';
+
+async function frontendFetch<T>(path: string): Promise<T> {
+  const url = `${FRONTEND_URL}/api${path}`;
+  const response = await fetch(url, {
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw new Error(`Frontend API ${response.status}`);
+  }
+  return response.json();
+}
+
 export async function fetchBlogCategories(): Promise<BlogCategory[]> {
   try {
-    const payload = await api.get<any>('/blog/categories');
-    return Array.isArray(payload.data) ? payload.data : (payload.data as any)?.data || [];
+    const result = await frontendFetch<{ ok: boolean; data: BlogCategory[] }>('/blog/categories');
+    return Array.isArray(result.data) ? result.data : [];
   } catch (error) {
     console.error('Error fetching blog categories:', error);
     return [];
@@ -107,8 +121,8 @@ export async function fetchBlogCategories(): Promise<BlogCategory[]> {
 export async function fetchBlogPosts(categoryId?: string): Promise<BlogPost[]> {
   try {
     const path = categoryId ? `/blog?category_id=${encodeURIComponent(categoryId)}` : '/blog';
-    const payload = await api.get<any>(path);
-    return Array.isArray(payload.data) ? payload.data : (payload.data as any)?.data || [];
+    const result = await frontendFetch<{ ok: boolean; data: BlogPost[] }>(path);
+    return Array.isArray(result.data) ? result.data : [];
   } catch (error) {
     console.error('Error fetching blog posts:', error);
     return [];
@@ -129,8 +143,8 @@ export async function fetchRecentBlogPosts(limit = 3, excludeSlug?: string): Pro
 
 export async function fetchBlogPostBySlug(slug: string): Promise<BlogPost | null> {
   try {
-    const payload = await api.get<any>(`/blog/${encodeURIComponent(slug)}`);
-    return (payload.data as any)?.data ?? payload.data ?? null;
+    const result = await frontendFetch<{ ok: boolean; data: BlogPost }>(`/blog/${encodeURIComponent(slug)}`);
+    return result.data ?? null;
   } catch (error) {
     console.error('Error fetching blog post by slug:', error);
     return null;
