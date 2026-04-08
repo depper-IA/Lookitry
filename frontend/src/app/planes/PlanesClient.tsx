@@ -24,8 +24,8 @@ function IconCheck() {
 
 function IconX() {
   return (
-    <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
-      <path d="M3 3l4 4M7 3l-4 4" stroke="#444" strokeWidth="1.5" strokeLinecap="round" />
+    <svg width="8" height="8" viewBox="0 0 10 10" fill="none" className="[&_path]:stroke-[var(--text-secondary)]">
+      <path d="M3 3l4 4M7 3l-4 4" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
@@ -40,8 +40,8 @@ function IconCheckTable() {
 
 function IconXTable() {
   return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="mx-auto">
-      <path d="M3 3l6 6M9 3l-6 6" stroke="#333" strokeWidth="1.5" strokeLinecap="round" />
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="mx-auto [&_path]:stroke-[var(--text-secondary)]">
+      <path d="M3 3l6 6M9 3l-6 6" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
@@ -50,6 +50,14 @@ function IconArrow() {
   return (
     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+    </svg>
+  );
+}
+
+function IconStar() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#FF5C3A" className="shrink-0">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
     </svg>
   );
 }
@@ -126,50 +134,77 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
 
   const allFeatures = Array.from(new Set([
     ...basic.features,
-    ...(basic.features_excluidas ?? []),
+    ...pro.features,
+    ...enterprise.features,
   ]));
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-dm-sans selection:bg-[#FF5C3A]/30 selection:text-white overflow-x-clip">
+    <div className="min-h-screen theme-bg-base theme-text font-dm-sans selection:bg-[#FF5C3A]/30 selection:text-white overflow-x-clip">
       <style dangerouslySetInnerHTML={{ __html: PREMIUM_FONTS }} />
 
       <LandingNav currency={currency} onCurrencyChange={handleManualCurrencyChange} />
 
       <main className="pt-32 pb-20">
-        <section className="bg-[#0a0a0a] pt-14 pb-10 px-6 md:px-8 text-center mt-12">
+        {/* Hero Section */}
+        <section className="theme-bg-base pt-14 pb-16 px-6 md:px-8 text-center mt-12">
           <div className="max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-[#1a1a1a] border border-[#333] text-[#FF5C3A] text-[11px] font-medium tracking-widest uppercase px-3 py-1.5 rounded-full mb-6">
-              <span className="w-1.5 h-1.5 bg-[#FF5C3A] rounded-full" />
-              Planes y precios
+            {/* Urgency Badge */}
+            <div className="inline-flex items-center gap-2 bg-[#FF5C3A]/10 border border-[#FF5C3A]/30 text-[#FF5C3A] text-[11px] font-bold tracking-widest uppercase px-4 py-2 rounded-full mb-6">
+              <span className="w-2 h-2 bg-[#FF5C3A] rounded-full animate-pulse" />
+              Precios exclusivos por tiempo limitado
             </div>
-            <h1 className="font-jakarta font-extrabold text-[36px] md:text-[64px] text-white tracking-tight leading-[1.1] mb-6">
-              Precios simples.<br />Sin sorpresas.
+            
+            <h1 className="font-jakarta font-extrabold text-4xl md:text-6xl lg:text-7xl theme-text tracking-tight leading-[1.05] mb-6">
+              Elige tu plan y<br />
+              <span className="text-[#FF5C3A]">empieza hoy.</span>
             </h1>
-            <p className="text-white/60 text-lg max-w-md mx-auto font-dm-sans leading-relaxed">
-              Precios en pesos. Paga varios meses y ahorra hasta un{' '}
-              <span className="text-[#FF5C3A] font-medium">{descuentos_duracion.meses_12}%</span>.
+            <p className="theme-text-muted text-lg md:text-xl max-w-lg mx-auto font-dm-sans leading-relaxed">
+              Sin contratos. Cancela cuando quieras. Paga por adelantado y ahorra hasta un{' '}
+              <span className="text-[#FF5C3A] font-bold">{descuentos_duracion.meses_12}%</span>.
             </p>
           </div>
         </section>
 
-        <section className="pt-8 pb-2 px-6 md:px-8">
+        {/* Social Proof */}
+        <section className="px-6 md:px-8 pb-8">
+          <div className="max-w-2xl mx-auto flex flex-col items-center gap-4">
+            <div className="flex items-center gap-2">
+              {[1,2,3,4,5].map(i => (
+                <IconStar key={i} />
+              ))}
+            </div>
+            <p className="theme-text-muted text-sm font-medium">
+              Más de <span className="theme-text font-bold">500+</span> tiendas en Colombia confían en Lookitry
+            </p>
+            <div className="flex items-center gap-6 theme-text-muted text-xs font-medium">
+              <span>CO Cali</span>
+              <span>CO Bogotá</span>
+              <span>CO Medellín</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Duration Selector */}
+        <section className="pt-6 pb-2 px-6 md:px-8">
           <div className="flex justify-center">
-            <div className="inline-flex bg-[#141414] border border-[#2a2a2a] rounded-xl p-1 gap-1">
+            <div className="inline-flex theme-bg-card theme-border border rounded-2xl p-1.5 gap-1">
               {DURATIONS.map(d => (
                 <button
                   key={d.months}
                   onClick={() => setSelectedMonths(d.months)}
-                  className={`relative px-4 py-2 rounded-lg text-[13px] font-medium transition-all ${
-                    selectedMonths === d.months ? 'bg-[#1f1f1f] text-white shadow-sm' : 'text-[#555] hover:text-[#888]'
+                  className={`relative px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-300 ${
+                    selectedMonths === d.months 
+                      ? 'bg-[#FF5C3A] theme-text shadow-lg shadow-[#FF5C3A]/20' 
+                      : 'theme-text-muted hover:theme-text'
                   }`}
                 >
                   {d.label}
                   {d.pct > 0 && (
                     <span className={`absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
-                      selectedMonths === d.months
-                        ? 'bg-[#FF5C3A] text-white'
-                        : 'bg-[#1f1f1f] text-[#FF5C3A] border border-[#FF5C3A]/30'
-                    }`}>
+                    selectedMonths === d.months
+                      ? 'bg-white text-[#FF5C3A]'
+                      : 'bg-[#FF5C3A]/20 text-[#FF5C3A] border border-[#FF5C3A]/30'
+                  }`}>
                       -{d.pct}%
                     </span>
                   )}
@@ -178,200 +213,233 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
             </div>
           </div>
           {duration.pct > 0 && (
-            <p className="text-center text-[13px] text-[#FF5C3A] font-medium mt-3">
-              Ahorra un {duration.pct}% pagando {duration.months} meses por adelantado
+            <p className="text-center text-[14px] text-[#FF5C3A] font-semibold mt-4">
+              ¡Ahorra ${((pro.precio_mensual_cop * selectedMonths * duration.pct / 100)).toLocaleString('es-CO')} COP con {duration.months} meses!
             </p>
           )}
         </section>
 
-        <section className="py-10 px-6 md:px-8">
+        {/* Pricing Cards */}
+        <section className="py-12 px-6 md:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 xl:gap-8 items-stretch">
-              <div className="bg-[#141414] border border-[#2a2a2a] rounded-[2.5rem] p-8 md:p-10 min-h-[700px] flex flex-col hover:border-white/10 transition-all duration-500">
-                <div className="font-jakarta font-bold text-xl text-white mb-1">Básico</div>
-                <p className="text-[13px] text-[#555] mb-5">{basic.subtitulo}</p>
+              
+              {/* BASIC CARD */}
+              <div className="theme-bg-card theme-border border rounded-[2rem] p-8 md:p-10 flex flex-col min-h-[580px] hover:border-[#FF5C3A] transition-all duration-500">
+                <div className="font-jakarta font-bold text-2xl theme-text mb-2">Básico</div>
+                <p className="text-[14px] theme-text-muted mb-6">{basic.subtitulo}</p>
 
-                <div className="mb-1 h-5">
+                <div className="mb-2">
                   {(duration.pct > 0 || basicOverride) && (
-                    <span className="text-[12px] text-[#444] line-through">
-                      {formatPrice(basicOverride ? basicOverride.original_price : basic.precio_mensual_cop)}/mes
-                    </span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[16px] theme-text-muted line-through font-medium">
+                        {formatPrice(basicOverride ? basicOverride.original_price : basic.precio_mensual_cop)}
+                      </span>
+                      <span className="bg-[#FF5C3A]/20 text-[#FF5C3A] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        -{Math.round((1 - basicMonthlyPrice / basic.precio_mensual_cop) * 100)}%
+                      </span>
+                    </div>
                   )}
                 </div>
-                <div className="font-jakarta font-extrabold text-[42px] text-white tracking-tight mb-0.5 group">
+                <div className="font-jakarta font-extrabold text-[48px] theme-text tracking-tight mb-1">
                   {formatPrice(basicMonthlyPrice)}
-                  <span className="text-xl font-normal text-[#555]"> / mes</span>
+                  <span className="text-xl font-normal theme-text-muted"> / mes</span>
                 </div>
                 {basicOverride && (
-                  <p className="text-[12px] text-[#FF5C3A] font-medium mb-1">
+                  <p className="text-[12px] text-[#FF5C3A] font-semibold mb-2">
                     {basicOverride.label ?? 'Precio especial'}
-                    {basicOverride.ends_at && (
-                      <span className="text-[#666] font-normal ml-1">
-                        · hasta {new Date(basicOverride.ends_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
-                      </span>
-                    )}
                   </p>
                 )}
                 {selectedMonths > 1 && (
-                  <p className="text-[12px] text-[#444] mb-1">
-                    Total {selectedMonths} meses:{' '}
-                    <span className="text-[#888]">{formatPrice(basicTotalPrice)}</span>
-                    {duration.pct > 0 && <span className="ml-1 line-through text-[#333]">{formatPrice(basicOriginalTotal)}</span>}
+                  <p className="text-[13px] theme-text-muted mb-2">
+                    Total: <span className="theme-text font-semibold">{formatPrice(basicTotalPrice)}</span>
+                    <span className="ml-2 line-through theme-text-muted/70">{formatPrice(basicOriginalTotal)}</span>
                   </p>
                 )}
-                <p className="text-[12px] text-[#444] mb-6 min-h-[40px]">Pago directo — activación inmediata</p>
+                <p className="text-[12px] theme-text-muted/80 mb-8">Pago único · Activa en minutos</p>
 
-                <button
-                  onClick={() => router.push(`/checkout?plan=BASIC&months=${selectedMonths}`)}
-                  className="block w-full text-center py-4 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-sm font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-95 mb-10 shadow-lg shadow-[#FF5C3A]/20"
+                <a
+                  href={`/checkout?plan=BASIC&months=${selectedMonths}`}
+                  className="block w-full text-center py-4 bg-white/5 hover:bg-white/10 theme-border border theme-text text-sm font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-95 mb-8"
                 >
                   {basic.boton_texto_sin_trial ?? 'Contratar ahora'}
-                </button>
+                </a>
 
-                <ul className="flex flex-col gap-3.5 flex-1 font-dm-sans">
+                <ul className="flex flex-col gap-4 flex-1">
                   {basic.features.map(f => (
-                    <li key={f} className="flex items-center gap-3 text-[14px]">
-                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(255,92,58,0.13)]">
+                    <li key={f} className="flex items-start gap-3 text-[14px]">
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[#FF5C3A]/10 mt-0.5">
                         <IconCheck />
                       </span>
-                      <span className="text-white/70">{f}</span>
+                      <span className="theme-text/80">{f}</span>
                     </li>
                   ))}
                   {(basic.features_excluidas ?? []).map(f => (
-                    <li key={f} className="flex items-center gap-3 text-[14px]">
-                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(255,92,58,0.13)]">
-                        <IconCheck />
+                    <li key={f} className="flex items-start gap-3 text-[14px]">
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-white/5 mt-0.5">
+                        <IconX />
                       </span>
-                      <span className="text-white/70">{f}</span>
+                      <span className="theme-text-muted/50 line-through">{f}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="bg-[#141414] border border-[#FF5C3A] rounded-[2.5rem] p-8 md:p-10 relative min-h-[700px] flex flex-col shadow-2xl shadow-[#FF5C3A]/5 hover:scale-[1.02] transition-all duration-500">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#FF5C3A] text-white text-[10px] font-black tracking-widest uppercase px-4 py-2 rounded-full shadow-xl">
-                  Recomendado
+              {/* PRO CARD - HIGHLIGHTED */}
+              <div className="bg-gradient-to-b from-[#1a1515] to-[#141414] border-2 border-[#FF5C3A] rounded-[2rem] p-8 md:p-10 relative shadow-2xl shadow-[#FF5C3A]/10 flex flex-col min-h-[580px] transition-all duration-500">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#FF5C3A] theme-text text-[11px] font-black tracking-widest uppercase px-6 py-2 rounded-full shadow-lg">
+                  Más popular
                 </div>
-                <div className="font-jakarta font-bold text-xl text-white mb-1">Pro</div>
-                <p className="text-[13px] text-[#555] mb-5">{pro.subtitulo}</p>
+                <div className="font-jakarta font-bold text-2xl theme-text mb-2">Pro</div>
+                <p className="text-[14px] theme-text-muted mb-6">{pro.subtitulo}</p>
 
-                <div className="mb-1 h-5">
+                <div className="mb-2">
                   {(duration.pct > 0 || proOverride) && (
-                    <span className="text-[12px] text-[#444] line-through">
-                      {formatPrice(proOverride ? proOverride.original_price : pro.precio_mensual_cop)}/mes
-                    </span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[16px] theme-text-muted line-through font-medium">
+                        {formatPrice(proOverride ? proOverride.original_price : pro.precio_mensual_cop)}
+                      </span>
+                      <span className="bg-[#FF5C3A] theme-text text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        -{Math.round((1 - proMonthlyPrice / pro.precio_mensual_cop) * 100)}%
+                      </span>
+                    </div>
                   )}
                 </div>
-                <div className="font-jakarta font-extrabold text-[42px] text-white tracking-tight mb-0.5">
+                <div className="font-jakarta font-extrabold text-[48px] theme-text tracking-tight mb-1">
                   {formatPrice(proMonthlyPrice)}
-                  <span className="text-xl font-normal text-[#555]"> / mes</span>
+                  <span className="text-xl font-normal theme-text-muted"> / mes</span>
                 </div>
                 {proOverride && (
-                  <p className="text-[12px] text-[#FF5C3A] font-medium mb-1">
+                  <p className="text-[12px] text-[#FF5C3A] font-semibold mb-2">
                     {proOverride.label ?? 'Precio especial'}
-                    {proOverride.ends_at && (
-                      <span className="text-[#666] font-normal ml-1">
-                        · hasta {new Date(proOverride.ends_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
-                      </span>
-                    )}
                   </p>
                 )}
                 {selectedMonths > 1 && (
-                  <p className="text-[12px] text-[#444] mb-1">
-                    Total {selectedMonths} meses:{' '}
-                    <span className="text-[#888]">{formatPrice(proTotalPrice)}</span>
-                    {duration.pct > 0 && <span className="ml-1 line-through text-[#333]">{formatPrice(proOriginalTotal)}</span>}
+                  <p className="text-[13px] theme-text-muted mb-2">
+                    Total: <span className="theme-text font-semibold">{formatPrice(proTotalPrice)}</span>
+                    <span className="ml-2 line-through theme-text-muted/70">{formatPrice(proOriginalTotal)}</span>
                   </p>
                 )}
-                <p className="text-[12px] text-[#444] mb-6 min-h-[40px]">Contratación directa — sin período de prueba</p>
+                <p className="text-[12px] theme-text-muted/80 mb-8">Sin trial · Activa inmediatamente</p>
 
-                <button
-                  onClick={() => router.push(`/checkout?plan=PRO&months=${selectedMonths}`)}
-                  className="block w-full text-center py-4 bg-[#FF5C3A] hover:bg-[#e84d2c] text-white text-sm font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-95 mb-10 shadow-lg shadow-[#FF5C3A]/20"
+                <a
+                  href={`/checkout?plan=PRO&months=${selectedMonths}`}
+                  className="block w-full text-center py-4 bg-[#FF5C3A] hover:bg-[#e84d2c] theme-text text-sm font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-95 mb-8 shadow-lg shadow-[#FF5C3A]/20"
                 >
                   {pro.boton_texto}
-                </button>
+                </a>
 
-                <ul className="flex flex-col gap-3.5 flex-1 font-dm-sans">
+                <ul className="flex flex-col gap-4 flex-1">
                   {pro.features.map(f => (
-                    <li key={f} className="flex items-center gap-3 text-[14px]">
-                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[rgba(255,92,58,0.13)]">
+                    <li key={f} className="flex items-start gap-3 text-[14px]">
+                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[#FF5C3A]/20 mt-0.5">
                         <IconCheck />
                       </span>
-                      <span className="text-white/70">{f}</span>
+                      <span className="theme-text/80">{f}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="bg-[#141414] border border-[#2a2a2a] rounded-[2.5rem] p-8 md:p-10 relative min-h-[700px] flex flex-col hover:border-white/10 transition-all duration-500">
-                <div className="font-jakarta font-bold text-xl text-white mb-1">Enterprise</div>
-                <p className="text-[13px] text-[#555] mb-5">{enterprise.subtitulo}</p>
+              {/* ENTERPRISE CARD */}
+              <div className="theme-bg-card theme-border border rounded-[2rem] p-8 md:p-10 flex flex-col min-h-[580px] hover:border-[#FF5C3A] transition-all duration-500">
+                <div className="font-jakarta font-bold text-2xl theme-text mb-2">Enterprise</div>
+                <p className="text-[14px] theme-text-muted mb-6">Para grandes operaciones</p>
 
-                <div className="mb-1 h-5"></div>
-                <div className="font-jakarta font-extrabold text-[32px] text-white tracking-tight mb-0.5 mt-2">
-                  Personalizado
+                <div className="font-jakarta font-extrabold text-[36px] theme-text tracking-tight mb-2">
+                  Custom
                 </div>
-                <p className="text-[12px] text-[#444] mb-1 min-h-[20px]">Base + excedentes variables</p>
-                <p className="text-[12px] text-[#444] mb-6 min-h-[40px]">Onboarding consultivo y SLA &lt; 5s</p>
+                <p className="text-[12px] theme-text-muted/80 mb-8">Talk to sales for pricing</p>
 
                 <a
                   href="https://wa.me/573105436281?text=Hola,%20me%20interesa%20conocer%20más%20sobre%20el%20Plan%20Enterprise%20de%20Lookitry."
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block w-full text-center py-4 bg-white hover:bg-gray-200 text-black text-sm font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-95 mb-10 mt-4"
+                  className="block w-full text-center py-4 bg-white hover:bg-gray-100 text-black text-sm font-bold rounded-2xl transition-all hover:scale-[1.02] active:scale-95 mb-8"
                 >
                   {enterprise.boton_texto}
                 </a>
 
-                <ul className="flex flex-col gap-3.5 flex-1 font-dm-sans">
-                  {enterprise.features.map(f => (
-                    <li key={f} className="flex items-center gap-3 text-[14px]">
-                      <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-white/10">
-                        <IconCheck />
-                      </span>
-                      <span className="text-white/70">{f}</span>
-                    </li>
-                  ))}
+                <ul className="flex flex-col gap-4 flex-1">
+                  <li className="flex items-start gap-3 text-[14px]">
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[#FF5C3A]/20 mt-0.5">
+                      <IconCheck />
+                    </span>
+                    <span className="theme-text/80">Todo lo del Plan Pro</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-[14px]">
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[#FF5C3A]/20 mt-0.5">
+                      <IconCheck />
+                    </span>
+                    <span className="text-[#FF5C3A] font-semibold">+50 productos en el probador</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-[14px]">
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[#FF5C3A]/20 mt-0.5">
+                      <IconCheck />
+                    </span>
+                    <span className="text-[#FF5C3A] font-semibold">Volumen a medida de tu negocio</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-[14px]">
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[#FF5C3A]/20 mt-0.5">
+                      <IconCheck />
+                    </span>
+                    <span className="text-[#FF5C3A] font-semibold">Marca Blanca</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-[14px]">
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[#FF5C3A]/20 mt-0.5">
+                      <IconCheck />
+                    </span>
+                    <span className="text-[#FF5C3A] font-semibold">Panel de Analitica Avanzado</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-[14px]">
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-[#FF5C3A]/20 mt-0.5">
+                      <IconCheck />
+                    </span>
+                    <span className="text-[#FF5C3A] font-semibold">Acceso a API</span>
+                  </li>
                 </ul>
               </div>
             </div>
 
-            <p className="text-center text-[12px] text-[#333] mt-10 font-medium">
-              Todos los planes se pagan por adelantado. El precio mensual refleja el total del período dividido entre los meses contratados.
+            <p className="text-center text-[13px] theme-text-muted/80 mt-10 font-medium">
+              Pagos seguros con Wompi · Mastercard, Visa, PSE, Nequi
             </p>
           </div>
         </section>
 
-        <section className="py-24 px-6 md:px-8 bg-[#0a0a0a] border-t border-white/5">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="font-jakarta font-bold text-[32px] text-white text-center mb-16">
+{/* Comparativa Table */}
+        <section className="py-16 px-4 md:px-6 theme-bg-base">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="font-jakarta font-bold text-2xl md:text-3xl theme-text text-center mb-8">
               Comparativa completa
             </h2>
-            <div className="bg-[#141414] border border-white/5 rounded-[3rem] overflow-hidden shadow-2xl">
-              <table className="w-full text-[14px] font-dm-sans">
+            <div className="theme-bg-card border border-white/5 rounded-2xl overflow-hidden shadow-2xl">
+              <table className="w-full text-[13px] font-dm-sans">
                 <thead>
                   <tr className="border-b border-white/5">
-                    <th className="text-left px-8 py-6 font-bold text-white/40 uppercase tracking-widest text-[10px] w-2/5">Característica</th>
-                    <th className="text-center px-8 py-6 font-bold text-white/40 uppercase tracking-widest text-[10px] w-1/5">Básico</th>
-                    <th className="text-center px-8 py-6 font-bold text-[#FF5C3A] uppercase tracking-widest text-[10px] w-1/5">Pro</th>
-                    <th className="text-center px-8 py-6 font-bold text-white uppercase tracking-widest text-[10px] w-1/5">Enterprise</th>
+                    <th className="text-left px-5 py-4 font-bold theme-text-muted uppercase tracking-widest text-[9px] w-1/2">Característica</th>
+                    <th className="text-center px-4 py-4 font-bold theme-text-muted uppercase tracking-widest text-[9px] w-1/6">Básico</th>
+                    <th className="text-center px-4 py-4 font-bold text-[#FF5C3A] uppercase tracking-widest text-[9px] w-1/6">Pro</th>
+                    <th className="text-center px-4 py-4 font-bold theme-text uppercase tracking-widest text-[9px] w-1/6">Enterprise</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  <tr className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="px-8 py-5 text-white/70 font-medium">Productos en el probador</td>
-                    <td className="px-8 py-5 text-center"><span className="font-bold text-white/40">{basic.productos_max}</span></td>
-                    <td className="px-8 py-5 text-center"><span className="font-bold text-[#FF5C3A]">{pro.productos_max}</span></td>
-                    <td className="px-8 py-5 text-center"><span className="font-bold text-white">{enterprise.productos_max}+</span></td>
+                  <tr className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-5 py-4 theme-text/80 font-medium">Productos en el probador</td>
+                    <td className="px-4 py-4 text-center"><span className="font-bold theme-text-muted">{basic.productos_max}</span></td>
+                    <td className="px-4 py-4 text-center"><span className="font-bold text-[#FF5C3A]">{pro.productos_max}</span></td>
+                    <td className="px-4 py-4 text-center"><span className="font-bold theme-text">{enterprise.productos_max}+</span></td>
                   </tr>
-                  <tr className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="px-8 py-5 text-white/70 font-medium">Generaciones por mes</td>
-                    <td className="px-8 py-5 text-center"><span className="font-bold text-white/40">{basic.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
-                    <td className="px-8 py-5 text-center"><span className="font-bold text-[#FF5C3A]">{pro.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
-                    <td className="px-8 py-5 text-center"><span className="font-bold text-white">{enterprise.generaciones_mensuales.toLocaleString('es-CO')}+</span></td>
+                  <tr className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-5 py-4 theme-text/80 font-medium">Generaciones por mes</td>
+                    <td className="px-4 py-4 text-center"><span className="font-bold theme-text-muted">{basic.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
+                    <td className="px-4 py-4 text-center"><span className="font-bold text-[#FF5C3A]">{pro.generaciones_mensuales.toLocaleString('es-CO')}</span></td>
+                    <td className="px-4 py-4 text-center"><span className="font-bold theme-text">{enterprise.generaciones_mensuales.toLocaleString('es-CO')}+</span></td>
                   </tr>
-                  {allFeatures.map(feature => {
+                  {allFeatures.filter(f => 
+                    f !== 'Template Bare, minimal y classical' && 
+                    f !== 'Widget embebible (script)'
+                  ).map(feature => {
                     if (
                       feature.includes('productos en el probador') ||
                       feature.includes('generaciones por mes') ||
@@ -379,14 +447,31 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
                       feature.includes('+50 productos')
                     ) return null;
 
-                    const inEnterprise = enterprise.features.includes(feature) || pro.features.includes(feature);
+                    const inPro = pro.features.includes(feature);
+                    // Enterprise incluye todo lo de Pro + las suyas
+                    const inEnterprise = inPro || enterprise.features.includes(feature);
 
                     return (
-                      <tr key={feature} className="hover:bg-white/[0.02] transition-colors group">
-                        <td className="px-8 py-5 text-white/60">{feature}</td>
-                        <td className="px-8 py-5 text-center">{basic.features.includes(feature) ? <IconCheckTable /> : <IconCheckTable />}</td>
-                        <td className="px-8 py-5 text-center">{pro.features.includes(feature) ? <IconCheckTable /> : <IconCheckTable />}</td>
-                        <td className="px-8 py-5 text-center">{inEnterprise ? <IconCheckTable /> : <IconCheckTable />}</td>
+                      <tr key={feature} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="px-5 py-3.5 theme-text-muted/90">{feature}</td>
+                        <td className="px-4 py-3.5 text-center">
+                          {basic.features.includes(feature) 
+                            ? <IconCheckTable /> 
+                            : <span className="theme-text-muted/50 text-sm">—</span>
+                          }
+                        </td>
+                        <td className="px-4 py-3.5 text-center">
+                          {inPro 
+                            ? <IconCheckTable /> 
+                            : <span className="theme-text-muted/50 text-sm">—</span>
+                          }
+                        </td>
+                        <td className="px-4 py-3.5 text-center">
+                          {inEnterprise 
+                            ? <IconCheckTable /> 
+                            : <span className="theme-text-muted/50 text-sm">—</span>
+                          }
+                        </td>
                       </tr>
                     );
                   })}
@@ -396,32 +481,36 @@ export default function PlanesClient({ pricing, overrides = [] }: Props) {
           </div>
         </section>
 
-        <section className="py-24 md:py-32 px-6 md:px-8 bg-[#0a0a0a] text-center relative overflow-hidden">
+        {/* Final CTA */}
+        <section className="py-24 md:py-32 px-6 md:px-8 theme-bg-base text-center relative overflow-hidden">
           <div
             className="absolute pointer-events-none"
-            style={{ width: '800px', height: '400px', background: 'radial-gradient(ellipse, rgba(255,92,58,0.08) 0%, transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}
+            style={{ width: '800px', height: '400px', background: 'radial-gradient(ellipse, rgba(255,92,58,0.1) 0%, transparent 70%)', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }}
           />
           <div className="relative z-10 max-w-4xl mx-auto">
-            <h2 className="font-jakarta font-black text-[42px] md:text-[72px] text-white tracking-tighter mb-8 leading-[0.95]">
-              Empieza hoy mismo <br /><span className="text-[#FF5C3A]">a transformar</span> tu tienda.
+            <h2 className="font-jakarta font-black text-4xl md:text-6xl lg:text-7xl theme-text tracking-tighter mb-6 leading-[1]">
+              ¿Listo para <span className="text-[#FF5C3A]">vender más</span>?<br />Empieza ahora.
             </h2>
-            <p className="text-white/60 text-lg mb-16 max-w-xl mx-auto font-dm-sans">
-              Elige el plan que mejor se adapte a tu marca y escala tus ventas con IA.
+            <p className="theme-text-muted text-lg md:text-xl mb-12 max-w-xl mx-auto font-dm-sans">
+              Únete a las tiendas que ya están transformando su negocio con IA.
             </p>
-            <div className="flex gap-6 justify-center flex-wrap">
-              <button
-                onClick={() => router.push(`/checkout?plan=BASIC&months=${selectedMonths}`)}
-                className="bg-[#FF5C3A] hover:bg-[#e84d2c] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center gap-3 active:scale-95"
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href={`/checkout?plan=PRO&months=${selectedMonths}`}
+                className="inline-flex items-center justify-center gap-3 bg-[#FF5C3A] hover:bg-[#e84d2c] theme-text px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20"
               >
-                Contratar ahora <IconArrow />
-              </button>
-              <button
-                onClick={() => router.push(`/checkout?plan=PRO&months=${selectedMonths}`)}
-                className="bg-white/5 text-white px-10 py-5 rounded-2xl font-bold text-sm border border-white/10 hover:bg-white/10 transition-all active:scale-95"
+                Contratar Pro <IconArrow />
+              </a>
+              <a
+                href={`/checkout?plan=BASIC&months=${selectedMonths}`}
+                className="inline-flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 theme-text px-10 py-5 rounded-2xl font-bold text-sm theme-border border transition-all"
               >
-                {pro.boton_texto}
-              </button>
+                Empezar con Básico
+              </a>
             </div>
+            <p className="theme-text-muted/80 text-sm mt-8">
+              Sin tarjeta de crédito para comenzar · Cancela cuando quieras
+            </p>
           </div>
         </section>
       </main>
