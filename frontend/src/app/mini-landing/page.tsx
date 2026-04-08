@@ -125,13 +125,13 @@ export default function MiniLandingPage() {
 
               <div className="flex flex-wrap gap-5">
                 <Link
-                  href="/dashboard/checkout-landing"
+                  href="/checkout?plan=LANDING"
                   className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center gap-3"
                 >
                   Obtener mi Mini-Landing ahora <ArrowRight size={18} />
                 </Link>
                 <Link
-                  href="/planes"
+                  href="/checkout?plan=LANDING"
                   className="bg-[#1a1a1a] border border-white/10 text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:border-[#FF5C3A]/30 flex items-center gap-3"
                 >
                   Ver planes base
@@ -284,7 +284,7 @@ export default function MiniLandingPage() {
 
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Link
-                      href="/dashboard/checkout-landing"
+                      href="/checkout?plan=LANDING"
                       className="bg-[#FF5C3A] text-white px-10 py-5 rounded-2xl font-bold text-sm transition-all hover:scale-105 shadow-xl shadow-[#FF5C3A]/20 flex items-center justify-center gap-3"
                     >
                       Obtener mi Mini-Landing ahora <ArrowRight size={18} />
@@ -362,7 +362,7 @@ export default function MiniLandingPage() {
             {/* CTA final */}
             <div className="mt-16 text-center">
               <Link
-                href="/dashboard/checkout-landing"
+                href="/checkout?plan=LANDING"
                 className="inline-flex items-center gap-3 bg-[#FF5C3A] text-white px-12 py-6 rounded-[2rem] font-bold text-lg hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-[#FF5C3A]/30"
               >
                 Obtener mi Mini-Landing ahora <ArrowRight size={22} />

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Shirt, Store, CreditCard, Zap, LayoutGrid, ChevronDown } from 'lucide-react';
+import Link from 'next/link';
+import { Shirt, Store, CreditCard, Zap, LayoutGrid, ChevronDown, Sparkles, ArrowRight } from 'lucide-react';
 
 const FAQ_TABS = [
   {
@@ -140,6 +141,50 @@ export default function LandingFaq() {
             );
           })}
         </div>
+
+        {/* CTA Marketing */}
+        <div className="mt-12 sm:mt-16 relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a0a0a] via-[#141414] to-[#0a0a0a] dark:from-black dark:via-[#111] dark:to-black p-8 sm:p-10 md:p-12 text-center border border-white/5">
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[1px] bg-gradient-to-r from-transparent via-[#FF5C3A]/50 to-transparent" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[150px] h-[1px] bg-gradient-to-r from-transparent via-[#FF5C3A]/30 to-transparent" />
+          
+          {/* Glow effect */}
+          <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#FF5C3A]/10 rounded-full blur-[100px] pointer-events-none" />
+          
+          {/* Content */}
+          <div className="relative z-10">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#FF5C3A]/10 border border-[#FF5C3A]/20 mb-6">
+              <Sparkles size={28} className="text-[#FF5C3A]" />
+            </div>
+            
+            <h3 className="font-jakarta text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
+              ¿Listo para <span className="text-[#FF5C3A]">transformar</span> tu tienda?
+            </h3>
+            
+            <p className="font-dm-sans text-white/50 text-sm sm:text-base max-w-xl mx-auto mb-8 leading-relaxed">
+              Prueba el probador virtual de IA en tu marca y vê los resultados en pocos minutos.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/checkout?plan=TRIAL"
+                className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full bg-[#FF5C3A] text-white font-bold text-sm uppercase tracking-wider overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#FF5C3A]/30"
+              >
+                <span className="relative z-10">Comenzar trial</span>
+                <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform duration-300" />
+              </Link>
+              
+              <Link
+                href="/planes"
+                className="inline-flex items-center gap-2 px-6 py-4 rounded-full border border-white/20 text-white/70 font-medium text-sm hover:bg-white/5 hover:text-white hover:border-white/30 transition-all duration-300"
+              >
+                Ver planes
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        
       </div>
     </section>
   );

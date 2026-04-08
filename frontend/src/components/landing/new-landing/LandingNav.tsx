@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ChevronDown, Layout, Zap, Terminal, User, LogOut } from 'lucide-react';
+import { Menu, X, ChevronDown, Layout, Zap, Terminal, User, LogOut, ArrowRight } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 import { usePromoBanner } from '@/context/PromoBannerContext';
 import { usePublicSession } from '@/hooks/usePublicSession';
@@ -21,9 +21,9 @@ export default function LandingNav({
   const [internalCurrency, setInternalCurrency] = useState<'COP' | 'USD'>('COP');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [productsOpen, setProductsOpen] = useState(false);
+  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const productsRef = useRef<HTMLDivElement>(null);
+  const megaMenuRef = useRef<HTMLDivElement>(null);
   const { session } = usePublicSession();
 
   useEffect(() => {
@@ -38,8 +38,8 @@ export default function LandingNav({
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
       }
-      if (productsRef.current && !productsRef.current.contains(e.target as Node)) {
-        setProductsOpen(false);
+      if (megaMenuRef.current && !megaMenuRef.current.contains(e.target as Node)) {
+        setMegaMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -83,26 +83,27 @@ export default function LandingNav({
 
   const productLinks = [
     {
-      title: 'MINI-LANDING PRO',
+      title: 'Mini-Landing Pro',
       desc: 'Tu tienda online pro sin código.',
-      href: '/mini-landing',
-      icon: <Layout size={16} className="text-[#FF5C3A]" />,
-      bgColor: 'bg-[#FF5C3A]/10'
+      href: '/mini-landing'
     },
     {
-      title: 'WOOCOMMERCE PLUGIN',
+      title: 'WooCommerce Plugin',
       desc: 'Automatiza tu probador virtual.',
-      href: '/plugin-woocommerce',
-      icon: <Zap size={16} className="text-blue-400" />,
-      bgColor: 'bg-blue-500/10'
+      href: '/plugin-woocommerce'
     },
     {
-      title: 'API DEVELOPER HUB',
+      title: 'API Developer Hub',
       desc: 'IA nativa en tu propia app.',
-      href: '/api-developer',
-      icon: <Terminal size={16} className="text-emerald-400" />,
-      bgColor: 'bg-emerald-500/10'
+      href: '/api-developer'
     }
+  ];
+
+  // Empresa - Links simples
+  const companyLinks = [
+    { title: 'Blog', href: '/blog' },
+    { title: 'Sobre Nosotros', href: '/sobre-nosotros' },
+    { title: 'Contacto', href: '/contacto' }
   ];
 
   const navBg = 'bg-white dark:bg-black border-b border-black/5 dark:border-white/5';
@@ -154,43 +155,101 @@ export default function LandingNav({
           </div>
 
           <div className="hidden grow items-center justify-center gap-4 lg:flex xl:gap-8">
-            <div className="relative" ref={productsRef}>
+            {/* MEGA MENU */}
+            <div className="relative" ref={megaMenuRef}>
               <button
-                onMouseEnter={() => setProductsOpen(true)}
-                onClick={() => setProductsOpen(!productsOpen)}
-                aria-expanded={productsOpen}
+                onMouseEnter={() => setMegaMenuOpen(true)}
+                onClick={() => setMegaMenuOpen(!megaMenuOpen)}
+                aria-expanded={megaMenuOpen}
                 aria-haspopup="true"
                 className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300 ${
-                  productsOpen ? 'text-[#FF5C3A]' : 'text-black/60 hover:text-[#0a0a0a] dark:text-white/60 dark:hover:text-white'
+                  megaMenuOpen ? 'text-[#FF5C3A]' : 'text-black/60 hover:text-[#0a0a0a] dark:text-white/60 dark:hover:text-white'
                 }`}
               >
                 Productos Pro
-                <ChevronDown size={12} className={`transition-transform duration-300 ${productsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                <ChevronDown size={12} className={`transition-transform duration-300 ${megaMenuOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
 
-              {productsOpen && (
+              {megaMenuOpen && (
                 <div
-                  onMouseLeave={() => setProductsOpen(false)}
-                  className="absolute left-1/2 top-full mt-4 w-72 -translate-x-1/2 rounded-2xl border border-black/10 bg-white p-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-300 dark:border-white/10 dark:bg-[#111]"
+                  onMouseLeave={() => setMegaMenuOpen(false)}
+                  className="absolute left-1/2 top-full mt-4 -translate-x-1/2 w-[50vw] max-w-[650px] rounded-2xl border border-black/10 bg-white p-5 shadow-2xl dark:border-white/10 dark:bg-[#111] animate-in fade-in slide-in-from-top-2 duration-200"
                   role="menu"
+                  style={{ left: '50%' }}
                 >
-                  {productLinks.map((prod) => (
-                    <Link
-                      key={prod.title}
-                      href={prod.href}
-                      onClick={() => setProductsOpen(false)}
-                      className="group flex items-start gap-4 rounded-xl p-4 transition-all hover:bg-black/5 dark:hover:bg-white/5"
-                      role="menuitem"
-                    >
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${prod.bgColor} transition-transform group-hover:scale-110`}>
-                        {prod.icon}
+                  <div className="grid grid-cols-12 gap-5">
+                    {/* Columna 1: Productos */}
+                    <div className="col-span-7 space-y-0">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999] mb-4 pb-2 border-b border-black/5 dark:border-white/5">Productos</p>
+                      {productLinks.map((prod, index) => (
+                        <Link
+                          key={prod.title}
+                          href={prod.href}
+                          onClick={() => setMegaMenuOpen(false)}
+                          className="group relative flex items-center gap-3 rounded-xl px-3 py-3 transition-all hover:bg-[#FF5C3A]/5"
+                          role="menuitem"
+                        >
+                          {/* Línea accent lateral */}
+                          <div className="absolute left-0 top-2 bottom-2 w-[2px] bg-[#FF5C3A] origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-200 ease-out rounded-full" />
+                          {/* Icono del producto */}
+                          <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all duration-200 ${
+                            index === 0 ? 'bg-[#FF5C3A]/10 text-[#FF5C3A]' :
+                            index === 1 ? 'bg-blue-500/10 text-blue-500' :
+                            'bg-emerald-500/10 text-emerald-500'
+                          }`}>
+                            {index === 0 ? <Layout size={18} /> :
+                             index === 1 ? <Zap size={18} /> :
+                             <Terminal size={18} />}
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-[12px] font-bold text-[#0a0a0a] dark:text-white group-hover:text-[#FF5C3A] transition-colors duration-150">
+                              {prod.title}
+                            </h3>
+                            <p className="text-[10px] font-medium text-[#999]">{prod.desc}</p>
+                          </div>
+                          <ArrowRight size={14} className="text-[#999] group-hover:text-[#FF5C3A] group-hover:translate-x-1 transition-all duration-150" />
+                        </Link>
+                      ))}
+                      
+                      <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#999] mt-5 mb-4 pb-2 border-b border-black/5 dark:border-white/5">Empresa</p>
+                      {companyLinks.map((link) => (
+                        <Link
+                          key={link.title}
+                          href={link.href}
+                          onClick={() => setMegaMenuOpen(false)}
+                          className="group relative flex items-center rounded-xl px-3 py-3 transition-all hover:bg-[#FF5C3A]/5"
+                          role="menuitem"
+                        >
+                          <span className="text-[12px] font-medium text-[#999] group-hover:text-[#FF5C3A] transition-colors duration-150">
+                            {link.title}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+
+                    {/* Columna 2: Hero Image con Branding */}
+                    <div className="col-span-5 flex flex-col items-center justify-center">
+                      <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden">
+                        <Image
+                          src="/hero/promo_landing.png"
+                          alt="Lookitry - Transforma tu tienda con IA"
+                          fill
+                          className="object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                       </div>
-                      <div className="overflow-hidden">
-                        <p className="mb-0.5 text-[11px] font-black uppercase tracking-wider text-[#0a0a0a] dark:text-white">{prod.title}</p>
-                        <p className="text-[10px] font-medium leading-relaxed text-black/50 dark:text-white/50">{prod.desc}</p>
+                      {/* Branding debajo de la imagen */}
+                      <div className="mt-3 flex items-center gap-2">
+                        <div className="relative h-5 w-5">
+                          <Image src="/Lookitry-logo-dark.svg" alt="Lookitry" fill className="object-contain dark:hidden" />
+                          <Image src="/logo.svg" alt="Lookitry" fill className="hidden object-contain dark:block" />
+                        </div>
+                        <span className="font-jakarta text-[11px] font-bold tracking-tight text-[#0a0a0a] dark:text-white">
+                          Look<span className="text-[#FF5C3A]">itry</span>
+                        </span>
                       </div>
-                    </Link>
-                  ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -324,8 +383,8 @@ export default function LandingNav({
                   onClick={() => setMobileMenuOpen(false)}
                   className="group flex w-full items-center gap-3.5 rounded-2xl border border-black/8 bg-black/[0.03] p-3.5 text-left transition-all hover:border-black/12 hover:bg-black/[0.05] active:scale-[0.98] dark:border-white/5 dark:bg-white/5 dark:hover:border-white/10 dark:hover:bg-white/10"
                 >
-                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${prod.bgColor} transition-transform group-hover:scale-110`}>
-                    {prod.icon}
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FF5C3A]/10 transition-transform group-hover:scale-110">
+                    <ArrowRight size={16} className="text-[#FF5C3A]" />
                   </div>
                   <div className="text-left">
                     <p className="text-[11px] font-black uppercase tracking-wider text-[#0a0a0a] dark:text-white">{prod.title}</p>

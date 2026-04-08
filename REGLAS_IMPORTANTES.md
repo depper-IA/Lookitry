@@ -116,6 +116,12 @@ Para evitar corrupciones de código ("mojibake") y caídas del sistema (Error 50
 - **Session Tokens Efímeros**: Usar JWT con expiración de 1 hora, solicitados desde el backend mediante `/session-token`
 - **Frontend Admin Auth**: Usar SIEMPRE `adminApi.ts` para peticiones autenticadas. PROHIBIDO extraer `admin_token` de `localStorage` (está en cookies HTTP-Only). Las peticiones manuales con `fetch` deben incluir `credentials: 'include'`.
 
+### 5.6 Reglas de APIs de IA
+
+- **GROQ**: Se conecta por API oficial directa (`api.groq.com`), NO via OpenRouter
+- **OpenRouter**: Exclusivo para GENERACIÓN DE IMÁGENES del WIDGET (Try-On). PROHIBIDO usar sus créditos para otras tareas sin consentimiento explícito del usuario
+- Esta regla debe respetarse en todo momento: cualquier uso de OpenRouter debe ser únicamente para generación de imágenes del widget
+
 ---
 
 ## 6. Reglas de Base de Datos
@@ -279,7 +285,44 @@ El orchestration corre via **Sammy** (Telegram + OpenCode). Los agentes especial
 
 ### 10.3 Skills Disponibles
 
-Usar `@brainstorming` antes de cualquier implementación. Ver `.claude/SKILL.md` para el índice completo.
+Usar `@brainstorming` antes de cualquier implementación. Ver `.opencode/SKILL.md` para el índice completo.
+
+### 10.4 Protección de Skills ⚠️
+
+**CARPETA PROTEGIDA:** `.opencode/skills/`
+
+Esta carpeta CONTIENE skills esenciales que NO DEBEN ser borrados bajo ninguna circunstancia:
+
+| Skill | Descripción |
+|-------|-------------|
+| `brainstorming/` | Lluvia de ideas estructurada |
+| `ui-ux-pro-max/` | UI/UX avanzado |
+| `seo-audit/` | Auditoría SEO |
+| `subagent-driven-development/` | Desarrollo multi-agente |
+| `test-driven-development/` | Testing proactivo |
+| `verification-before-completion/` | Verificación pre-entrega |
+| `excalidraw-diagram/` | Diagramas visuales |
+| `sequential-thinking/` | Razonamiento sistemático |
+| `token-efficiency/` | Optimización de contexto |
+| `code-reviewer/` | Code review automático |
+| `frontend-design/` | Diseño frontend |
+| `web-design-guidelines/` | Guidelines de diseño |
+| `mcp-builder/` | Construir MCP servers |
+| `find-skills/` | Buscar skills |
+| `claude-code-expert/` | Expertos en Claude Code |
+| `using-git-worktrees/` | Git worktrees |
+| `playwright/` | End-to-end testing y browser automation |
+| `skill-creator/` | Crear y mejorar skills |
+
+**REGLA ABSOLUTA:**
+- **PROHIBIDO eliminar, mover o modificar** cualquier archivo dentro de `.opencode/skills/`
+- **PROHIBIDO ejecutar "cleanups"** o scripts que eliminen archivos "duplicados" o "temporales" sin antes verificar que NO afectan `.opencode/skills/`
+- Si un agente o script intenta borrar esta carpeta, **DETENERSE inmediatamente** y consultar al usuario
+
+**Si un commit anterior fue un "cleanup" que borró skills:**
+1. Restaurar desde git: `git checkout <commit-anterior> -- .opencode/skills/`
+2. Reportar el incidente al usuario
+3. Actualizar SKILL.md si las rutas cambiaron
 
 ### 10.4 Reglas de Documentación
 

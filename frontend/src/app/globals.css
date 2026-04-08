@@ -108,6 +108,7 @@ h1, h2, h3, h4, h5, h6 {
 .theme-bg-base    { background-color: var(--bg-base); }
 .theme-bg-card    { background-color: var(--bg-card); }
 .theme-bg-sidebar { background-color: var(--bg-sidebar); }
+.theme-bg-hover   { background-color: var(--bg-hover); }
 .theme-border     { border-color: var(--border-color); }
 .theme-text       { color: var(--text-primary); }
 .theme-text-muted { color: var(--text-secondary); }

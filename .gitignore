@@ -6,6 +6,8 @@ node_modules/
 .env.local
 .env.production
 .env.*.local
+.env.opencode
+.env.opencode.*
 
 # Build outputs
 dist/
@@ -44,6 +46,7 @@ tmp/
 temp/
 /Local/
 /local/
+scripts/opencode.ps1
 
 # Python portable y archivos compilados
 python-portable/

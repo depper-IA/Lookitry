@@ -13,12 +13,8 @@ interface FooterSection {
 
 export default function LandingFooter() {
   const currentYear = new Date().getFullYear();
-  const [isDark, setIsDark] = React.useState(() => {
-    if (typeof document !== 'undefined') {
-      return document.documentElement.classList.contains('dark');
-    }
-    return false;
-  });
+  const [isDark, setIsDark] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const [socialLinks, setSocialLinks] = useState({
     instagram: '#',
@@ -83,11 +79,14 @@ export default function LandingFooter() {
   }, []);
 
   useEffect(() => {
+    // Sync theme on mount
+    setIsDark(document.documentElement.classList.contains('dark'));
+    setMounted(true);
+
     const syncTheme = () => {
       setIsDark(document.documentElement.classList.contains('dark'));
     };
 
-    syncTheme();
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleMediaChange = (event: MediaQueryListEvent) => {
       const stored = localStorage.getItem('theme');
@@ -162,8 +161,9 @@ export default function LandingFooter() {
               rel="noopener noreferrer"
               className="flex h-10 w-10 items-center justify-center rounded-full border border-black/5 bg-black/5 text-black/45 transition-all duration-300 hover:border-[#FF5C3A] hover:bg-[#FF5C3A] hover:text-white dark:border-white/5 dark:bg-white/5 dark:text-white/40"
               aria-label="TikTok"
+              suppressHydrationWarning
             >
-              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current" aria-hidden="true">
+              <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current" aria-hidden="true" suppressHydrationWarning>
                 <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.34 6.34 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
               </svg>
             </Link>
@@ -171,7 +171,7 @@ export default function LandingFooter() {
 
           <div className="border-t border-black/5 dark:border-white/5">
             {footerSections.map((section) => (
-              <div key={section.title} className="border-b border-black/5 dark:border-white/5">
+              <div key={section.title}>
                 <button
                   onClick={() => toggleSection(section.title)}
                   className="group flex w-full items-center justify-between py-3 text-[10px] font-bold uppercase tracking-wider text-black/60 transition-colors hover:text-[#FF5C3A] dark:text-white/60"
@@ -263,8 +263,9 @@ export default function LandingFooter() {
                 rel="noopener noreferrer"
                 className="flex h-9 w-9 items-center justify-center rounded-lg border border-black/5 bg-black/5 text-black/60 transition-all duration-300 hover:border-[#FF5C3A] hover:bg-[#FF5C3A] hover:text-white sm:h-10 sm:w-10 sm:rounded-xl md:h-11 md:w-11 dark:border-white/5 dark:bg-white/5 dark:text-white/60"
                 aria-label="TikTok"
+                suppressHydrationWarning
               >
-                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" aria-hidden="true">
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current sm:h-4 sm:w-4" aria-hidden="true" suppressHydrationWarning>
                   <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.34 6.34 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />
                 </svg>
               </Link>
@@ -291,34 +292,45 @@ export default function LandingFooter() {
       </div>
 
       <div className="mt-5 w-full bg-[#FF5C3A] md:mt-0">
-        <div className="mx-auto max-w-7xl px-4 pt-4 pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))] sm:px-6 sm:py-8 md:px-12 md:py-8">
-          <div className="text-center font-dm-sans text-[8px] font-bold uppercase tracking-[0.2em] text-white/80 sm:text-[10px] sm:tracking-[0.3em]">
-            © {currentYear} Lookitry / Un producto de{' '}
-            <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">
-              Wilkie Devs
-            </Link>
-          </div>
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-4 opacity-60 sm:gap-8 md:gap-10">
-            <div className="flex items-center gap-1.5 font-dm-sans text-[8px] font-bold uppercase tracking-widest text-white/90 sm:gap-2 sm:text-[9px]">
-              <ShieldCheck size={14} aria-hidden="true" /> Pagos seguros
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 md:px-12 md:py-10">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            {/* Copyright */}
+            <div className="font-dm-sans text-xs font-medium text-white/80 sm:text-sm">
+              © {currentYear} Lookitry · Un producto de{' '}
+              <Link href="https://wilkiedevs.com" target="_blank" rel="noopener noreferrer" className="font-semibold transition-colors hover:text-white">
+                Wilkie Devs
+              </Link>
             </div>
-          </div>
-          <div className="mt-4 flex justify-center">
-            <button
-              onClick={toggle}
-              aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-              className="flex items-center gap-2 rounded-xl border border-white/20 px-4 py-2 text-xs font-medium text-white/90 transition-all hover:border-[#FF8A70] hover:bg-[#FF8A70]/20 hover:text-white"
-            >
-              {isDark ? (
-                <>
-                  <Sun size={14} aria-hidden="true" /> Modo claro
-                </>
-              ) : (
-                <>
-                  <Moon size={14} aria-hidden="true" /> Modo oscuro
-                </>
-              )}
-            </button>
+            
+            {/* Trust badges */}
+            <div className="flex items-center gap-6 sm:gap-8">
+              <div className="flex items-center gap-2 font-dm-sans text-xs font-medium text-white/80 sm:text-sm">
+                <ShieldCheck size={16} aria-hidden="true" /> Pagos seguros
+              </div>
+              
+              {/* Theme toggle */}
+              <button
+                onClick={toggle}
+                aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                className="flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-xs font-medium text-white/90 transition-all hover:border-white/40 hover:bg-white/10 hover:text-white sm:text-sm"
+              >
+                {mounted ? (
+                  isDark ? (
+                    <>
+                      <Sun size={14} aria-hidden="true" /> Modo claro
+                    </>
+                  ) : (
+                    <>
+                      <Moon size={14} aria-hidden="true" /> Modo oscuro
+                    </>
+                  )
+                ) : (
+                  <>
+                    <Moon size={14} aria-hidden="true" /> Modo oscuro
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
