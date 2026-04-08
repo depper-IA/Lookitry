@@ -75,6 +75,9 @@
 
 ## HTML Esperado del Redactor IA
 
+### Prompt v4 ✅ Creado
+Documento: `docs/n8n/prompts/blog-article-prompt-v4.md`
+
 ### Estructura Completa
 
 ```html
@@ -82,7 +85,7 @@
   <p>Párrafo de apertura impactante con gancho...</p>
 </div>
 
-<h2 data-toc-title="El problema real">El problema real: Devoluciones y frustración</h2>
+<h2 data-toc-title="El problema real" id="el-problema-real">El problema real: Devoluciones y frustración</h2>
 <p>Contenido de la sección...</p>
 
 <div data-blog-block="impact" data-type="stat">
@@ -90,7 +93,7 @@
   <p>Información importante con estadística...</p>
 </div>
 
-<h2 data-toc-title="La solución">La solución: Probadores virtuales con IA</h2>
+<h2 data-toc-title="La solución" id="la-solucion">La solución: Probadores virtuales con IA</h2>
 <p>Contenido...</p>
 
 <div data-blog-faq="accordion">
@@ -110,6 +113,9 @@
   <a href="/trial-checkout">Probar Lookitry Gratis</a>
 </div>
 ```
+
+### Importante: NO incluir imágenes en el HTML
+El prompt v4 indica que **NO se deben incluir `<figure>` ni `<img>`** en el content. Las imágenes se insertan automáticamente por el backend en `/api/blog/assemble-article`.
 
 ---
 
@@ -154,12 +160,14 @@ El campo "content" del JSON debe ser HTML limpio con data-attributes.
 ## Tareas de Implementación
 
 ### Fase 1: Prompt del Redactor IA ✅
-- [x] Crear documento `docs/n8n/prompts/blog-article-prompt-v3.md`
+- [x] Crear documento `docs/n8n/prompts/blog-article-prompt-v4.md`
 - [x] Definir data-attributes correctos
+- [x] Nueva arquitectura: HTML sin imágenes (se insertan después)
 
 ### Fase 2: Actualizar Workflow n8n 🔄
-- [ ] Actualizar prompt del nodo Redactor IA en Article Producer
-- [ ] Test: generar artículo de prueba y verificar HTML
+- [ ] Copiar prompt v4 al nodo Redactor IA en Article Producer
+- [ ] Remover campos de URLs de imágenes del input del Redactor
+- [ ] Test: generar artículo de prueba y verificar HTML con data-attributes
 
 ### Fase 3: Integrar BlogArticle.tsx 🔄
 - [ ] Reemplazar `<SanitizedHtml>` por `<BlogArticle post={post} />` en page.tsx
@@ -167,7 +175,7 @@ El campo "content" del JSON debe ser HTML limpio con data-attributes.
 - [ ] Test: abrir artículo en blog y verificar TOC, callouts, FAQ, CTA
 
 ### Fase 4: Verificación end-to-end 🔄
-- [ ] Disparar webhook y verificar artículo publicado con estilos correctos
+- [ ] Disparar webhook completo y verificar artículo con estilos
 - [ ] Verificar en mobile (responsive)
 - [ ] Verificar performance (Core Web Vitals)
 
