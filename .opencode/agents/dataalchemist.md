@@ -21,7 +21,7 @@ Soy el agente responsable de los datos, la inteligencia artificial, y los flujos
 
 - **Principal:** MiniMax (`minimax-coding-plan/MiniMax-M2.7`)
 - **Fallback (si agotado):** DeepSeek Coder (`deepseek/deepseek-coder-33b-instruct`)
-- **Subagentes (tareas simples):** GROQ (`groq/llama-3.3-70b-instruct`) — queries, migraciones simples
+- **Subagentes (tareas simples):** MiniMax (`minimax/minimax-m2.7`)
 
 ## MCPs Disponibles
 
@@ -152,9 +152,9 @@ await redis.del(`brand:${brandSlug}`);
 **Reglas para responder:**
 - Máx 150 líneas por respuesta
 - SQL conciso, explicar solo si es complejo
-- Usar subagentes GROQ para queries repetitivas
+- Usar subagentes MiniMax para queries repetitivas
 
-**Subagentes GROQ para:**
+**Subagentes MiniMax para:**
 - Queries de verificación simples
 - Migraciones CRUD básicas
 - Revisión de performance de queries
