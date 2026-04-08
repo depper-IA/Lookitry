@@ -38,7 +38,8 @@ function templateToLayout(template?: string): Layout {
 // ── Componente principal ──────────────────────────────────────────────────────
 export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = null, externalId = null, forceLayout, pluginView = false }: TryOnWidgetProps) {
   const hasLockedPluginProduct = pluginView && !!(initialProductId || externalId);
-  const [step, setStep] = useState<Step>('upload');
+  // Nuevo flujo: Comenzamos en 'select' para que el usuario elija primero el producto.
+  const [step, setStep] = useState<Step>('select');
   const [config, setConfig] = useState<TryOnConfigResponse | null>(null);
   const [selfieFile, setSelfieFile] = useState<File | null>(null);
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
@@ -54,7 +55,6 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
   const [generatedProducts, setGeneratedProducts] = useState<Map<string, string>>(new Map());
 
   // Cargar productos generados previos de localStorage al montar o cambiar selfie
-  // Fix #6: Solo guardamos/leemos el mapa de IDs→URL, NO la selfie base64 (evita QuotaExceededError)
   useEffect(() => {
     if (!brandSlug) return;
     const key = `tryon_gen_${brandSlug}`;
@@ -70,20 +70,17 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     }
   }, [brandSlug]);
 
-  // Guardar productos generados en localStorage cuando cambien
-  // Fix #6: Ya no persiste la selfie base64
+  // Guardar productos generados en localStorage
   useEffect(() => {
     if (!brandSlug || generatedProducts.size === 0) return;
     const key = `tryon_gen_${brandSlug}`;
     try {
       localStorage.setItem(key, JSON.stringify({ products: Object.fromEntries(generatedProducts) }));
     } catch (e) {
-      // QuotaExceededError: ignorar silenciosamente, la funcionalidad sigue
       console.warn('[TryOnWidget] localStorage lleno, no se pudo guardar caché de generaciones.', e);
     }
   }, [generatedProducts, brandSlug]);
 
-  // Fix #2: loadConfig con useCallback para evitar referencias obsoletas
   const loadConfig = useCallback(async () => {
     try {
       setLoading(true);
@@ -94,18 +91,18 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
       // Pre-seleccionar producto si viene por props
       if (data.products) {
         let found = null;
-        
-        // 1. Prioridad: Búsqueda por externalId (WordPress ID)
         if (externalId) {
           found = data.products.find((p: any) => String(p.externalId) === String(externalId));
         }
-        
-        // 2. Fallback: Búsqueda por initialProductId (Lookitry UUID)
         if (!found && initialProductId) {
           found = data.products.find((p: any) => p.id === initialProductId);
         }
 
-        if (found) setSelectedProduct(found);
+        if (found) {
+          setSelectedProduct(found);
+          // Si estamos inyectando un producto pre-seleccionado, pasamos automáticamente al paso de subida.
+          setStep('upload');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Error al cargar');
@@ -116,14 +113,12 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
 
   useEffect(() => { loadConfig(); }, [loadConfig]);
 
-  // Limpieza de memoria de la URL temporal en desmontaje
   useEffect(() => {
     return () => {
       if (selfiePreview) URL.revokeObjectURL(selfiePreview);
     };
   }, [selfiePreview]);
 
-  // Fix #1: handleReset memoizado con useCallback — evita stale closure en el listener TRYON_RESET
   const handleReset = useCallback(() => {
     const key = `tryon_gen_${brandSlug}`;
     localStorage.removeItem(key);
@@ -138,7 +133,8 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     setResultImageUrl(null); setGenerationId(null); setError(null); setErrorIsService(false);
     setNotice(null);
     setGeneratedProducts(new Map());
-    setStep('upload');
+    // Nuevo flujo: Reset vuelve a select, a menos que el producto esté bloqueado, entonces vuelve a upload
+    setStep(hasLockedPluginProduct ? 'upload' : 'select');
   }, [brandSlug, hasLockedPluginProduct]);
 
   const handleSelfieUpload = (file: File, preview: string) => {
@@ -156,24 +152,26 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     setGeneratedProducts(new Map());
     
     if (selectedProduct) {
-      // Si el usuario ya viene con un producto seleccionado (ej. plugin WooCommerce),
-      // saltamos la pantalla de selección y empezamos a generar inmediatamente.
-      // IMPORTANTE: Pasamos force=true para evitar que use el mapa de generados actual (que es capturado por closure)
+      // Si el usuario sube la foto y ya había seleccionado el producto, genera automáticamente.
       handleGenerate(file, selectedProduct, true);
     } else {
+      // Como seguridad, si logró subir sin producto (bare), pasa a select,
+      // aunque nuestro nuevo diseño en bare deshabilitará el upload si no hay producto.
       setStep('select');
     }
   };
 
-  const handleProductSelect = (product: Product) => setSelectedProduct(product);
+  const handleProductSelect = (product: Product) => {
+    setSelectedProduct(product);
+    // En las plantillas donde los pasos están muy divididos (PRO), avanzamos automáticamente?
+    // Es mejor dejar que el botón "Siguiente" lo haga para mejorar UX.
+  };
 
   const handleGenerate = async (fileOverride?: File, productOverride?: Product, force = false) => {
     const activeFile = fileOverride || selfieFile;
     const activeProduct = productOverride || selectedProduct;
     if (!activeFile || !activeProduct) return;
     
-    // Si ya fue generado, mostrar resultado guardado directamente
-    // Excepto si forzamos una nueva generación (ej. cambio de selfie)
     const cached = generatedProducts.get(activeProduct.id);
     if (cached && !force) {
       setNotice('Ya habías probado este producto con tu foto actual. Te mostramos el resultado guardado para que sigas sin costo adicional.');
@@ -193,7 +191,6 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
       if (result.reused) {
         setNotice(result.message || 'Ya existía un resultado para esta foto y este producto. Te mostramos el guardado sin costo adicional.');
       }
-      // Guardar en el mapa de generados
       setGeneratedProducts(prev => new Map(prev).set(activeProduct.id, result.imageUrl));
       setStep('result');
       if (isEmbed) window.parent?.postMessage({ type: 'TRYON_COMPLETE', data: { imageUrl: result.imageUrl, productId: activeProduct.id, productName: activeProduct.name, generationId: result.generationId, processingTime: result.processingTime } }, EMBED_ORIGIN);
@@ -202,12 +199,12 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
       setErrorIsService(isService);
       setNotice(null);
       setError(isService ? 'SERVICE_CREDITS_EXHAUSTED' : (err.message || 'Algo salió mal. Intenta de nuevo.'));
-      setStep('select');
+      // Volver a upload para que reintente
+      setStep('upload');
       if (isEmbed) window.parent?.postMessage({ type: 'TRYON_ERROR', data: { error: err.message } }, EMBED_ORIGIN);
     }
   };
 
-  // Fix #4: postMessage seguro — usar origen del parent en vez de '*'
   const EMBED_ORIGIN = typeof window !== 'undefined' && document.referrer
     ? new URL(document.referrer).origin
     : '*';
@@ -220,7 +217,6 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     return () => window.removeEventListener('message', handleMessage);
   }, [isEmbed, config, brandSlug, handleReset, EMBED_ORIGIN]);
 
-  // Fix #8: ResizeObserver desacoplado del step — se conecta una sola vez
   useEffect(() => {
     if (!isEmbed) return;
     const notifyHeight = () =>
@@ -237,15 +233,13 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
   const welcomeMessage = config?.brand.welcomeMessage || '';
   const selectedLayout = templateToLayout(config?.brand?.widgetTemplate);
   const isPro = (config?.brand?.plan || 'BASIC') === 'PRO';
-  // En planes no-PRO, forzamos la experiencia principal (bare) por defecto.
-  // PRO desbloquea el resto de experiencias (minimal/modern/bold).
+  
   const effectiveLayout = pluginView ? 'bare' : (forceLayout || (isPro ? selectedLayout : 'bare'));
 
-  // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className={`flex items-center justify-center ${pluginView ? 'min-h-[70vh]' : 'py-16'}`} >
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: secondaryColor }}>
+        <div className="text-center px-6">
           <div className="w-14 h-14 border-4 border-gray-200 rounded-full animate-spin mx-auto" style={{ borderTopColor: primaryColor }} />
           <p className="mt-4 text-gray-500 text-sm font-medium">Cargando el probador...</p>
         </div>
@@ -253,7 +247,6 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     );
   }
 
-  // ── Error / no encontrado ──────────────────────────────────────────────────
   if (!config) {
     return (
       <div className="flex items-center justify-center py-16 bg-gray-50">
@@ -294,6 +287,7 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
     onReset: handleReset,
     onSelfieUpload: handleSelfieUpload,
     onProductSelect: handleProductSelect,
+    onProceedToUpload: () => setStep('upload'),
     onGenerate: () => handleGenerate(),
   } as const;
 
@@ -309,3 +303,4 @@ export function TryOnWidget({ brandSlug, isEmbed = false, initialProductId = nul
       return <TemplateShowcase {...templateProps} />;
   }
 }
+
