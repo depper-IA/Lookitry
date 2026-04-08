@@ -152,12 +152,13 @@ export function deriveDashboardAccountState(params: {
       id: 'tryons',
       title: 'Primeras pruebas recibidas',
       description: hasTryOns
-        ? 'Tu cuenta ya empezo a recibir actividad y pruebas del probador.'
-        : 'Todavia no hay pruebas registradas. Comparte el probador para ponerlo en marcha.',
-      href: '/dashboard/integrations',
+        ? 'Tu probador ya está generando resultados reales con clientes.'
+        : 'Falta que tus clientes usen el probador para generar las primeras pruebas.',
+      href: '/dashboard/analytics',
       done: hasTryOns,
-      stateLabel: hasTryOns ? 'En marcha' : 'Sin actividad',
+      stateLabel: hasTryOns ? 'Recibidas' : 'Pendiente',
     },
+
   ];
 
   const completedSteps = checklist.filter((item) => item.done).length;

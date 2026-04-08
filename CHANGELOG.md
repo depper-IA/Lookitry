@@ -1,5 +1,38 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-08] - Restauración Paso "Primeras Pruebas Recibidas" + Banner Dismissible
+
+### Cambios en Dashboard Onboarding
+- **REVERTIDO**: Eliminación del paso "Primeras pruebas recibidas" - ahora vuelve a aparecer en el checklist de onboarding
+- **NUEVA LÓGICA**: Banner "Estado de tu cuenta" ya no se elimina automáticamente al completar onboarding
+  - El banner permanece visible hasta que el usuario hace clic en "Entendido, ocultar banner" (solo visible cuando todos los pasos están completos)
+  - Estado de cierre persistente via localStorage (`onboardingBannerDismissed`)
+  - Una vez oculto, el banner no vuelve a aparecer (layout minimalista se muestra)
+- **REGLA**: El banner NO se oculta automáticamente al completar pasos, solo cuando el usuario interactúa
+
+### Archivos Modificados
+- `frontend/src/lib/dashboardAccountState.ts` - Agregado paso "tryons" al checklist (id: 'tryons')
+- `frontend/src/app/dashboard/page.tsx` - Nueva lógica de banner dismissible con localStorage
+  - Estado `isBannerDismissed` y efecto para leer de localStorage
+  - Función `handleDismissBanner` para guardar preferencia
+  - Botón "Entendido, ocultar banner" condicional cuando `isOnboardingComplete && !isBannerDismissed`
+  - Condición de renderizado cambiada de `if (isOnboardingComplete)` a `if (isOnboardingComplete && isBannerDismissed)`
+
+## [2026-04-07] - Dashboard Onboarding Simplificado
+
+### Cambios en Dashboard
+- **TAREA 1**: Banner "Estado de tu cuenta" ahora se oculta cuando todos los pasos de onboarding están completos (`completedSteps === totalSteps`)
+  - El usuario ya no ve el banner de estado cuando termina el onboarding
+  - Se mantiene la información de diagnóstico y métricas del sistema
+  
+- **TAREA 2**: Eliminado paso "Primeras pruebas recibidas" del checklist de onboarding
+  - Removido del array `checklist` en `dashboardAccountState.ts`
+  - El flujo de steps queda en 4 pasos: Cuenta, Plan, Tienda/Widget, Producto
+
+### Archivos Modificados
+- `frontend/src/lib/dashboardAccountState.ts` (eliminado paso tryons del checklist)
+- `frontend/src/app/dashboard/page.tsx` (agregada lógica para ocultar banner cuando onboarding completo)
+
 ## [2026-04-07] - Fix bug logout/session - Google login bloqueado
 
 ### Corrección de Seguridad y UX
