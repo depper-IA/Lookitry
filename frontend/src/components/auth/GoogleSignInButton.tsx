@@ -216,6 +216,7 @@ export default function GoogleSignInButton({
       client_id: clientId,
       scope: 'openid email profile',
       login_hint: loginHint || undefined,
+      prompt: 'select_account',
       callback: (response: any) => {
         setLoading(false);
 

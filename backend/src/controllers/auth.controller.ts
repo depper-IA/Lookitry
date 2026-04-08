@@ -19,7 +19,7 @@ function setCookieToken(res: Response, token: string): void {
   const cookieOptions: any = {
     httpOnly: true,
     secure: IS_PROD,           // Solo HTTPS en producción
-    sameSite: IS_PROD ? 'strict' : 'lax', // 'strict' para máxima protección CSRF
+    sameSite: 'lax', // 'lax' para compatibilidad con logout cross-origin
     maxAge: 30 * 24 * 60 * 60 * 1000,  // 30 días en ms
     path: '/',
   };
@@ -437,21 +437,8 @@ export class AuthController {
 
   async googleLogin(req: Request, res: Response) {
     try {
-      // Si el usuario ya tiene sesión activa, rechazar nuevo login
-      const token = (req as any).cookies?.token || req.headers.authorization?.replace('Bearer ', '');
-      if (token) {
-        try {
-          const { verifyToken } = await import('../utils/jwt');
-          const payload = verifyToken(token);
-          if (payload.brandId) {
-            return res.status(200).json({
-              needsOnboarding: false,
-              redirectTo: '/dashboard',
-              message: 'Ya tienes una sesión activa. Redirigiendo...',
-            });
-          }
-        } catch {}
-      }
+      // permite login con cualquier cuenta Google (incluso si hay cookie activa)
+      // El usuario elegirá cuenta en el diálogo de Google gracias a prompt: 'select_account'
 
       const { credential, accessToken } = req.body;
 

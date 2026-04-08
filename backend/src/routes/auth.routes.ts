@@ -109,7 +109,7 @@ router.post('/logout', (_req, res) => {
     path: '/',
     httpOnly: true,
     secure: IS_PROD,
-    sameSite: IS_PROD ? 'strict' : 'lax',
+    sameSite: 'lax',
   };
   
   if (COOKIE_DOMAIN && IS_PROD) {
@@ -131,7 +131,7 @@ router.post('/refresh-session', authMiddleware, asyncHandler(async (req: any, re
   const cookieOptions: any = {
     httpOnly: true,
     secure: IS_PROD,
-    sameSite: IS_PROD ? 'strict' : 'lax',
+    sameSite: 'lax',
     maxAge: 30 * 24 * 60 * 60 * 1000,
     path: '/',
   };
