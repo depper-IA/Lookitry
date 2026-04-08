@@ -6,7 +6,7 @@ import {
   Calendar, 
   Tag, 
   ChevronLeft, 
-  ArrowUpRight, 
+  ArrowUpRight,
   Clock,
   Share2,
   Twitter,
@@ -15,7 +15,6 @@ import {
   Link2,
   Check,
   ChevronDown,
-  BookOpen,
   TrendingUp
 } from 'lucide-react';
 
@@ -179,31 +178,6 @@ function TableOfContents({ items }: { items: TocItem[] }) {
         ))}
       </ul>
     </nav>
-  );
-}
-
-// ============================================================================
-// FAQ ACCORDION
-// ============================================================================
-
-function FaqAccordion({ html }: { html: string }) {
-  // Parse FAQ from rendered HTML
-  const faqMatch = html.match(/<div data-blog-faq="accordion">([\s\S]*?)<\/div>\s*<div data-blog-cta=/);
-  
-  if (!faqMatch) return null;
-
-  return (
-    <div className="mt-12 rounded-2xl border border-white/10 bg-[#141414] overflow-hidden">
-      <div className="p-6 md:p-8 border-b border-white/10">
-        <h3 className="font-plus-jakarta text-2xl font-bold text-white flex items-center gap-3">
-          <BookOpen size={24} className="text-[#FF5C3A]" />
-          Preguntas Frecuentes
-        </h3>
-      </div>
-      <div className="p-6 md:p-8 space-y-4">
-        {/* FAQ items will be rendered via details/summary CSS */}
-      </div>
-    </div>
   );
 }
 
@@ -565,7 +539,7 @@ export default function BlogArticle({ post, relatedPosts = [] }: BlogArticleProp
           {/* Main Content */}
           <div className="min-w-0">
             {/* Article Body */}
-            <section className="rounded-[2rem] border border-white/10 bg-[#f6f0ee] text-[#1f1f1f] shadow-[0_30px_80px_rgba(0,0,0,0.24)] overflow-hidden">
+            <section className="rounded-[2rem] border border-white/10 bg-[#141414] text-[#c8c4c0] shadow-[0_30px_80px_rgba(0,0,0,0.24)] overflow-hidden">
               <ArticleContent 
                 html={post.content} 
                 className={articleProseClass}
