@@ -377,7 +377,6 @@ export const blogController = {
         if (topicId && imageType) {
           const url = result.url as string;
           const updateField: Record<string, string> = {
-            imagen_hero_url: url,
             updated_at: new Date().toISOString(),
           };
           
@@ -548,49 +547,59 @@ export const blogController = {
       // 4. Ensamblar HTML con imágenes
       let finalHtml = draft.html_content || '';
 
-      // Insertar imagen hero al inicio del artículo (después del primer párrafo o al inicio)
+      // Insertar imagen hero: buscar el cierre del div de intro y insertar DESPUÉS
       if (images.imagen_hero_url) {
         const heroImage = `<figure class="blog-hero-image">
           <img src="${images.imagen_hero_url}" alt="${draft.title || 'Imagen del artículo'}" loading="lazy" />
         </figure>`;
         
-        // Insertar después del intro/lead si existe, o al inicio
-        if (finalHtml.includes('data-blog-intro="lead"')) {
-          finalHtml = finalHtml.replace(
-            'data-blog-intro="lead"',
-            `data-blog-intro="lead"${heroImage}`
-          );
+        // Buscar el cierre del div de intro (después del opening div con data-blog-intro="lead")
+        const introCloseMatch = finalHtml.match(/<div data-blog-intro="lead"[^>]*>([\s\S]*?)<\/div>/);
+        if (introCloseMatch) {
+          // Insertar la imagen AL FINAL del contenido del intro, antes del </div>
+          const introContent = introCloseMatch[1];
+          const introFullMatch = introCloseMatch[0];
+          const updatedIntro = introFullMatch.replace(introContent, introContent + '\n' + heroImage);
+          finalHtml = finalHtml.replace(introFullMatch, updatedIntro);
         } else {
+          // Si no hay intro, insertar al inicio
           finalHtml = heroImage + finalHtml;
         }
       }
 
-      // Insertar imagen body1 en la primera sección h2
+      // Insertar imagen body1: después del primer h2 (después del texto del h2, antes del primer párrafo)
       if (images.imagen_body1_url) {
         const body1Image = `<figure class="blog-body-image blog-body-image-1">
           <img src="${images.imagen_body1_url}" alt="${draft.title || 'Imagen'}" loading="lazy" />
         </figure>`;
         
-        // Insertar después del primer h2
-        const firstH2Match = finalHtml.match(/<h2[^>]*>/);
-        if (firstH2Match) {
-          const insertPos = firstH2Match.index + firstH2Match[0].length;
-          finalHtml = finalHtml.slice(0, insertPos) + body1Image + finalHtml.slice(insertPos);
+        // Buscar el primer h2 con su contenido hasta el siguiente h2 o cierre de sección
+        const firstH2WithContent = finalHtml.match(/<h2[^>]*>([\s\S]*?)<\/h2>/);
+        if (firstH2WithContent) {
+          const h2Content = firstH2WithContent[1]; // contenido entre <h2> y </h2>
+          const h2Full = firstH2WithContent[0];
+          // Insertar imagen body1 al final del contenido del h2 (después del texto del título)
+          const updatedH2 = h2Full.replace(h2Content, h2Content + '\n' + body1Image);
+          finalHtml = finalHtml.replace(h2Full, updatedH2);
         }
       }
 
-      // Insertar imagen body2 en la última sección
+      // Insertar imagen body2: antes del último h2
       if (images.imagen_body2_url) {
         const body2Image = `<figure class="blog-body-image blog-body-image-2">
           <img src="${images.imagen_body2_url}" alt="${draft.title || 'Imagen'}" loading="lazy" />
         </figure>`;
         
-        // Insertar antes del último h2 o al final del contenido
-        const lastH2Index = finalHtml.lastIndexOf('<h2');
-        if (lastH2Index > 0) {
-          const beforeLastH2 = finalHtml.slice(0, lastH2Index);
-          const fromLastH2 = finalHtml.slice(lastH2Index);
-          finalHtml = beforeLastH2 + body2Image + fromLastH2;
+        // Encontrar todos los h2 y tomar el penúltimo para insertar antes
+        const allH2Matches = [...finalHtml.matchAll(/<h2[^>]*>/g)];
+        if (allH2Matches.length >= 2) {
+          // Insertar antes del penúltimo h2 (que sería la anteúltima sección)
+          const secondToLastH2Index = allH2Matches[allH2Matches.length - 2].index;
+          finalHtml = finalHtml.slice(0, secondToLastH2Index) + body2Image + finalHtml.slice(secondToLastH2Index);
+        } else if (allH2Matches.length === 1) {
+          // Solo un h2, insertar después de ese h2
+          const h2Index = allH2Matches[0].index + allH2Matches[0][0].length;
+          finalHtml = finalHtml.slice(0, h2Index) + body2Image + finalHtml.slice(h2Index);
         } else {
           finalHtml = finalHtml + body2Image;
         }
