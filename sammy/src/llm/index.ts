@@ -291,9 +291,14 @@ export class LLMManager {
 
     // Orden de prioridad: MiniMax → Groq
     for (let i = 0; i < this.providers.length; i++) {
-    // Priority: MiniMax → Groq → OpenRouter (Safety Fallback)
+    // Priority: MiniMax → Groq
     for (let i = 0; i < this.providers.length; i++) {
         const provider = this.providers[i]; 
+        
+        // Strictly adhere to REGLAS_IMPORTANTES.md: OpenRouter is ONLY for widget images
+        if (provider.name === 'openrouter') {
+            continue;
+        }
         
         try {
             const result = await provider.complete(messages, tools);
