@@ -1,168 +1,318 @@
 {
-  "name": "Lookitry - Project Knowledge RAG",
-  "description": "Indexa documentación core (PRD, DESIGN, TECH_STACK, REGLAS) para RAG de agentes. Usa OpenAI embeddings.",
+  "name": "Project Knowledge RAG",
   "nodes": [
     {
-      "id": "webhook-trigger",
-      "name": "Webhook - Recibir documento",
-      "type": "n8n-nodes-base.webhook",
-      "position": [250, 300],
       "parameters": {
         "httpMethod": "POST",
         "path": "project-knowledge-rag",
-        "responseMode": "responseNode",
+        "responseMode": "onReceived",
         "options": {}
       },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
+      "position": [100, 300],
       "webhookId": "project-knowledge-rag"
     },
     {
-      "id": "validate-input",
-      "name": "Validar y preparar datos",
-      "type": "n8n-nodes-base.code",
-      "position": [470, 300],
       "parameters": {
-        "jsCode": "// Validar y normalizar entrada\nconst body = $input.first().json.body ?? $input.first().json;\n\nconst fileName = body.file_name;\nconst filePath = body.file_path || body.file_name;\nconst content = body.content;\nconst version = body.version || new Date().toISOString().split('T')[0];\n\nif (!fileName) throw new Error('file_name es requerido');\nif (!content) throw new Error('content es requerido');\n\n// Determinar tipo de documento\nlet docType = 'OTHER';\nconst upperFileName = fileName.toUpperCase();\nif (upperFileName.includes('PRD')) docType = 'PRD';\nelse if (upperFileName.includes('DESIGN')) docType = 'DESIGN';\nelse if (upperFileName.includes('TECH_STACK')) docType = 'TECH_STACK';\nelse if (upperFileName.includes('REGLAS')) docType = 'REGLAS';\nelse if (upperFileName.includes('CHANGELOG')) docType = 'CHANGELOG';\n\n\n// Calcular hash para detectar cambios\nconst contentHash = require('crypto')\n  .createHash('sha256')\n  .update(content)\n  .digest('hex');\n\n// Preparar texto para embedding (truncar si es muy largo)\nlet embedText = content;\nconst maxLength = 8000;\nif (embedText.length > maxLength) {\n  const chunkSize = Math.floor(maxLength / 2);\n  embedText = embedText.substring(0, chunkSize) + '\\n\\n...[truncado]...\\n\\n' + embedText.substring(embedText.length - chunkSize);\n}\n\nreturn [{ json: {\n  file_name: fileName,\n  file_path: filePath,\n  content: content,\n  content_hash: contentHash,\n  version: version,\n  doc_type: docType,\n  embedding_text: `[${docType}] ${fileName}\\n\\n${embedText}`\n} }];"
+        "jsCode": "// =============================================\n// Validate & Prepare Documentation\n// =============================================\nconst body = $input.first().json.body ?? $input.first().json;\n\n\nconst fileName = body.file_name;\nconst filePath = body.file_path || body.file_name;\nconst content = body.content;\nconst version = body.version;\nconst timestamp = body.timestamp;\n\n// Validate required fields\nif (!fileName) {\n  throw new Error('Missing required field: file_name');\n}\nif (!content) {\n  throw new Error('Missing required field: content');\n}\n\n// =============================================\n// Determine document type from filename\n// =============================================\nlet docType = 'OTHER';\nconst upperFileName = fileName.toUpperCase();\nif (upperFileName.includes('PRD')) {\n  docType = 'PRD';\n} else if (upperFileName.includes('DESIGN')) {\n  docType = 'DESIGN';\n} else if (upperFileName.includes('TECH_STACK')) {\n  docType = 'TECH_STACK';\n} else if (upperFileName.includes('REGLAS')) {\n  docType = 'REGLAS';\n} else if (upperFileName.includes('CHANGELOG')) {\n  docType = 'CHANGELOG';\n}\n\n// =============================================\n// Calculate SHA256 content hash\n// =============================================\nconst crypto = require('crypto');\nconst contentHash = crypto.createHash('sha256').update(content).digest('hex');\n\n\n// =============================================\n// Prepare enriched text for embedding\n// Truncate if too long (OpenAI has 8191 token limit for embedding)\n// =============================================\nconst maxChars = 30000;\nlet embedText = content;\nif (embedText.length > maxChars) {\n  const chunkSize = Math.floor(maxChars / 2);\n  embedText = embedText.substring(0, chunkSize) + '\\n\\n...[content truncated for embedding]...\\n\\n' + embedText.substring(embedText.length - chunkSize);\n}\n\nconst enrichedContent = `[${docType}] ${fileName}\\n\\n${embedText}`;\n\nreturn [{ json: {\n  file_name: fileName,\n  file_path: filePath,\n  content: content,\n  content_hash: contentHash,\n  version: version || null,\n  doc_type: docType,\n  enriched_content: enrichedContent,\n  timestamp: timestamp || new Date().toISOString()\n} }];"
       },
-      "typeVersion": 2
+      "id": "validate-prepare",
+      "name": "Validate & Prepare",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 300]
     },
     {
-      "id": "check-existing",
-      "name": "Supabase - Verificar existente",
-      "type": "n8n-nodes-base.httpRequest",
-      "position": [690, 300],
       "parameters": {
         "method": "GET",
-        "url": "=https://vkdooutklowctuudjnkl.supabase.co/rest/v1/project_knowledge?file_path=eq.{{ $json.file_path }}&select=id,content_hash",
-        "sendHeaders": true,
-        "headerParameters": {
+        "url": "=https://vkdooutklowctuudjnkl.supabase.co/rest/v1/project_knowledge",
+        "queryParameters": {
           "parameters": [
             {
+              "name": "file_path",
+              "value": "eq.{{ $json.file_path }}"
+            },
+            {
+              "name": "select",
+              "value": "id,content_hash"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        },
+        "headers": {
+          "values": [
+            {
               "name": "apikey",
-              "value": "=***REMOVED-SECRET***"
+              "value": "{{ $env.SUPABASE_SERVICE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "=Bearer ***REMOVED-SECRET***"
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
             }
           ]
-        },
-        "options": {}
-      }
+        }
+      },
+      "id": "check-existing",
+      "name": "Check Existing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [540, 300]
     },
     {
-      "id": "check-changes",
-      "name": "¿Contenido cambió?",
-      "type": "n8n-nodes-base.if",
-      "position": [910, 300],
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "typeValidation": "strict" },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
           "conditions": [
             {
-              "id": "hash-check",
-              "parameter1": "{{ $json.content_hash }}",
-              "parameter2": "{{ $('Supabase - Verificar existente').first().json.content_hash }}",
-              "type": "string",
-              "operation": "notEquals"
+              "id": "hash-compare",
+              "leftValue": "={{ $json.content_hash }}",
+              "rightValue": "={{ $('Check Existing').first().json.content_hash }}",
+              "operator": {
+                "type": "different",
+                "operation": "notEqual"
+              }
             }
           ],
-          "combinator": "and"
+          "optionsCombinations": {
+            "combinations": []
+          }
         },
         "options": {}
-      }
+      },
+      "id": "hash-changed-check",
+      "name": "Hash Changed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [760, 300]
     },
     {
-      "id": "openai-embedding",
-      "name": "OpenAI - Generar embedding",
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "position": [1130, 300],
       "parameters": {
-        "resource": "embedding",
-        "model": "text-embedding-3-small",
-        "textToEmbed": "={{ $json.embedding_text }}"
-      },
-      "credentials": {
-        "openAiApi": {
-          "id": "1",
-          "name": "OpenAI API"
+        "method": "POST",
+        "url": "https://api.openai.com/v1/embeddings",
+        "body": {
+          "model": "text-embedding-3-small",
+          "input": "={{ $json.enriched_content }}"
+        },
+        "options": {
+          "timeout": 60000
+        },
+        "headers": {
+          "values": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.OPENAI_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
         }
-      }
-    },
-    {
-      "id": "extract-embedding",
-      "name": "Extraer embedding",
-      "type": "n8n-nodes-base.code",
-      "position": [1350, 300],
-      "parameters": {
-        "jsCode": "// Extraer embedding de OpenAI response\nconst response = $input.first().json;\nconst embedding = response.embedding || [];\n\nif (!Array.isArray(embedding) || embedding.length === 0) {\n  throw new Error('OpenAI no devolvió embedding válido');\n}\n\nconst data = $('Validar y preparar datos').first().json;\nreturn [{ json: {\n  ...data,\n  embedding: embedding\n} }];"
       },
-      "typeVersion": 2
+      "id": "openai-embedding",
+      "name": "OpenAI Embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [980, 220]
     },
     {
-      "id": "supabase-upsert",
-      "name": "Supabase - Upsert",
-      "type": "n8n-nodes-base.httpRequest",
-      "position": [1570, 300],
+      "parameters": {
+        "jsCode": "// =============================================\n// Extract Embedding Array from OpenAI Response\n// =============================================\nconst openAiResponse = $input.first().json;\n\n// OpenAI returns: { data: [{ embedding: [...], index: 0, object: \"embedding\" }], model: \"...\", object: \"list\", usage: {...} }\nconst embeddingObj = openAiResponse.data && openAiResponse.data[0];\n\n\nif (!embeddingObj || !embeddingObj.embedding) {\n  throw new Error('OpenAI did not return a valid embedding');\n}\n\nconst embedding = embeddingObj.embedding;\n\n// Get the prepared data from earlier\nconst preparedData = $('Validate & Prepare').first().json;\n\nreturn [{ json: {\n  ...preparedData,\n  embedding: embedding\n} }];"
+      },
+      "id": "extract-embedding",
+      "name": "Extract Embedding",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, 220]
+    },
+    {
       "parameters": {
         "method": "POST",
         "url": "=https://vkdooutklowctuudjnkl.supabase.co/rest/v1/rpc/upsert_project_knowledge",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "apikey", "value": "=***REMOVED-SECRET***" },
-            { "name": "Authorization", "value": "=Bearer ***REMOVED-SECRET***" },
-            { "name": "Content-Type", "value": "application/json" },
-            { "name": "Prefer", "value": "return=minimal" }
-          ]
+        "body": {
+          "p_file_name": "={{ $json.file_name }}",
+          "p_file_path": "={{ $json.file_path }}",
+          "p_content": "={{ $json.content }}",
+          "p_content_hash": "={{ $json.content_hash }}",
+          "p_embedding": "={{ $json.embedding }}",
+          "p_version": "={{ $json.version }}",
+          "p_doc_type": "={{ $json.doc_type }}"
         },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"p_file_name\": \"{{ $json.file_name }}\",\n  \"p_file_path\": \"{{ $json.file_path }}\",\n  \"p_content\": \"{{ $json.content }}\",\n  \"p_content_hash\": \"{{ $json.content_hash }}\",\n  \"p_embedding\": {{ JSON.stringify($json.embedding) }},\n  \"p_version\": \"{{ $json.version }}\",\n  \"p_doc_type\": \"{{ $json.doc_type }}\"\n}"
-      }
-    },
-    {
-      "id": "respond-ok",
-      "name": "Responder OK",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "position": [1790, 300],
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={ \"ok\": true, \"file_name\": \"{{ $json.file_name }}\", \"doc_type\": \"{{ $json.doc_type }}\" }"
+        "options": {
+          "timeout": 30000
+        },
+        "headers": {
+          "values": [
+            {
+              "name": "apikey",
+              "value": "{{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        }
       },
-      "typeVersion": 1
+      "id": "upsert-supabase",
+      "name": "Upsert to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1420, 220]
     },
     {
+      "parameters": {
+        "respondWith": {
+          "responseBody": "={{ { \"status\": \"success\", \"file_name\": $json.file_name, \"doc_type\": $json.doc_type, \"message\": \"Document indexed successfully\" } }}"
+        },
+        "options": {
+          "responseStatusCode": 200
+        }
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1640, 220]
+    },
+    {
+      "parameters": {
+        "respondWith": {
+          "responseBody": "={{ { \"status\": \"skipped\", \"file_name\": $json.file_name, \"message\": \"Document content unchanged, skipping indexing\" } }}"
+        },
+        "options": {
+          "responseStatusCode": 200
+        }
+      },
       "id": "respond-skipped",
-      "name": "Responder sin cambios",
+      "name": "Respond Skipped",
       "type": "n8n-nodes-base.respondToWebhook",
-      "position": [1130, 500],
+      "typeVersion": 1,
+      "position": [980, 480]
+    },
+    {
       "parameters": {
-        "respondWith": "json",
-        "responseBody": "={ \"ok\": true, \"skipped\": true, \"file_name\": \"{{ $('Validar y preparar datos').first().json.file_name }}\" }"
+        "respondWith": {
+          "responseBody": "={{ { \"status\": \"error\", \"message\": \"Failed to process document\" } }}"
+        },
+        "options": {
+          "responseStatusCode": 500
+        }
       },
-      "typeVersion": 1
+      "id": "respond-error",
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1420, 480]
     }
   ],
   "connections": {
-    "Webhook - Recibir documento": { "main": [[{ "node": "Validar y preparar datos", "type": "main", "index": 0 }]] },
-    "Validar y preparar datos": { "main": [[{ "node": "Supabase - Verificar existente", "type": "main", "index": 0 }]] },
-    "Supabase - Verificar existente": { "main": [[{ "node": "¿Contenido cambió?", "type": "main", "index": 0 }]] },
-    "¿Contenido cambió?": {
+    "Webhook Trigger": {
       "main": [
-        [{ "node": "OpenAI - Generar embedding", "type": "main", "index": 0 }],
-        [{ "node": "Responder sin cambios", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Validate & Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
-    "OpenAI - Generar embedding": { "main": [[{ "node": "Extraer embedding", "type": "main", "index": 0 }]] },
-    "Extraer embedding": { "main": [[{ "node": "Supabase - Upsert", "type": "main", "index": 0 }]] },
-    "Supabase - Upsert": { "main": [[{ "node": "Responder OK", "type": "main", "index": 0 }]] }
+    "Validate & Prepare": {
+      "main": [
+        [
+          {
+            "node": "Check Existing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing": {
+      "main": [
+        [
+          {
+            "node": "Hash Changed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hash Changed?": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Embedding": {
+      "main": [
+        [
+          {
+            "node": "Extract Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Embedding": {
+      "main": [
+        [
+          {
+            "node": "Upsert to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert to Supabase": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "settings": {
     "executionOrder": "v1",
-    "saveManualExecutions": true,
-    "callerPolicy": "workflowsFromSameOwner"
+    "timezone": "America/Bogota"
   },
   "staticData": null,
-  "tags": [{ "name": "SaaS" }]
+  "tags": ["SaaS", "documentation", "RAG", "embeddings"]
 }

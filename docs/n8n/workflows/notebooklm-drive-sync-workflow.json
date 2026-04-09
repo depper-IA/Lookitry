@@ -1,42 +1,41 @@
 {
   "name": "Lookitry - NotebookLM Google Drive Sync",
-  "description": "Recibe archivos .md y los sincroniza a Google Drive para NotebookLM. Se ejecuta via webhook.",
   "nodes": [
     {
-      "id": "webhook-trigger",
-      "name": "Webhook - Recibir archivos",
-      "type": "n8n-nodes-base.webhook",
-      "position": [250, 300],
       "parameters": {
         "httpMethod": "POST",
         "path": "notebooklm-sync",
         "responseMode": "responseNode",
         "options": {}
       },
+      "id": "webhook-receive",
+      "name": "Webhook - Recibir archivos",
+      "type": "n8n-nodes-base.webhook",
+      "position": [250, 300],
       "typeVersion": 2,
-      "webhookId": "notebooklm-sync"
+      "webhookId": "notebooklm-sync",
+      "triggerCount": 1
     },
     {
-      "id": "parse-input",
-      "name": "Parsear entrada",
-      "type": "n8n-nodes-base.code",
-      "position": [470, 300],
       "parameters": {
-        "jsCode": "// Parsear entrada del webhook\nconst body = $input.first().json.body ?? $input.first().json;\n\n// El script sync_project_knowledge.py envía archivos directamente\nconst files = Array.isArray(body.files) ? body.files : [body];\n\nconst processed = files.map(f => ({\n  file_name: f.file_name || f.file_path?.split('/').pop() || 'unknown.md',\n  file_path: f.file_path || f.file_name || '',\n  content: f.content || '',\n  commit_sha: f.commit_sha || f.version || new Date().toISOString()\n})).filter(f => f.content);\n\nif (processed.length === 0) {\n  throw new Error('No se proporcionaron archivos con contenido');\n}\n\nreturn processed.map(f => ({ json: f }));"
+        "jsCode": "// ============================================\n// NODE: Parse Input\n// Normaliza la entrada a array de archivos\n// ============================================\n\nconst body = $input.first().json.body ?? $input.first().json;\n\n\n// El script puede enviar:\n// 1. { files: [...] } - array de archivos\n// 2. { file_name, file_path, content, commit_sha } - archivo único\nconst files = Array.isArray(body.files) ? body.files : [body];\n\n\nconst processed = files.map(f => ({\n  file_name: f.file_name || f.file_path?.split('/').pop() || 'unknown.md',\n  file_path: f.file_path || f.file_name || '',\n  content: f.content || '',\n  commit_sha: f.commit_sha || f.version || new Date().toISOString().replace(/[:.]/g, '-')\n})).filter(f => f.content.length > 0);\n\nif (processed.length === 0) {\n  throw new Error('No se proporcionaron archivos con contenido');\n}\n\n// Output: un item por archivo, preparado para el Split In Batches\nreturn processed.map(f => ({ json: f }));"
       },
+      "id": "parse-input",
+      "name": "Parse Input",
+      "type": "n8n-nodes-base.code",
+      "position": [450, 300],
       "typeVersion": 2
     },
     {
-      "id": "filter-md",
-      "name": "Filtrar archivos .md",
-      "type": "n8n-nodes-base.if",
-      "position": [690, 300],
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": false, "typeValidation": "strict" },
+          "options": {
+            "caseSensitive": false,
+            "typeValidation": "strict"
+          },
           "conditions": [
             {
-              "id": "md-check",
+              "id": "md-filter",
               "parameter1": "{{ $json.file_name }}",
               "parameter2": "",
               "type": "string",
@@ -47,81 +46,239 @@
           "combinator": "and"
         },
         "options": {}
-      }
+      },
+      "id": "filter-md",
+      "name": "Filter .md files",
+      "type": "n8n-nodes-base.if",
+      "position": [650, 300],
+      "typeVersion": 2.3
     },
     {
-      "id": "prepare-file",
-      "name": "Preparar archivo para Drive",
-      "type": "n8n-nodes-base.code",
-      "position": [910, 300],
       "parameters": {
-        "jsCode": "// Preparar metadata y contenido para Google Drive\nconst data = $input.first().json;\n\n// Crear nombre de archivo con timestamp para evitar duplicados\nconst timestamp = data.commit_sha?.substring(0, 7) || new Date().toISOString().split('T')[0];\nconst baseName = data.file_name.replace('.md', '');\nconst fileName = `${baseName}_${timestamp}.md`;\n\nreturn [{ json: {\n  file_name: fileName,\n  original_name: data.file_name,\n  content: data.content,\n  mimeType: 'text/markdown',\n  description: `Lookitry docs - Commit: ${data.commit_sha}`\n} }];"
+        "batchSize": 1,
+        "options": {}
       },
+      "id": "split-batches",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [850, 300],
+      "typeVersion": 4
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// NODE: Prepare File Metadata\n// Genera el nombre final: filename_commitsha.md\n// ============================================\n\nconst data = $input.first().json;\nconst commitSha = data.commit_sha?.substring(0, 7) || 'unknown';\nconst baseName = data.file_name.replace('.md', '').replace(/[^a-zA-Z0-9_-]/g, '_');\nconst fileName = `${baseName}_${commitSha}.md`;\n\n// Obtener folder ID de variable de entorno\nconst folderId = $env.GDRIVE_NOTEBOOKLM_FOLDER_ID || 'root';\n\nreturn [{ json: {\n  file_name: fileName,\n  original_name: data.file_name,\n  file_path: data.file_path,\n  content: data.content,\n  commit_sha: data.commit_sha,\n  folder_id: folderId,\n  mimeType: 'text/markdown'\n} }];"
+      },
+      "id": "prepare-file",
+      "name": "Prepare File Metadata",
+      "type": "n8n-nodes-base.code",
+      "position": [1050, 300],
       "typeVersion": 2
     },
     {
-      "id": "gdrive-upload",
-      "name": "Google Drive - Crear archivo",
-      "type": "n8n-nodes-base.google.assistant",
-      "position": [1130, 300],
       "parameters": {
-        "operation": "create",
-        "fileName": "={{ $json.file_name }}",
-        "fileContent": "={{ $json.content }}",
-        "folder": "={{ $env.GDRIVE_NOTEBOOKLM_FOLDER_ID || '0' }}",
+        "operation": "createFromText",
+        "folderId": "{{ $json.folder_id }}",
+        "fileName": "{{ $json.file_name }}",
+        "fileContent": "{{ $json.content }}",
         "options": {
-          "mimeType": "={{ $json.mimeType }}"
+          "mimetype": "text/markdown"
+        }
+      },
+      "id": "google-drive-create",
+      "name": "Google Drive - Create File",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [1250, 300],
+      "typeVersion": 4,
+      "credentials": {
+        "googleDriveOAuth2": {
+          "id": "CREDENTIALS_ID_PLACEHOLDER",
+          "name": "Google Drive API (OAuth2)"
         }
       }
     },
     {
+      "parameters": {},
       "id": "log-success",
-      "name": "Log éxito",
+      "name": "Log Success",
       "type": "n8n-nodes-base.noOp",
-      "position": [1350, 300],
-      "parameters": {
-        "jsCode": "// Log éxito\nconst data = $input.first().json;\nconsole.log('Archivo sincronizado:', data.file_name);"
-      }
+      "position": [1450, 300],
+      "typeVersion": 3
     },
     {
-      "id": "log-skipped",
-      "name": "Log omitido",
+      "parameters": {},
+      "id": "log-ignored",
+      "name": "Log Ignored",
       "type": "n8n-nodes-base.noOp",
-      "position": [910, 500],
-      "parameters": {
-        "jsCode": "// Log omitido\nconsole.log('Archivo omitido (no es .md):', $input.first().json.file_name);"
-      }
+      "position": [850, 500],
+      "typeVersion": 3
     },
     {
-      "id": "respond-success",
-      "name": "Responder OK",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "position": [1570, 300],
+      "parameters": {
+        "jsCode": "// ============================================\n// NODE: Count Synced Files\n// Cuenta archivos exitosos para el response\n// ============================================\n\nconst items = $input.all();\nconst syncedCount = items.filter(item => item.json.id || item.json.name).length;\n\nreturn [{ json: {\n  ok: true,\n  synced_count: syncedCount,\n  timestamp: new Date().toISOString()\n} }];"
+      },
+      "id": "count-synced",
+      "name": "Count Synced Files",
+      "type": "n8n-nodes-base.code",
+      "position": [1650, 300],
+      "typeVersion": 2
+    },
+    {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={ \"ok\": true, \"synced_count\": 1, \"timestamp\": new Date().toISOString() }"
+        "responseBody": "{{ $json }}",
+        "options": {}
       },
-      "typeVersion": 1
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [1850, 300],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"ok\": false,\n  \"error\": \"No se encontraron archivos .md para sincronizar\",\n  \"timestamp\": \"{{ $now.toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "respond-no-md",
+      "name": "Respond - No .md files",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [850, 700],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// NODE: Error Handler\n// Manejo de errores del workflow\n// ============================================\n\nconst error = $input.first().json.error || $input.first().json.message || 'Unknown error';\nconst workflowId = $workflow.id || 'unknown';\n\n\nreturn [{ json: {\n  ok: false,\n  error: error,\n  workflow_id: workflowId,\n  timestamp: new Date().toISOString()\n} }];"
+      },
+      "id": "error-handler",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.code",
+      "position": [1650, 550],
+      "typeVersion": 2
     }
   ],
   "connections": {
-    "Webhook - Recibir archivos": { "main": [[{ "node": "Parsear entrada", "type": "main", "index": 0 }]] },
-    "Parsear entrada": { "main": [[{ "node": "Filtrar archivos .md", "type": "main", "index": 0 }]] },
-    "Filtrar archivos .md": {
+    "Webhook - Recibir archivos": {
       "main": [
-        [{ "node": "Preparar archivo para Drive", "type": "main", "index": 0 }],
-        [{ "node": "Log omitido", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Parse Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
-    "Preparar archivo para Drive": { "main": [[{ "node": "Google Drive - Crear archivo", "type": "main", "index": 0 }]] },
-    "Google Drive - Crear archivo": { "main": [[{ "node": "Log éxito", "type": "main", "index": 0 }]] },
-    "Log éxito": { "main": [[{ "node": "Responder OK", "type": "main", "index": 0 }]] }
+    "Parse Input": {
+      "main": [
+        [
+          {
+            "node": "Filter .md files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter .md files": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Ignored",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond - No .md files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Prepare File Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare File Metadata": {
+      "main": [
+        [
+          {
+            "node": "Google Drive - Create File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive - Create File": {
+      "main": [
+        [
+          {
+            "node": "Log Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Success": {
+      "main": [
+        [
+          {
+            "node": "Count Synced Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Count Synced Files": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "settings": {
     "executionOrder": "v1",
-    "saveManualExecutions": true,
-    "callerPolicy": "workflowsFromSameOwner"
+    "errorWorkflow": "{{ $execution?.resumeUrl }}",
+    "binaryMode": "separate",
+    "saveManualSuccess": true,
+    "timezone": "America/Bogota",
+    "defaultName": "Lookitry - NotebookLM Sync"
   },
   "staticData": null,
-  "tags": [{ "name": "SaaS" }]
+  "tags": ["SaaS", "NotebookLM", "Google Drive", "Documentation"],
+  "triggerCount": 1,
+  "updatedAt": "2026-04-09T15:00:00.000Z",
+  "versionId": "notebooklm-sync-v2",
+  "versionCounter": 1,
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "templateCredentialsSetupCompleted": false
+  },
+  "pinData": {},
+  "shared": [],
+  "activeVersionId": null,
+  "isArchived": false
 }
