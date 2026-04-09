@@ -241,9 +241,9 @@ export function TemplateModernSidebar(props: TryOnTemplateProps) {
                     backgroundColor: isSelected 
                       ? `${primaryColor}25` 
                       : 'rgba(255,255,255,0.05)',
-                    ringColor: isSelected ? primaryColor : 'transparent',
                     animationDelay: `${idx * 30}ms`,
                     transform: isSelected ? 'translateX(4px)' : 'none',
+                    ['--tw-ring-color' as string]: primaryColor,
                   }}
                 >
                   <div className="relative">
