@@ -60,6 +60,7 @@ export interface Brand {
     allowed_origins?: string[];
     [key: string]: unknown;
   } | null;
+  onboardingDismissed?: boolean;
 }
 
 export type ReviewStatus = 'pending' | 'approved' | 'rejected';
@@ -169,6 +170,7 @@ export interface UpdateBrandConfigDto {
   welcomeMessage?: string;
   headerColor?: string | null;
   customDomain?: string | null;
+  onboardingDismissed?: boolean;
 }
 
 // Widget templates

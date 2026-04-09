@@ -43,6 +43,7 @@ class BrandsService {
       billingEmail: response.data.billing_email,
       apiKey: response.data.api_key,
       socialLinks: response.data.social_links,
+      onboardingDismissed: response.data.onboarding_dismissed,
     };
     
     return brandData;
@@ -116,6 +117,7 @@ class BrandsService {
       billingEmail: response.data.billing_email,
       apiKey: response.data.api_key,
       socialLinks: response.data.social_links,
+      onboardingDismissed: response.data.onboarding_dismissed,
     };
     
     return brandData;
@@ -133,6 +135,14 @@ class BrandsService {
 
   async createTrialEvent(eventName: string, metadata?: Record<string, unknown>): Promise<void> {
     await api.post('/brands/me/trial-events', { eventName, metadata });
+  }
+
+  async updateConfig(data: { onboardingDismissed?: boolean }): Promise<void> {
+    const backendData: any = {};
+    if (data.onboardingDismissed !== undefined) {
+      backendData.onboarding_dismissed = data.onboardingDismissed;
+    }
+    await api.patch('/brands/me', backendData);
   }
 }
 

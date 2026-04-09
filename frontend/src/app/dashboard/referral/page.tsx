@@ -29,6 +29,7 @@ export default function ReferralPage() {
   const [claimLoading, setClaimLoading] = useState(false);
   const [claimSuccess, setClaimSuccess] = useState<string | null>(null);
   const [claimError, setClaimError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     loadReferralData();
@@ -48,6 +49,8 @@ export default function ReferralPage() {
   const copyCode = () => {
     if (data?.referralCode) {
       navigator.clipboard.writeText(data.referralCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -103,8 +106,17 @@ export default function ReferralPage() {
           </div>
           <div className="mt-3 flex items-center gap-2">
             <code className="text-2xl font-bold text-white">{data?.referralCode || '—'}</code>
-            <button onClick={copyCode} className="rounded-lg p-2 transition-colors hover:bg-[var(--bg-hover)]" title="Copiar">
-              <Copy className="h-4 w-4 text-[var(--text-muted)]" />
+            <button onClick={copyCode} className="relative rounded-lg p-2 transition-colors hover:bg-[var(--bg-hover)]" title="Copiar">
+              {copied ? (
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              ) : (
+                <Copy className="h-4 w-4 text-[var(--text-muted)]" />
+              )}
+              {copied && (
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-emerald-500 px-2 py-1 text-[10px] font-bold text-white">
+                  ¡Copiado!
+                </span>
+              )}
             </button>
           </div>
         </motion.div>

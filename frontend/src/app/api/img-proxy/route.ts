@@ -33,6 +33,7 @@ const ALLOWED_HOSTS = [
   'pinimg.com',
   'tiktok.com',
   'bytegoofs.com',
+  'wilkiedevs.com',
   'minio.wilkiedevs.com',
   'vkdooutklowctuudjnkl.supabase.co',
   'supabase.co',

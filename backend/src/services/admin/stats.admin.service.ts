@@ -20,12 +20,16 @@ export class StatsAdminService {
       { count: totalGenerations },
       { count: successfulGenerations },
       { count: generationsThisMonth },
+      { count: pendingReviews },
+      { data: recentApprovedReviews },
     ] = await Promise.all([
       supabaseAdmin.from('brands').select('*', { count: 'exact', head: true }),
       supabaseAdmin.from('products').select('*', { count: 'exact', head: true }).eq('is_active', true),
       supabaseAdmin.from('generations').select('*', { count: 'exact', head: true }),
       supabaseAdmin.from('generations').select('*', { count: 'exact', head: true }).eq('status', 'SUCCESS'),
       supabaseAdmin.from('generations').select('*', { count: 'exact', head: true }).gte('generated_at', startOfMonth.toISOString()),
+      supabaseAdmin.from('brand_reviews').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabaseAdmin.from('brand_reviews').select('id, rating, comment, reviewer_name, created_at, status, is_featured').eq('status', 'approved').order('created_at', { ascending: false }).limit(3),
     ]);
 
     const { data: brandsForPlanStats, error: brandsForPlanStatsError } = await supabaseAdmin
@@ -106,6 +110,10 @@ export class StatsAdminService {
         inactive: landingsInactive || 0,
       },
       generationsByMonth,
+      reviewsStats: {
+        pendingCount: pendingReviews || 0,
+        recentApproved: recentApprovedReviews || [],
+      },
     };
   }
 

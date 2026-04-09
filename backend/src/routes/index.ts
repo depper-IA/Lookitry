@@ -22,6 +22,7 @@ import adminReviewsRoutes from './adminReviews.routes';
 import couponsRoutes from './coupons.routes';
 import enterpriseRoutes from './enterprise.routes';
 import agentRoutes from './agent.routes';
+import reviewsPublicRoutes from './reviewsPublic.routes';
 
 const router = Router();
 
@@ -41,6 +42,7 @@ router.use('/payments/paypal', paypalRoutes);
 router.use('/images', imageRoutes);
 router.use('/blog', blogRoutes);
 router.use('/trial', trialRoutes);
+router.use('/reviews/public', reviewsPublicRoutes);
 router.use('/reviews', reviewsRoutes);
 router.use('/admin/reviews', adminReviewsRoutes);
 router.use('/admin/coupons', couponsRoutes);

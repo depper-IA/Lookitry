@@ -1,5 +1,13 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-09] - Dashboard UX & Reviews Integration
+
+### Mejoras Dashboard & Integraciones
+- **Banner Onboarding**: Migrada persistencia de "Cuenta Operativa" a BD (`onboarding_dismissed`) en vez de localStorage para evitar reapariciones tras cerrar sesión.
+- **Feedback Copy**: Añadido estado interactivo "¡Copiado!" para los botones de copia de bloques de código de SDK y Claves API.
+- **Admin Reviews Section**: Incorporada métrica `pendingCount` y lista de `recentApproved` al endpoint de estadísticas globales, visualizadas en el grid principal de Admin Dashboard, corrigiendo validación JSX de comillas y layout grid `1.2fr_0.8fr`.
+- **Dynamic Landing Reviews**: Creada ruta `/api/reviews/public` en backend, y modificado la landing page (`page.tsx`) para renderizar testimonios dinámicos directamente desde la Base de datos con soporte fallback ante errores.
+
 ## [2026-04-09] - Dashboard Laptop Optimization & Cleanup
 
 ### Dashboard Responsive (Settings)

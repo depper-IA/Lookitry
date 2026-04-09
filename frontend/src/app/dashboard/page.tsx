@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
@@ -105,13 +105,25 @@ export default function DashboardPage() {
   }, [trialExpired]);
 
   useEffect(() => {
-    const dismissed = localStorage.getItem('onboardingBannerDismissed') === 'true';
-    setIsBannerDismissed(dismissed);
-  }, []);
+    if (brand) {
+      // Priorizar el estado de la base de datos, fallback a localStorage para transición suave
+      const dismissed = brand.onboardingDismissed || localStorage.getItem('onboardingBannerDismissed') === 'true';
+      setIsBannerDismissed(dismissed);
+    }
+  }, [brand]);
 
-  const handleDismissBanner = () => {
-    localStorage.setItem('onboardingBannerDismissed', 'true');
-    setIsBannerDismissed(true);
+  const handleDismissBanner = async () => {
+    try {
+      // Actualizar en base de datos
+      await brandsService.updateConfig({ onboardingDismissed: true });
+      // También guardar en localStorage por seguridad inmediata
+      localStorage.setItem('onboardingBannerDismissed', 'true');
+      setIsBannerDismissed(true);
+    } catch (error) {
+      console.error('Error dismissing banner:', error);
+      // Fallback a solo local si falla
+      setIsBannerDismissed(true);
+    }
   };
 
   if (loading) {

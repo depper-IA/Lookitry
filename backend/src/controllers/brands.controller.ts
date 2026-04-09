@@ -140,7 +140,12 @@ export class BrandsController {
         updates.welcome_message = req.body.welcome_message;
       }
 
+      if (req.body.onboarding_dismissed !== undefined) {
+        updates.onboarding_dismissed = Boolean(req.body.onboarding_dismissed);
+      }
+
       // Campos de contacto / perfil
+
       const contactFields: (keyof UpdateBrandDto)[] = [
         'phone', 'contact_name', 'address', 'city', 'country', 'nit',
         'state_province', 'postal_code', 'billing_email',
