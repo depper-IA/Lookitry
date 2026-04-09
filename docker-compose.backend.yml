@@ -30,36 +30,36 @@ services:
       timeout: 10s
       retries: 3
 
-  sammy:
-    build:
-      context: /root/virtual-tryon/sammy
-      dockerfile: Dockerfile
-    container_name: lookitry-sammy
-    restart: unless-stopped
-    env_file:
-      - /root/virtual-tryon/sammy/.env.production
-    environment:
-      - NODE_OPTIONS=--max-old-space-size=256
-      - PROJECT_ROOT=/app/project
-    networks:
-      - proxy
-    volumes:
-      - sammy_data:/data
-      - /root/virtual-tryon:/app/project:ro
-    deploy:
-      resources:
-        limits:
-          memory: 300M
-        reservations:
-          memory: 100M
-    healthcheck:
-      test: ["CMD", "node", "-e", "console.log('ok')"]
-      interval: 60s
-      timeout: 10s
-      retries: 3
+  # sammy:
+  #   build:
+  #     context: /root/virtual-tryon/sammy
+  #     dockerfile: Dockerfile
+  #   container_name: lookitry-sammy
+  #   restart: unless-stopped
+  #   env_file:
+  #     - /root/virtual-tryon/sammy/.env.production
+  #   environment:
+  #     - NODE_OPTIONS=--max-old-space-size=256
+  #     - PROJECT_ROOT=/app/project
+  #   networks:
+  #     - proxy
+  #   volumes:
+  #     - sammy_data:/data
+  #     - /root/virtual-tryon:/app/project:ro
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 300M
+  #       reservations:
+  #         memory: 100M
+  #   healthcheck:
+  #     test: ["CMD", "node", "-e", "console.log('ok')"]
+  #     interval: 60s
+  #     timeout: 10s
+  #     retries: 3
 
-volumes:
-  sammy_data:
+# volumes:
+#   sammy_data:
 
 networks:
   proxy:
