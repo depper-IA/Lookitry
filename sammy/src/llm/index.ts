@@ -129,6 +129,10 @@ export class MiniMaxProvider implements LLMProvider {
         }>;
       };
 
+      if (!data.choices || data.choices.length === 0) {
+        throw new Error('MiniMax API returned an empty choices array. Check API status or request format.');
+      }
+
       const choice = data.choices[0];
       const message = choice.message;
 
@@ -188,6 +192,10 @@ export class GroqProvider implements LLMProvider {
           };
         }>;
       };
+
+      if (!data.choices || data.choices.length === 0) {
+        throw new Error('Groq API returned an empty choices array. This might be a rate limit or content filter issue.');
+      }
 
       const choice = data.choices[0];
       const message = choice.message;
@@ -250,6 +258,10 @@ export class OpenRouterProvider implements LLMProvider {
           };
         }>;
       };
+
+      if (!data.choices || data.choices.length === 0) {
+        throw new Error('OpenRouter API returned an empty choices array.');
+      }
 
       const choice = data.choices[0];
       const message = choice.message;
