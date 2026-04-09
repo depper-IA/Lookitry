@@ -122,6 +122,40 @@ CREATE TABLE blogs (
   topic_id uuid
 );
 
+-- blog_draft_articles
+-- Almacena artículos en proceso de generación (JSON estructurado + HTML legacy)
+CREATE TABLE blog_draft_articles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  topic_id uuid REFERENCES blog_topics(id) ON DELETE CASCADE,
+  title text,
+  slug text,
+  html_content text, -- legacy: HTML completo sin imágenes
+  excerpt text,
+  meta_description text,
+  tags text[] DEFAULT '{}',
+  category_slug text,
+  sections jsonb DEFAULT '[]', -- Array de secciones estructuradas
+  faqs jsonb DEFAULT '[]', -- Array de preguntas y respuestas
+  cta_context jsonb, -- Contexto para CTA final
+  image_prompts jsonb DEFAULT '[]', -- Prompts para generar imágenes
+  toc_items jsonb DEFAULT '[]', -- Tabla de contenidos
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- blog_topic_images
+-- Almacena URLs de imágenes generadas para artículos
+CREATE TABLE blog_topic_images (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  topic_id uuid REFERENCES blog_topics(id) ON DELETE CASCADE,
+  imagen_hero_url text,
+  imagen_body1_url text,
+  imagen_body2_url text,
+  status text DEFAULT 'pending' CHECK (status = ANY (ARRAY['pending', 'generating', 'completed', 'failed'])),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
 -- brand_reviews
 CREATE TABLE brand_reviews (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -687,6 +721,14 @@ CREATE POLICY "Admins can update blog topics status" ON blog_topics FOR UPDATE U
 -- blogs
 CREATE POLICY "Allow public read access to published blogs" ON blogs FOR SELECT USING (status = 'published');
 
+-- blog_draft_articles
+-- Solo service_role puede acceder a drafts (proceso interno)
+CREATE POLICY "blog_draft_articles_service_role_all" ON blog_draft_articles FOR ALL USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
+
+-- blog_topic_images
+-- Solo service_role puede acceder (proceso interno de generación de imágenes)
+CREATE POLICY "blog_topic_images_service_role_all" ON blog_topic_images FOR ALL USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
+
 -- brand_reviews
 CREATE POLICY "brand_reviews_service_role_all" ON brand_reviews FOR ALL USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');
 
@@ -758,7 +800,8 @@ CREATE POLICY "trial_registrations_service_role" ON trial_registrations FOR ALL 
 -- ============================================
 -- NOTES
 -- ============================================
--- This schema reflects the current production database with 26 tables.
+-- This schema reflects the current production database with 28 tables.
 -- All tables have RLS enabled except where noted.
 -- Service role policies are in place for all admin/sensitive tables.
 -- Public read policies exist for: blog_categories, blog_settings, blogs (published only), brands (limited), coupons (active), pricing_config, promotions (active), trial_campaigns
+-- Internal tables (service_role only): blog_draft_articles, blog_topic_images, blog_topics (write)

@@ -1,6 +1,17 @@
 # Changelog - Lookitry (AI Assisted)
 
-## [2026-04-08] - Template Modern Neo-Luxury Redesign
+## [2026-04-09] - Dashboard Laptop Optimization & Cleanup
+
+### Dashboard Responsive (Settings)
+- **Grid adaptable a 1100px (Laptop)**: Cambiado breakpoint principal de `xl:` a `lg:` para evitar stacking prematuro en pantallas medianas.
+- **Layout 3-Columnas**: Configurado `lg:grid-cols-3` (1 col preview, 2 cols form) para optimizar el espacio en desktops compactos sin comprimir el formulario.
+- **Form UI Tuning**: Ajustados grids internos de `md:` a `sm:` para prevenir solapamientos en anchos de 1024px-1100px.
+- **Notch Alignment**: Verificada la posición del notch (`top-0`) para alineación perfecta en el marco del teléfono.
+
+### Estabilidad de Desarrollo
+- **Server Cleanup**: Identificados y eliminados procesos zombie en puertos 3000/3001 que causaban `EADDRINUSE`.
+- **Integridad de Templates**: Verificado `TemplateShowcase.tsx` sin errores de sintaxis; confirmados fixes de cache del servidor.
+
 
 ### Nueva Estética: Neo-Luxury con Profundidad
 - **Sidebar decorativo**: Gradiente sutil, borde de acento con color de marca, sombra 2xl

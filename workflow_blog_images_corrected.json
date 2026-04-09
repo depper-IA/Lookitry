@@ -71,7 +71,7 @@
     {
       "parameters": {
         "url": "={{ $json.imageUrl }}",
-        "options": {"response": {"response": {"responseFormat": "file"}}
+        "options": {"response": {"response": {"responseFormat": "file"}}}
       },
       "id": "download-image",
       "name": "Descargar Imagen",
