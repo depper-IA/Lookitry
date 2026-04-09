@@ -121,6 +121,10 @@ export default function IdleTimer({ children }: { children: React.ReactNode }) {
           setRemainingSeconds(prev => {
             if (prev <= 1) {
               if (countdownRef.current) clearInterval(countdownRef.current);
+              // Logout automático cuando el countdown llega a 0
+              setShowWarning(false);
+              setRemainingSeconds(0);
+              logout();
               return 0;
             }
             return prev - 1;
