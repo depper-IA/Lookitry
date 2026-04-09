@@ -8,6 +8,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:listener": "tsx local-scripts/listener.ts",
     "docker:build": "docker build -t sammy-agent .",
     "docker:run": "docker run --env-file .env.production sammy-agent"
   },

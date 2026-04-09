@@ -86,7 +86,7 @@ async function main() {
     }
   };
 
-  const toolRegistry = new ToolRegistry(config.projectRoot, getProjectContext);
+  const toolRegistry = new ToolRegistry(config.projectRoot, getProjectContext, config.supabaseUrl, config.supabaseServiceKey);
   console.log(`✅ Tools registered: ${toolRegistry.getDefinitions().map(t => t.name).join(', ')}`);
 
   // 5. Initialize agent

@@ -118,6 +118,18 @@ function buildToolDefinitions(): ToolDefinition[] {
         required: [],
       },
     },
+    {
+      name: 'delegate_task_to_local',
+      description: 'Delegate a task to a local OpenCode agent running on the user\'s PC (e.g. @WebWizard, @DevGuardian). Use this to start a task for them.',
+      input_schema: {
+        type: 'object',
+        properties: {
+          target_agent: { type: 'string', description: 'The name of the agent to delegate to, e.g. WebWizard' },
+          prompt: { type: 'string', description: 'The detailed prompt/task to run' },
+        },
+        required: ['target_agent', 'prompt'],
+      },
+    },
   ];
 }
 
@@ -307,11 +319,53 @@ export function createReadProjectContextTool(getContext: () => string): Tool {
   };
 }
 
+export function createDelegateTaskTool(supabaseUrl: string, supabaseKey: string): Tool {
+  return {
+    name: 'delegate_task_to_local',
+    description: 'Delegate a task to a local agent by creating a record in Supabase.',
+    execute: async (args) => {
+      const input = asObject(args);
+      const target_agent = typeof input.target_agent === 'string' ? input.target_agent : '';
+      const prompt = typeof input.prompt === 'string' ? input.prompt : '';
+
+      if (!target_agent || !prompt) {
+        throw new Error('Debes proveer target_agent y prompt.');
+      }
+
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Supabase no está configurado. No se puede delegar.');
+      }
+
+      // We'll use the lookitry API proxy or direct Supabase REST
+      const url = `${supabaseUrl}/rest/v1/agent_delegations`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({ target_agent, prompt })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delegate task via Supabase: ${response.statusText}`);
+      }
+
+      return {
+        success: true,
+        message: `Task successfully dropped in the bridge for ${target_agent}. They will execute it once the local PC is online.`
+      };
+    },
+  };
+}
+
 export class ToolRegistry {
   private tools: Map<string, Tool> = new Map();
   private definitions: ToolDefinition[];
 
-  constructor(projectRoot: string, getProjectContext: () => string) {
+  constructor(projectRoot: string, getProjectContext: () => string, supabaseUrl?: string, supabaseKey?: string) {
     this.definitions = buildToolDefinitions();
 
     [
@@ -322,6 +376,11 @@ export class ToolRegistry {
       createGitStatusTool(projectRoot),
       createReadProjectContextTool(getProjectContext),
     ].forEach((tool) => this.register(tool));
+
+    // Register delegate tool if credentials exist
+    if (supabaseUrl && supabaseKey) {
+      this.register(createDelegateTaskTool(supabaseUrl, supabaseKey));
+    }
   }
 
   register(tool: Tool): void {
