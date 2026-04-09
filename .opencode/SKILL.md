@@ -27,6 +27,7 @@ description: Master index of the Lookitry AI agent skills and bundles ecosystem
 │   ├── claude-code-expert/
 │   ├── using-git-worktrees/
 │   ├── playwright/
+│   ├── notebooklm/
 │   └── skill-creator/
 ├── agents/                        # Agentes especializados
 │   ├── sammy.md                  # Orquestador
@@ -64,6 +65,7 @@ Todos los skills están en `.opencode/skills/`:
 | `@claude-code-expert` | Expertos en Claude Code | Referencia |
 | `@using-git-worktrees` | Git worktrees | Flujos git |
 | `@playwright` | End-to-end testing y browser automation | Testing UI |
+| `@notebooklm` | Query NotebookLM para respuestas source-grounded | Research asistitido |
 | `@skill-creator` | Crear y mejorar skills | Desarrollo de skills |
 
 ## Agentes Especializados

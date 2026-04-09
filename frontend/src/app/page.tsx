@@ -36,7 +36,7 @@ export default async function HomePage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.lookitry.com';
   
-  let dynamicReviews = null;
+  let dynamicReviews: any[] = [];
   try {
     const res = await fetch(`${API_URL}/api/reviews/public`, { 
         next: { revalidate: 3600 } 
@@ -51,10 +51,10 @@ export default async function HomePage() {
     console.error("Error fetching reviews", err);
   }
 
-  // Testimonios curados para la home premium como fallback si falla la bd
-  const reviews = dynamicReviews || [
+  // Testimonios curados para la home premium como fallback si falla la bd o hay pocas
+  const mockReviews = [
     {
-      id: '1',
+      id: 'mock-1',
       rating: 5,
       comment: "Lookitry no solo nos dio una web, nos dio una herramienta de ventas real. La tasa de retorno de clientes que usan el probador es increíble.",
       reviewer_name: "Elena Martínez",
@@ -64,7 +64,7 @@ export default async function HomePage() {
       avatar_url: null
     },
     {
-      id: '2',
+      id: 'mock-2',
       rating: 5,
       comment: "Increíble cómo cambió la percepción de mi marca. Mis clientas de WhatsApp ahora entran al link, prueban y compran. ¡Ahorro horas!",
       reviewer_name: "Sofía Rodríguez",
@@ -74,7 +74,7 @@ export default async function HomePage() {
       avatar_url: null
     },
     {
-      id: '3',
+      id: 'mock-3',
       rating: 5,
       comment: "El plugin de WooCommerce se instaló en 5 minutos. Mis ventas subieron un 30% en el primer mes de uso.",
       reviewer_name: "Carlos Gómez",
@@ -84,6 +84,11 @@ export default async function HomePage() {
       avatar_url: null
     }
   ];
+
+  const finalReviews = [...dynamicReviews];
+  if (finalReviews.length < 5) {
+      finalReviews.push(...mockReviews.slice(0, 5 - finalReviews.length));
+  }
 
   const jsonLd = {
     // ... (rest of jsonLd remains the same)
@@ -149,7 +154,12 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <PremiumLanding pricing={pricing as PricingConfig} reviews={reviews} />
+      <PremiumLanding 
+        pricing={pricing as PricingConfig} 
+        reviews={finalReviews} 
+        realReviewsCount={dynamicReviews.length}
+        usingMockReviews={finalReviews.some(r => r.id.startsWith('mock-'))}
+      />
     </>
   );
 }

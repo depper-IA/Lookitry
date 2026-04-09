@@ -10,6 +10,8 @@ const nextConfig = {
   output: 'standalone',
   eslint: { ignoreDuringBuilds: false },
   images: {
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       { protocol: 'http', hostname: 'localhost' },
       { protocol: 'https', hostname: 'vkdooutklowctuudjnkl.supabase.co' },
