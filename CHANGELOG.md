@@ -1,5 +1,29 @@
 # Changelog - Lookitry (AI Assisted)
 
+## [2026-04-09] - NotebookLM Drive Sync Workflow v2
+
+### Workflow n8n - NotebookLM Google Drive Sync (Corregido)
+- **Problema anterior**: El workflow anterior usaba `serviceAccount` authentication (no soportado por n8n-nodes-base.googleDrive) y folder hardcodeado a "root"
+- **Solución**: Workflow completamente refeactored con:
+  - OAuth2 API credentials (credencial "Google Drive API OAuth2" requerida en n8n)
+  - Variable de entorno `GDRIVE_NOTEBOOKLM_FOLDER_ID` para folder destino configurable
+  - Nombre de archivo: `filename_commitsha.md` (e.g., `TECH_STACK_abc123d.md`)
+  - Split In Batches para procesar múltiples archivos secuencialmente
+  - Contador de archivos sincronizados en respuesta
+  - Manejo de errores con response JSON
+  - Solo sincroniza archivos `.md`
+- **Nodes**: Webhook → Parse Input → Filter .md → Split In Batches → Prepare Metadata → Google Drive Create → Count → Respond
+- **Archivo**: `docs/n8n/workflows/notebooklm-drive-sync-workflow.json`
+
+### Setup de Credenciales Google Drive en n8n
+1. Ir a n8n → Credentials → New Credential → "Google Drive OAuth2"
+2. Configurar con:
+   - Client ID (Google Cloud Console)
+   - Client Secret (Google Cloud Console)
+   - OAuth scopes: `https://www.googleapis.com/auth/drive.file`
+3. Reemplazar `CREDENTIALS_ID_PLACEHOLDER` en el workflow con el ID de la credencial creada
+4. Configurar variable de entorno `GDRIVE_NOTEBOOKLM_FOLDER_ID` en n8n con el ID del folder de destino
+
 ## [2026-04-09] - Segundo Cerebro: RAG + NotebookLM Bridge
 
 ### Infraestructura - Sistema de Conocimiento Bidireccional
@@ -1670,3 +1694,30 @@ Nuevo componente HalfStarRating permite puntuación con media estrella (4.5, 3.5
 
 ### Motivo
 - Permitir almacenar items de tabla de contenidos generados por Article Producer para uso futuro en renderizado de artículos
+
+---
+
+## [2026-04-09] - Workflow n8n: Project Knowledge RAG con OpenAI
+
+### Workflow de Indexación de Documentación con Embeddings
+
+- **Problema anterior**: Workflow usaba Google Palm API (deprecated) con credenciales hardcodeadas
+- **Solución**: Workflow refeactored con OpenAI `text-embedding-3-small`:
+  - Webhook trigger en path `project-knowledge-rag`
+  - Validación y preparación de datos (file_name, content, SHA256 hash, doc_type)
+  - Verificación de documento existente en Supabase (compara content_hash)
+  - Si hash cambió → genera embedding con OpenAI API
+  - Upsert a Supabase via RPC `upsert_project_knowledge`
+  - Respuestas: success (200), skipped (200 si sin cambios), error (500)
+- **Variables de entorno requeridas**:
+  - `SUPABASE_SERVICE_KEY` - Service role key de Supabase
+  - `OPENAI_API_KEY` - API key de OpenAI
+- **Modelo de embedding**: `text-embedding-3-small` (768 dimensiones)
+- **Archivo**: `docs/n8n/workflows/project-knowledge-rag-workflow.json`
+
+### Archivos creados
+- `docs/n8n/workflows/project-knowledge-rag-workflow.json` - Workflow completo
+
+### Motivo
+- Migrar de Google Palm (deprecated) a OpenAI para embeddings de documentación
+- Usar variables de entorno en lugar de credenciales hardcodeadas

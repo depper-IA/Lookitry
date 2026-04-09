@@ -1,5 +1,4 @@
 {
-  "name": "Lookitry - NotebookLM Google Drive Sync",
   "nodes": [
     {
       "parameters": {
@@ -8,143 +7,219 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "webhook-receive",
+      "id": "fa0d28a3-bfa1-4d51-ab17-93a25f9d79d3",
       "name": "Webhook - Recibir archivos",
       "type": "n8n-nodes-base.webhook",
-      "position": [250, 300],
+      "position": [
+        288,
+        -16
+      ],
       "typeVersion": 2,
       "webhookId": "notebooklm-sync"
     },
     {
       "parameters": {
-        "jsCode": "// Parse Input - normaliza a array de archivos\nconst body = $input.first().json.body ?? $input.first().json;\nconst files = Array.isArray(body.files) ? body.files : [body];\n\nconst processed = files.map(f => ({\n  file_name: f.file_name || f.file_path?.split('/').pop() || 'unknown.md',\n  file_path: f.file_path || f.file_name || '',\n  content: f.content || '',\n  commit_sha: f.commit_sha || f.version || new Date().toISOString().replace(/[:.]/g, '-')\n})).filter(f => f.content.length > 0);\n\n\nif (processed.length === 0) {\n  throw new Error('No se proporcionaron archivos con contenido');\n}\n\nreturn processed.map(f => ({ json: f }));"
+        "jsCode": "// Parsear entrada del webhook\nconst body = $input.first().json.body ?? $input.first().json;\n\n// El script sync_project_knowledge.py envía archivos directamente\nconst files = Array.isArray(body.files) ? body.files : [body];\n\nconst processed = files.map(f => ({\n  file_name: f.file_name || f.file_path?.split('/').pop() || 'unknown.md',\n  file_path: f.file_path || f.file_name || '',\n  content: f.content || '',\n  commit_sha: f.commit_sha || f.version || new Date().toISOString()\n})).filter(f => f.content);\n\nif (processed.length === 0) {\n  throw new Error('No se proporcionaron archivos con contenido');\n}\n\nreturn processed.map(f => ({ json: f }));"
       },
-      "id": "parse-input",
-      "name": "Parse Input",
+      "id": "e101884c-c559-4182-a705-025606bf83f2",
+      "name": "Parsear entrada",
       "type": "n8n-nodes-base.code",
-      "position": [450, 300],
+      "position": [
+        496,
+        -16
+      ],
       "typeVersion": 2
     },
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": false, "typeValidation": "strict" },
+          "options": {
+            "caseSensitive": false,
+            "typeValidation": "strict"
+          },
           "conditions": [
             {
-              "id": "md-filter",
+              "id": "md-check",
               "parameter1": "{{ $json.file_name }}",
               "parameter2": "",
               "type": "string",
               "operation": "endsWith",
               "value": ".md"
             }
-          ]
+          ],
+          "combinator": "and"
         },
         "options": {}
       },
-      "id": "filter-md",
-      "name": "Filter .md files",
+      "id": "71c5dec6-5006-4f70-8999-f68312ed3d3b",
+      "name": "Filtrar archivos .md",
       "type": "n8n-nodes-base.if",
-      "position": [650, 300],
+      "position": [
+        736,
+        -16
+      ],
       "typeVersion": 2.3
     },
     {
       "parameters": {
-        "batchSize": 1,
-        "options": {}
+        "jsCode": "// Preparar metadata y contenido para Google Drive\nconst data = $input.first().json;\n\n// Crear nombre de archivo con timestamp para evitar duplicados\nconst timestamp = data.commit_sha?.substring(0, 7) || new Date().toISOString().split('T')[0];\nconst baseName = data.file_name.replace('.md', '');\nconst fileName = `${baseName}_${timestamp}.md`;\n\nreturn [{ json: {\n  file_name: fileName,\n  original_name: data.file_name,\n  content: data.content,\n  mimeType: 'text/markdown',\n  description: `Lookitry docs - Commit: ${data.commit_sha}`\n} }];"
       },
-      "id": "split-batches",
-      "name": "Split In Batches",
-      "type": "n8n-nodes-base.splitInBatches",
-      "position": [850, 300],
-      "typeVersion": 4
+      "id": "75ef586e-73c8-420b-a116-3cb66f70f2d0",
+      "name": "Preparar archivo para Drive",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        960,
+        -32
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {},
+      "id": "b41c5c2b-cb62-4893-a427-3ddab2c4386f",
+      "name": "Log éxito",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1392,
+        -32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "b2ecc2a0-ed89-41b3-86d2-c68808e24cdc",
+      "name": "Log omitido",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        928,
+        256
+      ],
+      "typeVersion": 1
     },
     {
       "parameters": {
-        "jsCode": "// Prepare File Metadata\nconst data = $input.first().json;\nconst commitSha = data.commit_sha?.substring(0, 7) || 'unknown';\nconst baseName = data.file_name.replace('.md', '').replace(/[^a-zA-Z0-9_-]/g, '_');\nconst fileName = `${baseName}_${commitSha}.md`;\n// Folder ID de NotebookLM: https://drive.google.com/drive/u/1/folders/1EWF5O5458wC0zIdyAG7bOtfAhbEHzFB4\nconst folderId = '1EWF5O5458wC0zIdyAG7bOtfAhbEHzFB4';\nreturn [{ json: {\n  file_name: fileName,\n  original_name: data.file_name,\n  content: data.content,\n  folder_id: folderId\n} }];"
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true, \"synced_count\": 1, \"timestamp\": new Date().toISOString() }",
+        "options": {}
       },
-      "id": "prepare-file",
-      "name": "Prepare File Metadata",
-      "type": "n8n-nodes-base.code",
-      "position": [1050, 300],
-      "typeVersion": 2
+      "id": "f23f610d-a15d-4797-9c18-e23a8b09033c",
+      "name": "Responder OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1616,
+        -32
+      ],
+      "typeVersion": 1
     },
     {
       "parameters": {
         "operation": "createFromText",
-        "folderId": "{{ $json.folder_id }}",
-        "fileName": "{{ $json.file_name }}",
-        "fileContent": "{{ $json.content }}",
-        "options": {
-          "mimetype": "text/markdown"
-        }
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
       },
-      "id": "google-drive-create",
-      "name": "Google Drive - Create File",
       "type": "n8n-nodes-base.googleDrive",
-      "position": [1250, 300],
-      "typeVersion": 4,
+      "typeVersion": 3,
+      "position": [
+        1184,
+        -32
+      ],
+      "id": "46c11766-b471-4339-9f02-d2e431fc4387",
+      "name": "Create file from text",
       "credentials": {
-        "googleDriveOAuth2": {
-          "id": "CREDENTIALS_ID_PLACEHOLDER",
-          "name": "Google Drive API (OAuth2)"
+        "googleDriveOAuth2Api": {
+          "id": "3JCkh9uFiAjVVrRA",
+          "name": "Samwilkiedevs"
         }
       }
-    },
-    {
-      "parameters": {
-        "jsCode": "// Log success\nconsole.log('Synced:', $input.first().json.file_name);"
-      },
-      "id": "log-success",
-      "name": "Log Success",
-      "type": "n8n-nodes-base.noOp",
-      "position": [1450, 300]
-    },
-    {
-      "parameters": {
-        "respondWith": {
-          "responseBody": "={{ { ok: true, synced_count: $input.length, timestamp: new Date().toISOString() } }}"
-        },
-        "options": {}
-      },
-      "id": "respond-success",
-      "name": "Respond Success",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "position": [1650, 300],
-      "typeVersion": 1.2
-    },
-    {
-      "parameters": {
-        "respondWith": {
-          "responseBody": "={ ok: false, error: 'No .md files found', timestamp: new Date().toISOString() }"
-        },
-        "options": {}
-      },
-      "id": "respond-no-md",
-      "name": "Respond - No .md files",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "position": [850, 700],
-      "typeVersion": 1.2
     }
   ],
   "connections": {
-    "Webhook - Recibir archivos": { "main": [[{ "node": "Parse Input", "type": "main", "index": 0 }]] },
-    "Parse Input": { "main": [[{ "node": "Filter .md files", "type": "main", "index": 0 }]] },
-    "Filter .md files": {
+    "Webhook - Recibir archivos": {
       "main": [
-        [{ "node": "Split In Batches", "type": "main", "index": 0 }],
-        [{ "node": "Respond - No .md files", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Parsear entrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
-    "Split In Batches": { "main": [[{ "node": "Prepare File Metadata", "type": "main", "index": 0 }]] },
-    "Prepare File Metadata": { "main": [[{ "node": "Google Drive - Create File", "type": "main", "index": 0 }]] },
-    "Google Drive - Create File": { "main": [[{ "node": "Log Success", "type": "main", "index": 0 }]] },
-    "Log Success": { "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]] }
+    "Parsear entrada": {
+      "main": [
+        [
+          {
+            "node": "Filtrar archivos .md",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar archivos .md": {
+      "main": [
+        [
+          {
+            "node": "Preparar archivo para Drive",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log omitido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar archivo para Drive": {
+      "main": [
+        [
+          {
+            "node": "Create file from text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log éxito": {
+      "main": [
+        [
+          {
+            "node": "Responder OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create file from text": {
+      "main": [
+        [
+          {
+            "node": "Log éxito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-  "settings": {
-    "executionOrder": "v1",
-    "timezone": "America/Bogota"
-  },
-  "staticData": null,
-  "tags": ["SaaS", "NotebookLM", "Google Drive"]
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34a894eba6858199b78c0769d1eb411eeca63ea6b87d5682b14ecb5519e0d30f"
+  }
 }
