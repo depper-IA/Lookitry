@@ -53,6 +53,12 @@ N8N_WEBHOOK_URL = os.environ.get(
     "https://n8n.wilkiedevs.com/webhook/project-knowledge-rag",
 )
 
+# n8n webhook URL para NotebookLM sync
+N8N_NOTEBOOKLM_URL = os.environ.get(
+    "N8N_NOTEBOOKLM_URL",
+    "https://n8n.wilkiedevs.com/webhook/notebooklm-sync",
+)
+
 # Google Drive config (para NotebookLM)
 GDRIVE_FOLDER_NAME = "Lookitry_Project_Knowledge"
 GDRIVE_CREDENTIALS_FILE = os.environ.get(
@@ -217,6 +223,42 @@ def send_to_n8n_rag(file_name: str, file_path: str, content: str, version: str) 
         return False
 
 
+def send_to_n8n_notebooklm(files: list, commit_sha: str) -> bool:
+    """Enviar archivos al webhook de n8n para sincronizar a Google Drive (NotebookLM)"""
+    try:
+        import urllib.request
+        import urllib.error
+
+        payload = json.dumps(
+            {
+                "files": files,
+                "commit_sha": commit_sha,
+            }
+        ).encode("utf-8")
+
+        req = urllib.request.Request(
+            N8N_NOTEBOOKLM_URL,
+            data=payload,
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "Lookitry-Knowledge-Sync/1.0",
+            },
+            method="POST",
+        )
+
+        with urllib.request.urlopen(req, timeout=30) as response:
+            result = response.read().decode("utf-8")
+            log(f"n8n NotebookLM response: {result[:200]}", "DEBUG")
+            return response.status == 200
+
+    except urllib.error.HTTPError as e:
+        log(f"n8n HTTP error: {e.code} - {e.reason}", "ERROR")
+        return False
+    except Exception as e:
+        log(f"n8n NotebookLM request failed: {e}", "ERROR")
+        return False
+
+
 def get_gdrive_service():
     """Obtener Google Drive API service (solo si credentials existen)"""
     creds_file = Path(GDRIVE_CREDENTIALS_FILE)
@@ -339,19 +381,8 @@ def process_files(files: list[dict], commit: str, sync_drive: bool = True) -> di
     """Procesar archivos modificados"""
     results = {"processed": [], "skipped": [], "errors": [], "drive_synced": []}
 
-    # Preparar Google Drive si se requiere
-    drive_service = None
-    drive_folder_id = None
-
-    if sync_drive:
-        drive_service = get_gdrive_service()
-        if drive_service:
-            drive_folder_id = find_or_create_gdrive_folder(
-                drive_service, GDRIVE_FOLDER_NAME
-            )
-            if not drive_folder_id:
-                log("Could not get Drive folder, skipping Drive sync", "WARN")
-                drive_service = None
+    # Recolectar archivos para enviar a n8n NotebookLM
+    files_for_notebooklm = []
 
     for item in files:
         fname = item["filename"]
@@ -383,13 +414,25 @@ def process_files(files: list[dict], commit: str, sync_drive: bool = True) -> di
         else:
             results["errors"].append({"file": fname, "error": "rag_failed"})
 
-        # Sincronizar a Google Drive
-        if sync_drive and drive_service and drive_folder_id:
-            drive_ok = sync_to_google_drive(
-                drive_service, drive_folder_id, fname, content
+        # Recolectar para n8n NotebookLM (en lugar de sync directo a Drive)
+        if sync_drive:
+            files_for_notebooklm.append(
+                {
+                    "file_name": fname,
+                    "file_path": fpath,
+                    "content": content,
+                    "commit_sha": commit,
+                }
             )
-            if drive_ok:
-                results["drive_synced"].append(fname)
+
+    # Enviar todos los archivos a n8n NotebookLM de una vez
+    if files_for_notebooklm:
+        notebooklm_success = send_to_n8n_notebooklm(files_for_notebooklm, commit)
+        if notebooklm_success:
+            results["drive_synced"] = [f["file_name"] for f in files_for_notebooklm]
+            log(f"NotebookLM sync via n8n: {len(files_for_notebooklm)} files", "INFO")
+        else:
+            log("NotebookLM sync via n8n failed", "WARN")
 
     return results
 
